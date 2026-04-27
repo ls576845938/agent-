@@ -1,0 +1,79 @@
+from __future__ import annotations
+
+import unittest
+from datetime import datetime
+from tempfile import TemporaryDirectory
+
+from backend.app.core.exceptions import DataNotAvailableError
+from backend.app.services.data_management import KlineRecord, MarketDataRepository
+from backend.app.services.market_data import load_market_frame
+
+
+class DataLoaderTests(unittest.TestCase):
+    def test_fixture_loader_returns_normalized_frame(self) -> None:
+        frame = load_market_frame(
+            source="fixture",
+            symbol="BTCUSDT",
+            interval="1h",
+            start=datetime(2024, 1, 1),
+            end=datetime(2024, 1, 10),
+        )
+
+        self.assertGreater(len(frame), 100)
+        self.assertListEqual(list(frame.columns), ["open", "high", "low", "close", "volume"])
+        self.assertTrue(frame.index.is_monotonic_increasing)
+        self.assertTrue((frame["high"] >= frame["low"]).all())
+
+    def test_sqlite_loader_raises_explicit_error_when_missing(self) -> None:
+        with self.assertRaises(DataNotAvailableError):
+            load_market_frame(
+                source="sqlite",
+                symbol="BTCUSDT",
+                interval="1h",
+                start=datetime(2024, 1, 1),
+                end=datetime(2024, 1, 10),
+                db_path="D:/Trading/比特币聚合多策略模型codex/does-not-exist.db",
+            )
+
+    def test_sqlite_loader_reads_managed_market_kline_table(self) -> None:
+        with TemporaryDirectory() as directory:
+            db_path = f"{directory}/market.sqlite"
+            repository = MarketDataRepository(db_path=db_path)
+            repository.upsert_klines(
+                [
+                    KlineRecord(
+                        exchange="binance_spot",
+                        symbol="BTCUSDT",
+                        interval="1m",
+                        open_time_ms=1_704_067_200_000,
+                        open_time="2024-01-01T00:00:00+00:00",
+                        close_time_ms=1_704_067_259_999,
+                        close_time="2024-01-01T00:00:59.999000+00:00",
+                        open=42000.0,
+                        high=42100.0,
+                        low=41900.0,
+                        close=42050.0,
+                        volume=12.5,
+                        quote_volume=525000.0,
+                        trade_count=42,
+                        taker_buy_base_volume=6.0,
+                        taker_buy_quote_volume=252000.0,
+                    )
+                ]
+            )
+
+            frame = load_market_frame(
+                source="sqlite",
+                symbol="BTCUSDT",
+                interval="1m",
+                start=datetime(2024, 1, 1, 0, 0),
+                end=datetime(2024, 1, 1, 0, 1),
+                db_path=db_path,
+            )
+
+        self.assertEqual(len(frame), 1)
+        self.assertEqual(float(frame.iloc[0]["close"]), 42050.0)
+
+
+if __name__ == "__main__":
+    unittest.main()
