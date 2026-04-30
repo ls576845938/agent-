@@ -34,6 +34,13 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+def _env_csv(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return tuple(item.strip() for item in value.split(",") if item.strip())
+
+
 @dataclass(frozen=True)
 class Settings:
     repo_root: Path
@@ -44,6 +51,7 @@ class Settings:
     default_data_source: str
     data_db_path: str
     binance_base_url: str
+    binance_fallback_base_urls: tuple[str, ...]
     binance_request_sleep_seconds: float
     http_timeout_seconds: float
     data_update_interval_seconds: int
@@ -94,6 +102,10 @@ def load_settings() -> Settings:
         default_data_source=os.getenv("QS_DEFAULT_DATA_SOURCE", "fixture"),
         data_db_path=os.getenv("QS_DATA_DB_PATH", str(repo_root / "data" / "market_data.sqlite")),
         binance_base_url=os.getenv("QS_BINANCE_BASE_URL", "https://api.binance.com"),
+        binance_fallback_base_urls=_env_csv(
+            "QS_BINANCE_FALLBACK_BASE_URLS",
+            ("https://api.binance.us",),
+        ),
         binance_request_sleep_seconds=_env_float("QS_BINANCE_REQUEST_SLEEP_SECONDS", 0.15),
         http_timeout_seconds=_env_float("QS_HTTP_TIMEOUT_SECONDS", 20.0),
         data_update_interval_seconds=_env_int("QS_DATA_UPDATE_INTERVAL_SECONDS", 86400),

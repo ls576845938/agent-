@@ -1,0 +1,20 @@
+pre_trade:
+  max_symbol_weight: 0.10
+  max_gross_exposure: 1.00
+  max_order_notional_pct: 0.10
+  min_cash_buffer_pct: 0.02
+  long_only: true
+  allowed_sessions:
+    - regular
+portfolio:
+  default_strategy_weight: 0.10
+  cash_reserve_weight: 0.05
+  max_group_weight: 0.30
+  group_map: {}
+rebalance:
+  min_trade_notional: 25.00
+  min_weight_change: 0.00
+kill_switch:
+  max_daily_loss_pct: 0.03
+  max_drawdown_pct: 0.12
+  max_consecutive_order_failures: 3

@@ -40,6 +40,8 @@ export type ChartSeriesPayload = {
   drawdown: Array<{time: number; value: number}>;
   exposure: Array<{time: number; value: number}>;
   net_units: Array<{time: number; value: number}>;
+  turnover: Array<{time: number; value: number}>;
+  leverage: Array<{time: number; value: number}>;
 };
 
 export type DataCoverageItem = {

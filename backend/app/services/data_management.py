@@ -470,9 +470,18 @@ class BinanceKlineClient:
     def __init__(
         self,
         base_url: str | None = None,
+        fallback_base_urls: list[str] | tuple[str, ...] | None = None,
         timeout_seconds: float | None = None,
     ) -> None:
-        self.base_url = (base_url or settings.binance_base_url).rstrip("/")
+        primary_base_url = (base_url or settings.binance_base_url).rstrip("/")
+        configured_fallbacks = settings.binance_fallback_base_urls if fallback_base_urls is None else fallback_base_urls
+        base_urls = [primary_base_url]
+        for candidate in configured_fallbacks:
+            normalized = candidate.strip().rstrip("/")
+            if normalized and normalized not in base_urls:
+                base_urls.append(normalized)
+        self.base_url = primary_base_url
+        self.base_urls = tuple(base_urls)
         self.timeout_seconds = float(timeout_seconds or settings.http_timeout_seconds)
 
     def fetch_klines(
@@ -493,27 +502,66 @@ class BinanceKlineClient:
                 "limit": max(1, min(int(limit), 1000)),
             }
         )
-        url = f"{self.base_url}/api/v3/klines?{query}"
-        request = urllib.request.Request(
-            url,
-            headers={"User-Agent": "QuantStation-vNext/0.1"},
-            method="GET",
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
-                payload = response.read().decode("utf-8")
-                data = json.loads(payload)
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")
-            raise DataSyncError(f"Binance kline request failed: HTTP {exc.code} {detail}") from exc
-        except urllib.error.URLError as exc:
-            raise DataSyncError(f"Binance kline request failed: {exc.reason}") from exc
-        except json.JSONDecodeError as exc:
-            raise DataSyncError("Binance returned invalid JSON for kline request.") from exc
+        errors: list[str] = []
+        last_exception: Exception | None = None
 
-        if not isinstance(data, list):
-            raise DataSyncError(f"Unexpected Binance response: {data}")
-        return data
+        for index, base_url in enumerate(self.base_urls):
+            url = f"{base_url}/api/v3/klines?{query}"
+            request = urllib.request.Request(
+                url,
+                headers={"User-Agent": "QuantStation-vNext/0.1"},
+                method="GET",
+            )
+            try:
+                with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
+                    payload = response.read().decode("utf-8")
+                    data = json.loads(payload)
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", errors="replace")
+                errors.append(f"{base_url} HTTP {exc.code} {detail}")
+                last_exception = exc
+                if self._should_try_next_endpoint(exc.code, index):
+                    logger.warning(
+                        "Binance kline endpoint returned HTTP %s; trying fallback endpoint.",
+                        exc.code,
+                    )
+                    continue
+                break
+            except urllib.error.URLError as exc:
+                errors.append(f"{base_url} {exc.reason}")
+                last_exception = exc
+                if self._has_next_endpoint(index):
+                    logger.warning("Binance kline endpoint failed; trying fallback endpoint: %s", exc.reason)
+                    continue
+                break
+            except json.JSONDecodeError as exc:
+                errors.append(f"{base_url} invalid JSON")
+                last_exception = exc
+                if self._has_next_endpoint(index):
+                    logger.warning("Binance kline endpoint returned invalid JSON; trying fallback endpoint.")
+                    continue
+                break
+
+            if isinstance(data, list):
+                return data
+            errors.append(f"{base_url} unexpected response {data}")
+            if self._has_next_endpoint(index):
+                logger.warning("Binance kline endpoint returned an unexpected response; trying fallback endpoint.")
+                continue
+            break
+
+        tried = ", ".join(self.base_urls)
+        message = f"Binance kline request failed after trying {tried}: {'; '.join(errors)}"
+        if last_exception is not None:
+            raise DataSyncError(message) from last_exception
+        raise DataSyncError(message)
+
+    def _has_next_endpoint(self, index: int) -> bool:
+        return index + 1 < len(self.base_urls)
+
+    def _should_try_next_endpoint(self, status_code: int, index: int) -> bool:
+        retriable_statuses = {403, 418, 429, 451, 500, 502, 503, 504}
+        return self._has_next_endpoint(index) and status_code in retriable_statuses
 
 
 class MarketDataService:

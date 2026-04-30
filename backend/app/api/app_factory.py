@@ -5,7 +5,11 @@ from typing import Any
 from backend.app import __version__
 from backend.app.api.schemas import (
     ChartSeriesPayload,
+    CostStressRequest,
+    CostStressResponse,
     DataCoverageItem,
+    DataQualityRequest,
+    DataQualityResponse,
     DataSyncRequest,
     DataSyncRunResponse,
     DatabaseStatusResponse,
@@ -13,14 +17,28 @@ from backend.app.api.schemas import (
     KlinePreviewResponse,
     LatestDataUpdateRequest,
     PortfolioBacktestRequest,
+    PortfolioOptimizationRequest,
+    PortfolioOptimizationResponse,
     RunStatusResponse,
     SchedulerStartRequest,
     SchedulerStatusResponse,
     SingleBacktestRequest,
+    StrategyOptimizationRequest,
+    StrategyOptimizationResponse,
     StrategyInfo,
+    USDataSyncRequest,
+    USDataSyncResponse,
+    USEventBacktestRequest,
+    USEventBacktestResponse,
+    USFeatureBuildRequest,
+    USFeatureBuildResponse,
+    USReconciliationRequest,
+    USReconciliationResponse,
+    WalkForwardRequest,
+    WalkForwardResponse,
 )
 from backend.app.core.config import settings
-from backend.app.core.deps import data_update_scheduler, market_data_service, research_service, run_registry
+from backend.app.core.deps import data_update_scheduler, market_data_service, research_service, run_registry, us_quant_service
 from backend.app.core.exceptions import QuantStationError, RunNotFoundError
 
 
@@ -65,7 +83,7 @@ def _serialize_data_sync_result(result: Any):
 
 def create_app():
     try:
-        from fastapi import APIRouter, Depends, FastAPI, HTTPException, Security
+        from fastapi import APIRouter, Depends, FastAPI, HTTPException, Response, Security
         from fastapi.middleware.cors import CORSMiddleware
         from fastapi.security import APIKeyHeader
     except ImportError as exc:
@@ -76,6 +94,7 @@ def create_app():
         ) from exc
 
     from backend.app.services.data_management import DataSyncSpec, LatestUpdateSpec, resolve_data_db_path
+    from backend.app.services.market_data import inspect_market_data_quality
 
     api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -96,6 +115,10 @@ def create_app():
     )
 
     router = APIRouter(prefix="/api")
+
+    @app.get("/metrics")
+    async def metrics() -> Response:
+        return Response("quantstation_up 1\n", media_type="text/plain; version=0.0.4")
 
     @router.get("/health", response_model=HealthResponse)
     async def health() -> HealthResponse:
@@ -197,6 +220,22 @@ def create_app():
         except QuantStationError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+    @router.post("/data/quality", response_model=DataQualityResponse, dependencies=[Depends(verify_api_key)])
+    async def inspect_data_quality(request: DataQualityRequest) -> DataQualityResponse:
+        try:
+            return DataQualityResponse.model_validate(
+                inspect_market_data_quality(
+                    source=request.source,
+                    symbol=request.symbol,
+                    interval=request.interval,
+                    start=request.start,
+                    end=request.end,
+                    db_path=request.data_db_path,
+                )
+            )
+        except QuantStationError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     @router.post("/data/update-latest", response_model=DataSyncRunResponse, dependencies=[Depends(verify_api_key)])
     async def update_latest_market_data(request: LatestDataUpdateRequest) -> DataSyncRunResponse:
         try:
@@ -239,6 +278,46 @@ def create_app():
     async def stop_data_scheduler() -> SchedulerStatusResponse:
         return SchedulerStatusResponse.model_validate(data_update_scheduler.stop())
 
+    @router.post("/us/data/sync", response_model=USDataSyncResponse, dependencies=[Depends(verify_api_key)])
+    async def sync_us_market_data(request: USDataSyncRequest) -> USDataSyncResponse:
+        try:
+            result = us_quant_service.sync_data(request.model_dump())
+            if result["status"] != "completed":
+                raise HTTPException(status_code=400, detail=result.get("error") or "US data sync failed")
+            return USDataSyncResponse.model_validate(result)
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/us/features/build", response_model=USFeatureBuildResponse, dependencies=[Depends(verify_api_key)])
+    async def build_us_features(request: USFeatureBuildRequest) -> USFeatureBuildResponse:
+        try:
+            result = us_quant_service.build_features(request.model_dump())
+            if result["status"] != "completed":
+                raise HTTPException(status_code=400, detail=result.get("error") or "US feature build failed")
+            return USFeatureBuildResponse.model_validate(result)
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/us/backtests/event", response_model=USEventBacktestResponse, dependencies=[Depends(verify_api_key)])
+    async def run_us_event_backtest(request: USEventBacktestRequest) -> USEventBacktestResponse:
+        try:
+            result = us_quant_service.run_event_backtest(request.model_dump())
+            return USEventBacktestResponse.model_validate(result)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/us/reconcile", response_model=USReconciliationResponse, dependencies=[Depends(verify_api_key)])
+    async def reconcile_us_ledger(request: USReconciliationRequest) -> USReconciliationResponse:
+        try:
+            result = us_quant_service.reconcile_local_ledger(request.model_dump())
+            return USReconciliationResponse.model_validate(result)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     @router.get("/strategies", response_model=list[StrategyInfo], dependencies=[Depends(verify_api_key)])
     async def list_strategies() -> list[StrategyInfo]:
         return [StrategyInfo.model_validate(descriptor.__dict__) for descriptor in research_service.list_strategies()]
@@ -262,6 +341,34 @@ def create_app():
         except QuantStationError as exc:
             record = run_registry.create_failed_run(mode="portfolio", request=payload, error=str(exc))
         return _serialize_run(record)
+
+    @router.post("/backtests/portfolio-optimize", response_model=PortfolioOptimizationResponse, dependencies=[Depends(verify_api_key)])
+    async def optimize_portfolio(request: PortfolioOptimizationRequest) -> PortfolioOptimizationResponse:
+        try:
+            return PortfolioOptimizationResponse.model_validate(research_service.optimize_portfolio(request.model_dump()))
+        except (QuantStationError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/backtests/optimize", response_model=StrategyOptimizationResponse, dependencies=[Depends(verify_api_key)])
+    async def optimize_strategy(request: StrategyOptimizationRequest) -> StrategyOptimizationResponse:
+        try:
+            return StrategyOptimizationResponse.model_validate(research_service.optimize_strategy(request.model_dump()))
+        except (QuantStationError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/backtests/cost-stress", response_model=CostStressResponse, dependencies=[Depends(verify_api_key)])
+    async def run_cost_stress(request: CostStressRequest) -> CostStressResponse:
+        try:
+            return CostStressResponse.model_validate(research_service.run_cost_stress(request.model_dump()))
+        except (QuantStationError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/backtests/walk-forward", response_model=WalkForwardResponse, dependencies=[Depends(verify_api_key)])
+    async def run_walk_forward(request: WalkForwardRequest) -> WalkForwardResponse:
+        try:
+            return WalkForwardResponse.model_validate(research_service.run_walk_forward(request.model_dump()))
+        except (QuantStationError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @router.get("/runs/{run_id}", response_model=RunStatusResponse, dependencies=[Depends(verify_api_key)])
     async def get_run(run_id: str) -> RunStatusResponse:
