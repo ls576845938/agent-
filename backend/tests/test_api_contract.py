@@ -140,6 +140,35 @@ class ApiContractTests(unittest.TestCase):
         self.assertIn("optimized_weights", payload)
         self.assertIn("risk_budget", payload)
 
+    def test_research_promotion_gate_endpoint(self) -> None:
+        response = self.client.post(
+            "/api/research/promotion-gate",
+            json={
+                "mode": "portfolio",
+                "source": "fixture",
+                "symbol": "BTCUSDT",
+                "interval": "1h",
+                "start": "2024-01-01T00:00:00Z",
+                "end": "2024-02-15T23:00:00Z",
+                "weights": [
+                    {"strategy_id": "trend_macd", "weight": 0.5},
+                    {"strategy_id": "reversion_rsi", "weight": 0.25},
+                    {"strategy_id": "donchian_breakout", "weight": 0.25},
+                ],
+                "include_deep_checks": False,
+                "persist_manifest": False,
+                "register_experiment": False,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "completed")
+        self.assertEqual(payload["selected_priority"], "研究准入与实验晋级门")
+        self.assertIn(payload["decision"], {"pass", "warn", "fail"})
+        self.assertTrue(payload["strategy_version"].startswith("strategy_"))
+        self.assertEqual(payload["experiment_record"], {})
+        self.assertGreaterEqual(len(payload["gates"]), 4)
+
     def test_data_database_endpoint_initializes_sqlite(self) -> None:
         with TemporaryDirectory() as directory:
             response = self.client.get(

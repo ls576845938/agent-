@@ -100,6 +100,11 @@ The Vite dev server proxies `/api` to `http://127.0.0.1:8000`.
 The crypto research console now exposes the staged validation path used before
 paper trading:
 
+The MVP delivery path is available from the frontend through **一键 MVP 验收**.
+It runs the minimum closed loop in order: data quality check, backtest, chart
+artifact fetch, research promotion gate, and experiment-registry write. The
+status panel shows whether the current configuration has a complete MVP record.
+
 1. Run a single-strategy or portfolio backtest.
 2. Run **当前优先优化** for train/validation parameter robustness.
 3. Run **成本压力测试** to expand fees and slippage.
@@ -108,6 +113,9 @@ paper trading:
    risk-budgeted strategy allocation.
 6. Run **数据质量检查** to record coverage, missing bars, anomalies, a stable
    dataset fingerprint, and a reproducible data version before promoting a run.
+7. Run **研究准入门** to aggregate data quality, core backtest survival,
+   execution cost, risk gates, strategy-version fingerprint, a reproducible
+   promotion manifest, and an optional experiment-registry record.
 
 The corresponding API endpoints are:
 
@@ -116,6 +124,7 @@ The corresponding API endpoints are:
 - `POST /api/backtests/walk-forward`
 - `POST /api/backtests/portfolio-optimize`
 - `POST /api/data/quality`
+- `POST /api/research/promotion-gate`
 
 ### Event-driven US equity backtest
 
@@ -334,6 +343,14 @@ python scripts/compare_experiments.py \
   --experiment-name momentum_core_us \
   --metric sharpe_ratio
 ```
+
+The web research promotion gate can now write the same registry contract. When
+`register_experiment=true`, `/api/research/promotion-gate` stores a promotion
+manifest under `reports/research_gates`, registers an experiment under
+`data/experiments`, and records `strategy_version`, `data_version`,
+`promotion_decision`, `promotion_stage`, gate counts, and promotion score. This
+is the bridge from visual research to later paper candidates, model-score
+experiments, and cross-run comparison.
 
 Run a parameter sweep while preserving the same data, risk, OMS, and registry
 path:

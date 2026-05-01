@@ -31,8 +31,12 @@ class ExperimentSpec:
     asset_class: str = "equity"
     bar_size: str = "1d"
     feature_version: str = ""
+    data_version: str = ""
     dataset_run_id: str = ""
     model_id: str = ""
+    promotion_decision: str = ""
+    promotion_stage: str = ""
+    promotion_manifest_id: str = ""
     parameters: dict[str, Any] = field(default_factory=dict)
     tags: list[str] = field(default_factory=list)
     notes: str = ""
@@ -136,8 +140,13 @@ class ExperimentRegistry:
                     "experiment_name": spec.get("experiment_name", ""),
                     "run_type": spec.get("run_type", ""),
                     "strategy_id": spec.get("strategy_id", ""),
+                    "strategy_version": spec.get("strategy_version", ""),
                     "symbols": spec.get("symbols", []),
                     "status": record.get("status", ""),
+                    "data_version": spec.get("data_version", ""),
+                    "promotion_decision": spec.get("promotion_decision", ""),
+                    "promotion_stage": spec.get("promotion_stage", ""),
+                    "promotion_manifest_id": spec.get("promotion_manifest_id", ""),
                     metric: metrics.get(metric),
                     "total_return_pct": metrics.get("total_return_pct"),
                     "max_drawdown_pct": metrics.get("max_drawdown_pct"),

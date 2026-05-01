@@ -154,6 +154,48 @@ class PortfolioOptimizationResponse(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
 
 
+class ResearchPromotionGateRequest(BaseBacktestRequest):
+    mode: str = "portfolio"
+    strategy_id: str = "trend_macd"
+    strategy_params: Dict[str, float] = Field(default_factory=dict)
+    weights: list[StrategyWeight] = Field(default_factory=list)
+    include_deep_checks: bool = False
+    persist_manifest: bool = True
+    register_experiment: bool = False
+    experiment_name: str = ""
+    notes: str = ""
+    max_scenarios: int = Field(default=2, ge=1, le=6)
+    windows: int = Field(default=2, ge=1, le=8)
+    max_candidates: int = Field(default=1, ge=1, le=32)
+    max_single_weight: float = Field(default=0.35, ge=0.05, le=1.0)
+    correlation_penalty: float = Field(default=0.75, ge=0.0, le=2.0)
+    cash_reserve_pct: float = Field(default=5.0, ge=0.0, le=80.0)
+
+    @field_validator("mode")
+    @classmethod
+    def validate_gate_mode(cls, value: str) -> str:
+        allowed = {"single", "portfolio"}
+        if value not in allowed:
+            raise ValueError(f"mode must be one of {sorted(allowed)}")
+        return value
+
+
+class ResearchPromotionGateResponse(BaseModel):
+    status: str
+    selected_priority: str
+    framework: List[Dict[str, Any]] = Field(default_factory=list)
+    decision: str
+    next_stage: str
+    manifest_id: str
+    manifest_path: str = ""
+    strategy_version: str = ""
+    experiment_record: Dict[str, Any] = Field(default_factory=dict)
+    data_quality: Dict[str, Any] = Field(default_factory=dict)
+    backtest_summary: Dict[str, Any] = Field(default_factory=dict)
+    gates: List[Dict[str, Any]] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)
+
+
 class BacktestSummary(BaseModel):
     total_return_pct: float
     annual_return_pct: float

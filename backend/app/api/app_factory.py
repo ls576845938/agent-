@@ -19,6 +19,8 @@ from backend.app.api.schemas import (
     PortfolioBacktestRequest,
     PortfolioOptimizationRequest,
     PortfolioOptimizationResponse,
+    ResearchPromotionGateRequest,
+    ResearchPromotionGateResponse,
     RunStatusResponse,
     SchedulerStartRequest,
     SchedulerStatusResponse,
@@ -38,7 +40,7 @@ from backend.app.api.schemas import (
     WalkForwardResponse,
 )
 from backend.app.core.config import settings
-from backend.app.core.deps import data_update_scheduler, market_data_service, research_service, run_registry, us_quant_service
+from backend.app.core.deps import data_update_scheduler, market_data_service, promotion_gate_service, research_service, run_registry, us_quant_service
 from backend.app.core.exceptions import QuantStationError, RunNotFoundError
 
 
@@ -346,6 +348,13 @@ def create_app():
     async def optimize_portfolio(request: PortfolioOptimizationRequest) -> PortfolioOptimizationResponse:
         try:
             return PortfolioOptimizationResponse.model_validate(research_service.optimize_portfolio(request.model_dump()))
+        except (QuantStationError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/research/promotion-gate", response_model=ResearchPromotionGateResponse, dependencies=[Depends(verify_api_key)])
+    async def evaluate_research_promotion_gate(request: ResearchPromotionGateRequest) -> ResearchPromotionGateResponse:
+        try:
+            return ResearchPromotionGateResponse.model_validate(promotion_gate_service.evaluate(request.model_dump()))
         except (QuantStationError, ValueError) as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 

@@ -364,6 +364,47 @@ type DataQualityResponse = {
   issues: DataQualityIssue[];
 };
 
+type PromotionGate = {
+  name: string;
+  status: 'pass' | 'warn' | 'fail';
+  message: string;
+  metrics: Record<string, number | string | boolean>;
+  threshold: string;
+};
+
+type PromotionGateResponse = {
+  status: string;
+  selected_priority: string;
+  framework: OptimizationFrameworkItem[];
+  decision: 'pass' | 'warn' | 'fail';
+  next_stage: string;
+  manifest_id: string;
+  manifest_path: string;
+  strategy_version: string;
+  experiment_record: {
+    experiment_name?: string;
+    experiment_id?: string;
+    run_id?: string;
+    registry_path?: string;
+    index_path?: string;
+    strategy_version?: string;
+    data_version?: string;
+    decision?: string;
+    next_stage?: string;
+  };
+  data_quality: DataQualityResponse;
+  backtest_summary: Summary;
+  gates: PromotionGate[];
+  recommendations: string[];
+};
+
+type MvpStep = {
+  id: string;
+  label: string;
+  status: 'pending' | 'active' | 'done' | 'warn' | 'fail';
+  detail: string;
+};
+
 const defaultOptimizationFramework: OptimizationFrameworkItem[] = [
   {
     priority: 1,
@@ -489,6 +530,14 @@ function formatOptimizationScore(value?: number): string {
 
 function scenarioClass(survives: boolean): string {
   return survives ? 'stress-row stress-pass' : 'stress-row stress-fail';
+}
+
+function gateClass(status: string): string {
+  return `promotion-gate-row promotion-${status}`;
+}
+
+function mvpStepClass(status: MvpStep['status']): string {
+  return `mvp-step mvp-${status}`;
 }
 
 function createLinePath(points: Array<{time: number; value: number}>, width: number, height: number): string {
@@ -1004,6 +1053,11 @@ export default function App() {
   const [dataQuality, setDataQuality] = useState<DataQualityResponse | null>(null);
   const [dataQualityLoading, setDataQualityLoading] = useState(false);
   const [dataQualityMessage, setDataQualityMessage] = useState('');
+  const [promotionGate, setPromotionGate] = useState<PromotionGateResponse | null>(null);
+  const [promotionGateLoading, setPromotionGateLoading] = useState(false);
+  const [promotionGateMessage, setPromotionGateMessage] = useState('');
+  const [mvpLoading, setMvpLoading] = useState(false);
+  const [mvpMessage, setMvpMessage] = useState('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
@@ -1062,7 +1116,71 @@ export default function App() {
   const optimizationHints = useMemo(() => diagnosticsList<OptimizationHint>(run?.diagnostics, 'optimization_hints'), [run]);
   const drawdownPeriods = useMemo(() => diagnosticsList<DrawdownPeriod>(run?.diagnostics, 'drawdown_periods'), [run]);
   const monthlyReturns = useMemo(() => diagnosticsList<PeriodReturn>(run?.diagnostics, 'monthly_returns'), [run]);
-  const optimizationFramework = dataQuality?.framework ?? portfolioOptimization?.framework ?? walkForward?.framework ?? costStress?.framework ?? optimization?.framework ?? defaultOptimizationFramework;
+  const optimizationFramework = promotionGate?.framework ?? dataQuality?.framework ?? portfolioOptimization?.framework ?? walkForward?.framework ?? costStress?.framework ?? optimization?.framework ?? defaultOptimizationFramework;
+  const mvpSteps = useMemo<MvpStep[]>(() => {
+    const gateFails = promotionGate?.gates.filter((gate) => gate.status === 'fail').length ?? 0;
+    const gateWarns = promotionGate?.gates.filter((gate) => gate.status === 'warn').length ?? 0;
+    const completedSummary = run?.status === 'completed' ? run.summary : null;
+    return [
+      {
+        id: 'data_quality',
+        label: '数据质量',
+        status: dataQualityLoading || (mvpLoading && !dataQuality) ? 'active' : dataQuality ? (dataQuality.is_usable ? 'done' : 'fail') : 'pending',
+        detail: dataQuality ? `Score ${dataQuality.quality_score.toFixed(0)} · ${dataQuality.coverage_pct.toFixed(1)}% 覆盖` : '等待检查数据版本与覆盖率',
+      },
+      {
+        id: 'backtest',
+        label: '回测执行',
+        status: loading || (mvpLoading && !run) ? 'active' : completedSummary ? 'done' : run?.status === 'failed' ? 'fail' : 'pending',
+        detail: completedSummary ? `Return ${completedSummary.total_return_pct.toFixed(2)}% · Sharpe ${completedSummary.sharpe_ratio.toFixed(2)}` : '等待生成策略/组合回测',
+      },
+      {
+        id: 'visual_report',
+        label: '图表报告',
+        status: chart ? 'done' : run?.status === 'completed' ? 'warn' : 'pending',
+        detail: chart ? `${chart.candles.length} 根 K 线 · ${chart.markers.length} 个交易标记` : '等待权益曲线、回撤和 K 线标记',
+      },
+      {
+        id: 'promotion_gate',
+        label: '准入门',
+        status: promotionGateLoading || (mvpLoading && !promotionGate) ? 'active' : promotionGate ? (promotionGate.decision === 'fail' ? 'fail' : promotionGate.decision === 'warn' ? 'warn' : 'done') : 'pending',
+        detail: promotionGate ? `${promotionGate.decision.toUpperCase()} · ${gateWarns} warn · ${gateFails} fail` : '等待综合数据、回测、成本和风险门槛',
+      },
+      {
+        id: 'experiment_registry',
+        label: '实验登记',
+        status: promotionGate?.experiment_record.registry_path ? 'done' : promotionGate ? 'warn' : 'pending',
+        detail: promotionGate?.experiment_record.registry_path ?? '等待写入 manifest 与 experiment registry',
+      },
+    ];
+  }, [chart, dataQuality, dataQualityLoading, loading, mvpLoading, promotionGate, promotionGateLoading, run]);
+
+  const mvpDoneCount = mvpSteps.filter((step) => step.status === 'done').length;
+
+  const buildPromotionGateRequest = () => ({
+    mode,
+    source: form.source,
+    symbol: form.symbol,
+    interval: form.interval,
+    start: buildDateBoundary(form.startDate, 'start', form.interval),
+    end: buildDateBoundary(form.endDate, 'end', form.interval),
+    capital: form.capital,
+    commission_rate: form.commissionRate,
+    slippage: form.slippage,
+    leverage: form.leverage,
+    position_basis: form.positionBasis,
+    data_db_path: form.dataDbPath,
+    strategy_id: form.strategyId,
+    strategy_params: optimizedStrategyParams ?? {},
+    weights: Object.entries(weightMap)
+      .filter(([, weight]) => weight > 0)
+      .map(([strategy_id, weight]) => ({strategy_id, weight})),
+    include_deep_checks: false,
+    persist_manifest: true,
+    register_experiment: true,
+    experiment_name: `${form.symbol.toLowerCase()}_${mode}_promotion_gate`,
+    notes: 'Created from QuantStation MVP acceptance flow.',
+  });
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -1093,6 +1211,68 @@ export default function App() {
       setChart(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMvpAcceptance = async () => {
+    setMvpLoading(true);
+    setMvpMessage('MVP 验收开始：正在检查数据质量。');
+    setError('');
+    try {
+      const quality = await fetchJson<DataQualityResponse>('/api/data/quality', {
+        method: 'POST',
+        body: JSON.stringify({
+          source: form.source,
+          symbol: form.symbol,
+          interval: form.interval,
+          start: buildDateBoundary(form.startDate, 'start', form.interval),
+          end: buildDateBoundary(form.endDate, 'end', form.interval),
+          data_db_path: form.dataDbPath,
+        }),
+      });
+      setDataQuality(quality);
+      setDataQualityMessage(
+        `数据质量检查完成：Score ${quality.quality_score.toFixed(0)}，覆盖率 ${quality.coverage_pct.toFixed(2)}%，版本 ${quality.data_version}。`,
+      );
+      if (!quality.is_usable) {
+        throw new Error('数据质量存在阻断级问题，MVP 验收停止。');
+      }
+
+      setMvpMessage('数据质量通过，正在运行回测并生成图表。');
+      const endpoint = mode === 'single' ? '/api/backtests/single' : '/api/backtests/portfolio';
+      const payload =
+        mode === 'single'
+          ? {...buildSingleRequest(form), strategy_params: optimizedStrategyParams ?? {}}
+          : buildPortfolioRequest(form, weightMap);
+      const nextRun = await fetchJson<RunStatusResponse>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      setRun(nextRun);
+      if (nextRun.status !== 'completed') {
+        throw new Error(nextRun.error ?? '回测失败，MVP 验收停止。');
+      }
+      const nextChart = await fetchJson<ChartSeriesPayload>(`/api/runs/${nextRun.run_id}/chart`);
+      setChart(nextChart);
+
+      setMvpMessage('回测完成，正在运行研究准入门并登记实验。');
+      const gate = await fetchJson<PromotionGateResponse>('/api/research/promotion-gate', {
+        method: 'POST',
+        body: JSON.stringify(buildPromotionGateRequest()),
+      });
+      setPromotionGate(gate);
+      setPromotionGateMessage(
+        `准入门完成：Decision ${gate.decision.toUpperCase()}，下一阶段 ${gate.next_stage}，实验 ${gate.experiment_record.experiment_name ?? '-'}。`,
+      );
+      setMvpMessage(
+        `MVP 验收完成：${gate.decision.toUpperCase()}，已登记 ${gate.experiment_record.experiment_name ?? 'experiment'}。`,
+      );
+    } catch (caughtError) {
+      const message = humanizeError(caughtError);
+      setMvpMessage(message);
+      setError(message);
+    } finally {
+      setMvpLoading(false);
     }
   };
 
@@ -1275,6 +1455,26 @@ export default function App() {
       setDataQualityMessage(humanizeError(caughtError));
     } finally {
       setDataQualityLoading(false);
+    }
+  };
+
+  const handlePromotionGate = async () => {
+    setPromotionGateLoading(true);
+    setPromotionGateMessage('');
+    setError('');
+    try {
+      const result = await fetchJson<PromotionGateResponse>('/api/research/promotion-gate', {
+        method: 'POST',
+        body: JSON.stringify(buildPromotionGateRequest()),
+      });
+      setPromotionGate(result);
+      setPromotionGateMessage(
+        `准入门完成：Decision ${result.decision.toUpperCase()}，下一阶段 ${result.next_stage}，实验 ${result.experiment_record.experiment_name ?? '-'}。`,
+      );
+    } catch (caughtError) {
+      setPromotionGateMessage(humanizeError(caughtError));
+    } finally {
+      setPromotionGateLoading(false);
     }
   };
 
@@ -1805,6 +2005,32 @@ export default function App() {
         </aside>
 
         <section className="results-column">
+          <section className="panel mvp-panel">
+            <div className="panel-header">
+              <h2>MVP 交付闭环</h2>
+              <span>已完成 {mvpDoneCount}/{mvpSteps.length}</span>
+            </div>
+            <div className="mvp-command-row">
+              <div>
+                <strong>{promotionGate ? promotionGate.next_stage : run?.status === 'completed' ? 'ready_for_gate' : 'research_ready'}</strong>
+                <p>{promotionGate?.manifest_id ? `Manifest ${promotionGate.manifest_id}` : '最小闭环待验收'}</p>
+              </div>
+              <button type="button" className="primary-button" disabled={mvpLoading || loading || promotionGateLoading || dataQualityLoading} onClick={handleMvpAcceptance}>
+                {mvpLoading ? '验收中...' : '一键 MVP 验收'}
+              </button>
+            </div>
+            <div className="mvp-step-grid">
+              {mvpSteps.map((step, index) => (
+                <div key={step.id} className={mvpStepClass(step.status)}>
+                  <span>{index + 1}</span>
+                  <strong>{step.label}</strong>
+                  <p>{step.detail}</p>
+                </div>
+              ))}
+            </div>
+            {mvpMessage ? <p className="data-message">{mvpMessage}</p> : null}
+          </section>
+
           {error ? (
             <div className="panel error-panel">
               <div className="panel-header">
@@ -1817,7 +2043,7 @@ export default function App() {
           <section className="panel optimization-panel">
             <div className="panel-header">
               <h2>下一步优化框架</h2>
-              <span>{dataQuality?.selected_priority ?? portfolioOptimization?.selected_priority ?? walkForward?.selected_priority ?? costStress?.selected_priority ?? optimization?.selected_priority ?? '当前优先：参数稳健性 + 样本外验证'}</span>
+              <span>{promotionGate?.selected_priority ?? dataQuality?.selected_priority ?? portfolioOptimization?.selected_priority ?? walkForward?.selected_priority ?? costStress?.selected_priority ?? optimization?.selected_priority ?? '当前优先：参数稳健性 + 样本外验证'}</span>
             </div>
             <div className="optimization-framework">
               {optimizationFramework.map((item) => (
@@ -1846,6 +2072,9 @@ export default function App() {
               <button type="button" className="secondary-button" disabled={dataQualityLoading} onClick={handleDataQuality}>
                 {dataQualityLoading ? '质量检查中...' : '运行数据质量检查'}
               </button>
+              <button type="button" className="secondary-button" disabled={promotionGateLoading} onClick={handlePromotionGate}>
+                {promotionGateLoading ? '准入门检查中...' : '运行研究准入门'}
+              </button>
               {optimizedStrategyParams ? <span>已应用优化参数：{formatParams(optimizedStrategyParams)}</span> : null}
             </div>
             {optimizationMessage ? <p className="data-message">{optimizationMessage}</p> : null}
@@ -1853,6 +2082,7 @@ export default function App() {
             {walkForwardMessage ? <p className="data-message">{walkForwardMessage}</p> : null}
             {portfolioOptimizationMessage ? <p className="data-message">{portfolioOptimizationMessage}</p> : null}
             {dataQualityMessage ? <p className="data-message">{dataQualityMessage}</p> : null}
+            {promotionGateMessage ? <p className="data-message">{promotionGateMessage}</p> : null}
 
             {optimization?.best ? (
               <div className="optimization-result-grid">
@@ -2127,6 +2357,54 @@ export default function App() {
                       <strong>{issue.code}</strong>
                       <p>{issue.message}</p>
                     </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {promotionGate ? (
+              <div className="promotion-panel">
+                <div className="stress-summary-grid">
+                  <div className="optimization-best">
+                    <span>晋级决策</span>
+                    <strong>{promotionGate.decision.toUpperCase()}</strong>
+                    <p>{promotionGate.next_stage}</p>
+                  </div>
+                  <div className="optimization-best">
+                    <span>核心 Sharpe</span>
+                    <strong>{promotionGate.backtest_summary.sharpe_ratio.toFixed(2)}</strong>
+                    <p>MDD {promotionGate.backtest_summary.max_drawdown_pct.toFixed(2)}%</p>
+                  </div>
+                  <div className="optimization-best">
+                    <span>Manifest</span>
+                    <strong>{promotionGate.manifest_id.slice(0, 8)}</strong>
+                    <p>{promotionGate.manifest_path || 'not persisted'}</p>
+                  </div>
+                  <div className="optimization-best">
+                    <span>策略版本</span>
+                    <strong>{promotionGate.strategy_version.slice(0, 18)}</strong>
+                    <p>{promotionGate.experiment_record.data_version || promotionGate.data_quality.data_version}</p>
+                  </div>
+                  <div className="optimization-best">
+                    <span>实验登记</span>
+                    <strong>{promotionGate.experiment_record.experiment_name ?? '-'}</strong>
+                    <p>{promotionGate.experiment_record.registry_path ?? 'not registered'}</p>
+                  </div>
+                </div>
+
+                <div className="promotion-gate-list">
+                  {promotionGate.gates.map((gate) => (
+                    <div key={gate.name} className={gateClass(gate.status)}>
+                      <span>{gate.status.toUpperCase()}</span>
+                      <strong>{gate.name}</strong>
+                      <p>{gate.message}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="optimization-recommendations">
+                  {promotionGate.recommendations.map((item, index) => (
+                    <p key={index}>{item}</p>
                   ))}
                 </div>
               </div>

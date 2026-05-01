@@ -68,6 +68,11 @@ class ExperimentRegistryTests(unittest.TestCase):
                 start=datetime(2024, 1, 1, tzinfo=timezone.utc),
                 end=datetime(2024, 6, 30, tzinfo=timezone.utc),
                 strategy_id="trend_momentum",
+                strategy_version="strategy_v1",
+                data_version="data_v1",
+                promotion_decision="warn",
+                promotion_stage="research_iteration",
+                promotion_manifest_id="manifest_1",
                 parameters={"lookback_bars": 5},
                 tags=["unit"],
             )
@@ -92,6 +97,11 @@ class ExperimentRegistryTests(unittest.TestCase):
             self.assertTrue(high_path.exists())
             self.assertEqual(rows[0]["run_id"], "bt_high")
             self.assertEqual(rows[1]["run_id"], "bt_low")
+            self.assertEqual(rows[0]["strategy_version"], "strategy_v1")
+            self.assertEqual(rows[0]["data_version"], "data_v1")
+            self.assertEqual(rows[0]["promotion_decision"], "warn")
+            self.assertEqual(rows[0]["promotion_stage"], "research_iteration")
+            self.assertEqual(rows[0]["promotion_manifest_id"], "manifest_1")
             self.assertEqual(len(registry.load_records("momentum_core")), 2)
 
     def test_model_artifact_registry_writes_manifest(self) -> None:
