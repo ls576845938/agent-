@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(./venv/bin/python *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://127.0.0.1:8000/api/health)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl *)",
+      "Bash(python -m pytest backend/tests/test_anti_lookahead.py -v --tb=short)",
+      "Bash(python -m pytest backend/tests/test_paper_trading.py -v --tb=short)",
+      "Bash(venv/bin/python -m pytest backend/tests/test_anti_lookahead.py -v --tb=short)",
+      "Bash(venv/bin/python -m pytest backend/tests/test_paper_trading.py -v --tb=short)",
+      "Bash(venv/bin/python -m pytest backend/tests/ -v --tb=short)",
+      "Bash(venv/bin/uvicorn --version)",
+      "Bash(ps -p 46005 -o pid,cmd)",
+      "Bash(venv/bin/python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(f'{m.upper\\(\\):6s} {p}'\\) for p,v in d['paths'].items\\(\\) for m in v.keys\\(\\)]\")",
+      "Bash(kill 46005)",
+      "Bash(venv/bin/python -m backend.app)",
+      "Bash(npx tsc *)",
+      "Bash(venv/bin/python3 *)",
+      "Bash(kill 225165)",
+      "Bash(kill 47207 47208)",
+      "Bash(npx vite *)",
+      "Bash(grep -rn \"TODO\\\\|FIXME\\\\|XXX\\\\|HACK\\\\|STUB\\\\|stub\\\\|pass$\" /home/lishuonewbing/agent测试/quant_us/backtest/ --include=\"*.py\")",
+      "Bash(grep *)",
+      "Bash(venv/bin/python *)",
+      "Bash(python3 -c ' *)",
+      "Bash(python -m pytest backend/tests/ quant_us/tests/ -x --tb=short --timeout=60 -q)",
+      "Bash(pip --version)",
+      "Bash(python -m pytest backend/tests/ -x --tb=short --timeout=60 -q)",
+      "Bash(python -c \"import quant_us; print\\('quant_us OK'\\)\")",
+      "Bash(python -c \"from quant_us.backtest.unified_runner import UnifiedBacktestRunner; print\\('unified_runner OK'\\)\")",
+      "Bash(python -c \"from quant_us.backtest.ledger_pnl import derive_equity_from_fills; print\\('ledger_pnl OK'\\)\")",
+      "Bash(python -c \"from quant_us.live.paper_trading_loop import PaperTradingLoop; print\\('paper_trading OK'\\)\")",
+      "Bash(python -c \"from quant_us.monitoring.telegram_alerts import TelegramAlertService; print\\('telegram OK'\\)\")",
+      "Bash(python3 *)",
+      "Bash(pip3 list *)"
+    ]
+  }
+}

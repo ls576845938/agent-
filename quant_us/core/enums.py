@@ -60,6 +60,7 @@ class OrderStatus(str, Enum):
     REJECTED = "rejected"
     EXPIRED = "expired"
     ERROR = "error"
+    UNKNOWN = "unknown"
 
 
 class SessionName(str, Enum):

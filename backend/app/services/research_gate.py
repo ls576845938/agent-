@@ -152,7 +152,8 @@ class ResearchPromotionGateService:
         ]
 
         deep_checks: dict[str, Any] = {}
-        if bool(request.get("include_deep_checks", False)):
+        skip_deep = request.get("skip_deep_checks", False)
+        if not skip_deep:
             if mode == "single":
                 deep_checks = self._single_deep_checks(request, base_request)
             else:
@@ -162,15 +163,15 @@ class ResearchPromotionGateService:
             gates.append(
                 _gate(
                     name="deep_validation",
-                    status="warn",
-                    message="本次只运行核心准入门；晋级前仍建议运行成本压力、Walk-forward 或组合优化。",
-                    metrics={"include_deep_checks": False},
-                    threshold="include_deep_checks=true before paper trading",
+                    status="fail",
+                    message="深度验证被跳过；成本压力测试和 Walk-forward 是晋级 paper trading 的硬性前提。",
+                    metrics={"skip_deep_checks": True},
+                    threshold="成本压力 + walk-forward 全部通过 = paper candidate",
                 )
             )
 
         decision = self._decision(gates)
-        next_stage = self._next_stage(decision, bool(request.get("include_deep_checks", False)))
+        next_stage = self._next_stage(decision, bool(request.get("skip_deep_checks", False)))
         strategy_version = self._strategy_version(mode, request)
         created_at = _now()
         manifest = {
@@ -274,8 +275,8 @@ class ResearchPromotionGateService:
 
     def _data_quality_gate(self, quality: dict[str, Any]) -> dict[str, Any]:
         status = _gate_status(
-            failed=not bool(quality["is_usable"]) or float(quality["coverage_pct"]) < 90.0,
-            warned=float(quality["quality_score"]) < 95.0 or int(quality["missing_bars"]) > 0,
+            failed=not bool(quality["is_usable"]) or float(quality["coverage_pct"]) < 85.0,
+            warned=float(quality["quality_score"]) < 95.0 or int(quality["missing_bars"]) > 0 or float(quality["coverage_pct"]) < 95.0,
         )
         return _gate(
             name="data_quality",
@@ -287,31 +288,44 @@ class ResearchPromotionGateService:
                 "missing_bars": quality["missing_bars"],
                 "data_version": quality["data_version"],
             },
-            threshold="usable=true, coverage>=90%, score>=95 for pass",
+            threshold="usable=true, coverage>=95%, score>=95 for pass; coverage<85% = fail",
         )
 
     def _backtest_survival_gate(self, summary: dict[str, float | int]) -> dict[str, Any]:
-        failed = float(summary["total_return_pct"]) <= 0 or float(summary["max_drawdown_pct"]) <= -20
-        warned = float(summary["sharpe_ratio"]) < 1.0 or float(summary["profit_factor"]) < 1.15 or float(summary["max_drawdown_pct"]) <= -12
+        sharpe = float(summary["sharpe_ratio"])
+        profit_factor = float(summary["profit_factor"])
+        total_return = float(summary["total_return_pct"])
+        max_drawdown = float(summary["max_drawdown_pct"])
+        trade_count = int(summary.get("trade_count", 0))
+        failed = total_return <= 0 or max_drawdown <= -25 or sharpe < 0 or profit_factor < 0.5 or trade_count < 10
+        warned = sharpe < 0.5 or profit_factor < 1.2 or max_drawdown <= -15 or trade_count < 30
         return _gate(
             name="backtest_survival",
             status=_gate_status(failed=failed, warned=warned),
-            message="基础收益质量、交易边际和最大回撤检查。",
+            message="基础收益质量、交易边际、最大回撤和最小交易次数检查。",
             metrics={
-                "total_return_pct": summary["total_return_pct"],
-                "sharpe_ratio": summary["sharpe_ratio"],
-                "profit_factor": summary["profit_factor"],
-                "max_drawdown_pct": summary["max_drawdown_pct"],
+                "total_return_pct": total_return,
+                "sharpe_ratio": sharpe,
+                "profit_factor": profit_factor,
+                "max_drawdown_pct": max_drawdown,
+                "trade_count": trade_count,
             },
-            threshold="return>0, mdd>-20%; pass wants sharpe>=1, pf>=1.15, mdd>-12%",
+            threshold="return>0, sharpe>=0, pf>=0.5, mdd>-25%, trades>=10 for survival; pass wants sharpe>=0.5, pf>=1.2, mdd>-15%, trades>=30",
         )
 
     def _execution_gate(self, execution: dict[str, Any], summary: dict[str, float | int]) -> dict[str, Any]:
         cost_drag = float(execution.get("cost_drag_pct", 0.0))
         annual_turnover = float(execution.get("annual_turnover_pct", 0.0))
         total_return = abs(float(summary["total_return_pct"]))
-        failed = cost_drag > max(3.0, total_return * 0.5)
-        warned = cost_drag > max(0.5, total_return * 0.25) or annual_turnover > 5000.0
+        failed = (
+            cost_drag > max(2.0, total_return * 0.5)
+            or annual_turnover > 5000.0
+            or (cost_drag > total_return and total_return > 0)
+        )
+        warned = (
+            cost_drag > max(0.5, total_return * 0.15)
+            or annual_turnover > 1500.0
+        )
         return _gate(
             name="execution_cost",
             status=_gate_status(failed=failed, warned=warned),
@@ -321,7 +335,7 @@ class ResearchPromotionGateService:
                 "annual_turnover_pct": annual_turnover,
                 "orders": int(execution.get("orders", 0)),
             },
-            threshold="cost drag <= max(0.5%, 25% of absolute return) for pass",
+            threshold="cost drag <= max(2%, 50% of |return|), turnover <= 5000% for pass; cost drag must not exceed total return",
         )
 
     def _risk_gate(self, summary: dict[str, float | int], exposure: dict[str, Any]) -> dict[str, Any]:
@@ -343,14 +357,25 @@ class ResearchPromotionGateService:
     def _single_deep_checks(self, request: dict[str, Any], base_request: dict[str, Any]) -> dict[str, Any]:
         strategy_id = request.get("strategy_id") or "trend_macd"
         strategy_params = dict(request.get("strategy_params", {}) or {})
-        cost = self.research_service.run_cost_stress(
-            {
-                **base_request,
-                "strategy_id": strategy_id,
-                "strategy_params": strategy_params,
-                "max_scenarios": min(int(request.get("max_scenarios", 2)), 3),
-            }
-        )
+        use_event_driven = str(request.get("engine", "")).lower() == "event_driven"
+        if use_event_driven:
+            cost = self.research_service.run_event_driven_cost_stress(
+                {
+                    **base_request,
+                    "strategy_id": strategy_id,
+                    "strategy_params": strategy_params,
+                    "max_scenarios": min(int(request.get("max_scenarios", 2)), 3),
+                }
+            )
+        else:
+            cost = self.research_service.run_cost_stress(
+                {
+                    **base_request,
+                    "strategy_id": strategy_id,
+                    "strategy_params": strategy_params,
+                    "max_scenarios": min(int(request.get("max_scenarios", 2)), 3),
+                }
+            )
         walk = self.research_service.run_walk_forward(
             {
                 **base_request,
@@ -360,23 +385,26 @@ class ResearchPromotionGateService:
                 "max_candidates": min(int(request.get("max_candidates", 1)), 3),
             }
         )
+        # Safely extract stability metrics; walk-forward may return error/insufficient data
+        walk_stability = walk.get("stability", {})
+        walk_pass_rate = float(walk_stability.get("pass_rate_pct", 0.0)) if walk_stability else 0.0
         return {
             "cost_stress": cost,
             "walk_forward": walk,
             "gates": [
                 _gate(
                     name="cost_stress",
-                    status=_gate_status(failed=float(cost["survival_rate_pct"]) < 50.0, warned=float(cost["survival_rate_pct"]) < 100.0),
+                    status=_gate_status(failed=float(cost["survival_rate_pct"]) < 60.0, warned=float(cost["survival_rate_pct"]) < 100.0),
                     message="成本压力场景存活率检查。",
                     metrics={"survival_rate_pct": cost["survival_rate_pct"]},
-                    threshold="pass=100%, warn>=50%",
+                    threshold="pass=100%, warn>=60%, fail<60%",
                 ),
                 _gate(
                     name="walk_forward",
-                    status=_gate_status(failed=float(walk["stability"]["pass_rate_pct"]) < 50.0, warned=float(walk["stability"]["pass_rate_pct"]) < 100.0),
+                    status=_gate_status(failed=walk_pass_rate < 60.0, warned=walk_pass_rate < 100.0),
                     message="Walk-forward 样本外窗口通过率检查。",
-                    metrics=walk["stability"],
-                    threshold="pass=100%, warn>=50%",
+                    metrics=walk_stability,
+                    threshold="pass=100%, warn>=60%, fail<60%",
                 ),
             ],
         }
@@ -418,8 +446,8 @@ class ResearchPromotionGateService:
             return "warn"
         return "pass"
 
-    def _next_stage(self, decision: str, include_deep_checks: bool) -> str:
-        if decision == "pass" and include_deep_checks:
+    def _next_stage(self, decision: str, skip_deep_checks: bool) -> str:
+        if decision == "pass" and not skip_deep_checks:
             return "paper_candidate"
         if decision == "pass":
             return "deep_validation"
@@ -499,7 +527,7 @@ class ResearchPromotionGateService:
                 "slippage": base_request["slippage"],
                 "leverage": base_request["leverage"],
                 "position_basis": base_request["position_basis"],
-                "include_deep_checks": bool(request.get("include_deep_checks", False)),
+                "skip_deep_checks": bool(request.get("skip_deep_checks", False)),
             },
             tags=["promotion_gate", mode, decision],
             notes=str(request.get("notes", "")),

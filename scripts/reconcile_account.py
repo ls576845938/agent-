@@ -24,8 +24,8 @@ def main() -> None:
     if args.broker == "alpaca":
         broker = AlpacaBroker(
             AlpacaBrokerConfig(
-                api_key=os.getenv("ALPACA_API_KEY", ""),
-                api_secret=os.getenv("ALPACA_API_SECRET", ""),
+                api_key=os.getenv("APCA_API_KEY_ID", ""),
+                api_secret=os.getenv("APCA_API_SECRET_KEY", ""),
                 base_url=os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets"),
             )
         )

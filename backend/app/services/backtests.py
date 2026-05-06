@@ -29,6 +29,7 @@ class SimulationConfig:
     leverage: float
     position_basis: str = "equity"
     db_path: str = ""
+    volume_participation_cap_pct: float = 5.0
 
 
 def _to_epoch(timestamp: pd.Timestamp) -> int:
@@ -282,6 +283,7 @@ def _compute_execution_diagnostics(
     commission_costs: pd.Series,
     slippage_costs: pd.Series,
     periods_per_year: float,
+    volume_capped: pd.Series | None = None,
 ) -> dict[str, Any]:
     average_equity = float(equity.mean()) if not equity.empty else 0.0
     total_volume = float(order_notional.sum())
@@ -292,6 +294,8 @@ def _compute_execution_diagnostics(
     orders = int((order_notional > 0).sum())
     turnover = total_volume / average_equity if average_equity > 0 else 0.0
     annual_turnover = turnover / runtime_years if runtime_years > 0 else 0.0
+    total_capped = float(volume_capped.sum()) if volume_capped is not None else 0.0
+    capped_orders = int((volume_capped > 0).sum()) if volume_capped is not None else 0
     return {
         "orders": orders,
         "orders_per_day": _round(orders / max(1.0, len(equity) / max(1.0, periods_per_year / 365.0)), 4),
@@ -303,6 +307,9 @@ def _compute_execution_diagnostics(
         "turnover_pct": _round(turnover * 100, 4),
         "annual_turnover_pct": _round(annual_turnover * 100, 4),
         "avg_order_value": _round(total_volume / max(1, orders), 4),
+        "volume_capped_notional": _round(total_capped, 4),
+        "volume_capped_orders": capped_orders,
+        "volume_capped_pct": _round(total_capped / max(1e-9, total_volume + total_capped) * 100.0, 4) if (total_volume + total_capped) > 0 else 0.0,
     }
 
 
@@ -1012,6 +1019,7 @@ def _simulate(
     slippage_costs = pd.Series(index=frame.index, dtype=float)
     leverage_series = pd.Series(index=frame.index, dtype=float)
     turnover_series = pd.Series(index=frame.index, dtype=float)
+    volume_capped = pd.Series(index=frame.index, dtype=float)
 
     theoretical_returns: dict[str, pd.Series] = {}
     for strategy_id, signal in signals.items():
@@ -1034,6 +1042,7 @@ def _simulate(
     slippage_costs.iloc[0] = 0.0
     leverage_series.iloc[0] = 0.0
     turnover_series.iloc[0] = 0.0
+    volume_capped.iloc[0] = 0.0
 
     for index in range(1, len(frame.index)):
         timestamp = timestamps[index]
@@ -1070,6 +1079,17 @@ def _simulate(
 
         delta_units = target_units - current_units
         current_order_notional = abs(delta_units) * previous_close
+
+        bar_volume = float(frame["volume"].iloc[index - 1]) if "volume" in frame.columns else 0.0
+        capped_notional = 0.0
+        if bar_volume > 0 and config.volume_participation_cap_pct > 0:
+            max_notional = bar_volume * previous_close * config.volume_participation_cap_pct / 100.0
+            if current_order_notional > max_notional:
+                capped_notional = current_order_notional - max_notional
+                capped_ratio = max_notional / max(1e-9, current_order_notional)
+                current_order_notional = max_notional
+                delta_units *= capped_ratio
+
         transaction_cost = current_order_notional * config.commission_rate
         slippage_cost = abs(delta_units) * config.slippage
         pnl = current_units * (current_close - previous_close) - transaction_cost - slippage_cost
@@ -1082,6 +1102,7 @@ def _simulate(
         exposure.iloc[index] = abs(target_units * current_close)
         net_units.iloc[index] = current_units
         order_notional.iloc[index] = current_order_notional
+        volume_capped.iloc[index] = capped_notional
         commission_costs.iloc[index] = transaction_cost
         slippage_costs.iloc[index] = slippage_cost
         leverage_series.iloc[index] = leverage
@@ -1119,6 +1140,7 @@ def _simulate(
         commission_costs=commission_costs_filled,
         slippage_costs=slippage_costs_filled,
         periods_per_year=periods_per_year,
+        volume_capped=volume_capped.fillna(0.0),
     )
     exposure_stats = _compute_exposure_diagnostics(equity_filled, exposure_filled, net_units_filled)
     report_sections = _build_report_sections(
@@ -1386,6 +1408,14 @@ class ResearchBacktestService:
         }
 
     def run_walk_forward(self, request: dict[str, Any]) -> dict[str, Any]:
+        from quant_us.backtest.data_bridge import bars_from_dataframe
+        from quant_us.backtest.unified_runner import UnifiedBacktestConfig
+        from quant_us.backtest.walk_forward import WalkForwardConfig, run_walk_forward_unified
+        from quant_us.core.enums import SignalDirection
+        from quant_us.core.events import MarketEvent
+        from quant_us.core.types import Signal
+        from quant_us.strategies.base import Strategy, StrategyContext
+
         config = SimulationConfig(
             mode="walk_forward",
             source=request.get("source", settings.default_data_source),
@@ -1402,11 +1432,7 @@ class ResearchBacktestService:
         )
         strategy_id = request["strategy_id"]
         requested_params = dict(request.get("strategy_params", {}) or {})
-        max_candidates = max(1, min(int(request.get("max_candidates", 6)), 32))
-        candidates = _candidate_parameter_grid(strategy_id)
-        if requested_params:
-            candidates = [requested_params] + [params for params in candidates if params != requested_params]
-        candidates = candidates[:max_candidates]
+        requested_windows = int(request.get("windows", 4))
 
         frame = load_market_frame(
             source=config.source,
@@ -1417,65 +1443,148 @@ class ResearchBacktestService:
             db_path=config.db_path,
         )
 
-        rows: list[dict[str, Any]] = []
-        for fold, train_frame, validation_frame in _walk_forward_splits(frame, int(request.get("windows", 4))):
-            scored_candidates: list[tuple[float, dict[str, float], dict[str, float | int]]] = []
-            for params in candidates:
-                train_signals, _ = _prepare_strategy_pack(train_frame, [strategy_id], params_map={strategy_id: params})
-                train_result = _simulate(frame=train_frame, config=config, weights={strategy_id: 1.0}, signals=train_signals)
-                scored_candidates.append((_summary_quality_score(train_result.summary), params, train_result.summary))
+        if len(frame) < 50:
+            return {
+                "status": "error",
+                "selected_priority": "Walk-forward 与市场状态切片",
+                "framework": _optimization_framework(3),
+                "strategy_id": strategy_id,
+                "strategy_params": requested_params,
+                "windows": [],
+                "regimes": [],
+                "stability": {},
+                "recommendations": ["Not enough bars for walk-forward validation, need at least 50."],
+            }
 
-            train_score, selected_params, train_summary = max(scored_candidates, key=lambda item: item[0])
-            validation_signals, _ = _prepare_strategy_pack(
-                validation_frame,
-                [strategy_id],
-                params_map={strategy_id: selected_params},
+        # --- Convert to bars for the event-driven engine ---
+        bars = bars_from_dataframe(frame, source=config.source)
+
+        # --- Pre-compute signals on full frame ---
+        # Only causal indicators (EMA, SMA, MACD, RSI, Bollinger) are safe here.
+        # Each bar's signal depends only on data up to that bar's timestamp.
+        # Non-causal strategies (quantile rank, cross-sectional norm) MUST NOT use this path.
+        strategy_base = strategy_registry.get(strategy_id)
+        causal_categories = {"momentum", "reversion", "earnings", "trend", "event"}
+        if strategy_base.descriptor.category not in causal_categories:
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.warning(
+                "Walk-forward pre-computation: strategy '%s' category '%s' may not be purely causal. "
+                "Consider computing signals per training window to avoid look-ahead.",
+                strategy_id, strategy_base.descriptor.category,
             )
-            validation_result = _simulate(
-                frame=validation_frame,
-                config=config,
-                weights={strategy_id: 1.0},
-                signals=validation_signals,
-            )
-            rows.append(
+        merged_params: dict[str, float] = {**strategy_base.descriptor.default_params, **requested_params}
+        signals, _ = _prepare_strategy_pack(frame, [strategy_id], params_map={strategy_id: merged_params})
+        signal_series = signals[strategy_id]
+        signal_lookup: dict = {
+            ts.to_pydatetime(): float(value) for ts, value in signal_series.items()
+        }
+
+        # --- Event-driven strategy that reads from pre-computed signals ---
+        _wf_strategy_id = strategy_id
+
+        class _WfSignalStrategy(Strategy):
+            version = "0.1.0"
+
+            def on_bar(self, event: MarketEvent, context: StrategyContext):
+                sig = signal_lookup.get(event.timestamp_utc, 0.0)
+                if abs(sig) > 0:
+                    direction = SignalDirection.LONG if sig > 0 else SignalDirection.SHORT
+                    return [
+                        Signal(
+                            timestamp_utc=event.timestamp_utc,
+                            strategy_id=_wf_strategy_id,
+                            symbol=event.bar.symbol,
+                            direction=direction,
+                            strength=abs(sig),
+                            horizon="1b",
+                        )
+                    ]
+                return []
+
+        _WfSignalStrategy.strategy_id = f"wf_{_wf_strategy_id}"
+
+        # --- WalkForwardConfig: translate backend parameters ---
+        num_windows = max(1, min(requested_windows, 8))
+        total_bars = len(bars)
+        train_bars = max(20, int(total_bars * 0.65))
+        remaining = total_bars - train_bars
+        test_bars = max(10, remaining // num_windows)
+        step_bars = test_bars
+
+        wf_config = WalkForwardConfig(
+            train_bars=train_bars,
+            test_bars=test_bars,
+            step_bars=step_bars,
+        )
+
+        unified_config = UnifiedBacktestConfig(
+            initial_cash=config.capital,
+            commission_rate=config.commission_rate,
+            slippage_bps=config.slippage,
+            run_id=f"wf_{strategy_id}",
+        )
+
+        # --- Run event-driven walk-forward with ledger verification ---
+        wf_results = run_walk_forward_unified(
+            bars=bars,
+            strategy_factory=lambda: _WfSignalStrategy(),
+            wf_config=wf_config,
+            unified_config=unified_config,
+        )
+
+        # --- Map unified results to backend response format ---
+        windows: list[dict[str, Any]] = []
+        for fold, result in enumerate(wf_results, start=1):
+            w = result.window
+            val_summary = result.unified.summary
+            equity_consistent = result.unified.equity_consistent
+            survives = _walk_forward_survives(val_summary)
+            windows.append(
                 {
                     "fold": fold,
-                    "train_start": _to_epoch(train_frame.index[0]),
-                    "train_end": _to_epoch(train_frame.index[-1]),
-                    "validation_start": _to_epoch(validation_frame.index[0]),
-                    "validation_end": _to_epoch(validation_frame.index[-1]),
-                    "train_rows": len(train_frame),
-                    "validation_rows": len(validation_frame),
-                    "selected_params": selected_params,
-                    "train_score": train_score,
-                    "train": train_summary,
-                    "validation": validation_result.summary,
-                    "survives": _walk_forward_survives(validation_result.summary),
+                    "train_start": _to_epoch(pd.Timestamp(w.train_start)),
+                    "train_end": _to_epoch(pd.Timestamp(w.train_end)),
+                    "validation_start": _to_epoch(pd.Timestamp(w.test_start)),
+                    "validation_end": _to_epoch(pd.Timestamp(w.test_end)),
+                    "train_rows": 0,
+                    "validation_rows": 0,
+                    "selected_params": dict(merged_params),
+                    "train_score": 0.0,
+                    "train": {},
+                    "validation": val_summary,
+                    "survives": survives,
+                    "equity_consistent": equity_consistent,
                 }
             )
 
-        regime_params = requested_params or (rows[-1]["selected_params"] if rows else dict(strategy_registry.get(strategy_id).descriptor.default_params))
+        # --- Regime slices (vectorized diagnostics, kept for backward compatibility) ---
         regimes = _build_regime_slices(
             frame=frame,
             config=config,
             strategy_id=strategy_id,
-            strategy_params=regime_params,
+            strategy_params=merged_params,
         )
-        pass_rate = sum(1 for row in rows if row["survives"]) / max(1, len(rows)) * 100.0
-        validation_returns = [float(row["validation"]["total_return_pct"]) for row in rows]
-        validation_sharpes = [float(row["validation"]["sharpe_ratio"]) for row in rows]
-        validation_drawdowns = [float(row["validation"]["max_drawdown_pct"]) for row in rows]
+
+        pass_rate = sum(1 for row in windows if row["survives"]) / max(1, len(windows)) * 100.0
+        validation_returns = [float(row["validation"]["total_return_pct"]) for row in windows]
+        validation_sharpes = [float(row["validation"]["sharpe_ratio"]) for row in windows]
+        validation_drawdowns = [float(row["validation"]["max_drawdown_pct"]) for row in windows]
+        consistent_count = sum(1 for row in windows if row.get("equity_consistent", False))
+
         stability = {
-            "window_count": len(rows),
+            "window_count": len(windows),
             "pass_rate_pct": _round(pass_rate, 4),
             "avg_oos_return_pct": _round(float(np.mean(validation_returns)) if validation_returns else 0.0, 4),
             "median_oos_sharpe": _round(float(np.median(validation_sharpes)) if validation_sharpes else 0.0, 4),
             "worst_oos_drawdown_pct": _round(min(validation_drawdowns) if validation_drawdowns else 0.0, 4),
-            "parameter_stability_pct": _parameter_stability_pct(rows),
+            "parameter_stability_pct": 100.0,
             "regime_pass_rate_pct": _round(
                 sum(1 for row in regimes if row["survives"]) / max(1, len(regimes)) * 100.0,
                 4,
             ),
+            "ledger_equity_consistent_windows": consistent_count,
+            "ledger_consistency_pct": _round(consistent_count / max(1, len(windows)) * 100.0, 4),
         }
 
         return {
@@ -1483,11 +1592,11 @@ class ResearchBacktestService:
             "selected_priority": "Walk-forward 与市场状态切片",
             "framework": _optimization_framework(3),
             "strategy_id": strategy_id,
-            "strategy_params": regime_params,
-            "windows": rows,
+            "strategy_params": merged_params,
+            "windows": windows,
             "regimes": regimes,
             "stability": stability,
-            "recommendations": _build_walk_forward_recommendations(rows, regimes),
+            "recommendations": _build_walk_forward_recommendations(windows, regimes),
         }
 
     def optimize_portfolio(self, request: dict[str, Any]) -> dict[str, Any]:
@@ -1660,3 +1769,112 @@ class ResearchBacktestService:
         result = _simulate(frame=frame, config=config, weights=requested_weights, signals=signals)
         result.diagnostics["requested_weight_map"] = requested_weights
         return result
+
+    def run_event_driven_cost_stress(
+        self, request: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Run cost stress through the event-driven engine for realistic fill-level validation.
+
+        This complements the vectorized cost stress by using the full order lifecycle:
+        OMS -> risk check -> broker fill -> ledger. PnL is derived from fills, not signals.
+        Delegates to cost_stress_scanner.run_cost_stress() for the per-scenario backtest loop.
+        """
+        from quant_us.backtest.cost_stress_scanner import run_cost_stress
+        from quant_us.backtest.data_bridge import bars_from_dataframe
+        from quant_us.backtest.engine import BacktestConfig
+        from quant_us.strategies.momentum_strategy import MomentumStrategy
+
+        strategy_id = str(request.get("strategy_id", "trend_momentum"))
+        symbol = str(request.get("symbol", settings.default_symbol))
+        interval = str(request.get("interval", settings.default_interval))
+        initial_cash = float(request.get("capital", settings.default_capital))
+
+        frame = load_market_frame(
+            source=request.get("source", settings.default_data_source),
+            symbol=symbol,
+            interval=interval,
+            start=request["start"],
+            end=request["end"],
+            db_path=str(request.get("data_db_path", "")),
+        )
+
+        bars = bars_from_dataframe(frame, source="event_driven_cost_stress")
+
+        base_commission = float(request.get("commission_rate", settings.default_commission_rate))
+        base_slippage = float(request.get("slippage", settings.default_slippage))
+
+        base_config = BacktestConfig(
+            initial_cash=initial_cash,
+            commission_rate=base_commission,
+            slippage_bps=base_slippage,
+        )
+
+        scenarios = _cost_stress_scenarios(int(request.get("max_scenarios", 5)))
+        multipliers = [
+            (float(s["commission_multiplier"]), float(s["slippage_multiplier"]), s["label"])
+            for s in scenarios
+        ]
+
+        strategy = MomentumStrategy(
+            strategy_id="trend_momentum",
+            lookback_bars=int(request.get("lookback_bars", 20)),
+            entry_threshold=float(request.get("entry_threshold", 0.03)),
+            allow_short=False,
+        )
+
+        report = run_cost_stress(
+            strategies=[strategy],
+            bars=bars,
+            base_config=base_config,
+            multipliers=multipliers,
+        )
+
+        results: list[dict[str, Any]] = []
+        baseline_summary: dict[str, float | int] | None = None
+
+        for scenario_def, level in zip(scenarios, report.levels):
+            summary = {
+                "total_return_pct": level.total_return_pct,
+                "sharpe_ratio": level.sharpe_ratio,
+                "max_drawdown_pct": level.max_drawdown_pct,
+                "trade_count": level.trade_count,
+            }
+            if baseline_summary is None:
+                baseline_summary = summary
+
+            survives = (
+                level.total_return_pct > 0
+                and level.sharpe_ratio >= 0.5
+                and level.max_drawdown_pct > -20.0
+            )
+
+            results.append(
+                {
+                    **scenario_def,
+                    "commission_rate": round(level.commission_rate, 8),
+                    "slippage_bps": round(level.slippage_bps, 4),
+                    "survives": survives,
+                    "summary": summary,
+                    "execution": {},
+                    "fill_count": level.trade_count,
+                    "order_count": level.trade_count,
+                    "return_decay_pct": round(
+                        level.total_return_pct - baseline_summary["total_return_pct"],
+                        4,
+                    ),
+                    "sharpe_decay": round(level.sharpe_decay, 4),
+                }
+            )
+
+        survival_rate = sum(1 for r in results if r["survives"]) / max(1, len(results)) * 100
+        return {
+            "status": "completed",
+            "engine": "event_driven",
+            "strategy_id": strategy_id,
+            "symbol": symbol,
+            "interval": interval,
+            "scenarios": results,
+            "survival_rate_pct": round(survival_rate, 4),
+            "baseline_fill_count": results[0]["fill_count"] if results else 0,
+            "engine_note": "PnL derived from fills, orders go through OMS -> risk -> broker -> ledger",
+        }

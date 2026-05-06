@@ -45,6 +45,16 @@ class JsonlLedgerStore:
             return []
         return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
+    def latest_cash_from_fills(self, initial_cash: float = 0.0) -> float:
+        """Derive current cash from all fill records starting from *initial_cash*."""
+        cash = initial_cash
+        for row in self.read_records("fills.jsonl"):
+            fill = _fill_from_record(row)
+            signed_qty = fill.quantity if fill.side == OrderSide.BUY else -fill.quantity
+            cash -= signed_qty * fill.price
+            cash -= fill.commission
+        return cash
+
     def latest_positions_from_fills(self) -> dict[str, Position]:
         positions: dict[str, Position] = {}
         for row in self.read_records("fills.jsonl"):

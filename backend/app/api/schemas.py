@@ -159,7 +159,7 @@ class ResearchPromotionGateRequest(BaseBacktestRequest):
     strategy_id: str = "trend_macd"
     strategy_params: Dict[str, float] = Field(default_factory=dict)
     weights: list[StrategyWeight] = Field(default_factory=list)
-    include_deep_checks: bool = False
+    skip_deep_checks: bool = False
     persist_manifest: bool = True
     register_experiment: bool = False
     experiment_name: str = ""
@@ -579,7 +579,7 @@ class USEventBacktestRequest(BaseModel):
     @field_validator("strategy_id")
     @classmethod
     def validate_us_strategy(cls, value: str) -> str:
-        allowed = {"trend_momentum", "short_reversion", "factor_rank"}
+        allowed = {"trend_momentum", "short_reversion", "factor_rank", "earnings_drift", "etf_rotation"}
         if value not in allowed:
             raise ValueError(f"strategy_id must be one of {sorted(allowed)}")
         return value
@@ -613,3 +613,109 @@ class USReconciliationResponse(BaseModel):
     status: str
     break_count: int
     breaks: List[USReconciliationBreakResponse] = Field(default_factory=list)
+
+
+class USUnifiedBacktestResponse(BaseModel):
+    run_id: str
+    status: str
+    summary: Dict[str, Any]
+    equity_consistent: bool
+    equity_consistency_msg: str
+    order_count: int
+    fill_count: int
+    snapshot_count: int
+    event_count: int
+    ledger_final_equity: float
+    ledger_total_fees: float
+    ledger_curve_points: int
+    data_version: str = ""
+    strategy_version: str = ""
+    manifest_id: str = ""
+    determinism_verified: bool = False
+    equity_curve: List[Dict[str, Any]] = Field(default_factory=list)
+    drawdown_curve: List[Dict[str, Any]] = Field(default_factory=list)
+    turnover_report: Optional[Dict[str, Any]] = None
+    gap_skipped_bars: List[Dict[str, Any]] = Field(default_factory=list)
+    cost_summary: Optional[Dict[str, Any]] = None
+    diagnostics: Dict[str, Any] = Field(default_factory=dict)
+
+
+class USPaperRunDayRequest(BaseModel):
+    vendor: str = "yfinance"
+    asset_class: str = "equity"
+    symbol: str = "AAPL"
+    symbols: List[str] = Field(default_factory=list)
+    bar_size: str = "1d"
+    strategy_id: str = "trend_momentum"
+    strategy_params: Dict[str, Any] = Field(default_factory=dict)
+    feature_names: List[str] = Field(default_factory=list)
+    feature_version: str = "v1"
+    feature_universe: str = "default"
+    target_date: date
+    data_root: str = "data"
+    capital: float = Field(default=100000.0, gt=0)
+    commission_rate: float = Field(default=0.0001, ge=0.0, le=0.05)
+    slippage_bps: float = Field(default=1.0, ge=0.0, le=500.0)
+
+    @field_validator("strategy_id")
+    @classmethod
+    def validate_us_strategy(cls, value: str) -> str:
+        allowed = {"trend_momentum", "short_reversion", "factor_rank", "etf_rotation"}
+        if value not in allowed:
+            raise ValueError(f"strategy_id must be one of {sorted(allowed)}")
+        return value
+
+
+class USPaperStatusResponse(BaseModel):
+    equity: float
+    cash: float
+    buying_power: float
+    positions: int
+    kill_switch_triggered: bool
+    kill_switch_reason: Optional[str] = None
+    days_traded: int
+    healthy: bool
+    last_reconciliation_passed: Optional[bool] = None
+
+
+class USPaperDayResultResponse(BaseModel):
+    date: date
+    starting_equity: float
+    ending_equity: float
+    daily_pnl: float
+    daily_return_pct: float
+    orders_submitted: int
+    orders_filled: int
+    orders_rejected: int
+    orders_cancelled: int
+    kill_switch_triggered: bool
+    reconciliation_passed: bool
+    reconciliation_diff: Dict[str, Any] = Field(default_factory=dict)
+    errors: List[str] = Field(default_factory=list)
+
+
+class EventDrivenCostStressResponse(BaseModel):
+    status: str
+    engine: str
+    strategy_id: str
+    symbol: str
+    interval: str
+    scenarios: List[Dict[str, Any]] = Field(default_factory=list)
+    survival_rate_pct: float
+    baseline_fill_count: int
+    engine_note: str = ""
+
+
+class PaperBacktestResponse(BaseModel):
+    status: str
+    days_processed: int
+    total_pnl: float
+    final_equity: float
+    healthy: bool
+    kill_switch_triggered: bool
+    daily_results: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+class PaperResetResponse(BaseModel):
+    status: str
+    message: str

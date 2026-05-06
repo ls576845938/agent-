@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import random as _random
 from dataclasses import dataclass, field
 from datetime import date
 from itertools import groupby
+from types import SimpleNamespace
+
+import numpy as np
 
 from quant_us.backtest.broker_simulator import SimulatedBroker
 from quant_us.backtest.commission import PercentCommission
+from quant_us.backtest.gap_session import GapConfig, SessionConfig, gap_adjusted_fill_price, is_bar_tradable
+from quant_us.backtest.liquidity_slippage import LiquiditySlippage
 from quant_us.backtest.performance import compute_performance
 from quant_us.backtest.slippage import BpsSlippage
 from quant_us.core.calendar import USEquityCalendar
@@ -53,26 +59,37 @@ class EventDrivenBacktestEngine:
         config: BacktestConfig | None = None,
         calendar: USEquityCalendar | None = None,
         features_by_date: FeatureMap | None = None,
+        gap_config: GapConfig | None = None,
+        session_config: SessionConfig | None = None,
+        liquidity_slippage_model: LiquiditySlippage | None = None,
     ) -> None:
         self.strategies = strategies
         self.config = config or BacktestConfig()
         self.calendar = calendar or USEquityCalendar()
         self.features_by_date = features_by_date or {}
+        self.gap_config = gap_config
+        self.session_config = session_config
         self.broker = SimulatedBroker(
             initial_cash=self.config.initial_cash,
             commission_model=PercentCommission(rate=self.config.commission_rate),
             slippage_model=BpsSlippage(bps=self.config.slippage_bps),
+            liquidity_slippage_model=liquidity_slippage_model,
         )
         self.sizer = PercentOfEquitySizer(self.config.sizing)
         self.allocator = AllocationCombiner(self.config.allocation)
         self.rebalance = RebalancePlanner(self.config.rebalance)
         self.risk_engine = PreTradeRiskEngine(self.config.risk, calendar=self.calendar)
         self.oms = OrderManagementSystem(self.broker, self.risk_engine, calendar=self.calendar)
+        self._prev_close: dict[str, float] = {}
+        self._gap_rejected_orders: list[dict] = []
 
     def run(self, bars: list[Bar]) -> BacktestResult:
         return self.run_slices(bars)
 
     def run_slices(self, bars: list[Bar]) -> BacktestResult:
+        _random.seed(42)
+        np.random.seed(42)
+
         events: list[Event] = []
         oms_results: list[OMSResult] = []
         snapshots: list[PortfolioSnapshot] = []
@@ -80,7 +97,11 @@ class EventDrivenBacktestEngine:
         ordered = sorted(bars, key=lambda item: (item.timestamp_utc, item.symbol))
         for timestamp_utc, slice_iter in groupby(ordered, key=lambda item: item.timestamp_utc):
             slice_bars = list(slice_iter)
+
+            # Build a per-symbol bar map for this timestamp
+            bar_by_symbol: dict[str, Bar] = {}
             for bar in slice_bars:
+                bar_by_symbol[bar.symbol] = bar
                 self.broker.update_market(bar)
 
             account = self.broker.get_account()
@@ -108,16 +129,53 @@ class EventDrivenBacktestEngine:
             intents = self.rebalance.plan(targets, account, prices, self.config.run_id)
             events.extend(OrderIntentEvent.from_intent(intent) for intent in intents)
 
+            # Apply gap overrides before processing orders
+            if self.gap_config is not None and intents:
+                gap_overrides: dict[str, float | None] = {}
+                for intent in intents:
+                    bar = bar_by_symbol.get(intent.symbol)
+                    if bar is None:
+                        continue
+                    prev_close = self._prev_close.get(intent.symbol)
+                    if prev_close is None or prev_close <= 0:
+                        # No previous close — cannot detect gap, skip override
+                        continue
+                    order_proxy = SimpleNamespace(side=intent.side)
+                    adj = gap_adjusted_fill_price(order_proxy, bar, prev_close, self.gap_config)
+                    if adj is None:
+                        gap_overrides[intent.symbol] = None
+                        self._gap_rejected_orders.append({
+                            "timestamp": timestamp_utc,
+                            "symbol": intent.symbol,
+                            "side": intent.side.value,
+                            "quantity": intent.quantity,
+                            "reason": "extreme_gap",
+                        })
+                    else:
+                        gap_overrides[intent.symbol] = adj
+                self.broker.set_gap_overrides(gap_overrides)
+
             for intent in intents:
                 account = self.broker.get_account()
                 result = self.oms.handle_intent(intent, account, market_price=prices.get(intent.symbol, 0.0), timestamp=timestamp_utc)
                 oms_results.append(result)
                 events.extend(result.events)
 
+            self.broker.clear_gap_overrides()
+
+            # Track previous closes for gap detection on next timestamp
+            for bar in slice_bars:
+                if bar.close > 0:
+                    self._prev_close[bar.symbol] = bar.close
+
             snapshots.append(self.broker.snapshot(timestamp_utc))
 
         fills = self.broker.get_fills()
         orders = self.broker.get_orders()
+        metadata: dict[str, object] = {}
+        if self._gap_rejected_orders:
+            metadata["gap_rejected_orders"] = list(self._gap_rejected_orders)
+            metadata["gap_rejected_count"] = len(self._gap_rejected_orders)
         return BacktestResult(
             run_id=self.config.run_id,
             snapshots=snapshots,
@@ -126,4 +184,5 @@ class EventDrivenBacktestEngine:
             events=events,
             oms_results=oms_results,
             summary=compute_performance(snapshots, fills),
+            metadata=metadata,
         )

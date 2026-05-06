@@ -8,6 +8,9 @@ from backend.app.api.schemas import (
     CostStressRequest,
     CostStressResponse,
     DataCoverageItem,
+    EventDrivenCostStressResponse,
+    PaperBacktestResponse,
+    PaperResetResponse,
     DataQualityRequest,
     DataQualityResponse,
     DataSyncRequest,
@@ -34,8 +37,12 @@ from backend.app.api.schemas import (
     USEventBacktestResponse,
     USFeatureBuildRequest,
     USFeatureBuildResponse,
+    USPaperDayResultResponse,
+    USPaperRunDayRequest,
+    USPaperStatusResponse,
     USReconciliationRequest,
     USReconciliationResponse,
+    USUnifiedBacktestResponse,
     WalkForwardRequest,
     WalkForwardResponse,
 )
@@ -120,7 +127,13 @@ def create_app():
 
     @app.get("/metrics")
     async def metrics() -> Response:
-        return Response("quantstation_up 1\n", media_type="text/plain; version=0.0.4")
+        from quant_us.monitoring.metrics import MetricsCollector
+
+        collector = MetricsCollector()
+        return Response(
+            collector.to_prometheus_text(),
+            media_type="text/plain; version=0.0.4",
+        )
 
     @router.get("/health", response_model=HealthResponse)
     async def health() -> HealthResponse:
@@ -280,6 +293,15 @@ def create_app():
     async def stop_data_scheduler() -> SchedulerStatusResponse:
         return SchedulerStatusResponse.model_validate(data_update_scheduler.stop())
 
+    @router.post("/us/data/quality-report", dependencies=[Depends(verify_api_key)])
+    async def us_data_quality_report(request: USDataSyncRequest):
+        """Generate 6-type data quality report for a symbol."""
+        try:
+            result = us_quant_service.data_quality_report(request.model_dump())
+            return result
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
+
     @router.post("/us/data/sync", response_model=USDataSyncResponse, dependencies=[Depends(verify_api_key)])
     async def sync_us_market_data(request: USDataSyncRequest) -> USDataSyncResponse:
         try:
@@ -317,6 +339,54 @@ def create_app():
         try:
             result = us_quant_service.reconcile_local_ledger(request.model_dump())
             return USReconciliationResponse.model_validate(result)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/us/backtests/unified", response_model=USUnifiedBacktestResponse, dependencies=[Depends(verify_api_key)])
+    async def run_us_unified_backtest(request: USEventBacktestRequest) -> USUnifiedBacktestResponse:
+        try:
+            result = us_quant_service.run_unified_backtest(request.model_dump())
+            return USUnifiedBacktestResponse.model_validate(result)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/us/paper/run-day", response_model=USPaperDayResultResponse, dependencies=[Depends(verify_api_key)])
+    async def run_us_paper_day(request: USPaperRunDayRequest) -> USPaperDayResultResponse:
+        try:
+            result = us_quant_service.run_paper_day(request.model_dump())
+            return USPaperDayResultResponse.model_validate(result)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.get("/us/paper/status", response_model=USPaperStatusResponse, dependencies=[Depends(verify_api_key)])
+    async def us_paper_status() -> USPaperStatusResponse:
+        try:
+            result = us_quant_service.paper_status()
+            return USPaperStatusResponse.model_validate(result)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.get("/us/paper/daily-results", response_model=list[USPaperDayResultResponse], dependencies=[Depends(verify_api_key)])
+    async def us_paper_daily_results() -> list[USPaperDayResultResponse]:
+        try:
+            results = us_quant_service.paper_daily_results()
+            return [USPaperDayResultResponse.model_validate(r) for r in results]
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/us/paper/backtest", response_model=PaperBacktestResponse, dependencies=[Depends(verify_api_key)])
+    async def run_us_paper_backtest(request: USEventBacktestRequest) -> PaperBacktestResponse:
+        try:
+            result = us_quant_service.run_paper_backtest(request.model_dump())
+            return PaperBacktestResponse.model_validate(result)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/us/paper/reset", response_model=PaperResetResponse, dependencies=[Depends(verify_api_key)])
+    async def reset_us_paper_loop() -> PaperResetResponse:
+        try:
+            result = us_quant_service.reset_paper_loop()
+            return PaperResetResponse.model_validate(result)
         except Exception as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -369,6 +439,15 @@ def create_app():
     async def run_cost_stress(request: CostStressRequest) -> CostStressResponse:
         try:
             return CostStressResponse.model_validate(research_service.run_cost_stress(request.model_dump()))
+        except (QuantStationError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/backtests/cost-stress/event-driven", response_model=EventDrivenCostStressResponse, dependencies=[Depends(verify_api_key)])
+    async def run_event_driven_cost_stress(request: CostStressRequest) -> EventDrivenCostStressResponse:
+        try:
+            return EventDrivenCostStressResponse.model_validate(
+                research_service.run_event_driven_cost_stress(request.model_dump())
+            )
         except (QuantStationError, ValueError) as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 

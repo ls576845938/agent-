@@ -32,7 +32,7 @@ class ResearchPromotionGateTests(unittest.TestCase):
                         {"strategy_id": "reversion_rsi", "weight": 0.25},
                         {"strategy_id": "donchian_breakout", "weight": 0.25},
                     ],
-                    "include_deep_checks": False,
+                    "skip_deep_checks": True,
                     "persist_manifest": True,
                     "register_experiment": True,
                     "experiment_name": "btc_portfolio_gate",

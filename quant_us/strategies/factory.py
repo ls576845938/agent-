@@ -4,6 +4,8 @@ from dataclasses import fields, is_dataclass
 from typing import Any
 
 from quant_us.strategies.base import Strategy
+from quant_us.strategies.earnings_drift_strategy import EarningsDriftStrategy
+from quant_us.strategies.etf_rotation_strategy import EtfMomentumRotationStrategy
 from quant_us.strategies.factor_rank_strategy import FactorRankStrategy
 from quant_us.strategies.mean_reversion_strategy import MeanReversionStrategy
 from quant_us.strategies.momentum_strategy import MomentumStrategy
@@ -13,6 +15,8 @@ STRATEGY_REGISTRY: dict[str, type[Strategy]] = {
     "trend_momentum": MomentumStrategy,
     "short_reversion": MeanReversionStrategy,
     "factor_rank": FactorRankStrategy,
+    "earnings_drift": EarningsDriftStrategy,
+    "etf_rotation": EtfMomentumRotationStrategy,
 }
 
 

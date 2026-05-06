@@ -28,8 +28,8 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.broker == "alpaca":
-        api_key = os.getenv("ALPACA_API_KEY", "")
-        api_secret = os.getenv("ALPACA_API_SECRET", "")
+        api_key = os.getenv("APCA_API_KEY_ID", "")
+        api_secret = os.getenv("APCA_API_SECRET_KEY", "")
         if not api_key or not api_secret:
             print({"status": "blocked", "errors": ["missing_alpaca_credentials"]})
             raise SystemExit(1)

@@ -113,6 +113,9 @@ class RiskDecision:
     checked_at: datetime = field(default_factory=utc_now)
     risk_check_id: str = field(default_factory=lambda: new_id("risk"))
     adjusted_quantity: float | None = None
+    risk_version: str = "risk_v0.1.0"
+    rule_name: str = ""
+    threshold: float = 0.0
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:

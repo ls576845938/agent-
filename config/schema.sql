@@ -175,9 +175,19 @@ create table if not exists quant.model_artifacts (
     created_at timestamptz not null
 );
 
+create table if not exists quant.trading_calendar (
+    date date primary key,
+    is_trading_day boolean not null default true,
+    session_hours text not null default '09:30-16:00',
+    early_close_time time,
+    holiday_name text,
+    notes text
+);
+
 create index if not exists idx_bars_1d_symbol_time on quant.bars_1d(symbol, timestamp desc);
 create index if not exists idx_bars_1m_symbol_time on quant.bars_1m(symbol, timestamp desc);
 create index if not exists idx_factor_values_name_date on quant.factor_values(factor_name, date desc);
 create index if not exists idx_orders_status_created on quant.orders(status, created_at desc);
 create index if not exists idx_experiments_name_created on quant.experiments(experiment_name, created_at desc);
 create index if not exists idx_experiments_run_id on quant.experiments(run_id);
+create index if not exists idx_trading_calendar_date on quant.trading_calendar(date);

@@ -50,7 +50,7 @@ type USEquityFormState = {
   startDate: string;
   endDate: string;
   dataRoot: string;
-  strategyId: 'trend_momentum' | 'short_reversion';
+  strategyId: 'trend_momentum' | 'short_reversion' | 'factor_rank' | 'earnings_drift';
   ledgerDir: string;
 };
 
@@ -118,6 +118,101 @@ type USReconciliationResponse = {
     local_quantity: number;
     broker_quantity: number;
   }>;
+  halt_new_orders?: boolean;
+  alert_sent?: boolean;
+  cash_diff?: number;
+  position_diffs?: Record<string, unknown>;
+  order_diffs?: Record<string, unknown>;
+  fill_diffs?: Record<string, unknown>;
+  report_path?: string;
+};
+
+type USQualityReportResponse = {
+  symbol: string;
+  data_version: string;
+  total_issues: number;
+  has_issues: boolean;
+  reports: Array<{
+    report_type: string;
+    issues_found: number;
+    details: Array<Record<string, unknown>>;
+  }>;
+};
+
+type USUnifiedBacktestResponse = {
+  run_id: string;
+  status: string;
+  summary: Record<string, number>;
+  equity_consistent: boolean;
+  equity_consistency_msg: string;
+  order_count: number;
+  fill_count: number;
+  snapshot_count: number;
+  event_count: number;
+  ledger_final_equity: number;
+  ledger_total_fees: number;
+  ledger_curve_points: number;
+  equity_curve: Array<{time: number; value: number}>;
+  drawdown_curve: Array<{time: number; value: number}>;
+};
+
+type USPaperStatusResponse = {
+  equity: number;
+  cash: number;
+  buying_power: number;
+  positions: number;
+  kill_switch_triggered: boolean;
+  kill_switch_reason: string | null;
+  days_traded: number;
+  healthy: boolean;
+  last_reconciliation_passed: boolean | null;
+};
+
+type USPaperDayResultResponse = {
+  date: string;
+  starting_equity: number;
+  ending_equity: number;
+  daily_pnl: number;
+  daily_return_pct: number;
+  orders_submitted: number;
+  orders_filled: number;
+  orders_rejected: number;
+  orders_cancelled: number;
+  kill_switch_triggered: boolean;
+  reconciliation_passed: boolean;
+  reconciliation_diff: Record<string, unknown>;
+  errors: string[];
+};
+
+type PaperBacktestResponse = {
+  status: string;
+  days_processed: number;
+  total_pnl: number;
+  final_equity: number;
+  healthy: boolean;
+  kill_switch_triggered: boolean;
+  daily_results: USPaperDayResultResponse[];
+};
+
+type EventDrivenCostStressResponse = {
+  status: string;
+  engine: string;
+  strategy_id: string;
+  symbol: string;
+  interval: string;
+  scenarios: Array<{
+    name: string;
+    commission_rate: number;
+    slippage_bps: number;
+    survives: boolean;
+    total_return_pct: number;
+    sharpe_ratio: number;
+    max_drawdown_pct: number;
+    fill_count: number;
+  }>;
+  survival_rate_pct: number;
+  baseline_fill_count: number;
+  engine_note: string;
 };
 
 type ReportMetric = {
@@ -1037,6 +1132,12 @@ export default function App() {
   const [usFeature, setUSFeature] = useState<USFeatureBuildResponse | null>(null);
   const [usBacktest, setUSBacktest] = useState<USEventBacktestResponse | null>(null);
   const [usReconcile, setUSReconcile] = useState<USReconciliationResponse | null>(null);
+  const [usQualityReport, setUSQualityReport] = useState<USQualityReportResponse | null>(null);
+  const [usUnifiedBacktest, setUSUnifiedBacktest] = useState<USUnifiedBacktestResponse | null>(null);
+  const [usPaperStatus, setUSPaperStatus] = useState<USPaperStatusResponse | null>(null);
+  const [usPaperDailyResults, setUSPaperDailyResults] = useState<USPaperDayResultResponse[]>([]);
+  const [usPaperLoading, setUSPaperLoading] = useState(false);
+  const [paperBacktest, setPaperBacktest] = useState<PaperBacktestResponse | null>(null);
   const [optimization, setOptimization] = useState<StrategyOptimizationResponse | null>(null);
   const [optimizationLoading, setOptimizationLoading] = useState(false);
   const [optimizationMessage, setOptimizationMessage] = useState('');
@@ -1044,6 +1145,7 @@ export default function App() {
   const [costStress, setCostStress] = useState<CostStressResponse | null>(null);
   const [costStressLoading, setCostStressLoading] = useState(false);
   const [costStressMessage, setCostStressMessage] = useState('');
+  const [edCostStress, setEDCostStress] = useState<EventDrivenCostStressResponse | null>(null);
   const [walkForward, setWalkForward] = useState<WalkForwardResponse | null>(null);
   const [walkForwardLoading, setWalkForwardLoading] = useState(false);
   const [walkForwardMessage, setWalkForwardMessage] = useState('');
@@ -1175,7 +1277,7 @@ export default function App() {
     weights: Object.entries(weightMap)
       .filter(([, weight]) => weight > 0)
       .map(([strategy_id, weight]) => ({strategy_id, weight})),
-    include_deep_checks: false,
+    skip_deep_checks: false,
     persist_manifest: true,
     register_experiment: true,
     experiment_name: `${form.symbol.toLowerCase()}_${mode}_promotion_gate`,
@@ -1667,6 +1769,31 @@ export default function App() {
     }
   };
 
+
+  const handleUSQualityReport = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await fetchJson<USQualityReportResponse>('/api/us/data/quality-report', {
+        method: 'POST',
+        body: JSON.stringify({
+          symbol: usForm.symbol,
+          start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+          end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+          data_root: usForm.dataRoot,
+        }),
+      });
+      setUSQualityReport(result);
+      setUSMessage(result.has_issues
+        ? '数据质量报告：发现 ' + result.total_issues + ' 个问题（' + result.reports.filter(r => r.issues_found > 0).length + ' 类）。'
+        : '数据质量报告：无问题。');
+    } catch (caughtError) {
+      setUSMessage(humanizeError(caughtError));
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
   const handleUSReconcile = async () => {
     setUSLoading(true);
     setUSMessage('');
@@ -1680,6 +1807,223 @@ export default function App() {
       });
       setUSReconcile(result);
       setUSMessage(result.status === 'clean' ? '本地 ledger 持仓一致。' : `发现 ${result.break_count} 个持仓差异。`);
+    } catch (caughtError) {
+      setUSMessage(humanizeError(caughtError));
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSUnifiedBacktest = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await fetchJson<USUnifiedBacktestResponse>('/api/us/backtests/unified', {
+        method: 'POST',
+        body: JSON.stringify({
+          vendor: 'yfinance',
+          asset_class: 'equity',
+          symbol: usForm.symbol,
+          bar_size: usForm.barSize,
+          strategy_id: usForm.strategyId,
+          start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+          end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+          data_root: usForm.dataRoot,
+          auto_sync: true,
+        }),
+      });
+      setUSUnifiedBacktest(result);
+      setUSMessage(
+        result.equity_consistent
+          ? `统一回测完成：权益一致性验证通过。${result.equity_consistency_msg}`
+          : `统一回测完成：权益一致性验证失败！${result.equity_consistency_msg}`,
+      );
+    } catch (caughtError) {
+      setUSMessage(humanizeError(caughtError));
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSPaperRunDay = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await fetchJson<USPaperDayResultResponse>('/api/us/paper/run-day', {
+        method: 'POST',
+        body: JSON.stringify({
+          vendor: 'yfinance',
+          asset_class: 'equity',
+          symbol: usForm.symbol,
+          bar_size: usForm.barSize,
+          strategy_id: usForm.strategyId,
+          target_date: usForm.startDate,
+          data_root: usForm.dataRoot,
+          capital: 100000,
+        }),
+      });
+      setUSMessage(
+        `纸交易运行完成：PnL $${result.daily_pnl.toFixed(2)}，成交 ${result.orders_filled}/${result.orders_submitted} 笔。`,
+      );
+      handleUSPaperStatus();
+      handleUSPaperDailyResults();
+    } catch (caughtError) {
+      setUSMessage(humanizeError(caughtError));
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSPaperStatus = async () => {
+    setUSPaperLoading(true);
+    try {
+      const result = await fetchJson<USPaperStatusResponse>('/api/us/paper/status');
+      setUSPaperStatus(result);
+    } catch (caughtError) {
+      setUSMessage(humanizeError(caughtError));
+    } finally {
+      setUSPaperLoading(false);
+    }
+  };
+
+  const handleUSPaperDailyResults = async () => {
+    setUSPaperLoading(true);
+    try {
+      const results = await fetchJson<USPaperDayResultResponse[]>('/api/us/paper/daily-results');
+      setUSPaperDailyResults(results);
+    } catch (caughtError) {
+      setUSMessage(humanizeError(caughtError));
+    } finally {
+      setUSPaperLoading(false);
+    }
+  };
+
+  const handleUSPaperBacktest = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await fetchJson<PaperBacktestResponse>('/api/us/paper/backtest', {
+        method: 'POST',
+        body: JSON.stringify({
+          vendor: 'yfinance',
+          asset_class: 'equity',
+          symbol: usForm.symbol,
+          bar_size: usForm.barSize,
+          strategy_id: usForm.strategyId,
+          start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+          end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+          data_root: usForm.dataRoot,
+          capital: 100000,
+          auto_sync: true,
+        }),
+      });
+      setPaperBacktest(result);
+      setUSMessage(
+        `纸交易回测完成：${result.days_processed} 天，总 PnL $${result.total_pnl.toFixed(2)}，最终权益 ${formatPrice(result.final_equity)}`,
+      );
+      handleUSPaperStatus();
+    } catch (caughtError) {
+      setUSMessage(humanizeError(caughtError));
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSCostStressED = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await fetchJson<EventDrivenCostStressResponse>('/api/backtests/cost-stress/event-driven', {
+        method: 'POST',
+        body: JSON.stringify({
+          source: 'fixture',
+          symbol: usForm.symbol,
+          interval: '1h',
+          strategy_id: usForm.strategyId,
+          start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+          end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+          capital: 100000,
+          max_scenarios: 5,
+        }),
+      });
+      setEDCostStress(result);
+      setUSMessage(`事件驱动成本压力测试完成：${result.survival_rate_pct.toFixed(0)}% 生存率，引擎：${result.engine}`);
+    } catch (caughtError) {
+      setUSMessage(humanizeError(caughtError));
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSWalkForward = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await fetchJson<{stability: Record<string, unknown>; windows: Array<unknown>}>('/api/backtests/walk-forward', {
+        method: 'POST',
+        body: JSON.stringify({
+          source: 'yfinance',
+          symbol: usForm.symbol,
+          interval: usForm.barSize,
+          start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+          end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+          capital: 100000,
+          commission_rate: 0.0001,
+          strategy_id: usForm.strategyId,
+          data_root: usForm.dataRoot,
+        }),
+      });
+      const stability = result.stability as Record<string, number>;
+      setUSMessage(
+        'Walk-Forward: pass_rate ' + ((stability.pass_rate_pct ?? 0) as number).toFixed(0) + '%, ' +
+        'OOS return ' + ((stability.avg_oos_return_pct ?? 0) as number).toFixed(2) + '%, ' +
+        'windows ' + (result.windows as Array<unknown>).length,
+      );
+    } catch (caughtError) {
+      setUSMessage(humanizeError(caughtError));
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSPromotionGate = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await fetchJson<{decision: string; next_stage: string; gates: Array<{name: string; status: string}>}>('/api/research/promotion-gate', {
+        method: 'POST',
+        body: JSON.stringify({
+          strategy_id: usForm.strategyId,
+          symbol: usForm.symbol,
+          interval: usForm.barSize,
+          start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+          end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+          capital: 100000,
+          source: 'yfinance',
+          data_root: usForm.dataRoot,
+          skip_deep_checks: false,
+        }),
+      });
+      const passed = result.gates.filter(function(g: {status: string}) { return g.status === 'pass'; }).length;
+      setUSMessage(
+        'Promotion Gate: ' + result.decision + ' -> ' + result.next_stage +
+        ' (' + passed + '/' + result.gates.length + ' gates passed)',
+      );
+    } catch (caughtError) {
+      setUSMessage(humanizeError(caughtError));
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSPaperReset = async () => {
+    setUSLoading(true);
+    try {
+      await fetchJson<{status: string}>('/api/us/paper/reset', {method: 'POST'});
+      setUSMessage('纸交易状态已重置。');
+      setPaperBacktest(null);
+      setUSPaperStatus(null);
+      setUSPaperDailyResults([]);
     } catch (caughtError) {
       setUSMessage(humanizeError(caughtError));
     } finally {
@@ -2582,6 +2926,9 @@ export default function App() {
               <select value={usForm.strategyId} onChange={(event: ValueEvent) => setUSForm({...usForm, strategyId: event.target.value as USEquityFormState['strategyId']})}>
                 <option value="trend_momentum">趋势动量</option>
                 <option value="short_reversion">短期均值回归</option>
+                <option value="factor_rank">因子排序</option>
+                <option value="earnings_drift">盈利漂移</option>
+                <option value="etf_rotation">ETF 动量轮动</option>
               </select>
             </label>
             <label>
@@ -2603,9 +2950,138 @@ export default function App() {
             <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSReconcile}>
               持仓核对
             </button>
+            <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSUnifiedBacktest}>
+              统一回测（权益验证）
+            </button>
+            <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperRunDay}>
+              纸交易（运行日）
+            </button>
+            <button type="button" className="secondary-button" disabled={usPaperLoading} onClick={handleUSPaperStatus}>
+              纸交易状态
+            </button>
+            <button type="button" className="secondary-button" disabled={usPaperLoading} onClick={handleUSPaperDailyResults}>
+              纸交易每日结果
+            </button>
+            <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperBacktest}>
+              纸交易回测（多日）
+            </button>
+            <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSQualityReport}>
+              数据质量报告
+            </button>
+            <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSCostStressED}>
+              事件驱动成本压力
+            </button>
+            <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSWalkForward}>
+              Walk-Forward 验证
+            </button>
+            <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPromotionGate}>
+              晋升门检查
+            </button>
+            <button type="button" className="secondary-button danger" disabled={usLoading} onClick={handleUSPaperReset}>
+              重置纸交易
+            </button>
           </div>
 
           {usMessage ? <p className="data-message">{usMessage}</p> : null}
+
+          {/* 数据质量报告 */}
+          {usQualityReport ? (
+            <div className="panel quality-panel">
+              <div className="panel-header">
+                <h3>数据质量报告 — {usQualityReport.symbol}</h3>
+                <span className={usQualityReport.has_issues ? 'status-warn' : 'status-ok'}>
+                  {usQualityReport.has_issues ? usQualityReport.total_issues + ' 个问题' : '全部通过'}
+                </span>
+              </div>
+              <table className="quality-table">
+                <thead><tr><th>检查项</th><th>问题数</th><th>详情</th></tr></thead>
+                <tbody>
+                  {usQualityReport.reports.map((r) => (
+                    <tr key={r.report_type}>
+                      <td>{r.report_type}</td>
+                      <td className={r.issues_found > 0 ? 'text-warn' : 'text-ok'}>{r.issues_found}</td>
+                      <td className="text-muted">{r.details.slice(0, 3).map(d => JSON.stringify(d)).join(', ') || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+
+          {/* 对账结果 + halt 状态 */}
+          {usReconcile ? (
+            <div className="panel recon-panel">
+              <div className="panel-header">
+                <h3>持仓核对</h3>
+                <span className={usReconcile.status === 'clean' ? 'status-ok' : 'status-err'}>
+                  {usReconcile.status === 'clean' ? '一致' : '差异'}
+                  {usReconcile.halt_new_orders ? ' — 已暂停新开仓' : ''}
+                </span>
+              </div>
+              {usReconcile.status !== 'clean' ? (
+                <div className="recon-details">
+                  {usReconcile.cash_diff !== undefined && usReconcile.cash_diff !== 0 ? (
+                    <p>现金差异: ${usReconcile.cash_diff.toFixed(2)}</p>
+                  ) : null}
+                  {usReconcile.position_diffs && Object.keys(usReconcile.position_diffs).length > 0 ? (
+                    <p>持仓差异: {Object.keys(usReconcile.position_diffs).join(', ')}</p>
+                  ) : null}
+                  {usReconcile.order_diffs && Object.keys(usReconcile.order_diffs).length > 0 ? (
+                    <p>订单差异: {Object.keys(usReconcile.order_diffs).join(', ')}</p>
+                  ) : null}
+                  {usReconcile.report_path ? <p className="text-muted">报告: {usReconcile.report_path}</p> : null}
+                  {usReconcile.alert_sent ? <p className="text-warn">已发送告警</p> : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </section>
+
+        <section className="panel mvp-panel">
+          <div className="panel-header">
+            <h2>美股工作流</h2>
+            <span>已同步 → 回测 → 验证 → 纸交易</span>
+          </div>
+          <div className="mvp-step-grid">
+            {[
+              {
+                id: 'us_data',
+                label: '数据同步',
+                status: usSync ? 'done' : 'pending',
+                detail: usSync ? `${usSync.rows_cleaned} 行清洗` : '等待同步',
+              },
+              {
+                id: 'us_features',
+                label: '因子构建',
+                status: usFeature ? 'done' : usSync ? 'warn' : 'pending',
+                detail: usFeature ? `${usFeature.rows_written} 行` : '等待构建',
+              },
+              {
+                id: 'us_backtest',
+                label: '事件回测',
+                status: usBacktest ? 'done' : usFeature ? 'warn' : 'pending',
+                detail: usBacktest ? `${usBacktest.fill_count} 笔成交` : '等待回测',
+              },
+              {
+                id: 'us_unified',
+                label: '权益验证',
+                status: usUnifiedBacktest ? (usUnifiedBacktest.equity_consistent ? 'done' : 'fail') : usBacktest ? 'warn' : 'pending',
+                detail: usUnifiedBacktest ? (usUnifiedBacktest.equity_consistent ? '一致' : '不一致') : '等待验证',
+              },
+              {
+                id: 'us_paper',
+                label: '纸交易',
+                status: usPaperStatus?.days_traded && usPaperStatus.days_traded > 0 ? (usPaperStatus.healthy ? 'done' : 'warn') : usUnifiedBacktest ? 'warn' : 'pending',
+                detail: usPaperStatus ? `${usPaperStatus.days_traded} 天 ${usPaperStatus.healthy ? '健康' : '异常'}` : '等待运行',
+              },
+            ].map((step, index) => (
+              <div key={step.id} className={mvpStepClass(step.status as MvpStep['status'])}>
+                <span>{index + 1}</span>
+                <strong>{step.label}</strong>
+                <p>{step.detail}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="panel us-output-panel">
@@ -2656,6 +3132,212 @@ export default function App() {
               </div>
             ))}
           </div>
+
+          {usUnifiedBacktest ? (
+            <div className="us-unified-section">
+              <div className="panel-header">
+                <h3>统一回测结果</h3>
+                <span className={`status-tag ${usUnifiedBacktest.equity_consistent ? 'good' : 'bad'}`}>
+                  {usUnifiedBacktest.equity_consistent ? '权益验证 PASS' : '权益验证 FAIL'}
+                </span>
+              </div>
+              <div className="us-mini-metrics">
+                <div>
+                  <span>总收益</span>
+                  <strong className={(usUnifiedBacktest.summary.total_return_pct ?? 0) >= 0 ? 'metric-good' : 'metric-bad'}>
+                    {(usUnifiedBacktest.summary.total_return_pct ?? 0).toFixed(2)}%
+                  </strong>
+                </div>
+                <div>
+                  <span>Sharpe</span>
+                  <strong>{(usUnifiedBacktest.summary.sharpe_ratio ?? 0).toFixed(2)}</strong>
+                </div>
+                <div>
+                  <span>最大回撤</span>
+                  <strong>{(usUnifiedBacktest.summary.max_drawdown_pct ?? 0).toFixed(2)}%</strong>
+                </div>
+                <div>
+                  <span>账本权益</span>
+                  <strong>{formatPrice(usUnifiedBacktest.ledger_final_equity)}</strong>
+                </div>
+              </div>
+              <div className="us-stage-grid">
+                <div>
+                  <span>订单/成交</span>
+                  <strong>{usUnifiedBacktest.order_count}/{usUnifiedBacktest.fill_count}</strong>
+                </div>
+                <div>
+                  <span>快照/事件</span>
+                  <strong>{usUnifiedBacktest.snapshot_count}/{usUnifiedBacktest.event_count}</strong>
+                </div>
+                <div>
+                  <span>总费用</span>
+                  <strong>{formatPrice(usUnifiedBacktest.ledger_total_fees)}</strong>
+                </div>
+                <div>
+                  <span>验证</span>
+                  <strong style={{color: usUnifiedBacktest.equity_consistent ? 'var(--good)' : 'var(--bad)'}}>
+                    {usUnifiedBacktest.equity_consistent ? '一致' : '不一致'}
+                  </strong>
+                </div>
+              </div>
+              <p className="data-message">{usUnifiedBacktest.equity_consistency_msg}</p>
+              {usUnifiedBacktest.equity_curve.length > 1 ? (
+                <div className="charts-grid" style={{marginTop: 14}}>
+                  <LineChart title="美股权益曲线" points={usUnifiedBacktest.equity_curve} accentClass="line-accent" />
+                  <LineChart title="美股回撤曲线" points={usUnifiedBacktest.drawdown_curve} accentClass="line-accent-secondary" />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {usPaperStatus ? (
+            <div className="us-paper-section">
+              <div className="panel-header">
+                <h3>纸交易状态</h3>
+                <span className={`status-tag ${usPaperStatus.healthy ? 'good' : 'bad'}`}>
+                  {usPaperStatus.healthy ? '健康' : '异常'}
+                </span>
+              </div>
+              <div className="us-mini-metrics">
+                <div>
+                  <span>权益</span>
+                  <strong>{formatPrice(usPaperStatus.equity)}</strong>
+                </div>
+                <div>
+                  <span>现金</span>
+                  <strong>{formatPrice(usPaperStatus.cash)}</strong>
+                </div>
+                <div>
+                  <span>购买力</span>
+                  <strong>{formatPrice(usPaperStatus.buying_power)}</strong>
+                </div>
+                <div>
+                  <span>持仓数</span>
+                  <strong>{usPaperStatus.positions}</strong>
+                </div>
+              </div>
+              <div className="us-stage-grid">
+                <div>
+                  <span>交易日数</span>
+                  <strong>{usPaperStatus.days_traded}</strong>
+                </div>
+                <div>
+                  <span>风控开关</span>
+                  <strong style={{color: usPaperStatus.kill_switch_triggered ? 'var(--bad)' : 'var(--good)'}}>
+                    {usPaperStatus.kill_switch_triggered ? '已触发' : '正常'}
+                  </strong>
+                </div>
+                <div>
+                  <span>上次对账</span>
+                  <strong>{usPaperStatus.last_reconciliation_passed === null ? '-' : usPaperStatus.last_reconciliation_passed ? '通过' : '失败'}</strong>
+                </div>
+              </div>
+              {usPaperStatus.kill_switch_reason ? (
+                <p className="data-message">风控原因：{usPaperStatus.kill_switch_reason}</p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {usPaperDailyResults.length > 0 ? (
+            <div className="us-paper-results-section">
+              <div className="panel-header">
+                <h3>纸交易每日结果</h3>
+                <span>最近 {Math.min(usPaperDailyResults.length, 10)} 天</span>
+              </div>
+              <div className="paper-results-table">
+                {usPaperDailyResults.slice(-10).reverse().map((day) => (
+                  <div key={day.date} className={`paper-result-row ${day.reconciliation_passed ? '' : 'paper-fail'}`}>
+                    <span>{day.date}</span>
+                    <span className={day.daily_pnl >= 0 ? 'metric-good' : 'metric-bad'}>
+                      ${day.daily_pnl.toFixed(2)}
+                    </span>
+                    <span className={day.reconciliation_passed ? 'status-tag good' : 'status-tag bad'}>
+                      {day.reconciliation_passed ? '对账通过' : '对账失败'}
+                    </span>
+                    <span>{day.orders_filled}/{day.orders_submitted} 成交</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {edCostStress ? (
+            <div className="us-unified-section">
+              <div className="panel-header">
+                <h3>事件驱动成本压力测试</h3>
+                <span className={`status-tag ${edCostStress.survival_rate_pct >= 50 ? 'good' : 'bad'}`}>
+                  {edCostStress.survival_rate_pct.toFixed(0)}% 生存率
+                </span>
+              </div>
+              <div className="us-stage-grid">
+                <div><span>引擎</span><strong>{edCostStress.engine}</strong></div>
+                <div><span>基准成交</span><strong>{edCostStress.baseline_fill_count}</strong></div>
+                <div><span>策略</span><strong>{edCostStress.strategy_id}</strong></div>
+                <div><span>标的</span><strong>{edCostStress.symbol} · {edCostStress.interval}</strong></div>
+              </div>
+              <p className="data-message">{edCostStress.engine_note}</p>
+              <div className="paper-results-table">
+                {edCostStress.scenarios.map((scenario) => (
+                  <div key={scenario.name} className={`paper-result-row ${scenario.survives ? '' : 'paper-fail'}`}>
+                    <span>{scenario.name}</span>
+                    <span className={scenario.total_return_pct >= 0 ? 'metric-good' : 'metric-bad'}>
+                      {scenario.total_return_pct?.toFixed(2) ?? '-'}%
+                    </span>
+                    <span>Sharpe: {scenario.sharpe_ratio?.toFixed(2) ?? '-'}</span>
+                    <span>成交: {scenario.fill_count ?? '-'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {paperBacktest ? (
+            <div className="us-unified-section">
+              <div className="panel-header">
+                <h3>纸交易回测汇总</h3>
+                <span className={`status-tag ${paperBacktest.healthy ? 'good' : 'bad'}`}>
+                  {paperBacktest.healthy ? '健康' : '异常'}
+                </span>
+              </div>
+              <div className="us-mini-metrics">
+                <div>
+                  <span>总 PnL</span>
+                  <strong className={paperBacktest.total_pnl >= 0 ? 'metric-good' : 'metric-bad'}>
+                    ${paperBacktest.total_pnl.toFixed(2)}
+                  </strong>
+                </div>
+                <div>
+                  <span>最终权益</span>
+                  <strong>{formatPrice(paperBacktest.final_equity)}</strong>
+                </div>
+                <div>
+                  <span>处理天数</span>
+                  <strong>{paperBacktest.days_processed}</strong>
+                </div>
+                <div>
+                  <span>风控开关</span>
+                  <strong style={{color: paperBacktest.kill_switch_triggered ? 'var(--bad)' : 'var(--good)'}}>
+                    {paperBacktest.kill_switch_triggered ? '已触发' : '正常'}
+                  </strong>
+                </div>
+              </div>
+              {paperBacktest.daily_results.length > 0 ? (
+                <div className="paper-results-table">
+                  {paperBacktest.daily_results.map((day) => (
+                    <div key={day.date} className={`paper-result-row ${day.reconciliation_passed ? '' : 'paper-fail'}`}>
+                      <span>{day.date}</span>
+                      <span className={day.daily_pnl >= 0 ? 'metric-good' : 'metric-bad'}>
+                        ${day.daily_pnl.toFixed(2)}
+                      </span>
+                      <span>{day.orders_filled}/{day.orders_submitted} 成交</span>
+                      <span>{day.reconciliation_passed ? '通过' : '失败'}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </section>
       </main>
       )}

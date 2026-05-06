@@ -33,6 +33,9 @@ live = [
   "vnpy>=3.9"
 ]
 
+[project.scripts]
+quant-us = "quant_us.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["backend*", "quant_us*"]

@@ -16,8 +16,10 @@ class PreTradeRiskConfig:
     max_order_notional_pct: float = 0.10
     min_cash_buffer_pct: float = 0.02
     long_only: bool = True
-    allowed_sessions: set[SessionName] = field(default_factory=lambda: {SessionName.REGULAR})
+    allowed_sessions: set[SessionName] = field(default_factory=lambda: {SessionName.REGULAR, SessionName.AFTER_HOURS})
+    skip_session_check: bool = False
     blacklisted_symbols: set[str] = field(default_factory=set)
+    risk_version: str = "risk_v0.1.0"
 
 
 class PreTradeRiskEngine:
@@ -39,7 +41,7 @@ class PreTradeRiskEngine:
             return self._reject(intent, "non_positive_quantity")
         if market_price <= 0:
             return self._reject(intent, "missing_market_price")
-        if not self.calendar.is_open(timestamp, self.config.allowed_sessions):
+        if not self.config.skip_session_check and not self.calendar.is_open(timestamp, self.config.allowed_sessions):
             return self._reject(intent, "session_not_allowed")
 
         position = account.positions.get(symbol)
@@ -52,17 +54,17 @@ class PreTradeRiskEngine:
         equity = max(account.equity, 1.0)
         order_notional = abs(intent.quantity * market_price)
         if order_notional / equity > self.config.max_order_notional_pct:
-            return self._reject(intent, "order_notional_limit")
+            return self._reject(intent, "order_notional_limit", self.config.max_order_notional_pct)
 
         projected_symbol_weight = abs(projected_quantity * market_price) / equity
         if projected_symbol_weight > self.config.max_symbol_weight + 1e-9:
-            return self._reject(intent, "symbol_weight_limit")
+            return self._reject(intent, "symbol_weight_limit", self.config.max_symbol_weight)
 
         if intent.side == OrderSide.BUY:
             required_cash = order_notional
             cash_buffer = equity * self.config.min_cash_buffer_pct
             if account.cash - required_cash < cash_buffer:
-                return self._reject(intent, "cash_buffer_limit")
+                return self._reject(intent, "cash_buffer_limit", self.config.min_cash_buffer_pct)
 
         projected_positions = dict(account.positions)
         if position:
@@ -77,10 +79,23 @@ class PreTradeRiskEngine:
 
             projected_positions[symbol] = Position(symbol=symbol, quantity=projected_quantity, market_price=market_price)
         if gross_exposure(projected_positions) / equity > self.config.max_gross_exposure + 1e-9:
-            return self._reject(intent, "gross_exposure_limit")
+            return self._reject(intent, "gross_exposure_limit", self.config.max_gross_exposure)
 
-        return RiskDecision(approved=True, reason="approved", order_intent_id=intent.order_intent_id)
+        return RiskDecision(
+            approved=True,
+            reason="approved",
+            order_intent_id=intent.order_intent_id,
+            risk_version=self.config.risk_version,
+            rule_name="",
+            threshold=0.0,
+        )
 
-    @staticmethod
-    def _reject(intent: OrderIntent, reason: str) -> RiskDecision:
-        return RiskDecision(approved=False, reason=reason, order_intent_id=intent.order_intent_id)
+    def _reject(self, intent: OrderIntent, rule_name: str, threshold: float = 0.0) -> RiskDecision:
+        return RiskDecision(
+            approved=False,
+            reason=rule_name,
+            order_intent_id=intent.order_intent_id,
+            risk_version=self.config.risk_version,
+            rule_name=rule_name,
+            threshold=threshold,
+        )

@@ -19,6 +19,14 @@ class StrategyContext:
 
 
 class Strategy(ABC):
+    """Strategy only emits Signal[] or TargetPosition[]. Never Order, never broker calls.
+
+    - on_bar() receives MarketEvent + StrategyContext and returns Iterable[Signal].
+    - Strategies do NOT import broker, OMS, execution, or account modules.
+    - Strategies do NOT call data sources directly — all market data arrives via MarketEvent.
+    - Strategies do NOT calculate PnL or account for slippage/commission.
+    """
+
     strategy_id: str
     version: str = "0.1.0"
 

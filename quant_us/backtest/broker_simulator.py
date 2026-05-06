@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass, field
 
 from quant_us.backtest.commission import PercentCommission
+from quant_us.backtest.liquidity_slippage import LiquiditySlippage
 from quant_us.backtest.slippage import BpsSlippage
 from quant_us.core.clock import utc_now
 from quant_us.core.enums import OrderSide, OrderStatus
@@ -11,12 +13,21 @@ from quant_us.execution.broker_base import BrokerBase
 from quant_us.risk.exposure import gross_exposure, net_exposure
 
 
+def _deterministic_random(seed: str, low: float = 0.0, high: float = 1.0) -> float:
+    digest = hashlib.sha256(seed.encode()).hexdigest()[:8]
+    return low + (int(digest, 16) / 0xFFFFFFFF) * (high - low)
+
+
 @dataclass
 class SimulatedBroker(BrokerBase):
     initial_cash: float = 100_000.0
     commission_model: PercentCommission = field(default_factory=PercentCommission)
     slippage_model: BpsSlippage = field(default_factory=BpsSlippage)
+    liquidity_slippage_model: LiquiditySlippage | None = None
     broker_name: str = "sim"
+    fill_ratio: float = 1.0
+    volume_participation_cap_pct: float = 5.0
+    bar_volumes: dict[str, float] = field(default_factory=dict)
     cash: float = field(init=False)
     positions: dict[str, Position] = field(default_factory=dict)
     orders: list[Order] = field(default_factory=list)
@@ -24,6 +35,15 @@ class SimulatedBroker(BrokerBase):
     market_prices: dict[str, float] = field(default_factory=dict)
     start_equity: float = field(init=False)
     high_water_equity: float = field(init=False)
+    gap_overrides: dict[str, float | None] = field(default_factory=dict)
+    _order_counter: int = field(init=False, default=0)
+
+    def set_gap_overrides(self, overrides: dict[str, float | None]) -> None:
+        self.gap_overrides.clear()
+        self.gap_overrides.update(overrides)
+
+    def clear_gap_overrides(self) -> None:
+        self.gap_overrides.clear()
 
     def __post_init__(self) -> None:
         self.cash = self.initial_cash
@@ -32,6 +52,7 @@ class SimulatedBroker(BrokerBase):
 
     def update_market(self, bar: Bar) -> None:
         self.market_prices[bar.symbol] = float(bar.close)
+        self.bar_volumes[bar.symbol] = float(bar.volume) if bar.volume else 0.0
         if bar.symbol in self.positions:
             position = self.positions[bar.symbol]
             position.market_price = float(bar.close)
@@ -55,7 +76,19 @@ class SimulatedBroker(BrokerBase):
         return list(self.orders)
 
     def submit_order(self, order: Order) -> Order:
-        price = self.market_prices.get(order.symbol)
+        # Check gap overrides first — if set, override market price or reject
+        if order.symbol in self.gap_overrides:
+            override = self.gap_overrides[order.symbol]
+            if override is None:
+                order.status = OrderStatus.REJECTED
+                order.broker_order_id = new_id("sim")
+                order.updated_at = utc_now()
+                self.orders.append(order)
+                return order
+            price = override
+        else:
+            price = self.market_prices.get(order.symbol)
+
         if price is None or price <= 0:
             order.status = OrderStatus.REJECTED
             order.updated_at = utc_now()
@@ -65,26 +98,83 @@ class SimulatedBroker(BrokerBase):
         order.status = OrderStatus.ACCEPTED
         order.broker_order_id = new_id("sim")
         order.updated_at = utc_now()
-        fill_price = self.slippage_model.apply(order.side, price)
-        notional = order.quantity * fill_price
-        commission = self.commission_model.calculate(notional)
-        fill = Fill(
-            order_id=order.order_id,
-            symbol=order.symbol,
-            side=order.side,
-            quantity=order.quantity,
-            price=fill_price,
-            commission=commission,
-            filled_at=order.timestamp_utc,
-            broker=self.broker_name,
-            broker_order_id=order.broker_order_id,
-        )
-        self._apply_fill(fill)
-        order.status = OrderStatus.FILLED
+
+        self._order_counter += 1
+        fillable_quantity = self._compute_fillable_quantity(order, price)
+
+        if fillable_quantity <= 0:
+            order.status = OrderStatus.REJECTED
+            order.updated_at = utc_now()
+            self.orders.append(order)
+            return order
+
+        if fillable_quantity < order.quantity:
+            filled_qty = fillable_quantity
+            if self.liquidity_slippage_model is not None:
+                fill_price = self.liquidity_slippage_model.apply(order.side, price, filled_qty, self.bar_volumes.get(order.symbol, 0.0))
+            else:
+                fill_price = self.slippage_model.apply(order.side, price)
+            notional = filled_qty * fill_price
+            commission = self.commission_model.calculate(notional)
+            fill = Fill(
+                order_id=order.order_id,
+                symbol=order.symbol,
+                side=order.side,
+                quantity=filled_qty,
+                price=fill_price,
+                commission=commission,
+                filled_at=order.timestamp_utc,
+                broker=self.broker_name,
+                broker_order_id=order.broker_order_id,
+            )
+            self._apply_fill(fill)
+            self.fills.append(fill)
+            order.status = OrderStatus.PARTIALLY_FILLED
+        else:
+            filled_qty = order.quantity
+            if self.liquidity_slippage_model is not None:
+                fill_price = self.liquidity_slippage_model.apply(order.side, price, filled_qty, self.bar_volumes.get(order.symbol, 0.0))
+            else:
+                fill_price = self.slippage_model.apply(order.side, price)
+            notional = filled_qty * fill_price
+            commission = self.commission_model.calculate(notional)
+            fill = Fill(
+                order_id=order.order_id,
+                symbol=order.symbol,
+                side=order.side,
+                quantity=filled_qty,
+                price=fill_price,
+                commission=commission,
+                filled_at=order.timestamp_utc,
+                broker=self.broker_name,
+                broker_order_id=order.broker_order_id,
+            )
+            self._apply_fill(fill)
+            self.fills.append(fill)
+            order.status = OrderStatus.FILLED
+
         order.updated_at = utc_now()
         self.orders.append(order)
-        self.fills.append(fill)
         return order
+
+    def _compute_fillable_quantity(self, order: Order, price: float) -> float:
+        requested = abs(order.quantity)
+
+        if self.fill_ratio < 1.0:
+            seed = f"{order.order_id}:{self._order_counter}:fill"
+            roll = _deterministic_random(seed)
+            if roll > self.fill_ratio:
+                requested *= self.fill_ratio
+
+        bar_volume = self.bar_volumes.get(order.symbol, 0.0)
+        if bar_volume > 0 and self.volume_participation_cap_pct > 0:
+            max_by_volume = bar_volume * self.volume_participation_cap_pct / 100.0
+            requested_notional = requested * price
+            max_notional = max_by_volume * price
+            if requested_notional > max_notional:
+                requested = max_by_volume
+
+        return round(requested, 8)
 
     def cancel_order(self, order_id: str) -> Order:
         for order in self.orders:
