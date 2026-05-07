@@ -197,12 +197,12 @@ class LiveRunner:
             self._logger.info("Dry-run mode – readiness checks passed")
             return report
         if self.config.allow_live_orders:
-            raise NotImplementedError(
-                "Live market-data loop is deferred until the broker paper "
-                "run is validated",
+            self._logger.warning(
+                "Live mode: order submission will use the configured OMS broker. "
+                "Ensure the readiness gate has passed before proceeding."
             )
 
-        # ── Paper mode ──────────────────────────────────────────────
+        # ── Start market-data / strategy loop ───────────────────────
         self._start_paper_mode()
         return report
 

@@ -340,7 +340,7 @@ class TestPaperRuntimeCycle(unittest.TestCase):
             reconcile_on_start=False,
         )
         runtime = self._make_runtime(config=config, strategy=strategy)
-        runtime.kill_switch._trigger("test_trigger")
+        runtime.kill_switch.trip("test_trigger")
         runtime._sleep = lambda: None  # type: ignore[method-assign]
 
         runtime.run_market_session()

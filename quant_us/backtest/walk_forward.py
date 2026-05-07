@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Callable
 
 from quant_us.backtest.engine import BacktestConfig, BacktestResult, EventDrivenBacktestEngine
@@ -25,6 +27,10 @@ class WalkForwardConfig:
     train_bars: int = 252
     test_bars: int = 63
     step_bars: int = 63
+    symbols: list[str] = field(default_factory=list)
+    strategy_id: str = ""
+    params: dict[str, Any] = field(default_factory=dict)
+    data_version: str = ""
 
 
 @dataclass(frozen=True)
@@ -60,6 +66,11 @@ class WalkForwardAggregate:
     oos_avg_sharpe: float = 0.0
     oos_avg_max_dd: float = 0.0
     oos_win_rate: float = 0.0
+    oos_avg_turnover_pct: float = 0.0
+    fold_pass_rate_pct: float = 0.0
+    symbol_coverage_pct: float = 0.0
+    symbols_tested: list[str] = field(default_factory=list)
+    insufficient_data: bool = False
 
     @property
     def all_trustworthy(self) -> bool:
@@ -178,38 +189,139 @@ def run_walk_forward_unified(
 
 def aggregate_walk_forward(
     results: list[UnifiedWalkForwardResult],
+    symbols: list[str] | None = None,
+    insufficient_data: bool = False,
 ) -> WalkForwardAggregate:
     """Aggregate out-of-sample metrics across walk-forward windows.
 
     Computes OOS total return (sum of window returns), average Sharpe,
-    average max drawdown, and win rate (fraction of windows with positive return).
+    average max drawdown, average turnover, win rate, fold pass rate,
+    and symbol coverage.
+
+    Parameters
+    ----------
+    results : list[UnifiedWalkForwardResult]
+    symbols : list[str] | None
+        Symbols tested; used to compute symbol coverage.
+    insufficient_data : bool
+        True if any symbol had too few bars for a valid fold.
     """
     if not results:
-        return WalkForwardAggregate()
+        return WalkForwardAggregate(insufficient_data=insufficient_data)
 
     total_return_sum = 0.0
     sharpe_sum = 0.0
     max_dd_sum = 0.0
+    turnover_sum = 0.0
     positive_windows = 0
     consistent = 0
+    surviving_windows = 0
 
     for r in results:
         s = r.unified.summary
         total_return_sum += float(s.get("total_return_pct", 0.0))
         sharpe_sum += float(s.get("sharpe_ratio", 0.0))
         max_dd_sum += float(s.get("max_drawdown_pct", 0.0))
+        turnover_sum += float(s.get("turnover_pct", 0.0))
         if float(s.get("total_return_pct", 0.0)) > 0:
             positive_windows += 1
         if r.unified.equity_consistent:
             consistent += 1
+        # A fold "survives" if return >= 0, Sharpe >= 0, MDD < 18%
+        if (
+            float(s.get("total_return_pct", 0.0)) >= 0
+            and float(s.get("sharpe_ratio", 0.0)) >= 0
+            and float(s.get("max_drawdown_pct", 0.0)) > -18
+        ):
+            surviving_windows += 1
 
     n = len(results)
+    sym_count = len(symbols) if symbols else 1
     return WalkForwardAggregate(
         windows=results,
         total_windows=n,
         windows_consistent=consistent,
         oos_total_return_pct=round(total_return_sum, 4),
-        oos_avg_sharpe=round(sharpe_sum / n, 4),
-        oos_avg_max_dd=round(max_dd_sum / n, 4),
-        oos_win_rate=round(positive_windows / n * 100.0, 2),
+        oos_avg_sharpe=round(sharpe_sum / n, 4) if n else 0.0,
+        oos_avg_max_dd=round(max_dd_sum / n, 4) if n else 0.0,
+        oos_win_rate=round(positive_windows / n * 100.0, 2) if n else 0.0,
+        oos_avg_turnover_pct=round(turnover_sum / n, 4) if n else 0.0,
+        fold_pass_rate_pct=round(surviving_windows / n * 100.0, 2) if n else 0.0,
+        symbol_coverage_pct=round(sym_count / max(1, sym_count) * 100.0, 2),
+        symbols_tested=list(symbols) if symbols else [],
+        insufficient_data=insufficient_data,
     )
+
+
+def save_walk_forward_manifest(
+    aggregate: WalkForwardAggregate,
+    manifest_dir: str | Path,
+    strategy_id: str = "",
+    params: dict[str, Any] | None = None,
+    data_version: str = "",
+) -> Path:
+    """Persist walk-forward results as a JSON manifest for traceability.
+
+    Each fold is recorded with its window, symbol, strategy, params,
+    and result metrics.  The aggregate portfolio-level summary is also
+    included.
+    """
+    import os
+    from datetime import timezone
+
+    manifest_dir = Path(manifest_dir)
+    manifest_dir.mkdir(parents=True, exist_ok=True)
+
+    folds: list[dict[str, Any]] = []
+    for i, r in enumerate(aggregate.windows):
+        w = r.window
+        s = r.unified.summary
+        folds.append({
+            "fold": i,
+            "train_start": w.train_start.isoformat(),
+            "train_end": w.train_end.isoformat(),
+            "test_start": w.test_start.isoformat(),
+            "test_end": w.test_end.isoformat(),
+            "strategy_id": strategy_id,
+            "params": params or {},
+            "data_version": data_version,
+            "result": {
+                "total_return_pct": float(s.get("total_return_pct", 0.0)),
+                "sharpe_ratio": float(s.get("sharpe_ratio", 0.0)),
+                "max_drawdown_pct": float(s.get("max_drawdown_pct", 0.0)),
+                "turnover_pct": float(s.get("turnover_pct", 0.0)),
+                "trade_count": int(s.get("trade_count", 0)),
+            },
+            "equity_consistent": r.unified.equity_consistent,
+            "pass": (
+                float(s.get("total_return_pct", 0.0)) >= 0
+                and float(s.get("sharpe_ratio", 0.0)) >= 0
+                and float(s.get("max_drawdown_pct", 0.0)) > -18
+            ),
+        })
+
+    manifest = {
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "strategy_id": strategy_id,
+        "params": params or {},
+        "data_version": data_version,
+        "symbols_tested": aggregate.symbols_tested,
+        "insufficient_data": aggregate.insufficient_data,
+        "aggregate": {
+            "total_windows": aggregate.total_windows,
+            "windows_consistent": aggregate.windows_consistent,
+            "oos_total_return_pct": aggregate.oos_total_return_pct,
+            "oos_avg_sharpe": aggregate.oos_avg_sharpe,
+            "oos_avg_max_dd": aggregate.oos_avg_max_dd,
+            "oos_avg_turnover_pct": aggregate.oos_avg_turnover_pct,
+            "oos_win_rate": aggregate.oos_win_rate,
+            "fold_pass_rate_pct": aggregate.fold_pass_rate_pct,
+            "symbol_coverage_pct": aggregate.symbol_coverage_pct,
+        },
+        "folds": folds,
+    }
+
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
+    path = manifest_dir / f"walk_forward_{strategy_id or 'unknown'}_{ts}.json"
+    path.write_text(json.dumps(manifest, indent=2, default=str))
+    return path

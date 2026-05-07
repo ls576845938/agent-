@@ -585,7 +585,7 @@ class PaperRuntime:
             _logger.error("Reconciliation on start FAILED: cash_diff=%.2f pos_diffs=%d",
                           report.cash_diff, len(report.position_diffs))
             if self.config.kill_on_recon_fail:
-                self.kill_switch._trigger("reconciliation_start_failure")
+                self.kill_switch.trip("reconciliation_start_failure")
             self._halt_reconciliation = True
 
     def _reconcile_or_close(self) -> bool:

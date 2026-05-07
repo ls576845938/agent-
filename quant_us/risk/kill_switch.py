@@ -83,9 +83,17 @@ class KillSwitch:
     def record_order_success(self) -> None:
         self.record_broker_success()
 
-    def _trigger(self, reason: str) -> bool:
+    def trip(self, reason: str) -> bool:
+        """Public API: manually trip the kill switch for a given reason.
+
+        Returns True (the switch is now triggered).
+        """
         self.triggered = True
         self.reason = reason
         if self.risk_event_log is not None:
             self.risk_event_log.record("kill_switch_triggered", {"reason": reason})
         return True
+
+    def _trigger(self, reason: str) -> bool:
+        """Internal trigger — delegates to :meth:`trip`."""
+        return self.trip(reason)

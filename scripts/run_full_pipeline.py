@@ -23,6 +23,15 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+_VALID_GATE_SOURCES = {"fixture", "sqlite", "auto"}
+
+
+def _gate_source(source: str) -> str:
+    if source in _VALID_GATE_SOURCES:
+        return source
+    print(f"  WARN: source={source!r} not in {_VALID_GATE_SOURCES}; defaulting to 'fixture'")
+    return "fixture"
+
 
 def run_pipeline(
     symbol: str = "AAPL",
@@ -33,6 +42,7 @@ def run_pipeline(
     capital: float = 100000.0,
     commission: float = 0.0001,
     slippage: float = 1.0,
+    strategy: str = "trend_momentum",
     mode: str = "backtest",
     register: bool = False,
     data_db_path: str = "",
@@ -89,7 +99,7 @@ def run_pipeline(
     print(f"{'='*60}")
     from quant_us.backtest.data_bridge import bars_from_dataframe
     from quant_us.backtest.unified_runner import UnifiedBacktestConfig, UnifiedBacktestRunner
-    from quant_us.strategies.momentum_strategy import MomentumStrategy
+    from quant_us.strategies.factory import build_strategy
 
     import pandas as pd
     parquet_root = (
@@ -109,7 +119,7 @@ def run_pipeline(
     frame = pd.concat(frames, ignore_index=True)
     print(f"  Loaded {len(frame)} bars from {parquet_root}")
 
-    strategy = MomentumStrategy(strategy_id="momentum_us", lookback_bars=60, entry_threshold=0.05, allow_short=False)
+    strategy_instance = build_strategy(strategy, {})
 
     unified_config = UnifiedBacktestConfig(
         initial_cash=capital,
@@ -119,7 +129,7 @@ def run_pipeline(
     )
     unified_runner = UnifiedBacktestRunner(config=unified_config)
     unified_result = unified_runner.run(
-        strategies=[strategy],
+        strategies=[strategy_instance],
         frame=frame,
         data_version=results.get("data_version", ""),
     )
@@ -147,7 +157,7 @@ def run_pipeline(
 
     gate_request: dict[str, Any] = {
         "mode": "single",
-        "source": source if source in ("fixture", "sqlite", "auto") else "fixture",
+        "source": _gate_source(source),
         "symbol": symbol,
         "interval": interval,
         "start": start,
@@ -157,7 +167,7 @@ def run_pipeline(
         "slippage": slippage,
         "leverage": 1.0,
         "position_basis": "equity",
-        "strategy_id": "trend_macd",
+        "strategy_id": strategy,
         "data_db_path": data_db_path,
         "register_experiment": register,
         "experiment_name": f"{symbol.lower()}_momentum_gate",
@@ -202,7 +212,7 @@ def run_pipeline(
     paper_loop = PaperTradingLoop(config=paper_config)
 
     bars = bars_from_dataframe(frame, source=source, session="regular")
-    day_result = paper_loop.run_day(bars=bars, strategies=[strategy])
+    day_result = paper_loop.run_day(bars=bars, strategies=[strategy_instance])
 
     print(f"  Orders: {day_result.orders_submitted} submitted, {day_result.orders_filled} filled")
     print(f"  PnL: ${day_result.daily_pnl:,.2f} ({day_result.daily_return_pct:.2f}%)")
@@ -237,6 +247,7 @@ def main() -> None:
     parser.add_argument("--capital", type=float, default=100000.0, help="Initial capital")
     parser.add_argument("--commission", type=float, default=0.0001, help="Commission rate")
     parser.add_argument("--slippage", type=float, default=1.0, help="Slippage in bps")
+    parser.add_argument("--strategy", default="trend_momentum", help="Strategy ID from the registry")
     parser.add_argument("--mode", default="backtest", choices=["backtest", "gate", "paper", "full"], help="Pipeline depth")
     parser.add_argument("--register", action="store_true", help="Register as experiment")
     parser.add_argument("--data-db-path", default="", help="SQLite DB path")
@@ -252,6 +263,7 @@ def main() -> None:
         capital=args.capital,
         commission=args.commission,
         slippage=args.slippage,
+        strategy=args.strategy,
         mode=args.mode,
         register=args.register,
         data_db_path=args.data_db_path,

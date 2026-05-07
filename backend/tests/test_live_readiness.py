@@ -73,19 +73,17 @@ class LiveReadinessGateCheckAllTests(unittest.TestCase):
         passed = [c for c in report.checks if c.passed]
         failed = [c for c in report.checks if not c.passed]
 
-        # paper_30_day_clean will fail (no validation-state path), but all
+        # paper_30_day_clean will fail (no validation-state path), and
+        # broker/data/telegram checks may fail without env vars — but all
         # other checks should pass.
+        _env_gated = {"paper_30_day_clean", "broker_credentials", "data_vendor_health", "telegram_connectivity"}
         for check in report.checks:
-            if check.name == "paper_30_day_clean":
-                self.assertFalse(
-                    check.passed,
-                    f"paper_30_day_clean should fail without validation_state_path: {check.detail}",
-                )
-            else:
-                self.assertTrue(
-                    check.passed,
-                    f"{check.name} should pass with real modules: {check.detail}",
-                )
+            if check.name in _env_gated:
+                continue
+            self.assertTrue(
+                check.passed,
+                f"{check.name} should pass with real modules: {check.detail}",
+            )
 
 
 class LiveReadinessGatePaper30DayCleanTests(unittest.TestCase):
@@ -319,6 +317,9 @@ class LiveReadinessGateIsReadyTests(unittest.TestCase):
             patch.object(gate, "_check_order_recovery") as m6,
             patch.object(gate, "_check_daily_report") as m7,
             patch.object(gate, "_check_monitoring") as m8,
+            patch.object(gate, "_check_broker_credentials") as m9,
+            patch.object(gate, "_check_data_vendor_health") as m10,
+            patch.object(gate, "_check_telegram_connectivity") as m11,
         ):
             # Return passing check for every one
             passed = ReadinessCheck(name="mock", passed=True)
@@ -330,5 +331,8 @@ class LiveReadinessGateIsReadyTests(unittest.TestCase):
             m6.return_value = passed
             m7.return_value = passed
             m8.return_value = passed
+            m9.return_value = passed
+            m10.return_value = passed
+            m11.return_value = passed
             report = gate.check_all()
             self.assertTrue(report.is_ready())

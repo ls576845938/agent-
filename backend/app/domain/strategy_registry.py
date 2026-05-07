@@ -233,6 +233,129 @@ class DynamicGridStrategy(StrategyBase):
         )
 
 
+class TrendMomentumStrategy(StrategyBase):
+    descriptor = StrategyDescriptor(
+        id="trend_momentum",
+        display_name="Trend Momentum (US)",
+        description="Price momentum over lookback window with entry threshold.",
+        category="momentum",
+        default_weight=0.12,
+        default_params={"lookback_bars": 20, "entry_threshold": 0.03},
+    )
+
+    def generate(self, frame: pd.DataFrame, params: dict[str, float] | None = None) -> StrategySignalPack:
+        config = {**self.descriptor.default_params, **(params or {})}
+        lookback = int(config["lookback_bars"])
+        threshold = float(config["entry_threshold"])
+        momentum = frame["close"].pct_change(lookback).fillna(0.0)
+        signal = _flat_signal(frame.index)
+        signal[momentum >= threshold] = 1.0
+        signal[momentum <= -threshold] = -1.0
+        return StrategySignalPack(
+            signal=signal.fillna(0.0),
+            diagnostics={"momentum": momentum},
+        )
+
+
+class ShortReversionStrategy(StrategyBase):
+    descriptor = StrategyDescriptor(
+        id="short_reversion",
+        display_name="Short Reversion (US)",
+        description="Mean reversion on short-term price deviations.",
+        category="mean_reversion",
+        default_weight=0.1,
+        default_params={"window": 10, "threshold": 0.02},
+    )
+
+    def generate(self, frame: pd.DataFrame, params: dict[str, float] | None = None) -> StrategySignalPack:
+        config = {**self.descriptor.default_params, **(params or {})}
+        window = int(config["window"])
+        threshold = float(config["threshold"])
+        mean_price = sma(frame["close"], window)
+        deviation = (frame["close"] - mean_price) / mean_price.replace(0, pd.NA)
+        signal = _flat_signal(frame.index)
+        signal[deviation < -threshold] = 1.0
+        signal[deviation > threshold] = -1.0
+        return StrategySignalPack(
+            signal=signal.fillna(0.0),
+            diagnostics={"deviation": deviation.fillna(0.0)},
+        )
+
+
+class FactorRankStrategy(StrategyBase):
+    descriptor = StrategyDescriptor(
+        id="factor_rank",
+        display_name="Factor Rank (US)",
+        description="Cross-sectional factor ranking based on momentum and volatility.",
+        category="momentum",
+        default_weight=0.1,
+        default_params={"momentum_window": 20, "vol_window": 20},
+    )
+
+    def generate(self, frame: pd.DataFrame, params: dict[str, float] | None = None) -> StrategySignalPack:
+        config = {**self.descriptor.default_params, **(params or {})}
+        mom_w = int(config["momentum_window"])
+        vol_w = int(config["vol_window"])
+        momentum = frame["close"].pct_change(mom_w).fillna(0.0)
+        volatility = frame["close"].pct_change().rolling(vol_w).std(ddof=0).fillna(0.0)
+        vol_denom = volatility.replace(0, pd.NA)
+        factor_score = (momentum / vol_denom).fillna(0.0)
+        signal = factor_score.clip(-1.0, 1.0)
+        return StrategySignalPack(
+            signal=signal.fillna(0.0),
+            diagnostics={"momentum": momentum, "volatility": volatility},
+        )
+
+
+class EarningsDriftStrategy(StrategyBase):
+    descriptor = StrategyDescriptor(
+        id="earnings_drift",
+        display_name="Earnings Drift (US)",
+        description="Post-earnings announcement drift using price trend.",
+        category="event",
+        default_weight=0.1,
+        default_params={"drift_window": 5, "drift_threshold": 0.01},
+    )
+
+    def generate(self, frame: pd.DataFrame, params: dict[str, float] | None = None) -> StrategySignalPack:
+        config = {**self.descriptor.default_params, **(params or {})}
+        window = int(config["drift_window"])
+        threshold = float(config["drift_threshold"])
+        drift = frame["close"].pct_change(window).fillna(0.0)
+        signal = _flat_signal(frame.index)
+        signal[drift > threshold] = 1.0
+        signal[drift < -threshold] = -1.0
+        return StrategySignalPack(
+            signal=signal.fillna(0.0),
+            diagnostics={"drift": drift},
+        )
+
+
+class ETFRotationStrategy(StrategyBase):
+    descriptor = StrategyDescriptor(
+        id="etf_rotation",
+        display_name="ETF Rotation (US)",
+        description="Rotate between ETFs based on relative momentum.",
+        category="momentum",
+        default_weight=0.1,
+        default_params={"rotation_window": 20, "momentum_threshold": 0.02},
+    )
+
+    def generate(self, frame: pd.DataFrame, params: dict[str, float] | None = None) -> StrategySignalPack:
+        config = {**self.descriptor.default_params, **(params or {})}
+        window = int(config["rotation_window"])
+        threshold = float(config["momentum_threshold"])
+        rel_momentum = frame["close"].pct_change(window).fillna(0.0)
+        signal = _flat_signal(frame.index)
+        signal[rel_momentum >= threshold] = 1.0
+        signal[rel_momentum <= -threshold] = -1.0
+        signal[(rel_momentum.abs() < threshold * 0.5) & (signal.shift(1).fillna(0.0) != 0)] = 0.0
+        return StrategySignalPack(
+            signal=signal.fillna(0.0),
+            diagnostics={"rel_momentum": rel_momentum},
+        )
+
+
 @dataclass
 class StrategyRegistry:
     strategies: dict[str, StrategyBase]
@@ -258,6 +381,11 @@ strategy_registry = StrategyRegistry(
             MacroTrendStrategy(),
             TimeWindowStrategy(),
             DynamicGridStrategy(),
+            TrendMomentumStrategy(),
+            ShortReversionStrategy(),
+            FactorRankStrategy(),
+            EarningsDriftStrategy(),
+            ETFRotationStrategy(),
         ]
     }
 )

@@ -383,11 +383,16 @@ class ResearchPromotionGateService:
                 "strategy_params": strategy_params,
                 "windows": min(int(request.get("windows", 2)), 3),
                 "max_candidates": min(int(request.get("max_candidates", 1)), 3),
+                "symbols": request.get("symbols", []),
             }
         )
         # Safely extract stability metrics; walk-forward may return error/insufficient data
         walk_stability = walk.get("stability", {})
-        walk_pass_rate = float(walk_stability.get("pass_rate_pct", 0.0)) if walk_stability else 0.0
+        # Use fold_pass_rate_pct (multi-symbol) or pass_rate_pct (legacy single-symbol)
+        walk_pass_rate = float(
+            walk_stability.get("fold_pass_rate_pct") or walk_stability.get("pass_rate_pct", 0.0)
+        ) if walk_stability else 0.0
+        is_insufficient = walk.get("status") == "insufficient_data"
         return {
             "cost_stress": cost,
             "walk_forward": walk,
@@ -401,10 +406,13 @@ class ResearchPromotionGateService:
                 ),
                 _gate(
                     name="walk_forward",
-                    status=_gate_status(failed=walk_pass_rate < 60.0, warned=walk_pass_rate < 100.0),
-                    message="Walk-forward 样本外窗口通过率检查。",
+                    status=_gate_status(
+                        failed=walk_pass_rate < 60.0 and not is_insufficient,
+                        warned=(walk_pass_rate < 100.0 and not is_insufficient) or is_insufficient,
+                    ),
+                    message="Walk-forward 多标的样本外窗口通过率检查。",
                     metrics=walk_stability,
-                    threshold="pass=100%, warn>=60%, fail<60%",
+                    threshold="pass=100%, warn>=60% or insufficient data, fail<60%",
                 ),
             ],
         }

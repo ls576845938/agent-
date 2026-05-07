@@ -12,6 +12,9 @@ class BacktestServiceTests(unittest.TestCase):
         self.base_range = {
             "start": datetime(2024, 1, 1),
             "end": datetime(2024, 2, 15),
+            "rebalance_buffer_pct": 0.0,
+            "min_holding_bars": 0,
+            "cost_aware_filter": False,
         }
 
     def test_single_backtest_is_deterministic(self) -> None:

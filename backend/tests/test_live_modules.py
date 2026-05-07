@@ -190,13 +190,15 @@ class TestLiveRunnerStart:
         report = runner.start(dry_run=True)
         assert report.status == "ready"
 
-    def test_live_raises_not_implemented(self) -> None:
+    def test_live_allow_live_orders_starts_paper_mode(self) -> None:
         oms = MagicMock()
         hb = Heartbeat("svc")
         cfg = LiveRunnerConfig(allow_live_orders=True)
         runner = LiveRunner(oms=oms, heartbeat=hb, config=cfg)
-        with pytest.raises(NotImplementedError, match="Live market-data loop"):
-            runner.start(dry_run=False)
+        runner._start_paper_mode = MagicMock()  # type: ignore[method-assign]
+        report = runner.start(dry_run=False)
+        runner._start_paper_mode.assert_called_once()
+        assert report.status == "ready"
 
 
 class TestLiveReadinessReport:

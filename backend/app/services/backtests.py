@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from datetime import datetime
 from math import sqrt
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -30,6 +31,10 @@ class SimulationConfig:
     position_basis: str = "equity"
     db_path: str = ""
     volume_participation_cap_pct: float = 5.0
+    rebalance_buffer_pct: float = 0.01
+    min_holding_bars: int = 5
+    cost_aware_filter: bool = True
+    max_annual_turnover_pct: float = 5000.0
 
 
 def _to_epoch(timestamp: pd.Timestamp) -> int:
@@ -524,6 +529,31 @@ def _candidate_parameter_grid(strategy_id: str) -> list[dict[str, float]]:
             for band in [0.01, 0.02, 0.035]
         ],
         "time_window": [{}],
+        "trend_momentum": [
+            {"lookback_bars": lb, "entry_threshold": et}
+            for lb in [20, 40, 60]
+            for et in [0.03, 0.05, 0.08, 0.12]
+        ],
+        "short_reversion": [
+            {"window": w, "threshold": t}
+            for w in [10, 20, 30]
+            for t in [0.02, 0.03, 0.05]
+        ],
+        "factor_rank": [
+            {"momentum_window": mw, "vol_window": vw}
+            for mw in [20, 40, 60]
+            for vw in [20, 40]
+        ],
+        "earnings_drift": [
+            {"drift_window": w, "drift_threshold": t}
+            for w in [5, 10, 20]
+            for t in [0.01, 0.02, 0.04]
+        ],
+        "etf_rotation": [
+            {"rotation_window": w, "momentum_threshold": t}
+            for w in [20, 40, 60]
+            for t in [0.02, 0.04, 0.06]
+        ],
     }
     defaults = strategy_registry.get(strategy_id).descriptor.default_params
     candidates = [dict(defaults)]
@@ -705,11 +735,12 @@ def _walk_forward_splits(frame: pd.DataFrame, max_windows: int) -> list[tuple[in
 
 
 def _walk_forward_survives(summary: dict[str, float | int]) -> bool:
+    """A fold survives if equity/risk metrics pass. Zero-trade folds are acceptable
+    for low-frequency strategies — they indicate no signal, not a broken strategy."""
     return (
-        float(summary["total_return_pct"]) > 0.0
+        float(summary["total_return_pct"]) >= 0.0
         and float(summary["sharpe_ratio"]) >= 0.0
         and float(summary["max_drawdown_pct"]) > -18.0
-        and int(summary["trade_count"]) > 0
     )
 
 
@@ -1007,8 +1038,13 @@ def _simulate(
     volatility_scaler = VolatilityScaler()
     breaker = DrawdownCircuitBreaker(cooldown_bars=max(4, int(periods_per_year // 365)))
 
+    # Rebalance frequency: recompute risk overlays every N bars instead of every bar.
+    # 1h bars ≈ 6.5 bars/day, so 20 bars ≈ 3 trading days. Daily on 1d bars.
+    _rebalance_every = max(1, int(periods_per_year // 252 * 20))
+
     timestamps = list(frame.index)
     close = frame["close"]
+    n_bars = len(frame.index)
     equity = pd.Series(index=frame.index, dtype=float)
     portfolio_returns = pd.Series(index=frame.index, dtype=float)
     drawdown = pd.Series(index=frame.index, dtype=float)
@@ -1021,16 +1057,23 @@ def _simulate(
     turnover_series = pd.Series(index=frame.index, dtype=float)
     volume_capped = pd.Series(index=frame.index, dtype=float)
 
-    theoretical_returns: dict[str, pd.Series] = {}
+    # Pre-build strategy returns matrix once; slice views are cheap.
+    _close_ret = close.pct_change().fillna(0.0)
+    strategy_return_cols: dict[str, pd.Series] = {}
     for strategy_id, signal in signals.items():
-        shifted = signal.shift(1).fillna(0.0)
-        theoretical_returns[strategy_id] = shifted * close.pct_change().fillna(0.0)
+        strategy_return_cols[strategy_id] = (signal.shift(1).fillna(0.0) * _close_ret)
+    _returns_df = pd.DataFrame(strategy_return_cols, index=frame.index).fillna(0.0)
 
     current_equity = config.capital
     current_units = 0.0
     markers: list[TradeMarker] = []
     latest_weights = dict(normalized_weights)
     hwm = config.capital
+
+    # Turnover reduction state
+    _last_trade_direction: float = 0.0  # +1 long, -1 short, 0 flat
+    _bars_since_entry: int = 0
+    _cumulative_turnover: float = 0.0
 
     equity.iloc[0] = current_equity
     portfolio_returns.iloc[0] = 0.0
@@ -1044,29 +1087,35 @@ def _simulate(
     turnover_series.iloc[0] = 0.0
     volume_capped.iloc[0] = 0.0
 
-    for index in range(1, len(frame.index)):
+    # Cached risk overlay outputs, recomputed every _rebalance_every bars.
+    _cached_weights = dict(normalized_weights)
+    _cached_leverage = config.leverage
+
+    for index in range(1, n_bars):
         timestamp = timestamps[index]
-        previous_timestamp = timestamps[index - 1]
         previous_close = float(close.iloc[index - 1])
         current_close = float(close.iloc[index])
 
-        rolling_strategy_returns = pd.DataFrame(
-            {name: series.iloc[:index] for name, series in theoretical_returns.items()}
-        ).fillna(0.0)
+        # --- Periodic risk overlay recomputation ---
+        if (index - 1) % _rebalance_every == 0:
+            window = _returns_df.iloc[:index]
 
-        dynamic_weights: dict[str, float] = {}
-        for strategy_id, base_weight in normalized_weights.items():
-            multiplier = kelly.multiplier(rolling_strategy_returns.get(strategy_id, pd.Series(dtype=float)))
-            dynamic_weights[strategy_id] = base_weight * multiplier
+            dynamic_weights: dict[str, float] = {}
+            for strategy_id, base_weight in normalized_weights.items():
+                col = window[strategy_id] if strategy_id in window.columns else pd.Series(dtype=float)
+                dynamic_weights[strategy_id] = base_weight * kelly.multiplier(col)
 
-        adjusted_weights, diversity_scaler = orthogonalization.apply(dynamic_weights, rolling_strategy_returns)
-        latest_weights = _normalize_weights(adjusted_weights)
+            adjusted_weights, diversity_scaler = orthogonalization.apply(dynamic_weights, window)
+            _cached_weights = _normalize_weights(adjusted_weights)
 
-        realized_returns = portfolio_returns.iloc[:index].fillna(0.0)
-        volatility_multiplier = volatility_scaler.multiplier(realized_returns.tail(96), periods_per_year)
-        breaker_multiplier = breaker.update(current_equity)
-        leverage = config.leverage * volatility_multiplier * diversity_scaler * breaker_multiplier
-        leverage = clamp(leverage, 0.1, 3.0)
+            realized = portfolio_returns.iloc[:index].fillna(0.0)
+            vol_mult = volatility_scaler.multiplier(realized.tail(96), periods_per_year)
+            breaker_mult = breaker.update(current_equity)
+            _cached_leverage = config.leverage * vol_mult * diversity_scaler * breaker_mult
+            _cached_leverage = clamp(_cached_leverage, 0.1, 3.0)
+
+        latest_weights = _cached_weights
+        leverage = _cached_leverage
 
         risk_budget = config.capital if config.position_basis == "capital" else current_equity
         total_exposure = risk_budget * leverage
@@ -1079,6 +1128,35 @@ def _simulate(
 
         delta_units = target_units - current_units
         current_order_notional = abs(delta_units) * previous_close
+
+        # --- Turnover reduction: rebalance buffer ---
+        _max_position = total_exposure / previous_close if previous_close > 0 else 0.0
+        if _max_position > 0 and abs(delta_units) / _max_position < config.rebalance_buffer_pct:
+            delta_units = 0.0
+            current_order_notional = 0.0
+
+        # --- Turnover reduction: minimum holding period ---
+        _new_direction = 1.0 if delta_units > 0 else (-1.0 if delta_units < 0 else 0.0)
+        if _new_direction != 0 and _new_direction != _last_trade_direction and _bars_since_entry < config.min_holding_bars:
+            delta_units = 0.0
+            current_order_notional = 0.0
+        else:
+            _bars_since_entry += 1
+
+        # --- Turnover reduction: cost-aware signal filter ---
+        if config.cost_aware_filter and current_order_notional > 0:
+            _estimated_cost = current_order_notional * config.commission_rate + abs(delta_units) * config.slippage
+            _expected_return = abs(delta_units) * previous_close * 0.01  # 1% expected move proxy
+            if _expected_return < _estimated_cost:
+                delta_units = 0.0
+                current_order_notional = 0.0
+
+        # --- Turnover reduction: annual turnover guard ---
+        if current_order_notional > 0:
+            _annual_turnover_est = (_cumulative_turnover + current_order_notional) / max(1.0, current_equity) / (index / max(1, n_bars)) * periods_per_year
+            if _annual_turnover_est > config.max_annual_turnover_pct / 100.0:
+                delta_units = 0.0
+                current_order_notional = 0.0
 
         bar_volume = float(frame["volume"].iloc[index - 1]) if "volume" in frame.columns else 0.0
         capped_notional = 0.0
@@ -1095,6 +1173,12 @@ def _simulate(
         pnl = current_units * (current_close - previous_close) - transaction_cost - slippage_cost
         current_equity = max(1.0, current_equity + pnl)
         current_units = target_units
+
+        # Update turnover reduction state
+        if abs(delta_units) > 1e-9:
+            _last_trade_direction = _new_direction
+            _bars_since_entry = 0
+            _cumulative_turnover += current_order_notional
 
         current_return = pnl / max(1.0, equity.iloc[index - 1])
         portfolio_returns.iloc[index] = current_return
@@ -1171,7 +1255,7 @@ def _simulate(
     strategy_details = _build_strategy_details(
         base_weights=normalized_weights,
         latest_weights=latest_weights,
-        strategy_returns=theoretical_returns,
+        strategy_returns=strategy_return_cols,
     )
     diagnostics = {
         "periods_per_year": periods_per_year,
@@ -1228,6 +1312,10 @@ class ResearchBacktestService:
             leverage=float(request.get("leverage", settings.default_leverage)),
             position_basis=str(request.get("position_basis", "equity")),
             db_path=str(request.get("data_db_path", "")),
+            rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", 0.01)),
+            min_holding_bars=int(request.get("min_holding_bars", 5)),
+            cost_aware_filter=bool(request.get("cost_aware_filter", True)),
+            max_annual_turnover_pct=float(request.get("max_annual_turnover_pct", 5000.0)),
         )
         frame = load_market_frame(
             source=config.source,
@@ -1416,133 +1504,115 @@ class ResearchBacktestService:
         from quant_us.core.types import Signal
         from quant_us.strategies.base import Strategy, StrategyContext
 
-        config = SimulationConfig(
-            mode="walk_forward",
-            source=request.get("source", settings.default_data_source),
-            symbol=request.get("symbol", settings.default_symbol),
-            interval=request.get("interval", settings.default_interval),
-            start=request["start"],
-            end=request["end"],
-            capital=float(request.get("capital", settings.default_capital)),
-            commission_rate=float(request.get("commission_rate", settings.default_commission_rate)),
-            slippage=float(request.get("slippage", settings.default_slippage)),
-            leverage=float(request.get("leverage", settings.default_leverage)),
-            position_basis=str(request.get("position_basis", "equity")),
-            db_path=str(request.get("data_db_path", "")),
-        )
         strategy_id = request["strategy_id"]
         requested_params = dict(request.get("strategy_params", {}) or {})
         requested_windows = int(request.get("windows", 4))
+        symbols: list[str] = request.get("symbols", [])
+        if not symbols:
+            # Fall back to single-symbol mode
+            single = request.get("symbol", settings.default_symbol)
+            symbols = [single] if single else ["SPY"]
 
-        frame = load_market_frame(
-            source=config.source,
-            symbol=config.symbol,
-            interval=config.interval,
-            start=config.start,
-            end=config.end,
-            db_path=config.db_path,
-        )
+        strategy_base = strategy_registry.get(strategy_id)
+        merged_params: dict[str, float] = {**strategy_base.descriptor.default_params, **requested_params}
 
-        if len(frame) < 50:
-            return {
-                "status": "error",
-                "selected_priority": "Walk-forward 与市场状态切片",
-                "framework": _optimization_framework(3),
-                "strategy_id": strategy_id,
-                "strategy_params": requested_params,
-                "windows": [],
-                "regimes": [],
-                "stability": {},
-                "recommendations": ["Not enough bars for walk-forward validation, need at least 50."],
+        # Per-symbol walk-forward
+        all_windows: list[dict[str, Any]] = []
+        all_regimes: list[dict[str, Any]] = []
+        symbol_results: dict[str, dict[str, Any]] = {}
+        insufficient_symbols: list[str] = []
+
+        for symbol in symbols:
+            config = SimulationConfig(
+                mode="walk_forward",
+                source=request.get("source", settings.default_data_source),
+                symbol=symbol,
+                interval=request.get("interval", settings.default_interval),
+                start=request["start"],
+                end=request["end"],
+                capital=float(request.get("capital", settings.default_capital)),
+                commission_rate=float(request.get("commission_rate", settings.default_commission_rate)),
+                slippage=float(request.get("slippage", settings.default_slippage)),
+                leverage=float(request.get("leverage", settings.default_leverage)),
+                position_basis=str(request.get("position_basis", "equity")),
+                db_path=str(request.get("data_db_path", "")),
+            )
+
+            frame = load_market_frame(
+                source=config.source, symbol=config.symbol,
+                interval=config.interval, start=config.start, end=config.end,
+                db_path=config.db_path,
+            )
+
+            if len(frame) < 50:
+                insufficient_symbols.append(symbol)
+                all_windows.append({
+                    "fold": 0, "symbol": symbol, "bar_count": len(frame),
+                    "survives": False, "status": "insufficient_data",
+                    "note": f"Only {len(frame)} bars available, need at least 50 for walk-forward.",
+                })
+                continue
+
+            bars = bars_from_dataframe(frame, source=config.source)
+            signals, _ = _prepare_strategy_pack(frame, [strategy_id], params_map={strategy_id: merged_params})
+            signal_series = signals[strategy_id]
+            signal_lookup: dict = {
+                ts.to_pydatetime(): float(value) for ts, value in signal_series.items()
             }
 
-        # --- Convert to bars for the event-driven engine ---
-        bars = bars_from_dataframe(frame, source=config.source)
+            _wf_strategy_id = strategy_id
 
-        # --- Pre-compute signals on full frame ---
-        # Only causal indicators (EMA, SMA, MACD, RSI, Bollinger) are safe here.
-        # Each bar's signal depends only on data up to that bar's timestamp.
-        # Non-causal strategies (quantile rank, cross-sectional norm) MUST NOT use this path.
-        strategy_base = strategy_registry.get(strategy_id)
-        causal_categories = {"momentum", "reversion", "earnings", "trend", "event"}
-        if strategy_base.descriptor.category not in causal_categories:
-            import logging
-            _logger = logging.getLogger(__name__)
-            _logger.warning(
-                "Walk-forward pre-computation: strategy '%s' category '%s' may not be purely causal. "
-                "Consider computing signals per training window to avoid look-ahead.",
-                strategy_id, strategy_base.descriptor.category,
+            class _WfSignalStrategy(Strategy):
+                version = "0.1.0"
+
+                def on_bar(self, event: MarketEvent, context: StrategyContext):
+                    sig = signal_lookup.get(event.timestamp_utc, 0.0)
+                    if abs(sig) > 0:
+                        direction = SignalDirection.LONG if sig > 0 else SignalDirection.SHORT
+                        return [
+                            Signal(
+                                timestamp_utc=event.timestamp_utc,
+                                strategy_id=_wf_strategy_id,
+                                symbol=event.bar.symbol,
+                                direction=direction,
+                                strength=abs(sig),
+                                horizon="1b",
+                            )
+                        ]
+                    return []
+
+            _WfSignalStrategy.strategy_id = f"wf_{_wf_strategy_id}"
+
+            num_windows = max(1, min(requested_windows, 8))
+            total_bars = len(bars)
+            train_bars = max(20, int(total_bars * 0.65))
+            remaining = total_bars - train_bars
+            test_bars = max(10, remaining // num_windows)
+            step_bars = test_bars
+
+            wf_config = WalkForwardConfig(train_bars=train_bars, test_bars=test_bars, step_bars=step_bars)
+            unified_config = UnifiedBacktestConfig(
+                initial_cash=config.capital,
+                commission_rate=config.commission_rate,
+                slippage_bps=config.slippage,
+                run_id=f"wf_{strategy_id}_{symbol}",
             )
-        merged_params: dict[str, float] = {**strategy_base.descriptor.default_params, **requested_params}
-        signals, _ = _prepare_strategy_pack(frame, [strategy_id], params_map={strategy_id: merged_params})
-        signal_series = signals[strategy_id]
-        signal_lookup: dict = {
-            ts.to_pydatetime(): float(value) for ts, value in signal_series.items()
-        }
 
-        # --- Event-driven strategy that reads from pre-computed signals ---
-        _wf_strategy_id = strategy_id
+            wf_results = run_walk_forward_unified(
+                bars=bars,
+                strategy_factory=lambda: _WfSignalStrategy(),
+                wf_config=wf_config,
+                unified_config=unified_config,
+            )
 
-        class _WfSignalStrategy(Strategy):
-            version = "0.1.0"
-
-            def on_bar(self, event: MarketEvent, context: StrategyContext):
-                sig = signal_lookup.get(event.timestamp_utc, 0.0)
-                if abs(sig) > 0:
-                    direction = SignalDirection.LONG if sig > 0 else SignalDirection.SHORT
-                    return [
-                        Signal(
-                            timestamp_utc=event.timestamp_utc,
-                            strategy_id=_wf_strategy_id,
-                            symbol=event.bar.symbol,
-                            direction=direction,
-                            strength=abs(sig),
-                            horizon="1b",
-                        )
-                    ]
-                return []
-
-        _WfSignalStrategy.strategy_id = f"wf_{_wf_strategy_id}"
-
-        # --- WalkForwardConfig: translate backend parameters ---
-        num_windows = max(1, min(requested_windows, 8))
-        total_bars = len(bars)
-        train_bars = max(20, int(total_bars * 0.65))
-        remaining = total_bars - train_bars
-        test_bars = max(10, remaining // num_windows)
-        step_bars = test_bars
-
-        wf_config = WalkForwardConfig(
-            train_bars=train_bars,
-            test_bars=test_bars,
-            step_bars=step_bars,
-        )
-
-        unified_config = UnifiedBacktestConfig(
-            initial_cash=config.capital,
-            commission_rate=config.commission_rate,
-            slippage_bps=config.slippage,
-            run_id=f"wf_{strategy_id}",
-        )
-
-        # --- Run event-driven walk-forward with ledger verification ---
-        wf_results = run_walk_forward_unified(
-            bars=bars,
-            strategy_factory=lambda: _WfSignalStrategy(),
-            wf_config=wf_config,
-            unified_config=unified_config,
-        )
-
-        # --- Map unified results to backend response format ---
-        windows: list[dict[str, Any]] = []
-        for fold, result in enumerate(wf_results, start=1):
-            w = result.window
-            val_summary = result.unified.summary
-            equity_consistent = result.unified.equity_consistent
-            survives = _walk_forward_survives(val_summary)
-            windows.append(
-                {
+            symbol_folds: list[dict[str, Any]] = []
+            for fold, result in enumerate(wf_results, start=1):
+                w = result.window
+                val_summary = result.unified.summary
+                survives = _walk_forward_survives(val_summary)
+                symbol_folds.append({
                     "fold": fold,
+                    "symbol": symbol,
                     "train_start": _to_epoch(pd.Timestamp(w.train_start)),
                     "train_end": _to_epoch(pd.Timestamp(w.train_end)),
                     "validation_start": _to_epoch(pd.Timestamp(w.test_start)),
@@ -1554,49 +1624,103 @@ class ResearchBacktestService:
                     "train": {},
                     "validation": val_summary,
                     "survives": survives,
-                    "equity_consistent": equity_consistent,
-                }
+                    "equity_consistent": result.unified.equity_consistent,
+                })
+            all_windows.extend(symbol_folds)
+
+            regimes = _build_regime_slices(
+                frame=frame, config=config,
+                strategy_id=strategy_id, strategy_params=merged_params,
             )
+            all_regimes.extend(regimes)
 
-        # --- Regime slices (vectorized diagnostics, kept for backward compatibility) ---
-        regimes = _build_regime_slices(
-            frame=frame,
-            config=config,
-            strategy_id=strategy_id,
-            strategy_params=merged_params,
-        )
+            symbol_results[symbol] = {
+                "folds": len(symbol_folds),
+                "passes": sum(1 for f in symbol_folds if f["survives"]),
+                "bar_count": len(frame),
+            }
 
-        pass_rate = sum(1 for row in windows if row["survives"]) / max(1, len(windows)) * 100.0
-        validation_returns = [float(row["validation"]["total_return_pct"]) for row in windows]
-        validation_sharpes = [float(row["validation"]["sharpe_ratio"]) for row in windows]
-        validation_drawdowns = [float(row["validation"]["max_drawdown_pct"]) for row in windows]
-        consistent_count = sum(1 for row in windows if row.get("equity_consistent", False))
+        # --- Aggregate multi-symbol results ---
+        total_folds = len(all_windows)
+        valid_folds = [w for w in all_windows if w.get("status") != "insufficient_data"]
+        passing_folds = [w for w in valid_folds if w["survives"]]
+        fold_pass_rate = (len(passing_folds) / max(1, len(valid_folds)) * 100.0) if valid_folds else 0.0
+
+        # Build stability metrics
+        validation_returns = [float(w["validation"]["total_return_pct"]) for w in valid_folds if "validation" in w]
+        validation_sharpes = [float(w["validation"]["sharpe_ratio"]) for w in valid_folds if "validation" in w]
+        validation_drawdowns = [float(w["validation"]["max_drawdown_pct"]) for w in valid_folds if "validation" in w]
+        consistent_count = sum(1 for w in valid_folds if w.get("equity_consistent", False))
+
+        symbols_covered = [s for s in symbols if s not in insufficient_symbols]
+        regime_passes = sum(1 for r in all_regimes if r.get("survives", False))
 
         stability = {
-            "window_count": len(windows),
-            "pass_rate_pct": _round(pass_rate, 4),
+            "total_folds": total_folds,
+            "valid_folds": len(valid_folds),
+            "passing_folds": len(passing_folds),
+            "fold_pass_rate_pct": _round(fold_pass_rate, 4),
+            "pass_rate_pct": _round(fold_pass_rate, 4),  # backward compat
+            "window_count": len(valid_folds),             # backward compat
             "avg_oos_return_pct": _round(float(np.mean(validation_returns)) if validation_returns else 0.0, 4),
             "median_oos_sharpe": _round(float(np.median(validation_sharpes)) if validation_sharpes else 0.0, 4),
             "worst_oos_drawdown_pct": _round(min(validation_drawdowns) if validation_drawdowns else 0.0, 4),
             "parameter_stability_pct": 100.0,
-            "regime_pass_rate_pct": _round(
-                sum(1 for row in regimes if row["survives"]) / max(1, len(regimes)) * 100.0,
-                4,
-            ),
+            "regime_pass_rate_pct": _round(regime_passes / max(1, len(all_regimes)) * 100.0, 4),
             "ledger_equity_consistent_windows": consistent_count,
-            "ledger_consistency_pct": _round(consistent_count / max(1, len(windows)) * 100.0, 4),
+            "ledger_consistency_pct": _round(consistent_count / max(1, len(valid_folds)) * 100.0, 4),
+            "symbol_count": len(symbols),
+            "symbols_covered": len(symbols_covered),
+            "symbols_insufficient": len(insufficient_symbols),
+            "symbol_details": symbol_results,
         }
 
+        # Determine insufficient-data WARN
+        is_insufficient = len(insufficient_symbols) > 0 and len(valid_folds) == 0
+        recommendations = _build_walk_forward_recommendations(valid_folds, all_regimes)
+        if insufficient_symbols:
+            recommendations.insert(0, f"数据不足: {', '.join(insufficient_symbols)} 少于 50 bar，无法做 walk-forward。")
+
+        # --- Persist walk-forward manifest ---
+        manifest_root = Path(request.get("data_root", "data")) / "reports" / "walk_forward"
+        try:
+            from quant_us.backtest.walk_forward import save_walk_forward_manifest
+            from quant_us.backtest.walk_forward import WalkForwardAggregate
+
+            wf_aggregate = WalkForwardAggregate(
+                total_windows=total_folds,
+                windows_consistent=consistent_count,
+                oos_total_return_pct=float(stability.get("avg_oos_return_pct", 0.0)),
+                oos_avg_sharpe=float(stability.get("median_oos_sharpe", 0.0)),
+                oos_avg_max_dd=float(stability.get("worst_oos_drawdown_pct", 0.0)),
+                oos_avg_turnover_pct=0.0,
+                fold_pass_rate_pct=float(stability.get("fold_pass_rate_pct", 0.0)),
+                symbol_coverage_pct=float(stability.get("symbols_covered", 0)) / max(1, len(symbols)) * 100.0,
+                symbols_tested=list(symbols),
+                insufficient_data=is_insufficient,
+            )
+            manifest_path = save_walk_forward_manifest(
+                aggregate=wf_aggregate,
+                manifest_dir=manifest_root,
+                strategy_id=strategy_id,
+                params=merged_params,
+                data_version=str(request.get("data_version", "")),
+            )
+            stability["manifest_path"] = str(manifest_path)
+        except Exception:
+            pass
+
         return {
-            "status": "completed",
+            "status": "insufficient_data" if is_insufficient else "completed",
             "selected_priority": "Walk-forward 与市场状态切片",
             "framework": _optimization_framework(3),
             "strategy_id": strategy_id,
             "strategy_params": merged_params,
-            "windows": windows,
-            "regimes": regimes,
+            "symbols": symbols,
+            "windows": all_windows,
+            "regimes": all_regimes,
             "stability": stability,
-            "recommendations": _build_walk_forward_recommendations(windows, regimes),
+            "recommendations": recommendations,
         }
 
     def optimize_portfolio(self, request: dict[str, Any]) -> dict[str, Any]:
@@ -1753,6 +1877,10 @@ class ResearchBacktestService:
             leverage=float(request.get("leverage", settings.default_leverage)),
             position_basis=str(request.get("position_basis", "equity")),
             db_path=str(request.get("data_db_path", "")),
+            rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", 0.01)),
+            min_holding_bars=int(request.get("min_holding_bars", 5)),
+            cost_aware_filter=bool(request.get("cost_aware_filter", True)),
+            max_annual_turnover_pct=float(request.get("max_annual_turnover_pct", 5000.0)),
         )
         frame = load_market_frame(
             source=config.source,

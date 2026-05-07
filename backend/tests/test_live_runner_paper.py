@@ -2,7 +2,7 @@
 
 Covers:
   - Paper mode starts without error (mocked)
-  - Live mode still raises NotImplementedError
+  - Live mode proceeds with warning to paper-mode loop
   - State transitions: BOOTSTRAPPING -> READY -> RUNNING
   - Shutdown transitions to SHUTTING_DOWN
   - Error during cycle transitions to ERROR
@@ -162,17 +162,16 @@ class TestLiveRunnerPaper:
             f"Expected RUNNING, got {runner.state}"
         )
 
-    # ── test 2: live mode raises NotImplementedError ──────────────────
+    # ── test 2: live mode starts paper mode with warning ──────────────
 
     @patch("quant_us.live.runner.threading.Thread")
-    def test_live_mode_raises_not_implemented(
+    def test_live_mode_proceeds_with_warning(
         self, mock_thread: MagicMock, runner: LiveRunner,
     ) -> None:
-        """allow_live_orders=True must raise."""
+        """allow_live_orders=True logs warning and proceeds to paper mode."""
         runner.config.allow_live_orders = True
-        with pytest.raises(NotImplementedError) as exc:
-            runner.start(dry_run=False)
-        assert "deferred" in str(exc.value).lower()
+        report = runner.start(dry_run=False)
+        assert report is not None
 
     # ── test 3: state transitions ────────────────────────────────────
 

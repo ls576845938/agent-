@@ -175,7 +175,7 @@ class SmallLiveReadinessGateTests(unittest.TestCase):
             self.assertFalse(report.is_ready())
 
     def test_gate_passes_with_all_mocks(self) -> None:
-        """When all 8 checks return passed, the gate says ready."""
+        """When all 11 checks return passed, the gate says ready."""
         gate = LiveReadinessGate()
         passed = ReadinessCheck(name="mock", passed=True)
         attrs = [
@@ -187,6 +187,9 @@ class SmallLiveReadinessGateTests(unittest.TestCase):
             "_check_order_recovery",
             "_check_daily_report",
             "_check_monitoring",
+            "_check_broker_credentials",
+            "_check_data_vendor_health",
+            "_check_telegram_connectivity",
         ]
         with (
             patch.object(gate, attrs[0], return_value=passed),
@@ -197,6 +200,9 @@ class SmallLiveReadinessGateTests(unittest.TestCase):
             patch.object(gate, attrs[5], return_value=passed),
             patch.object(gate, attrs[6], return_value=passed),
             patch.object(gate, attrs[7], return_value=passed),
+            patch.object(gate, attrs[8], return_value=passed),
+            patch.object(gate, attrs[9], return_value=passed),
+            patch.object(gate, attrs[10], return_value=passed),
         ):
             report = gate.check_all(
                 validation_state_path="/fake/path/validation_state.json"

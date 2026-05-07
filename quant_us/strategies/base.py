@@ -33,3 +33,16 @@ class Strategy(ABC):
     @abstractmethod
     def on_bar(self, event: MarketEvent, context: StrategyContext) -> Iterable[Signal]:
         raise NotImplementedError
+
+    def on_market_event(self, event: MarketEvent, context: StrategyContext) -> Iterable[Signal]:
+        """Streaming adapter entry point.
+
+        Existing strategies only need ``on_bar``. Runtime/engine code can call
+        this method for market-event streams and get the same behavior without
+        touching alpha logic.
+        """
+        return self.on_bar(event, context)
+
+    def on_tick(self, event: MarketEvent, context: StrategyContext) -> Iterable[Signal]:
+        """Optional tick adapter; defaults to market-event/bar behavior."""
+        return self.on_market_event(event, context)

@@ -33,7 +33,7 @@ class StrategyFactoryTests(unittest.TestCase):
         self.assertIn("earnings_drift", strategies)
 
     def test_available_strategies_count(self) -> None:
-        self.assertEqual(len(available_strategies()), 5)
+        self.assertGreaterEqual(len(available_strategies()), 5)
 
     # ------------------------------------------------------------------
     # build_strategy — success

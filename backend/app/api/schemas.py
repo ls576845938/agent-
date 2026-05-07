@@ -36,7 +36,7 @@ class BaseBacktestRequest(BaseModel):
     @field_validator("source")
     @classmethod
     def validate_source(cls, value: str) -> str:
-        allowed = {"fixture", "sqlite", "auto"}
+        allowed = {"fixture", "sqlite", "auto", "yfinance", "alpaca"}
         if value not in allowed:
             raise ValueError(f"source must be one of {sorted(allowed)}")
         return value
@@ -115,6 +115,7 @@ class WalkForwardRequest(BaseBacktestRequest):
     strategy_params: dict[str, float] = Field(default_factory=dict)
     windows: int = Field(default=4, ge=1, le=8)
     max_candidates: int = Field(default=6, ge=1, le=32)
+    symbols: list[str] = Field(default_factory=list)
 
 
 class WalkForwardResponse(BaseModel):
@@ -159,6 +160,7 @@ class ResearchPromotionGateRequest(BaseBacktestRequest):
     strategy_id: str = "trend_macd"
     strategy_params: Dict[str, float] = Field(default_factory=dict)
     weights: list[StrategyWeight] = Field(default_factory=list)
+    symbols: list[str] = Field(default_factory=list)
     skip_deep_checks: bool = False
     persist_manifest: bool = True
     register_experiment: bool = False
@@ -285,7 +287,7 @@ class DataQualityRequest(BaseModel):
     @field_validator("source")
     @classmethod
     def validate_quality_source(cls, value: str) -> str:
-        allowed = {"fixture", "sqlite", "auto"}
+        allowed = {"fixture", "sqlite", "auto", "yfinance", "alpaca"}
         if value not in allowed:
             raise ValueError(f"source must be one of {sorted(allowed)}")
         return value

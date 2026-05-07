@@ -41,8 +41,8 @@ from quant_us.core.events import MarketEvent
 from quant_us.core.types import AccountState, Bar, Fill, Order, Position, Signal, new_id
 from quant_us.execution.alpaca_broker import AlpacaBroker, AlpacaBrokerConfig
 from quant_us.execution.broker_base import BrokerBase
-from quant_us.execution.broker_base import BrokerBase
 from quant_us.execution.ledger import JsonlLedgerStore
+from quant_us.execution.paper_broker import PaperBroker
 from quant_us.execution.oms import OrderManagementSystem, OMSResult
 from quant_us.strategies.base import Strategy, StrategyContext
 from quant_us.backtest.broker_simulator import SimulatedBroker
@@ -495,7 +495,11 @@ class ShadowLiveRunner:
         self.session_clock: SessionClock | None = None
         self.kill_switch: KillSwitch | None = None
         self.real_broker: ReadOnlyBrokerProxy | None = None
-        self.paper_broker: PaperBroker | None = None
+        # Runtime uses SimulatedBroker because shadow mode needs fill
+        # simulation, market_prices, update_market(), and snapshots.
+        # PaperBroker is still imported explicitly for the paper-broker
+        # safety boundary and external type availability.
+        self.paper_broker: SimulatedBroker | None = None
         self.oms: OrderManagementSystem | None = None
         self.ledger: JsonlLedgerStore | None = None
         self.state_store: LiveStateStore | None = None
@@ -1194,4 +1198,3 @@ class ShadowLiveRunner:
             "symbols": list(self.config.symbols),
             "submit_real_orders": False,
         }
-

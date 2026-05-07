@@ -86,14 +86,16 @@ class PaperScheduler:
         )
 
         while self._running:
-            # 1. Wait until the market should be running (includes warmup)
-            if not self._wait_for_market_open():
-                _logger.info("Scheduler stopping (wait for market open returned False)")
-                break
-
-            # 2. Check max daily sessions
+            # 1. Check max daily sessions first so a completed session
+            #    does not re-enter _wait_for_market_open after the limit
+            #    is reached.
             if self._max_sessions_reached():
                 _logger.info("max_daily_sessions (%d) reached", self.config.max_daily_sessions)
+                break
+
+            # 2. Wait until the market should be running (includes warmup)
+            if not self._wait_for_market_open():
+                _logger.info("Scheduler stopping (wait for market open returned False)")
                 break
 
             # 3. Create and run a PaperRuntime session

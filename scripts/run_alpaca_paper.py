@@ -349,8 +349,8 @@ class AlpacaPaperRunner:
         all_symbols = set(broker_positions) | set(ledger_positions)
         diffs: dict[str, dict] = {}
         for sym in all_symbols:
-            bq = broker_positions.get(sym).quantity if sym in broker_positions else 0.0
-            lq = ledger_positions.get(sym).quantity if sym in ledger_positions else 0.0
+            bq = broker_positions[sym].quantity if sym in broker_positions else 0.0
+            lq = ledger_positions[sym].quantity if sym in ledger_positions else 0.0
             if abs(bq - lq) > 1e-6:
                 diffs[sym] = {"broker_qty": bq, "ledger_qty": lq, "diff": bq - lq}
 

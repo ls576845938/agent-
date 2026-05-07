@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import sqlite3
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -152,6 +153,27 @@ def load_market_frame(
     end: datetime,
     db_path: str = "",
 ) -> pd.DataFrame:
+    # Try data lake (parquet store) for known vendors
+    if source in ("yfinance", "alpaca"):
+        try:
+            from quant_us.data.storage.parquet_store import ParquetBarStore
+
+            store = ParquetBarStore(root=Path("data") / "cleaned")
+            frame = store.read_bars(
+                vendor=source,
+                asset_class="equity",
+                bar_size=interval,
+                symbol=symbol,
+                start=start,
+                end=end,
+            )
+            if not frame.empty:
+                frame = frame.rename(columns={"timestamp_utc": "timestamp"}).set_index("timestamp")
+                return _normalize_frame(frame)
+        except Exception:
+            pass
+        source = "auto"
+
     if source == "fixture":
         return load_fixture_frame(symbol=symbol, interval=interval, start=start, end=end)
 
@@ -273,22 +295,49 @@ def inspect_market_data_quality(
     db_path: str = "",
 ) -> dict[str, Any]:
     actual_source = source
-    try:
-        if source == "fixture":
-            raw = load_fixture_frame(symbol=symbol, interval=interval, start=start, end=end).reset_index()
-        elif source == "sqlite":
-            raw = _load_raw_sqlite_frame(db_path=db_path, symbol=symbol, interval=interval, start=start, end=end)
-        elif source == "auto":
-            try:
+    raw = pd.DataFrame()
+
+    # Try data lake (parquet) for known vendors first
+    if source in ("yfinance", "alpaca"):
+        try:
+            from quant_us.data.storage.parquet_store import ParquetBarStore
+
+            store = ParquetBarStore(root=Path("data") / "cleaned")
+            frame = store.read_bars(
+                vendor=source,
+                asset_class="equity",
+                bar_size=interval,
+                symbol=symbol,
+                start=start,
+                end=end,
+            )
+            if not frame.empty:
+                raw = frame.rename(columns={"timestamp_utc": "timestamp"})
+                raw["open_time_ms"] = pd.to_datetime(raw["timestamp"], utc=True).astype("int64") // 1_000_000
+        except Exception:
+            pass
+
+    if raw.empty:
+        if source in ("yfinance", "alpaca"):
+            source = "auto"
+
+        try:
+            if source == "fixture":
+                raw = load_fixture_frame(symbol=symbol, interval=interval, start=start, end=end).reset_index()
+            elif source == "sqlite":
                 raw = _load_raw_sqlite_frame(db_path=db_path, symbol=symbol, interval=interval, start=start, end=end)
                 actual_source = "sqlite"
-            except DataNotAvailableError:
-                raw = load_fixture_frame(symbol=symbol, interval=interval, start=start, end=end).reset_index()
-                actual_source = "fixture"
-        else:
-            raise DataNotAvailableError(f"Unsupported market data source: {source}")
-    except DataNotAvailableError:
-        raise
+            elif source == "auto":
+                try:
+                    raw = _load_raw_sqlite_frame(db_path=db_path, symbol=symbol, interval=interval, start=start, end=end)
+                    actual_source = "sqlite"
+                except DataNotAvailableError:
+                    raw = load_fixture_frame(symbol=symbol, interval=interval, start=start, end=end).reset_index()
+                    actual_source = "fixture"
+            else:
+                raise DataNotAvailableError(f"Unsupported market data source: {source}")
+        except DataNotAvailableError:
+            raise
 
     raw_rows = int(len(raw))
     issues: list[dict[str, str]] = []
@@ -342,9 +391,16 @@ def inspect_market_data_quality(
     cleaning_loss_rows = raw_rows - int(len(cleaned))
     start_ts = _utc_timestamp(start)
     end_ts = _utc_timestamp(end)
-    expected_index = pd.date_range(start=start_ts, end=end_ts, freq=interval_to_frequency(interval), inclusive="both")
+    # Use business days for equity sources (skip weekends/holidays)
+    freq = "1B" if actual_source in ("yfinance", "alpaca") and interval == "1d" else interval_to_frequency(interval)
+    expected_index = pd.date_range(start=start_ts, end=end_ts, freq=freq, inclusive="both")
     expected_rows = int(len(expected_index))
-    missing_bars = int(expected_index.difference(cleaned.index).size) if not cleaned.empty else expected_rows
+    # For daily bars, compare date-only to ignore intraday timestamp differences
+    if interval == "1d":
+        cleaned_dates = cleaned.index.normalize() if not cleaned.empty else pd.DatetimeIndex([])
+        missing_bars = int(expected_index.difference(cleaned_dates).size) if not cleaned.empty else expected_rows
+    else:
+        missing_bars = int(expected_index.difference(cleaned.index).size) if not cleaned.empty else expected_rows
     coverage_pct = round((1.0 - missing_bars / max(1, expected_rows)) * 100.0, 4)
 
     if len(cleaned) > 1:

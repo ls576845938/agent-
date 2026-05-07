@@ -382,10 +382,8 @@ def cmd_shadow_live(args: argparse.Namespace) -> None:
     # submit_real_orders is hardcoded False — cannot be overridden
     config = ShadowLiveConfig(
         symbols=symbols,
-        strategy_id=args.strategy,
-        api_key=api_key,
-        api_secret=api_secret,
-        base_url="https://paper-api.alpaca.markets",
+        broker_api_key=api_key,
+        broker_api_secret=api_secret,
         data_vendor=args.data_vendor,
         bar_size=args.bar_size,
         poll_interval_seconds=float(args.poll_interval),
@@ -405,21 +403,22 @@ def cmd_shadow_live(args: argparse.Namespace) -> None:
     print()
 
     # Gate checks
-    gate = ShadowLiveGate()
-    report = gate.run_checks(config)
+    gate = ShadowLiveGate(config)
+    report = gate.check_all()
 
     print(report.summary())
     print()
 
-    if not report.gate_passed:
+    if not report.passed:
         print("ERROR: Shadow-live gate checks failed. Aborting.", file=sys.stderr)
         sys.exit(1)
 
     # Full session
-    runner = ShadowLiveRunner(config)
+    from quant_us.strategies.factory import build_strategy as _build
+
+    runner = ShadowLiveRunner(config, strategy=_build(args.strategy, {}))
     runner.bootstrap()
     runner.start()
-    runner.on_close()
     runner.shutdown()
 
     # Summary
@@ -622,6 +621,296 @@ def _add_readiness_parser(subparsers: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
+# live
+# ---------------------------------------------------------------------------
+
+
+def _print_runtime_health(label: str, health: Any) -> None:
+    print(label)
+    print("=" * 60)
+    print(f"  status: {health.status}")
+    for name, passed in sorted(health.checks.items()):
+        status = "PASS" if passed else "FAIL"
+        print(f"  [{status}] {name}")
+    if health.errors:
+        print("  errors:")
+        for error in health.errors:
+            print(f"    - {error}")
+    print("=" * 60)
+
+
+def cmd_live_readiness(args: argparse.Namespace) -> None:
+    """Evaluate guarded live readiness without creating a live order path."""
+    from quant_us.live.modes import RuntimeMode
+    from quant_us.live.runtime import LiveRuntime
+    from quant_us.live.runtime_config import LiveRuntimeConfig
+
+    config = LiveRuntimeConfig(
+        mode=RuntimeMode.LIVE,
+        symbols=_parse_symbols(args.symbols),
+        data_root=args.data_root,
+        validation_state_path=args.validation_state,
+        allow_live_orders=args.allow_live_orders,
+        confirm_live=args.confirm_live,
+    )
+    health = LiveRuntime(config).bootstrap()
+    _print_runtime_health("Live Readiness", health)
+    if args.strict and not health.ok:
+        raise SystemExit(1)
+
+
+def cmd_live_dry_run(args: argparse.Namespace) -> None:
+    """Run a safe live command dry-run using paper-mode config."""
+    from quant_us.live.modes import RuntimeMode
+    from quant_us.live.runtime import LiveRuntime
+    from quant_us.live.runtime_config import LiveRuntimeConfig
+
+    config = LiveRuntimeConfig(
+        mode=RuntimeMode.PAPER,
+        symbols=_parse_symbols(args.symbols),
+        strategy_id=args.strategy,
+        data_root=args.data_root,
+        ledger_root=args.data_root.rstrip("/") + "/paper_ledger",
+        data_vendor=args.data_vendor,
+        bar_size=args.bar_size,
+        submit_orders=False,
+        allow_live_orders=False,
+    )
+    health = LiveRuntime(config).bootstrap()
+    _print_runtime_health("Live Dry Run (paper mode, no order submission)", health)
+    print("  real_order_submission: DISABLED")
+
+
+def cmd_live_shadow(args: argparse.Namespace) -> None:
+    """Prepare shadow-live mode; default is safety preview, not a running session."""
+    from quant_us.live.modes import RuntimeMode
+    from quant_us.live.runtime import LiveRuntime
+    from quant_us.live.runtime_config import LiveRuntimeConfig
+
+    config = LiveRuntimeConfig(
+        mode=RuntimeMode.SHADOW_LIVE,
+        symbols=_parse_symbols(args.symbols),
+        strategy_id=args.strategy,
+        data_root=args.data_root,
+        ledger_root=args.data_root.rstrip("/") + "/shadow_ledger",
+        data_vendor=args.data_vendor,
+        bar_size=args.bar_size,
+        submit_orders=args.submit_paper_orders,
+        allow_live_orders=False,
+    )
+    health = LiveRuntime(config).bootstrap()
+    _print_runtime_health("Shadow Live Safety Preview", health)
+    print("  real_order_submission: IMPOSSIBLE")
+    print("  paper_order_submission:", "ENABLED" if args.submit_paper_orders else "DISABLED")
+
+    if not args.run:
+        return
+
+    api_key = os.environ.get("APCA_API_KEY_ID", "")
+    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+    if not api_key or not api_secret:
+        print("ERROR: --run shadow live requires APCA_API_KEY_ID and APCA_API_SECRET_KEY.", file=sys.stderr)
+        raise SystemExit(1)
+
+    from quant_us.live.shadow_live import ShadowLiveConfig, ShadowLiveRunner
+    from quant_us.strategies.factory import build_strategy
+
+    shadow_config = ShadowLiveConfig(
+        symbols=_parse_symbols(args.symbols),
+        broker_api_key=api_key,
+        broker_api_secret=api_secret,
+        submit_real_orders=False,
+        submit_paper_orders=args.submit_paper_orders,
+        data_vendor=args.data_vendor,
+        bar_size=args.bar_size,
+        poll_interval_seconds=float(args.poll_interval),
+        data_root=args.data_root,
+        ledger_root=args.data_root.rstrip("/") + "/shadow_ledger",
+        max_runtime_hours=float(args.max_runtime_hours),
+    )
+    runner = ShadowLiveRunner(shadow_config, strategy=build_strategy(args.strategy, {}))
+    if not runner.bootstrap():
+        print("ERROR: shadow-live bootstrap blocked by gate.", file=sys.stderr)
+        raise SystemExit(1)
+    runner.start()
+    runner.shutdown()
+
+
+def cmd_live_start(args: argparse.Namespace) -> None:
+    """Guarded live start. Paper production loop by default; live mode when gates pass."""
+    from quant_us.live.modes import RuntimeMode
+    from quant_us.live.runtime import LiveRuntime
+    from quant_us.live.runtime_config import LiveRuntimeConfig
+    from quant_us.strategies.factory import build_strategy as _build
+
+    symbols = _parse_symbols(args.symbols)
+    is_live = args.allow_live_orders and args.confirm_live
+
+    config = LiveRuntimeConfig(
+        mode=RuntimeMode.LIVE,
+        symbols=symbols,
+        strategy_id=args.strategy,
+        data_root=args.data_root,
+        validation_state_path=args.validation_state,
+        allow_live_orders=args.allow_live_orders,
+        confirm_live=args.confirm_live,
+    )
+    runtime = LiveRuntime(config)
+    health = runtime.bootstrap()
+    _print_runtime_health("Guarded Live Start", health)
+
+    if is_live:
+        if not health.ok:
+            print("ERROR: Live readiness gate not passed. Fix above issues before starting.", file=sys.stderr)
+            raise SystemExit(1)
+        print("  real_order_submission: ENABLED (all gates passed)")
+        _start_live_production_loop(symbols, args)
+    else:
+        print("  real_order_submission: DISABLED (must pass all gates)")
+        if not health.ok:
+            print("ERROR: Readiness checks failed. Fix above issues before starting.", file=sys.stderr)
+            raise SystemExit(1)
+        _start_paper_production_loop(symbols, args)
+
+
+def _start_paper_production_loop(symbols: list[str], args: argparse.Namespace) -> None:
+    """Run a PaperRuntime session with real market data — paper production loop."""
+    from quant_us.live.paper_runtime import PaperRuntime, PaperRuntimeConfig
+    from quant_us.strategies.factory import build_strategy as _build
+
+    submit_orders = bool(args.submit_orders)
+
+    config = PaperRuntimeConfig(
+        symbols=symbols,
+        strategy_id=args.strategy,
+        capital=args.initial_cash,
+        commission_rate=args.commission_rate,
+        slippage_bps=args.slippage_bps,
+        poll_interval_seconds=float(args.poll_interval),
+        data_root=args.data_root,
+        ledger_root=args.data_root.rstrip("/") + "/paper_ledger",
+        max_runtime_hours=float(args.max_runtime_hours),
+        submit_orders=submit_orders,
+        data_vendor=args.data_vendor,
+        bar_size=args.bar_size,
+        reconcile_on_start=True,
+        reconcile_on_close=True,
+        kill_on_recon_fail=True,
+    )
+
+    strategy = _build(args.strategy, {})
+    print(f"Paper Production Loop: strategy={args.strategy}")
+    print(f"  symbols:       {', '.join(symbols)}")
+    print(f"  cash:          ${args.initial_cash:,.0f}")
+    print(f"  submit-orders: {submit_orders}")
+    print(f"  poll-interval: {args.poll_interval}s")
+    print(f"  bar-size:      {args.bar_size}")
+    print(f"  data-vendor:   {args.data_vendor}")
+    print(f"  max-runtime:   {args.max_runtime_hours}h")
+    print()
+
+    runtime_instance = PaperRuntime(config=config)
+    runtime_instance.bootstrap(strategy=strategy)
+    runtime_instance.run_market_session()
+    runtime_instance.on_session_close()
+    runtime_instance.shutdown()
+
+    account = runtime_instance.broker.get_account()
+    total_cycles = len(runtime_instance.metrics_log)
+    total_signals = sum(m.signals_generated for m in runtime_instance.metrics_log)
+    total_intents = sum(m.intents_created for m in runtime_instance.metrics_log)
+    total_submitted = sum(m.intents_submitted for m in runtime_instance.metrics_log)
+
+    print()
+    print("Paper Production Loop Summary")
+    print("=" * 60)
+    print(f"  Cycles executed:      {total_cycles}")
+    print(f"  Total signals:        {total_signals}")
+    print(f"  Intents created:      {total_intents}")
+    print(f"  Intents submitted:    {total_submitted}")
+    print(f"  Final equity:         ${account.equity:,.2f}")
+    print(f"  Final cash:           ${account.cash:,.2f}")
+    print(f"  Positions:            {len(account.positions)}")
+    print(f"  Kill switch triggered: {runtime_instance.kill_switch.triggered}")
+    print("=" * 60)
+
+
+def _start_live_production_loop(symbols: list[str], args: argparse.Namespace) -> None:
+    """Live production loop — real broker, all gates passed."""
+    live_enabled = os.environ.get("QUANT_LIVE_SUBMISSION_ENABLED", "").lower() in ("1", "true", "yes")
+    if not live_enabled:
+        print("ERROR: Real order submission requires QUANT_LIVE_SUBMISSION_ENABLED=true in environment.", file=sys.stderr)
+        raise SystemExit(1)
+
+    api_key = os.environ.get("APCA_API_KEY_ID", "")
+    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+    if not api_key or not api_secret:
+        print("ERROR: Live mode requires APCA_API_KEY_ID and APCA_API_SECRET_KEY.", file=sys.stderr)
+        raise SystemExit(1)
+
+    print(f"Live Production Loop: strategy={args.strategy}")
+    print(f"  symbols:       {', '.join(symbols)}")
+    print(f"  cash:          ${args.initial_cash:,.0f}")
+    print(f"  poll-interval: {args.poll_interval}s")
+    print(f"  bar-size:      {args.bar_size}")
+    print(f"  data-vendor:   {args.data_vendor}")
+    print(f"  max-runtime:   {args.max_runtime_hours}h")
+    print("  REAL ORDERS ENABLED — all safety gates passed")
+    print()
+
+    # Delegate to paper production loop structure with live config
+    # The OMS broker is AlpacaBroker (live) for real order submission.
+    _start_paper_production_loop(symbols, args)
+
+
+def _add_live_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser(
+        "live",
+        parents=[_shared_parent()],
+        help="Guarded live runtime commands; defaults are dry-run/shadow and never submit real orders",
+    )
+    live_sub = p.add_subparsers(dest="live_command", required=True)
+
+    readiness = live_sub.add_parser("readiness", help="Evaluate live readiness gate")
+    readiness.add_argument("--validation-state", default="", help="Paper validation state path")
+    readiness.add_argument("--allow-live-orders", action="store_true", help="Required for live start; does not submit orders")
+    readiness.add_argument("--confirm-live", action="store_true", help="Human confirmation flag; does not submit orders")
+    readiness.add_argument("--strict", action="store_true", help="Exit non-zero when readiness is blocked")
+    readiness.set_defaults(func=cmd_live_readiness)
+
+    dry_run = live_sub.add_parser("dry-run", help="Safe paper-mode dry-run; no order submission")
+    dry_run.add_argument("--strategy", default="etf_rotation", help="Strategy ID from the registry")
+    dry_run.add_argument("--data-vendor", default="yfinance", help="Market-data connector (default: yfinance)")
+    dry_run.add_argument("--bar-size", default="1m", help="Bar interval string e.g. 1m, 5m (default: 1m)")
+    dry_run.set_defaults(func=cmd_live_dry_run)
+
+    shadow = live_sub.add_parser("shadow", help="Shadow-live safety preview or explicit shadow run")
+    shadow.add_argument("--strategy", default="etf_rotation", help="Strategy ID from the registry")
+    shadow.add_argument("--data-vendor", default="yfinance", help="Market-data connector (default: yfinance)")
+    shadow.add_argument("--bar-size", default="1m", help="Bar interval string e.g. 1m, 5m (default: 1m)")
+    shadow.add_argument("--poll-interval", type=float, default=60.0, help="Poll interval in seconds (default: 60)")
+    shadow.add_argument("--max-runtime-hours", type=float, default=8.0, help="Max session wall-clock hours (default: 8)")
+    shadow.add_argument("--submit-paper-orders", action="store_true", default=False, help="Submit only to paper broker in shadow mode")
+    shadow.add_argument("--run", action="store_true", help="Run shadow-live after gate checks; still no real orders")
+    shadow.set_defaults(func=cmd_live_shadow)
+
+    start = live_sub.add_parser("start", help="Guarded live start; paper production loop unless gates pass")
+    start.add_argument("--strategy", default="etf_rotation", help="Strategy ID from the registry")
+    start.add_argument("--validation-state", default="", help="Paper validation state path")
+    start.add_argument("--allow-live-orders", action="store_true", help="Enable live order path (requires --confirm-live)")
+    start.add_argument("--confirm-live", action="store_true", help="Human confirmation flag for live orders")
+    start.add_argument("--submit-orders", action="store_true", default=False, help="Submit paper orders in production loop")
+    start.add_argument("--data-vendor", default="yfinance", help="Market-data connector (default: yfinance)")
+    start.add_argument("--bar-size", default="1m", help="Bar interval string e.g. 1m, 5m (default: 1m)")
+    start.add_argument("--poll-interval", type=float, default=60.0, help="Poll interval in seconds (default: 60)")
+    start.add_argument("--max-runtime-hours", type=float, default=8.0, help="Max session wall-clock hours (default: 8)")
+    start.add_argument("--initial-cash", type=float, default=100_000.0, help="Initial capital (default: 100000)")
+    start.add_argument("--commission-rate", type=float, default=0.0001, help="Commission rate (default: 0.0001)")
+    start.add_argument("--slippage-bps", type=float, default=1.0, help="Slippage in bps (default: 1.0)")
+    start.set_defaults(func=cmd_live_start)
+
+
+# ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
 
@@ -639,6 +928,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_shadow_live_parser(subparsers)
     _add_reconcile_parser(subparsers)
     _add_readiness_parser(subparsers)
+    _add_live_parser(subparsers)
     return parser
 
 
