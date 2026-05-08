@@ -430,6 +430,50 @@ def cmd_paper_start(args: argparse.Namespace) -> None:
     print("=" * 60 + "\n")
 
 
+def cmd_paper_resume(args: argparse.Namespace) -> None:
+    """Resume paper production from saved state."""
+    from quant_us.live.paper_orchestrator import PaperProductionOrchestrator
+
+    orch = PaperProductionOrchestrator(
+        symbols=[], data_root=args.data_root,
+        run_id=args.run_id if args.run_id else None,
+    )
+    result = orch.resume()
+    print()
+    print("=" * 60)
+    print("  Paper Resume Result")
+    print("=" * 60)
+    print(f"  Status: {result.get('status', 'unknown')}")
+    if result.get("error"):
+        print(f"  Error:  {result['error']}")
+    print("=" * 60)
+
+
+def cmd_paper_audit(args: argparse.Namespace) -> None:
+    """Audit paper run journal."""
+    from quant_us.live.paper_orchestrator import PaperRunJournal
+    from pathlib import Path
+
+    journal_path = Path(args.data_root) / "paper_ledger" / "run_journal.jsonl"
+    journal = PaperRunJournal(journal_path)
+    entries = journal.read_all(run_id=args.run_id if args.run_id else None)
+
+    print()
+    print("=" * 60)
+    print(f"  Paper Run Journal — {len(entries)} entries")
+    print("=" * 60)
+    if not entries:
+        print("  No journal entries found.")
+    for e in entries[-20:]:  # Show last 20
+        print(f"  [{e['entry_type']:12s}] {e['timestamp'][:19]}  run={e.get('run_id','?')}")
+        if e.get("data"):
+            for k, v in e["data"].items():
+                if k in ("error", "reason", "status", "note"):
+                    print(f"    {k}: {v}")
+    print("=" * 60)
+    print()
+
+
 def _cmd_paper_run(symbols: list[str], args: argparse.Namespace) -> None:
     """Execute a full paper trading session."""
     # Build strategy
@@ -540,8 +584,20 @@ def _add_paper_parser(subparsers: Any) -> None:
     start.add_argument("--initial-cash", type=float, default=100_000.0, help="Initial capital")
     start.add_argument("--commission-rate", type=float, default=0.0001, help="Commission rate")
     start.add_argument("--slippage-bps", type=float, default=1.0, help="Slippage in bps")
-    start.add_argument("--enable-paper-orders", action="store_true", default=False, help="Submit orders to Alpaca Paper (default: dry-run, no orders)")
+    start.add_argument("--enable-paper-orders", action="store_true", default=False, help="Submit orders to Alpaca Paper (default: dry-run)")
     start.set_defaults(func=cmd_paper_start)
+
+    # paper resume
+    resume = paper_sub.add_parser("resume", help="Resume paper production from saved state")
+    resume.add_argument("--run-id", default="", help="Run ID to resume")
+    resume.add_argument("--data-root", default="data", help="Data root path")
+    resume.set_defaults(func=cmd_paper_resume)
+
+    # paper audit
+    audit = paper_sub.add_parser("audit", help="Audit paper run journal")
+    audit.add_argument("--run-id", default="", help="Filter by run ID (default: latest)")
+    audit.add_argument("--data-root", default="data", help="Data root path")
+    audit.set_defaults(func=cmd_paper_audit)
 
     p.set_defaults(func=cmd_paper)
 
