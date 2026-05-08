@@ -464,12 +464,148 @@ def cmd_paper_audit(args: argparse.Namespace) -> None:
     print("=" * 60)
     if not entries:
         print("  No journal entries found.")
-    for e in entries[-20:]:  # Show last 20
+    for e in entries[-20:]:
         print(f"  [{e['entry_type']:12s}] {e['timestamp'][:19]}  run={e.get('run_id','?')}")
         if e.get("data"):
             for k, v in e["data"].items():
                 if k in ("error", "reason", "status", "note"):
                     print(f"    {k}: {v}")
+    print("=" * 60)
+    print()
+
+
+def cmd_paper_status(args: argparse.Namespace) -> None:
+    """Show paper production status."""
+    from quant_us.live.paper_orchestrator import PaperRunStateStore, ValidationStateController
+    from pathlib import Path
+
+    data_root = Path(args.data_root)
+    state_path = data_root / "paper_ledger" / "run_state.json"
+    validation_path = data_root / "reports" / "paper_production" / "validation_state.json"
+
+    state_store = PaperRunStateStore(state_path)
+    val_ctrl = ValidationStateController(validation_path)
+
+    state = state_store.load()
+    val = val_ctrl.load()
+
+    print()
+    print("=" * 60)
+    print("  Paper Production Status")
+    print("=" * 60)
+    print(f"  Run ID:           {state.run_id if state else 'none'}")
+    print(f"  Trading Day:      {state.trading_day if state else 0}")
+    print(f"  Last Step:        {state.last_step if state else 'n/a'}")
+    print(f"  Kill Switch:      {'TRIGGERED' if state and state.kill_switch_triggered else 'ok'}")
+    print(f"  Recovery Needed:  {state.recovery_required if state else False}")
+    print()
+    print(f"  Validation:       {val.days_completed}/{val.days_target} days")
+    print(f"  Clean Days:       {val.clean_days}")
+    print(f"  Recon:            {val.recon_pass_count} pass / {val.recon_fail_count} fail")
+    print(f"  Orders:           {val.order_submitted_count} submitted / {val.fill_count} filled")
+    print(f"  Duplicates:       {val.duplicate_order_count}")
+    print(f"  Broker Errors:    {val.broker_error_count}")
+    print(f"  Manual Review:    {val.manual_review_required}")
+    print(f"  Status:           {val.current_status or 'in_progress'}")
+    print(f"  Invalidated:      {val.invalidated}")
+    if val.invalidated:
+        print(f"  Invalid Reason:   {val.invalidated_reason}")
+    print("=" * 60)
+    print()
+
+
+def cmd_paper_stop(args: argparse.Namespace) -> None:
+    """Stop paper production safely."""
+    from quant_us.live.paper_orchestrator import PaperRunStateStore
+    from pathlib import Path
+
+    data_root = Path(args.data_root)
+    state_path = data_root / "paper_ledger" / "run_state.json"
+    store = PaperRunStateStore(state_path)
+    state = store.load()
+
+    print()
+    print("=" * 60)
+    print("  Paper Stop")
+    print("=" * 60)
+    if state is None:
+        print("  No active run state found. Nothing to stop.")
+    else:
+        state.recovery_required = True
+        state.last_step = "stopped_manually"
+        store.save(state)
+        print(f"  Run ID:       {state.run_id}")
+        print(f"  Stopped at:   day {state.trading_day}, step '{state.last_step}'")
+        print(f"  Recovery:     required before resume")
+        print(f"  Next action:  run 'paper resume --run-id {state.run_id}' after review")
+    print("=" * 60)
+    print()
+
+
+def cmd_paper_report(args: argparse.Namespace) -> None:
+    """Show paper daily report."""
+    from pathlib import Path
+    import json
+
+    data_root = Path(args.data_root)
+    report_dir = data_root / "paper_ledger" / "daily_reports"
+
+    print()
+    print("=" * 60)
+    if args.latest or not args.date:
+        reports = sorted(report_dir.glob("daily_report_*.json"), reverse=True)
+        if not reports:
+            print("  No daily reports found.")
+            print("=" * 60 + "\n")
+            return
+        path = reports[0]
+        print(f"  Latest Daily Report: {path.name}")
+    else:
+        path = report_dir / f"daily_report_{args.date}.json"
+        if not path.exists():
+            print(f"  Report not found: {path.name}")
+            print("=" * 60 + "\n")
+            return
+        print(f"  Daily Report: {path.name}")
+
+    try:
+        data = json.loads(path.read_text())
+        print(f"  Date:           {data.get('date', '?')}")
+        print(f"  Equity:         ${data.get('ending_equity', 0):,.2f}")
+        print(f"  PnL:            ${data.get('daily_pnl', 0):+,.2f}")
+        print(f"  Orders:         {data.get('orders_submitted', 0)} sub / {data.get('orders_filled', 0)} fill")
+        print(f"  Recon:          {data.get('reconciliation_status', '?')}")
+        print(f"  Kill Switch:    {'TRIGGERED' if data.get('kill_switch_triggered') else 'ok'}")
+        if data.get('errors'):
+            print(f"  Errors:         {data['errors']}")
+    except Exception:
+        print(f"  (unable to parse report)")
+    print("=" * 60)
+    print()
+
+
+def cmd_paper_incidents(args: argparse.Namespace) -> None:
+    """Show paper incident log."""
+    from quant_us.live.paper_orchestrator import PaperRunJournal
+    from pathlib import Path
+
+    journal_path = Path(args.data_root) / "paper_ledger" / "run_journal.jsonl"
+    journal = PaperRunJournal(journal_path)
+    entries = journal.read_all()
+    incidents = [e for e in entries if e["entry_type"] == "incident"]
+
+    print()
+    print("=" * 60)
+    print(f"  Paper Incidents — {len(incidents)} total")
+    print("=" * 60)
+    if not incidents:
+        print("  No incidents recorded.")
+    for e in incidents[-10:]:
+        d = e.get("data", {})
+        print(f"  [{d.get('severity', '?')}] {e['timestamp'][:19]}")
+        print(f"    category: {d.get('category', '?')}")
+        print(f"    error:    {d.get('error', d.get('reason', '?'))}")
+        print(f"    review:   {d.get('requires_manual_review', False)}")
     print("=" * 60)
     print()
 
@@ -598,6 +734,30 @@ def _add_paper_parser(subparsers: Any) -> None:
     audit.add_argument("--run-id", default="", help="Filter by run ID (default: latest)")
     audit.add_argument("--data-root", default="data", help="Data root path")
     audit.set_defaults(func=cmd_paper_audit)
+
+    # paper status
+    status_cmd = paper_sub.add_parser("status", help="Show paper production status")
+    status_cmd.add_argument("--data-root", default="data", help="Data root path")
+    status_cmd.set_defaults(func=cmd_paper_status)
+
+    # paper stop
+    stop_cmd = paper_sub.add_parser("stop", help="Stop paper production safely")
+    stop_cmd.add_argument("--run-id", default="", help="Run ID to stop")
+    stop_cmd.add_argument("--data-root", default="data", help="Data root path")
+    stop_cmd.set_defaults(func=cmd_paper_stop)
+
+    # paper report
+    report_cmd = paper_sub.add_parser("report", help="Show paper daily report")
+    report_cmd.add_argument("--latest", action="store_true", help="Show latest report")
+    report_cmd.add_argument("--date", default="", help="Show report for date YYYY-MM-DD")
+    report_cmd.add_argument("--data-root", default="data", help="Data root path")
+    report_cmd.set_defaults(func=cmd_paper_report)
+
+    # paper incidents
+    incidents_cmd = paper_sub.add_parser("incidents", help="Show paper incident log")
+    incidents_cmd.add_argument("--latest", action="store_true", help="Show latest incidents")
+    incidents_cmd.add_argument("--data-root", default="data", help="Data root path")
+    incidents_cmd.set_defaults(func=cmd_paper_incidents)
 
     p.set_defaults(func=cmd_paper)
 

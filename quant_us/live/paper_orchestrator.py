@@ -1,8 +1,12 @@
-"""Paper Production Orchestrator — G0: production-grade paper trading with audit trail.
+"""Paper Production Orchestrator — G0/G1: production-grade paper trading with audit trail.
 
 Wraps PaperRuntime with:
   - run journal (JSONL audit trail)
   - state persistence for recovery
+  - strategy whitelist enforcement
+  - paper order limits (max notional, daily count, exposure)
+  - 30-day validation state controller
+  - pre-flight checks (credentials, readiness, smoke test)
   - strategy whitelist enforcement
   - pre-flight checks (credentials, readiness, smoke test)
 """
@@ -182,6 +186,151 @@ class PaperRunStateStore:
 # ---------------------------------------------------------------------------
 # Paper Production Orchestrator
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Paper Order Limits (G1)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class PaperOrderLimits:
+    """Safety limits for paper order submission."""
+    max_daily_paper_order_count: int = 5
+    max_paper_order_notional: float = 1000.0
+    max_daily_paper_notional: float = 3000.0
+    max_gross_exposure: float = 0.20
+    max_single_symbol_position_pct: float = 0.10
+    _daily_count: int = field(default=0, repr=False)
+    _daily_notional: float = field(default=0.0, repr=False)
+
+    def check_order(self, notional: float) -> dict[str, Any]:
+        """Check if an order exceeds limits. Returns error dict or empty dict."""
+        if self._daily_count >= self.max_daily_paper_order_count:
+            return {"error": f"daily order count limit exceeded ({self._daily_count}/{self.max_daily_paper_order_count})"}
+        if self._daily_notional + notional > self.max_daily_paper_notional:
+            return {"error": f"daily notional limit exceeded (${self._daily_notional + notional:,.0f}/${self.max_daily_paper_notional:,.0f})"}
+        if notional > self.max_paper_order_notional:
+            return {"error": f"order notional exceeds max (${notional:,.0f}/${self.max_paper_order_notional:,.0f})"}
+        return {}
+
+    def record_order(self, notional: float) -> None:
+        self._daily_count += 1
+        self._daily_notional += notional
+
+    def reset_daily(self) -> None:
+        self._daily_count = 0
+        self._daily_notional = 0.0
+
+
+# ---------------------------------------------------------------------------
+# 30-Day Validation State (G1)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Paper30DayValidationState:
+    """Tracks 30-day paper production validation progress."""
+    run_id: str = ""
+    started_at: str = ""
+    updated_at: str = ""
+    profile: str = "paper"
+    symbols: list[str] = field(default_factory=list)
+    strategy_id: str = ""
+    strategy_version: str = ""
+    days_target: int = 30
+    days_completed: int = 0
+    clean_days: int = 0
+    warn_days: int = 0
+    failed_days: int = 0
+    recon_pass_count: int = 0
+    recon_fail_count: int = 0
+    order_submitted_count: int = 0
+    fill_count: int = 0
+    duplicate_order_count: int = 0
+    broker_error_count: int = 0
+    data_stale_count: int = 0
+    kill_switch_event_count: int = 0
+    manual_review_required: bool = False
+    current_status: str = ""  # "in_progress", "passed", "blocked"
+    invalidated: bool = False
+    invalidated_reason: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "run_id": self.run_id, "started_at": self.started_at,
+            "updated_at": self.updated_at, "profile": self.profile,
+            "symbols": self.symbols, "strategy_id": self.strategy_id,
+            "strategy_version": self.strategy_version, "days_target": self.days_target,
+            "days_completed": self.days_completed, "clean_days": self.clean_days,
+            "warn_days": self.warn_days, "failed_days": self.failed_days,
+            "recon_pass_count": self.recon_pass_count, "recon_fail_count": self.recon_fail_count,
+            "order_submitted_count": self.order_submitted_count,
+            "fill_count": self.fill_count, "duplicate_order_count": self.duplicate_order_count,
+            "broker_error_count": self.broker_error_count,
+            "data_stale_count": self.data_stale_count,
+            "kill_switch_event_count": self.kill_switch_event_count,
+            "manual_review_required": self.manual_review_required,
+            "current_status": self.current_status,
+            "invalidated": self.invalidated,
+            "invalidated_reason": self.invalidated_reason,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> "Paper30DayValidationState":
+        return cls(
+            run_id=d.get("run_id", ""), started_at=d.get("started_at", ""),
+            updated_at=d.get("updated_at", ""), profile=d.get("profile", "paper"),
+            symbols=d.get("symbols", []), strategy_id=d.get("strategy_id", ""),
+            strategy_version=d.get("strategy_version", ""),
+            days_target=d.get("days_target", 30),
+            days_completed=d.get("days_completed", 0),
+            clean_days=d.get("clean_days", 0), warn_days=d.get("warn_days", 0),
+            failed_days=d.get("failed_days", 0),
+            recon_pass_count=d.get("recon_pass_count", 0),
+            recon_fail_count=d.get("recon_fail_count", 0),
+            order_submitted_count=d.get("order_submitted_count", 0),
+            fill_count=d.get("fill_count", 0),
+            duplicate_order_count=d.get("duplicate_order_count", 0),
+            broker_error_count=d.get("broker_error_count", 0),
+            data_stale_count=d.get("data_stale_count", 0),
+            kill_switch_event_count=d.get("kill_switch_event_count", 0),
+            manual_review_required=d.get("manual_review_required", False),
+            current_status=d.get("current_status", ""),
+            invalidated=d.get("invalidated", False),
+            invalidated_reason=d.get("invalidated_reason", ""),
+        )
+
+    def is_passing(self) -> bool:
+        return (self.clean_days >= 30 and self.recon_fail_count == 0
+                and self.duplicate_order_count == 0 and not self.manual_review_required)
+
+
+class ValidationStateController:
+    """Manages the 30-day paper production validation state file."""
+
+    def __init__(self, path: str | Path) -> None:
+        self.path = Path(path)
+
+    def load(self) -> Paper30DayValidationState:
+        if not self.path.exists():
+            return Paper30DayValidationState()
+        try:
+            return Paper30DayValidationState.from_dict(json.loads(self.path.read_text()))
+        except (json.JSONDecodeError, KeyError):
+            return Paper30DayValidationState()
+
+    def save(self, state: Paper30DayValidationState) -> None:
+        state.updated_at = datetime.now(timezone.utc).isoformat()
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = self.path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(state.to_dict(), indent=2, default=str))
+        tmp.replace(self.path)
+
+    def invalidate(self, reason: str) -> None:
+        state = self.load()
+        state.invalidated = True
+        state.invalidated_reason = reason
+        state.current_status = "invalidated"
+        self.save(state)
+
 
 class PaperProductionOrchestrator:
     """Production-grade paper trading orchestrator with audit trail and recovery.
