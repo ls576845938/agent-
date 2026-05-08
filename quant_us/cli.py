@@ -261,6 +261,175 @@ def _cmd_paper_ready(symbols: list[str], args: argparse.Namespace) -> None:
     print(f"  status:   {loop.status_summary()}")
 
 
+def cmd_paper_smoke_test(args: argparse.Namespace) -> None:
+    """Paper smoke test: read-only broker check + signal calc + intent gen. No orders submitted."""
+    import json
+    from datetime import datetime, timezone
+
+    symbols = _parse_symbols(args.symbols)
+    api_key = os.environ.get("APCA_API_KEY_ID", "")
+    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+
+    print()
+    print("=" * 60)
+    print("  Alpaca Paper Smoke Test")
+    print("=" * 60)
+
+    if not api_key or not api_secret:
+        print("  RESULT: BLOCKED — APCA_API_KEY_ID or APCA_API_SECRET_KEY not set")
+        print("=" * 60)
+        return
+
+    print(f"  Key ID:       {_mask_key(api_key)}")
+    print(f"  Profile:      paper")
+    print(f"  Symbols:      {', '.join(symbols)}")
+    print(f"  real_order_submission: DISABLED")
+    print(f"  would_submit_orders: false")
+    print()
+
+    try:
+        from quant_us.execution.alpaca_broker import AlpacaBroker, AlpacaBrokerConfig, PAPER_BASE_URL
+
+        config = AlpacaBrokerConfig(api_key=api_key, api_secret=api_secret, paper=True)
+        if PAPER_BASE_URL not in config.base_url:
+            print(f"  RESULT: BLOCKED — base_url not paper endpoint ({PAPER_BASE_URL})")
+            print("=" * 60)
+            return
+
+        broker = AlpacaBroker(config)
+
+        # Step 1: Account check
+        account = broker.get_account()
+        aid = account.account_id
+        print(f"  [1/5] Account:  {aid[:4]}...{aid[-4:] if len(aid) > 8 else aid}")
+        print(f"         Equity=${account.equity:,.2f} Cash=${account.cash:,.2f} BP=${account.buying_power:,.2f}")
+
+        # Step 2: Positions
+        positions = broker.get_positions()
+        print(f"  [2/5] Positions: {len(positions)} ({', '.join(list(positions.keys())[:5]) or 'none'})")
+
+        # Step 3: Open orders
+        orders = broker.get_orders()
+        print(f"  [3/5] Open Orders: {len(orders)}")
+
+        # Step 4: Market data
+        from quant_us.data.connectors.yfinance_data import YFinanceDataConnector, YFinanceDataConfig
+        connector = YFinanceDataConnector(YFinanceDataConfig())
+        end = datetime.now(timezone.utc)
+        start = end - __import__('datetime').timedelta(days=5)
+        frames = {}
+        for sym in symbols:
+            df = connector.fetch_bars(sym, start, end, args.bar_size)
+            if not df.empty:
+                frames[sym] = df
+        bar_count = sum(len(f) for f in frames.values())
+        print(f"  [4/5] Market Data: {bar_count} bars for {len(frames)}/{len(symbols)} symbols")
+
+        # Step 5: Signal calc + intent gen (no submission)
+        from quant_us.strategies.factory import build_strategy
+        from quant_us.core.types import Bar
+        from quant_us.core.events import MarketEvent
+        from quant_us.strategies.base import StrategyContext
+        strategy = build_strategy(args.strategy, {})
+        signal_count = 0
+        for sym, df in frames.items():
+            for _, row in df.iterrows():
+                bar = Bar(timestamp_utc=row.name.to_pydatetime(), symbol=sym,
+                          open=float(row["open"]), high=float(row["high"]),
+                          low=float(row["low"]), close=float(row["close"]),
+                          volume=float(row.get("volume", 0)))
+                ctx = StrategyContext(run_id="smoke", account=account,
+                                     market_prices={sym: float(bar.close)}, universe=[sym])
+                signals = list(strategy.on_bar(MarketEvent.from_bar(bar), ctx))
+                signal_count += len(signals)
+        print(f"  [5/5] Signals: {signal_count} generated for {args.strategy}")
+
+        print()
+        print(f"  RESULT: PASS — All 5 smoke test steps completed")
+        print(f"  No orders were submitted. Paper infrastructure ready.")
+    except Exception as exc:
+        print(f"  RESULT: BLOCKED — {exc}")
+    print("=" * 60)
+    print()
+
+
+def cmd_paper_start(args: argparse.Namespace) -> None:
+    """Start paper production loop with safety gates."""
+    symbols = _parse_symbols(args.symbols)
+    enable_orders = args.enable_paper_orders
+    api_key = os.environ.get("APCA_API_KEY_ID", "")
+    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+
+    print()
+    print("=" * 60)
+    print("  Paper Production Start")
+    print("=" * 60)
+    print(f"  Symbols:      {', '.join(symbols)}")
+    print(f"  Strategy:     {args.strategy}")
+    print(f"  Bar Size:     {args.bar_size}")
+    print(f"  Enable Orders: {enable_orders}")
+    print()
+
+    # Safety gates
+    if not api_key or not api_secret:
+        print("  RESULT: BLOCKED — APCA_API_KEY_ID or APCA_API_SECRET_KEY not set")
+        print("=" * 60 + "\n")
+        return
+
+    try:
+        from quant_us.execution.alpaca_broker import AlpacaBrokerConfig, PAPER_BASE_URL
+
+        # Gate 1: Endpoint check
+        config = AlpacaBrokerConfig(api_key=api_key, api_secret=api_secret, paper=True)
+        if PAPER_BASE_URL not in config.base_url:
+            print(f"  RESULT: BLOCKED — base_url is not paper endpoint")
+            print("=" * 60 + "\n")
+            return
+
+        # Gate 2: Readiness check
+        from quant_us.reports.live_readiness import LiveReadinessGate
+        gate = LiveReadinessGate()
+        report = gate.check_all(profile="paper")
+        if not report.is_ready():
+            failed = [c.name for c in report.checks if not c.passed and not c.warn]
+            print(f"  RESULT: BLOCKED — readiness not passed. Failures: {failed}")
+            print("=" * 60 + "\n")
+            return
+        print("  [GATE] readiness: PASS")
+
+        # Gate 3: Real order guard
+        live_enabled = os.environ.get("QUANT_LIVE_SUBMISSION_ENABLED", "").lower() in ("1", "true", "yes")
+        if live_enabled:
+            print("  RESULT: BLOCKED — QUANT_LIVE_SUBMISSION_ENABLED is set. Paper profile must not use live.")
+            print("=" * 60 + "\n")
+            return
+        print("  [GATE] live_submission: DISABLED")
+
+        if enable_orders:
+            print()
+            print(f"  Paper orders ENABLED — will submit to Alpaca Paper API")
+            print(f"  Endpoint: {PAPER_BASE_URL}")
+            print(f"  WARNING: This will create real paper orders on Alpaca.")
+            print(f"  To proceed, re-run with --enable-paper-orders flag.")
+            print()
+            # Delegate to paper production loop
+            _start_paper_production_loop(symbols, args)
+        else:
+            print()
+            print(f"  Dry-run mode — orders will NOT be submitted.")
+            print(f"  To enable paper orders, re-run with: --enable-paper-orders")
+            print(f"  Running smoke test instead...")
+            # Run smoke test for dry-run mode
+            smoke_args = argparse.Namespace(
+                symbols=args.symbols, strategy=args.strategy,
+                bar_size=args.bar_size, data_vendor=args.data_vendor,
+            )
+            cmd_paper_smoke_test(smoke_args)
+    except Exception as exc:
+        print(f"  RESULT: BLOCKED — {exc}")
+    print("=" * 60 + "\n")
+
+
 def _cmd_paper_run(symbols: list[str], args: argparse.Namespace) -> None:
     """Execute a full paper trading session."""
     # Build strategy
@@ -341,17 +510,39 @@ def _cmd_paper_run(symbols: list[str], args: argparse.Namespace) -> None:
 
 def _add_paper_parser(subparsers: Any) -> None:
     p = subparsers.add_parser("paper", parents=[_shared_parent()], help="Run paper trading loop or session")
-    p.add_argument("--strategy", required=True, help="Strategy ID from the registry")
+    paper_sub = p.add_subparsers(dest="paper_command")
+    # Default no-subcommand: readiness-only check
+    p.add_argument("--strategy", default="etf_rotation", help="Strategy ID from the registry")
     p.add_argument("--broker", default="simulated", choices=["simulated", "alpaca"], help="Broker backend (default: simulated)")
     p.add_argument("--initial-cash", type=float, default=100_000.0, help="Initial capital (default: 100000)")
     p.add_argument("--commission-rate", type=float, default=0.0001, help="Commission rate (default: 0.0001)")
     p.add_argument("--slippage-bps", type=float, default=1.0, help="Slippage in bps (default: 1.0)")
-    p.add_argument("--run", action="store_true", help="Execute the full paper trading session (not just readiness)")
-    p.add_argument("--submit-orders", action="store_true", default=False, help="Submit orders to the broker (default: dry-run)")
+    p.add_argument("--run", action="store_true", help="Execute the full paper trading session")
+    p.add_argument("--submit-orders", action="store_true", default=False, help="Submit orders to broker (default: dry-run)")
     p.add_argument("--max-runtime-hours", type=float, default=8.0, help="Max session wall-clock hours (default: 8)")
-    p.add_argument("--poll-interval", type=float, default=60.0, help="Market-data poll interval in seconds (default: 60)")
-    p.add_argument("--bar-size", default="1m", help="Bar interval string e.g. 1m, 5m (default: 1m)")
+    p.add_argument("--poll-interval", type=float, default=60.0, help="Poll interval in seconds (default: 60)")
+    p.add_argument("--bar-size", default="1m", help="Bar interval string e.g. 1m, 5m")
     p.add_argument("--data-vendor", default="yfinance", help="Market-data connector (default: yfinance)")
+
+    # paper smoke-test
+    smoke = paper_sub.add_parser("smoke-test", help="Read-only paper smoke test — no orders submitted")
+    smoke.add_argument("--symbols", default="SPY,QQQ,IWM,DIA", help="Symbols to test")
+    smoke.add_argument("--strategy", default="trend_momentum", help="Strategy ID")
+    smoke.add_argument("--bar-size", default="1d", help="Bar interval")
+    smoke.set_defaults(func=cmd_paper_smoke_test)
+
+    # paper start
+    start = paper_sub.add_parser("start", help="Start paper production loop")
+    start.add_argument("--symbols", default="SPY,QQQ,IWM,DIA", help="Symbols to trade")
+    start.add_argument("--strategy", default="trend_momentum", help="Strategy ID")
+    start.add_argument("--bar-size", default="1d", help="Bar interval")
+    start.add_argument("--data-vendor", default="yfinance", help="Market-data connector")
+    start.add_argument("--initial-cash", type=float, default=100_000.0, help="Initial capital")
+    start.add_argument("--commission-rate", type=float, default=0.0001, help="Commission rate")
+    start.add_argument("--slippage-bps", type=float, default=1.0, help="Slippage in bps")
+    start.add_argument("--enable-paper-orders", action="store_true", default=False, help="Submit orders to Alpaca Paper (default: dry-run, no orders)")
+    start.set_defaults(func=cmd_paper_start)
+
     p.set_defaults(func=cmd_paper)
 
 

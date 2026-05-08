@@ -178,12 +178,12 @@ class CliPaperTests(unittest.TestCase):
         self.assertIn("--broker", help_text)
         self.assertIn("--strategy", help_text)
 
-    def test_paper_requires_strategy(self) -> None:
+    def test_paper_strategy_defaults(self) -> None:
         parser = build_parser()
         sub = parser._subparsers._group_actions[0]
         pp_parser = sub.choices["paper"]
-        with self.assertRaises(SystemExit):
-            pp_parser.parse_args(["--broker", "simulated"])
+        args = pp_parser.parse_args(["--broker", "simulated"])
+        self.assertEqual(args.strategy, "etf_rotation")
 
 
 class CliReconcileTests(unittest.TestCase):
