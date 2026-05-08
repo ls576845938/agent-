@@ -530,6 +530,59 @@ def _add_reconcile_parser(subparsers: Any) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _mask_key(key: str) -> str:
+    """Return masked key showing only last 4 characters."""
+    if len(key) <= 4:
+        return "****"
+    return "*" * (len(key) - 4) + key[-4:]
+
+
+def _check_alpaca_credentials(profile: str) -> None:
+    """Run detailed Alpaca Paper credential check. Does NOT submit orders."""
+    import os
+
+    api_key = os.environ.get("APCA_API_KEY_ID", "")
+    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+
+    print()
+    print("=" * 60)
+    print("  Alpaca Paper Credential Check")
+    print("=" * 60)
+
+    if not api_key or not api_secret:
+        print("  RESULT: BLOCKED — APCA_API_KEY_ID or APCA_API_SECRET_KEY not set")
+        print("=" * 60 + "\n")
+        return
+
+    print(f"  Key ID:    {_mask_key(api_key)}")
+    print(f"  Secret:    {_mask_key(api_secret)}")
+
+    try:
+        from quant_us.execution.alpaca_broker import AlpacaBroker, AlpacaBrokerConfig, PAPER_BASE_URL
+
+        config = AlpacaBrokerConfig(api_key=api_key, api_secret=api_secret, paper=True)
+        if PAPER_BASE_URL not in config.base_url:
+            print(f"  Endpoint:  {config.base_url}")
+            print("  RESULT: BLOCKED — base_url is not paper endpoint")
+            print("=" * 60 + "\n")
+            return
+
+        print(f"  Endpoint:  {config.base_url}")
+        broker = AlpacaBroker(config)
+        account = broker.get_account()
+        positions = broker.get_positions()
+        orders = broker.get_orders()
+        aid = account.account_id
+        print(f"  Account:   {aid[:4]}...{aid[-4:] if len(aid) > 8 else aid}")
+        print(f"  Equity:    ${account.equity:,.2f}")
+        print(f"  Cash:      ${account.cash:,.2f}")
+        print(f"  Positions: {len(positions)} | Open Orders: {len(orders)}")
+        print("  RESULT: PASS — Paper account reachable, credentials valid")
+    except Exception as exc:
+        print(f"  RESULT: BLOCKED — {exc}")
+    print("=" * 60 + "\n")
+
+
 def cmd_readiness(args: argparse.Namespace) -> None:
     """Check all pre-live readiness conditions."""
     from quant_us.reports.live_readiness import LiveReadinessGate
@@ -544,8 +597,13 @@ def cmd_readiness(args: argparse.Namespace) -> None:
     force_rerun = getattr(args, "force_rerun", False)
     no_cache = getattr(args, "no_cache", False)
     generated_at = datetime.now(timezone.utc).isoformat()
+    check_credentials = getattr(args, "check_credentials", False)
 
     profile = getattr(args, "profile", "simulated") or "simulated"
+
+    # If credential check requested, run detailed Alpaca Paper verification
+    if check_credentials and profile in ("paper", "live"):
+        _check_alpaca_credentials(profile)
 
     gate = LiveReadinessGate()
     if force_rerun or no_cache:
@@ -647,6 +705,11 @@ def _add_readiness_parser(subparsers: Any) -> None:
         "--small-live",
         action="store_true",
         help="Run small-live go/no-go gate (requires --validation-state)",
+    )
+    p.add_argument(
+        "--check-credentials",
+        action="store_true",
+        help="Run detailed Alpaca Paper credential check (for paper/live profiles)",
     )
     p.add_argument(
         "--force-rerun",

@@ -10,13 +10,29 @@ from quant_us.core.types import AccountState, Fill, Order, Position
 from quant_us.execution.paper_broker import PaperBroker
 
 
+PAPER_BASE_URL = "https://paper-api.alpaca.markets"
+LIVE_BASE_URL = "https://api.alpaca.markets"
+
+
 @dataclass
 class AlpacaBrokerConfig:
     api_key: str
     api_secret: str
     paper: bool = True
-    base_url: str = "https://paper-api.alpaca.markets"
+    base_url: str = PAPER_BASE_URL
     timeout_seconds: float = 20.0
+
+    def __post_init__(self) -> None:
+        if self.paper and PAPER_BASE_URL not in self.base_url:
+            raise ValueError(
+                f"SAFETY: paper=True but base_url={self.base_url} does not point to paper endpoint. "
+                f"Expected {PAPER_BASE_URL}"
+            )
+        if not self.paper and LIVE_BASE_URL not in self.base_url:
+            raise ValueError(
+                f"SAFETY: paper=False but base_url={self.base_url} does not point to live endpoint. "
+                f"Expected {LIVE_BASE_URL}"
+            )
 
 
 class AlpacaBroker(PaperBroker):
