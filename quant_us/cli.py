@@ -931,7 +931,7 @@ def _run_simulated_paper_loop(
     loop = PaperTradingLoop(config=config, calendar=calendar)
     strategy = _build(args.strategy, {})
     strategies = [strategy]
-    lookback_bars = 120  # ~6 months of daily bars for strategy warmup
+    lookback_bars = 252  # ~1 year of daily bars for strategy warmup (ETF rotation needs 60+ per symbol)
 
     # Find N recent trading days from history by stepping backward.
     # Start from yesterday to avoid today's missing yfinance data.
@@ -980,16 +980,37 @@ def _run_simulated_paper_loop(
                     volume=float(row.get("volume", 0)),
                 ))
 
-    # Pre-warm the loop with lookback bars (no trading, just broker.market update)
+    # Pre-warm: feed historical bars through strategy too (trade execution disabled)
     all_warmup = sorted(
         [b for bars in warmup_bars.values() for b in bars],
         key=lambda b: b.timestamp_utc,
     )
     warmup_cutoff = trading_days[0]
     pre_trading_bars = [b for b in all_warmup if b.timestamp_utc.date() < warmup_cutoff]
-    for bar in pre_trading_bars[-lookback_bars:]:
+    warmup_bars_subset = pre_trading_bars[-lookback_bars:]
+
+    from quant_us.core.events import MarketEvent
+    from quant_us.strategies.base import StrategyContext
+    from quant_us.core.types import new_id
+    for bar in warmup_bars_subset:
         loop.broker.update_market(bar)
-    print(f"  Warmup: {len(pre_trading_bars[-lookback_bars:])} bars loaded for strategy context")
+        # Feed bar through strategy for data accumulation (no trade execution)
+        for strategy in strategies:
+            try:
+                ctx = StrategyContext(
+                    run_id=new_id("warmup"),
+                    account=loop.broker.get_account(),
+                    market_prices={bar.symbol: float(bar.close)},
+                    universe=[bar.symbol],
+                )
+                list(strategy.on_bar(MarketEvent.from_bar(bar), ctx))
+            except Exception:
+                pass  # warmup errors are non-fatal
+    # Mark data as fresh by evaluating the last warmup bar through freshness guard
+    if warmup_bars_subset:
+        loop.data_freshness.evaluate_bar(warmup_bars_subset[-1])
+
+    print(f"  Warmup: {len(warmup_bars_subset)} bars → broker + strategy context ready")
     print()
 
     for i, day_date in enumerate(trading_days, 1):
