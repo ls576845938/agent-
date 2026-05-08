@@ -921,16 +921,14 @@ def _run_simulated_paper_loop(
         commission_rate=args.commission_rate,
         slippage_bps=args.slippage_bps,
         ledger_root=str(ledger_root),
-        max_daily_loss_pct=999.0,  # effectively disable for simulated
-        max_drawdown_pct=999.0,     # effectively disable for simulated
-        max_consecutive_failures=999,  # effectively disable for simulated
-        max_data_delay_seconds=999_999_999,  # allow historical data (no staleness check)
+        max_daily_loss_pct=999.0,
+        max_drawdown_pct=999.0,
+        max_consecutive_failures=999,
+        max_data_delay_seconds=999_999_999,
+        max_data_staleness_seconds=999_999_999,
     )
 
     loop = PaperTradingLoop(config=config, calendar=calendar)
-    # Disable data staleness checks for simulated historical data
-    loop.kill_switch.config.max_data_staleness_seconds = 999_999_999
-    loop.data_freshness.config.max_delay_seconds = 999_999_999
     strategy = _build(args.strategy, {})
     strategies = [strategy]
     lookback_bars = 120  # ~6 months of daily bars for strategy warmup

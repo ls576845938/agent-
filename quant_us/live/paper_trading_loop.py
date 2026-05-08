@@ -52,6 +52,7 @@ class PaperTradingConfig:
     gap_config: GapConfig | None = None
     alerts_enabled: bool = False
     max_data_delay_seconds: float = 300.0
+    max_data_staleness_seconds: float = 600.0  # for kill switch data staleness check
     risk_event_log_path: str = ""
     pg_dsn: str = ""  # PostgreSQL connection string; empty = no dual-write
 
@@ -94,6 +95,7 @@ class PaperTradingLoop:
             max_daily_loss_pct=self.config.max_daily_loss_pct,
             max_drawdown_pct=self.config.max_drawdown_pct,
             max_consecutive_order_failures=self.config.max_consecutive_failures,
+            max_data_staleness_seconds=self.config.max_data_staleness_seconds,
         )
 
         # Risk event log
