@@ -842,13 +842,336 @@ def cmd_shadow_live(args: argparse.Namespace) -> None:
     print("Shadow-live session completed successfully.")
 
 
+# ---------------------------------------------------------------------------
+# shadow-live subcommand handlers
+# ---------------------------------------------------------------------------
+
+
+def cmd_shadow_live_start(args: argparse.Namespace) -> None:
+    """Start shadow-live validation run."""
+    symbols = _parse_symbols(args.symbols)
+    api_key = os.environ.get("APCA_API_KEY_ID", "")
+    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+
+    print()
+    print("=" * 60)
+    print("  Shadow Live Validation Start")
+    print("=" * 60)
+    print(f"  Symbols:       {', '.join(symbols)}")
+    print(f"  Strategy:      {args.strategy}")
+    print(f"  Days Target:   {args.days}")
+    print(f"  Readonly:      True (hardcoded)")
+    print()
+
+    if not args.readonly:
+        print("  RESULT: BLOCKED — shadow-live requires --readonly")
+        print("=" * 60 + "\n")
+        return
+
+    if api_key and api_secret:
+        print(f"  Key ID:        {_mask_key(api_key)}")
+        print(f"  Live endpoint: READ-ONLY (no real orders)")
+    else:
+        print("  WARNING: No live API credentials. Using local data sources only.")
+
+    # Data parity check
+    if not args.skip_data_parity:
+        print()
+        print("  [1/3] Running market data parity check...")
+        from quant_us.live.market_data_parity import MarketDataParityChecker
+
+        checker = MarketDataParityChecker(symbols, data_root=args.data_root)
+        report = checker.compare()
+        print(f"    Status: {report.overall_status}")
+        print(f"    Warnings: {len(report.warnings)}")
+        print(f"    Critical: {len(report.critical_issues)}")
+        if not report.is_safe_for_shadow_orders:
+            print(f"  RESULT: BLOCKED — data parity critical issues detected")
+            print("=" * 60 + "\n")
+            return
+        checker.save_report(report, f"{args.data_root}/shadow_ledger/data_parity_report.json")
+
+    # Shadow orchestrator
+    print()
+    print("  [2/3] Starting shadow orchestrator...")
+    from quant_us.live.shadow_orchestrator import (
+        ShadowLiveOrchestrator,
+        ShadowOrchestratorConfig,
+    )
+
+    orch_config = ShadowOrchestratorConfig(
+        symbols=symbols,
+        strategy_id=args.strategy,
+        api_key=api_key,
+        api_secret=api_secret,
+        data_vendor=args.data_vendor,
+        bar_size=args.bar_size,
+        readonly=True,
+        data_root=args.data_root,
+        ledger_root=f"{args.data_root}/shadow_ledger",
+        submit_paper_orders=False,
+    )
+    orch = ShadowLiveOrchestrator(orch_config)
+
+    if not orch.bootstrap():
+        print("  RESULT: BLOCKED — orchestrator bootstrap failed")
+        print("=" * 60 + "\n")
+        return
+
+    if api_key and api_secret:
+        creds_ok = orch.check_live_readonly_credentials()
+        if not creds_ok:
+            print("  WARNING: Live credentials check failed. Continuing with local data.")
+    else:
+        print("  INFO: No live credentials. Running shadow-only (no live comparison).")
+
+    _ = orch.check_shadow_readiness()
+
+    # Validation controller
+    print()
+    print("  [3/3] Starting validation controller...")
+    from quant_us.live.shadow_validation_controller import ShadowValidationController
+
+    controller = ShadowValidationController(
+        state_dir=f"{args.data_root}/shadow_validation",
+        symbols=symbols,
+        strategy_id=args.strategy,
+        days_target=args.days,
+    )
+    state = controller.start(orch)
+
+    # Run one full cycle
+    print()
+    print(f"  Run ID: {state.run_id}")
+    print(f"  Running shadow-live cycle...")
+
+    result = orch.run_one_cycle()
+    print(f"  Cycle complete:")
+    print(f"    Bars:          {result.get('bars', 0)}")
+    print(f"    Signals:       {result.get('signals', 0)}")
+    print(f"    Shadow Orders: {result.get('shadow_orders', 0)}")
+    print(f"    Shadow Fills:  {result.get('shadow_fills', 0)}")
+    print(f"    Real Submit:   {result.get('real_submit_count', 0)}")
+
+    controller.record_day(
+        shadow_orders=orch.shadow_orders,
+        shadow_fills=orch.shadow_fills,
+    )
+
+    orch.generate_daily_shadow_report()
+    orch.shutdown_safely()
+
+    final = controller.status()
+    print()
+    print(f"  Validation Status: {final['state']['current_status']}")
+    print(f"  Days Completed:    {final['state']['days_completed']}/{final['state']['days_target']}")
+    print(f"  Real Submit Count: {final['state']['real_submit_count']} (must be 0)")
+    print(f"  Passed:            {final['passed']}")
+    print("=" * 60)
+    print()
+
+
+def cmd_shadow_live_status(args: argparse.Namespace) -> None:
+    """Show shadow-live validation status."""
+    from quant_us.live.shadow_validation_controller import ShadowValidationController
+
+    controller = ShadowValidationController(
+        state_dir=f"{args.data_root}/shadow_validation",
+    )
+    status = controller.status()
+
+    print()
+    print("=" * 60)
+    print("  Shadow Live Validation Status")
+    print("=" * 60)
+
+    if status["status"] == "not_started":
+        print("  No validation run found. Start with: shadow-live start")
+        print("=" * 60 + "\n")
+        return
+
+    s = status["state"]
+    p = status["pass_criteria"]
+    print(f"  Run ID:           {s['run_id']}")
+    print(f"  Profile:          {s['profile']}")
+    print(f"  Started:          {s['started_at'][:19]}")
+    print(f"  Strategy:         {s['strategy_id']}")
+    print(f"  Symbols:          {', '.join(s.get('symbols', []))}")
+    print()
+    print(f"  Days:             {s['days_completed']}/{s['days_target']}")
+    print(f"  Clean/Warn/Fail:  {s['clean_days']}/{s['warn_days']}/{s['failed_days']}")
+    print(f"  Shadow Orders:    {s['shadow_order_count']}")
+    print(f"  Shadow Fills:     {s['shadow_fill_count']}")
+    print(f"  Real Submits:     **{s['real_submit_count']}** (must be 0)")
+    print(f"  Incidents:        {s['incident_count']}")
+    print(f"  Manual Review:    {s['manual_review_required']}")
+    print(f"  Status:           {s['current_status']}")
+    print()
+    print(f"  Pass Criteria:")
+    for name, crit in p.items():
+        icon = "PASS" if crit.get("met", False) else "FAIL"
+        print(f"    [{icon}] {name}: {crit.get('actual')}/{crit.get('required')}")
+    print("=" * 60)
+    print()
+
+
+def cmd_shadow_live_audit(args: argparse.Namespace) -> None:
+    """Audit shadow-live journal entries."""
+    from quant_us.live.shadow_validation_controller import ShadowValidationController
+
+    controller = ShadowValidationController(
+        state_dir=f"{args.data_root}/shadow_validation",
+    )
+    entries = controller.audit(latest_only=args.latest)
+
+    print()
+    print("=" * 60)
+    print(f"  Shadow Live Audit — {len(entries)} entries")
+    print("=" * 60)
+    if not entries:
+        print("  No audit entries found.")
+    for e in entries[-30:]:
+        event = e.get("event_type", e.get("entry_type", "?"))
+        ts = e.get("timestamp", "?")[:19]
+        rid = e.get("run_id", "?")
+        print(f"  [{event:30s}] {ts}  run={rid}")
+        data = e.get("data", {})
+        for k, v in data.items():
+            if isinstance(v, dict):
+                continue
+            val_str = str(v)[:80]
+            print(f"    {k}: {val_str}")
+    print("=" * 60)
+    print()
+
+
+def cmd_shadow_live_report(args: argparse.Namespace) -> None:
+    """Show latest shadow-live daily report."""
+    from pathlib import Path
+
+    report_dir = Path(args.data_root) / "shadow_ledger"
+    reports = sorted(report_dir.glob("daily_shadow_report*.json"), reverse=True)
+
+    print()
+    print("=" * 60)
+    if args.latest or not args.date:
+        if not reports:
+            print("  No shadow reports found.")
+            print("=" * 60 + "\n")
+            return
+        path = reports[0]
+        print(f"  Latest Shadow Report: {path.name}")
+    else:
+        path = report_dir / f"daily_shadow_report_{args.date}.json"
+        if not path.exists():
+            print(f"  Report not found: {path.name}")
+            print("=" * 60 + "\n")
+            return
+        print(f"  Shadow Report: {path.name}")
+
+    try:
+        data = json.loads(path.read_text())
+        print(f"  Run ID:            {data.get('run_id', '?')}")
+        print(f"  Generated:         {data.get('generated_at', '?')[:19]}")
+        print(f"  Shadow Orders:     {data.get('shadow_order_count', 0)}")
+        print(f"  Shadow Fills:      {data.get('shadow_fill_count', 0)}")
+        print(f"  Real Submit Count: **{data.get('real_submit_count', 0)}**")
+        print(f"  No Real Orders:    {data.get('no_real_order_submitted', True)}")
+        ledger = data.get("shadow_ledger", {})
+        if ledger:
+            print(f"  Shadow Equity:     ${ledger.get('shadow_equity', 0):,.2f}")
+            print(f"  Shadow PnL:        ${ledger.get('shadow_pnl', 0):+,.2f}")
+            print(f"  Shadow Positions:  {ledger.get('shadow_positions', {})}")
+    except Exception:
+        print("  (unable to parse report)")
+    print("=" * 60)
+    print()
+
+
+def cmd_shadow_live_data_parity(args: argparse.Namespace) -> None:
+    """Run market data parity check."""
+    symbols = _parse_symbols(args.symbols)
+
+    print()
+    print("=" * 60)
+    print("  Market Data Parity Check")
+    print("=" * 60)
+    print(f"  Symbols: {', '.join(symbols)}")
+
+    from quant_us.live.market_data_parity import MarketDataParityChecker
+
+    checker = MarketDataParityChecker(symbols, data_root=args.data_root)
+    report = checker.compare()
+
+    print(f"  Sources:  {', '.join(report.sources_compared)}")
+    print(f"  Bars:     {len(report.bars)}")
+    print(f"  Status:   {report.overall_status}")
+    print(f"  Warnings: {len(report.warnings)}")
+    for w in report.warnings[:10]:
+        print(f"    WARN: {w}")
+    for c in report.critical_issues:
+        print(f"    CRITICAL: {c}")
+    print(f"  Safe for shadow orders: {report.is_safe_for_shadow_orders}")
+
+    output_path = f"{args.data_root}/shadow_ledger/data_parity_report.json"
+    checker.save_report(report, output_path)
+    print(f"  Report saved: {output_path}")
+    print("=" * 60)
+    print()
+
+
+def cmd_shadow_live_readiness_dossier(args: argparse.Namespace) -> None:
+    """Generate Live Pilot Readiness Dossier."""
+    output = args.output or f"{args.data_root}/reports/live_readiness_dossier.md"
+
+    from quant_us.live.live_pilot_dossier import LivePilotDossierBuilder
+
+    print()
+    print("=" * 60)
+    print("  Live Pilot Readiness Dossier")
+    print("=" * 60)
+
+    builder = LivePilotDossierBuilder(data_root=args.data_root)
+    dossier = builder.build()
+
+    print(f"  Dossier ID:        {dossier.dossier_id}")
+    print(f"  Paper Clean Days:  {dossier.paper.clean_days}/30")
+    print(f"  Shadow Days:       {dossier.shadow.days_completed}/5")
+    print(f"  Real Submit Count: {dossier.shadow.real_submit_count}")
+    print(f"  Paper Recon Fail:  {dossier.paper.recon_fail}")
+    print(f"  Shadow Incidents:  {dossier.shadow.incidents}")
+    print(f"  Endpoint Guard:    {'ACTIVE' if dossier.live_safety.endpoint_guard_active else 'BROKEN'}")
+    print()
+    print(f"  Decision:          **{dossier.go_decision}**")
+
+    if dossier.is_go:
+        print()
+        print("  GO_FOR_SMALL_LIVE_REVIEW conditions:")
+        print("  - Human review REQUIRED before enabling live orders.")
+        print("  - Live profile still NOT READY by default.")
+        print("  - Shadow-live must keep running alongside pilot.")
+    elif dossier.go_decision == "BLOCKED":
+        print("  BLOCKED: Critical safety violation detected.")
+    else:
+        print("  NOT_READY: Missing prerequisites.")
+
+    builder.save_dossier(dossier, output)
+    print(f"  Dossier saved: {output}")
+    print(f"               : {output.replace('.md', '.json')}")
+    print("=" * 60)
+    print()
+
+
 def _add_shadow_live_parser(subparsers: Any) -> None:
     p = subparsers.add_parser(
         "shadow-live",
         parents=[_shared_parent()],
         help="Run shadow-live session: full broker connectivity but NO real order submission",
     )
-    p.add_argument("--strategy", required=True, help="Strategy ID from the registry")
+    shadow_sub = p.add_subparsers(dest="shadow_command")
+
+    # Default (no subcommand) behavior
+    p.add_argument("--strategy", default="etf_rotation", help="Strategy ID from the registry")
     p.add_argument(
         "--broker",
         default="alpaca",
@@ -860,6 +1183,48 @@ def _add_shadow_live_parser(subparsers: Any) -> None:
     p.add_argument("--poll-interval", type=float, default=60.0, help="Poll interval in seconds (default: 60)")
     p.add_argument("--max-runtime-hours", type=float, default=8.0, help="Max session wall-clock hours (default: 8)")
     p.set_defaults(func=cmd_shadow_live)
+
+    # shadow-live start
+    start_p = shadow_sub.add_parser("start", help="Start shadow-live validation run")
+    start_p.add_argument("--symbols", default="SPY,QQQ,IWM,DIA", help="Symbols to track")
+    start_p.add_argument("--strategy", default="etf_rotation", help="Strategy ID")
+    start_p.add_argument("--days", type=int, default=5, help="Days target (5-10)")
+    start_p.add_argument("--readonly", action="store_true", default=True, help="Read-only mode (hardcoded)")
+    start_p.add_argument("--data-vendor", default="yfinance", help="Market-data connector")
+    start_p.add_argument("--bar-size", default="1d", help="Bar interval")
+    start_p.add_argument("--data-root", default="data", help="Data root path")
+    start_p.add_argument("--skip-data-parity", action="store_true", help="Skip data parity check")
+    start_p.set_defaults(func=cmd_shadow_live_start)
+
+    # shadow-live status
+    status_p = shadow_sub.add_parser("status", help="Show shadow-live validation status")
+    status_p.add_argument("--data-root", default="data", help="Data root path")
+    status_p.set_defaults(func=cmd_shadow_live_status)
+
+    # shadow-live audit
+    audit_p = shadow_sub.add_parser("audit", help="Audit shadow-live journal")
+    audit_p.add_argument("--latest", action="store_true", default=True, help="Latest run only")
+    audit_p.add_argument("--data-root", default="data", help="Data root path")
+    audit_p.set_defaults(func=cmd_shadow_live_audit)
+
+    # shadow-live report
+    report_p = shadow_sub.add_parser("report", help="Show latest shadow report")
+    report_p.add_argument("--latest", action="store_true", help="Show latest report")
+    report_p.add_argument("--date", default="", help="Show report for date YYYY-MM-DD")
+    report_p.add_argument("--data-root", default="data", help="Data root path")
+    report_p.set_defaults(func=cmd_shadow_live_report)
+
+    # shadow-live data-parity
+    parity_p = shadow_sub.add_parser("data-parity", help="Run market data parity check")
+    parity_p.add_argument("--symbols", default="SPY,QQQ,IWM,DIA", help="Symbols to compare")
+    parity_p.add_argument("--data-root", default="data", help="Data root path")
+    parity_p.set_defaults(func=cmd_shadow_live_data_parity)
+
+    # shadow-live readiness-dossier
+    dossier_p = shadow_sub.add_parser("readiness-dossier", help="Generate Live Pilot Readiness Dossier")
+    dossier_p.add_argument("--output", default="", help="Output path for markdown dossier")
+    dossier_p.add_argument("--data-root", default="data", help="Data root path")
+    dossier_p.set_defaults(func=cmd_shadow_live_readiness_dossier)
 
 
 # ---------------------------------------------------------------------------
@@ -1099,9 +1464,9 @@ def _add_readiness_parser(subparsers: Any) -> None:
     p = subparsers.add_parser("readiness", help="Evaluate pre-live readiness checks")
     p.add_argument(
         "--profile",
-        choices=["simulated", "paper", "live"],
+        choices=["simulated", "paper", "shadow_live", "live"],
         default="simulated",
-        help="Readiness profile: simulated (local, no broker), paper (Alpaca paper), live (strict)",
+        help="Readiness profile: simulated (local), paper (Alpaca paper), shadow_live (read-only live validation), live (strict)",
     )
     p.add_argument(
         "--validation-state",
@@ -1700,6 +2065,2617 @@ def _add_live_parser(subparsers: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
+# live-pilot
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_approval_create(args: argparse.Namespace) -> None:
+    """Create a live pilot approval request."""
+    from quant_us.live.live_pilot_approval import HumanApprovalGate
+
+    gate = HumanApprovalGate()
+    approval = gate.create(
+        approval_id=args.approval_id,
+        strategy_id=args.strategy,
+        strategy_version=args.strategy_version,
+        symbols=_parse_symbols(args.symbols),
+        requested_by=args.requested_by,
+        proposed_capital=args.capital,
+    )
+
+    print()
+    print("=" * 60)
+    print("  Live Pilot Approval Created")
+    print("=" * 60)
+    print(f"  Approval ID:     {approval.approval_id}")
+    print(f"  Status:          {approval.status}")
+    print(f"  Strategy:        {approval.strategy_id} v{approval.strategy_version}")
+    print(f"  Symbols:         {', '.join(approval.symbols)}")
+    print(f"  Proposed Capital: ${approval.proposed_capital:,.2f}")
+    print(f"  Requested By:    {approval.requested_by or 'N/A'}")
+    print(f"  Requested At:    {approval.requested_at[:19]}")
+    print()
+    print("  Next: approval approve --approval-id <id> --manual")
+    print("  NOTE: approval does NOT enable live orders.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_approval_inspect(args: argparse.Namespace) -> None:
+    """Inspect a live pilot approval."""
+    from quant_us.live.live_pilot_approval import HumanApprovalGate
+
+    gate = HumanApprovalGate()
+    approval = gate.inspect(args.approval_id)
+
+    print()
+    print("=" * 60)
+    if approval is None:
+        print(f"  Approval not found: {args.approval_id}")
+    else:
+        print(f"  Approval: {approval.approval_id}")
+        print(f"  Status:   {approval.status}")
+        print(f"  Strategy: {approval.strategy_id} v{approval.strategy_version}")
+        print(f"  Symbols:  {', '.join(approval.symbols)}")
+        print(f"  Capital:  ${approval.proposed_capital:,.2f}")
+        print(f"  Approver: {approval.approver or 'N/A'}")
+        print(f"  Expires:  {approval.expires_at[:19] if approval.expires_at else 'N/A'}")
+        if approval.rejection_reason:
+            print(f"  Rejection: {approval.rejection_reason}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_approval_approve(args: argparse.Namespace) -> None:
+    """Approve a live pilot approval (manual action)."""
+    from quant_us.live.live_pilot_approval import HumanApprovalGate
+
+    gate = HumanApprovalGate()
+    try:
+        approval = gate.approve(args.approval_id, args.manual or "cli_user")
+        print()
+        print("=" * 60)
+        print(f"  Approval APPROVED: {approval.approval_id}")
+        print(f"  Approver: {approval.approver}")
+        print(f"  Expires:  {approval.expires_at[:19]}")
+        print()
+        print("  NOTE: This does NOT enable live orders.")
+        print("  Live profile remains NOT READY by default.")
+        print("=" * 60)
+        print()
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def cmd_live_pilot_approval_reject(args: argparse.Namespace) -> None:
+    """Reject a live pilot approval."""
+    from quant_us.live.live_pilot_approval import HumanApprovalGate
+
+    gate = HumanApprovalGate()
+    try:
+        approval = gate.reject(args.approval_id, args.reason)
+        print()
+        print("=" * 60)
+        print(f"  Approval REJECTED: {approval.approval_id}")
+        print(f"  Reason: {approval.rejection_reason}")
+        print("=" * 60)
+        print()
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def cmd_live_pilot_approval_list(args: argparse.Namespace) -> None:
+    """List all live pilot approvals."""
+    from quant_us.live.live_pilot_approval import HumanApprovalGate
+
+    gate = HumanApprovalGate()
+    approvals = gate.list_approvals()
+
+    print()
+    print("=" * 60)
+    print(f"  Live Pilot Approvals — {len(approvals)} found")
+    print("=" * 60)
+    for a in approvals:
+        print(f"  [{a.status:12s}] {a.approval_id}  {a.strategy_id}  "
+              f"symbols={','.join(a.symbols)}  capital=${a.proposed_capital:,.0f}")
+    if not approvals:
+        print("  No approvals found.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_risk_envelope_create(args: argparse.Namespace) -> None:
+    """Create a live pilot risk envelope."""
+    from quant_us.live.live_pilot_risk_envelope import LivePilotRiskEnvelope, RiskEnvelopeManager
+
+    envelope = LivePilotRiskEnvelope(
+        envelope_id=args.envelope_id,
+        strategy_id=args.strategy,
+        symbols=_parse_symbols(args.symbols),
+    )
+    mgr = RiskEnvelopeManager()
+    mgr.create(envelope)
+
+    print()
+    print("=" * 60)
+    print("  Live Pilot Risk Envelope Created")
+    print("=" * 60)
+    print(f"  Envelope ID:           {envelope.envelope_id}")
+    print(f"  Max Capital:           ${envelope.max_total_capital:,.2f}")
+    print(f"  Max Order Notional:    ${envelope.max_order_notional:,.2f}")
+    print(f"  Max Daily Notional:    ${envelope.max_daily_notional:,.2f}")
+    print(f"  Max Daily Orders:      {envelope.max_daily_order_count}")
+    print(f"  Max Gross Exposure:    {envelope.max_gross_exposure_pct:.1%}")
+    print(f"  Max Daily Loss:        {envelope.max_daily_loss_pct:.2%}")
+    print(f"  Market Orders:         {'BLOCKED' if not envelope.allow_market_order else 'allowed'}")
+    print(f"  Pre/Post Market:       {'BLOCKED' if not envelope.allow_pre_post_market else 'allowed'}")
+    print(f"  Short Selling:         {'BLOCKED' if not envelope.allow_short else 'allowed'}")
+    print(f"  Reduce-Only on Warn:   {envelope.reduce_only_on_warning}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_risk_envelope_inspect(args: argparse.Namespace) -> None:
+    """Inspect a risk envelope."""
+    from quant_us.live.live_pilot_risk_envelope import RiskEnvelopeManager
+
+    mgr = RiskEnvelopeManager()
+    envelope = mgr.load(args.envelope_id)
+
+    print()
+    print("=" * 60)
+    if envelope is None:
+        print(f"  Envelope not found: {args.envelope_id}")
+    else:
+        print(f"  Envelope: {envelope.envelope_id}")
+        print(f"  Strategy: {envelope.strategy_id}")
+        print(f"  Symbols:  {', '.join(envelope.symbols)}")
+        print(f"  Max Order: ${envelope.max_order_notional:,.2f}")
+        print(f"  Daily Loss Limit: {envelope.max_daily_loss_pct:.2%}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_risk_envelope_validate(args: argparse.Namespace) -> None:
+    """Validate order against a risk envelope."""
+    from quant_us.live.live_pilot_risk_envelope import RiskEnvelopeManager
+
+    mgr = RiskEnvelopeManager()
+    result = mgr.validate(
+        args.envelope_id,
+        order_notional=args.notional,
+        order_type=OrderType.LIMIT,
+        side=OrderSide.BUY,
+    )
+
+    print()
+    print("=" * 60)
+    print(f"  Risk Envelope Validation: {args.envelope_id}")
+    print(f"  Result: {'PASS' if result.get('passed') else 'BLOCKED'}")
+    if result.get("reason"):
+        print(f"  Reason: {result['reason']}")
+    if result.get("reduce_only"):
+        print("  REDUCE-ONLY enforced.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_dry_run(args: argparse.Namespace) -> None:
+    """Execute live pilot dry-run (no real orders)."""
+    from quant_us.live.live_pilot_dry_run import LivePilotDryRunExecutor
+
+    executor = LivePilotDryRunExecutor(data_root=args.data_root)
+    report = executor.execute(
+        approval_id=args.approval_id,
+        envelope_id=args.envelope_id,
+        strategy_id=args.strategy,
+        symbols=_parse_symbols(args.symbols),
+    )
+    output = executor.save_report(report)
+
+    print()
+    print("=" * 60)
+    print("  Live Pilot Dry-Run Report")
+    print("=" * 60)
+    print(f"  Dry-Run ID:       {report.dry_run_id}")
+    print(f"  Steps:            {report.steps_passed}/{report.steps_total}")
+    print(f"  Overall:          {'PASS' if report.overall_passed else 'BLOCKED'}")
+    print(f"  Real Submit:      **False** (always)")
+    print(f"  Real Submit Occurred: {report.to_dict()['real_submit_occurred']}")
+    if report.errors:
+        print("  Errors:")
+        for err in report.errors:
+            print(f"    - {err}")
+    print(f"  Report saved:     {output}")
+    print()
+    print("  NO real orders were submitted.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_emergency_stop_trigger(args: argparse.Namespace) -> None:
+    """Trigger emergency stop."""
+    from quant_us.live.emergency_stop import EmergencyStopController
+
+    controller = EmergencyStopController(state_dir=f"{args.data_root}/live_pilot")
+    event = controller.trigger(reason=args.reason, triggered_by="cli")
+
+    print()
+    print("=" * 60)
+    print("  EMERGENCY STOP TRIGGERED")
+    print("=" * 60)
+    print(f"  Event:   {event.event_id}")
+    print(f"  Reason:  {event.reason}")
+    print(f"  State:   {event.state}")
+    print()
+    print("  New positions: BLOCKED")
+    print("  Reduce-only:   ALLOWED")
+    print("  Next: emergency-stop acknowledge")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_emergency_stop_status(args: argparse.Namespace) -> None:
+    """Show emergency stop status."""
+    from quant_us.live.emergency_stop import EmergencyStopController
+
+    controller = EmergencyStopController(state_dir=f"{args.data_root}/live_pilot")
+    status = controller.status()
+
+    print()
+    print("=" * 60)
+    print(f"  Emergency Stop Status: {status['state']}")
+    print(f"  Reduce-Only:           {status['reduce_only']}")
+    print(f"  New Positions Allowed: {status['new_positions_allowed']}")
+    if status["current_event"]:
+        e = status["current_event"]
+        print(f"  Event:   {e.get('event_id', 'N/A')}")
+        print(f"  Reason:  {e.get('reason', 'N/A')}")
+        print(f"  Trigger: {e.get('triggered_at', 'N/A')[:19]}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_emergency_stop_acknowledge(args: argparse.Namespace) -> None:
+    """Acknowledge emergency stop."""
+    from quant_us.live.emergency_stop import EmergencyStopController
+
+    controller = EmergencyStopController(state_dir=f"{args.data_root}/live_pilot")
+    event = controller.acknowledge(acknowledged_by="cli")
+
+    print()
+    print("=" * 60)
+    print(f"  Emergency Stop ACKNOWLEDGED: {event.event_id}")
+    print(f"  State: {event.state}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_emergency_stop_resolve(args: argparse.Namespace) -> None:
+    """Resolve emergency stop."""
+    from quant_us.live.emergency_stop import EmergencyStopController
+
+    controller = EmergencyStopController(state_dir=f"{args.data_root}/live_pilot")
+    event = controller.resolve(notes="Resolved via CLI")
+
+    print()
+    print("=" * 60)
+    print(f"  Emergency Stop RESOLVED: {event.event_id}")
+    print(f"  State: {event.state}")
+    print("  New positions are now allowed again.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_rollback_plan(args: argparse.Namespace) -> None:
+    """Generate a rollback plan."""
+    from quant_us.live.emergency_stop import RollbackPlanGenerator
+
+    generator = RollbackPlanGenerator(data_root=args.data_root)
+    plan = generator.generate(reason=args.reason or "manual_request")
+
+    print()
+    print("=" * 60)
+    print(f"  Rollback Plan: {plan.plan_id}")
+    print("=" * 60)
+    print(f"  Stop Reason: {plan.stop_reason or 'N/A'}")
+    print("  Actions:")
+    for action in plan.actions:
+        print(f"    {action['step']}. {action['action']} [{action['status']}]")
+    print()
+    print("  Reduce-Only Instructions:")
+    for instr in plan.reduce_only_instructions:
+        print(f"    - {instr}")
+    print()
+    print("  NO orders are submitted by this plan.")
+    print("  Manual review REQUIRED.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_dossier(args: argparse.Namespace) -> None:
+    """Generate G3 Go/No-Go dossier."""
+    output = args.output or f"{args.data_root}/reports/live_pilot_go_no_go.md"
+
+    from quant_us.live.live_pilot_go_nogo import LivePilotGoNoGoBuilder
+
+    builder = LivePilotGoNoGoBuilder(data_root=args.data_root)
+    dossier = builder.build()
+
+    print()
+    print("=" * 60)
+    print("  G3 Live Pilot Go/No-Go Dossier")
+    print("=" * 60)
+    print(f"  Paper:       {dossier.paper.clean_days}/30 clean days")
+    print(f"  Shadow:      {dossier.shadow.days_completed}/5 days, real_submit={dossier.shadow.real_submit_count}")
+    print(f"  Approval:    {dossier.approval.status}")
+    print(f"  Envelope:    {'configured' if dossier.envelope.is_ready() else 'NOT configured'}")
+    print(f"  Safety:      {'PASS' if dossier.safety.all_ready() else 'INCOMPLETE'}")
+    print()
+    print(f"  Decision:    **{dossier.decision}**")
+
+    if dossier.decision == "READY_FOR_HUMAN_REVIEW":
+        print()
+        print("  IMPORTANT:")
+        print("  - This does NOT automatically enable live orders.")
+        print("  - Human review and explicit authorization REQUIRED.")
+        print("  - Live profile remains NOT READY by default.")
+    elif dossier.decision == "BLOCKED":
+        reasons = dossier.decision_reasons
+        if reasons:
+            print(f"  Reasons: {', '.join(reasons)}")
+
+    builder.save_dossier(dossier, output)
+    print(f"  Dossier:     {output}")
+    print("=" * 60)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# G4: live-pilot execute handlers
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_execute(args: argparse.Namespace) -> None:
+    """Execute live pilot order pipeline (default: dry-run)."""
+    import os
+
+    symbols = _parse_symbols(args.symbols)
+    api_key = os.environ.get("APCA_API_KEY_ID", "")
+    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+
+    from quant_us.live.live_pilot_executor import LivePilotExecutor, LivePilotExecutorConfig
+
+    execute_live = getattr(args, "execute_live_pilot", False)
+    confirm_live = getattr(args, "confirm_live", False)
+
+    config = LivePilotExecutorConfig(
+        approval_id=args.approval_id,
+        envelope_id=args.envelope_id,
+        symbols=symbols,
+        strategy_id=args.strategy,
+        execute_live_pilot=execute_live,
+        confirm_live=confirm_live,
+        is_dry_run=not execute_live,
+        data_root=args.data_root,
+        api_key=api_key,
+        api_secret=api_secret,
+    )
+
+    print()
+    print("=" * 60)
+    if config.is_dry_run:
+        print("  Live Pilot DRY-RUN Execution")
+    else:
+        print("  Live Pilot REAL Execution")
+    print("=" * 60)
+    print(f"  Approval:    {config.approval_id}")
+    print(f"  Envelope:    {config.envelope_id}")
+    print(f"  Symbols:     {', '.join(symbols)}")
+    print(f"  Strategy:    {config.strategy_id}")
+    print(f"  Execute:     {'YES (REAL)' if execute_live else 'NO (dry-run)'}")
+    print(f"  Confirm:     {'YES' if confirm_live else 'NO'}")
+    print()
+
+    executor = LivePilotExecutor(config)
+    result = executor.execute()
+
+    print(f"  Run ID:      {result['run_id']}")
+    print(f"  Status:      {result['status']}")
+    print(f"  Real Submit: {'YES' if result['real_submit_occurred'] else 'NO'}")
+    print(f"  Previews:    {len(result['previews'])}")
+    if result.get("errors"):
+        print("  Errors:")
+        for err in result["errors"]:
+            print(f"    - {err}")
+
+    steps = result.get("steps", {})
+    for step_name, step_result in steps.items():
+        status = step_result.get("status", step_result.get("decision", "?"))
+        print(f"  [{step_name:20s}] {status}")
+
+    print()
+    if result["real_submit_occurred"]:
+        print("  REAL ORDER SUBMITTED. Check audit trail.")
+    else:
+        print("  No real orders were submitted.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_first_order_simulate(args: argparse.Namespace) -> None:
+    """Simulate first live order (no submit)."""
+    from quant_us.live.first_live_order_simulation import FirstLiveOrderSimulation
+
+    simulator = FirstLiveOrderSimulation(data_root=args.data_root)
+    result = simulator.simulate(
+        approval_id=args.approval_id,
+        envelope_id=args.envelope_id,
+        symbols=_parse_symbols(args.symbols),
+    )
+    sim_path = simulator.save_result(result)
+
+    print()
+    print("=" * 60)
+    print("  First Live Order Simulation")
+    print("=" * 60)
+    print(f"  Symbol:        {result.suggested_symbol}")
+    print(f"  Side:          {result.suggested_side}")
+    print(f"  Qty:           {result.suggested_qty}")
+    print(f"  Notional:      ${result.notional:,.2f}")
+    print(f"  Risk Decision: {result.risk_decision}")
+    print(f"  Gate Decision: {result.gate_decision}")
+    print(f"  Readiness:     {result.readiness}")
+    print()
+    print(f"  Block Reasons: {', '.join(result.gate_block_reasons) or 'none'}")
+    print()
+    print("  Manual Checklist:")
+    for item in result.manual_checklist[:5]:
+        print(f"    - {item}")
+    print(f"    ... ({len(result.manual_checklist)} items total)")
+    print()
+    print(f"  Result saved: {sim_path}")
+    print(f"  Real Submit:  **NO** (simulation only)")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_audit_trail(args: argparse.Namespace) -> None:
+    """Show live order audit trail."""
+    from quant_us.live.live_order_audit import LiveOrderAuditTrail
+
+    trail = LiveOrderAuditTrail(audit_dir=f"{args.data_root}/live_pilot/audit")
+
+    if args.run_id:
+        entries = trail.read_by_run(args.run_id)
+    else:
+        entries = trail.read_all(limit=50)
+
+    real_count = trail.real_submit_count()
+
+    print()
+    print("=" * 60)
+    print(f"  Live Order Audit Trail — {len(entries)} entries")
+    print(f"  Real Submits: {real_count}")
+    print("=" * 60)
+    if not entries:
+        print("  No entries found.")
+    for e in entries[-20:]:
+        icon = "REAL" if e.get("real_submit") else "DRY"
+        print(f"  [{icon}] {e.get('created_at', '?')[:19]} "
+              f"{e.get('symbol', '?')} {e.get('side', '?')} "
+              f"qty={e.get('qty', 0)} notional=${e.get('notional', 0):,.0f} "
+              f"gate={e.get('gate_decision', '?')}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_executor_status(args: argparse.Namespace) -> None:
+    """Show live pilot executor status."""
+    from quant_us.live.emergency_stop import EmergencyStopController
+    from quant_us.live.live_order_audit import LiveOrderAuditTrail
+
+    es_ctrl = EmergencyStopController(state_dir=f"{args.data_root}/live_pilot")
+    es_status = es_ctrl.status()
+    trail = LiveOrderAuditTrail(audit_dir=f"{args.data_root}/live_pilot/audit")
+
+    print()
+    print("=" * 60)
+    print("  Live Pilot Status")
+    print("=" * 60)
+    print(f"  Emergency Stop: {es_status['state']}")
+    print(f"  Reduce-Only:    {es_status['reduce_only']}")
+    print(f"  Real Submits:   {trail.real_submit_count()}")
+    print(f"  Audit Entries:  {len(trail.read_all(limit=1))}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_stop(args: argparse.Namespace) -> None:
+    """Stop live pilot (triggers emergency stop)."""
+    from quant_us.live.emergency_stop import EmergencyStopController
+
+    controller = EmergencyStopController(state_dir=f"{args.data_root}/live_pilot")
+    event = controller.trigger(reason="manual_stop", triggered_by="cli")
+
+    print()
+    print("=" * 60)
+    print("  Live Pilot STOPPED")
+    print("=" * 60)
+    print(f"  Event:     {event.event_id}")
+    print(f"  State:     {event.state}")
+    print(f"  New orders: BLOCKED")
+    print(f"  Reduce-only: ALLOWED")
+    print()
+    print("  To resume: acknowledge then resolve emergency stop")
+    print("=" * 60)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# G5: one-shot execution handlers
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_first_order_ticket(args: argparse.Namespace) -> None:
+    """Generate a first live order ticket for human review. No orders submitted."""
+    symbols = _parse_symbols(args.symbols)
+    from quant_us.live.first_live_order_ticket import FirstLiveOrderTicketBuilder
+
+    builder = FirstLiveOrderTicketBuilder(data_root=args.data_root)
+    ticket = builder.build(
+        approval_id=args.approval_id,
+        envelope_id=args.envelope_id,
+        symbol=symbols[0] if symbols else "SPY",
+        side=args.side,
+        quantity=args.quantity,
+        limit_price=args.limit_price,
+    )
+    path = builder.save_ticket(ticket)
+
+    print()
+    print("=" * 60)
+    print("  First Live Order Ticket")
+    print("=" * 60)
+    print(f"  Ticket ID:     {ticket.ticket_id}")
+    print(f"  Status:        {ticket.status}")
+    print(f"  Symbol:        {ticket.symbol}")
+    print(f"  Side:          {ticket.side}")
+    print(f"  Qty:           {ticket.quantity}")
+    print(f"  Limit:         ${ticket.limit_price:,.2f}")
+    print(f"  Notional:      ${ticket.estimated_notional:,.2f}")
+    print(f"  Max Notional:  ${ticket.max_allowed_notional:,.2f}")
+    print(f"  Expires:       {ticket.expires_at[:19]}")
+    print(f"  Expired:       {'YES' if ticket.is_expired else 'NO'}")
+    print()
+    print(f"  Saved:         {path}")
+    print("  Real Submit:   **NO** (ticket generation only)")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_confirm_ticket(args: argparse.Namespace) -> None:
+    """Final human confirmation of a ticket. Does NOT submit orders."""
+    from quant_us.live.first_live_order_ticket import FinalHumanConfirmationGate
+
+    gate = FinalHumanConfirmationGate(audit_dir=f"{args.data_root}/live_pilot/audit")
+    result = gate.check(
+        ticket_id=args.ticket_id,
+        i_understand_real_money=False,
+        confirm_live=False,
+        execute_one_shot=False,
+        confirm_ticket=args.ticket_id,
+    )
+
+    print()
+    print("=" * 60)
+    print(f"  Ticket Confirmation: {args.ticket_id}")
+    print(f"  Passed: {'YES' if result.passed else 'NO'}")
+    if result.reason:
+        print(f"  Reason: {result.reason}")
+    print()
+    print("  NOTE: This confirms the ticket. It does NOT submit an order.")
+    print("  To execute: live-pilot one-shot --execute-one-shot --confirm-live")
+    print("             --i-understand-this-is-real-money")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_one_shot(args: argparse.Namespace) -> None:
+    """Execute one-shot live pilot order (default: dry-run)."""
+    import os
+
+    symbols = _parse_symbols(args.symbols)
+    api_key = os.environ.get("APCA_API_KEY_ID", "")
+    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+
+    from quant_us.live.one_shot_executor import OneShotLivePilotExecutor, OneShotExecutorConfig
+
+    approve_id = args.approval_id or args.ticket_id
+    config = OneShotExecutorConfig(
+        ticket_id=args.ticket_id,
+        approve_live_id=approve_id,
+        envelope_id=args.envelope_id,
+        symbols=symbols,
+        confirm_live=getattr(args, "confirm_live", False),
+        execute_one_shot=getattr(args, "execute_one_shot", False),
+        i_understand_real_money=getattr(args, "i_understand_this_is_real_money", False),
+        confirm_ticket=getattr(args, "confirm_ticket", args.ticket_id),
+        is_dry_run=not getattr(args, "execute_one_shot", False),
+        data_root=args.data_root,
+        api_key=api_key,
+        api_secret=api_secret,
+    )
+
+    print()
+    print("=" * 60)
+    print("  G5 One-Shot Live Pilot")
+    print("=" * 60)
+    print(f"  Ticket:       {config.ticket_id}")
+    print(f"  Execute:      {'YES (REAL)' if config.execute_one_shot else 'NO (dry-run)'}")
+    print(f"  Confirm:      {'YES' if config.confirm_live else 'NO'}")
+    print(f"  Real Money:   {'YES' if config.i_understand_real_money else 'NO'}")
+    print()
+
+    executor = OneShotLivePilotExecutor(config)
+    result = executor.execute()
+
+    print(f"  Run ID:       {result['run_id']}")
+    print(f"  Status:       {result['status']}")
+    print(f"  Real Submit:  {'YES' if result.get('real_submit_occurred') else 'NO'}")
+    print(f"  Freeze:       {'YES' if result.get('freeze_applied') else 'NO'}")
+
+    steps = result.get("steps", {})
+    for step_name, step in steps.items():
+        status = step.get("status", step.get("passed", "?"))
+        print(f"  [{step_name:25s}] {status}")
+
+    lock_status = executor.lock_manager.status()
+    print(f"  Submit Lock:  {'ACTIVE' if lock_status['locked'] else 'not active'}")
+
+    if result.get("errors"):
+        print(f"  Errors: {', '.join(result['errors'])}")
+    if result["status"] == "ONE_SHOT_SUBMITTED_FROZEN":
+        print()
+        print("  ONE-SHOT EXECUTED. SYSTEM IS FROZEN.")
+        print("  No second order is possible without manual review.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_submit_lock(args: argparse.Namespace) -> None:
+    """Manage submit-once lock."""
+    from quant_us.live.one_shot_executor import SubmitOnceLockManager
+
+    mgr = SubmitOnceLockManager(lock_path=f"{args.data_root}/live_pilot/submit_once_lock.json")
+
+    if getattr(args, "release", False):
+        lock = mgr.release(args.manual or "cli", args.reason or "manual_release")
+        print(f"Submit-once lock RELEASED: {lock.lock_id}")
+        return
+
+    status = mgr.status()
+    print()
+    print("=" * 60)
+    print(f"  Submit-Once Lock: {'ACTIVE' if status['locked'] else 'not active'}")
+    if status["locked"]:
+        lock = status["lock"]
+        print(f"  Lock ID:        {lock.get('lock_id', '?')}")
+        print(f"  Ticket:         {lock.get('ticket_id', '?')}")
+        print(f"  Client Order:   {lock.get('client_order_id', '?')}")
+        print(f"  Reason:         {lock.get('reason', '?')}")
+        print(f"  Locked At:      {lock.get('locked_at', '?')[:19]}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_post_trade_reconcile(args: argparse.Namespace) -> None:
+    """Run post-trade reconciliation."""
+    from quant_us.live.g5_post_trade import PostTradeReconciler
+
+    reconciler = PostTradeReconciler()
+    result = reconciler.reconcile(ticket_id=args.ticket_id)
+
+    print()
+    print("=" * 60)
+    print(f"  Post-Trade Reconciliation: {args.ticket_id}")
+    print(f"  Status:      {result.status}")
+    print(f"  Fill Qty:    {result.fill_qty}")
+    print(f"  Fill Price:  ${result.fill_price:,.2f}")
+    print(f"  Manual:      {'REQUIRED' if result.requires_manual_review else 'no'}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_freeze_status(args: argparse.Namespace) -> None:
+    """Show freeze state."""
+    from quant_us.live.g5_post_trade import LivePilotFreezeState
+
+    freeze = LivePilotFreezeState(state_dir=f"{args.data_root}/live_pilot")
+    status = freeze.status()
+
+    print()
+    print("=" * 60)
+    print(f"  Live Pilot Freeze: {'ACTIVE' if status['frozen'] else 'not active'}")
+    if status["frozen"]:
+        d = status.get("data", {})
+        print(f"  State:    {status['state']}")
+        print(f"  Ticket:   {d.get('ticket_id', '?')}")
+        print(f"  Frozen:   {d.get('frozen_at', '?')[:19]}")
+        print(f"  Reason:   {d.get('reason', '?')}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_execution_quality(args: argparse.Namespace) -> None:
+    """Generate execution quality report."""
+    from quant_us.live.g5_post_trade import generate_execution_quality
+
+    report = generate_execution_quality(ticket_id=args.ticket_id)
+
+    print()
+    print("=" * 60)
+    print(f"  Execution Quality: {args.ticket_id}")
+    print(f"  Status:    {report.execution_status}")
+    print(f"  Slippage:  {report.slippage_bps} bps")
+    print(f"  Latency:   {report.latency_ms} ms")
+    print(f"  Next:      {report.next_action}")
+    if report.lessons_learned:
+        print("  Lessons:")
+        for l in report.lessons_learned:
+            print(f"    - {l}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_g5_dossier(args: argparse.Namespace) -> None:
+    """Generate G5 post-trade dossier."""
+    output = args.output or f"{args.data_root}/reports/g5_post_trade_dossier.md"
+    from quant_us.live.g5_post_trade import G5PostTradeDossier
+
+    dossier = G5PostTradeDossier(ticket_id=args.ticket_id)
+    dossier.determine_decision()
+
+    Path(output).parent.mkdir(parents=True, exist_ok=True)
+    Path(output).write_text(dossier.to_markdown())
+    Path(output.replace(".md", ".json")).write_text(json.dumps(dossier.to_dict(), indent=2))
+
+    print()
+    print("=" * 60)
+    print(f"  G5 Post-Trade Dossier: {args.ticket_id}")
+    print(f"  Decision: {dossier.decision}")
+    print(f"  Saved:    {output}")
+    print("=" * 60)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# G6: live-pilot risk-status
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_risk_status(args: argparse.Namespace) -> None:
+    """Show cumulative risk status for a micro pilot episode."""
+    from quant_us.live.g6_risk_monitor import CumulativeLiveRiskMonitor
+
+    monitor = CumulativeLiveRiskMonitor(data_root=args.data_root)
+    state = monitor.evaluate(episode_id=args.episode_id)
+
+    print()
+    print("=" * 60)
+    print(f"  Cumulative Risk Status: {args.episode_id}")
+    print(f"  Status:                {state.status}")
+    print(f"  Total Orders:          {state.total_order_count}")
+    print(f"  Daily Orders:          {state.daily_order_count}")
+    print(f"  Cumulative Notional:   ${state.cumulative_notional:,.2f}")
+    print(f"  Realized PnL:          ${state.cumulative_realized_pnl:,.2f}")
+    print(f"  Unrealized PnL:        ${state.cumulative_unrealized_pnl:,.2f}")
+    print(f"  Fees:                  ${state.cumulative_fees:,.2f}")
+    print(f"  Slippage:              {state.cumulative_slippage_bps:.1f} bps")
+    print(f"  Open Positions:        {state.live_open_position_count}")
+    print(f"  Incidents:             {state.incident_count}")
+    print(f"  Recon Fails:           {state.recon_fail_count}")
+    print(f"  Broker Errors:         {state.broker_error_count}")
+    print("=" * 60)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# G6: live-pilot exit-plan
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_exit_plan_create(args: argparse.Namespace) -> None:
+    """Create a reduce-only exit plan for a live position."""
+    from quant_us.live.g6_exit_plan import LivePositionExitPlanBuilder
+
+    builder = LivePositionExitPlanBuilder(data_root=args.data_root)
+    plan = builder.build(
+        episode_id=args.episode_id,
+        ticket_id=args.ticket_id,
+        symbol=args.symbol,
+        current_qty=args.qty,
+        entry_price=args.entry_price,
+        exit_reason=getattr(args, "exit_reason", "manual_exit"),
+    )
+    builder.save(plan)
+
+    print()
+    print("=" * 60)
+    print(f"  Exit Plan Created: {plan.exit_plan_id}")
+    print(f"  Episode:           {plan.episode_id}")
+    print(f"  Ticket:            {plan.ticket_id}")
+    print(f"  Symbol:            {plan.symbol}")
+    print(f"  Position:          {plan.current_qty}")
+    print(f"  Suggested:         {plan.suggested_side} {plan.suggested_qty} @ ${plan.suggested_limit_price:.2f}")
+    print(f"  Reduce-Only:       {plan.reduce_only}")
+    print(f"  Status:            {plan.status}")
+    print(f"  Saved:             {builder.plans_dir / (plan.exit_plan_id + '.json')}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_exit_plan_inspect(args: argparse.Namespace) -> None:
+    """Inspect an exit plan."""
+    from quant_us.live.g6_exit_plan import LivePositionExitPlanBuilder
+
+    builder = LivePositionExitPlanBuilder(data_root=args.data_root)
+    plan = builder.load(args.exit_plan_id)
+
+    if plan is None:
+        print(f"Exit plan not found: {args.exit_plan_id}")
+        return
+
+    print()
+    print("=" * 60)
+    print(f"  Exit Plan:         {plan.exit_plan_id}")
+    print(f"  Episode:           {plan.episode_id}")
+    print(f"  Ticket:            {plan.ticket_id}")
+    print(f"  Symbol:            {plan.symbol}")
+    print(f"  Current Qty:       {plan.current_qty}")
+    print(f"  Entry Price:       ${plan.average_entry_price:,.2f}")
+    print(f"  Market Price:      ${plan.current_market_price:,.2f}")
+    print(f"  Unrealized PnL:    ${plan.unrealized_pnl:,.2f}")
+    print(f"  Exit Reason:       {plan.exit_reason}")
+    print(f"  Suggested:         {plan.suggested_side} {plan.suggested_qty} @ ${plan.suggested_limit_price:.2f}")
+    print(f"  Reduce-Only:       {plan.reduce_only}")
+    print(f"  Manual Approval:   {plan.manual_approval_required}")
+    print(f"  Status:            {plan.status}")
+    print(f"  Created:           {plan.created_at[:19] if plan.created_at else '?'}")
+    if plan.notes:
+        print(f"  Notes:             {plan.notes}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_exit_plan_execute(args: argparse.Namespace) -> None:
+    """Execute an exit plan (dry-run by default)."""
+    from quant_us.live.g6_reduce_only_executor import ReduceOnlyExitExecutor
+
+    executor = ReduceOnlyExitExecutor(
+        data_root=args.data_root,
+        dry_run=getattr(args, "dry_run", True),
+    )
+    result = executor.execute(
+        exit_plan_id=args.exit_plan_id,
+        manual_approval=getattr(args, "manual_approval", False),
+    )
+
+    print()
+    print("=" * 60)
+    print(f"  Exit Plan Execute: {args.exit_plan_id}")
+    print(f"  Dry Run:           {result.dry_run}")
+    print(f"  Submitted:         {result.submitted}")
+    print(f"  Reduce-Only OK:    {result.reduce_only_verified}")
+    print(f"  Position Check:    {result.position_check_passed}")
+    if result.errors:
+        print("  Errors:")
+        for e in result.errors:
+            print(f"    - {e}")
+    print("=" * 60)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# G6: live-pilot episode final-dossier
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_episode_final_dossier(args: argparse.Namespace) -> None:
+    """Generate final dossier for a micro pilot episode."""
+    from quant_us.live.g6_final_dossier import MicroPilotFinalDossierBuilder
+
+    builder = MicroPilotFinalDossierBuilder(data_root=args.data_root)
+    dossier = builder.build(args.episode_id)
+    path = builder.save(dossier)
+
+    print()
+    print("=" * 60)
+    print(f"  Micro Pilot Final Dossier")
+    print(f"  Episode:     {args.episode_id}")
+    print(f"  Dossier ID:  {dossier.dossier_id}")
+    print(f"  Decision:    {dossier.decision}")
+    if dossier.decision_reasons:
+        print("  Reasons:")
+        for r in dossier.decision_reasons:
+            print(f"    - {r}")
+    print(f"  Saved:       {path}")
+    print("=" * 60)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# G6: Second review / Episode / Progression handlers
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_second_review(args: argparse.Namespace) -> None:
+    """Run G6 second one-shot review gate."""
+    from quant_us.live.g6_second_review import SecondOneShotReviewGate
+
+    gate = SecondOneShotReviewGate(data_root=args.data_root)
+    decision = gate.review(
+        g5_ticket_id=args.ticket_id,
+        g5_dossier_path=getattr(args, "dossier_path", ""),
+        manual_review_decision=getattr(args, "manual_review", ""),
+        manual_reviewer=getattr(args, "reviewer", ""),
+    )
+
+    print()
+    print("=" * 60)
+    print(f"  G6 Second One-Shot Review: {args.ticket_id}")
+    print(f"  Decision: {decision.decision}")
+    print(f"  Passed Checks: {', '.join(decision.passed_checks) or 'none'}")
+    print(f"  Block Reasons: {', '.join(decision.block_reasons) or 'none'}")
+    print(f"  Checked At: {decision.checked_at[:19]}")
+    print()
+    print("  NOTE: This is a review gate. It does NOT submit orders.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_episode_create(args: argparse.Namespace) -> None:
+    """Create a new micro-pilot episode."""
+    from quant_us.live.g6_episode import MicroPilotEpisodeManager
+
+    symbols = _parse_symbols(args.symbols) if args.symbols else ["SPY"]
+    mgr = MicroPilotEpisodeManager(data_root=args.data_root)
+    episode = mgr.create(
+        strategy_id=args.strategy_id,
+        symbols=symbols,
+        strategy_version=getattr(args, "strategy_version", "1.0.0"),
+        max_order_count=getattr(args, "max_order_count", 3),
+        max_cumulative_notional=getattr(args, "max_cumulative_notional", 300.0),
+        max_cumulative_loss=getattr(args, "max_cumulative_loss", 10.0),
+        max_order_notional=getattr(args, "max_order_notional", 100.0),
+        max_orders_per_day=getattr(args, "max_orders_per_day", 1),
+    )
+
+    print()
+    print("=" * 60)
+    print("  Micro-Pilot Episode Created")
+    print("=" * 60)
+    print(f"  Episode ID:     {episode.episode_id}")
+    print(f"  Strategy:       {episode.strategy_id} v{episode.strategy_version}")
+    print(f"  Symbols:        {', '.join(episode.symbols)}")
+    print(f"  Status:         {episode.status}")
+    print(f"  Max Orders:     {episode.max_order_count}")
+    print(f"  Max Notional:   ${episode.max_cumulative_notional:,.2f}")
+    print(f"  Max Loss:       ${episode.max_cumulative_loss:,.2f}")
+    print(f"  Started At:     {episode.started_at[:19]}")
+    print()
+    print("  Next: episode add-ticket --episode-id <id> --ticket-id <id>")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_episode_status(args: argparse.Namespace) -> None:
+    """Show micro-pilot episode status."""
+    from quant_us.live.g6_episode import MicroPilotEpisodeManager
+    import json
+
+    mgr = MicroPilotEpisodeManager(data_root=args.data_root)
+    status = mgr.status(args.episode_id)
+
+    print()
+    print("=" * 60)
+    print(f"  Micro-Pilot Episode Status: {args.episode_id}")
+    print("=" * 60)
+    print(json.dumps(status, indent=2))
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_episode_add_ticket(args: argparse.Namespace) -> None:
+    """Add a ticket to a micro-pilot episode."""
+    from quant_us.live.g6_episode import MicroPilotEpisodeManager
+
+    mgr = MicroPilotEpisodeManager(data_root=args.data_root)
+    episode = mgr.add_ticket(
+        episode_id=args.episode_id,
+        ticket_id=args.ticket_id,
+        notional=args.notional,
+    )
+
+    print()
+    print("=" * 60)
+    print(f"  Ticket Added to Episode: {args.episode_id}")
+    print("=" * 60)
+    print(f"  Episode:     {episode.episode_id}")
+    print(f"  Ticket:      {episode.latest_ticket_id}")
+    print(f"  Count:       {episode.completed_order_count}/{episode.max_order_count}")
+    print(f"  Used Notional: ${episode.used_cumulative_notional:,.2f}")
+    print(f"  Status:      {episode.status}")
+    print()
+    print("  NOTE: This records the ticket assignment. It does NOT submit orders.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_episode_terminate(args: argparse.Namespace) -> None:
+    """Terminate a micro-pilot episode."""
+    from quant_us.live.g6_episode import MicroPilotEpisodeManager
+
+    mgr = MicroPilotEpisodeManager(data_root=args.data_root)
+    episode = mgr.terminate(
+        episode_id=args.episode_id,
+        reason=args.reason,
+    )
+
+    print()
+    print("=" * 60)
+    print(f"  Episode TERMINATED: {args.episode_id}")
+    print("=" * 60)
+    print(f"  Reason: {episode.termination_reason}")
+    print(f"  Status: {episode.status}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_episode_dossier(args: argparse.Namespace) -> None:
+    """Show full episode dossier as JSON."""
+    from quant_us.live.g6_episode import MicroPilotEpisodeManager
+    import json
+
+    mgr = MicroPilotEpisodeManager(data_root=args.data_root)
+    episode = mgr.load(args.episode_id)
+
+    print()
+    print("=" * 60)
+    if episode is None:
+        print(f"  Episode not found: {args.episode_id}")
+    else:
+        print(f"  Episode Dossier: {args.episode_id}")
+        print("=" * 60)
+        print(json.dumps(episode.to_dict(), indent=2))
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_progression_status(args: argparse.Namespace) -> None:
+    """Show overall progression status."""
+    from quant_us.live.g6_progression import PilotProgressionController
+    import json
+
+    controller = PilotProgressionController(data_root=args.data_root)
+    status = controller.status()
+
+    print()
+    print("=" * 60)
+    print("  G6 Pilot Progression Status")
+    print("=" * 60)
+    print(json.dumps(status, indent=2))
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_progression_evaluate(args: argparse.Namespace) -> None:
+    """Evaluate progression readiness for G7."""
+    from quant_us.live.g6_progression import PilotProgressionController
+    import json
+
+    controller = PilotProgressionController(data_root=args.data_root)
+    result = controller.evaluate(episode_id=args.episode_id)
+
+    print()
+    print("=" * 60)
+    print(f"  G6 Progression Evaluation: {args.episode_id}")
+    print("=" * 60)
+    print(json.dumps(result, indent=2))
+    print()
+    print("  NOTE: This is a READ-ONLY evaluation. No state is auto-advanced.")
+    print("=" * 60)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# G8: Session command handlers
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_session_create(args: argparse.Namespace) -> None:
+    """Create a new G8 supervised micro live session."""
+    from quant_us.live.g8_session_state import SessionRuntimeStateManager
+    from quant_us.live.g8_session_gate import SessionGate
+
+    mgr = SessionRuntimeStateManager(data_root=args.data_root)
+    from quant_us.core.types import new_id
+    session_id = args.session_id or new_id("g8_session")
+
+    state = mgr.create(
+        promotion_id=args.promotion_id,
+        session_id=session_id,
+        strategy_id=args.strategy,
+        strategy_version=args.strategy_version,
+        symbols=[s.strip().upper() for s in args.symbols.split(",") if s.strip()],
+        max_orders_per_session=args.max_orders,
+        max_orders_per_day=args.max_orders_per_day,
+        max_session_notional=args.max_notional,
+        max_session_loss=args.max_loss,
+    )
+
+    # Create promotion manifest if it doesn't exist
+    gate = SessionGate(data_root=args.data_root)
+    existing = gate.get_promotion(args.promotion_id)
+    if existing is None:
+        gate.create_promotion(args.promotion_id)
+        print("  [INFO] Promotion manifest created (DRAFT).")
+
+    print()
+    print("=" * 60)
+    print("  G8 Supervised Micro Live Session Created")
+    print("=" * 60)
+    print(f"  Session ID:    {state.session_id}")
+    print(f"  Promotion ID:  {state.promotion_id}")
+    print(f"  Strategy:      {state.strategy_id} v{state.strategy_version}")
+    print(f"  Status:        {state.status}")
+    print(f"  Max Orders:    {state.max_orders_per_session}")
+    print(f"  Max Notional:  ${state.max_session_notional:,.2f}")
+    print(f"  Max Loss:      ${state.max_session_loss:,.2f}")
+    print()
+    print("  Next: session arm --session-id <id> --manual")
+    print("  NOTE: Session starts in DRAFT. Must be armed and activated.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_session_arm(args: argparse.Namespace) -> None:
+    """Arm a session (DRAFT -> ARMED)."""
+    from quant_us.live.g8_session_state import SessionRuntimeStateManager
+
+    mgr = SessionRuntimeStateManager(data_root=args.data_root)
+
+    try:
+        state = mgr.arm(args.session_id)
+        print()
+        print("=" * 60)
+        print(f"  Session ARMED: {state.session_id}")
+        print(f"  Status:        {state.status}")
+        print(f"  Promotion:     {state.promotion_id}")
+        print()
+        print("  Next: session activate --session-id <id>")
+        print("  NOTE: Manual approval required before activation.")
+        print("=" * 60)
+        print()
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def cmd_live_pilot_session_activate(args: argparse.Namespace) -> None:
+    """Activate a session (ARMED -> ACTIVE_MANUAL_SUPERVISION)."""
+    from quant_us.live.g8_session_state import SessionRuntimeStateManager
+
+    mgr = SessionRuntimeStateManager(data_root=args.data_root)
+
+    try:
+        state = mgr.activate(args.session_id)
+        print()
+        print("=" * 60)
+        print(f"  Session ACTIVATED: {state.session_id}")
+        print(f"  Status:            {state.status}")
+        print()
+        print("  Session is now ready for supervised one-shot orders.")
+        print("=" * 60)
+        print()
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def cmd_live_pilot_session_status(args: argparse.Namespace) -> None:
+    """Show session status."""
+    from quant_us.live.g8_session_state import SessionRuntimeStateManager
+    import json
+
+    mgr = SessionRuntimeStateManager(data_root=args.data_root)
+    status = mgr.status(args.session_id)
+
+    print()
+    print("=" * 60)
+    if not status.get("exists"):
+        print(f"  Session not found: {args.session_id}")
+    else:
+        print(f"  Session:        {status['session_id']}")
+        print(f"  Promotion:      {status['promotion_id']}")
+        print(f"  Status:         {status['status']}")
+        print(f"  Started:        {status['started_at'][:19]}")
+        print(f"  Updated:        {status['updated_at'][:19]}")
+        print(f"  Orders Submitted: {status['submitted_order_count']}")
+        print(f"  Orders Completed: {status['completed_order_count']}")
+        print(f"  Real Submits:   {status['real_submit_count']}")
+        print(f"  Incidents:      {status['incident_count']}")
+        print(f"  Freeze Reason:  {status['current_freeze_reason'] or 'none'}")
+        print(f"  Manual Review:  {status['manual_review_required']}")
+        print(f"  Tickets:        {', '.join(status['order_ticket_ids']) if status['order_ticket_ids'] else 'none'}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_session_pause(args: argparse.Namespace) -> None:
+    """Pause a session."""
+    from quant_us.live.g8_session_state import SessionRuntimeStateManager
+
+    mgr = SessionRuntimeStateManager(data_root=args.data_root)
+
+    try:
+        state = mgr.pause(args.session_id)
+        print()
+        print("=" * 60)
+        print(f"  Session PAUSED: {state.session_id}")
+        print(f"  Status:         {state.status}")
+        print()
+        print("  Resume: session resume --session-id <id> --manual")
+        print("=" * 60)
+        print()
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def cmd_live_pilot_session_resume(args: argparse.Namespace) -> None:
+    """Resume a frozen session after post-trade review."""
+    from quant_us.live.g8_session_state import SessionRuntimeStateManager
+
+    mgr = SessionRuntimeStateManager(data_root=args.data_root)
+
+    try:
+        state = mgr.resume(args.session_id, reason=args.reason or "POST_TRADE_REVIEW_COMPLETE")
+        print()
+        print("=" * 60)
+        print(f"  Session RESUMED: {state.session_id}")
+        print(f"  Status:          {state.status}")
+        print()
+        print("  Session is ready for the next one-shot order.")
+        print("=" * 60)
+        print()
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def cmd_live_pilot_session_terminate(args: argparse.Namespace) -> None:
+    """Terminate a session."""
+    from quant_us.live.g8_session_state import SessionRuntimeStateManager
+
+    mgr = SessionRuntimeStateManager(data_root=args.data_root)
+
+    try:
+        state = mgr.terminate(args.session_id, reason=args.reason)
+        print()
+        print("=" * 60)
+        print("  Session TERMINATED")
+        print("=" * 60)
+        print(f"  Session: {state.session_id}")
+        print(f"  Status:  {state.status}")
+        print(f"  Reason:  {state.terminated_reason}")
+        print()
+        print("  No further orders allowed in this session.")
+        print("=" * 60)
+        print()
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def cmd_live_pilot_session_one_shot(args: argparse.Namespace) -> None:
+    """Execute a one-shot order within a session (DEFAULT: dry-run)."""
+    from quant_us.live.g8_session_bridge import SessionExecutionBridge
+    import os
+
+    api_key = os.environ.get("APCA_API_KEY_ID", "")
+    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+
+    bridge = SessionExecutionBridge(data_root=args.data_root)
+
+    # dry_run is derived from execute_one_shot:
+    # --execute-one-shot=False (default) -> dry_run=True -> gate blocks
+    # --execute-one-shot=True -> dry_run=False -> gate can pass other checks
+    is_dry_run = not args.execute_one_shot
+
+    result = bridge.execute_one_shot(
+        session_id=args.session_id,
+        ticket_id=args.ticket_id,
+        dry_run=is_dry_run,
+        manual_confirm=args.manual_confirm,
+        envelope_id=args.envelope_id,
+        symbols=[s.strip().upper() for s in args.symbols.split(",") if s.strip()],
+        strategy_id=args.strategy,
+        confirm_live=args.confirm_live,
+        execute_one_shot=args.execute_one_shot,
+        i_understand_real_money=args.i_understand_this_is_real_money,
+        confirm_ticket=args.confirm_ticket,
+        estimated_notional=args.estimated_notional,
+        api_key=api_key,
+        api_secret=api_secret,
+    )
+
+    print()
+    print("=" * 60)
+    print("  G8 Session One-Shot Execution")
+    print("=" * 60)
+    print(f"  Session:         {args.session_id}")
+    print(f"  Ticket:          {args.ticket_id}")
+    print(f"  Dry Run:         {is_dry_run}")
+    print(f"  Status:          {result['status']}")
+    print(f"  Real Submit:     {result['real_submit_occurred']}")
+    print(f"  Freeze Applied:  {result.get('freeze_applied', False)}")
+    print(f"  Gate Decision:   {result.get('gate_decision', {}).get('decision', 'N/A')}")
+
+    if result.get("errors"):
+        print("  Errors:")
+        for err in result["errors"]:
+            print(f"    - {err}")
+
+    print()
+    if result["real_submit_occurred"]:
+        print("  REAL ORDER SUBMITTED. Session is now FROZEN.")
+        print("  Post-trade review required before resume.")
+    else:
+        print("  No real orders were submitted (dry-run).")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_session_report(args: argparse.Namespace) -> None:
+    """Generate a session report."""
+    from quant_us.live.g8_session_report import SessionReportBuilder
+
+    builder = SessionReportBuilder(data_root=args.data_root)
+    report = builder.build(args.session_id)
+    path = builder.save(report)
+
+    if args.markdown:
+        print(builder.to_markdown(report))
+    else:
+        import json
+        print()
+        print("=" * 60)
+        print(f"  G8 Session Report: {args.session_id}")
+        print("=" * 60)
+        print(json.dumps(report.to_dict(), indent=2))
+        print("=" * 60)
+        print()
+
+    print(f"  Report saved: {path}")
+
+
+def cmd_live_pilot_session_daily_cap(args: argparse.Namespace) -> None:
+    """Show daily cap status for a session."""
+    from quant_us.live.g8_daily_cap import DailyTradingCapManager
+    from datetime import date
+
+    mgr = DailyTradingCapManager(data_root=args.data_root)
+    today = date.today().isoformat()
+    cap = mgr.load(args.session_id, today)
+
+    print()
+    print("=" * 60)
+    print(f"  Daily Cap: session={args.session_id} date={today}")
+    print("=" * 60)
+    if cap is None:
+        print("  No cap data for today. No orders submitted yet.")
+    else:
+        print(f"  Status:                   {cap.status}")
+        print(f"  Orders:                   {cap.orders_submitted_today}/{cap.max_orders_today}")
+        print(f"  Notional Used:            ${cap.notional_used_today:,.2f} / ${cap.max_notional_today:,.2f}")
+        print(f"  Realized PnL:             ${cap.realized_pnl_today:,.2f} / -${cap.max_loss_today:,.2f} max loss")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_session_promotion_approve(args: argparse.Namespace) -> None:
+    """Approve a promotion for G8 review."""
+    from quant_us.live.g8_session_gate import SessionGate
+
+    gate = SessionGate(data_root=args.data_root)
+
+    try:
+        manifest = gate.approve_promotion(args.promotion_id)
+        print()
+        print("=" * 60)
+        print(f"  Promotion APPROVED_FOR_G8_REVIEW: {args.promotion_id}")
+        print(f"  Status: {manifest['status']}")
+        print("=" * 60)
+        print()
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def cmd_live_pilot_session_promotion_status(args: argparse.Namespace) -> None:
+    """Show promotion status."""
+    from quant_us.live.g8_session_gate import SessionGate
+
+    gate = SessionGate(data_root=args.data_root)
+    manifest = gate.get_promotion(args.promotion_id)
+
+    print()
+    print("=" * 60)
+    if manifest is None:
+        print(f"  Promotion not found: {args.promotion_id}")
+    else:
+        print(f"  Promotion: {manifest['promotion_id']}")
+        print(f"  Status:     {manifest['status']}")
+        print(f"  Created:    {manifest['created_at'][:19]}")
+        print(f"  Updated:    {manifest['updated_at'][:19]}")
+    print("=" * 60)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# G7: live-pilot scorecard
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_scorecard(args: argparse.Namespace) -> None:
+    """Build pilot scorecard for promotion readiness."""
+    from quant_us.live.g7_scorecard import PilotScorecardBuilder
+
+    builder = PilotScorecardBuilder(data_root=args.data_root)
+    scorecard = builder.build(args.episode_id)
+    path = builder.save(scorecard)
+
+    print()
+    print("=" * 60)
+    print("  G7 Pilot Scorecard")
+    print("=" * 60)
+    print(f"  Scorecard ID: {scorecard.scorecard_id}")
+    print(f"  Episode:      {scorecard.episode_id}")
+    print(f"  Strategy:     {scorecard.strategy_id} v{scorecard.strategy_version}")
+    print(f"  Orders:       {scorecard.clean_order_count}/{scorecard.order_count} clean")
+    print(f"  Incidents:    {scorecard.incident_count}")
+    print(f"  Recon Fails:  {scorecard.recon_fail_count}")
+    print(f"  Duplicates:   {scorecard.duplicate_order_count}")
+    print(f"  PnL:          ${scorecard.cumulative_pnl:,.2f}")
+    print(f"  Score:        {scorecard.final_score:.1f} / 100")
+    print(f"  Decision:     {scorecard.decision}")
+    if scorecard.decision_reasons:
+        print("  Reasons:")
+        for r in scorecard.decision_reasons:
+            print(f"    - {r}")
+    print(f"  Saved:        {path}")
+    print()
+    print("  NOTE: This is a read-only evaluation. No promotion is auto-executed.")
+    print("=" * 60)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# G7: live-pilot promote (promotion manifest)
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_promote_create(args: argparse.Namespace) -> None:
+    """Create a promotion manifest from an episode scorecard."""
+    from quant_us.live.g7_manifest import StrategyPromotionManifestManager
+
+    mgr = StrategyPromotionManifestManager(data_root=args.data_root)
+
+    manifest = mgr.create(
+        source_episode_id=args.episode_id,
+        scorecard_path=getattr(args, "scorecard_path", ""),
+        strategy_id=getattr(args, "strategy_id", ""),
+        strategy_version=getattr(args, "strategy_version", "1.0.0"),
+        paper_30d_path=getattr(args, "paper_30d_path", ""),
+        shadow_5d_path=getattr(args, "shadow_5d_path", ""),
+        g5_dossier_path=getattr(args, "g5_dossier_path", ""),
+        g6_episode_dossier_path=getattr(args, "g6_dossier_path", ""),
+        approved_symbols=_parse_symbols(getattr(args, "symbols", "")),
+        approved_capital_limit=float(getattr(args, "capital_limit", 1000.0)),
+        approved_order_limit=int(getattr(args, "order_limit", 3)),
+        approved_session_limit=int(getattr(args, "session_limit", 1)),
+        approved_risk_envelope_id=getattr(args, "envelope_id", ""),
+    )
+
+    print()
+    print("=" * 60)
+    print("  Promotion Manifest Created")
+    print("=" * 60)
+    print(f"  Promotion ID:  {manifest.promotion_id}")
+    print(f"  Episode:       {manifest.source_episode_id}")
+    print(f"  Strategy:      {manifest.strategy_id} v{manifest.strategy_version}")
+    print(f"  Status:        {manifest.status}")
+    print(f"  Created:       {manifest.created_at[:19]}")
+    print()
+    print("  Next: promotion-board review --promotion-id <id> --board-member <name>")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_promote_inspect(args: argparse.Namespace) -> None:
+    """Inspect a promotion manifest."""
+    from quant_us.live.g7_manifest import StrategyPromotionManifestManager
+    import json
+
+    mgr = StrategyPromotionManifestManager(data_root=args.data_root)
+    manifest = mgr.load(args.promotion_id)
+
+    print()
+    print("=" * 60)
+    if manifest is None:
+        print(f"  Promotion not found: {args.promotion_id}")
+    else:
+        print(f"  Promotion Manifest: {args.promotion_id}")
+        print("=" * 60)
+        print(json.dumps(manifest.to_dict(), indent=2))
+
+        valid, reason = mgr.is_valid_for_g8(args.promotion_id)
+        print()
+        print(f"  Valid for G8: {valid}")
+        if not valid:
+            print(f"  Reason: {reason}")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_promote_approve(args: argparse.Namespace) -> None:
+    """Approve a promotion manifest (requires board member name)."""
+    from quant_us.live.g7_manifest import StrategyPromotionManifestManager
+
+    board_member = getattr(args, "board_member", "") or getattr(args, "manual", "")
+    if not board_member:
+        print("ERROR: --board-member <name> is required for approval")
+        return
+
+    mgr = StrategyPromotionManifestManager(data_root=args.data_root)
+    manifest = mgr.approve(
+        promotion_id=args.promotion_id,
+        approved_by=board_member,
+    )
+
+    print()
+    print("=" * 60)
+    print(f"  Promotion APPROVED: {args.promotion_id}")
+    print("=" * 60)
+    print(f"  Approved By: {manifest.approved_by}")
+    print(f"  Approved At: {manifest.approved_at[:19]}")
+    print(f"  Expires At:  {manifest.expires_at[:19]}")
+    print(f"  Status:      {manifest.status}")
+    print()
+    print("  NOTE: This manifest is now valid for G8 review for 7 days.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_promote_reject(args: argparse.Namespace) -> None:
+    """Reject a promotion manifest with a reason."""
+    from quant_us.live.g7_manifest import StrategyPromotionManifestManager
+
+    mgr = StrategyPromotionManifestManager(data_root=args.data_root)
+    manifest = mgr.reject(
+        promotion_id=args.promotion_id,
+        reason=args.reason,
+    )
+
+    print()
+    print("=" * 60)
+    print(f"  Promotion REJECTED: {args.promotion_id}")
+    print("=" * 60)
+    print(f"  Reason: {manifest.rejection_reason}")
+    print(f"  Status: {manifest.status}")
+    print("=" * 60)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# G7: live-pilot promotion-board
+# ---------------------------------------------------------------------------
+
+
+def cmd_live_pilot_promotion_board_list(args: argparse.Namespace) -> None:
+    """List all pending promotion reviews."""
+    from quant_us.live.g7_promotion_board import PromotionBoard
+    import json
+
+    board = PromotionBoard(data_root=args.data_root)
+    pending = board.list_pending()
+
+    print()
+    print("=" * 60)
+    print(f"  Pending Promotions: {len(pending)}")
+    print("=" * 60)
+    if pending:
+        print(json.dumps(pending, indent=2))
+    else:
+        print("  No pending promotions.")
+    print("=" * 60)
+    print()
+
+
+def cmd_live_pilot_promotion_board_review(args: argparse.Namespace) -> None:
+    """Human board member reviews a promotion."""
+    from quant_us.live.g7_promotion_board import PromotionBoard
+
+    # Map decision strings
+    decision_map = {
+        "approve": "APPROVED_FOR_G8_REVIEW",
+        "reject": "REJECTED",
+        "more-evidence": "MORE_EVIDENCE_REQUIRED",
+    }
+
+    decision_str = decision_map.get(args.decision, args.decision.upper())
+    board = PromotionBoard(data_root=args.data_root)
+    result = board.review(
+        promotion_id=args.promotion_id,
+        board_member=args.board_member,
+        decision=decision_str,
+        reason=args.reason,
+    )
+
+    print()
+    print("=" * 60)
+    print(f"  Board Review Complete: {args.promotion_id}")
+    print("=" * 60)
+    print(f"  Decision ID:  {result.decision_id}")
+    print(f"  Board Member: {result.board_member}")
+    print(f"  Decision:     {result.decision}")
+    print(f"  Reason:       {result.reason}")
+    if result.conditions:
+        print(f"  Conditions:   {', '.join(result.conditions)}")
+    print(f"  Decided At:   {result.decided_at[:19]}")
+    print()
+    print("  Audit trail written.")
+    print("=" * 60)
+    print()
+
+
+def _add_live_pilot_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser(
+        "live-pilot",
+        parents=[_shared_parent()],
+        help="G3 Small Live Pilot: approval, risk envelope, dry-run, emergency stop, dossier",
+    )
+    pilot_sub = p.add_subparsers(dest="pilot_command")
+
+    # approval create
+    apr_create = pilot_sub.add_parser("approval-create", help="Create approval request")
+    apr_create.add_argument("--approval-id", required=True, help="Unique approval ID")
+    apr_create.add_argument("--strategy", default="etf_rotation", help="Strategy ID")
+    apr_create.add_argument("--strategy-version", default="1.0.0", help="Strategy version")
+    apr_create.add_argument("--symbols", default="SPY,QQQ", help="Approved symbols")
+    apr_create.add_argument("--requested-by", default="", help="Who requested")
+    apr_create.add_argument("--capital", type=float, default=1000.0, help="Proposed capital")
+    apr_create.set_defaults(func=cmd_live_pilot_approval_create)
+
+    # approval inspect
+    apr_inspect = pilot_sub.add_parser("approval-inspect", help="Inspect approval")
+    apr_inspect.add_argument("--approval-id", required=True, help="Approval ID")
+    apr_inspect.set_defaults(func=cmd_live_pilot_approval_inspect)
+
+    # approval approve
+    apr_approve = pilot_sub.add_parser("approval-approve", help="Approve request (manual)")
+    apr_approve.add_argument("--approval-id", required=True, help="Approval ID")
+    apr_approve.add_argument("--manual", default="", help="Approver name")
+    apr_approve.set_defaults(func=cmd_live_pilot_approval_approve)
+
+    # approval reject
+    apr_reject = pilot_sub.add_parser("approval-reject", help="Reject request")
+    apr_reject.add_argument("--approval-id", required=True, help="Approval ID")
+    apr_reject.add_argument("--reason", required=True, help="Rejection reason")
+    apr_reject.set_defaults(func=cmd_live_pilot_approval_reject)
+
+    # approval list
+    apr_list = pilot_sub.add_parser("approval-list", help="List approvals")
+    apr_list.set_defaults(func=cmd_live_pilot_approval_list)
+
+    # risk-envelope create
+    env_create = pilot_sub.add_parser("risk-envelope-create", help="Create risk envelope")
+    env_create.add_argument("--envelope-id", required=True, help="Envelope ID")
+    env_create.add_argument("--strategy", default="etf_rotation", help="Strategy ID")
+    env_create.add_argument("--symbols", default="SPY,QQQ", help="Allowed symbols")
+    env_create.set_defaults(func=cmd_live_pilot_risk_envelope_create)
+
+    # risk-envelope inspect
+    env_inspect = pilot_sub.add_parser("risk-envelope-inspect", help="Inspect envelope")
+    env_inspect.add_argument("--envelope-id", required=True, help="Envelope ID")
+    env_inspect.set_defaults(func=cmd_live_pilot_risk_envelope_inspect)
+
+    # risk-envelope validate
+    env_validate = pilot_sub.add_parser("risk-envelope-validate", help="Validate against envelope")
+    env_validate.add_argument("--envelope-id", required=True, help="Envelope ID")
+    env_validate.add_argument("--notional", type=float, default=100.0, help="Order notional to check")
+    env_validate.set_defaults(func=cmd_live_pilot_risk_envelope_validate)
+
+    # dry-run
+    dry_run = pilot_sub.add_parser("dry-run", help="Run live pilot dry-run (no real orders)")
+    dry_run.add_argument("--approval-id", required=True, help="Approval ID")
+    dry_run.add_argument("--envelope-id", required=True, help="Envelope ID")
+    dry_run.add_argument("--strategy", default="etf_rotation", help="Strategy ID")
+    dry_run.add_argument("--symbols", default="SPY,QQQ", help="Symbols")
+    dry_run.add_argument("--data-root", default="data", help="Data root path")
+    dry_run.set_defaults(func=cmd_live_pilot_dry_run)
+
+    # emergency-stop trigger
+    es_trigger = pilot_sub.add_parser("emergency-stop-trigger", help="Trigger emergency stop")
+    es_trigger.add_argument("--reason", required=True, help="Stop reason (manual_stop, recon_fail, etc.)")
+    es_trigger.add_argument("--data-root", default="data", help="Data root path")
+    es_trigger.set_defaults(func=cmd_live_pilot_emergency_stop_trigger)
+
+    # emergency-stop status
+    es_status = pilot_sub.add_parser("emergency-stop-status", help="Show emergency stop status")
+    es_status.add_argument("--data-root", default="data", help="Data root path")
+    es_status.set_defaults(func=cmd_live_pilot_emergency_stop_status)
+
+    # emergency-stop acknowledge
+    es_ack = pilot_sub.add_parser("emergency-stop-acknowledge", help="Acknowledge emergency stop")
+    es_ack.add_argument("--data-root", default="data", help="Data root path")
+    es_ack.set_defaults(func=cmd_live_pilot_emergency_stop_acknowledge)
+
+    # emergency-stop resolve
+    es_resolve = pilot_sub.add_parser("emergency-stop-resolve", help="Resolve emergency stop")
+    es_resolve.add_argument("--data-root", default="data", help="Data root path")
+    es_resolve.set_defaults(func=cmd_live_pilot_emergency_stop_resolve)
+
+    # rollback plan
+    rollback = pilot_sub.add_parser("rollback-plan", help="Generate rollback plan")
+    rollback.add_argument("--reason", default="", help="Stop reason")
+    rollback.add_argument("--data-root", default="data", help="Data root path")
+    rollback.set_defaults(func=cmd_live_pilot_rollback_plan)
+
+    # dossier
+    dossier = pilot_sub.add_parser("dossier", help="Generate G3 Go/No-Go dossier")
+    dossier.add_argument("--output", default="", help="Output path for markdown")
+    dossier.add_argument("--data-root", default="data", help="Data root path")
+    dossier.set_defaults(func=cmd_live_pilot_dossier)
+
+    # G4 commands
+    # execute
+    execute = pilot_sub.add_parser("execute", help="Execute live pilot order (DEFAULT: dry-run)")
+    execute.add_argument("--approval-id", required=True, help="Approval ID")
+    execute.add_argument("--envelope-id", required=True, help="Envelope ID")
+    execute.add_argument("--symbols", default="SPY,QQQ", help="Symbols")
+    execute.add_argument("--strategy", default="etf_rotation", help="Strategy ID")
+    execute.add_argument("--dry-run", action="store_true", default=True, help="Dry-run mode (default: True)")
+    execute.add_argument("--execute-live-pilot", action="store_true", default=False, help="REAL execute live pilot order")
+    execute.add_argument("--confirm-live", action="store_true", default=False, help="Confirm live order submission")
+    execute.add_argument("--data-root", default="data", help="Data root path")
+    execute.set_defaults(func=cmd_live_pilot_execute)
+
+    # first-order-simulate
+    fos = pilot_sub.add_parser("first-order-simulate", help="Simulate first live order (no submit)")
+    fos.add_argument("--approval-id", required=True, help="Approval ID")
+    fos.add_argument("--envelope-id", required=True, help="Envelope ID")
+    fos.add_argument("--symbols", default="SPY,QQQ", help="Symbols")
+    fos.add_argument("--strategy", default="etf_rotation", help="Strategy ID")
+    fos.add_argument("--data-root", default="data", help="Data root path")
+    fos.set_defaults(func=cmd_live_pilot_first_order_simulate)
+
+    # audit
+    audit_p = pilot_sub.add_parser("audit", help="Show live order audit trail")
+    audit_p.add_argument("--latest", action="store_true", default=True, help="Latest entries")
+    audit_p.add_argument("--run-id", default="", help="Filter by run ID")
+    audit_p.add_argument("--data-root", default="data", help="Data root path")
+    audit_p.set_defaults(func=cmd_live_pilot_audit_trail)
+
+    # status
+    status_p = pilot_sub.add_parser("status", help="Show live pilot status")
+    status_p.add_argument("--run-id", default="", help="Run ID")
+    status_p.add_argument("--data-root", default="data", help="Data root path")
+    status_p.set_defaults(func=cmd_live_pilot_executor_status)
+
+    # stop
+    stop_p = pilot_sub.add_parser("stop", help="Stop live pilot")
+    stop_p.add_argument("--run-id", default="", help="Run ID")
+    stop_p.add_argument("--data-root", default="data", help="Data root path")
+    stop_p.set_defaults(func=cmd_live_pilot_stop)
+
+    # G5 commands
+    # first-order-ticket
+    fot = pilot_sub.add_parser("first-order-ticket", help="Generate first live order ticket (no submit)")
+    fot.add_argument("--approval-id", required=True, help="Approval ID")
+    fot.add_argument("--envelope-id", required=True, help="Envelope ID")
+    fot.add_argument("--symbols", default="SPY,QQQ", help="Symbols")
+    fot.add_argument("--side", default="buy", choices=["buy", "sell"], help="Order side")
+    fot.add_argument("--quantity", type=float, default=1.0, help="Order quantity")
+    fot.add_argument("--limit-price", type=float, default=500.0, help="Limit price")
+    fot.add_argument("--data-root", default="data", help="Data root path")
+    fot.set_defaults(func=cmd_live_pilot_first_order_ticket)
+
+    # confirm-ticket
+    ct = pilot_sub.add_parser("confirm-ticket", help="Final human confirmation of ticket")
+    ct.add_argument("--ticket-id", required=True, help="Ticket ID to confirm")
+    ct.add_argument("--manual", default="", help="Confirmer name")
+    ct.add_argument("--data-root", default="data", help="Data root path")
+    ct.set_defaults(func=cmd_live_pilot_confirm_ticket)
+
+    # one-shot
+    os_cmd = pilot_sub.add_parser("one-shot", help="One-shot live order execution (DEFAULT: dry-run)")
+    os_cmd.add_argument("--ticket-id", required=True, help="Ticket ID")
+    os_cmd.add_argument("--approval-id", default="", help="Approval ID (defaults to ticket ID)")
+    os_cmd.add_argument("--envelope-id", required=True, help="Envelope ID")
+    os_cmd.add_argument("--symbols", default="SPY,QQQ", help="Symbols")
+    os_cmd.add_argument("--confirm-ticket", default="", help="Must match ticket-id")
+    os_cmd.add_argument("--dry-run", action="store_true", default=True, help="Dry-run mode (default)")
+    os_cmd.add_argument("--execute-one-shot", action="store_true", default=False, help="REAL one-shot execution")
+    os_cmd.add_argument("--confirm-live", action="store_true", default=False, help="Confirm live order")
+    os_cmd.add_argument("--i-understand-this-is-real-money", action="store_true", default=False, help="REAL MONEY acknowledgement")
+    os_cmd.add_argument("--data-root", default="data", help="Data root path")
+    os_cmd.set_defaults(func=cmd_live_pilot_one_shot)
+
+    # submit-lock
+    sl = pilot_sub.add_parser("submit-lock", help="Manage submit-once lock")
+    sl.add_argument("--status", action="store_true", default=True, help="Show lock status")
+    sl.add_argument("--release", action="store_true", default=False, help="Release lock (manual)")
+    sl.add_argument("--manual", default="", help="Releaser name")
+    sl.add_argument("--reason", default="", help="Release reason")
+    sl.add_argument("--data-root", default="data", help="Data root path")
+    sl.set_defaults(func=cmd_live_pilot_submit_lock)
+
+    # post-trade-reconcile
+    ptr = pilot_sub.add_parser("post-trade-reconcile", help="Post-trade reconciliation")
+    ptr.add_argument("--ticket-id", required=True, help="Ticket ID")
+    ptr.add_argument("--data-root", default="data", help="Data root path")
+    ptr.set_defaults(func=cmd_live_pilot_post_trade_reconcile)
+
+    # freeze-status
+    fs = pilot_sub.add_parser("freeze-status", help="Show freeze state")
+    fs.add_argument("--data-root", default="data", help="Data root path")
+    fs.set_defaults(func=cmd_live_pilot_freeze_status)
+
+    # execution-quality
+    eq = pilot_sub.add_parser("execution-quality", help="Generate execution quality report")
+    eq.add_argument("--ticket-id", required=True, help="Ticket ID")
+    eq.add_argument("--data-root", default="data", help="Data root path")
+    eq.set_defaults(func=cmd_live_pilot_execution_quality)
+
+    # g5-dossier
+    g5d = pilot_sub.add_parser("g5-dossier", help="Generate G5 post-trade dossier")
+    g5d.add_argument("--ticket-id", required=True, help="Ticket ID")
+    g5d.add_argument("--output", default="", help="Output path")
+    g5d.add_argument("--data-root", default="data", help="Data root path")
+    g5d.set_defaults(func=cmd_live_pilot_g5_dossier)
+
+    # ------------------------------------------------------------------
+    # G6 commands
+    # ------------------------------------------------------------------
+
+    # risk-status
+    risk_st = pilot_sub.add_parser("risk-status", help="Show cumulative risk status for micro pilot episode")
+    risk_st.add_argument("--episode-id", required=True, help="Episode ID")
+    risk_st.add_argument("--data-root", default="data", help="Data root path")
+    risk_st.set_defaults(func=cmd_live_pilot_risk_status)
+
+    # exit-plan create
+    ep_create = pilot_sub.add_parser("exit-plan-create", help="Create reduce-only exit plan")
+    ep_create.add_argument("--episode-id", required=True, help="Episode ID")
+    ep_create.add_argument("--ticket-id", required=True, help="Ticket ID")
+    ep_create.add_argument("--symbol", required=True, help="Symbol")
+    ep_create.add_argument("--qty", type=float, required=True, help="Current position (positive=long, negative=short)")
+    ep_create.add_argument("--entry-price", type=float, required=True, help="Average entry price")
+    ep_create.add_argument("--exit-reason", default="manual_exit", help="Exit reason")
+    ep_create.add_argument("--data-root", default="data", help="Data root path")
+    ep_create.set_defaults(func=cmd_live_pilot_exit_plan_create)
+
+    # exit-plan inspect
+    ep_inspect = pilot_sub.add_parser("exit-plan-inspect", help="Inspect an exit plan")
+    ep_inspect.add_argument("--exit-plan-id", required=True, help="Exit plan ID")
+    ep_inspect.add_argument("--data-root", default="data", help="Data root path")
+    ep_inspect.set_defaults(func=cmd_live_pilot_exit_plan_inspect)
+
+    # exit-plan execute
+    ep_exec = pilot_sub.add_parser("exit-plan-execute", help="Execute an exit plan")
+    ep_exec.add_argument("--exit-plan-id", required=True, help="Exit plan ID")
+    ep_exec.add_argument("--dry-run", action="store_true", default=True, help="Dry-run mode (default)")
+    ep_exec.add_argument("--manual-approval", action="store_true", default=False, help="Manual approval flag")
+    ep_exec.add_argument("--data-root", default="data", help="Data root path")
+    ep_exec.set_defaults(func=cmd_live_pilot_exit_plan_execute)
+
+    # episode final-dossier
+    ep_fd = pilot_sub.add_parser("episode-final-dossier", help="Generate micro pilot final dossier")
+    ep_fd.add_argument("--episode-id", required=True, help="Episode ID")
+    ep_fd.add_argument("--data-root", default="data", help="Data root path")
+    ep_fd.set_defaults(func=cmd_live_pilot_episode_final_dossier)
+
+    # ------------------------------------------------------------------
+    # G6: second-review
+    # ------------------------------------------------------------------
+    sr = pilot_sub.add_parser("second-review", help="G6 second one-shot review gate")
+    sr.add_argument("--ticket-id", required=True, help="G5 ticket ID to review")
+    sr.add_argument("--dossier-path", default="", help="Custom dossier path (optional)")
+    sr.add_argument("--manual-review", default="", choices=["approve", "reject", ""],
+                    help="Manual review decision (approve/reject)")
+    sr.add_argument("--reviewer", default="", help="Manual reviewer name")
+    sr.add_argument("--data-root", default="data", help="Data root path")
+    sr.set_defaults(func=cmd_live_pilot_second_review)
+
+    # ------------------------------------------------------------------
+    # G6: episode subcommands
+    # ------------------------------------------------------------------
+    ep_mgr = pilot_sub.add_parser("episode", help="Micro-pilot episode management")
+    ep_sub = ep_mgr.add_subparsers(dest="episode_command")
+
+    ep_create_sub = ep_sub.add_parser("create", help="Create a new micro-pilot episode")
+    ep_create_sub.add_argument("--strategy-id", required=True, help="Strategy ID")
+    ep_create_sub.add_argument("--strategy-version", default="1.0.0", help="Strategy version")
+    ep_create_sub.add_argument("--symbols", default="SPY,QQQ", help="Episode symbols")
+    ep_create_sub.add_argument("--max-order-count", type=int, default=3, help="Max orders in episode")
+    ep_create_sub.add_argument("--max-cumulative-notional", type=float, default=300.0,
+                               help="Max cumulative notional")
+    ep_create_sub.add_argument("--max-cumulative-loss", type=float, default=10.0,
+                               help="Max cumulative loss")
+    ep_create_sub.add_argument("--max-order-notional", type=float, default=100.0,
+                               help="Max single order notional")
+    ep_create_sub.add_argument("--max-orders-per-day", type=int, default=1, help="Max orders per day")
+    ep_create_sub.add_argument("--data-root", default="data", help="Data root path")
+    ep_create_sub.set_defaults(func=cmd_live_pilot_episode_create)
+
+    ep_status_sub = ep_sub.add_parser("status", help="Show episode status")
+    ep_status_sub.add_argument("--episode-id", required=True, help="Episode ID")
+    ep_status_sub.add_argument("--data-root", default="data", help="Data root path")
+    ep_status_sub.set_defaults(func=cmd_live_pilot_episode_status)
+
+    ep_add_sub = ep_sub.add_parser("add-ticket", help="Add ticket to episode")
+    ep_add_sub.add_argument("--episode-id", required=True, help="Episode ID")
+    ep_add_sub.add_argument("--ticket-id", required=True, help="Ticket ID to add")
+    ep_add_sub.add_argument("--notional", type=float, required=True, help="Ticket notional")
+    ep_add_sub.add_argument("--data-root", default="data", help="Data root path")
+    ep_add_sub.set_defaults(func=cmd_live_pilot_episode_add_ticket)
+
+    ep_term_sub = ep_sub.add_parser("terminate", help="Terminate an episode")
+    ep_term_sub.add_argument("--episode-id", required=True, help="Episode ID")
+    ep_term_sub.add_argument("--reason", required=True, help="Termination reason")
+    ep_term_sub.add_argument("--data-root", default="data", help="Data root path")
+    ep_term_sub.set_defaults(func=cmd_live_pilot_episode_terminate)
+
+    ep_dos_sub = ep_sub.add_parser("dossier", help="Show full episode dossier")
+    ep_dos_sub.add_argument("--episode-id", required=True, help="Episode ID")
+    ep_dos_sub.add_argument("--data-root", default="data", help="Data root path")
+    ep_dos_sub.set_defaults(func=cmd_live_pilot_episode_dossier)
+
+    # ------------------------------------------------------------------
+    # G6: progression
+    # ------------------------------------------------------------------
+    prog = pilot_sub.add_parser("progression", help="Pilot progression controller")
+    prog_sub = prog.add_subparsers(dest="progression_command")
+
+    prog_status_sub = prog_sub.add_parser("status", help="Show overall progression status")
+    prog_status_sub.add_argument("--data-root", default="data", help="Data root path")
+    prog_status_sub.set_defaults(func=cmd_live_pilot_progression_status)
+
+    prog_eval_sub = prog_sub.add_parser("evaluate", help="Evaluate progression readiness")
+    prog_eval_sub.add_argument("--episode-id", required=True, help="Episode ID to evaluate")
+    prog_eval_sub.add_argument("--data-root", default="data", help="Data root path")
+    prog_eval_sub.set_defaults(func=cmd_live_pilot_progression_evaluate)
+
+    # ------------------------------------------------------------------
+    # G8: Session subcommands
+    # ------------------------------------------------------------------
+    session_mgr = pilot_sub.add_parser("session", help="G8 Supervised Micro Live Session management")
+    session_sub = session_mgr.add_subparsers(dest="session_command")
+
+    # session create
+    s_create = session_sub.add_parser("create", help="Create a new supervised micro live session")
+    s_create.add_argument("--session-id", default="", help="Custom session ID (optional)")
+    s_create.add_argument("--promotion-id", required=True, help="Promotion ID for G8 review")
+    s_create.add_argument("--strategy", default="etf_rotation", help="Strategy ID")
+    s_create.add_argument("--strategy-version", default="1.0.0", help="Strategy version")
+    s_create.add_argument("--symbols", default="SPY,QQQ", help="Session symbols")
+    s_create.add_argument("--max-orders", type=int, default=3, help="Max orders per session")
+    s_create.add_argument("--max-orders-per-day", type=int, default=1, help="Max orders per day")
+    s_create.add_argument("--max-notional", type=float, default=300.0, help="Max session notional")
+    s_create.add_argument("--max-loss", type=float, default=10.0, help="Max session loss")
+    s_create.add_argument("--data-root", default="data", help="Data root path")
+    s_create.set_defaults(func=cmd_live_pilot_session_create)
+
+    # session arm
+    s_arm = session_sub.add_parser("arm", help="Arm a session (DRAFT -> ARMED)")
+    s_arm.add_argument("--session-id", required=True, help="Session ID")
+    s_arm.add_argument("--data-root", default="data", help="Data root path")
+    s_arm.set_defaults(func=cmd_live_pilot_session_arm)
+
+    # session activate
+    s_activate = session_sub.add_parser("activate", help="Activate a session (ARMED -> ACTIVE_MANUAL_SUPERVISION)")
+    s_activate.add_argument("--session-id", required=True, help="Session ID")
+    s_activate.add_argument("--data-root", default="data", help="Data root path")
+    s_activate.set_defaults(func=cmd_live_pilot_session_activate)
+
+    # session status
+    s_status = session_sub.add_parser("status", help="Show session status")
+    s_status.add_argument("--session-id", required=True, help="Session ID")
+    s_status.add_argument("--data-root", default="data", help="Data root path")
+    s_status.set_defaults(func=cmd_live_pilot_session_status)
+
+    # session pause
+    s_pause = session_sub.add_parser("pause", help="Pause a session")
+    s_pause.add_argument("--session-id", required=True, help="Session ID")
+    s_pause.add_argument("--data-root", default="data", help="Data root path")
+    s_pause.set_defaults(func=cmd_live_pilot_session_pause)
+
+    # session resume
+    s_resume = session_sub.add_parser("resume", help="Resume a frozen session")
+    s_resume.add_argument("--session-id", required=True, help="Session ID")
+    s_resume.add_argument("--reason", default="POST_TRADE_REVIEW_COMPLETE", help="Resume reason")
+    s_resume.add_argument("--data-root", default="data", help="Data root path")
+    s_resume.set_defaults(func=cmd_live_pilot_session_resume)
+
+    # session terminate
+    s_term = session_sub.add_parser("terminate", help="Terminate a session")
+    s_term.add_argument("--session-id", required=True, help="Session ID")
+    s_term.add_argument("--reason", required=True, help="Termination reason")
+    s_term.add_argument("--data-root", default="data", help="Data root path")
+    s_term.set_defaults(func=cmd_live_pilot_session_terminate)
+
+    # session one-shot
+    s_os = session_sub.add_parser("one-shot", help="Execute a one-shot order within session (DEFAULT: dry-run)")
+    s_os.add_argument("--session-id", required=True, help="Session ID")
+    s_os.add_argument("--ticket-id", required=True, help="Ticket ID")
+    s_os.add_argument("--envelope-id", default="", help="Risk envelope ID")
+    s_os.add_argument("--symbols", default="SPY,QQQ", help="Symbols")
+    s_os.add_argument("--strategy", default="etf_rotation", help="Strategy ID")
+    s_os.add_argument("--estimated-notional", type=float, default=0.0, help="Estimated order notional for cap check")
+    s_os.add_argument("--dry-run", action="store_true", default=True, help="Dry-run mode (default: True)")
+    s_os.add_argument("--manual-confirm", action="store_true", default=False, help="Manual confirmation for gate")
+    s_os.add_argument("--confirm-ticket", default="", help="Confirm ticket ID")
+    s_os.add_argument("--execute-one-shot", action="store_true", default=False, help="REAL one-shot execution")
+    s_os.add_argument("--confirm-live", action="store_true", default=False, help="Confirm live order")
+    s_os.add_argument("--i-understand-this-is-real-money", action="store_true", default=False, help="REAL MONEY")
+    s_os.add_argument("--data-root", default="data", help="Data root path")
+    s_os.set_defaults(func=cmd_live_pilot_session_one_shot)
+
+    # session report
+    s_report = session_sub.add_parser("report", help="Generate session report")
+    s_report.add_argument("--session-id", required=True, help="Session ID")
+    s_report.add_argument("--markdown", action="store_true", default=False, help="Render as markdown")
+    s_report.add_argument("--data-root", default="data", help="Data root path")
+    s_report.set_defaults(func=cmd_live_pilot_session_report)
+
+    # session daily-cap
+    s_dcap = session_sub.add_parser("daily-cap", help="Show daily cap status")
+    s_dcap.add_argument("--session-id", required=True, help="Session ID")
+    s_dcap.add_argument("--data-root", default="data", help="Data root path")
+    s_dcap.set_defaults(func=cmd_live_pilot_session_daily_cap)
+
+    # session promotion-approve
+    s_prom_apr = session_sub.add_parser("promotion-approve", help="Approve promotion for G8 review")
+    s_prom_apr.add_argument("--promotion-id", required=True, help="Promotion ID")
+    s_prom_apr.add_argument("--data-root", default="data", help="Data root path")
+    s_prom_apr.set_defaults(func=cmd_live_pilot_session_promotion_approve)
+
+    # session promotion-status
+    s_prom_st = session_sub.add_parser("promotion-status", help="Show promotion status")
+    s_prom_st.add_argument("--promotion-id", required=True, help="Promotion ID")
+    s_prom_st.add_argument("--data-root", default="data", help="Data root path")
+    s_prom_st.set_defaults(func=cmd_live_pilot_session_promotion_status)
+
+    # ------------------------------------------------------------------
+    # G7: scorecard
+    # ------------------------------------------------------------------
+    sc = pilot_sub.add_parser("scorecard", help="Build G7 pilot scorecard for promotion readiness")
+    sc.add_argument("--episode-id", required=True, help="Episode ID to score")
+    sc.add_argument("--data-root", default="data", help="Data root path")
+    sc.set_defaults(func=cmd_live_pilot_scorecard)
+
+    # ------------------------------------------------------------------
+    # G7: promote (promotion manifest management)
+    # ------------------------------------------------------------------
+    promote = pilot_sub.add_parser("promote", help="G7 promotion manifest management")
+    promote_sub = promote.add_subparsers(dest="promote_command")
+
+    # promote create
+    pc = promote_sub.add_parser("create", help="Create promotion manifest from episode")
+    pc.add_argument("--episode-id", required=True, help="Source episode ID")
+    pc.add_argument("--scorecard-path", default="", help="Path to scorecard evidence")
+    pc.add_argument("--strategy-id", default="", help="Strategy ID (from episode)")
+    pc.add_argument("--strategy-version", default="1.0.0", help="Strategy version")
+    pc.add_argument("--paper-30d-path", default="", help="Path to 30-day paper evidence")
+    pc.add_argument("--shadow-5d-path", default="", help="Path to 5-day shadow evidence")
+    pc.add_argument("--g5-dossier-path", default="", help="Path to G5 post-trade dossier")
+    pc.add_argument("--g6-dossier-path", default="", help="Path to G6 episode dossier")
+    pc.add_argument("--symbols", default="", help="Approved symbols (comma-separated)")
+    pc.add_argument("--capital-limit", type=float, default=1000.0, help="Approved capital limit")
+    pc.add_argument("--order-limit", type=int, default=3, help="Approved order limit")
+    pc.add_argument("--session-limit", type=int, default=1, help="Approved session limit")
+    pc.add_argument("--envelope-id", default="", help="Approved risk envelope ID")
+    pc.add_argument("--data-root", default="data", help="Data root path")
+    pc.set_defaults(func=cmd_live_pilot_promote_create)
+
+    # promote inspect
+    pi = promote_sub.add_parser("inspect", help="Inspect a promotion manifest")
+    pi.add_argument("--promotion-id", required=True, help="Promotion ID")
+    pi.add_argument("--data-root", default="data", help="Data root path")
+    pi.set_defaults(func=cmd_live_pilot_promote_inspect)
+
+    # promote approve
+    pa = promote_sub.add_parser("approve", help="Approve a promotion manifest (requires board member)")
+    pa.add_argument("--promotion-id", required=True, help="Promotion ID")
+    pa.add_argument("--board-member", default="", help="Board member name approving")
+    pa.add_argument("--manual", default="", help="Manual confirmer name (alias for --board-member)")
+    pa.add_argument("--data-root", default="data", help="Data root path")
+    pa.set_defaults(func=cmd_live_pilot_promote_approve)
+
+    # promote reject
+    pr = promote_sub.add_parser("reject", help="Reject a promotion manifest")
+    pr.add_argument("--promotion-id", required=True, help="Promotion ID")
+    pr.add_argument("--reason", required=True, help="Rejection reason")
+    pr.add_argument("--data-root", default="data", help="Data root path")
+    pr.set_defaults(func=cmd_live_pilot_promote_reject)
+
+    # ------------------------------------------------------------------
+    # G7: promotion-board
+    # ------------------------------------------------------------------
+    pb = pilot_sub.add_parser("promotion-board", help="G7 promotion board for human governance review")
+    pb_sub = pb.add_subparsers(dest="board_command")
+
+    # promotion-board list
+    pbl = pb_sub.add_parser("list", help="List pending promotion reviews")
+    pbl.add_argument("--data-root", default="data", help="Data root path")
+    pbl.set_defaults(func=cmd_live_pilot_promotion_board_list)
+
+    # promotion-board review
+    pbr = pb_sub.add_parser("review", help="Board member reviews a promotion")
+    pbr.add_argument("--promotion-id", required=True, help="Promotion ID to review")
+    pbr.add_argument("--board-member", required=True, help="Board member name")
+    pbr.add_argument("--decision", required=True,
+                     choices=["approve", "reject", "more-evidence"],
+                     help="Board decision")
+    pbr.add_argument("--reason", required=True, help="Review reason")
+    pbr.add_argument("--conditions", default="", help="Review conditions (comma-separated)")
+    pbr.add_argument("--data-root", default="data", help="Data root path")
+    pbr.set_defaults(func=cmd_live_pilot_promotion_board_review)
+
+
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# G9: ops (production ops commands)
+# ---------------------------------------------------------------------------
+
+
+def cmd_ops_release_create(args: argparse.Namespace) -> None:
+    """Create a new release manifest."""
+    from quant_us.live.g9_release_manifest import ReleaseManifestManager
+
+    mgr = ReleaseManifestManager(data_root=args.data_root)
+    promotion_ids = [s.strip() for s in (args.promotion_ids or "").split(",") if s.strip()]
+    session_report_ids = [s.strip() for s in (args.session_report_ids or "").split(",") if s.strip()]
+
+    manifest = mgr.create(
+        promotion_ids=promotion_ids or None,
+        session_report_ids=session_report_ids or None,
+    )
+
+    print()
+    print("=" * 60)
+    print("  Release Manifest Created")
+    print("=" * 60)
+    print(f"  Release ID:     {manifest.release_id}")
+    print(f"  Status:         {manifest.status}")
+    print(f"  Config Hash:    {manifest.config_hash[:16] if manifest.config_hash else 'N/A'}...")
+    print(f"  Risk Env Hash:  {manifest.risk_envelope_hash[:16] if manifest.risk_envelope_hash else 'N/A'}...")
+    print(f"  Git Commit:     {manifest.git_commit[:12] if manifest.git_commit else 'N/A'}")
+    print(f"  Promotions:     {len(manifest.promotion_manifest_ids)}")
+    print(f"  Session Reports: {len(manifest.session_report_ids)}")
+    print(f"  Created At:     {manifest.created_at[:19]}")
+    print()
+    print("  Next: ops release approve --release-id <id> --manual <name>")
+    print("  NOTE: This does NOT trigger deployment.")
+    print("=" * 60)
+    print()
+
+
+def cmd_ops_release_inspect(args: argparse.Namespace) -> None:
+    """Inspect a release manifest."""
+    from quant_us.live.g9_release_manifest import ReleaseManifestManager
+
+    mgr = ReleaseManifestManager(data_root=args.data_root)
+    manifest = mgr.load(args.release_id)
+
+    print()
+    print("=" * 60)
+    if manifest is None:
+        print(f"  Release not found: {args.release_id}")
+    else:
+        print(mgr.to_markdown(manifest))
+    print("=" * 60)
+    print()
+
+
+def cmd_ops_release_approve(args: argparse.Namespace) -> None:
+    """Approve a release manifest (manual action). NEVER auto-approves."""
+    from quant_us.live.g9_release_manifest import ReleaseManifestManager
+
+    mgr = ReleaseManifestManager(data_root=args.data_root)
+    try:
+        manifest = mgr.approve(args.release_id, args.manual or "cli_user")
+        print()
+        print("=" * 60)
+        print(f"  Release APPROVED: {manifest.release_id}")
+        print(f"  Approver: {manifest.approved_by}")
+        print(f"  Approved At: {manifest.approved_at[:19] if manifest.approved_at else 'N/A'}")
+        print()
+        print("  WARNING: This is a record-only approval.")
+        print("  It does NOT trigger any deployment.")
+        print("=" * 60)
+        print()
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def cmd_ops_release_rollback(args: argparse.Namespace) -> None:
+    """Mark a release as ROLLED_BACK. Does NOT execute code changes."""
+    from quant_us.live.g9_release_manifest import ReleaseManifestManager
+
+    mgr = ReleaseManifestManager(data_root=args.data_root)
+    try:
+        manifest = mgr.rollback(args.release_id, args.reason or "manual_rollback")
+        print()
+        print("=" * 60)
+        print(f"  Release ROLLED_BACK: {manifest.release_id}")
+        print(f"  Reason: {args.reason or 'manual_rollback'}")
+        print()
+        print("  NOTE: This is a record-only action.")
+        print("  No code changes were executed.")
+        print("=" * 60)
+        print()
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def cmd_ops_release_list(args: argparse.Namespace) -> None:
+    """List all release manifests."""
+    from quant_us.live.g9_release_manifest import ReleaseManifestManager
+
+    mgr = ReleaseManifestManager(data_root=args.data_root)
+    releases = mgr.list_releases()
+
+    print()
+    print("=" * 60)
+    print(f"  Release Manifests — {len(releases)} found")
+    print("=" * 60)
+    if not releases:
+        print("  No releases found.")
+    for r in releases:
+        d = r.to_dict()
+        print(f"  [{d['status']:12s}] {d['release_id']}  "
+              f"created={d['created_at'][:19] if d['created_at'] else '?'}  "
+              f"hash={d['config_hash'][:12] if d['config_hash'] else '?'}...")
+    print("=" * 60)
+    print()
+
+
+def cmd_ops_config_check(args: argparse.Namespace) -> None:
+    """Run config integrity check."""
+    from quant_us.live.g9_config_check import ConfigIntegrityChecker
+
+    print()
+    print("=" * 60)
+    print("  Config Integrity Check")
+    print("=" * 60)
+
+    checker = ConfigIntegrityChecker(data_root=args.data_root)
+    result = checker.check()
+
+    print(f"  Overall: {'PASS' if result.passed else 'FAIL'}")
+    print(f"  Checked: {result.checked_at[:19]}")
+    print()
+    for name, passed in sorted(result.checks.items()):
+        status = "PASS" if passed else "FAIL"
+        print(f"  [{status}] {name}")
+
+    if result.drift_detected:
+        print()
+        print("  Drift Detected:")
+        for d in result.drift_detected:
+            print(f"    - {d}")
+
+    if result.mismatches:
+        print()
+        print("  Mismatches:")
+        for m in result.mismatches:
+            print(f"    - {m.get('field', '?')}: expected={m.get('expected','?')} actual={m.get('actual','?')}")
+
+    saved = checker.save_result(result)
+    print(f"  Result saved: {saved}")
+    print("=" * 60)
+    print()
+
+
+def cmd_ops_backup(args: argparse.Namespace) -> None:
+    """Create a backup of operational state."""
+    from quant_us.live.g9_backup import BackupRestoreController
+
+    print()
+    print("=" * 60)
+    print("  Backup Operational State")
+    print("=" * 60)
+
+    ctrl = BackupRestoreController(data_root=args.data_root)
+    dry_run = getattr(args, "dry_run", False)
+    record = ctrl.create_backup(dry_run=dry_run)
+
+    label = "Dry-Run" if dry_run else "Created"
+    print(f"  Backup {label}:")
+    print(f"  Backup ID:    {record.backup_id}")
+    print(f"  Archive:      {record.archive_name}")
+    print(f"  Files:        {record.file_count}")
+    print(f"  Total Bytes:  {record.total_bytes}")
+    print(f"  Checksum:     {record.checksum[:16] if record.checksum else 'N/A'}...")
+    print(f"  Excluded:     {record.excluded_count}")
+    print(f"  Dry Run:      {record.dry_run}")
+    print()
+    print("  Excluded patterns: .env, *key*, *secret*, *credential*, *token*")
+    print("  NO secrets were included in the backup.")
+    print("=" * 60)
+    print()
+
+
+def cmd_ops_backup_list(args: argparse.Namespace) -> None:
+    """List all backups."""
+    from quant_us.live.g9_backup import BackupRestoreController
+
+    ctrl = BackupRestoreController(data_root=args.data_root)
+    backups = ctrl.list_backups()
+
+    print()
+    print("=" * 60)
+    print(f"  Backups — {len(backups)} found")
+    print("=" * 60)
+    if not backups:
+        print("  No backups found.")
+    for b in backups:
+        print(f"  [{b.backup_id}] {b.archive_name}  "
+              f"files={b.file_count}  bytes={b.total_bytes}  "
+              f"checksum={b.checksum[:12] if b.checksum else '?'}...")
+    print("=" * 60)
+    print()
+
+
+def cmd_ops_restore(args: argparse.Namespace) -> None:
+    """Restore from a backup (default: dry-run)."""
+    from quant_us.live.g9_backup import BackupRestoreController
+
+    print()
+    print("=" * 60)
+    print("  Restore from Backup")
+    print("=" * 60)
+    print(f"  Backup ID:    {args.backup_id}")
+    print(f"  Dry Run:      {args.dry_run}")
+    print()
+
+    ctrl = BackupRestoreController(data_root=args.data_root)
+    result = ctrl.restore(args.backup_id, dry_run=args.dry_run)
+
+    status = result.get("status", "ERROR")
+    print(f"  Status:       {status}")
+    if status == "DRY_RUN":
+        print(f"  Archive:      {result.get('archive', '?')}")
+        print(f"  Members:      {result.get('member_count', 0)}")
+        print(f"  Checksum:     {result.get('checksum', '?')[:16] if result.get('checksum') else '?'}...")
+        print()
+        print("  Dry-run mode -- no files restored.")
+        print("  To restore: ops restore --backup-id <id> --no-dry-run")
+    elif status == "RESTORED":
+        print(f"  Files:        {result.get('restored_file_count', 0)}")
+        print(f"  To:           {result.get('restored_to', '?')}")
+        print()
+        print("  WARNING: Backup restored. Verify integrity immediately.")
+    elif status == "CORRUPTED":
+        print(f"  Error:        {result.get('error', 'archive corrupted')}")
+        print(f"  Expected:     {result.get('expected_checksum', '?')}")
+        print(f"  Actual:       {result.get('actual_checksum', '?')}")
+    else:
+        print(f"  Error:        {result.get('error', 'unknown')}")
+
+    print()
+    print("  NOTE: Restore does NOT trigger any orders.")
+    print("=" * 60)
+    print()
+
+
+def cmd_ops_audit_archive_create(args: argparse.Namespace) -> None:
+    """Create audit archive."""
+    from quant_us.live.g9_audit_archive import AuditArchiveBuilder
+
+    print()
+    print("=" * 60)
+    print("  Audit Archive Create")
+    print("=" * 60)
+
+    builder = AuditArchiveBuilder(data_root=args.data_root)
+    archive = builder.build()
+
+    print(f"  Archive ID:   {archive.archive_id}")
+    print(f"  Archive:      {archive.archive_name}")
+    print(f"  Files:        {archive.audit_file_count}")
+    print(f"  Total Bytes:  {archive.total_bytes}")
+    print(f"  Checksum:     {archive.checksum[:16] if archive.checksum else 'N/A'}...")
+    print(f"  Sources:      {', '.join(archive.audit_sources) or 'none'}")
+    print(f"  Created:      {archive.created_at[:19]}")
+    print()
+    print("  NOTE: Audit archives exclude secret-bearing files.")
+    print("=" * 60)
+    print()
+
+
+def cmd_ops_audit_archive_verify(args: argparse.Namespace) -> None:
+    """Verify audit archive integrity."""
+    from quant_us.live.g9_audit_archive import AuditArchiveBuilder
+
+    print()
+    print("=" * 60)
+    print(f"  Audit Archive Verify: {args.archive_id}")
+    print("=" * 60)
+
+    builder = AuditArchiveBuilder(data_root=args.data_root)
+    result = builder.verify(args.archive_id)
+
+    if result:
+        print("  Result: VERIFIED -- checksum OK")
+    else:
+        print("  Result: FAILED -- checksum mismatch or archive missing")
+
+    print("=" * 60)
+    print()
+
+
+def cmd_ops_audit_archive_list(args: argparse.Namespace) -> None:
+    """List all audit archives."""
+    from quant_us.live.g9_audit_archive import AuditArchiveBuilder
+
+    builder = AuditArchiveBuilder(data_root=args.data_root)
+    archives = builder.list_archives()
+
+    print()
+    print("=" * 60)
+    print(f"  Audit Archives -- {len(archives)} found")
+    print("=" * 60)
+    if not archives:
+        print("  No archives found.")
+    for a in archives:
+        print(f"  [{a.archive_id}] {a.archive_name}  "
+              f"files={a.audit_file_count}  bytes={a.total_bytes}  "
+              f"checksum={a.checksum[:12] if a.checksum else '?'}...")
+    print("=" * 60)
+    print()
+
+
+def cmd_ops_deployment_readiness(args: argparse.Namespace) -> None:
+    """Run deployment readiness check."""
+    from quant_us.live.g9_readiness import ReadinessChecker
+
+    print()
+    print("=" * 60)
+    print("  Deployment Readiness Check")
+    print("=" * 60)
+    print("  NOTE: This is a READ-ONLY assessment. No deployment is triggered.")
+    print()
+
+    checker = ReadinessChecker(data_root=args.data_root)
+    readiness = checker.check()
+
+    print(f"  Check ID:     {readiness.check_id}")
+    print(f"  Status:       {readiness.status}")
+    print(f"  Checked At:   {readiness.checked_at[:19]}")
+    print()
+    print("  Checks:")
+    checks = {
+        "release_exists": readiness.release_exists,
+        "release_approved": readiness.release_approved,
+        "release_manifest_consistent": readiness.release_manifest_consistent,
+        "config_integrity_passed": readiness.config_integrity_passed,
+        "config_drift_detected": readiness.config_drift_detected,
+        "backup_available": readiness.backup_available,
+        "audit_archive_exists": readiness.audit_archive_exists,
+    }
+    for name, passed in sorted(checks.items()):
+        icon = "PASS" if passed else "FAIL"
+        print(f"  [{icon}] {name}")
+
+    if readiness.block_reasons:
+        print()
+        print("  Blocking Reasons:")
+        for r in readiness.block_reasons:
+            print(f"    - {r}")
+
+    print()
+    if readiness.is_ready:
+        print("  RESULT: SYSTEM IS READY for supervised operation.")
+    else:
+        print("  RESULT: SYSTEM IS BLOCKED. Fix blocking reasons above.")
+    print()
+    print("  WARNING: This is a readiness assessment only.")
+    print("  It does NOT trigger any deployment.")
+    print("=" * 60)
+    print()
+
+
+def _add_ops_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser(
+        "ops",
+        parents=[_shared_parent()],
+        help="G9 Production ops commands: release, backup, audit archive, config check, readiness",
+    )
+    ops_sub = p.add_subparsers(dest="ops_command")
+
+    # --- release ---
+    release_p = ops_sub.add_parser("release", help="Manage release manifests")
+    release_sub = release_p.add_subparsers(dest="release_command")
+
+    rel_create = release_sub.add_parser("create", help="Create a new release manifest")
+    rel_create.add_argument("--promotion-ids", default="", help="Comma-separated promotion manifest IDs")
+    rel_create.add_argument("--session-report-ids", default="", help="Comma-separated session report IDs")
+    rel_create.add_argument("--data-root", default="data", help="Data root path")
+    rel_create.set_defaults(func=cmd_ops_release_create)
+
+    rel_inspect = release_sub.add_parser("inspect", help="Inspect a release manifest")
+    rel_inspect.add_argument("--release-id", required=True, help="Release ID")
+    rel_inspect.add_argument("--data-root", default="data", help="Data root path")
+    rel_inspect.set_defaults(func=cmd_ops_release_inspect)
+
+    rel_approve = release_sub.add_parser("approve", help="Approve a release (manual action)")
+    rel_approve.add_argument("--release-id", required=True, help="Release ID")
+    rel_approve.add_argument("--manual", default="", help="Approver name")
+    rel_approve.add_argument("--data-root", default="data", help="Data root path")
+    rel_approve.set_defaults(func=cmd_ops_release_approve)
+
+    rel_rollback = release_sub.add_parser("rollback", help="Mark release as rolled back")
+    rel_rollback.add_argument("--release-id", required=True, help="Release ID")
+    rel_rollback.add_argument("--reason", default="manual_rollback", help="Rollback reason")
+    rel_rollback.add_argument("--data-root", default="data", help="Data root path")
+    rel_rollback.set_defaults(func=cmd_ops_release_rollback)
+
+    rel_list = release_sub.add_parser("list", help="List all release manifests")
+    rel_list.add_argument("--data-root", default="data", help="Data root path")
+    rel_list.set_defaults(func=cmd_ops_release_list)
+
+    # --- config-check ---
+    cc_p = ops_sub.add_parser("config-check", help="Run config integrity check")
+    cc_p.add_argument("--data-root", default="data", help="Data root path")
+    cc_p.set_defaults(func=cmd_ops_config_check)
+
+    # --- backup ---
+    backup_p = ops_sub.add_parser("backup", help="Create a backup of operational state")
+    backup_p.add_argument("--dry-run", action="store_true", default=False, help="Count files but do not create archive")
+    backup_p.add_argument("--data-root", default="data", help="Data root path")
+    backup_p.set_defaults(func=cmd_ops_backup)
+
+    backup_list_p = ops_sub.add_parser("backup-list", help="List all backups")
+    backup_list_p.add_argument("--data-root", default="data", help="Data root path")
+    backup_list_p.set_defaults(func=cmd_ops_backup_list)
+
+    restore_p = ops_sub.add_parser("restore", help="Restore from a backup (default: dry-run)")
+    restore_p.add_argument("--backup-id", required=True, help="Backup ID to restore")
+    restore_p.add_argument("--dry-run", action="store_true", default=True, help="Dry-run mode (default)")
+    restore_p.add_argument("--no-dry-run", action="store_false", dest="dry_run", help="Actually restore files")
+    restore_p.add_argument("--data-root", default="data", help="Data root path")
+    restore_p.set_defaults(func=cmd_ops_restore)
+
+    # --- audit-archive ---
+    aa_p = ops_sub.add_parser("audit-archive", help="Manage audit archives")
+    aa_sub = aa_p.add_subparsers(dest="audit_archive_command")
+
+    aa_create = aa_sub.add_parser("create", help="Create an audit archive")
+    aa_create.add_argument("--data-root", default="data", help="Data root path")
+    aa_create.set_defaults(func=cmd_ops_audit_archive_create)
+
+    aa_verify = aa_sub.add_parser("verify", help="Verify an audit archive")
+    aa_verify.add_argument("--archive-id", required=True, help="Archive ID")
+    aa_verify.add_argument("--data-root", default="data", help="Data root path")
+    aa_verify.set_defaults(func=cmd_ops_audit_archive_verify)
+
+    aa_list = aa_sub.add_parser("list", help="List all audit archives")
+    aa_list.add_argument("--data-root", default="data", help="Data root path")
+    aa_list.set_defaults(func=cmd_ops_audit_archive_list)
+
+    # --- deployment-readiness ---
+    dr_p = ops_sub.add_parser("deployment-readiness", help="Run deployment readiness check")
+    dr_p.add_argument("--data-root", default="data", help="Data root path")
+    dr_p.set_defaults(func=cmd_ops_deployment_readiness)
 # main
 # ---------------------------------------------------------------------------
 
@@ -1718,6 +4694,8 @@ def build_parser() -> argparse.ArgumentParser:
     _add_reconcile_parser(subparsers)
     _add_readiness_parser(subparsers)
     _add_live_parser(subparsers)
+    _add_live_pilot_parser(subparsers)
+    _add_ops_parser(subparsers)
     return parser
 
 

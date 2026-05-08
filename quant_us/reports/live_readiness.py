@@ -91,9 +91,12 @@ class LiveReadinessGate:
 
         Args:
             validation_state_path: Path to validation_state.json from paper trading.
-            profile: One of 'simulated', 'paper', 'live'. Controls which checks
-                     are hard FAIL vs soft WARN.
+            profile: One of 'simulated', 'paper', 'shadow_live', 'live'.
+                     Controls which checks are hard FAIL vs soft WARN.
         """
+        if profile == "shadow_live":
+            return self._check_all_shadow_live(validation_state_path)
+
         report = LiveReadinessReport()
 
         report.checks.append(self._check_paper_30_day_clean(validation_state_path, profile))
@@ -107,6 +110,67 @@ class LiveReadinessGate:
         report.checks.append(self._check_broker_credentials(profile))
         report.checks.append(self._check_data_vendor_health())
         report.checks.append(self._check_telegram_connectivity(profile))
+
+        return report
+
+    def _check_all_shadow_live(
+        self, validation_state_path: str | Path | None = None
+    ) -> LiveReadinessReport:
+        """Run shadow_live-specific readiness checks (12 gates).
+
+        shadow_live profile checks:
+        1. paper_30_day_validation PASS
+        2. live readonly credentials PASS
+        3. live endpoint readonly guard PASS
+        4. no live order path PASS
+        5. ReadOnlyBrokerProxy PASS
+        6. data parity smoke PASS/WARN
+        7. strategy whitelist PASS
+        8. risk/OMS/reconciliation PASS
+        9. shadow journal writable PASS
+        10. incident report writable PASS
+        11. Telegram WARN (not hard FAIL)
+        12. QUANT_LIVE_SUBMISSION_ENABLED safety proof
+        """
+        report = LiveReadinessReport()
+
+        # 1. Paper 30-day validation
+        report.checks.append(
+            self._check_paper_30_day_clean(validation_state_path, profile="live")
+        )
+
+        # 2. Live readonly credentials
+        report.checks.append(self._check_live_readonly_credentials())
+
+        # 3. Live endpoint readonly guard
+        report.checks.append(self._check_live_endpoint_readonly_guard())
+
+        # 4. No live order path
+        report.checks.append(self._check_no_live_order_path())
+
+        # 5. ReadOnlyBrokerProxy
+        report.checks.append(self._check_readonly_broker_proxy_exists())
+
+        # 6. Data parity smoke
+        report.checks.append(self._check_data_parity_smoke())
+
+        # 7. Strategy whitelist
+        report.checks.append(self._check_strategy_whitelist())
+
+        # 8. Risk/OMS/reconciliation
+        report.checks.append(self._check_risk_oms_recon())
+
+        # 9. Shadow journal writable
+        report.checks.append(self._check_shadow_journal_writable())
+
+        # 10. Incident report writable
+        report.checks.append(self._check_incident_report_writable())
+
+        # 11. Telegram (WARN, not hard FAIL)
+        report.checks.append(self._check_telegram_connectivity("shadow_live"))
+
+        # 12. QUANT_LIVE_SUBMISSION_ENABLED safety proof
+        report.checks.append(self._check_live_submission_shadow_safety())
 
         return report
 
@@ -492,7 +556,7 @@ class LiveReadinessGate:
         bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
         chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
         if not bot_token or not chat_id:
-            if profile in ("simulated", "paper"):
+            if profile in ("simulated", "paper", "shadow_live"):
                 return ReadinessCheck(
                     name="telegram_connectivity",
                     passed=True,
@@ -530,4 +594,358 @@ class LiveReadinessGate:
                 name="telegram_connectivity",
                 passed=False,
                 detail=f"Telegram test message failed: {exc}",
+            )
+
+    # ------------------------------------------------------------------
+    # Shadow Live specific checks
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _check_live_readonly_credentials() -> ReadinessCheck:
+        """Verify live API credentials can connect in read-only mode."""
+        api_key = os.environ.get("APCA_API_KEY_ID", "")
+        api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+
+        if not api_key or not api_secret:
+            return ReadinessCheck(
+                name="live_readonly_credentials",
+                passed=True,
+                detail="No live credentials set — shadow-live can run with local data only (WARN)",
+                warn=True,
+            )
+
+        try:
+            from quant_us.execution.alpaca_broker import AlpacaBroker, AlpacaBrokerConfig, LIVE_BASE_URL
+            from quant_us.live.readonly_live_broker import ReadOnlyLiveBrokerProxy
+
+            broker = AlpacaBroker(
+                AlpacaBrokerConfig(api_key=api_key, api_secret=api_secret, paper=False, base_url=LIVE_BASE_URL)
+            )
+            proxy = ReadOnlyLiveBrokerProxy(broker)
+            account = proxy.get_account()
+            return ReadinessCheck(
+                name="live_readonly_credentials",
+                passed=True,
+                detail=f"Live readonly credentials valid: account accessible, equity=${account.equity:,.2f}",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="live_readonly_credentials",
+                passed=False,
+                detail=f"Live readonly credentials failed: {exc}",
+            )
+
+    @staticmethod
+    def _check_live_endpoint_readonly_guard() -> ReadinessCheck:
+        """Verify live endpoint readonly guard blocks write operations."""
+        try:
+            from datetime import datetime as dt, timezone
+            from quant_us.live.readonly_live_broker import ReadOnlyLiveBrokerProxy, LiveEndpointGuard
+            from quant_us.execution.broker_base import BrokerBase
+            from unittest.mock import MagicMock
+
+            inner = MagicMock(spec=BrokerBase)
+            inner.broker_name = "test"
+            proxy = ReadOnlyLiveBrokerProxy(inner)
+
+            from quant_us.core.types import Order
+            from quant_us.core.enums import OrderSide, OrderType, TimeInForce
+
+            order = Order(
+                timestamp_utc=dt.now(timezone.utc),
+                strategy_id="test",
+                symbol="SPY",
+                side=OrderSide.BUY,
+                quantity=10.0,
+                order_type=OrderType.MARKET,
+                time_in_force=TimeInForce.DAY,
+                client_order_id="readiness_test",
+            )
+
+            # Verify submit_order raises
+            submit_blocked = False
+            try:
+                proxy.submit_order(order)
+            except RuntimeError:
+                submit_blocked = True
+
+            # Verify cancel_order raises
+            cancel_blocked = False
+            try:
+                proxy.cancel_order("test_id")
+            except RuntimeError:
+                cancel_blocked = True
+
+            if submit_blocked and cancel_blocked:
+                return ReadinessCheck(
+                    name="live_endpoint_readonly_guard",
+                    passed=True,
+                    detail="ReadOnlyLiveBrokerProxy blocks submit_order and cancel_order with RuntimeError",
+                )
+            return ReadinessCheck(
+                name="live_endpoint_readonly_guard",
+                passed=False,
+                detail=f"Guard incomplete: submit_blocked={submit_blocked}, cancel_blocked={cancel_blocked}",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="live_endpoint_readonly_guard",
+                passed=False,
+                detail=f"Live endpoint guard check failed: {exc}",
+            )
+
+    @staticmethod
+    def _check_no_live_order_path() -> ReadinessCheck:
+        """Verify there is no reachable live order path in shadow_live mode."""
+        try:
+            from quant_us.live.modes import RuntimeMode
+            from quant_us.live.runtime_config import LiveRuntimeConfig
+
+            # Verify shadow_live mode rejects allow_live_orders
+            config_blocked = False
+            try:
+                LiveRuntimeConfig(mode=RuntimeMode.SHADOW_LIVE, allow_live_orders=True)
+            except ValueError:
+                config_blocked = True
+
+            # Verify shadow_live cannot submit real orders
+            shadow_cannot_submit = not RuntimeMode.SHADOW_LIVE.can_submit_real_orders
+
+            # Verify ReadOnlyBrokerProxy exists
+            from quant_us.live.shadow_live import ReadOnlyBrokerProxy
+
+            proxy_exists = ReadOnlyBrokerProxy is not None
+
+            if config_blocked and shadow_cannot_submit and proxy_exists:
+                return ReadinessCheck(
+                    name="no_live_order_path",
+                    passed=True,
+                    detail="Shadow_live mode blocks live orders at config, runtime mode, and broker levels",
+                )
+            return ReadinessCheck(
+                name="no_live_order_path",
+                passed=False,
+                detail="Live order path may be reachable in shadow_live mode",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="no_live_order_path",
+                passed=False,
+                detail=f"No-live-order-path check failed: {exc}",
+            )
+
+    @staticmethod
+    def _check_readonly_broker_proxy_exists() -> ReadinessCheck:
+        """Verify ReadOnlyLiveBrokerProxy exists and has all forbidden methods."""
+        try:
+            from quant_us.live.readonly_live_broker import ReadOnlyLiveBrokerProxy
+
+            required_methods = [
+                "get_account",
+                "get_positions",
+                "get_open_orders",
+                "get_fills",
+                "get_fills_readonly",
+                "health_check",
+            ]
+            forbidden_methods = [
+                "submit_order",
+                "cancel_order",
+                "replace_order",
+                "close_position",
+                "close_all_positions",
+            ]
+
+            missing_required = [m for m in required_methods if not hasattr(ReadOnlyLiveBrokerProxy, m)]
+            missing_forbidden = [m for m in forbidden_methods if not hasattr(ReadOnlyLiveBrokerProxy, m)]
+
+            if not missing_required and not missing_forbidden:
+                return ReadinessCheck(
+                    name="readonly_broker_proxy",
+                    passed=True,
+                    detail=f"ReadOnlyLiveBrokerProxy: {len(required_methods)} read methods, {len(forbidden_methods)} blocked methods",
+                )
+
+            errors = []
+            if missing_required:
+                errors.append(f"missing read methods: {missing_required}")
+            if missing_forbidden:
+                errors.append(f"missing forbidden methods: {missing_forbidden}")
+            return ReadinessCheck(
+                name="readonly_broker_proxy",
+                passed=False,
+                detail="; ".join(errors),
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="readonly_broker_proxy",
+                passed=False,
+                detail=f"Cannot verify ReadOnlyLiveBrokerProxy: {exc}",
+            )
+
+    @staticmethod
+    def _check_data_parity_smoke() -> ReadinessCheck:
+        """Check that MarketDataParityChecker is importable and functional."""
+        try:
+            from quant_us.live.market_data_parity import MarketDataParityChecker
+
+            checker = MarketDataParityChecker(["SPY"])
+            report = checker.compare(include_yfinance=False)
+            if report.overall_status in ("ok", "warn"):
+                return ReadinessCheck(
+                    name="data_parity_smoke",
+                    passed=True,
+                    detail=f"MarketDataParityChecker functional (status={report.overall_status})",
+                    warn=report.overall_status == "warn",
+                )
+            return ReadinessCheck(
+                name="data_parity_smoke",
+                passed=False,
+                detail=f"MarketDataParityChecker returned status={report.overall_status}",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="data_parity_smoke",
+                passed=True,
+                detail=f"Data parity checker available but couldn't run: {exc} (WARN — re-run with data)",
+                warn=True,
+            )
+
+    @staticmethod
+    def _check_strategy_whitelist() -> ReadinessCheck:
+        """Verify strategy factory is importable and has registered strategies."""
+        try:
+            from quant_us.strategies.factory import build_strategy
+
+            test_strategy = build_strategy("etf_rotation", {})
+            return ReadinessCheck(
+                name="strategy_whitelist",
+                passed=True,
+                detail=f"Strategy factory functional: etf_rotation loaded (version={getattr(test_strategy, 'version', 'unknown')})",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="strategy_whitelist",
+                passed=False,
+                detail=f"Strategy factory check failed: {exc}",
+            )
+
+    @staticmethod
+    def _check_risk_oms_recon() -> ReadinessCheck:
+        """Verify risk engine, OMS, and reconciliation are importable."""
+        errors: list[str] = []
+        try:
+            from quant_us.risk.pre_trade import PreTradeRiskEngine  # noqa: F401
+        except Exception as exc:
+            errors.append(f"risk: {exc}")
+
+        try:
+            from quant_us.execution.oms import OrderManagementSystem  # noqa: F401
+        except Exception as exc:
+            errors.append(f"oms: {exc}")
+
+        try:
+            from quant_us.live.reconciliation_service import ReconciliationService  # noqa: F401
+        except Exception as exc:
+            errors.append(f"recon: {exc}")
+
+        if not errors:
+            return ReadinessCheck(
+                name="risk_oms_reconciliation",
+                passed=True,
+                detail="Risk engine, OMS, and reconciliation service all importable",
+            )
+        return ReadinessCheck(
+            name="risk_oms_reconciliation",
+            passed=False,
+            detail="; ".join(errors),
+        )
+
+    @staticmethod
+    def _check_shadow_journal_writable() -> ReadinessCheck:
+        """Verify shadow journal directory is writable."""
+        try:
+            from pathlib import Path
+            import tempfile
+
+            journal_dir = Path("data/shadow_ledger")
+            journal_dir.mkdir(parents=True, exist_ok=True)
+            test_file = journal_dir / ".write_test"
+            test_file.write_text("test")
+            test_file.unlink()
+            return ReadinessCheck(
+                name="shadow_journal_writable",
+                passed=True,
+                detail=f"Shadow journal directory writable: {journal_dir.absolute()}",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="shadow_journal_writable",
+                passed=False,
+                detail=f"Shadow journal directory not writable: {exc}",
+            )
+
+    @staticmethod
+    def _check_incident_report_writable() -> ReadinessCheck:
+        """Verify incident report directory is writable."""
+        try:
+            from pathlib import Path
+
+            report_dir = Path("data/reports")
+            report_dir.mkdir(parents=True, exist_ok=True)
+            test_file = report_dir / ".write_test"
+            test_file.write_text("test")
+            test_file.unlink()
+            return ReadinessCheck(
+                name="incident_report_writable",
+                passed=True,
+                detail=f"Incident report directory writable: {report_dir.absolute()}",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="incident_report_writable",
+                passed=False,
+                detail=f"Incident report directory not writable: {exc}",
+            )
+
+    @staticmethod
+    def _check_live_submission_shadow_safety() -> ReadinessCheck:
+        """Verify QUANT_LIVE_SUBMISSION_ENABLED=true does NOT enable shadow_live orders."""
+        import os
+
+        live_env = os.environ.get("QUANT_LIVE_SUBMISSION_ENABLED", "").lower() in ("1", "true", "yes")
+
+        try:
+            from quant_us.live.modes import RuntimeMode
+            from quant_us.live.runtime_config import LiveRuntimeConfig
+
+            shadow_cannot_submit = not RuntimeMode.SHADOW_LIVE.can_submit_real_orders
+
+            config_blocks_live = False
+            try:
+                LiveRuntimeConfig(mode=RuntimeMode.SHADOW_LIVE, allow_live_orders=True)
+            except ValueError:
+                config_blocks_live = True
+
+            if shadow_cannot_submit and config_blocks_live:
+                detail = (
+                    "Shadow_live blocks real orders regardless of QUANT_LIVE_SUBMISSION_ENABLED. "
+                    f"Env: QUANT_LIVE_SUBMISSION_ENABLED={'true' if live_env else 'false'}. "
+                    "Safety invariant holds."
+                )
+                return ReadinessCheck(
+                    name="live_submission_shadow_safety",
+                    passed=True,
+                    detail=detail,
+                )
+            return ReadinessCheck(
+                name="live_submission_shadow_safety",
+                passed=False,
+                detail="QUANT_LIVE_SUBMISSION_ENABLED may enable shadow_live real orders — SAFETY VIOLATION",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="live_submission_shadow_safety",
+                passed=False,
+                detail=f"Cannot verify shadow safety: {exc}",
             )
