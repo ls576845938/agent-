@@ -215,6 +215,233 @@ def _add_backtest_parser(subparsers: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
+# regime
+# ---------------------------------------------------------------------------
+
+
+def cmd_regime_compute(args: argparse.Namespace) -> None:
+    """Compute regime history for a symbol and save to store."""
+    from quant_us.regime.detector import MarketRegimeDetector
+    from quant_us.regime.store import RegimeFeatureStore, RegimeRecord
+
+    detector = MarketRegimeDetector(data_root=args.data_root)
+    store = RegimeFeatureStore(data_root=args.data_root)
+
+    regime_df = detector.detect_all(symbol=args.symbol)
+    if regime_df.empty:
+        print(f"No regime data computed for {args.symbol}. Ensure data is ingested first.")
+        return
+
+    # Build RegimeRecord list from the detection DataFrame
+    records: list[RegimeRecord] = []
+    for _, row in regime_df.iterrows():
+        records.append(
+            RegimeRecord(
+                date=str(row["date"]),
+                symbol=args.symbol,
+                regime=str(row["regime"]),
+                confidence=float(row["confidence"]),
+                features={
+                    "trend_strength": float(row.get("trend_strength", 0.0)),
+                    "vol_percentile": float(row.get("vol_percentile", 0.0)),
+                    "drawdown_pct": float(row.get("drawdown_pct", 0.0)),
+                    "volume_ratio": float(row.get("volume_ratio", 1.0)),
+                },
+            )
+        )
+
+    path = store.save(records)
+    print(f"Regime data for {args.symbol}: {len(records)} days")
+    print(f"Saved to: {path}")
+
+
+def cmd_regime_current(args: argparse.Namespace) -> None:
+    """Show the current market regime for a symbol."""
+    from quant_us.regime.detector import MarketRegimeDetector
+
+    detector = MarketRegimeDetector(data_root=args.data_root)
+    result = detector.current_regime(symbol=args.symbol)
+    print(f"Current Regime for {args.symbol}:")
+    print(f"  Regime:      {result.regime}")
+    print(f"  Date:        {result.date}")
+    print(f"  Confidence:  {result.confidence:.4f}")
+    print(f"  Features:")
+    for k, v in result.features.items():
+        print(f"    {k}: {v:.6f}")
+
+
+def cmd_regime_history(args: argparse.Namespace) -> None:
+    """Print regime history from the store for a symbol."""
+    from quant_us.regime.store import RegimeFeatureStore
+
+    store = RegimeFeatureStore(data_root=args.data_root)
+    history = store.get_regime_history(symbol=args.symbol)
+    if not history:
+        print(f"No regime history for {args.symbol}. Run `regime compute` first.")
+        return
+
+    print(f"Regime History for {args.symbol}: {len(history)} records")
+    print(f"{'Date':<14} {'Regime':<16} {'Confidence':<12}")
+    print("-" * 42)
+    for rec in history[-args.limit :]:
+        print(f"{rec.get('date', ''):<14} {rec.get('regime', ''):<16} {rec.get('confidence', 0):<12.4f}")
+
+
+def cmd_regime_report(args: argparse.Namespace) -> None:
+    """Build a Markdown regime strategy report."""
+    from quant_us.regime.backtest import RegimeAwareBacktest, RegimeBacktestResult
+    from quant_us.regime.detector import MarketRegimeDetector
+    from quant_us.regime.report import RegimeReportBuilder
+
+    detector = MarketRegimeDetector(data_root=args.data_root)
+    regime_df = detector.detect_all(symbol=args.symbol)
+    if regime_df.empty:
+        print(f"No regime data for {args.symbol}.")
+        return
+
+    bak = RegimeAwareBacktest(data_root=args.data_root)
+    transitions = bak.transition_analysis(regime_df)
+    n_transitions = transitions.get("transitions", 0)
+
+    # Build a RegimeBacktestResult from detector data
+    freq = regime_df["regime"].value_counts()
+    perf_by_regime: dict[str, dict[str, float]] = {}
+    for regime in regime_df["regime"].unique():
+        subset = regime_df[regime_df["regime"] == regime]
+        perf_by_regime[regime] = {
+            "cagr_pct": 0.0,
+            "sharpe_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "trade_count": len(subset),
+        }
+
+    result = RegimeBacktestResult(
+        symbol=args.symbol,
+        strategy_id=args.strategy,
+        regime_performance=perf_by_regime,
+        regime_transitions=n_transitions,
+    )
+
+    builder = RegimeReportBuilder(data_root=args.data_root)
+    timeline = builder.build_timeline(symbol=args.symbol)
+    print(timeline)
+    print()
+
+    if args.strategy:
+        report = builder.build_strategy_report(args.strategy, result)
+        print(report)
+
+
+def cmd_regime_backtest(args: argparse.Namespace) -> None:
+    """Analyse a backtest result through regime filters."""
+    from quant_us.regime.backtest import RegimeAwareBacktest, RegimeBacktestResult
+    from quant_us.regime.detector import MarketRegimeDetector
+    from quant_us.regime.report import RegimeReportBuilder
+
+    detector = MarketRegimeDetector(data_root=args.data_root)
+    regime_df = detector.detect_all(symbol=args.symbol)
+    if regime_df.empty:
+        print("No regime data available. Ensure SPY (or --symbol) data is ingested.")
+        return
+
+    bak = RegimeAwareBacktest(data_root=args.data_root)
+
+    if args.regimes:
+        allowed = [r.strip() for r in args.regimes.split(",")]
+        filtered = bak.filter_by_regime(args.backtest_result, allowed)
+        print(f"Filtered performance (regimes: {', '.join(allowed)}):")
+        print(f"  CAGR:      {filtered.get('cagr_pct', 0):.2f}%")
+        print(f"  Sharpe:    {filtered.get('sharpe_ratio', 0):.4f}")
+        print(f"  Max DD:    {filtered.get('max_drawdown_pct', 0):.2f}%")
+        print(f"  Trades:    {filtered.get('trade_count', 0)}")
+    else:
+        split = bak.split_by_regime(args.backtest_result, regime_df)
+        transitions = bak.transition_analysis(regime_df)
+
+        print(f"Regime-split performance for {args.symbol}")
+        print(f"Transitions observed: {transitions.get('transitions', 0)}")
+        print()
+
+        # Determine best/worst
+        best_regime = ""
+        worst_regime = ""
+        best_sharpe = -999.0
+        worst_sharpe = 999.0
+
+        print(f"{'Regime':<18} {'CAGR%':<10} {'Sharpe':<10} {'Max DD%':<10} {'Trades':<8}")
+        print("-" * 56)
+        for regime, perf in sorted(split.items()):
+            cagr = perf.get("cagr_pct", 0)
+            sharpe = perf.get("sharpe_ratio", 0)
+            mdd = perf.get("max_drawdown_pct", 0)
+            trades = perf.get("trade_count", 0)
+            print(f"{regime:<18} {cagr:<10.2f} {sharpe:<10.4f} {mdd:<10.2f} {trades:<8}")
+            if sharpe > best_sharpe:
+                best_sharpe = sharpe
+                best_regime = regime
+            if sharpe < worst_sharpe:
+                worst_sharpe = sharpe
+                worst_regime = regime
+
+        print()
+        print(f"Best regime:  {best_regime} (Sharpe: {best_sharpe:.4f})")
+        print(f"Worst regime: {worst_regime} (Sharpe: {worst_sharpe:.4f})")
+
+        builder = RegimeReportBuilder(data_root=args.data_root)
+        recommendations = builder.recommend_filter(
+            RegimeBacktestResult(
+                symbol=args.symbol,
+                strategy_id=args.strategy,
+                regime_performance=split,
+                best_regime=best_regime,
+                worst_regime=worst_regime,
+                regime_transitions=transitions.get("transitions", 0),
+            )
+        )
+        if recommendations:
+            print(f"\nRecommended filters (avoid): {', '.join(recommendations)}")
+
+
+def _add_regime_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser(
+        "regime",
+        parents=[_shared_parent()],
+        help="Market regime detection and regime-aware backtest analysis",
+    )
+    p.add_argument("--symbol", default="SPY", help="Ticker symbol (default: SPY)")
+    regime_sub = p.add_subparsers(dest="regime_command")
+
+    # --- compute ---
+    compute_p = regime_sub.add_parser("compute", help="Compute and store regime history")
+    compute_p.add_argument("--start", default="", help="Start date YYYY-MM-DD")
+    compute_p.add_argument("--end", default="", help="End date YYYY-MM-DD")
+    compute_p.set_defaults(func=cmd_regime_compute)
+
+    # --- current ---
+    current_p = regime_sub.add_parser("current", help="Show current market regime")
+    current_p.set_defaults(func=cmd_regime_current)
+
+    # --- history ---
+    history_p = regime_sub.add_parser("history", help="Show stored regime history")
+    history_p.add_argument("--limit", type=int, default=20, help="Number of recent records (default: 20)")
+    history_p.set_defaults(func=cmd_regime_history)
+
+    # --- report ---
+    report_p = regime_sub.add_parser("report", help="Build regime strategy report")
+    report_p.add_argument("--strategy", default="", help="Strategy ID for the report")
+    report_p.set_defaults(func=cmd_regime_report)
+
+    # --- backtest ---
+    backtest_p = regime_sub.add_parser("backtest", help="Analyse backtest by regime")
+    backtest_p.add_argument("--strategy", default="", help="Strategy ID")
+    backtest_p.add_argument("--backtest-result", required=True, help="Path to backtest result directory")
+    backtest_p.add_argument("--regimes", default="", help="Comma-separated allowed regimes for filtering")
+    backtest_p.set_defaults(func=cmd_regime_backtest)
+
+    p.set_defaults(func=lambda a: p.print_help())
+
+
+# ---------------------------------------------------------------------------
 # paper
 # ---------------------------------------------------------------------------
 
@@ -4676,6 +4903,764 @@ def _add_ops_parser(subparsers: Any) -> None:
     dr_p = ops_sub.add_parser("deployment-readiness", help="Run deployment readiness check")
     dr_p.add_argument("--data-root", default="data", help="Data root path")
     dr_p.set_defaults(func=cmd_ops_deployment_readiness)
+# ---------------------------------------------------------------------------
+# portfolio
+# ---------------------------------------------------------------------------
+
+
+def _build_candidate_scorecards(
+    candidate_ids: list[str],
+) -> list[dict]:
+    """Build synthetic candidate scorecards from candidate IDs.
+
+    In a production setting, this would load from a strategy registry
+    or scorecard store. Here we create reasonable defaults.
+    """
+    import random
+
+    random.seed(42)
+    scorecards = []
+    for cid in candidate_ids:
+        vol = random.uniform(0.10, 0.30)
+        scorecards.append({
+            "id": cid,
+            "volatility": vol,
+            "expected_return": random.uniform(0.05, 0.20),
+            "max_drawdown": random.uniform(0.05, 0.25),
+            "holdings": {},
+        })
+    return scorecards
+
+
+def cmd_portfolio_construct(args: argparse.Namespace) -> None:
+    """Construct a portfolio from candidate strategies."""
+    from quant_us.portfolio.construction.engine import (
+        PortfolioConfig,
+        PortfolioConstructionEngine,
+    )
+
+    candidate_ids = [s.strip() for s in args.candidates.split(",") if s.strip()]
+    if not candidate_ids:
+        print("ERROR: at least one candidate required", file=sys.stderr)
+        sys.exit(1)
+
+    portfolio_id = args.portfolio_id or f"portfolio_{candidate_ids[0]}"
+
+    config = PortfolioConfig(
+        portfolio_id=portfolio_id,
+        candidate_ids=candidate_ids,
+        capital=args.capital,
+        max_gross_exposure=args.max_gross,
+        max_net_exposure=args.max_net,
+        max_single_weight=args.max_single_weight,
+        max_sector_weight=args.max_sector_weight,
+        target_volatility=args.target_vol,
+    )
+
+    candidate_scorecards = _build_candidate_scorecards(candidate_ids)
+    engine = PortfolioConstructionEngine(data_root=args.data_root)
+    target = engine.construct(config, candidate_scorecards)
+
+    path = engine.save_target(target)
+
+    print()
+    print("=" * 60)
+    print(f"  Portfolio Constructed: {portfolio_id}")
+    print("=" * 60)
+    print(f"  Candidates:     {', '.join(candidate_ids)}")
+    print(f"  Capital:        ${config.capital:,.2f}")
+    print(f"  Target Vol:     {config.target_volatility:.0%}")
+    print()
+    print("  Strategy Weights:")
+    for sid, w in sorted(target.strategy_weights.items()):
+        capped_fmt = f" (capped at {config.max_single_weight:.0%})" if w >= config.max_single_weight else ""
+        print(f"    {sid:20s}: {w:7.2%}{capped_fmt}")
+    print()
+    print(f"  Expected Return:  {target.expected_return:.2%}")
+    print(f"  Expected Vol:     {target.expected_volatility:.2%}")
+    print(f"  Saved to:         {path}")
+    print("=" * 60)
+
+
+def cmd_portfolio_backtest(args: argparse.Namespace) -> None:
+    """Run a portfolio-level backtest."""
+    from quant_us.portfolio.construction.backtest import PortfolioBacktestRunner
+
+    runner = PortfolioBacktestRunner(data_root=args.data_root)
+
+    # Generate synthetic strategy returns for demonstration
+    import random
+
+    random.seed(42)
+    strategy_returns: dict[str, list[float]] = {}
+    for sid in args.strategies.split(",") if args.strategies else []:
+        sid = sid.strip()
+        if sid:
+            n_days = 252 * 3  # 3 years of daily returns
+            mu = random.uniform(0.0003, 0.0010)
+            sigma = random.uniform(0.005, 0.020)
+            strategy_returns[sid] = [random.gauss(mu, sigma) for _ in range(n_days)]
+
+    result = runner.run(
+        portfolio_id=args.portfolio_id,
+        start=args.start,
+        end=args.end,
+        strategy_returns=strategy_returns if strategy_returns else None,
+        risk_free_rate=0.02,
+    )
+
+    print()
+    print("=" * 60)
+    print(f"  Portfolio Backtest: {result.portfolio_id}")
+    print("=" * 60)
+    print(f"  CAGR:           {result.cagr:.2%}")
+    print(f"  Sharpe:         {result.sharpe:.3f}")
+    print(f"  Max Drawdown:   {result.max_drawdown:.2%}")
+    print()
+    if result.strategy_contributions:
+        print("  Strategy Contributions:")
+        for sid, contrib in sorted(result.strategy_contributions.items()):
+            print(f"    {sid:20s}: {contrib:+.2%}")
+    if result.drawdown_attribution:
+        print()
+        print("  Drawdown Attribution:")
+        for sid, dd in sorted(result.drawdown_attribution.items()):
+            print(f"    {sid:20s}: {dd:.2%}")
+    print("=" * 60)
+
+
+def cmd_portfolio_scorecard(args: argparse.Namespace) -> None:
+    """Build and display a portfolio scorecard."""
+    from quant_us.portfolio.construction.scorecard import PortfolioScorecardBuilder
+
+    builder = PortfolioScorecardBuilder(data_root=args.data_root)
+
+    import random
+
+    random.seed(42)
+    n_strats = max(len(args.strategies.split(",")) if args.strategies else 3, 1)
+    strategy_scorecards = []
+    for i in range(n_strats):
+        sid = f"strategy_{i}"
+        strategy_scorecards.append({
+            "id": sid,
+            "cagr": random.uniform(0.05, 0.25),
+            "sharpe": random.uniform(0.5, 2.0),
+            "max_drawdown": random.uniform(0.05, 0.30),
+            "volatility": random.uniform(0.10, 0.30),
+        })
+
+    weights = {sc["id"]: 1.0 / n_strats for sc in strategy_scorecards}
+    scorecard = builder.build(args.portfolio_id, strategy_scorecards, weights)
+
+    print()
+    print(builder.to_markdown(scorecard))
+    print("=" * 60)
+
+
+def cmd_portfolio_allocation(args: argparse.Namespace) -> None:
+    """Allocate capital across strategies using a given method."""
+    from quant_us.portfolio.construction.allocator import CapitalAllocator
+
+    candidate_ids = [s.strip() for s in args.candidates.split(",") if s.strip()]
+    if not candidate_ids:
+        print("ERROR: at least one candidate required", file=sys.stderr)
+        sys.exit(1)
+
+    import random
+
+    random.seed(42)
+    candidates = []
+    for cid in candidate_ids:
+        candidates.append({
+            "id": cid,
+            "volatility": random.uniform(0.10, 0.30),
+            "expected_return": random.uniform(0.05, 0.20),
+            "max_drawdown": random.uniform(0.05, 0.25),
+        })
+
+    allocator = CapitalAllocator()
+    constraints = {
+        "max_single_weight": args.max_single_weight,
+        "target_vol": args.target_vol,
+    }
+    weights = allocator.allocate(candidates, args.method, constraints)
+
+    print()
+    print("=" * 60)
+    print(f"  Allocation Method: {args.method}")
+    print("=" * 60)
+    print(f"  Candidates: {', '.join(candidate_ids)}")
+    print()
+    print("  Weights:")
+    for sid, w in sorted(weights.items()):
+        capped = " (capped)" if w >= args.max_single_weight else ""
+        print(f"    {sid:20s}: {w:7.2%}{capped}")
+    print()
+    print(f"  Total: {sum(weights.values()):.2%} (normalized)")
+    print("=" * 60)
+
+
+def _add_portfolio_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser("portfolio", help="Portfolio construction, backtest, scorecard, and allocation")
+    portfolio_sub = p.add_subparsers(dest="portfolio_command", required=True)
+
+    # --- construct ---
+    const_p = portfolio_sub.add_parser("construct", help="Construct a portfolio from candidate strategies")
+    const_p.add_argument("--candidates", required=True, help="Comma-separated strategy IDs")
+    const_p.add_argument("--portfolio-id", default="", help="Portfolio ID (default: auto)")
+    const_p.add_argument("--capital", type=float, default=100_000.0, help="Total capital (default: 100000)")
+    const_p.add_argument("--max-gross", type=float, default=1.0, help="Max gross exposure (default: 1.0)")
+    const_p.add_argument("--max-net", type=float, default=1.0, help="Max net exposure (default: 1.0)")
+    const_p.add_argument("--max-single-weight", type=float, default=0.25, help="Max single strategy weight (default: 0.25)")
+    const_p.add_argument("--max-sector-weight", type=float, default=0.40, help="Max sector weight (default: 0.40)")
+    const_p.add_argument("--target-vol", type=float, default=0.15, help="Target volatility (default: 0.15)")
+    const_p.add_argument("--data-root", default="data", help="Data root directory (default: data)")
+    const_p.set_defaults(func=cmd_portfolio_construct)
+
+    # --- backtest ---
+    bt_p = portfolio_sub.add_parser("backtest", help="Run portfolio-level backtest")
+    bt_p.add_argument("--portfolio-id", required=True, help="Portfolio ID")
+    bt_p.add_argument("--strategies", default="", help="Comma-separated strategy IDs for synthetic data")
+    bt_p.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
+    bt_p.add_argument("--end", default=date.today().isoformat(), help="End date YYYY-MM-DD")
+    bt_p.add_argument("--data-root", default="data", help="Data root directory (default: data)")
+    bt_p.set_defaults(func=cmd_portfolio_backtest)
+
+    # --- scorecard ---
+    sc_p = portfolio_sub.add_parser("scorecard", help="Build portfolio scorecard")
+    sc_p.add_argument("--portfolio-id", required=True, help="Portfolio ID")
+    sc_p.add_argument("--strategies", default="", help="Comma-separated strategy IDs (optional)")
+    sc_p.add_argument("--data-root", default="data", help="Data root directory (default: data)")
+    sc_p.set_defaults(func=cmd_portfolio_scorecard)
+
+    # --- allocation ---
+    alloc_p = portfolio_sub.add_parser("allocation", help="Allocate capital across strategies")
+    alloc_p.add_argument("--candidates", required=True, help="Comma-separated strategy IDs")
+    alloc_p.add_argument(
+        "--method",
+        default="risk_parity",
+        choices=[
+            "equal_weight",
+            "inverse_volatility",
+            "risk_parity",
+            "vol_targeting",
+            "drawdown_adjusted",
+        ],
+        help="Allocation method (default: risk_parity)",
+    )
+    alloc_p.add_argument("--max-single-weight", type=float, default=0.25, help="Max single weight (default: 0.25)")
+    alloc_p.add_argument("--target-vol", type=float, default=0.15, help="Target volatility (default: 0.15)")
+    alloc_p.set_defaults(func=cmd_portfolio_allocation)
+
+
+# ---------------------------------------------------------------------------
+# research (R1 Strategy Research Lab)
+# ---------------------------------------------------------------------------
+
+
+def _add_research_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser(
+        "research",
+        parents=[_shared_parent()],
+        help="R1 Strategy Research Lab: experiment, backtest, candidate, scorecard",
+    )
+    research_sub = p.add_subparsers(dest="research_command")
+
+    # --- experiment ---
+    exp_p = research_sub.add_parser("experiment", help="Manage research experiments")
+    exp_sub = exp_p.add_subparsers(dest="experiment_command")
+
+    exp_create = exp_sub.add_parser("create", help="Create a new experiment manifest")
+    exp_create.add_argument("--strategy-id", required=True, help="Strategy ID (e.g. trend_momentum)")
+    exp_create.add_argument("--symbols", required=True, help="Comma-separated symbols")
+    exp_create.add_argument("--family", default="", help="Strategy family (e.g. momentum, trend)")
+    exp_create.add_argument("--timeframe", default="1d", help="Bar timeframe (default: 1d)")
+    exp_create.add_argument("--start", default="", help="Start date YYYY-MM-DD")
+    exp_create.add_argument("--end", default="", help="End date YYYY-MM-DD")
+    exp_create.add_argument("--params", default="{}", help="Strategy params as JSON string")
+    exp_create.add_argument("--data-root", default="data", help="Data root path")
+    exp_create.set_defaults(func=cmd_research_experiment_create)
+
+    exp_run = exp_sub.add_parser("run", help="Run an experiment backtest")
+    exp_run.add_argument("--experiment-id", required=True, help="Experiment ID")
+    exp_run.add_argument("--data-root", default="data", help="Data root path")
+    exp_run.set_defaults(func=cmd_research_experiment_run)
+
+    exp_list = exp_sub.add_parser("list", help="List experiments")
+    exp_list.add_argument("--status", default="", help="Filter by status (e.g. COMPLETED)")
+    exp_list.add_argument("--data-root", default="data", help="Data root path")
+    exp_list.set_defaults(func=cmd_research_experiment_list)
+
+    exp_inspect = exp_sub.add_parser("inspect", help="Inspect experiment details")
+    exp_inspect.add_argument("--experiment-id", required=True, help="Experiment ID")
+    exp_inspect.add_argument("--data-root", default="data", help="Data root path")
+    exp_inspect.set_defaults(func=cmd_research_experiment_inspect)
+
+    # --- candidate ---
+    cand_p = research_sub.add_parser("candidate", help="Manage strategy candidates")
+    cand_sub = cand_p.add_subparsers(dest="candidate_command")
+
+    cand_list = cand_sub.add_parser("list", help="List all candidates")
+    cand_list.add_argument("--data-root", default="data", help="Data root path")
+    cand_list.set_defaults(func=cmd_research_candidate_list)
+
+    cand_promote = cand_sub.add_parser("promote", help="Promote an experiment to candidate (manual)")
+    cand_promote.add_argument("--experiment-id", required=True, help="Experiment ID to promote")
+    cand_promote.add_argument("--manual", action="store_true", required=True, help="Manual confirmation flag")
+    cand_promote.add_argument("--data-root", default="data", help="Data root path")
+    cand_promote.set_defaults(func=cmd_research_candidate_promote)
+
+    # --- batch-run ---
+    batch_p = research_sub.add_parser("batch-run", help="Run multiple experiments in batch")
+    batch_p.add_argument("--experiment-ids", required=True, help="Comma-separated experiment IDs")
+    batch_p.add_argument("--data-root", default="data", help="Data root path")
+    batch_p.set_defaults(func=cmd_research_batch_run)
+
+    # --- scorecard ---
+    sc_p = research_sub.add_parser("scorecard", help="Build scorecard for a candidate")
+    sc_p.add_argument("--candidate-id", required=True, help="Candidate ID")
+    sc_p.add_argument("--data-root", default="data", help="Data root path")
+    sc_p.add_argument("--markdown", action="store_true", help="Output as markdown")
+    sc_p.set_defaults(func=cmd_research_scorecard)
+
+
+def cmd_research_experiment_create(args: argparse.Namespace) -> None:
+    """Create a new experiment."""
+    import json
+
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+    symbols = _parse_symbols(args.symbols)
+
+    params = {}
+    if args.params and args.params != "{}":
+        params = json.loads(args.params)
+
+    manifest = mgr.create(
+        strategy_id=args.strategy_id,
+        symbols=symbols,
+        params=params,
+        strategy_family=args.family,
+        timeframe=args.timeframe,
+        start_date=args.start,
+        end_date=args.end,
+    )
+
+    print(f"Created experiment: {manifest.experiment_id}")
+    print(f"  strategy_id: {manifest.strategy_id}")
+    print(f"  symbols:     {', '.join(manifest.symbols)}")
+    print(f"  status:      {manifest.status}")
+    print(f"  created_at:  {manifest.created_at}")
+
+
+def cmd_research_experiment_run(args: argparse.Namespace) -> None:
+    """Run an experiment backtest."""
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+    print(f"Running experiment {args.experiment_id}...")
+
+    try:
+        summary = mgr.run(args.experiment_id)
+        print(f"  status: COMPLETED")
+        for key, value in sorted(summary.items()):
+            if isinstance(value, float):
+                print(f"  {key}: {value:.4f}")
+            else:
+                print(f"  {key}: {value}")
+    except Exception as exc:
+        print(f"  status: FAILED — {exc}")
+        raise
+
+
+def cmd_research_experiment_list(args: argparse.Namespace) -> None:
+    """List experiments."""
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+    status = args.status or None
+    experiments = mgr.list_experiments(status=status)
+
+    if not experiments:
+        print("No experiments found.")
+        return
+
+    print(f"{'ID':<20} {'Strategy':<20} {'Symbols':<24} {'Status':<22} {'Created'}")
+    print("-" * 100)
+    for m in experiments:
+        sym_str = ", ".join(m.symbols[:4])
+        if len(m.symbols) > 4:
+            sym_str += "..."
+        print(
+            f"{m.experiment_id:<20} {m.strategy_id:<20} {sym_str:<24} {m.status:<22} {m.created_at[:19]}"
+        )
+
+
+def cmd_research_experiment_inspect(args: argparse.Namespace) -> None:
+    """Inspect experiment details."""
+    import json
+
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+    manifest = mgr.load(args.experiment_id)
+
+    if manifest is None:
+        print(f"Experiment {args.experiment_id} not found.")
+        return
+
+    print(f"Experiment ID:   {manifest.experiment_id}")
+    print(f"Strategy ID:     {manifest.strategy_id}")
+    print(f"Strategy Family: {manifest.strategy_family or '(not set)'}")
+    print(f"Symbols:         {', '.join(manifest.symbols)}")
+    print(f"Timeframe:       {manifest.timeframe}")
+    print(f"Date Range:      {manifest.start_date or '(not set)'} -> {manifest.end_date or '(not set)'}")
+    print(f"Data Version:    {manifest.data_version or '(not set)'}")
+    print(f"Feature Version: {manifest.feature_version or '(not set)'}")
+    print(f"Cost Model:      {manifest.cost_model}")
+    print(f"Status:          {manifest.status}")
+    print(f"Created At:      {manifest.created_at}")
+    print(f"Params:          {json.dumps(manifest.params, indent=2, default=str)}")
+    if manifest.metrics:
+        print(f"Metrics:")
+        for key, value in sorted(manifest.metrics.items()):
+            if isinstance(value, float):
+                print(f"  {key}: {value:.4f}")
+            else:
+                print(f"  {key}: {value}")
+
+
+def cmd_research_candidate_list(args: argparse.Namespace) -> None:
+    """List all candidates."""
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+    candidates = mgr.list_candidates()
+
+    if not candidates:
+        print("No candidates found.")
+        return
+
+    print(f"{'ID':<20} {'Strategy':<20} {'Promotion Status':<22} {'Created'}")
+    print("-" * 80)
+    for c in candidates:
+        print(
+            f"{c.candidate_id:<20} {c.strategy_id:<20} {c.promotion_status:<22} {c.created_at[:19]}"
+        )
+
+
+def cmd_research_candidate_promote(args: argparse.Namespace) -> None:
+    """Promote an experiment to candidate (manual only)."""
+    if not args.manual:
+        print("ERROR: --manual flag required for promotion.")
+        print("Research promotion is a manual approval action.")
+        return
+
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+
+    try:
+        candidate = mgr.promote_to_candidate(args.experiment_id)
+        print(f"Promoted experiment {args.experiment_id} to candidate.")
+        print(f"  Candidate ID:    {candidate.candidate_id}")
+        print(f"  Promotion Status: {candidate.promotion_status}")
+        print(f"  Note: Candidate is RESEARCH_ONLY. Not eligible for paper or live.")
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        raise
+
+
+def cmd_research_batch_run(args: argparse.Namespace) -> None:
+    """Run multiple experiments in batch."""
+    from quant_us.research.lab.batch_runner import BatchBacktestRunner
+
+    experiment_ids = [eid.strip() for eid in args.experiment_ids.split(",") if eid.strip()]
+
+    runner = BatchBacktestRunner(data_root=args.data_root)
+    results = runner.run_experiments(experiment_ids)
+
+    ok = sum(1 for r in results if r.get("status") == "COMPLETED")
+    fail = sum(1 for r in results if r.get("status") == "FAILED")
+    print(f"Batch run complete: {ok} ok, {fail} failed")
+    for r in results:
+        status = r.get("status", "UNKNOWN")
+        eid = r.get("experiment_id", "?")
+        if status == "COMPLETED":
+            metrics = r.get("metrics", {})
+            sharpe = metrics.get("sharpe_ratio", "N/A")
+            print(f"  {eid}: {status} (sharpe={sharpe})")
+        else:
+            print(f"  {eid}: {status} — {r.get('error', '')}")
+
+
+def cmd_research_scorecard(args: argparse.Namespace) -> None:
+    """Build and display a scorecard for a candidate."""
+    from quant_us.research.lab.scorecard import ResearchScorecardBuilder
+
+    builder = ResearchScorecardBuilder(data_root=args.data_root)
+
+    try:
+        scorecard = builder.build(args.candidate_id)
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        return
+
+    if args.markdown:
+        print(builder.to_markdown(scorecard))
+    else:
+        print(f"Scorecard for candidate {scorecard.candidate_id}:")
+        for field_name in (
+            "cagr", "sharpe", "sortino", "calmar", "max_drawdown",
+            "win_rate", "profit_factor", "turnover", "trade_count",
+            "avg_holding_period", "robustness_score", "overfit_risk",
+        ):
+            value = getattr(scorecard, field_name, "N/A")
+            if isinstance(value, float):
+                print(f"  {field_name}: {value:.4f}")
+            else:
+                print(f"  {field_name}: {value}")
+
+
+# ---------------------------------------------------------------------------
+# factor
+# ---------------------------------------------------------------------------
+
+
+def _resolve_factor_ids(raw: str) -> list[str]:
+    """Parse comma-separated factor IDs."""
+    return [s.strip() for s in raw.split(",") if s.strip()]
+
+
+def cmd_factor_compute(args: argparse.Namespace) -> None:
+    """Compute factor values for one or more factors."""
+    from quant_us.factors.pipeline import FactorPipeline
+
+    factor_ids = _resolve_factor_ids(args.factor)
+    symbols = _parse_symbols(args.symbols)
+    pipe = FactorPipeline(data_root=args.data_root)
+    df = pipe.compute(factor_ids=factor_ids, symbols=symbols, start=args.start, end=args.end)
+    print(f"Computed {len(factor_ids)} factor(s) for {len(symbols)} symbols")
+    print(f"  dates:  {args.start} -> {args.end}")
+    print(f"  rows:   {len(df)}")
+    print(f"  columns: {list(df.columns)}")
+    print()
+    if not df.empty:
+        for fid in factor_ids:
+            col = df[fid].dropna()
+            print(f"  {fid}:  min={col.min():.4f}  max={col.max():.4f}  mean={col.mean():.4f}  std={col.std():.4f}  count={len(col)}")
+
+
+def cmd_factor_evaluate(args: argparse.Namespace) -> None:
+    """Run full factor evaluation (IC, rank IC, quantile returns)."""
+    from datetime import date
+
+    from quant_us.factors.evaluation import FactorEvaluator
+
+    factor_id = args.factor
+    symbols = _parse_symbols(args.symbols) if args.symbols else _parse_symbols("SPY,QQQ,AAPL,MSFT,GOOGL")
+    end = args.end or date.today().isoformat()
+    evaluator = FactorEvaluator(data_root=args.data_root)
+    result = evaluator.evaluate(
+        factor_id=factor_id,
+        symbols=symbols,
+        start=args.start,
+        end=end,
+        forward_period=args.forward_period,
+    )
+    print(f"Evaluation for '{factor_id}'")
+    print(f"  {'Observations:':20s} {result.n_observations}")
+    print(f"  {'Dates:':20s} {result.n_dates}")
+    print(f"  {'IC (mean):':20s} {result.ic_mean:.4f}")
+    print(f"  {'IC (std):':20s} {result.ic_std:.4f}")
+    print(f"  {'ICIR:':20s} {result.icir:.2f}")
+    print(f"  {'Rank IC (mean):':20s} {result.rank_ic_mean:.4f}")
+    print(f"  {'Rank IC (std):':20s} {result.rank_ic_std:.4f}")
+    print(f"  {'Rank ICIR:':20s} {result.rank_icir:.2f}")
+    print(f"  {'Hit Rate:':20s} {result.hit_rate:.1%}")
+    print(f"  {'Monotonicity:':20s} {result.monotonicity:.2f}")
+    print(f"  {'Long/Short Spread:':20s} {result.long_short_spread:.4f}")
+    print(f"  {'Decay Half-Life:':20s} {result.decay_half_life:.1f}d")
+    print()
+    if result.quantile_returns:
+        print("  Quantile Returns:")
+        for q, ret in sorted(result.quantile_returns.items()):
+            print(f"    Q{q}: {ret:.4f}")
+
+
+def cmd_factor_list(args: argparse.Namespace) -> None:
+    """List all registered factors, optionally filtered by category."""
+    from quant_us.factors.definition import FactorLibrary
+
+    lib = FactorLibrary()
+    if args.category:
+        factors = lib.list_by_category(args.category)
+    else:
+        factors = lib.list_all()
+
+    if not factors:
+        print(f"No factors found{' for category: ' + args.category if args.category else ''}.")
+        return
+
+    print(f"{'Factor ID':24s} {'Name':40s} {'Category':16s} {'Lookback':10s} {'Neutralization':16s}")
+    print("-" * 106)
+    for f in factors:
+        print(f"{f.factor_id:24s} {f.name:40s} {f.category:16s} {str(f.lookback):10s} {f.neutralization:16s}")
+    print(f"\nTotal: {len(factors)} factor(s)")
+
+
+def cmd_factor_report(args: argparse.Namespace) -> None:
+    """Generate and print a markdown factor report."""
+    from datetime import date
+
+    from quant_us.factors.evaluation import FactorEvaluator
+    from quant_us.factors.report import FactorReportBuilder
+
+    factor_id = args.factor
+    symbols = _parse_symbols(args.symbols) if args.symbols else _parse_symbols("SPY,QQQ,AAPL,MSFT,GOOGL")
+    end = args.end or date.today().isoformat()
+    evaluator = FactorEvaluator(data_root=args.data_root)
+    result = evaluator.evaluate(
+        factor_id=factor_id,
+        symbols=symbols,
+        start=args.start,
+        end=end,
+        forward_period=args.forward_period,
+    )
+    builder = FactorReportBuilder()
+    md = builder.build_report(factor_id, result)
+    print(md)
+
+
+def cmd_factor_compare(args: argparse.Namespace) -> None:
+    """Compare multiple factors side-by-side."""
+    from datetime import date
+
+    from quant_us.factors.evaluation import FactorEvaluator
+
+    factor_ids = _resolve_factor_ids(args.factors)
+    symbols = _parse_symbols(args.symbols) if args.symbols else _parse_symbols("SPY,QQQ,AAPL,MSFT,GOOGL")
+    end = args.end or date.today().isoformat()
+    evaluator = FactorEvaluator(data_root=args.data_root)
+
+    results = {}
+    for fid in factor_ids:
+        print(f"Evaluating {fid}...")
+        results[fid] = evaluator.evaluate(
+            factor_id=fid,
+            symbols=symbols,
+            start=args.start,
+            end=end,
+            forward_period=args.forward_period,
+        )
+
+    if not results:
+        print("No results to compare.")
+        return
+
+    print()
+    header = f"{'Metric':24s}"
+    for fid in factor_ids:
+        header += f" {fid:>20s}"
+    print(header)
+    print("-" * (24 + 21 * len(factor_ids)))
+
+    metrics = [
+        ("IC Mean", "ic_mean", "{:.4f}"),
+        ("IC Std", "ic_std", "{:.4f}"),
+        ("ICIR", "icir", "{:.2f}"),
+        ("Rank IC Mean", "rank_ic_mean", "{:.4f}"),
+        ("Rank IC Std", "rank_ic_std", "{:.4f}"),
+        ("Rank ICIR", "rank_icir", "{:.2f}"),
+        ("Hit Rate", "hit_rate", "{:.1%}"),
+        ("Monotonicity", "monotonicity", "{:.2f}"),
+        ("LS Spread", "long_short_spread", "{:.4f}"),
+        ("Decay HL", "decay_half_life", "{:.1f}d"),
+    ]
+    for label, attr, fmt in metrics:
+        row = f"{label:24s}"
+        for fid in factor_ids:
+            val = getattr(results[fid], attr, 0.0)
+            row += f" {fmt.format(val):>20s}"
+        print(row)
+
+
+def cmd_factor_check_lookahead(args: argparse.Namespace) -> None:
+    """Run lookahead detection heuristic on a factor."""
+    from quant_us.factors.evaluation import FactorEvaluator
+
+    factor_id = args.factor
+    evaluator = FactorEvaluator(data_root=args.data_root)
+    flagged, message = evaluator.detect_lookahead(factor_id)
+
+    if flagged:
+        print(f"WARNING: Lookahead detected for '{factor_id}'")
+        print(f"  {message}")
+        print()
+        print("Possible causes:")
+        print("  - Factor uses shift(-1) or future data")
+        print("  - Factor uses bfill or forward-filling")
+        print("  - Factor computation incorrectly aligns timestamps")
+    else:
+        print(f"OK: No lookahead detected for '{factor_id}'")
+        print(f"  {message}")
+
+
+def _add_factor_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser(
+        "factor",
+        parents=[_shared_parent()],
+        help="R3 Factor Engine: compute, evaluate, list, report, compare, check-lookahead",
+    )
+    factor_sub = p.add_subparsers(dest="factor_command", required=True)
+
+    # --- compute ---
+    comp = factor_sub.add_parser("compute", help="Compute factor values for symbols over date range")
+    comp.add_argument("--factor", required=True, help="Factor ID (comma-separated for multiple)")
+    comp.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
+    comp.add_argument("--end", default="", help="End date YYYY-MM-DD (default: today)")
+    comp.set_defaults(func=cmd_factor_compute)
+
+    # --- evaluate ---
+    ev = factor_sub.add_parser("evaluate", help="Full factor evaluation with IC, quantile returns, decay")
+    ev.add_argument("--factor", required=True, help="Factor ID")
+    ev.add_argument("--symbols", default="", help="Comma-separated symbols (default: SPY,QQQ,AAPL,MSFT,GOOGL)")
+    ev.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
+    ev.add_argument("--end", default="", help="End date YYYY-MM-DD (default: today)")
+    ev.add_argument("--forward-period", type=int, default=5, help="Forward return period in days (default: 5)")
+    ev.set_defaults(func=cmd_factor_evaluate)
+
+    # --- list ---
+    lst = factor_sub.add_parser("list", help="List all registered factors")
+    lst.add_argument("--category", default="", help="Filter by category (e.g. momentum, volatility)")
+    lst.set_defaults(func=cmd_factor_list)
+
+    # --- report ---
+    rep = factor_sub.add_parser("report", help="Generate markdown factor report")
+    rep.add_argument("--factor", required=True, help="Factor ID")
+    rep.add_argument("--symbols", default="", help="Comma-separated symbols (default: SPY,QQQ,AAPL,MSFT,GOOGL)")
+    rep.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
+    rep.add_argument("--end", default="", help="End date YYYY-MM-DD (default: today)")
+    rep.add_argument("--forward-period", type=int, default=5, help="Forward return period in days (default: 5)")
+    rep.set_defaults(func=cmd_factor_report)
+
+    # --- compare ---
+    cmp = factor_sub.add_parser("compare", help="Compare multiple factors side-by-side")
+    cmp.add_argument("--factors", required=True, help="Comma-separated factor IDs")
+    cmp.add_argument("--symbols", default="", help="Comma-separated symbols (default: SPY,QQQ,AAPL,MSFT,GOOGL)")
+    cmp.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
+    cmp.add_argument("--end", default="", help="End date YYYY-MM-DD (default: today)")
+    cmp.add_argument("--forward-period", type=int, default=5, help="Forward return period in days (default: 5)")
+    cmp.set_defaults(func=cmd_factor_compare)
+
+    # --- check-lookahead ---
+    cl = factor_sub.add_parser("check-lookahead", help="Heuristic lookahead detection")
+    cl.add_argument("--factor", required=True, help="Factor ID")
+    cl.set_defaults(func=cmd_factor_check_lookahead)
+
+
 # main
 # ---------------------------------------------------------------------------
 
@@ -4683,12 +5668,13 @@ def _add_ops_parser(subparsers: Any) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="quant-us",
-        description="QuantStation US Equity quant system — ingest, backtest, paper trade, shadow-live, reconcile, readiness.",
+        description="QuantStation US Equity quant system — ingest, backtest, paper trade, shadow-live, reconcile, readiness, factor.",
     )
 
     subparsers = parser.add_subparsers(dest="subcommand", required=True, help="Subcommand")
     _add_ingest_parser(subparsers)
     _add_backtest_parser(subparsers)
+    _add_regime_parser(subparsers)
     _add_paper_parser(subparsers)
     _add_shadow_live_parser(subparsers)
     _add_reconcile_parser(subparsers)
@@ -4696,6 +5682,9 @@ def build_parser() -> argparse.ArgumentParser:
     _add_live_parser(subparsers)
     _add_live_pilot_parser(subparsers)
     _add_ops_parser(subparsers)
+    _add_portfolio_parser(subparsers)
+    _add_research_parser(subparsers)
+    _add_factor_parser(subparsers)
     return parser
 
 

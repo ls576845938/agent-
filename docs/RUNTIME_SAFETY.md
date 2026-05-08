@@ -346,3 +346,55 @@ ReadinessChecker is read-only:
 7. ReadinessChecker returns report only -- never triggers deployment
 8. No G9 component has submit_order or broker access
 9. Secret values are masked in all config check output
+
+## R5 Research Automation Safety (Added R-Series)
+
+### Research-to-Live Isolation
+
+Research automation modules are strictly isolated from live execution:
+
+1. **No live imports**: Research modules (`quant_us.research.*`) never import from `quant_us.live` or `quant_us.execution`.
+2. **No submit_order**: No research module contains a `submit_order()` method or calls it.
+3. **No AlpacaBroker**: Research modules have no reference to `AlpacaBroker` or any broker class.
+4. **No QUANT_LIVE**: Research modules do not reference the `QUANT_LIVE` environment variable.
+5. **No broker config**: Research modules do not create or reference broker configuration objects.
+
+### Promotion Safety
+
+6. **Max auto-promotion**: The maximum automated promotion level is `PAPER_ELIGIBLE` (a status marker only).
+7. **Manual promotion required**: `ResearchAutomationPipeline.step_promote()` requires explicit caller intent. No auto-promote path exists.
+8. **Cannot promote past PAPER_ELIGIBLE**: Once a candidate reaches `PAPER_ELIGIBLE`, `step_promote()` raises `ValueError`.
+9. **REJECTED is terminal**: Overfit or otherwise rejected candidates cannot be promoted.
+10. **No live promotion method**: There is no `promote_to_live()` method anywhere in the research track.
+
+### Overfit Guard
+
+11. **OverfitDetector**: All candidates are checked for overfitting before promotion.
+12. **Threshold enforcement**: OOS degradation > 40%, param sensitivity > 0.5, trade count < 10, single-year concentration > 50%, and single-symbol concentration > 60% all trigger rejection.
+13. **Cost stress guard**: Sharpe < 0 after 5x costs triggers rejection.
+
+### Lookahead Prevention
+
+14. **No shift(-1)**: Factor computation modules never use `shift(-1)` which would peek into the future.
+15. **No bfill in features**: Feature/factor computation modules do not use `bfill` for feature engineering (allowed only in regime detector's expanding percentile calculation, which is past-only).
+16. **Time-split enforced**: ML dataset builder always enforces chronological train/validation/test splits.
+17. **Rolling windows only**: Regime detection and factor computation use `rolling()` and `expanding()` windows that only access data available at time `t`.
+
+### Portfolio Construction Safety
+
+18. **No orders from portfolio**: Portfolio construction outputs `PortfolioTarget` (allocation weights only), never orders.
+19. **No broker in portfolio**: Portfolio construction modules have no broker imports or references.
+20. **Portfolio backtest is simulated**: `PortfolioBacktestRunner` combines return series -- it does not submit orders.
+
+### R-Series Safety Invariants
+
+1. Research modules cannot submit real orders
+2. Research modules cannot access live brokers
+3. Max auto-promotion is PAPER_ELIGIBLE (marker only)
+4. Manual action required for all promotions beyond RESEARCH_ONLY
+5. Overfit candidates are automatically rejected
+6. Lookahead bias is detected and prevented
+7. Time-split is enforced in all dataset construction
+8. Portfolio construction outputs allocation targets, not orders
+9. No research module references QUANT_LIVE environment variable
+10. All research tests use tmp_path and fake data -- no real API keys or network calls
