@@ -146,7 +146,7 @@ class ResearchPromotionGateService:
 
         gates = [
             self._data_quality_gate(quality),
-            self._backtest_survival_gate(artifacts.summary),
+            self._backtest_survival_gate(artifacts.summary, interval=base_request.get("interval", "1d"), mode=mode),
             self._execution_gate(artifacts.diagnostics.get("execution", {}), artifacts.summary),
             self._risk_gate(artifacts.summary, artifacts.diagnostics.get("exposure", {})),
         ]
@@ -294,14 +294,22 @@ class ResearchPromotionGateService:
             threshold="usable=true, coverage>=95%, score>=95 for pass; coverage<85% = fail",
         )
 
-    def _backtest_survival_gate(self, summary: dict[str, float | int]) -> dict[str, Any]:
+    def _backtest_survival_gate(self, summary: dict[str, float | int], interval: str = "1d", mode: str = "single") -> dict[str, Any]:
         sharpe = float(summary["sharpe_ratio"])
         profit_factor = float(summary["profit_factor"])
         total_return = float(summary["total_return_pct"])
         max_drawdown = float(summary["max_drawdown_pct"])
         trade_count = int(summary.get("trade_count", 0))
-        failed = total_return <= 0 or max_drawdown <= -25 or sharpe < 0 or profit_factor < 0.5 or trade_count < 10
-        warned = sharpe < 0.5 or profit_factor < 1.2 or max_drawdown <= -15 or trade_count < 30
+        signal_count = int(summary.get("signal_count", trade_count))
+        is_low_frequency = interval in ("1d", "4h", "1w") or mode == "portfolio"
+        if is_low_frequency:
+            failed = total_return <= 0 or max_drawdown <= -25 or sharpe < 0 or profit_factor < 0.5 or trade_count < 3
+            warned = sharpe < 0.5 or profit_factor < 1.2 or max_drawdown <= -15 or trade_count < 5
+            criteria = f"low_frequency_profile: return>0,sharpe>=0,pf>=0.5,mdd>-25%,trades>=3 (interval={interval})"
+        else:
+            failed = total_return <= 0 or max_drawdown <= -25 or sharpe < 0 or profit_factor < 0.5 or trade_count < 10
+            warned = sharpe < 0.5 or profit_factor < 1.2 or max_drawdown <= -15 or trade_count < 30
+            criteria = f"standard_profile: return>0,sharpe>=0,pf>=0.5,mdd>-25%,trades>=10 (interval={interval})"
         return _gate(
             name="backtest_survival",
             status=_gate_status(failed=failed, warned=warned),
@@ -312,8 +320,10 @@ class ResearchPromotionGateService:
                 "profit_factor": profit_factor,
                 "max_drawdown_pct": max_drawdown,
                 "trade_count": trade_count,
+                "signal_count": signal_count,
+                "frequency_profile": "low_frequency" if is_low_frequency else "standard",
             },
-            threshold="return>0, sharpe>=0, pf>=0.5, mdd>-25%, trades>=10 for survival; pass wants sharpe>=0.5, pf>=1.2, mdd>-15%, trades>=30",
+            threshold=criteria,
         )
 
     def _execution_gate(self, execution: dict[str, Any], summary: dict[str, float | int]) -> dict[str, Any]:

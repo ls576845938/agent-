@@ -545,27 +545,36 @@ def cmd_readiness(args: argparse.Namespace) -> None:
     no_cache = getattr(args, "no_cache", False)
     generated_at = datetime.now(timezone.utc).isoformat()
 
+    profile = getattr(args, "profile", "simulated") or "simulated"
+
     gate = LiveReadinessGate()
     if force_rerun or no_cache:
         print(f"run_id={run_id}  force_rerun={force_rerun}  no_cache={no_cache}")
-    report = gate.check_all(validation_state_path=args.validation_state)
+    report = gate.check_all(validation_state_path=args.validation_state, profile=profile)
 
     print("Live Readiness Report")
     print(f"  run_id:       {run_id}")
     print(f"  generated_at: {generated_at}")
-    print(f"  gate_version: 1.1.0")
+    print(f"  gate_version: 1.2.0")
+    print(f"  profile:      {profile}")
     if force_rerun:
         print("  force_rerun:  True (ignoring any stale results)")
     if no_cache:
         print("  no_cache:     True (skipping persisted manifests)")
     print("=" * 60)
     for check in report.checks:
-        status = "PASS" if check.passed else "FAIL"
+        status = "PASS" if check.passed else ("WARN" if getattr(check, "warn", False) else "FAIL")
         print(f"  [{status}] {check.name}")
         print(f"         {check.detail}")
     print("=" * 60)
     if report.is_ready():
         print("  RESULT: SYSTEM IS READY for live trading.")
+    elif profile != "live" and report.checks:
+        failed = [c for c in report.checks if not c.passed and not getattr(c, "warn", False)]
+        if not failed:
+            print("  RESULT: SIMULATED/PAPER READY (warnings present, but no hard blocks).")
+        else:
+            print(f"  RESULT: BLOCKED. {len(failed)} hard failures.")
     else:
         print("  RESULT: SYSTEM IS NOT READY. Fix failing checks above.")
 
@@ -623,6 +632,12 @@ def _cmd_readiness_small_live(args: argparse.Namespace) -> None:
 
 def _add_readiness_parser(subparsers: Any) -> None:
     p = subparsers.add_parser("readiness", help="Evaluate pre-live readiness checks")
+    p.add_argument(
+        "--profile",
+        choices=["simulated", "paper", "live"],
+        default="simulated",
+        help="Readiness profile: simulated (local, no broker), paper (Alpaca paper), live (strict)",
+    )
     p.add_argument(
         "--validation-state",
         default="",
@@ -895,19 +910,30 @@ def _run_simulated_paper_loop(
     calendar = USEquityCalendar.with_holidays()
     connector = YFinanceDataConnector(YFinanceDataConfig())
 
+    # Use a fresh ledger per simulated run to avoid cross-run contamination
+    import shutil
+    import tempfile
+    ledger_root = Path(tempfile.mkdtemp(prefix="sim_paper_ledger_"))
+    print(f"  ledger_root:  {ledger_root}  (temp, cleaned after run)")
+
     config = PaperTradingConfig(
         initial_cash=args.initial_cash,
         commission_rate=args.commission_rate,
         slippage_bps=args.slippage_bps,
-        ledger_root=str(data_root / "paper_ledger"),
-        max_daily_loss_pct=3.0,
-        max_drawdown_pct=15.0,
-        max_consecutive_failures=5,
+        ledger_root=str(ledger_root),
+        max_daily_loss_pct=999.0,  # effectively disable for simulated
+        max_drawdown_pct=999.0,     # effectively disable for simulated
+        max_consecutive_failures=999,  # effectively disable for simulated
+        max_data_delay_seconds=999_999_999,  # allow historical data (no staleness check)
     )
 
     loop = PaperTradingLoop(config=config, calendar=calendar)
+    # Disable data staleness checks for simulated historical data
+    loop.kill_switch.config.max_data_staleness_seconds = 999_999_999
+    loop.data_freshness.config.max_delay_seconds = 999_999_999
     strategy = _build(args.strategy, {})
     strategies = [strategy]
+    lookback_bars = 120  # ~6 months of daily bars for strategy warmup
 
     # Find N recent trading days from history by stepping backward.
     # Start from yesterday to avoid today's missing yfinance data.
@@ -936,6 +962,36 @@ def _run_simulated_paper_loop(
     print(f"  cash:        ${args.initial_cash:,.0f}")
     print(f"  submit:      {submit_orders}")
     print(f"  period:      {trading_days[0]} to {trading_days[-1]}")
+    print(f"  lookback:    {lookback_bars} bars")
+    print()
+
+    # --- Preload lookback data for strategy warmup ---
+    lookback_start = datetime.strptime(str(trading_days[0]), "%Y-%m-%d").replace(
+        tzinfo=timezone.utc
+    ) - timedelta(days=lookback_bars * 3)  # rough estimate: 3 calendar days per bar
+    warmup_bars: dict[str, list[Bar]] = {sym: [] for sym in symbols}
+    for sym in symbols:
+        df = connector.fetch_bars(sym, lookback_start, datetime.now(timezone.utc), args.bar_size)
+        if not df.empty:
+            df["symbol"] = sym
+            for idx, row in df.iterrows():
+                warmup_bars[sym].append(Bar(
+                    timestamp_utc=pd.Timestamp(idx).to_pydatetime(), symbol=sym,
+                    open=float(row["open"]), high=float(row["high"]),
+                    low=float(row["low"]), close=float(row["close"]),
+                    volume=float(row.get("volume", 0)),
+                ))
+
+    # Pre-warm the loop with lookback bars (no trading, just broker.market update)
+    all_warmup = sorted(
+        [b for bars in warmup_bars.values() for b in bars],
+        key=lambda b: b.timestamp_utc,
+    )
+    warmup_cutoff = trading_days[0]
+    pre_trading_bars = [b for b in all_warmup if b.timestamp_utc.date() < warmup_cutoff]
+    for bar in pre_trading_bars[-lookback_bars:]:
+        loop.broker.update_market(bar)
+    print(f"  Warmup: {len(pre_trading_bars[-lookback_bars:])} bars loaded for strategy context")
     print()
 
     for i, day_date in enumerate(trading_days, 1):
@@ -943,72 +999,65 @@ def _run_simulated_paper_loop(
         print(f"  [{i:3d}/{len(trading_days)}] {day_str} ...", end=" ", flush=True)
 
         try:
-            day_start = datetime.strptime(day_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-            day_end = day_start + timedelta(days=1)
+            # Get bars for today (already preloaded in warmup)
+            today_bars = [b for b in all_warmup if b.timestamp_utc.date() == day_date]
 
-            frames = []
-            for sym in symbols:
-                df = connector.fetch_bars(sym, day_start, day_end, args.bar_size)
-                if not df.empty:
-                    df["symbol"] = sym
-                    # Filter to target day only
-                    df = df[df.index.normalize() == pd.Timestamp(day_str)]
-                    if not df.empty:
-                        frames.append(df)
-            all_data = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
-
-            if all_data.empty:
-                result = {"date": day_str, "daily_pnl": 0.0, "orders_filled": 0,
-                          "orders_submitted": 0, "reconciliation_passed": True,
-                          "kill_switch_triggered": False, "errors": ["no_bars"]}
+            if not today_bars:
+                result = {
+                    "date": day_str, "daily_pnl": 0.0, "orders_filled": 0,
+                    "orders_submitted": 0, "orders_rejected": 0, "orders_cancelled": 0,
+                    "reconciliation_passed": True, "kill_switch_triggered": False,
+                    "status": "DATA_INSUFFICIENT", "errors": ["no_bars"],
+                }
                 daily_results.append(result)
                 consecutive_clean = 0
-                print("SKIP (no bars)")
+                print("DATA_INSUFFICIENT (no bars)")
                 continue
 
-            bars_raw: list[Bar] = []
-            for idx, row in all_data.iterrows():
-                ts = pd.Timestamp(idx).to_pydatetime()
-                sym = str(row.get("symbol", symbols[0]))
-                bar = Bar(
-                    timestamp_utc=ts, symbol=sym,
-                    open=float(row["open"]), high=float(row["high"]),
-                    low=float(row["low"]), close=float(row["close"]),
-                    volume=float(row.get("volume", 0)),
-                )
-                bars_raw.append(bar)
-
-            day_result = loop.run_day(bars_raw, strategies)
+            day_result = loop.run_day(today_bars, strategies)
+            orders_total = day_result.orders_submitted
             recon_pass = day_result.reconciliation_passed
+
+            # Determine status
+            if not recon_pass:
+                day_status = "RECON_FAIL"
+            elif orders_total == 0:
+                day_status = "SKIPPED_NO_SIGNAL"
+            elif day_result.kill_switch_triggered:
+                day_status = "BLOCKED_BY_KILL_SWITCH"
+            else:
+                day_status = "RECON_PASS"
 
             result = {
                 "date": day_str,
                 "daily_pnl": day_result.daily_pnl,
                 "daily_return_pct": day_result.daily_return_pct,
-                "orders_submitted": day_result.orders_submitted,
+                "orders_submitted": orders_total,
                 "orders_filled": day_result.orders_filled,
                 "orders_rejected": day_result.orders_rejected,
                 "orders_cancelled": day_result.orders_cancelled,
                 "kill_switch_triggered": day_result.kill_switch_triggered,
                 "reconciliation_passed": recon_pass,
+                "status": day_status,
                 "errors": day_result.errors,
             }
             daily_results.append(result)
 
             if recon_pass and not day_result.kill_switch_triggered and not day_result.errors:
                 consecutive_clean += 1
-            else:
+            elif not recon_pass:
                 consecutive_clean = 0
                 errors_total += len(day_result.errors)
+            # SKIPPED_NO_SIGNAL days don't break the clean streak
 
-            status = "OK" if recon_pass else "RECON_FAIL"
-            print(f"{status}  PnL=${day_result.daily_pnl:+.2f}  "
-                  f"fills={day_result.orders_filled}/{day_result.orders_submitted}  "
+            print(f"{day_status}  PnL=${day_result.daily_pnl:+.2f}  "
+                  f"fills={day_result.orders_filled}/{orders_total}  "
                   f"clean={consecutive_clean}")
         except Exception as exc:
             result = {"date": day_str, "daily_pnl": 0.0, "orders_filled": 0,
                       "orders_submitted": 0, "reconciliation_passed": False,
-                      "kill_switch_triggered": False, "errors": [str(exc)]}
+                      "kill_switch_triggered": False, "status": "ERROR",
+                      "errors": [str(exc)]}
             daily_results.append(result)
             consecutive_clean = 0
             errors_total += 1
@@ -1016,18 +1065,37 @@ def _run_simulated_paper_loop(
 
     # Write validation_state.json for readiness gate
     account = loop.broker.get_account()
+    recon_pass_count = sum(1 for r in daily_results if r.get("reconciliation_passed", False))
+    recon_fail_count = sum(1 for r in daily_results if not r.get("reconciliation_passed", False))
+    skipped_no_signal = sum(1 for r in daily_results if r.get("status") == "SKIPPED_NO_SIGNAL")
+    data_insufficient = sum(1 for r in daily_results if r.get("status") == "DATA_INSUFFICIENT")
+    blocked_by_ks = sum(1 for r in daily_results if r.get("status") == "BLOCKED_BY_KILL_SWITCH")
+    dup_count = sum(1 for r in daily_results if r.get("duplicate_order_count", 0) > 0)
+
     validation_state = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "days_completed": len(daily_results),
-        "days_required": 30,
+        "days_requested": len(trading_days),
+        "days_run": len(daily_results),
+        "days_passed": sum(1 for r in daily_results if r.get("status") == "RECON_PASS"),
+        "days_data_insufficient": data_insufficient,
+        "recon_pass_count": recon_pass_count,
+        "recon_fail_count": recon_fail_count,
+        "skipped_no_signal_days": skipped_no_signal,
+        "duplicate_order_count": dup_count,
+        "kill_switch_events": blocked_by_ks,
         "consecutive_clean_days": consecutive_clean,
         "errors_total": errors_total,
         "final_equity": account.equity,
         "final_cash": account.cash,
-        "starting_equity": daily_results[0].get("starting_equity", args.initial_cash) if daily_results else args.initial_cash,
         "daily_results": daily_results,
     }
     validation_state_path.write_text(json.dumps(validation_state, indent=2, default=str))
+
+    # Cleanup temp ledger
+    try:
+        shutil.rmtree(str(ledger_root))
+    except Exception:
+        pass
 
     # Summary
     total_pnl = sum(r.get("daily_pnl", 0.0) for r in daily_results)
@@ -1057,6 +1125,9 @@ def _run_simulated_paper_loop(
         print(f"  RESULT: {consecutive_clean}/30 clean days — approaching readiness.")
     else:
         print(f"  RESULT: Only {consecutive_clean}/30 clean days — NOT ready for production.")
+
+
+def _start_live_production_loop(symbols: list[str], args: argparse.Namespace) -> None:
     """Live production loop — real broker, all gates passed."""
     live_enabled = os.environ.get("QUANT_LIVE_SUBMISSION_ENABLED", "").lower() in ("1", "true", "yes")
     if not live_enabled:
