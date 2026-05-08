@@ -28,6 +28,28 @@ All 5 conditions must be met for real order submission:
 4. `config.live_submission_enabled == True`
 5. `QUANT_LIVE_SUBMISSION_ENABLED=true` in environment
 
+## Simulated Paper Production Loop (Phase F.7)
+
+`live start --simulate-days N` runs an accelerated N-day paper production loop using historical data.
+
+- **No real orders** — runs against SimulatedBroker only
+- **No real market data** — uses cached historical yfinance data
+- **Full lifecycle per day** — market data → signals → positions → risk → OMS → fill → reconcile → report
+- **Generates validation_state.json** — feed to `live readiness --validation-state <path>` for readiness gate
+
+```bash
+python3 -m quant_us.cli live start --simulate-days 30 --symbols SPY,QQQ
+```
+
+## Promotion Gate Re-evaluation (Phase F.7)
+
+The CLI readiness command now supports:
+- `--force-rerun`: force fresh evaluation, ignore stale results
+- `--no-cache`: skip persisted manifest reads
+
+Each run outputs `run_id`, `generated_at`, and `gate_version` for traceability.
+Promotion gate manifests now include `gate_version`, `config_version`, `generated_at` fields.
+
 If any condition fails, orders are rejected with a clear reason string.
 
 ## Idempotency (Anti-Duplicate Orders)

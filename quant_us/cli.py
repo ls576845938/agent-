@@ -875,11 +875,14 @@ def _run_simulated_paper_loop(
     generates daily reports, and writes validation_state.json.
     """
     import json
-    from datetime import datetime, timezone
+    from datetime import date, datetime, timedelta, timezone
     from pathlib import Path
 
+    import pandas as pd
+
     from quant_us.core.calendar import USEquityCalendar
-    from quant_us.data.connectors.yfinance_data import YFinanceConnector
+    from quant_us.core.types import Bar
+    from quant_us.data.connectors.yfinance_data import YFinanceDataConnector, YFinanceDataConfig
     from quant_us.live.paper_trading_loop import PaperTradingConfig, PaperTradingLoop
     from quant_us.strategies.factory import build_strategy as _build
 
@@ -890,16 +893,13 @@ def _run_simulated_paper_loop(
     validation_state_path = report_dir / "validation_state.json"
 
     calendar = USEquityCalendar.with_holidays()
-    connector = YFinanceConnector()
+    connector = YFinanceDataConnector(YFinanceDataConfig())
 
     config = PaperTradingConfig(
-        symbols=symbols,
         initial_cash=args.initial_cash,
         commission_rate=args.commission_rate,
         slippage_bps=args.slippage_bps,
-        data_root=str(data_root),
         ledger_root=str(data_root / "paper_ledger"),
-        submit_orders=submit_orders,
         max_daily_loss_pct=3.0,
         max_drawdown_pct=15.0,
         max_consecutive_failures=5,
@@ -909,12 +909,19 @@ def _run_simulated_paper_loop(
     strategy = _build(args.strategy, {})
     strategies = [strategy]
 
-    # Find N recent trading days from history
-    end_date = datetime.now(timezone.utc)
-    start_date = end_date.replace(year=end_date.year - 1)  # Look back up to 1 year
-    trading_days = [
-        d for d in calendar.trading_days_between(start_date.date(), end_date.date())
-    ][-days:]
+    # Find N recent trading days from history by stepping backward.
+    # Start from yesterday to avoid today's missing yfinance data.
+    yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
+    trading_days: list[date] = []
+    cursor = yesterday
+    # Walk backward to find trading days
+    while len(trading_days) < days + 10:  # buffer for non-trading days
+        if calendar.is_trading_day(cursor):
+            trading_days.append(cursor)
+        cursor = cursor - timedelta(days=1)
+        if (yesterday - cursor).days > 365:  # don't go back more than a year
+            break
+    trading_days = list(reversed(trading_days))[-days:]
 
     if len(trading_days) < days:
         print(f"WARNING: Only {len(trading_days)} trading days available (requested {days})")
@@ -936,13 +943,21 @@ def _run_simulated_paper_loop(
         print(f"  [{i:3d}/{len(trading_days)}] {day_str} ...", end=" ", flush=True)
 
         try:
-            bars_raw = connector.download_bars(
-                symbols=symbols,
-                start=day_str,
-                end=day_str,
-                interval=args.bar_size,
-            )
-            if bars_raw is None or len(bars_raw) == 0:
+            day_start = datetime.strptime(day_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            day_end = day_start + timedelta(days=1)
+
+            frames = []
+            for sym in symbols:
+                df = connector.fetch_bars(sym, day_start, day_end, args.bar_size)
+                if not df.empty:
+                    df["symbol"] = sym
+                    # Filter to target day only
+                    df = df[df.index.normalize() == pd.Timestamp(day_str)]
+                    if not df.empty:
+                        frames.append(df)
+            all_data = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+            if all_data.empty:
                 result = {"date": day_str, "daily_pnl": 0.0, "orders_filled": 0,
                           "orders_submitted": 0, "reconciliation_passed": True,
                           "kill_switch_triggered": False, "errors": ["no_bars"]}
@@ -950,6 +965,18 @@ def _run_simulated_paper_loop(
                 consecutive_clean = 0
                 print("SKIP (no bars)")
                 continue
+
+            bars_raw: list[Bar] = []
+            for idx, row in all_data.iterrows():
+                ts = pd.Timestamp(idx).to_pydatetime()
+                sym = str(row.get("symbol", symbols[0]))
+                bar = Bar(
+                    timestamp_utc=ts, symbol=sym,
+                    open=float(row["open"]), high=float(row["high"]),
+                    low=float(row["low"]), close=float(row["close"]),
+                    volume=float(row.get("volume", 0)),
+                )
+                bars_raw.append(bar)
 
             day_result = loop.run_day(bars_raw, strategies)
             recon_pass = day_result.reconciliation_passed
@@ -1070,6 +1097,7 @@ def _add_live_parser(subparsers: Any) -> None:
     readiness.add_argument("--allow-live-orders", action="store_true", help="Required for live start; does not submit orders")
     readiness.add_argument("--confirm-live", action="store_true", help="Human confirmation flag; does not submit orders")
     readiness.add_argument("--strict", action="store_true", help="Exit non-zero when readiness is blocked")
+    readiness.add_argument("--force-rerun", action="store_true", help="Force re-evaluation, ignore stale results")
     readiness.set_defaults(func=cmd_live_readiness)
 
     dry_run = live_sub.add_parser("dry-run", help="Safe paper-mode dry-run; no order submission")
@@ -1089,6 +1117,7 @@ def _add_live_parser(subparsers: Any) -> None:
     shadow.set_defaults(func=cmd_live_shadow)
 
     start = live_sub.add_parser("start", help="Guarded live start; paper production loop unless gates pass")
+    start.add_argument("--symbols", default="SPY,QQQ", help="Comma-separated tickers (default: SPY,QQQ)")
     start.add_argument("--strategy", default="etf_rotation", help="Strategy ID from the registry")
     start.add_argument("--validation-state", default="", help="Paper validation state path")
     start.add_argument("--allow-live-orders", action="store_true", help="Enable live order path (requires --confirm-live)")
