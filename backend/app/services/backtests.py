@@ -1136,8 +1136,11 @@ def _simulate(
             current_order_notional = 0.0
 
         # --- Turnover reduction: minimum holding period ---
+        # Only blocks DIRECTION REVERSALS (long->short or short->long).
+        # Risk-forced liquidations (going flat, _new_direction==0) always allowed.
         _new_direction = 1.0 if delta_units > 0 else (-1.0 if delta_units < 0 else 0.0)
-        if _new_direction != 0 and _new_direction != _last_trade_direction and _bars_since_entry < config.min_holding_bars:
+        _is_exit_to_flat = _new_direction == 0 and _last_trade_direction != 0
+        if not _is_exit_to_flat and _new_direction != 0 and _new_direction != _last_trade_direction and _bars_since_entry < config.min_holding_bars:
             delta_units = 0.0
             current_order_notional = 0.0
         else:
@@ -1345,6 +1348,10 @@ class ResearchBacktestService:
             leverage=float(request.get("leverage", settings.default_leverage)),
             position_basis=str(request.get("position_basis", "equity")),
             db_path=str(request.get("data_db_path", "")),
+            rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", 0.01)),
+            min_holding_bars=int(request.get("min_holding_bars", 5)),
+            cost_aware_filter=bool(request.get("cost_aware_filter", True)),
+            max_annual_turnover_pct=float(request.get("max_annual_turnover_pct", 5000.0)),
         )
         strategy_id = request["strategy_id"]
         frame = load_market_frame(
@@ -1432,6 +1439,10 @@ class ResearchBacktestService:
             leverage=float(request.get("leverage", settings.default_leverage)),
             position_basis=str(request.get("position_basis", "equity")),
             db_path=str(request.get("data_db_path", "")),
+            rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", 0.01)),
+            min_holding_bars=int(request.get("min_holding_bars", 5)),
+            cost_aware_filter=bool(request.get("cost_aware_filter", True)),
+            max_annual_turnover_pct=float(request.get("max_annual_turnover_pct", 5000.0)),
         )
         strategy_id = request["strategy_id"]
         strategy_params = request.get("strategy_params", {})
@@ -1461,6 +1472,10 @@ class ResearchBacktestService:
                 leverage=config.leverage,
                 position_basis=config.position_basis,
                 db_path=config.db_path,
+                rebalance_buffer_pct=config.rebalance_buffer_pct,
+                min_holding_bars=config.min_holding_bars,
+                cost_aware_filter=config.cost_aware_filter,
+                max_annual_turnover_pct=config.max_annual_turnover_pct,
             )
             result = _simulate(frame=frame, config=scenario_config, weights={strategy_id: 1.0}, signals=signals)
             summary = result.summary
@@ -1536,6 +1551,10 @@ class ResearchBacktestService:
                 leverage=float(request.get("leverage", settings.default_leverage)),
                 position_basis=str(request.get("position_basis", "equity")),
                 db_path=str(request.get("data_db_path", "")),
+                rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", 0.01)),
+                min_holding_bars=int(request.get("min_holding_bars", 5)),
+                cost_aware_filter=bool(request.get("cost_aware_filter", True)),
+                max_annual_turnover_pct=float(request.get("max_annual_turnover_pct", 5000.0)),
             )
 
             frame = load_market_frame(
@@ -1737,6 +1756,10 @@ class ResearchBacktestService:
             leverage=float(request.get("leverage", settings.default_leverage)),
             position_basis=str(request.get("position_basis", "equity")),
             db_path=str(request.get("data_db_path", "")),
+            rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", 0.01)),
+            min_holding_bars=int(request.get("min_holding_bars", 5)),
+            cost_aware_filter=bool(request.get("cost_aware_filter", True)),
+            max_annual_turnover_pct=float(request.get("max_annual_turnover_pct", 5000.0)),
         )
         baseline_weights = _normalize_weights(_requested_portfolio_weights(request))
         if not baseline_weights:

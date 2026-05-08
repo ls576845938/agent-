@@ -175,12 +175,15 @@ class ResearchPromotionGateService:
         strategy_version = self._strategy_version(mode, request)
         created_at = _now()
         manifest = {
+            "gate_version": "2.0.0",
             "created_at": created_at.isoformat(),
+            "generated_at": created_at.isoformat(),
             "mode": mode,
             "request": _jsonable(request),
             "strategy_version": strategy_version,
             "data_version": quality["data_version"],
             "data_fingerprint": quality["fingerprint"],
+            "config_version": _fingerprint({k: request.get(k) for k in ["rebalance_buffer_pct", "min_holding_bars", "cost_aware_filter", "max_annual_turnover_pct"] if k in request})[:16],
             "summary": artifacts.summary,
             "gates": gates,
             "decision": decision,
@@ -383,7 +386,7 @@ class ResearchPromotionGateService:
                 "strategy_params": strategy_params,
                 "windows": min(int(request.get("windows", 2)), 3),
                 "max_candidates": min(int(request.get("max_candidates", 1)), 3),
-                "symbols": request.get("symbols", []),
+                "symbols": request.get("symbols") or ["SPY", "QQQ", "IWM", "DIA"],
             }
         )
         # Safely extract stability metrics; walk-forward may return error/insufficient data

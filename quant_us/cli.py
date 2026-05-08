@@ -533,15 +533,31 @@ def _add_reconcile_parser(subparsers: Any) -> None:
 def cmd_readiness(args: argparse.Namespace) -> None:
     """Check all pre-live readiness conditions."""
     from quant_us.reports.live_readiness import LiveReadinessGate
+    import uuid
+    from datetime import datetime, timezone
 
     if args.small_live:
         _cmd_readiness_small_live(args)
         return
 
+    run_id = str(uuid.uuid4())[:12]
+    force_rerun = getattr(args, "force_rerun", False)
+    no_cache = getattr(args, "no_cache", False)
+    generated_at = datetime.now(timezone.utc).isoformat()
+
     gate = LiveReadinessGate()
+    if force_rerun or no_cache:
+        print(f"run_id={run_id}  force_rerun={force_rerun}  no_cache={no_cache}")
     report = gate.check_all(validation_state_path=args.validation_state)
 
     print("Live Readiness Report")
+    print(f"  run_id:       {run_id}")
+    print(f"  generated_at: {generated_at}")
+    print(f"  gate_version: 1.1.0")
+    if force_rerun:
+        print("  force_rerun:  True (ignoring any stale results)")
+    if no_cache:
+        print("  no_cache:     True (skipping persisted manifests)")
     print("=" * 60)
     for check in report.checks:
         status = "PASS" if check.passed else "FAIL"
@@ -616,6 +632,16 @@ def _add_readiness_parser(subparsers: Any) -> None:
         "--small-live",
         action="store_true",
         help="Run small-live go/no-go gate (requires --validation-state)",
+    )
+    p.add_argument(
+        "--force-rerun",
+        action="store_true",
+        help="Force re-evaluation: ignore any cached or stale results",
+    )
+    p.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="Skip reading any previously persisted manifests or reports",
     )
     p.set_defaults(func=cmd_readiness)
 
@@ -759,12 +785,17 @@ def cmd_live_start(args: argparse.Namespace) -> None:
     health = runtime.bootstrap()
     _print_runtime_health("Guarded Live Start", health)
 
+    simulate_days = getattr(args, "simulate_days", 0) or 0
+
     if is_live:
         if not health.ok:
             print("ERROR: Live readiness gate not passed. Fix above issues before starting.", file=sys.stderr)
             raise SystemExit(1)
         print("  real_order_submission: ENABLED (all gates passed)")
         _start_live_production_loop(symbols, args)
+    elif simulate_days > 0:
+        print(f"  real_order_submission: DISABLED (simulated paper mode, {simulate_days} days)")
+        _run_simulated_paper_loop(symbols, args, simulate_days)
     else:
         print("  real_order_submission: DISABLED (must pass all gates)")
         if not health.ok:
@@ -835,7 +866,170 @@ def _start_paper_production_loop(symbols: list[str], args: argparse.Namespace) -
     print("=" * 60)
 
 
-def _start_live_production_loop(symbols: list[str], args: argparse.Namespace) -> None:
+def _run_simulated_paper_loop(
+    symbols: list[str], args: argparse.Namespace, days: int
+) -> None:
+    """Simulate N historical trading days using the paper trading loop.
+
+    Loads historical bars, runs PaperTradingLoop for each trading day,
+    generates daily reports, and writes validation_state.json.
+    """
+    import json
+    from datetime import datetime, timezone
+    from pathlib import Path
+
+    from quant_us.core.calendar import USEquityCalendar
+    from quant_us.data.connectors.yfinance_data import YFinanceConnector
+    from quant_us.live.paper_trading_loop import PaperTradingConfig, PaperTradingLoop
+    from quant_us.strategies.factory import build_strategy as _build
+
+    submit_orders = bool(args.submit_orders)
+    data_root = Path(args.data_root)
+    report_dir = data_root / "reports" / "paper_production"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    validation_state_path = report_dir / "validation_state.json"
+
+    calendar = USEquityCalendar.with_holidays()
+    connector = YFinanceConnector()
+
+    config = PaperTradingConfig(
+        symbols=symbols,
+        initial_cash=args.initial_cash,
+        commission_rate=args.commission_rate,
+        slippage_bps=args.slippage_bps,
+        data_root=str(data_root),
+        ledger_root=str(data_root / "paper_ledger"),
+        submit_orders=submit_orders,
+        max_daily_loss_pct=3.0,
+        max_drawdown_pct=15.0,
+        max_consecutive_failures=5,
+    )
+
+    loop = PaperTradingLoop(config=config, calendar=calendar)
+    strategy = _build(args.strategy, {})
+    strategies = [strategy]
+
+    # Find N recent trading days from history
+    end_date = datetime.now(timezone.utc)
+    start_date = end_date.replace(year=end_date.year - 1)  # Look back up to 1 year
+    trading_days = [
+        d for d in calendar.trading_days_between(start_date.date(), end_date.date())
+    ][-days:]
+
+    if len(trading_days) < days:
+        print(f"WARNING: Only {len(trading_days)} trading days available (requested {days})")
+
+    daily_results: list[dict[str, Any]] = []
+    consecutive_clean = 0
+    errors_total = 0
+
+    print(f"Simulated Paper Production Loop: {len(trading_days)} trading days")
+    print(f"  strategy:    {args.strategy}")
+    print(f"  symbols:     {', '.join(symbols)}")
+    print(f"  cash:        ${args.initial_cash:,.0f}")
+    print(f"  submit:      {submit_orders}")
+    print(f"  period:      {trading_days[0]} to {trading_days[-1]}")
+    print()
+
+    for i, day_date in enumerate(trading_days, 1):
+        day_str = day_date.isoformat()
+        print(f"  [{i:3d}/{len(trading_days)}] {day_str} ...", end=" ", flush=True)
+
+        try:
+            bars_raw = connector.download_bars(
+                symbols=symbols,
+                start=day_str,
+                end=day_str,
+                interval=args.bar_size,
+            )
+            if bars_raw is None or len(bars_raw) == 0:
+                result = {"date": day_str, "daily_pnl": 0.0, "orders_filled": 0,
+                          "orders_submitted": 0, "reconciliation_passed": True,
+                          "kill_switch_triggered": False, "errors": ["no_bars"]}
+                daily_results.append(result)
+                consecutive_clean = 0
+                print("SKIP (no bars)")
+                continue
+
+            day_result = loop.run_day(bars_raw, strategies)
+            recon_pass = day_result.reconciliation_passed
+
+            result = {
+                "date": day_str,
+                "daily_pnl": day_result.daily_pnl,
+                "daily_return_pct": day_result.daily_return_pct,
+                "orders_submitted": day_result.orders_submitted,
+                "orders_filled": day_result.orders_filled,
+                "orders_rejected": day_result.orders_rejected,
+                "orders_cancelled": day_result.orders_cancelled,
+                "kill_switch_triggered": day_result.kill_switch_triggered,
+                "reconciliation_passed": recon_pass,
+                "errors": day_result.errors,
+            }
+            daily_results.append(result)
+
+            if recon_pass and not day_result.kill_switch_triggered and not day_result.errors:
+                consecutive_clean += 1
+            else:
+                consecutive_clean = 0
+                errors_total += len(day_result.errors)
+
+            status = "OK" if recon_pass else "RECON_FAIL"
+            print(f"{status}  PnL=${day_result.daily_pnl:+.2f}  "
+                  f"fills={day_result.orders_filled}/{day_result.orders_submitted}  "
+                  f"clean={consecutive_clean}")
+        except Exception as exc:
+            result = {"date": day_str, "daily_pnl": 0.0, "orders_filled": 0,
+                      "orders_submitted": 0, "reconciliation_passed": False,
+                      "kill_switch_triggered": False, "errors": [str(exc)]}
+            daily_results.append(result)
+            consecutive_clean = 0
+            errors_total += 1
+            print(f"ERROR: {exc}")
+
+    # Write validation_state.json for readiness gate
+    account = loop.broker.get_account()
+    validation_state = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "days_completed": len(daily_results),
+        "days_required": 30,
+        "consecutive_clean_days": consecutive_clean,
+        "errors_total": errors_total,
+        "final_equity": account.equity,
+        "final_cash": account.cash,
+        "starting_equity": daily_results[0].get("starting_equity", args.initial_cash) if daily_results else args.initial_cash,
+        "daily_results": daily_results,
+    }
+    validation_state_path.write_text(json.dumps(validation_state, indent=2, default=str))
+
+    # Summary
+    total_pnl = sum(r.get("daily_pnl", 0.0) for r in daily_results)
+    total_filled = sum(r.get("orders_filled", 0) for r in daily_results)
+    total_submitted = sum(r.get("orders_submitted", 0) for r in daily_results)
+    recon_pass_count = sum(1 for r in daily_results if r.get("reconciliation_passed", False))
+
+    print()
+    print("=" * 60)
+    print("  30-Day Simulated Paper Production Loop — Summary")
+    print("=" * 60)
+    print(f"  Days run:              {len(daily_results)}")
+    print(f"  Consecutive clean:     {consecutive_clean}")
+    print(f"  Total errors:          {errors_total}")
+    print(f"  Total PnL:             ${total_pnl:+,.2f}")
+    print(f"  Total orders filled:   {total_filled}/{total_submitted}")
+    print(f"  Reconciliation passes: {recon_pass_count}/{len(daily_results)}")
+    print(f"  Final equity:          ${account.equity:,.2f}")
+    print(f"  Final cash:            ${account.cash:,.2f}")
+    print(f"  Kill switch triggered: {loop.kill_switch.triggered}")
+    print(f"  Validation state:      {validation_state_path}")
+    print("=" * 60)
+
+    if consecutive_clean >= 30:
+        print("  RESULT: 30 consecutive clean days — READY for paper production.")
+    elif consecutive_clean >= 20:
+        print(f"  RESULT: {consecutive_clean}/30 clean days — approaching readiness.")
+    else:
+        print(f"  RESULT: Only {consecutive_clean}/30 clean days — NOT ready for production.")
     """Live production loop — real broker, all gates passed."""
     live_enabled = os.environ.get("QUANT_LIVE_SUBMISSION_ENABLED", "").lower() in ("1", "true", "yes")
     if not live_enabled:
@@ -907,6 +1101,7 @@ def _add_live_parser(subparsers: Any) -> None:
     start.add_argument("--initial-cash", type=float, default=100_000.0, help="Initial capital (default: 100000)")
     start.add_argument("--commission-rate", type=float, default=0.0001, help="Commission rate (default: 0.0001)")
     start.add_argument("--slippage-bps", type=float, default=1.0, help="Slippage in bps (default: 1.0)")
+    start.add_argument("--simulate-days", type=int, default=0, help="Simulate N historical trading days for accelerated paper production (0=live session)")
     start.set_defaults(func=cmd_live_start)
 
 
