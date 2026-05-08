@@ -929,6 +929,9 @@ def _run_simulated_paper_loop(
     )
 
     loop = PaperTradingLoop(config=config, calendar=calendar)
+    # Disable session check for simulated historical data
+    from dataclasses import replace
+    loop.risk_engine.config = replace(loop.risk_engine.config, skip_session_check=True)
     strategy = _build(args.strategy, {})
     strategies = [strategy]
     lookback_bars = 252  # ~1 year of daily bars for strategy warmup (ETF rotation needs 60+ per symbol)
