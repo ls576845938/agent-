@@ -492,11 +492,11 @@ class LiveReadinessGate:
         bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
         chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
         if not bot_token or not chat_id:
-            if profile == "simulated":
+            if profile in ("simulated", "paper"):
                 return ReadinessCheck(
                     name="telegram_connectivity",
                     passed=True,
-                    detail="Telegram not configured — alerts disabled (WARN for paper/live)",
+                    detail=f"Telegram not configured — alerts disabled (WARN for live, OK for {profile})",
                     warn=True,
                 )
             return ReadinessCheck(

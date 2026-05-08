@@ -1097,6 +1097,8 @@ def _run_simulated_paper_loop(
     validation_state = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "days_requested": len(trading_days),
+        "days_required": len(trading_days),
+        "days_completed": len(daily_results),
         "days_run": len(daily_results),
         "days_passed": sum(1 for r in daily_results if r.get("status") == "RECON_PASS"),
         "days_data_insufficient": data_insufficient,
