@@ -2,6 +2,8 @@ import {useEffect, useState} from 'react';
 
 import LineChart from '../components/LineChart';
 import StatusBadge from '../components/StatusBadge';
+import {LoadingSpinner} from '../components/LoadingSpinner';
+import {apiGet, apiPost} from '../lib/api';
 import type {StrategyInfo} from '../lib/view-model';
 import {buildDateBoundary, formatPrice, mvpStepClass} from '../lib/utils';
 import type {EventDrivenCostStressResponse, MvpStep, ValueEvent} from '../lib/shared-types';
@@ -32,12 +34,6 @@ type USUnifiedBacktestResponse = {run_id: string; status: string; summary: Recor
 type USPaperStatusResponse = {equity: number; cash: number; buying_power: number; positions: number; kill_switch_triggered: boolean; kill_switch_reason: string | null; days_traded: number; healthy: boolean; last_reconciliation_passed: boolean | null};
 type USPaperDayResultResponse = {date: string; starting_equity: number; ending_equity: number; daily_pnl: number; daily_return_pct: number; orders_submitted: number; orders_filled: number; orders_rejected: number; orders_cancelled: number; kill_switch_triggered: boolean; reconciliation_passed: boolean; reconciliation_diff: Record<string, unknown>; errors: string[]};
 type PaperBacktestResponse = {status: string; days_processed: number; total_pnl: number; final_equity: number; healthy: boolean; kill_switch_triggered: boolean; daily_results: USPaperDayResultResponse[]};
-
-async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, {...init, headers: {'Content-Type': 'application/json', ...(init?.headers ?? {})}});
-  if (!response.ok) { const message = await response.text(); throw new Error(message || `Failed: ${response.status}`); }
-  return response.json() as Promise<T>;
-}
 
 export type USEquityWorkspaceProps = {
   strategies: StrategyInfo[];
@@ -71,12 +67,12 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSDataSync = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      const result = await fetchJson<USEquitySyncResponse>('/api/us/data/sync', {method: 'POST', body: JSON.stringify({
+      const result = await apiPost<USEquitySyncResponse>('/api/us/data/sync', {
         vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
         data_root: usForm.dataRoot,
-      })});
+      });
       setUSSync(result); setUSMessage(`同步完成：清洗 ${result.rows_cleaned} 行`);
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '同步失败'); }
     finally { setUSLoading(false); }
@@ -85,12 +81,12 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSBuildFeatures = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      const result = await fetchJson<USFeatureBuildResponse>('/api/us/features/build', {method: 'POST', body: JSON.stringify({
+      const result = await apiPost<USFeatureBuildResponse>('/api/us/features/build', {
         vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
         data_root: usForm.dataRoot, version: 'v1', universe: 'default', auto_sync: true,
-      })});
+      });
       setUSFeature(result); setUSMessage(`因子构建完成：写入 ${result.rows_written} 行`);
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '构建失败'); }
     finally { setUSLoading(false); }
@@ -99,13 +95,13 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSBacktest = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      const result = await fetchJson<USEventBacktestResponse>('/api/us/backtests/event', {method: 'POST', body: JSON.stringify({
+      const result = await apiPost<USEventBacktestResponse>('/api/us/backtests/event', {
         vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
         strategy_id: usForm.strategyId,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
         data_root: usForm.dataRoot, auto_sync: true,
-      })});
+      });
       setUSBacktest(result); setUSMessage(`事件回测完成：${result.fill_count} 成交 / ${result.order_count} 订单`);
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '回测失败'); }
     finally { setUSLoading(false); }
@@ -114,7 +110,7 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSReconcile = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      const result = await fetchJson<USReconciliationResponse>('/api/us/reconcile', {method: 'POST', body: JSON.stringify({ledger_dir: usForm.ledgerDir, tolerance: 0.000001})});
+      const result = await apiPost<USReconciliationResponse>('/api/us/reconcile', {ledger_dir: usForm.ledgerDir, tolerance: 0.000001});
       setUSReconcile(result); setUSMessage(result.status === 'clean' ? '对账一致' : `发现 ${result.break_count} 个差异`);
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '对账失败'); }
     finally { setUSLoading(false); }
@@ -123,13 +119,13 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSUnifiedBacktest = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      const result = await fetchJson<USUnifiedBacktestResponse>('/api/us/backtests/unified', {method: 'POST', body: JSON.stringify({
+      const result = await apiPost<USUnifiedBacktestResponse>('/api/us/backtests/unified', {
         vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
         strategy_id: usForm.strategyId,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
         data_root: usForm.dataRoot, auto_sync: true,
-      })});
+      });
       setUSUnifiedBacktest(result); setUSMessage(result.equity_consistent ? '权益验证 PASS' : '权益验证 FAIL');
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '回测失败'); }
     finally { setUSLoading(false); }
@@ -138,10 +134,10 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSPaperRunDay = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      await fetchJson<USPaperDayResultResponse>('/api/us/paper/run-day', {method: 'POST', body: JSON.stringify({
+      await apiPost<USPaperDayResultResponse>('/api/us/paper/run-day', {
         vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
         strategy_id: usForm.strategyId, target_date: usForm.startDate, data_root: usForm.dataRoot, capital: 100000,
-      })});
+      });
       handleUSPaperStatus(); handleUSPaperDailyResults();
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '运行失败'); }
     finally { setUSLoading(false); }
@@ -149,14 +145,14 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
 
   const handleUSPaperStatus = async () => {
     try {
-      const result = await fetchJson<USPaperStatusResponse>('/api/us/paper/status');
+      const result = await apiGet<USPaperStatusResponse>('/api/us/paper/status');
       setUSPaperStatus(result);
     } catch { /* silent */ }
   };
 
   const handleUSPaperDailyResults = async () => {
     try {
-      const results = await fetchJson<USPaperDayResultResponse[]>('/api/us/paper/daily-results');
+      const results = await apiGet<USPaperDayResultResponse[]>('/api/us/paper/daily-results');
       setUSPaperDailyResults(results);
     } catch { /* silent */ }
   };
@@ -164,13 +160,13 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSPaperBacktest = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      const result = await fetchJson<PaperBacktestResponse>('/api/us/paper/backtest', {method: 'POST', body: JSON.stringify({
+      const result = await apiPost<PaperBacktestResponse>('/api/us/paper/backtest', {
         vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
         strategy_id: usForm.strategyId,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
         data_root: usForm.dataRoot, capital: 100000, auto_sync: true,
-      })});
+      });
       setPaperBacktest(result); setUSMessage(`纸交易回测：${result.days_processed} 天 PnL $${result.total_pnl.toFixed(2)}`);
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '回测失败'); }
     finally { setUSLoading(false); }
@@ -179,10 +175,10 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSQualityReport = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      const result = await fetchJson<USQualityReportResponse>('/api/us/data/quality-report', {method: 'POST', body: JSON.stringify({
+      const result = await apiPost<USQualityReportResponse>('/api/us/data/quality-report', {
         symbol: usForm.symbol, start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize), data_root: usForm.dataRoot,
-      })});
+      });
       setUSQualityReport(result); setUSMessage(result.has_issues ? `发现 ${result.total_issues} 个问题` : '数据质量通过');
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '检查失败'); }
     finally { setUSLoading(false); }
@@ -191,12 +187,12 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSCostStressED = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      const result = await fetchJson<EventDrivenCostStressResponse>('/api/backtests/cost-stress/event-driven', {method: 'POST', body: JSON.stringify({
+      const result = await apiPost<EventDrivenCostStressResponse>('/api/backtests/cost-stress/event-driven', {
         source: 'fixture', symbol: usForm.symbol, interval: '1h', strategy_id: usForm.strategyId,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
         capital: 100000, max_scenarios: 5,
-      })});
+      });
       setEDCostStress(result); setUSMessage(`成本压力 ${result.survival_rate_pct.toFixed(0)}% 生存率`);
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '失败'); }
     finally { setUSLoading(false); }
@@ -205,12 +201,12 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSWalkForward = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      const result = await fetchJson<{stability: Record<string, unknown>; windows: Array<unknown>}>('/api/backtests/walk-forward', {method: 'POST', body: JSON.stringify({
+      const result = await apiPost<{stability: Record<string, unknown>; windows: Array<unknown>}>('/api/backtests/walk-forward', {
         source: 'yfinance', symbol: usForm.symbol, interval: usForm.barSize,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
         capital: 100000, commission_rate: 0.0001, strategy_id: usForm.strategyId, data_root: usForm.dataRoot,
-      })});
+      });
       setUSMessage(`Walk-Forward: pass_rate ${((result.stability.pass_rate_pct ?? 0) as number).toFixed(0)}%, ${(result.windows as Array<unknown>).length} windows`);
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '失败'); }
     finally { setUSLoading(false); }
@@ -219,12 +215,12 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSPromotionGate = async () => {
     setUSLoading(true); setUSMessage('');
     try {
-      const result = await fetchJson<{decision: string; next_stage: string; gates: Array<{name: string; status: string}>}>('/api/research/promotion-gate', {method: 'POST', body: JSON.stringify({
+      const result = await apiPost<{decision: string; next_stage: string; gates: Array<{name: string; status: string}>}>('/api/research/promotion-gate', {
         strategy_id: usForm.strategyId, symbol: usForm.symbol, interval: usForm.barSize,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
         capital: 100000, source: 'yfinance', data_root: usForm.dataRoot, skip_deep_checks: false,
-      })});
+      });
       setPromotionGateResult(result as unknown as Record<string, unknown>);
       const passed = result.gates.filter(g => g.status === 'pass').length;
       setUSMessage(`Promotion Gate: ${result.decision} → ${result.next_stage} (${passed}/${result.gates.length} pass)`);
@@ -235,7 +231,7 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const handleUSPaperReset = async () => {
     setUSLoading(true);
     try {
-      await fetchJson<{status: string}>('/api/us/paper/reset', {method: 'POST'});
+      await apiPost<{status: string}>('/api/us/paper/reset');
       setUSMessage('纸交易已重置');
       setPaperBacktest(null); setUSPaperStatus(null); setUSPaperDailyResults([]);
     } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '重置失败'); }
@@ -301,7 +297,7 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
       </section>
 
       <section className="panel us-output-panel">
-        <div className="panel-header"><h2>链路状态</h2><span>{usLoading ? 'running' : 'idle'}</span></div>
+        <div className="panel-header"><h2>链路状态</h2><span>{usLoading ? <LoadingSpinner text="running" /> : 'idle'}</span></div>
         <div className="us-stage-grid">
           <div><span>清洗数据</span><strong>{usSync ? `${usSync.rows_cleaned}/${usSync.rows_received}` : '-'}</strong></div>
           <div><span>因子行数</span><strong>{usFeature?.rows_written ?? '-'}</strong></div>

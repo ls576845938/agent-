@@ -4,6 +4,9 @@
   --bg-soft: rgba(13, 27, 39, 0.88);
   --panel: rgba(8, 20, 30, 0.84);
   --panel-border: rgba(134, 170, 197, 0.16);
+  --panel-bg: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.1);
+  --accent-soft: rgba(99,102,241,0.3);
   --text: #ecf4fb;
   --muted: #9db2c3;
   --good: #6ef3b0;
@@ -133,8 +136,26 @@ select {
   cursor: pointer;
 }
 
-.system-switch button.active {
+.system-switch button.active,
+.system-switch a.active {
   background: rgba(122, 215, 255, 0.14);
+  color: var(--text);
+}
+
+.system-switch a {
+  display: inline-block;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 14px;
+  background: transparent;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.system-switch a:hover {
+  background: rgba(122, 215, 255, 0.08);
   color: var(--text);
 }
 

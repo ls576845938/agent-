@@ -1,13 +1,16 @@
-import {FormEvent, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
+import {BrowserRouter, Routes, Route, Link, useLocation} from 'react-router-dom';
 
 import type {StrategyInfo} from './lib/view-model';
 import {humanizeError} from './lib/view-model';
+import {apiGet} from './lib/api';
+import {ErrorBoundary} from './components/ErrorBoundary';
 import CryptoWorkspace from './workspaces/CryptoWorkspace';
 import USEquityWorkspace from './workspaces/USEquityWorkspace';
 import LiveTradingDashboard from './workspaces/LiveTradingDashboard';
 import StrategyExplorer from './workspaces/StrategyExplorer';
-
-type TabId = 'crypto' | 'us_equity' | 'live' | 'strategies';
+import ResearchDashboard from './workspaces/ResearchDashboard';
+import PortfolioMonitor from './workspaces/PortfolioMonitor';
 
 type HealthState = {
   status: string;
@@ -16,21 +19,17 @@ type HealthState = {
   fastapi_available: boolean;
 };
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url, {headers: {'Content-Type': 'application/json'}});
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json() as Promise<T>;
-}
-
-const tabs: Array<{id: TabId; label: string}> = [
-  {id: 'crypto', label: '加密策略'},
-  {id: 'us_equity', label: '美股量化'},
-  {id: 'live', label: '实盘监控'},
-  {id: 'strategies', label: '策略浏览'},
+const tabs: Array<{path: string; label: string}> = [
+  {path: '/', label: '美股量化'},
+  {path: '/crypto', label: '加密策略'},
+  {path: '/live', label: '实盘监控'},
+  {path: '/strategies', label: '策略浏览'},
+  {path: '/research', label: '研究台'},
+  {path: '/portfolio', label: '投资组合'},
 ];
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState<TabId>('us_equity');
+function AppShell() {
+  const location = useLocation();
   const [health, setHealth] = useState<HealthState | null>(null);
   const [strategies, setStrategies] = useState<StrategyInfo[]>([]);
   const [error, setError] = useState('');
@@ -39,8 +38,8 @@ export default function App() {
     void (async () => {
       try {
         const [healthResult, strategyResult] = await Promise.all([
-          fetchJson<HealthState>('/api/health'),
-          fetchJson<StrategyInfo[]>('/api/strategies'),
+          apiGet<HealthState>('/api/health'),
+          apiGet<StrategyInfo[]>('/api/strategies'),
         ]);
         setHealth(healthResult);
         setStrategies(strategyResult);
@@ -49,6 +48,8 @@ export default function App() {
       }
     })();
   }, []);
+
+  const activePath = location.pathname;
 
   return (
     <div className="app-shell">
@@ -62,18 +63,17 @@ export default function App() {
           <p className="hero-copy">策略回测 · 数据管道 · 模拟交易 · 实盘监控 · 风险管控 — 一体工作台</p>
         </div>
         <div className="hero-actions">
-          <div className="system-switch">
+          <nav className="system-switch">
             {tabs.map(tab => (
-              <button
-                key={tab.id}
-                type="button"
-                className={activeTab === tab.id ? 'active' : ''}
-                onClick={() => setActiveTab(tab.id)}
+              <Link
+                key={tab.path}
+                to={tab.path}
+                className={activePath === tab.path ? 'active' : ''}
               >
                 {tab.label}
-              </button>
+              </Link>
             ))}
-          </div>
+          </nav>
           <div className="hero-status">
             <span className="status-chip">{health?.service ?? '等待后端'}</span>
             <span className="status-chip muted">数据源 {health?.data_source_default ?? 'unknown'}</span>
@@ -88,10 +88,22 @@ export default function App() {
         </div>
       ) : null}
 
-      {activeTab === 'crypto' && <CryptoWorkspace health={health} strategies={strategies} />}
-      {activeTab === 'us_equity' && <USEquityWorkspace strategies={strategies} />}
-      {activeTab === 'live' && <LiveTradingDashboard />}
-      {activeTab === 'strategies' && <StrategyExplorer strategies={strategies} />}
+      <Routes>
+        <Route path="/" element={<ErrorBoundary><USEquityWorkspace strategies={strategies} /></ErrorBoundary>} />
+        <Route path="/crypto" element={<ErrorBoundary><CryptoWorkspace health={health} strategies={strategies} /></ErrorBoundary>} />
+        <Route path="/live" element={<ErrorBoundary><LiveTradingDashboard /></ErrorBoundary>} />
+        <Route path="/strategies" element={<ErrorBoundary><StrategyExplorer strategies={strategies} /></ErrorBoundary>} />
+        <Route path="/research" element={<ErrorBoundary><ResearchDashboard /></ErrorBoundary>} />
+        <Route path="/portfolio" element={<ErrorBoundary><PortfolioMonitor /></ErrorBoundary>} />
+      </Routes>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppShell />
+    </BrowserRouter>
   );
 }

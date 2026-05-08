@@ -1,0 +1,179 @@
+import type {StrategyOptimizationResponse, CostStressResponse, WalkForwardResponse, PortfolioOptimizationResponse, DataQualityResponse, PromotionGateResponse, OptimizationFrameworkItem} from '../../lib/shared-types';
+import {formatOptimizationScore, formatParams, formatTimestamp, formatPrice, scenarioClass, gateClass} from '../../lib/utils';
+
+interface OptimizationPanelProps {
+  optimization: StrategyOptimizationResponse | null;
+  optimizationLoading: boolean;
+  optimizationMessage: string;
+  costStress: CostStressResponse | null;
+  costStressLoading: boolean;
+  costStressMessage: string;
+  walkForward: WalkForwardResponse | null;
+  walkForwardLoading: boolean;
+  walkForwardMessage: string;
+  portfolioOptimization: PortfolioOptimizationResponse | null;
+  portfolioOptimizationLoading: boolean;
+  portfolioOptimizationMessage: string;
+  dataQuality: DataQualityResponse | null;
+  dataQualityLoading: boolean;
+  dataQualityMessage: string;
+  promotionGate: PromotionGateResponse | null;
+  promotionGateLoading: boolean;
+  promotionGateMessage: string;
+  optimizationFramework: OptimizationFrameworkItem[];
+  optimizedStrategyParams: Record<string, number> | null;
+  onOptimize: () => void;
+  onCostStress: () => void;
+  onWalkForward: () => void;
+  onPortfolioOptimize: () => void;
+  onDataQuality: () => void;
+  onPromotionGate: () => void;
+  onApplyWeights: () => void;
+}
+
+export default function OptimizationPanel({
+  optimization, optimizationLoading, optimizationMessage,
+  costStress, costStressLoading, costStressMessage,
+  walkForward, walkForwardLoading, walkForwardMessage,
+  portfolioOptimization, portfolioOptimizationLoading, portfolioOptimizationMessage,
+  dataQuality, dataQualityLoading, dataQualityMessage,
+  promotionGate, promotionGateLoading, promotionGateMessage,
+  optimizationFramework, optimizedStrategyParams,
+  onOptimize, onCostStress, onWalkForward, onPortfolioOptimize,
+  onDataQuality, onPromotionGate, onApplyWeights,
+}: OptimizationPanelProps) {
+  return (
+    <>
+      <div className="panel-header"><h2>下一步优化框架</h2><span>{optimizationFramework[0]?.title ?? ''}</span></div>
+      <div className="optimization-framework">
+        {optimizationFramework.map((item) => (
+          <div key={item.priority} className={`optimization-step optimization-${item.status}`}><span>{item.priority}</span><div><strong>{item.title}</strong><p>{item.reason}</p></div></div>
+        ))}
+      </div>
+      <div className="optimization-actions">
+        <button type="button" className="secondary-button" disabled={optimizationLoading} onClick={onOptimize}>{optimizationLoading ? '优化中...' : '运行优先优化'}</button>
+        <button type="button" className="secondary-button" disabled={costStressLoading} onClick={onCostStress}>{costStressLoading ? '中...' : '成本压力测试'}</button>
+        <button type="button" className="secondary-button" disabled={walkForwardLoading} onClick={onWalkForward}>{walkForwardLoading ? '中...' : 'Walk-forward'}</button>
+        <button type="button" className="secondary-button" disabled={portfolioOptimizationLoading} onClick={onPortfolioOptimize}>{portfolioOptimizationLoading ? '中...' : '组合优化'}</button>
+        <button type="button" className="secondary-button" disabled={dataQualityLoading} onClick={onDataQuality}>{dataQualityLoading ? '中...' : '数据质量'}</button>
+        <button type="button" className="secondary-button" disabled={promotionGateLoading} onClick={onPromotionGate}>{promotionGateLoading ? '中...' : '研究准入门'}</button>
+        {optimizedStrategyParams ? <span>已应用：{formatParams(optimizedStrategyParams)}</span> : null}
+      </div>
+      {optimizationMessage ? <p className="data-message">{optimizationMessage}</p> : null}
+      {costStressMessage ? <p className="data-message">{costStressMessage}</p> : null}
+      {walkForwardMessage ? <p className="data-message">{walkForwardMessage}</p> : null}
+      {portfolioOptimizationMessage ? <p className="data-message">{portfolioOptimizationMessage}</p> : null}
+      {dataQualityMessage ? <p className="data-message">{dataQualityMessage}</p> : null}
+      {promotionGateMessage ? <p className="data-message">{promotionGateMessage}</p> : null}
+
+      {/* Optimization results */}
+      {optimization?.best ? (
+        <div className="optimization-result-grid">
+          <div className="optimization-best"><span>最佳候选</span><strong>Score {formatOptimizationScore(optimization.best.score)}</strong><p>{formatParams(optimization.best.parameters)}</p></div>
+          <div className="optimization-best"><span>样本外表现</span><strong>Sharpe {optimization.best.validation.sharpe_ratio.toFixed(2)}</strong><p>Return {optimization.best.validation.total_return_pct.toFixed(2)}% · MDD {optimization.best.validation.max_drawdown_pct.toFixed(2)}%</p></div>
+          <div className="optimization-best"><span>切分</span><strong>{optimization.split.train_rows} / {optimization.split.validation_rows}</strong><p>{formatTimestamp(optimization.split.train_start)} - {formatTimestamp(optimization.split.validation_end)}</p></div>
+        </div>
+      ) : null}
+      {optimization?.candidates.length ? (
+        <div className="optimization-table">
+          {optimization.candidates.slice(0, 5).map((c) => (
+            <div key={c.rank} className="optimization-row"><span>#{c.rank}</span><span>{formatOptimizationScore(c.score)}</span><span>{c.validation.sharpe_ratio.toFixed(2)} Sharpe</span><span>{c.validation.max_drawdown_pct.toFixed(2)}% MDD</span><span>{formatParams(c.parameters)}</span></div>
+          ))}
+        </div>
+      ) : null}
+
+      {/* Cost stress results */}
+      {costStress ? (
+        <div className="stress-panel">
+          <div className="stress-summary-grid">
+            <div className="optimization-best"><span>压力存活率</span><strong>{costStress.survival_rate_pct.toFixed(0)}%</strong><p>{costStress.selected_priority}</p></div>
+            <div className="optimization-best"><span>最差场景</span><strong>{costStress.worst_case?.label ?? '-'}</strong><p>Return {costStress.worst_case?.summary.total_return_pct.toFixed(2) ?? '-'}% · MDD {costStress.worst_case?.summary.max_drawdown_pct.toFixed(2) ?? '-'}%</p></div>
+            <div className="optimization-best"><span>测试参数</span><strong>{costStress.strategy_id}</strong><p>{formatParams(costStress.strategy_params)}</p></div>
+          </div>
+          <div className="stress-table">
+            {costStress.scenarios.map((scenario) => (
+              <div key={scenario.name} className={scenarioClass(scenario.survives)}><span>{scenario.survives ? 'PASS' : 'FAIL'}</span><span>{scenario.label}</span><span>{scenario.summary.total_return_pct.toFixed(2)}%</span><span>{scenario.summary.sharpe_ratio.toFixed(2)} Sharpe</span><span>{scenario.summary.max_drawdown_pct.toFixed(2)}% MDD</span></div>
+            ))}
+          </div>
+          <div className="optimization-recommendations">{costStress.recommendations.map((r, i) => <p key={i}>{r}</p>)}</div>
+        </div>
+      ) : null}
+
+      {/* Walk-forward results */}
+      {walkForward ? (
+        <div className="walk-panel">
+          <div className="stress-summary-grid">
+            <div className="optimization-best"><span>OOS 通过率</span><strong>{walkForward.stability.pass_rate_pct.toFixed(0)}%</strong><p>{walkForward.selected_priority}</p></div>
+            <div className="optimization-best"><span>OOS 中位 Sharpe</span><strong>{walkForward.stability.median_oos_sharpe.toFixed(2)}</strong><p>Avg Return {walkForward.stability.avg_oos_return_pct.toFixed(2)}%</p></div>
+            <div className="optimization-best"><span>参数稳定性</span><strong>{walkForward.stability.parameter_stability_pct.toFixed(0)}%</strong><p>Worst MDD {walkForward.stability.worst_oos_drawdown_pct.toFixed(2)}%</p></div>
+          </div>
+          <div className="walk-table">
+            {walkForward.windows.map((w) => (
+              <div key={w.fold} className={`walk-row ${w.survives ? 'stress-pass' : 'stress-fail'}`}><span>W{w.fold}</span><span>{w.survives ? 'PASS' : 'FAIL'}</span><span>{formatTimestamp(w.validation_start)} - {formatTimestamp(w.validation_end)}</span><span>{w.validation.total_return_pct.toFixed(2)}%</span><span>{w.validation.sharpe_ratio.toFixed(2)} Sharpe</span><span>{w.validation.max_drawdown_pct.toFixed(2)}% MDD</span><span>{formatParams(w.selected_params)}</span></div>
+            ))}
+          </div>
+          <div className="regime-grid">
+            {walkForward.regimes.map((r) => (
+              <div key={r.name} className={`regime-card ${r.survives ? 'stress-pass' : 'stress-fail'}`}><span>{r.survives ? 'PASS' : 'FAIL'}</span><strong>{r.label}</strong><p>{r.coverage_pct.toFixed(0)}% bars · Return {r.summary.total_return_pct.toFixed(2)}% · MDD {r.summary.max_drawdown_pct.toFixed(2)}%</p></div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Portfolio optimization results */}
+      {portfolioOptimization ? (
+        <div className="portfolio-opt-panel">
+          <div className="stress-summary-grid">
+            <div className="optimization-best"><span>优化后 Sharpe</span><strong>{portfolioOptimization.optimized_summary.sharpe_ratio.toFixed(2)}</strong><p>Delta {portfolioOptimization.improvement.sharpe_delta.toFixed(2)}</p></div>
+            <div className="optimization-best"><span>优化后收益</span><strong>{portfolioOptimization.optimized_summary.total_return_pct.toFixed(2)}%</strong><p>Baseline {portfolioOptimization.baseline_summary.total_return_pct.toFixed(2)}%</p></div>
+            <div className="optimization-best"><span>风险状态</span><strong>{portfolioOptimization.risk_overlay.state}</strong><p>Gross x{portfolioOptimization.risk_overlay.suggested_gross_multiplier.toFixed(2)}</p></div>
+          </div>
+          <div className="portfolio-action-row">
+            <button type="button" className="secondary-button" onClick={onApplyWeights}>应用建议权重</button>
+          </div>
+          <div className="portfolio-table">
+            {portfolioOptimization.optimized_weight_rows.map((row) => (
+              <div key={row.strategy_id} className="portfolio-row"><span>{row.display_name}</span><span>{row.baseline_weight_pct.toFixed(1)}% → {row.weight_pct.toFixed(1)}%</span></div>
+            ))}
+          </div>
+          <div className="portfolio-split-grid">
+            <div><h4>风险贡献</h4><div className="risk-list">{portfolioOptimization.risk_budget.risk_contributions.map((item) => <div key={item.strategy_id} className="risk-row"><span>{item.strategy_id}</span><span>{item.risk_contribution_pct.toFixed(1)}% risk</span></div>)}</div></div>
+            <div><h4>最高相关性</h4><div className="risk-list">{portfolioOptimization.correlation_pairs.slice(0, 4).map((pair) => <div key={`${pair.left}-${pair.right}`} className="risk-row"><span>{pair.left}/{pair.right}</span><span>{pair.correlation.toFixed(2)}</span></div>)}</div></div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Data quality */}
+      {dataQuality ? (
+        <div className="data-quality-panel">
+          <div className="stress-summary-grid">
+            <div className="optimization-best"><span>质量分数</span><strong>{dataQuality.quality_score.toFixed(0)}</strong><p>{dataQuality.is_usable ? '可用' : '阻断'}</p></div>
+            <div className="optimization-best"><span>覆盖率</span><strong>{dataQuality.coverage_pct.toFixed(2)}%</strong><p>{dataQuality.row_count.toLocaleString('en-US')} / {dataQuality.expected_rows.toLocaleString('en-US')}</p></div>
+            <div className="optimization-best"><span>数据版本</span><strong>{dataQuality.actual_source}</strong><p>{dataQuality.data_version}</p></div>
+          </div>
+          <div className="quality-metrics-grid">
+            <div><span>缺失K线</span><strong>{dataQuality.missing_bars}</strong></div>
+            <div><span>重复时间戳</span><strong>{dataQuality.duplicate_timestamps}</strong></div>
+            <div><span>OHLC异常</span><strong>{dataQuality.invalid_ohlc}</strong></div>
+            <div><span>价格跳变</span><strong>{dataQuality.large_price_jumps}</strong></div>
+          </div>
+          <div className="quality-issue-list">{dataQuality.issues.map((issue) => <div key={`${issue.code}-${issue.message}`} className={`quality-issue quality-${issue.severity}`}><span>{issue.severity}</span><strong>{issue.code}</strong><p>{issue.message}</p></div>)}</div>
+        </div>
+      ) : null}
+
+      {/* Promotion gate */}
+      {promotionGate ? (
+        <div className="promotion-panel">
+          <div className="stress-summary-grid">
+            <div className="optimization-best"><span>晋级决策</span><strong>{promotionGate.decision.toUpperCase()}</strong><p>{promotionGate.next_stage}</p></div>
+            <div className="optimization-best"><span>核心 Sharpe</span><strong>{promotionGate.backtest_summary.sharpe_ratio.toFixed(2)}</strong><p>MDD {promotionGate.backtest_summary.max_drawdown_pct.toFixed(2)}%</p></div>
+            <div className="optimization-best"><span>Manifest</span><strong>{promotionGate.manifest_id.slice(0, 8)}</strong><p>{promotionGate.manifest_path || 'not persisted'}</p></div>
+            <div className="optimization-best"><span>实验</span><strong>{promotionGate.experiment_record.experiment_name ?? '-'}</strong></div>
+          </div>
+          <div className="promotion-gate-list">{promotionGate.gates.map((g) => <div key={g.name} className={gateClass(g.status)}><span>{g.status.toUpperCase()}</span><strong>{g.name}</strong><p>{g.message}</p></div>)}</div>
+          <div className="optimization-recommendations">{promotionGate.recommendations.map((r, i) => <p key={i}>{r}</p>)}</div>
+        </div>
+      ) : null}
+    </>
+  );
+}

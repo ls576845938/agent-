@@ -1,5 +1,7 @@
 import {useEffect, useState} from 'react';
 import StatusBadge from '../components/StatusBadge';
+import MetricCard from '../components/MetricCard';
+import {apiGet} from '../lib/api';
 import {formatPrice} from '../lib/utils';
 
 type PaperStatus = {
@@ -18,12 +20,6 @@ type DailyResult = {
   reconciliation_diff: Record<string, unknown>; errors: string[];
 };
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const resp = await fetch(url, {headers: {'Content-Type': 'application/json'}});
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  return resp.json() as Promise<T>;
-}
-
 export default function LiveTradingDashboard() {
   const [status, setStatus] = useState<PaperStatus | null>(null);
   const [dailyResults, setDailyResults] = useState<DailyResult[]>([]);
@@ -33,8 +29,8 @@ export default function LiveTradingDashboard() {
   const refresh = async () => {
     try {
       const [s, results] = await Promise.all([
-        fetchJson<PaperStatus>('/api/us/paper/status'),
-        fetchJson<DailyResult[]>('/api/us/paper/daily-results'),
+        apiGet<PaperStatus>('/api/us/paper/status'),
+        apiGet<DailyResult[]>('/api/us/paper/daily-results'),
       ]);
       setStatus(s);
       setDailyResults(results);
@@ -70,12 +66,12 @@ export default function LiveTradingDashboard() {
 
       {/* Account overview */}
       <section className="metrics-grid">
-        <article className="metric-card"><span>当前权益</span><strong>{status ? formatPrice(status.equity) : '—'}</strong></article>
-        <article className="metric-card"><span>可用现金</span><strong>{status ? formatPrice(status.cash) : '—'}</strong></article>
-        <article className="metric-card"><span>购买力</span><strong>{status ? formatPrice(status.buying_power) : '—'}</strong></article>
-        <article className="metric-card"><span>持仓数</span><strong>{status?.positions ?? '—'}</strong></article>
-        <article className="metric-card"><span>累计 PnL</span><strong className={totalPnL >= 0 ? 'metric-good' : 'metric-bad'}>${totalPnL.toFixed(2)}</strong></article>
-        <article className="metric-card"><span>交易日</span><strong>{status?.days_traded ?? '—'}</strong></article>
+        <MetricCard label="当前权益" value={status ? formatPrice(status.equity) : '—'} />
+        <MetricCard label="可用现金" value={status ? formatPrice(status.cash) : '—'} />
+        <MetricCard label="购买力" value={status ? formatPrice(status.buying_power) : '—'} />
+        <MetricCard label="持仓数" value={String(status?.positions ?? '—')} />
+        <MetricCard label="累计 PnL" value={`$${totalPnL.toFixed(2)}`} tone={totalPnL >= 0 ? 'good' : 'bad'} />
+        <MetricCard label="交易日" value={String(status?.days_traded ?? '—')} />
       </section>
 
       {/* Safety indicators */}
@@ -150,26 +146,10 @@ export default function LiveTradingDashboard() {
         <section className="panel">
           <div className="panel-header"><h3>PnL 概览</h3></div>
           <div className="metrics-grid">
-            <article className="metric-card">
-              <span>日均 PnL</span>
-              <strong className={totalPnL / dailyResults.length >= 0 ? 'metric-good' : 'metric-bad'}>
-                ${(totalPnL / dailyResults.length).toFixed(2)}
-              </strong>
-            </article>
-            <article className="metric-card">
-              <span>盈利天数</span>
-              <strong className="metric-good">{dailyResults.filter(d => d.daily_pnl > 0).length}</strong>
-            </article>
-            <article className="metric-card">
-              <span>亏损天数</span>
-              <strong className="metric-bad">{dailyResults.filter(d => d.daily_pnl < 0).length}</strong>
-            </article>
-            <article className="metric-card">
-              <span>胜率</span>
-              <strong className={dailyResults.filter(d => d.daily_pnl > 0).length / dailyResults.length >= 0.5 ? 'metric-good' : 'metric-bad'}>
-                {(dailyResults.filter(d => d.daily_pnl > 0).length / dailyResults.length * 100).toFixed(1)}%
-              </strong>
-            </article>
+            <MetricCard label="日均 PnL" value={`$${(totalPnL / dailyResults.length).toFixed(2)}`} tone={totalPnL / dailyResults.length >= 0 ? 'good' : 'bad'} />
+            <MetricCard label="盈利天数" value={String(dailyResults.filter(d => d.daily_pnl > 0).length)} tone="good" />
+            <MetricCard label="亏损天数" value={String(dailyResults.filter(d => d.daily_pnl < 0).length)} tone="bad" />
+            <MetricCard label="胜率" value={`${(dailyResults.filter(d => d.daily_pnl > 0).length / dailyResults.length * 100).toFixed(1)}%`} tone={dailyResults.filter(d => d.daily_pnl > 0).length / dailyResults.length >= 0.5 ? 'good' : 'bad'} />
           </div>
         </section>
       ) : null}
