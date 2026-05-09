@@ -5,20 +5,24 @@ from __future__ import annotations
 import os
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 
 import numpy as np
 import pandas as pd
 
 from quant_us.backtest.broker_simulator import SimulatedBroker
 from quant_us.backtest.commission import PercentCommission
+from quant_us.backtest.corporate_actions_ledger import LedgerAdjustment, LedgerAdjustmentLog
 from quant_us.backtest.data_bridge import bars_from_dataframe
 from quant_us.backtest.ledger_pnl import derive_equity_from_fills, ledger_positions_and_cash_at, verify_equity_consistency
 from quant_us.backtest.slippage import BpsSlippage
 from quant_us.backtest.unified_runner import UnifiedBacktestConfig, UnifiedBacktestResult, UnifiedBacktestRunner, compare_vectorized_vs_event_driven
-from quant_us.core.enums import OrderSide
-from quant_us.core.types import Bar, Fill, Order, PortfolioSnapshot, new_id
+from quant_us.core.enums import OrderSide, SignalDirection
+from quant_us.core.events import MarketEvent
+from quant_us.core.types import Bar, Fill, Order, PortfolioSnapshot, Signal, new_id
 from quant_us.data.storage.data_manifest import DataManifest, DataManifestStore
+from quant_us.strategies.base import Strategy, StrategyContext
 
 
 def _make_test_fills(n: int = 5) -> list[Fill]:
@@ -61,6 +65,103 @@ def _make_test_snapshots(fills: list[Fill], initial_cash: float = 100_000.0) -> 
             )
         )
     return snaps
+
+
+@dataclass
+class LongThenFlatStrategy(Strategy):
+    strategy_id: str = "long_then_flat_fixture"
+    version: str = "1.0.0"
+    long_bars: int = 2
+
+    def on_bar(self, event: MarketEvent, context: StrategyContext):
+        anchor = datetime(2024, 1, 2, 14, 30, tzinfo=timezone.utc)
+        bar_offset = int((event.timestamp_utc - anchor).total_seconds() // 60)
+        direction = SignalDirection.LONG if bar_offset < self.long_bars else SignalDirection.FLAT
+        return [
+            Signal(
+                timestamp_utc=event.timestamp_utc,
+                strategy_id=self.strategy_id,
+                symbol=event.bar.symbol,
+                direction=direction,
+                strength=1.0,
+                horizon="1b",
+                reason=f"fixture_{direction.value}",
+            )
+        ]
+
+
+@dataclass
+class CashProbeStrategy(Strategy):
+    strategy_id: str = "cash_probe_fixture"
+    version: str = "1.0.0"
+    cash_by_timestamp: dict[datetime, float] = None
+
+    def __post_init__(self) -> None:
+        if self.cash_by_timestamp is None:
+            self.cash_by_timestamp = {}
+
+    def on_bar(self, event: MarketEvent, context: StrategyContext):
+        self.cash_by_timestamp[event.timestamp_utc] = context.account.cash
+        direction = (
+            SignalDirection.LONG
+            if event.timestamp_utc == datetime(2024, 1, 2, 14, 30, tzinfo=timezone.utc)
+            else SignalDirection.FLAT
+        )
+        return [
+            Signal(
+                timestamp_utc=event.timestamp_utc,
+                strategy_id=self.strategy_id,
+                symbol=event.bar.symbol,
+                direction=direction,
+                strength=1.0,
+                horizon="1b",
+                reason=f"cash_probe_{direction.value}",
+            )
+        ]
+
+
+@dataclass
+class PositionProbeStrategy(Strategy):
+    strategy_id: str = "position_probe_fixture"
+    version: str = "1.0.0"
+    positions_by_timestamp: dict[datetime, dict[str, tuple[float, float]]] = None
+
+    def __post_init__(self) -> None:
+        if self.positions_by_timestamp is None:
+            self.positions_by_timestamp = {}
+
+    def on_bar(self, event: MarketEvent, context: StrategyContext):
+        self.positions_by_timestamp[event.timestamp_utc] = {
+            symbol: (position.quantity, position.avg_price)
+            for symbol, position in context.account.positions.items()
+        }
+        return [
+            Signal(
+                timestamp_utc=event.timestamp_utc,
+                strategy_id=self.strategy_id,
+                symbol=event.bar.symbol,
+                direction=SignalDirection.LONG,
+                strength=1.0,
+                horizon="1b",
+                reason="position_probe_long",
+            )
+        ]
+
+
+def _scenario_bars(prices: list[float], volume: float = 100.0, symbol: str = "AAPL") -> list[Bar]:
+    start = datetime(2024, 1, 2, 14, 30, tzinfo=timezone.utc)
+    return [
+        Bar(
+            timestamp_utc=start + timedelta(minutes=idx),
+            symbol=symbol,
+            open=price,
+            high=price,
+            low=price,
+            close=price,
+            volume=volume,
+        )
+        for idx, price in enumerate(prices)
+    ]
 
 
 class LedgerPnlTests(unittest.TestCase):
@@ -166,6 +267,161 @@ class LedgerPnlTests(unittest.TestCase):
                                msg="Roundtrip should only lose commission")
         self.assertAlmostEqual(curve.total_fees, 2.0, places=6)
 
+    def test_ledger_replay_applies_split_adjustments_to_position_state(self):
+        buy_time = datetime(2024, 1, 2, 10, 0, tzinfo=timezone.utc)
+        split_time = datetime(2024, 1, 2, 10, 10, tzinfo=timezone.utc)
+        buy = Fill(
+            order_id=new_id("ord"),
+            symbol="AAPL",
+            side=OrderSide.BUY,
+            quantity=100.0,
+            price=100.0,
+            commission=0.0,
+            filled_at=buy_time,
+            broker="test",
+        )
+        adjustments = LedgerAdjustmentLog(
+            adjustments=[
+                LedgerAdjustment(
+                    timestamp_utc=split_time,
+                    symbol="AAPL",
+                    adjustment_type="split",
+                    amount=0.0,
+                    quantity_multiplier=2.0,
+                    description="AAPL 2:1 split",
+                )
+            ]
+        )
+
+        positions, cash = ledger_positions_and_cash_at(
+            [buy],
+            split_time,
+            100_000.0,
+            adjustments=adjustments,
+        )
+        curve = derive_equity_from_fills(
+            [buy],
+            100_000.0,
+            market_prices_by_time={
+                buy_time: {"AAPL": 100.0},
+                split_time: {"AAPL": 50.0},
+            },
+            adjustments=adjustments,
+        )
+
+        self.assertEqual(positions, {"AAPL": 200.0})
+        self.assertAlmostEqual(cash, 90_000.0, places=6)
+        self.assertEqual(len(curve.points), 2)
+        self.assertEqual(curve.points[-1].timestamp_utc, split_time)
+        self.assertAlmostEqual(curve.points[-1].position_value, 10_000.0, places=6)
+        self.assertAlmostEqual(curve.final_equity, 100_000.0, places=6)
+
+    def test_ledger_adjustment_cross_check_does_not_use_future_prices(self):
+        fill_time = datetime(2024, 1, 2, 10, 0, tzinfo=timezone.utc)
+        adjustment_time = datetime(2024, 1, 2, 10, 10, tzinfo=timezone.utc)
+        future_time = datetime(2024, 1, 2, 10, 20, tzinfo=timezone.utc)
+        buy = Fill(
+            order_id=new_id("ord"),
+            symbol="AAPL",
+            side=OrderSide.BUY,
+            quantity=10.0,
+            price=100.0,
+            commission=0.0,
+            filled_at=fill_time,
+            broker="test",
+        )
+        adjustments = LedgerAdjustmentLog(
+            adjustments=[
+                LedgerAdjustment(
+                    timestamp_utc=adjustment_time,
+                    symbol="AAPL",
+                    adjustment_type="dividend",
+                    amount=0.0,
+                    description="zero cash adjustment used to exercise cross-check",
+                )
+            ]
+        )
+
+        curve = derive_equity_from_fills(
+            [buy],
+            100_000.0,
+            market_prices_by_time={
+                fill_time: {"AAPL": 100.0},
+                adjustment_time: {"AAPL": 100.0},
+                future_time: {"AAPL": 200.0},
+            },
+            adjustments=adjustments,
+        )
+
+        self.assertEqual(curve.points[-1].timestamp_utc, adjustment_time)
+        self.assertAlmostEqual(curve.points[-1].position_value, 1_000.0, places=6)
+        self.assertAlmostEqual(curve.final_equity, 100_000.0, places=6)
+        self.assertIsNotNone(curve.adjustment_cross_check)
+        self.assertTrue(curve.adjustment_cross_check.passed)
+
+    def test_ledger_adjustment_cross_check_reports_discrepancy_without_overwrite(self):
+        fill_time = datetime(2024, 1, 2, 10, 0, tzinfo=timezone.utc)
+        split_time = datetime(2024, 1, 2, 10, 10, tzinfo=timezone.utc)
+        buy = Fill(
+            order_id=new_id("ord"),
+            symbol="AAPL",
+            side=OrderSide.BUY,
+            quantity=10.0,
+            price=100.0,
+            commission=0.0,
+            filled_at=fill_time,
+            broker="test",
+        )
+        adjustments = LedgerAdjustmentLog(
+            adjustments=[
+                LedgerAdjustment(
+                    timestamp_utc=split_time,
+                    symbol="AAPL",
+                    adjustment_type="split",
+                    amount=0.0,
+                    quantity_multiplier=2.0,
+                    description="AAPL 2:1 split without same-timestamp price",
+                )
+            ]
+        )
+
+        curve = derive_equity_from_fills(
+            [buy],
+            100_000.0,
+            market_prices_by_time={
+                fill_time: {"AAPL": 100.0},
+            },
+            adjustments=adjustments,
+        )
+        snapshots = [
+            PortfolioSnapshot(
+                timestamp_utc=split_time,
+                equity=100_000.0,
+                cash=99_000.0,
+                gross_exposure=1_000.0,
+                net_exposure=1_000.0,
+                daily_pnl=0.0,
+                drawdown=0.0,
+            )
+        ]
+
+        consistent, msg = verify_equity_consistency(
+            snapshots,
+            curve,
+            fills=[buy],
+            market_prices_by_time={fill_time: {"AAPL": 100.0}},
+            adjustments=adjustments,
+        )
+
+        self.assertAlmostEqual(curve.final_equity, 100_000.0, places=6)
+        self.assertAlmostEqual(curve.points[-1].cash, 99_000.0, places=6)
+        self.assertIsNotNone(curve.adjustment_cross_check)
+        self.assertFalse(curve.adjustment_cross_check.passed)
+        self.assertAlmostEqual(curve.adjustment_cross_check.reconstructed_final_equity, 101_000.0, places=6)
+        self.assertAlmostEqual(curve.adjustment_cross_check.equity_diff, -1_000.0, places=6)
+        self.assertFalse(consistent)
+        self.assertIn("adjustment cross-check discrepancy", msg)
+
 
 class UnifiedRunnerMarketPricesTests(unittest.TestCase):
     """Verify the market_prices mapping fix in unified_runner."""
@@ -266,6 +522,180 @@ class UnifiedRunnerMarketPricesTests(unittest.TestCase):
             fills, fills[-1].filled_at + __import__('datetime').timedelta(days=1), 100_000.0,
         )
         self.assertNotEqual(cash, full_cash, "Middle and full cash should differ")
+
+
+class UnifiedRunnerLedgerBackedScenarioTests(unittest.TestCase):
+    """Deterministic ledger-backed scenarios for costs, partial fills, and cash adjustments."""
+
+    def test_runner_honors_volume_cap_for_partial_sell_sequence(self):
+        bars = _scenario_bars([100.0, 101.0, 102.0, 103.0], volume=100.0)
+        runner = UnifiedBacktestRunner(
+            UnifiedBacktestConfig(
+                initial_cash=100_000.0,
+                commission_rate=0.0,
+                slippage_bps=0.0,
+                volume_participation_cap_pct=10.0,
+                run_id="ubt_partial_sell_fixture",
+            )
+        )
+
+        result = runner.run(
+            strategies=[LongThenFlatStrategy(long_bars=2)],
+            bars_override=bars,
+        )
+
+        self.assertEqual([fill.quantity for fill in result.fills], [10.0, 10.0, 10.0, 10.0])
+        self.assertEqual(
+            [order.status.value for order in result.orders],
+            ["partially_filled", "partially_filled", "partially_filled", "filled"],
+        )
+        self.assertEqual(result.evidence["orders"]["status_counts"]["partially_filled"], 3)
+        self.assertEqual(result.evidence["positions"]["final_positions"], {})
+        self.assertTrue(result.equity_consistent, result.equity_consistency_msg)
+
+    def test_runner_adjustment_log_flows_into_snapshots_and_evidence(self):
+        bars = _scenario_bars([100.0, 100.0, 100.0], volume=100_000.0)
+        adjustment_ts = bars[1].timestamp_utc
+        runner = UnifiedBacktestRunner(
+            UnifiedBacktestConfig(
+                initial_cash=100_000.0,
+                commission_rate=0.0,
+                slippage_bps=0.0,
+                adjustment_log=LedgerAdjustmentLog(
+                    adjustments=[
+                        LedgerAdjustment(
+                            timestamp_utc=adjustment_ts,
+                            symbol="AAPL",
+                            adjustment_type="dividend",
+                            amount=10.0,
+                            description="fixture dividend",
+                        )
+                    ]
+                ),
+                run_id="ubt_adjustment_fixture",
+            )
+        )
+
+        result = runner.run(
+            strategies=[LongThenFlatStrategy(long_bars=1)],
+            bars_override=bars,
+        )
+
+        self.assertAlmostEqual(result.ledger_curve.final_equity, 100_010.0, places=6)
+        self.assertAlmostEqual(result.snapshots[-1].cash, 100_010.0, places=6)
+        self.assertAlmostEqual(result.snapshots[-1].equity, 100_010.0, places=6)
+        self.assertAlmostEqual(result.evidence["cash"]["ledger_cash_at_final_snapshot"], 100_010.0, places=6)
+        self.assertAlmostEqual(result.evidence["pnl"]["final_equity"], 100_010.0, places=6)
+        self.assertEqual(result.evidence["corporate_actions"]["summary"]["adjustment_count"], 1)
+        self.assertAlmostEqual(result.evidence["corporate_actions"]["summary"]["total_dividends"], 10.0, places=6)
+        self.assertEqual(result.evidence["corporate_actions"]["adjustments"][0]["adjustment_type"], "dividend")
+        self.assertTrue(result.evidence["reconciliation"]["summary"]["passed"])
+        self.assertTrue(result.equity_consistent, result.equity_consistency_msg)
+
+    def test_adjustment_log_is_visible_to_strategy_context_before_next_signal(self):
+        bars = _scenario_bars([100.0, 100.0, 100.0], volume=100_000.0)
+        adjustment_ts = bars[1].timestamp_utc
+        strategy = CashProbeStrategy()
+        runner = UnifiedBacktestRunner(
+            UnifiedBacktestConfig(
+                initial_cash=100_000.0,
+                commission_rate=0.0,
+                slippage_bps=0.0,
+                adjustment_log=LedgerAdjustmentLog(
+                    adjustments=[
+                        LedgerAdjustment(
+                            timestamp_utc=adjustment_ts,
+                            symbol="AAPL",
+                            adjustment_type="dividend",
+                            amount=10.0,
+                            description="fixture dividend",
+                        )
+                    ]
+                ),
+                run_id="ubt_native_adjustment_fixture",
+            )
+        )
+
+        result = runner.run(strategies=[strategy], bars_override=bars)
+
+        self.assertAlmostEqual(
+            strategy.cash_by_timestamp[adjustment_ts],
+            90_010.0,
+            places=6,
+        )
+        self.assertAlmostEqual(result.snapshots[1].cash, 100_010.0, places=6)
+        self.assertTrue(result.equity_consistent, result.equity_consistency_msg)
+
+    def test_multi_symbol_cash_adjustment_keeps_final_snapshot_consistent(self):
+        aapl_bars = _scenario_bars([100.0, 100.0, 100.0], volume=100_000.0, symbol="AAPL")
+        msft_bars = _scenario_bars([200.0, 200.0, 200.0], volume=100_000.0, symbol="MSFT")
+        bars = sorted(aapl_bars + msft_bars, key=lambda bar: (bar.timestamp_utc, bar.symbol))
+        adjustment_ts = aapl_bars[1].timestamp_utc
+        runner = UnifiedBacktestRunner(
+            UnifiedBacktestConfig(
+                initial_cash=100_000.0,
+                commission_rate=0.0,
+                slippage_bps=0.0,
+                adjustment_log=LedgerAdjustmentLog(
+                    adjustments=[
+                        LedgerAdjustment(
+                            timestamp_utc=adjustment_ts,
+                            symbol="AAPL",
+                            adjustment_type="dividend",
+                            amount=5.0,
+                            description="AAPL fixture dividend",
+                        )
+                    ]
+                ),
+                run_id="ubt_multisymbol_adjustment_fixture",
+            )
+        )
+
+        result = runner.run(
+            strategies=[LongThenFlatStrategy(long_bars=1)],
+            bars_override=bars,
+        )
+
+        self.assertEqual(result.evidence["positions"]["final_positions"], {})
+        self.assertAlmostEqual(result.snapshots[-1].cash, 100_005.0, places=6)
+        self.assertAlmostEqual(result.evidence["cash"]["ledger_cash_at_final_snapshot"], 100_005.0, places=6)
+        self.assertAlmostEqual(result.evidence["pnl"]["final_equity"], 100_005.0, places=6)
+        self.assertTrue(result.equity_consistent, result.equity_consistency_msg)
+
+    def test_split_adjustment_updates_quantity_and_avg_price_before_next_signal(self):
+        bars = _scenario_bars([100.0, 50.0, 50.0], volume=100_000.0)
+        adjustment_ts = bars[1].timestamp_utc
+        strategy = PositionProbeStrategy()
+        runner = UnifiedBacktestRunner(
+            UnifiedBacktestConfig(
+                initial_cash=100_000.0,
+                commission_rate=0.0,
+                slippage_bps=0.0,
+                adjustment_log=LedgerAdjustmentLog(
+                    adjustments=[
+                        LedgerAdjustment(
+                            timestamp_utc=adjustment_ts,
+                            symbol="AAPL",
+                            adjustment_type="split",
+                            amount=0.0,
+                            quantity_multiplier=2.0,
+                            description="AAPL 2:1 split",
+                        )
+                    ]
+                ),
+                run_id="ubt_native_split_fixture",
+            )
+        )
+
+        result = runner.run(strategies=[strategy], bars_override=bars)
+
+        self.assertEqual(strategy.positions_by_timestamp[adjustment_ts]["AAPL"], (200.0, 50.0))
+        self.assertAlmostEqual(result.snapshots[1].cash, 90_000.0, places=6)
+        self.assertAlmostEqual(result.snapshots[1].equity, 100_000.0, places=6)
+        self.assertEqual(result.evidence["positions"]["final_positions"], {"AAPL": 200.0})
+        self.assertAlmostEqual(result.evidence["cash"]["ledger_cash_at_final_snapshot"], 90_000.0, places=6)
+        self.assertAlmostEqual(result.evidence["pnl"]["final_equity"], 100_000.0, places=6)
+        self.assertTrue(result.equity_consistent, result.equity_consistency_msg)
 
 
 class DataBridgeTests(unittest.TestCase):
@@ -543,15 +973,35 @@ class ManifestPropagationTests(unittest.TestCase):
 
     def test_run_manifest_file_written(self):
         """Run manifest JSON file is written to manifest_store root with correct contents."""
-        runner = UnifiedBacktestRunner()
-        result = runner.run(
-            strategies=[self.strategy],
-            bars_override=self.bars,
-            data_version="manifest_test_v1",
-            strategy_version="s1",
-        )
-        manifest_path = runner.manifest_store.root / f"run_{result.run_id}.json"
-        try:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            runner = UnifiedBacktestRunner()
+            runner.manifest_store = DataManifestStore(tmp_dir)
+            runner.manifest_store.write(
+                DataManifest(
+                    data_version="manifest_test_v1",
+                    source="yfinance",
+                    symbol="AAPL",
+                    interval="1d",
+                    asset_class="equity",
+                    timezone="UTC",
+                    start="2024-01-01T00:00:00+00:00",
+                    end="2024-03-31T00:00:00+00:00",
+                    row_count=60,
+                    expected_rows=60,
+                    coverage_pct=100.0,
+                    fingerprint="manifestchecksum",
+                    checksum="manifestchecksum",
+                    quality_score=95.0,
+                )
+            )
+
+            result = runner.run(
+                strategies=[self.strategy],
+                bars_override=self.bars,
+                data_version="manifest_test_v1",
+                strategy_version="s1",
+            )
+            manifest_path = runner.manifest_store.root / f"run_{result.run_id}.json"
             self.assertTrue(manifest_path.exists(), f"Run manifest should exist at {manifest_path}")
             import json
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -563,9 +1013,15 @@ class ManifestPropagationTests(unittest.TestCase):
             self.assertIn("end_time", manifest)
             self.assertIn("config", manifest)
             self.assertIn("initial_cash", manifest["config"])
-        finally:
-            if manifest_path.exists():
-                manifest_path.unlink()
+            self.assertTrue(manifest["data_manifest_exists"])
+            self.assertFalse(manifest["missing_data_manifest"])
+            self.assertEqual(manifest["data_manifest"]["path"], os.path.join(tmp_dir, "manifest_test_v1.json"))
+            self.assertEqual(manifest["data_manifest"]["checksum"], "manifestchecksum")
+            self.assertTrue(manifest["data_manifest"]["data_version_matches_requested"])
+            self.assertIn("reconciliation", manifest)
+            self.assertTrue(manifest["reconciliation"]["passed"])
+            self.assertIn("corporate_actions", manifest)
+            self.assertEqual(manifest["corporate_actions"]["adjustment_count"], 0)
 
     def test_data_manifest_write_and_read(self):
         """DataManifest can be written to a store and read back with correct fields."""

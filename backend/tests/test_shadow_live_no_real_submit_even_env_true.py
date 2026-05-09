@@ -173,9 +173,66 @@ class TestShadowLiveNoRealSubmitEnvTrue:
         assert proof["is_readonly"] is True
         assert proof["no_real_order_submitted"] is True
 
+    def test_shadow_readonly_audit_is_explicit_about_endpoint_and_credentials(self) -> None:
+        """shadow_live readonly proof includes masked credential and endpoint audit."""
+        from quant_us.execution.broker_base import BrokerBase
+        from quant_us.live.shadow_live import ReadOnlyBrokerProxy
+
+        inner = MagicMock(spec=BrokerBase)
+        inner.broker_name = "alpaca"
+        proxy = ReadOnlyBrokerProxy(
+            inner,
+            audit_context={
+                "api_key": "PKLIVE12345678",
+                "api_secret": "secret987654321",
+                "base_url": "https://api.alpaca.markets",
+                "endpoint_kind": "live",
+                "readonly_expected": True,
+            },
+        )
+
+        proof = proxy.audit_no_real_submit()
+        assert proof["credential_audit"]["api_key_present"] is True
+        assert proof["credential_audit"]["api_secret_present"] is True
+        assert proof["credential_audit"]["endpoint_kind"] == "live"
+        assert proof["credential_audit"]["api_key_masked"].endswith("5678")
+        assert proof["credential_audit"]["api_secret_masked"].endswith("4321")
+
     def test_shadow_orchestrator_config_requires_readonly(self) -> None:
         """ShadowOrchestratorConfig requires readonly=True."""
         from quant_us.live.shadow_orchestrator import ShadowOrchestratorConfig
 
         with pytest.raises(ValueError, match="readonly MUST be True"):
             ShadowOrchestratorConfig(readonly=False)
+
+    def test_shadow_runner_readonly_audit_stays_fail_closed_even_when_env_true(
+        self, monkeypatch, tmp_path
+    ) -> None:
+        """ShadowLiveRunner exposes explicit readonly proof even when env is true."""
+        from quant_us.execution.broker_base import BrokerBase
+        from quant_us.live.shadow_live import ReadOnlyBrokerProxy
+
+        monkeypatch.setenv("QUANT_LIVE_SUBMISSION_ENABLED", "true")
+        config = ShadowLiveConfig(
+            broker_api_key="PKLIVE12345678",
+            broker_api_secret="secret987654321",
+            require_live_readiness_check=False,
+            use_real_market_data=False,
+            symbols=[],
+            ledger_root=str(tmp_path / "shadow_ledger"),
+        )
+        runner = ShadowLiveRunner(config)
+        inner = MagicMock(spec=BrokerBase)
+        inner.broker_name = "alpaca"
+        runner.real_broker = ReadOnlyBrokerProxy(
+            inner,
+            audit_context=runner._readonly_broker_audit_context(),
+            audit_log_path=str(tmp_path / "shadow_ledger" / "readonly_audit.jsonl"),
+        )
+
+        proof = runner.readonly_broker_audit()
+        assert proof["configured"] is True
+        assert proof["runtime_mode"] == "shadow_live"
+        assert proof["real_submit_capability"] is False
+        assert proof["credential_audit"]["endpoint_kind"] == "live"
+        assert proof["credential_audit"]["api_key_masked"].endswith("5678")

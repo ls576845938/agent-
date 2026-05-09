@@ -14,6 +14,10 @@ from backend.app.domain.models import BacktestArtifacts, StrategyDescriptor, Tra
 from backend.app.domain.risk import DrawdownCircuitBreaker, KellySizer, OrthogonalizationEngine, VolatilityScaler, clamp
 from backend.app.domain.strategy_registry import strategy_registry
 from backend.app.services.market_data import load_market_frame
+from quant_us.core.enums import SignalDirection
+from quant_us.core.events import MarketEvent
+from quant_us.core.types import Signal
+from quant_us.strategies.base import Strategy, StrategyContext
 
 
 @dataclass(frozen=True)
@@ -485,6 +489,42 @@ def _prepare_strategy_pack(frame: pd.DataFrame, strategy_ids: list[str], params_
         packs[strategy_id] = signal
         descriptors[strategy_id] = strategy.descriptor
     return packs, descriptors
+
+
+class RegistrySignalReplayStrategy(Strategy):
+    """Replay registry-generated target signals through the event-driven engine."""
+
+    version = "registry_signal_replay_v1"
+
+    def __init__(self, strategy_id: str, signal: pd.Series) -> None:
+        self.strategy_id = strategy_id
+        normalized = signal.fillna(0.0).clip(-1.0, 1.0).copy()
+        normalized.index = pd.to_datetime(normalized.index, utc=True)
+        self._signals = {pd.Timestamp(ts).to_pydatetime(): float(value) for ts, value in normalized.items()}
+
+    def on_bar(self, event: MarketEvent, context: StrategyContext):
+        raw_signal = float(self._signals.get(pd.Timestamp(event.timestamp_utc).to_pydatetime(), 0.0))
+        if raw_signal > 0:
+            direction = SignalDirection.LONG
+            strength = min(1.0, abs(raw_signal))
+        elif raw_signal < 0:
+            direction = SignalDirection.SHORT
+            strength = min(1.0, abs(raw_signal))
+        else:
+            direction = SignalDirection.FLAT
+            strength = 1.0
+        return [
+            Signal(
+                timestamp_utc=event.timestamp_utc,
+                strategy_id=self.strategy_id,
+                symbol=event.bar.symbol,
+                direction=direction,
+                strength=strength,
+                horizon="registry_replay",
+                reason="registry_signal_replay",
+                metadata={"raw_signal": raw_signal},
+            )
+        ]
 
 
 def _candidate_parameter_grid(strategy_id: str) -> list[dict[str, float]]:
@@ -1928,14 +1968,13 @@ class ResearchBacktestService:
 
         This complements the vectorized cost stress by using the full order lifecycle:
         OMS -> risk check -> broker fill -> ledger. PnL is derived from fills, not signals.
-        Delegates to cost_stress_scanner.run_cost_stress() for the per-scenario backtest loop.
+        Registry strategies are adapted via _prepare_strategy_pack signal replay so
+        this path is not tied to a specific quant_us Strategy implementation.
         """
-        from quant_us.backtest.cost_stress_scanner import run_cost_stress
-        from quant_us.backtest.data_bridge import bars_from_dataframe
-        from quant_us.backtest.engine import BacktestConfig
-        from quant_us.strategies.momentum_strategy import MomentumStrategy
+        from quant_us.backtest.unified_runner import UnifiedBacktestConfig, UnifiedBacktestRunner
 
         strategy_id = str(request.get("strategy_id", "trend_momentum"))
+        strategy_params = dict(request.get("strategy_params", {}) or {})
         symbol = str(request.get("symbol", settings.default_symbol))
         interval = str(request.get("interval", settings.default_interval))
         initial_cash = float(request.get("capital", settings.default_capital))
@@ -1948,84 +1987,105 @@ class ResearchBacktestService:
             end=request["end"],
             db_path=str(request.get("data_db_path", "")),
         )
-
-        bars = bars_from_dataframe(frame, source="event_driven_cost_stress")
+        signals, _ = _prepare_strategy_pack(frame, [strategy_id], params_map={strategy_id: strategy_params})
+        signal = signals[strategy_id]
 
         base_commission = float(request.get("commission_rate", settings.default_commission_rate))
         base_slippage = float(request.get("slippage", settings.default_slippage))
 
-        base_config = BacktestConfig(
-            initial_cash=initial_cash,
-            commission_rate=base_commission,
-            slippage_bps=base_slippage,
-        )
-
         scenarios = _cost_stress_scenarios(int(request.get("max_scenarios", 5)))
-        multipliers = [
-            (float(s["commission_multiplier"]), float(s["slippage_multiplier"]), s["label"])
-            for s in scenarios
-        ]
-
-        strategy = MomentumStrategy(
-            strategy_id="trend_momentum",
-            lookback_bars=int(request.get("lookback_bars", 20)),
-            entry_threshold=float(request.get("entry_threshold", 0.03)),
-            allow_short=False,
-        )
-
-        report = run_cost_stress(
-            strategies=[strategy],
-            bars=bars,
-            base_config=base_config,
-            multipliers=multipliers,
-        )
-
         results: list[dict[str, Any]] = []
         baseline_summary: dict[str, float | int] | None = None
+        ledger_consistent_count = 0
+        total_fill_count = 0
+        total_order_count = 0
 
-        for scenario_def, level in zip(scenarios, report.levels):
+        for scenario_def in scenarios:
+            scenario_config = UnifiedBacktestConfig(
+                initial_cash=initial_cash,
+                commission_rate=base_commission * float(scenario_def["commission_multiplier"]),
+                slippage_bps=base_slippage * float(scenario_def["slippage_multiplier"]),
+                run_id=f"ed_cost_{strategy_id}_{scenario_def['name']}",
+            )
+            runner = UnifiedBacktestRunner(config=scenario_config)
+            result = runner.run(
+                strategies=[RegistrySignalReplayStrategy(strategy_id=strategy_id, signal=signal)],
+                frame=frame,
+                data_version=str(request.get("data_version", "")),
+                strategy_version=f"{strategy_id}:registry_signal_replay_v1",
+            )
+            event_summary = result.summary
             summary = {
-                "total_return_pct": level.total_return_pct,
-                "sharpe_ratio": level.sharpe_ratio,
-                "max_drawdown_pct": level.max_drawdown_pct,
-                "trade_count": level.trade_count,
+                "total_return_pct": float(event_summary.get("total_return_pct", 0.0)),
+                "sharpe_ratio": float(event_summary.get("sharpe_ratio", 0.0)),
+                "max_drawdown_pct": float(event_summary.get("max_drawdown_pct", 0.0)),
+                "profit_factor": float(event_summary.get("profit_factor", 0.0)),
+                "trade_count": int(event_summary.get("trade_count", 0)),
             }
             if baseline_summary is None:
                 baseline_summary = summary
 
-            survives = (
-                level.total_return_pct > 0
-                and level.sharpe_ratio >= 0.5
-                and level.max_drawdown_pct > -20.0
-            )
+            fill_count = len(result.fills)
+            order_count = len(result.orders)
+            total_fill_count += fill_count
+            total_order_count += order_count
+            if result.equity_consistent:
+                ledger_consistent_count += 1
+
+            survives = _cost_stress_survives(summary) and result.equity_consistent
 
             results.append(
                 {
                     **scenario_def,
-                    "commission_rate": round(level.commission_rate, 8),
-                    "slippage_bps": round(level.slippage_bps, 4),
+                    "engine": "event_driven",
+                    "commission_rate": round(scenario_config.commission_rate, 8),
+                    "slippage_bps": round(scenario_config.slippage_bps, 4),
                     "survives": survives,
                     "summary": summary,
-                    "execution": {},
-                    "fill_count": level.trade_count,
-                    "order_count": level.trade_count,
+                    "execution": {
+                        "engine": "event_driven",
+                        "orders": order_count,
+                        "fills": fill_count,
+                        "ledger_equity_consistent": result.equity_consistent,
+                    },
+                    "fill_count": fill_count,
+                    "order_count": order_count,
+                    "ledger_equity_consistent": result.equity_consistent,
+                    "ledger_consistency_msg": result.equity_consistency_msg,
+                    "ledger_final_equity": round(float(result.ledger_curve.final_equity), 6),
+                    "ledger_total_fees": round(float(result.ledger_curve.total_fees), 6),
+                    "ledger_curve_points": len(result.ledger_curve.points),
                     "return_decay_pct": round(
-                        level.total_return_pct - baseline_summary["total_return_pct"],
+                        float(summary["total_return_pct"]) - float(baseline_summary["total_return_pct"]),
                         4,
                     ),
-                    "sharpe_decay": round(level.sharpe_decay, 4),
+                    "sharpe_decay": round(
+                        float(summary["sharpe_ratio"]) - float(baseline_summary["sharpe_ratio"]),
+                        4,
+                    ),
                 }
             )
 
         survival_rate = sum(1 for r in results if r["survives"]) / max(1, len(results)) * 100
+        ledger_consistency_pct = ledger_consistent_count / max(1, len(results)) * 100
+        worst_case = min(results, key=lambda row: float(row["summary"]["total_return_pct"])) if results else None
         return {
             "status": "completed",
             "engine": "event_driven",
             "strategy_id": strategy_id,
+            "strategy_params": strategy_params,
             "symbol": symbol,
             "interval": interval,
+            "baseline": results[0] if results else None,
             "scenarios": results,
             "survival_rate_pct": round(survival_rate, 4),
+            "ledger_consistency_pct": round(ledger_consistency_pct, 4),
+            "ledger_equity_consistent_scenarios": ledger_consistent_count,
+            "total_fill_count": total_fill_count,
+            "total_order_count": total_order_count,
             "baseline_fill_count": results[0]["fill_count"] if results else 0,
+            "baseline_order_count": results[0]["order_count"] if results else 0,
+            "worst_case": worst_case,
+            "recommendations": _build_cost_stress_recommendations(results),
             "engine_note": "PnL derived from fills, orders go through OMS -> risk -> broker -> ledger",
         }

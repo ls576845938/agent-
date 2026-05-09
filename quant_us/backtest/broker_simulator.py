@@ -4,6 +4,7 @@ import hashlib
 from dataclasses import dataclass, field
 
 from quant_us.backtest.commission import PercentCommission
+from quant_us.backtest.corporate_actions_ledger import LedgerAdjustment, LedgerAdjustmentLog
 from quant_us.backtest.liquidity_slippage import LiquiditySlippage
 from quant_us.backtest.slippage import BpsSlippage
 from quant_us.core.clock import utc_now
@@ -36,7 +37,9 @@ class SimulatedBroker(BrokerBase):
     start_equity: float = field(init=False)
     high_water_equity: float = field(init=False)
     gap_overrides: dict[str, float | None] = field(default_factory=dict)
+    adjustment_log: LedgerAdjustmentLog | None = None
     _order_counter: int = field(init=False, default=0)
+    _applied_adjustment_keys: set[tuple[str, str, str, float, float, float]] = field(init=False, default_factory=set)
 
     def set_gap_overrides(self, overrides: dict[str, float | None]) -> None:
         self.gap_overrides.clear()
@@ -57,6 +60,29 @@ class SimulatedBroker(BrokerBase):
             position = self.positions[bar.symbol]
             position.market_price = float(bar.close)
             position.unrealized_pnl = (position.market_price - position.avg_price) * position.quantity
+
+    def apply_adjustments(self, timestamp_utc) -> float:
+        """Apply ledger adjustments due at or before ``timestamp_utc`` once."""
+        if self.adjustment_log is None:
+            return 0.0
+
+        applied_total = 0.0
+        for adjustment in sorted(
+            self.adjustment_log.adjustments,
+            key=lambda item: item.timestamp_utc,
+        ):
+            if adjustment.timestamp_utc > timestamp_utc:
+                continue
+            key = adjustment.key()
+            if key in self._applied_adjustment_keys:
+                continue
+            if adjustment.amount:
+                self.cash += adjustment.amount
+                applied_total += adjustment.amount
+            if adjustment.has_position_impact():
+                self._apply_position_adjustment(adjustment)
+            self._applied_adjustment_keys.add(key)
+        return applied_total
 
     def get_account(self) -> AccountState:
         equity = self.cash + sum(position.market_value for position in self.positions.values())
@@ -161,7 +187,11 @@ class SimulatedBroker(BrokerBase):
         requested = abs(order.quantity)
 
         if self.fill_ratio < 1.0:
-            seed = f"{order.order_id}:{self._order_counter}:fill"
+            timestamp = order.timestamp_utc.isoformat()
+            seed = (
+                f"{timestamp}:{order.symbol}:{order.side.value}:"
+                f"{order.quantity:.8f}:{self._order_counter}:fill"
+            )
             roll = _deterministic_random(seed)
             if roll > self.fill_ratio:
                 requested *= self.fill_ratio
@@ -227,3 +257,25 @@ class SimulatedBroker(BrokerBase):
         position.market_price = self.market_prices.get(fill.symbol, fill.price)
         position.unrealized_pnl = (position.market_price - position.avg_price) * position.quantity
         self.positions[fill.symbol] = position
+
+    def _apply_position_adjustment(self, adjustment: LedgerAdjustment) -> None:
+        symbol = adjustment.normalized_symbol()
+        position = self.positions.get(symbol)
+        if position is None or abs(position.quantity) <= 1e-10:
+            return
+
+        qty_multiplier = float(adjustment.quantity_multiplier)
+        avg_multiplier = adjustment.effective_avg_price_multiplier()
+        if qty_multiplier <= 0 or avg_multiplier <= 0:
+            raise ValueError(f"Position adjustment multipliers must be positive for {symbol}")
+
+        position.quantity = round(position.quantity * qty_multiplier, 8)
+        if abs(position.quantity) <= 1e-10:
+            self.positions.pop(symbol, None)
+            return
+
+        if position.avg_price != 0:
+            position.avg_price = round(position.avg_price * avg_multiplier, 8)
+        position.market_price = self.market_prices.get(symbol, position.market_price)
+        position.unrealized_pnl = (position.market_price - position.avg_price) * position.quantity
+        self.positions[symbol] = position

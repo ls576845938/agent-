@@ -175,7 +175,7 @@ Research Modules
   |-- No AlpacaBroker references
   |-- No QUANT_LIVE env var references
   |-- No broker configs
-  |-- Max auto-promotion: PAPER_ELIGIBLE
+  |-- Automated output stops at paper_review_ready evidence; PAPER_ELIGIBLE is manual
   |-- All tests use tmp_path + fake data
 ```
 

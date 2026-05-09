@@ -18,7 +18,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.app.services.market_data import inspect_market_data_quality
-from quant_us.data.storage.data_manifest import DataManifestStore, build_manifest_from_quality
+from quant_us.data.storage.data_manifest import (
+    DataManifestStore,
+    build_manifest_from_quality,
+    validate_manifest_for_promotion,
+)
 
 
 def get_git_commit() -> str:
@@ -40,6 +44,7 @@ def generate_one(
     end: str,
     db_path: str = "",
     store: DataManifestStore | None = None,
+    validate: bool = False,
 ) -> str:
     quality = inspect_market_data_quality(
         source=source,
@@ -61,13 +66,24 @@ def generate_one(
     path = store.write(manifest)
     print(f"  {manifest.data_version}")
     print(f"    coverage: {manifest.coverage_pct:.2f}%  quality: {manifest.quality_score:.1f}  rows: {manifest.row_count}")
+    print(f"    checksum: {manifest.effective_checksum or '(missing)'}  timezone: {manifest.timezone}  adjustment: {manifest.adjustment}")
     print(f"    written to {path}")
+    if validate:
+        validation = validate_manifest_for_promotion(manifest)
+        status = "PASS" if validation.ok else "BLOCK"
+        print(f"    promotion validation: {status}")
+        if validation.reasons:
+            print(f"      reasons: {', '.join(validation.reasons)}")
+        if validation.warnings:
+            print(f"      warnings: {', '.join(validation.warnings)}")
+        if not validation.ok:
+            raise ValueError(f"data manifest validation failed for {manifest.data_version}: {validation.reasons}")
     return manifest.data_version
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate data manifests for datasets")
-    parser.add_argument("--source", default="sqlite", help="Data source (sqlite, fixture, auto)")
+    parser.add_argument("--source", default="sqlite", help="Data source (sqlite, yfinance, alpaca, fixture, auto)")
     parser.add_argument("--symbol", default="AAPL", help="Ticker symbol")
     parser.add_argument("--interval", default="1d", help="Bar interval (1m, 5m, 1h, 1d)")
     parser.add_argument("--start", default="2024-01-01", help="Start date YYYY-MM-DD")
@@ -75,9 +91,11 @@ def main() -> None:
     parser.add_argument("--db-path", default="", help="Path to SQLite database")
     parser.add_argument("--all", action="store_true", help="Generate for all known combinations")
     parser.add_argument("--list", action="store_true", help="List existing manifests")
+    parser.add_argument("--manifest-root", default="data/manifests", help="Directory where data manifests are stored")
+    parser.add_argument("--validate", action="store_true", help="Fail if the generated manifest is not promotion-grade")
     args = parser.parse_args()
 
-    store = DataManifestStore()
+    store = DataManifestStore(root=args.manifest_root)
 
     if args.list:
         manifests = store.list_manifests()
@@ -108,6 +126,7 @@ def main() -> None:
                         end=args.end,
                         db_path=args.db_path,
                         store=store,
+                        validate=args.validate,
                     )
                 except Exception as exc:
                     print(f"  SKIP {symbol} {interval}: {exc}")
@@ -120,6 +139,7 @@ def main() -> None:
             end=args.end,
             db_path=args.db_path,
             store=store,
+            validate=args.validate,
         )
 
     print(f"\nDone. {len(store.list_manifests())} manifests in {store.root}")

@@ -10,6 +10,9 @@ class BacktestServiceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.service = ResearchBacktestService()
         self.base_range = {
+            "source": "fixture",
+            "symbol": "BTCUSDT",
+            "interval": "1h",
             "start": datetime(2024, 1, 1),
             "end": datetime(2024, 2, 15),
             "rebalance_buffer_pct": 0.0,
@@ -81,6 +84,25 @@ class BacktestServiceTests(unittest.TestCase):
         self.assertIsNotNone(result["baseline"])
         self.assertIn("survives", result["scenarios"][0])
         self.assertIn("recommendations", result)
+
+    def test_event_driven_cost_stress_replays_registry_strategy(self) -> None:
+        result = self.service.run_event_driven_cost_stress(
+            {
+                "strategy_id": "reversion_rsi",
+                **self.base_range,
+                "max_scenarios": 1,
+            }
+        )
+
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["engine"], "event_driven")
+        self.assertEqual(result["strategy_id"], "reversion_rsi")
+        self.assertEqual(len(result["scenarios"]), 1)
+        self.assertEqual(result["ledger_consistency_pct"], 100.0)
+        self.assertIn("fill_count", result["scenarios"][0])
+        self.assertIn("order_count", result["scenarios"][0])
+        self.assertIn("ledger_equity_consistent", result["scenarios"][0])
+        self.assertIn("baseline_order_count", result)
 
     def test_walk_forward_returns_oos_windows_and_regimes(self) -> None:
         result = self.service.run_walk_forward(

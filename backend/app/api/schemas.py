@@ -20,15 +20,20 @@ class StrategyWeight(BaseModel):
     weight: float = Field(ge=0.0, le=1.0)
 
 
+DEFAULT_US_EQUITY_SOURCE = "yfinance"
+DEFAULT_US_EQUITY_SYMBOL = "SPY"
+DEFAULT_US_EQUITY_INTERVAL = "1d"
+
+
 class BaseBacktestRequest(BaseModel):
-    source: str = "fixture"
-    symbol: str = "BTCUSDT"
-    interval: str = "1h"
+    source: str = DEFAULT_US_EQUITY_SOURCE
+    symbol: str = DEFAULT_US_EQUITY_SYMBOL
+    interval: str = DEFAULT_US_EQUITY_INTERVAL
     start: datetime
     end: datetime
     capital: float = Field(default=100000.0, gt=0)
-    commission_rate: float = Field(default=0.0004, ge=0.0, le=0.05)
-    slippage: float = Field(default=4.0, ge=0.0)
+    commission_rate: float = Field(default=0.0001, ge=0.0, le=0.05)
+    slippage: float = Field(default=1.0, ge=0.0)
     leverage: float = Field(default=1.0, gt=0.0, le=5.0)
     position_basis: str = Field(default="equity")
     data_db_path: str = ""
@@ -277,9 +282,9 @@ class DataSyncRequest(BaseModel):
 
 
 class DataQualityRequest(BaseModel):
-    source: str = "fixture"
-    symbol: str = "BTCUSDT"
-    interval: str = "1h"
+    source: str = DEFAULT_US_EQUITY_SOURCE
+    symbol: str = DEFAULT_US_EQUITY_SYMBOL
+    interval: str = DEFAULT_US_EQUITY_INTERVAL
     start: datetime
     end: datetime
     data_db_path: str = ""

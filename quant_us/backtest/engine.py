@@ -42,6 +42,9 @@ class BacktestBroker(Protocol):
     def update_market(self, bar: Bar) -> None:
         ...
 
+    def apply_adjustments(self, timestamp_utc) -> float:
+        ...
+
     def get_account(self) -> AccountState:
         ...
 
@@ -189,6 +192,10 @@ class EventDrivenBacktestEngine:
         for bar in slice_bars:
             bar_by_symbol[bar.symbol] = bar
             self.broker.update_market(bar)
+
+        apply_adjustments = getattr(self.broker, "apply_adjustments", None)
+        if callable(apply_adjustments):
+            apply_adjustments(timestamp_utc)
 
         account = self.broker.get_account()
         prices = {symbol: float(price) for symbol, price in self.broker.market_prices.items()}

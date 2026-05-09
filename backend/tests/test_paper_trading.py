@@ -97,6 +97,31 @@ class PaperTradingOrderLifecycleTests(unittest.TestCase):
             self.assertLess(total_filled, 100.0, f"Partial fill should fill less than requested, got {total_filled}")
             self.assertEqual(submitted.quantity, 100.0, "Order should preserve original requested quantity")
 
+    def test_fill_ratio_does_not_depend_on_generated_order_id(self):
+        bar = _make_bars(1)[0]
+        filled_quantities: list[float] = []
+        statuses: list[OrderStatus] = []
+
+        for client_order_id in ("coid_a", "coid_b"):
+            broker = SimulatedBroker(initial_cash=100_000.0, fill_ratio=0.5)
+            broker.update_market(bar)
+            order = Order(
+                timestamp_utc=bar.timestamp_utc,
+                strategy_id="test",
+                symbol="AAPL",
+                side=OrderSide.BUY,
+                quantity=100.0,
+                order_type="MARKET",
+                time_in_force="DAY",
+                client_order_id=client_order_id,
+            )
+            submitted = broker.submit_order(order)
+            statuses.append(submitted.status)
+            filled_quantities.append(sum(f.quantity for f in broker.get_fills()))
+
+        self.assertEqual(statuses[0], statuses[1])
+        self.assertEqual(filled_quantities[0], filled_quantities[1])
+
     def test_kill_switch_blocks_orders(self):
         broker = SimulatedBroker(initial_cash=100_000.0)
         calendar = USEquityCalendar.with_holidays()

@@ -8,8 +8,18 @@ Covers:
 
 from __future__ import annotations
 
+import argparse
+import io
 import unittest
+import sys
+from contextlib import redirect_stdout
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from quant_us.cli import build_parser, main
 
@@ -25,6 +35,8 @@ class CliHelpTests(unittest.TestCase):
         self.assertIn("paper", help_text)
         self.assertIn("reconcile", help_text)
         self.assertIn("readiness", help_text)
+        self.assertIn("manifest", help_text)
+        self.assertIn("report", help_text)
 
     def test_ingest_help(self) -> None:
         parser = build_parser()
@@ -185,6 +197,83 @@ class CliPaperTests(unittest.TestCase):
         args = pp_parser.parse_args(["--broker", "simulated"])
         self.assertEqual(args.strategy, "etf_rotation")
 
+    @patch("quant_us.live.paper_runtime.PaperRuntime")
+    @patch("quant_us.strategies.factory.build_strategy")
+    def test_paper_run_passes_broker_to_runtime_config(
+        self,
+        mock_build_strategy: MagicMock,
+        mock_runtime_cls: MagicMock,
+    ) -> None:
+        from quant_us.cli import _cmd_paper_run
+
+        mock_build_strategy.return_value = MagicMock()
+        runtime = mock_runtime_cls.return_value
+        runtime.metrics_log = []
+        runtime.broker.get_account.return_value = MagicMock(
+            equity=100_000.0,
+            cash=100_000.0,
+            positions={},
+        )
+        runtime.kill_switch.triggered = False
+        args = argparse.Namespace(
+            strategy="trend_momentum",
+            broker="alpaca",
+            submit_orders=True,
+            initial_cash=100_000.0,
+            commission_rate=0.0001,
+            slippage_bps=1.0,
+            poll_interval=60.0,
+            data_root="data",
+            max_runtime_hours=1.0,
+            data_vendor="yfinance",
+            bar_size="1m",
+        )
+
+        with patch.dict(
+            "os.environ",
+            {"APCA_API_KEY_ID": "paper_key", "APCA_API_SECRET_KEY": "paper_secret"},
+            clear=True,
+        ):
+            _cmd_paper_run(["SPY"], args)
+
+        config = mock_runtime_cls.call_args.kwargs["config"]
+        self.assertEqual(config.paper_broker, "alpaca")
+        self.assertTrue(config.submit_orders)
+
+    @patch("quant_us.live.paper_runtime.PaperRuntime")
+    @patch("quant_us.strategies.factory.build_strategy")
+    def test_paper_start_enable_orders_maps_to_submit_orders(
+        self,
+        mock_build_strategy: MagicMock,
+        mock_runtime_cls: MagicMock,
+    ) -> None:
+        from quant_us.cli import _start_paper_production_loop
+
+        mock_build_strategy.return_value = MagicMock()
+        runtime = mock_runtime_cls.return_value
+        runtime.metrics_log = []
+        runtime.broker.get_account.return_value = MagicMock(
+            equity=100_000.0,
+            cash=100_000.0,
+            positions={},
+        )
+        runtime.kill_switch.triggered = False
+        args = argparse.Namespace(
+            strategy="trend_momentum",
+            enable_paper_orders=True,
+            initial_cash=100_000.0,
+            commission_rate=0.0001,
+            slippage_bps=1.0,
+            data_vendor="yfinance",
+            bar_size="1d",
+        )
+
+        _start_paper_production_loop(["SPY"], args)
+
+        config = mock_runtime_cls.call_args.kwargs["config"]
+        self.assertTrue(config.submit_orders)
+        self.assertEqual(config.paper_broker, "alpaca")
+
 
 class CliReconcileTests(unittest.TestCase):
     """Reconcile subcommand."""
@@ -212,3 +301,92 @@ class CliReadinessTests(unittest.TestCase):
         from quant_us.cli import main
 
         main(["readiness"])
+
+    def test_readiness_prints_paper_review_status(self) -> None:
+        with TemporaryDirectory() as tmp:
+            review_dir = Path(tmp) / "research" / "paper_reviews" / "prev_001"
+            review_dir.mkdir(parents=True)
+            (review_dir / "review.json").write_text(
+                """{
+                  "paper_review_id": "prev_001",
+                  "strategy_manifest_id": "sman_001",
+                  "status": "PENDING_HUMAN_REVIEW",
+                  "created_at": "2026-05-08T12:00:00+00:00"
+                }""",
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["readiness", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_review_status: PENDING_HUMAN_REVIEW", text)
+            self.assertIn("paper_review_entry_allowed: YES", text)
+            self.assertIn("manual_review_pending: YES", text)
+            self.assertIn("evidence:     paper_review=", text)
+
+
+class CliManifestReportTests(unittest.TestCase):
+    """Traceability commands for manifests and reports."""
+
+    def test_manifest_inspect_backtest_run_id(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "run_abc123.json").write_text(
+                """{
+                  "run_id": "abc123",
+                  "data_version": "data_v1",
+                  "strategy_version": "strat_v1",
+                  "commit_hash": "deadbee",
+                  "start_time": "2026-05-01T00:00:00+00:00",
+                  "end_time": "2026-05-01T00:01:00+00:00",
+                  "config": {"initial_cash": 100000, "commission_rate": 0.0001, "slippage_bps": 1.0}
+                }""",
+                encoding="utf-8",
+            )
+            main(["manifest", "inspect", "--manifest", "abc123", "--data-root", tmp])
+
+    def test_report_backtest_requires_identifier(self) -> None:
+        with self.assertRaises(SystemExit) as ctx:
+            main(["report", "backtest"])
+        self.assertEqual(ctx.exception.code, 2)
+
+    def test_report_daily_latest_uses_ledger_report(self) -> None:
+        with TemporaryDirectory() as tmp:
+            report_dir = Path(tmp) / "paper_ledger" / "daily_reports"
+            report_dir.mkdir(parents=True)
+            (report_dir / "daily_report_2026-05-08.json").write_text(
+                """{
+                  "report_date": "2026-05-08",
+                  "generated_at": "2026-05-08T21:00:00+00:00",
+                  "ending_equity": 101000.0,
+                  "daily_pnl": 1000.0,
+                  "orders_submitted": 2,
+                  "orders_filled": 2,
+                  "reconciliation_status": "clean",
+                  "kill_switch_triggered": false
+                }""",
+                encoding="utf-8",
+            )
+            review_dir = Path(tmp) / "research" / "paper_reviews" / "prev_001"
+            review_dir.mkdir(parents=True)
+            (review_dir / "review.json").write_text(
+                """{
+                  "paper_review_id": "prev_001",
+                  "strategy_manifest_id": "sman_001",
+                  "status": "APPROVED_FOR_PAPER_ONLY",
+                  "created_at": "2026-05-08T22:00:00+00:00"
+                }""",
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "daily", "--latest", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_review_status: APPROVED_FOR_PAPER_ONLY", text)
+            self.assertIn("manual_review_pending: NO", text)
+            self.assertIn("Reporting only. This does not approve or start paper/live trading.", text)

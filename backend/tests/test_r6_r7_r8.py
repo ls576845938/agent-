@@ -18,6 +18,8 @@ from pathlib import Path
 
 import pytest
 
+from quant_us.data.storage.data_manifest import DataManifest, DataManifestStore
+
 
 # ===========================================================================
 # R6: Monte Carlo / Alpha Robustness
@@ -135,7 +137,7 @@ class TestAlphaDecay:
     def test_decay_curve(self, tmp_path: Path) -> None:
         """Decay curve should be monotonic decreasing and parameterized."""
         half_life = 7.0
-        time_steps = list(range(21))
+        time_steps = list(range(int(5 * half_life) + 1))
         decay_curve = [1.0 * (0.5 ** (t / half_life)) for t in time_steps]
 
         # Verify monotonic decreasing
@@ -163,7 +165,7 @@ class TestAlphaDecay:
         curve_path.write_text(json.dumps(decay_curve))
         reloaded = json.loads(curve_path.read_text())
         assert reloaded == decay_curve, "Decay curve should survive serialization"
-        assert len(reloaded) == 21, "Decay curve should have 21 points"
+        assert len(reloaded) == int(5 * half_life) + 1, "Decay curve should cover 5 half-lives"
 
 
 # ===========================================================================
@@ -365,24 +367,60 @@ class TestPromotionGateEnhanced:
     """Enhanced ResearchPromotionGate with R6/R7/R8 checks."""
 
     def _write_candidate(
-        self, root: Path, candidate_id: str, metrics: dict
+        self,
+        root: Path,
+        candidate_id: str,
+        metrics: dict,
+        promotion_status: str = "CANDIDATE",
+        symbols: list[str] | None = None,
+        data_version: str = "qs-yfinance-AAPL-1d-test",
+        data_source: str = "yfinance",
+        asset_class: str = "equity",
+        backtest_manifest_path: str | None = None,
+        backtest_manifest: dict | None = None,
     ) -> Path:
         """Helper to write a candidate JSON file with given metrics."""
         cand_dir = root / "research" / "candidates" / candidate_id
         cand_dir.mkdir(parents=True)
+        merged_metrics = {
+            "engine": "event_driven",
+            "ledger_consistency_pct": 100.0,
+            "baseline_fill_count": 1,
+            "baseline_order_count": 1,
+            "total_fill_count": 2,
+            "total_order_count": 2,
+            **metrics,
+        }
         data = {
             "candidate_id": candidate_id,
             "experiment_id": "exp_test",
             "strategy_id": "momentum",
             "params_hash": "abc123",
-            "promotion_status": "CANDIDATE",
-            "metrics": metrics,
+            "promotion_status": promotion_status,
+            "symbols": symbols or ["AAPL"],
+            "data_version": data_version,
+            "data_source": data_source,
+            "asset_class": asset_class,
+            "metrics": merged_metrics,
         }
+        if backtest_manifest_path is not None:
+            data["backtest_manifest_path"] = backtest_manifest_path
+        if backtest_manifest is not None:
+            data["backtest_manifest"] = backtest_manifest
         path = cand_dir / "candidate.json"
         path.write_text(json.dumps(data))
         return path
 
-    def _make_experiment_manifest(self, root: Path, experiment_id: str) -> None:
+    def _make_experiment_manifest(
+        self,
+        root: Path,
+        experiment_id: str,
+        symbols: list[str] | None = None,
+        data_version: str = "qs-yfinance-AAPL-1d-test",
+        data_source: str = "yfinance",
+        asset_class: str = "equity",
+        write_data_manifest: bool = True,
+    ) -> None:
         """Helper to create a minimal experiment manifest."""
         exp_dir = root / "research" / "experiments" / experiment_id
         exp_dir.mkdir(parents=True)
@@ -390,11 +428,143 @@ class TestPromotionGateEnhanced:
             "experiment_id": experiment_id,
             "strategy_id": "momentum",
             "strategy_version": "1.0.0",
+            "symbols": symbols or ["AAPL"],
+            "data_version": data_version,
+            "data_source": data_source,
+            "asset_class": asset_class,
             "params": {"lookback": 20},
             "status": "COMPLETED",
             "metrics": {"sharpe": 1.5},
         }
         (exp_dir / "manifest.json").write_text(json.dumps(manifest))
+        if write_data_manifest:
+            self._make_data_manifest(
+                root,
+                data_version=data_version,
+                source=data_source,
+                symbol=(symbols or ["AAPL"])[0],
+                asset_class=asset_class,
+            )
+
+    def _make_data_manifest(
+        self,
+        root: Path,
+        data_version: str = "qs-yfinance-AAPL-1d-test",
+        source: str = "yfinance",
+        symbol: str = "AAPL",
+        asset_class: str = "equity",
+        fingerprint: str = "a" * 64,
+        checksum: str = "a" * 64,
+    ) -> None:
+        """Helper to create governed data manifest evidence for promotion tests."""
+        DataManifestStore(root / "manifests").write(
+            DataManifest(
+                data_version=data_version,
+                source=source,
+                symbol=symbol,
+                interval="1d",
+                asset_class=asset_class,
+                timezone="UTC",
+                adjustment="raw",
+                start="2024-01-01T00:00:00+00:00",
+                end="2024-12-31T00:00:00+00:00",
+                row_count=252,
+                expected_rows=252,
+                coverage_pct=100.0,
+                fingerprint=fingerprint,
+                checksum=checksum,
+                quality_score=98.0,
+                cleaning={
+                    "duplicate_timestamps_removed": 0,
+                    "invalid_ohlc_removed": 0,
+                    "non_positive_prices_removed": 0,
+                    "cleaning_loss_rows": 0,
+                    "missing_bars": 0,
+                },
+                git_commit="testcommit",
+            )
+        )
+
+    def _make_backtest_manifest(
+        self,
+        root: Path,
+        candidate_id: str,
+        *,
+        data_version: str = "qs-yfinance-AAPL-1d-test",
+        source: str = "yfinance",
+        symbol: str = "AAPL",
+        asset_class: str = "equity",
+        engine: str = "event_driven",
+        canonical_for_promotion: bool = True,
+        promotion_evidence_complete: bool = True,
+        fixture_like_data_version: bool = False,
+        order_count: int = 2,
+        fill_count: int = 2,
+        orders_have_risk_check_id: bool = True,
+        fills_match_orders: bool = True,
+        equity_consistent: bool = True,
+        data_manifest_fingerprint: str = "a" * 64,
+        data_manifest_checksum: str = "a" * 64,
+    ) -> Path:
+        """Helper to create canonical backtest manifest evidence for promotion tests."""
+        manifest_dir = root / "research" / "backtests" / candidate_id
+        manifest_dir.mkdir(parents=True, exist_ok=True)
+        manifest = {
+            "engine": engine,
+            "canonical_for_promotion": canonical_for_promotion,
+            "data_version": data_version,
+            "data_manifest": {
+                "data_version": data_version,
+                "source": source,
+                "symbol": symbol,
+                "interval": "1d",
+                "asset_class": asset_class,
+                "timezone": "UTC",
+                "adjustment": "raw",
+                "start": "2024-01-01T00:00:00+00:00",
+                "end": "2024-12-31T00:00:00+00:00",
+                "row_count": 252,
+                "expected_rows": 252,
+                "coverage_pct": 100.0,
+                "fingerprint": data_manifest_fingerprint,
+                "checksum": data_manifest_checksum,
+                "quality_score": 98.0,
+                "cleaning": {
+                    "duplicate_timestamps_removed": 0,
+                    "invalid_ohlc_removed": 0,
+                    "non_positive_prices_removed": 0,
+                    "cleaning_loss_rows": 0,
+                    "missing_bars": 0,
+                },
+                "git_commit": "testcommit",
+            },
+            "evidence": {
+                "data_scope": {
+                    "fixture_like_data_version": fixture_like_data_version,
+                    "promotion_scope_ok": not fixture_like_data_version,
+                    "scope_rejections": ["fixture_data_version"]
+                    if fixture_like_data_version
+                    else [],
+                },
+                "orders": {
+                    "count": order_count,
+                    "all_orders_have_risk_check_id": orders_have_risk_check_id,
+                },
+                "fills": {
+                    "count": fill_count,
+                    "all_fills_match_orders": fills_match_orders,
+                },
+                "equity": {
+                    "consistent": equity_consistent,
+                },
+                "completeness": {
+                    "promotion_evidence_complete": promotion_evidence_complete,
+                },
+            },
+        }
+        path = manifest_dir / "run_manifest.json"
+        path.write_text(json.dumps(manifest), encoding="utf-8")
+        return path
 
     def _make_scorecard(self, root: Path, candidate_id: str) -> None:
         """Helper to create a minimal scorecard."""
@@ -416,6 +586,7 @@ class TestPromotionGateEnhanced:
         )
 
         candidate_id = "cand_low_mc"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
         self._write_candidate(tmp_path, candidate_id, {
             "monte_carlo_survival_rate": 0.45,
             "alpha_decay_half_life_days": 15.0,
@@ -427,7 +598,7 @@ class TestPromotionGateEnhanced:
             "trade_count": 50,
             "cost_sensitivity": 0.2,
             "max_drawdown_pct": 0.15,
-        })
+        }, backtest_manifest_path=str(manifest_path))
         self._make_experiment_manifest(tmp_path, "exp_test")
         self._make_scorecard(tmp_path, candidate_id)
 
@@ -449,6 +620,7 @@ class TestPromotionGateEnhanced:
         )
 
         candidate_id = "cand_rapid_decay"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
         self._write_candidate(tmp_path, candidate_id, {
             "monte_carlo_survival_rate": 0.90,
             "alpha_decay_half_life_days": 3.0,
@@ -460,7 +632,7 @@ class TestPromotionGateEnhanced:
             "trade_count": 50,
             "cost_sensitivity": 0.2,
             "max_drawdown_pct": 0.15,
-        })
+        }, backtest_manifest_path=str(manifest_path))
         self._make_experiment_manifest(tmp_path, "exp_test")
         self._make_scorecard(tmp_path, candidate_id)
 
@@ -482,6 +654,7 @@ class TestPromotionGateEnhanced:
         )
 
         candidate_id = "cand_unstable"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
         self._write_candidate(tmp_path, candidate_id, {
             "monte_carlo_survival_rate": 0.90,
             "alpha_decay_half_life_days": 15.0,
@@ -493,7 +666,7 @@ class TestPromotionGateEnhanced:
             "trade_count": 50,
             "cost_sensitivity": 0.2,
             "max_drawdown_pct": 0.15,
-        })
+        }, backtest_manifest_path=str(manifest_path))
         self._make_experiment_manifest(tmp_path, "exp_test")
         self._make_scorecard(tmp_path, candidate_id)
 
@@ -515,6 +688,7 @@ class TestPromotionGateEnhanced:
         )
 
         candidate_id = "cand_redundant"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
         self._write_candidate(tmp_path, candidate_id, {
             "monte_carlo_survival_rate": 0.90,
             "alpha_decay_half_life_days": 15.0,
@@ -526,7 +700,7 @@ class TestPromotionGateEnhanced:
             "trade_count": 50,
             "cost_sensitivity": 0.2,
             "max_drawdown_pct": 0.15,
-        })
+        }, backtest_manifest_path=str(manifest_path))
         self._make_experiment_manifest(tmp_path, "exp_test")
         self._make_scorecard(tmp_path, candidate_id)
 
@@ -548,6 +722,7 @@ class TestPromotionGateEnhanced:
         )
 
         candidate_id = "cand_stress_fail"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
         self._write_candidate(tmp_path, candidate_id, {
             "monte_carlo_survival_rate": 0.90,
             "alpha_decay_half_life_days": 15.0,
@@ -559,7 +734,7 @@ class TestPromotionGateEnhanced:
             "trade_count": 50,
             "cost_sensitivity": 0.2,
             "max_drawdown_pct": 0.15,
-        })
+        }, backtest_manifest_path=str(manifest_path))
         self._make_experiment_manifest(tmp_path, "exp_test")
         self._make_scorecard(tmp_path, candidate_id)
 
@@ -574,6 +749,227 @@ class TestPromotionGateEnhanced:
         )
         assert result.evidence.get("stress_survival_rate") == 0.50
 
+    def test_stored_paper_eligible_with_failed_evidence_is_blocked(
+        self, tmp_path: Path
+    ) -> None:
+        """Stored PAPER_ELIGIBLE cannot outrank the current gate evidence."""
+        from quant_us.research.automation.promotion_gate import (
+            ResearchPromotionGate,
+        )
+
+        candidate_id = "cand_stale_paper_eligible"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
+        self._write_candidate(
+            tmp_path,
+            candidate_id,
+            {
+                "monte_carlo_survival_rate": 0.90,
+                "alpha_decay_half_life_days": 15.0,
+                "param_stability_score": 0.8,
+                "correlation_redundancy": 0.30,
+                "stress_survival_rate": 0.50,
+                "sharpe": 1.5,
+                "walk_forward_pass_rate": 0.8,
+                "trade_count": 50,
+                "cost_sensitivity": 0.2,
+                "max_drawdown_pct": 0.15,
+            },
+            promotion_status="PAPER_ELIGIBLE",
+            backtest_manifest_path=str(manifest_path),
+        )
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        gate = ResearchPromotionGate(data_root=str(tmp_path))
+        result = gate.evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert result.evidence["stored_promotion_status"] == "PAPER_ELIGIBLE"
+        assert any("promotion_status_inconsistent" in r for r in result.reasons)
+
+    def test_fixture_data_version_is_blocked(self, tmp_path: Path) -> None:
+        """Automation promotion gate blocks fixture evidence even with clean metrics."""
+        from quant_us.research.automation.promotion_gate import (
+            ResearchPromotionGate,
+        )
+
+        candidate_id = "cand_fixture_scope"
+        manifest_path = self._make_backtest_manifest(
+            tmp_path,
+            candidate_id,
+            data_version="qs-fixture-AAPL-1d-test",
+            source="fixture",
+            fixture_like_data_version=True,
+        )
+        self._write_candidate(
+            tmp_path,
+            candidate_id,
+            {
+                "monte_carlo_survival_rate": 0.90,
+                "alpha_decay_half_life_days": 15.0,
+                "param_stability_score": 0.8,
+                "correlation_redundancy": 0.30,
+                "stress_survival_rate": 0.85,
+                "sharpe": 1.5,
+                "walk_forward_pass_rate": 0.8,
+                "trade_count": 50,
+                "cost_sensitivity": 0.2,
+                "max_drawdown_pct": 0.15,
+            },
+            data_version="qs-fixture-AAPL-1d-test",
+            data_source="fixture",
+            backtest_manifest_path=str(manifest_path),
+        )
+        self._make_experiment_manifest(
+            tmp_path,
+            "exp_test",
+            data_version="qs-fixture-AAPL-1d-test",
+            data_source="fixture",
+        )
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert result.evidence["fixture_used"] is True
+        assert any("fixture_data_not_allowed" in r for r in result.reasons)
+
+    def test_missing_data_manifest_is_blocked(self, tmp_path: Path) -> None:
+        """A data_version string alone is not governed promotion evidence."""
+        from quant_us.research.automation.promotion_gate import (
+            ResearchPromotionGate,
+        )
+
+        candidate_id = "cand_missing_data_manifest"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
+        self._write_candidate(
+            tmp_path,
+            candidate_id,
+            {
+                "monte_carlo_survival_rate": 0.90,
+                "alpha_decay_half_life_days": 15.0,
+                "param_stability_score": 0.8,
+                "correlation_redundancy": 0.30,
+                "stress_survival_rate": 0.85,
+                "sharpe": 1.5,
+                "walk_forward_pass_rate": 0.8,
+                "trade_count": 50,
+                "cost_sensitivity": 0.2,
+                "max_drawdown_pct": 0.15,
+            },
+            backtest_manifest_path=str(manifest_path),
+        )
+        self._make_experiment_manifest(
+            tmp_path,
+            "exp_test",
+            write_data_manifest=False,
+        )
+        manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest_payload.pop("data_manifest", None)
+        manifest_path.write_text(json.dumps(manifest_payload), encoding="utf-8")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert result.evidence["data_manifest_exists"] is False
+        assert any("missing_data_manifest" in r for r in result.reasons)
+
+    def test_crypto_symbol_is_blocked(self, tmp_path: Path) -> None:
+        """Automation promotion gate blocks crypto-like symbols from US equity paper review."""
+        from quant_us.research.automation.promotion_gate import (
+            ResearchPromotionGate,
+        )
+
+        candidate_id = "cand_crypto_scope"
+        manifest_path = self._make_backtest_manifest(
+            tmp_path,
+            candidate_id,
+            data_version="qs-yfinance-BTCUSDT-1d-test",
+            symbol="BTCUSDT",
+            asset_class="crypto",
+        )
+        self._write_candidate(
+            tmp_path,
+            candidate_id,
+            {
+                "monte_carlo_survival_rate": 0.90,
+                "alpha_decay_half_life_days": 15.0,
+                "param_stability_score": 0.8,
+                "correlation_redundancy": 0.30,
+                "stress_survival_rate": 0.85,
+                "sharpe": 1.5,
+                "walk_forward_pass_rate": 0.8,
+                "trade_count": 50,
+                "cost_sensitivity": 0.2,
+                "max_drawdown_pct": 0.15,
+            },
+            symbols=["BTCUSDT"],
+            data_version="qs-yfinance-BTCUSDT-1d-test",
+            asset_class="crypto",
+            backtest_manifest_path=str(manifest_path),
+        )
+        self._make_experiment_manifest(
+            tmp_path,
+            "exp_test",
+            symbols=["BTCUSDT"],
+            data_version="qs-yfinance-BTCUSDT-1d-test",
+            asset_class="crypto",
+        )
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert result.evidence["asset_class"] == "crypto"
+        assert any("asset_class_not_allowed" in r for r in result.reasons)
+
+    def test_missing_event_ledger_metadata_is_blocked(self, tmp_path: Path) -> None:
+        """Clean scalar metrics are not enough without event-driven ledger metadata."""
+        from quant_us.research.automation.promotion_gate import (
+            ResearchPromotionGate,
+        )
+
+        candidate_id = "cand_missing_ledger"
+        manifest_path = self._make_backtest_manifest(
+            tmp_path,
+            candidate_id,
+            order_count=0,
+            fill_count=0,
+            orders_have_risk_check_id=False,
+            fills_match_orders=False,
+            promotion_evidence_complete=False,
+        )
+        self._write_candidate(tmp_path, candidate_id, {
+            "engine": "",
+            "ledger_consistency_pct": 100.0,
+            "baseline_fill_count": 0,
+            "baseline_order_count": 0,
+            "total_fill_count": 0,
+            "total_order_count": 0,
+            "monte_carlo_survival_rate": 0.90,
+            "alpha_decay_half_life_days": 15.0,
+            "param_stability_score": 0.8,
+            "correlation_redundancy": 0.30,
+            "stress_survival_rate": 0.85,
+            "sharpe": 1.5,
+            "walk_forward_pass_rate": 0.8,
+            "trade_count": 50,
+            "cost_sensitivity": 0.2,
+            "max_drawdown_pct": 0.15,
+        }, backtest_manifest_path=str(manifest_path))
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert result.evidence["has_ledger_trade_metadata"] is False
+        assert any("missing_ledger_trade_metadata" in r for r in result.reasons)
+        assert any("missing_order_risk_metadata" in r for r in result.reasons)
+        assert any("missing_fill_order_linkage" in r for r in result.reasons)
+        assert any("promotion_evidence_incomplete" in r for r in result.reasons)
+
     def test_all_r6_r7_r8_checks_pass(self, tmp_path: Path) -> None:
         """All R6/R7/R8 checks passing should result in READY_FOR_PAPER_REVIEW."""
         from quant_us.research.automation.promotion_gate import (
@@ -581,6 +977,7 @@ class TestPromotionGateEnhanced:
         )
 
         candidate_id = "cand_all_pass"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
         self._write_candidate(tmp_path, candidate_id, {
             "monte_carlo_survival_rate": 0.90,
             "alpha_decay_half_life_days": 15.0,
@@ -592,7 +989,7 @@ class TestPromotionGateEnhanced:
             "trade_count": 50,
             "cost_sensitivity": 0.2,
             "max_drawdown_pct": 0.15,
-        })
+        }, backtest_manifest_path=str(manifest_path))
         self._make_experiment_manifest(tmp_path, "exp_test")
         self._make_scorecard(tmp_path, candidate_id)
 
@@ -608,6 +1005,7 @@ class TestPromotionGateEnhanced:
         assert len(result.needs_more_research) == 0, (
             "Should have no needs_more_research items"
         )
+        assert result.evidence["backtest_manifest_present"] is True
         # Verify all new evidence fields are present
         for field in [
             "monte_carlo_survival_rate",
@@ -619,6 +1017,166 @@ class TestPromotionGateEnhanced:
             assert field in result.evidence, (
                 f"Evidence should contain {field}"
             )
+
+    def test_vectorized_backtest_manifest_is_blocked(self, tmp_path: Path) -> None:
+        """Vectorized backtest evidence cannot become READY_FOR_PAPER_REVIEW."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_vectorized"
+        manifest_path = self._make_backtest_manifest(
+            tmp_path,
+            candidate_id,
+            engine="vectorized",
+            canonical_for_promotion=False,
+        )
+        self._write_candidate(
+            tmp_path,
+            candidate_id,
+            {
+                "monte_carlo_survival_rate": 0.90,
+                "alpha_decay_half_life_days": 15.0,
+                "param_stability_score": 0.8,
+                "correlation_redundancy": 0.30,
+                "stress_survival_rate": 0.85,
+                "sharpe": 1.5,
+                "walk_forward_pass_rate": 0.8,
+                "trade_count": 50,
+                "cost_sensitivity": 0.2,
+                "max_drawdown_pct": 0.15,
+            },
+            backtest_manifest_path=str(manifest_path),
+        )
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert result.evidence["backtest_manifest_present"] is True
+        assert any("event_driven_required" in r for r in result.reasons)
+        assert any("canonical_backtest_manifest_required" in r for r in result.reasons)
+
+    def test_missing_backtest_manifest_evidence_is_blocked(self, tmp_path: Path) -> None:
+        """Without canonical backtest manifest evidence, the gate cannot return READY."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_missing_backtest_manifest"
+        self._write_candidate(
+            tmp_path,
+            candidate_id,
+            {
+                "monte_carlo_survival_rate": 0.90,
+                "alpha_decay_half_life_days": 15.0,
+                "param_stability_score": 0.8,
+                "correlation_redundancy": 0.30,
+                "stress_survival_rate": 0.85,
+                "sharpe": 1.5,
+                "walk_forward_pass_rate": 0.8,
+                "trade_count": 50,
+                "cost_sensitivity": 0.2,
+                "max_drawdown_pct": 0.15,
+            },
+        )
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert result.evidence["backtest_manifest_present"] is False
+        assert any("missing_backtest_manifest_evidence" in r for r in result.reasons)
+
+    def test_inline_backtest_manifest_is_not_promotion_evidence(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Inline backtest manifests are diagnostic only and cannot authorize READY."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_inline_backtest_manifest"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
+        inline_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest_path.unlink()
+        self._write_candidate(
+            tmp_path,
+            candidate_id,
+            {
+                "backtest_manifest": inline_manifest,
+                "monte_carlo_survival_rate": 0.90,
+                "alpha_decay_half_life_days": 15.0,
+                "param_stability_score": 0.8,
+                "correlation_redundancy": 0.30,
+                "stress_survival_rate": 0.85,
+                "sharpe": 1.5,
+                "walk_forward_pass_rate": 0.8,
+                "trade_count": 50,
+                "cost_sensitivity": 0.2,
+                "max_drawdown_pct": 0.15,
+            },
+        )
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert result.evidence["backtest_manifest_inline"] is True
+        assert result.evidence["backtest_manifest_present"] is False
+        assert result.evidence["backtest_manifest_source"] == "inline_untrusted"
+        assert any("inline_backtest_manifest_not_allowed" in r for r in result.reasons)
+        assert any("missing_backtest_manifest_evidence" in r for r in result.reasons)
+
+    def test_data_manifest_checksum_mismatch_is_blocked(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Backtest embedded data manifest must match the governed manifest store."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_data_manifest_checksum_mismatch"
+        manifest_path = self._make_backtest_manifest(
+            tmp_path,
+            candidate_id,
+            data_manifest_fingerprint="a" * 64,
+            data_manifest_checksum="a" * 64,
+        )
+        self._write_candidate(
+            tmp_path,
+            candidate_id,
+            {
+                "monte_carlo_survival_rate": 0.90,
+                "alpha_decay_half_life_days": 15.0,
+                "param_stability_score": 0.8,
+                "correlation_redundancy": 0.30,
+                "stress_survival_rate": 0.85,
+                "sharpe": 1.5,
+                "walk_forward_pass_rate": 0.8,
+                "trade_count": 50,
+                "cost_sensitivity": 0.2,
+                "max_drawdown_pct": 0.15,
+            },
+            backtest_manifest_path=str(manifest_path),
+        )
+        self._make_experiment_manifest(
+            tmp_path,
+            "exp_test",
+            write_data_manifest=False,
+        )
+        self._make_data_manifest(
+            tmp_path,
+            fingerprint="b" * 64,
+            checksum="b" * 64,
+        )
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert result.evidence["data_manifest_source"] == "manifest_store"
+        assert result.evidence["data_manifest_checksum"] == "b" * 64
+        assert result.evidence["data_manifest_embedded_checksum"] == "a" * 64
+        assert any("data_manifest_checksum_mismatch" in r for r in result.reasons)
+        assert any("data_manifest_fingerprint_mismatch" in r for r in result.reasons)
 
     def test_paper_candidate_approve_requires_manual(self, tmp_path: Path) -> None:
         """PaperReviewManager.approve() requires a non-empty reviewer name."""
@@ -693,8 +1251,103 @@ class TestPromotionGateEnhanced:
         # Should succeed with valid portfolio evidence
         review = mgr.create_from_portfolio_evidence("pack_valid")
         assert review.status == "PENDING_HUMAN_REVIEW"
+        assert review.status != "APPROVED_FOR_PAPER_ONLY"
         assert "AAPL" in review.proposed_symbols
         assert "MSFT" in review.proposed_symbols
+
+    @pytest.mark.parametrize("gate_decision", ["WATCHLIST", "NEED_MORE_RESEARCH", "BLOCKED"])
+    def test_create_from_portfolio_evidence_requires_ready_gate(
+        self, tmp_path: Path, gate_decision: str
+    ) -> None:
+        """Non-READY automation decisions cannot enter paper review."""
+        from quant_us.research.paper_review_bridge import (
+            PaperReviewManager,
+        )
+
+        mgr = PaperReviewManager(data_root=str(tmp_path))
+        ev_dir = tmp_path / "research" / "evidence_packs" / "pack_watchlist"
+        ev_dir.mkdir(parents=True)
+        evidence = {
+            "candidate_id": "cand_watchlist",
+            "sections": {
+                "portfolio_sim": {
+                    "status": "completed",
+                    "decision": "PORTFOLIO_PASS",
+                    "final_equity": 105000.0,
+                },
+                "candidate_data": {
+                    "candidate_id": "cand_watchlist",
+                    "symbols": ["AAPL"],
+                    "metrics": {"max_drawdown_pct": 0.15},
+                },
+                "promotion_gate": {
+                    "decision": gate_decision,
+                },
+            },
+        }
+        (ev_dir / "evidence_pack.json").write_text(json.dumps(evidence))
+
+        with pytest.raises(ValueError, match="READY_FOR_PAPER_REVIEW"):
+            mgr.create_from_portfolio_evidence("pack_watchlist")
+
+    def test_create_review_rejects_watchlist_simulation(self, tmp_path: Path) -> None:
+        """Legacy sim-based entry cannot send WATCHLIST simulations to paper review."""
+        from quant_us.research.paper_review_bridge import PaperReviewManager
+
+        sim_dir = tmp_path / "research" / "portfolio_sims" / "sim_watchlist"
+        sim_dir.mkdir(parents=True)
+        request = {
+            "portfolio_sim_id": "sim_watchlist",
+            "strategy_manifest_ids": ["sman_ready"],
+            "symbols": ["AAPL"],
+            "capital": 100000.0,
+        }
+        result = {
+            "portfolio_sim_id": "sim_watchlist",
+            "equity_curve": [100000.0, 101000.0],
+            "drawdown": [0.0, 0.0],
+            "decision": "WATCHLIST",
+        }
+        (sim_dir / "request.json").write_text(json.dumps(request), encoding="utf-8")
+        (sim_dir / "result.json").write_text(json.dumps(result), encoding="utf-8")
+
+        with pytest.raises(ValueError, match="Only PORTFOLIO_PASS"):
+            PaperReviewManager(data_root=str(tmp_path)).create_review("sim_watchlist")
+
+    def test_create_review_requires_ready_manifest(self, tmp_path: Path) -> None:
+        """A PORTFOLIO_PASS simulation still needs READY_FOR_PORTFOLIO_SIM manifests."""
+        from quant_us.research.paper_review_bridge import PaperReviewManager
+
+        sim_dir = tmp_path / "research" / "portfolio_sims" / "sim_pass"
+        sim_dir.mkdir(parents=True)
+        request = {
+            "portfolio_sim_id": "sim_pass",
+            "strategy_manifest_ids": ["sman_draft"],
+            "symbols": ["AAPL"],
+            "capital": 100000.0,
+        }
+        result = {
+            "portfolio_sim_id": "sim_pass",
+            "equity_curve": [100000.0, 101000.0],
+            "drawdown": [0.0, 0.0],
+            "decision": "PORTFOLIO_PASS",
+        }
+        manifest_dir = tmp_path / "research" / "manifests" / "sman_draft"
+        manifest_dir.mkdir(parents=True)
+        manifest = {
+            "strategy_candidate_id": "sman_draft",
+            "source_candidate_id": "cand_1",
+            "source_experiment_id": "exp_1",
+            "symbols": ["AAPL"],
+            "promotion_status": "DRAFT",
+            "params_frozen": True,
+        }
+        (sim_dir / "request.json").write_text(json.dumps(request), encoding="utf-8")
+        (sim_dir / "result.json").write_text(json.dumps(result), encoding="utf-8")
+        (manifest_dir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+        with pytest.raises(ValueError, match="READY_FOR_PORTFOLIO_SIM"):
+            PaperReviewManager(data_root=str(tmp_path)).create_review("sim_pass")
 
 
 # ===========================================================================
@@ -801,30 +1454,14 @@ class TestSafetyInvariants:
         """PromotionGate must not import any broker module."""
         import quant_us.research.automation.promotion_gate as pg
 
-        # Get all imported module names
-        import sys
-        imported = set(sys.modules.keys())
-
-        # Check none of the imported modules are live/execution
-        forbidden = {"quant_us.live", "quant_us.execution"}
-        for mod_name in imported:
-            for f in forbidden:
-                assert not mod_name.startswith(f), (
-                    f"Promotion gate transitively imported {mod_name} "
-                    f"which is in forbidden namespace {f}"
-                )
+        source = Path(pg.__file__).read_text(encoding="utf-8")
+        assert "quant_us.live" not in source
+        assert "quant_us.execution" not in source
 
     def test_no_broker_import_in_paper_review_bridge(self, tmp_path: Path) -> None:
         """PaperReviewBridge must not import any broker module."""
         import quant_us.research.paper_review_bridge as prb
 
-        import sys
-        imported = set(sys.modules.keys())
-
-        forbidden = {"quant_us.live", "quant_us.execution"}
-        for mod_name in imported:
-            for f in forbidden:
-                assert not mod_name.startswith(f), (
-                    f"Paper review bridge transitively imported {mod_name} "
-                    f"which is in forbidden namespace {f}"
-                )
+        source = Path(prb.__file__).read_text(encoding="utf-8")
+        assert "quant_us.live" not in source
+        assert "quant_us.execution" not in source

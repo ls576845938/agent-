@@ -11,6 +11,7 @@ from quant_us.data.storage.data_manifest import (
     DataManifest,
     DataManifestStore,
     build_manifest_from_quality,
+    validate_manifest_for_promotion,
 )
 
 
@@ -29,6 +30,10 @@ class TestDataManifestConstruction(unittest.TestCase):
         self.assertEqual(m.symbol, "AAPL")
         self.assertEqual(m.interval, "1d")
         self.assertEqual(m.asset_class, "equity")  # default
+        self.assertEqual(m.timezone, "UTC")
+        self.assertEqual(m.adjustment, "raw")
+        self.assertEqual(m.checksum, "")
+        self.assertEqual(m.effective_checksum, "")
         self.assertEqual(m.start, "")
         self.assertEqual(m.end, "")
         self.assertEqual(m.row_count, 0)
@@ -157,12 +162,15 @@ class TestDataManifestStoreRoundTrip(unittest.TestCase):
                 symbol="AAPL",
                 interval="1d",
                 asset_class="equity",
+                timezone="UTC",
+                adjustment="split_adjusted",
                 start="2024-01-01T00:00:00+00:00",
                 end="2024-12-31T23:59:59+00:00",
                 row_count=252,
                 expected_rows=252,
                 coverage_pct=100.0,
                 fingerprint="abc123",
+                checksum="abc123",
                 quality_score=95.0,
                 fields=["timestamp_utc", "open", "high", "low", "close", "volume"],
                 issues=[],
@@ -181,12 +189,15 @@ class TestDataManifestStoreRoundTrip(unittest.TestCase):
             self.assertEqual(loaded.symbol, original.symbol)
             self.assertEqual(loaded.interval, original.interval)
             self.assertEqual(loaded.asset_class, original.asset_class)
+            self.assertEqual(loaded.timezone, original.timezone)
+            self.assertEqual(loaded.adjustment, original.adjustment)
             self.assertEqual(loaded.start, original.start)
             self.assertEqual(loaded.end, original.end)
             self.assertEqual(loaded.row_count, original.row_count)
             self.assertEqual(loaded.expected_rows, original.expected_rows)
             self.assertEqual(loaded.coverage_pct, original.coverage_pct)
             self.assertEqual(loaded.fingerprint, original.fingerprint)
+            self.assertEqual(loaded.checksum, original.checksum)
             self.assertEqual(loaded.quality_score, original.quality_score)
             self.assertEqual(loaded.fields, original.fields)
             self.assertEqual(loaded.issues, original.issues)
@@ -200,6 +211,24 @@ class TestDataManifestStoreRoundTrip(unittest.TestCase):
             store = DataManifestStore(root=directory)
             result = store.read("nonexistent")
             self.assertIsNone(result)
+
+    def test_read_returns_none_for_non_data_manifest_payload(self) -> None:
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "run_ubt.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "run_id": "ubt_1",
+                        "engine": "event_driven",
+                        "data_version": "qs-yfinance-AAPL-1d-test",
+                        "source": "yfinance",
+                        "symbol": "AAPL",
+                        "interval": "1d",
+                    }
+                )
+            )
+            store = DataManifestStore(root=directory)
+            self.assertIsNone(store.read("run_ubt"))
 
     def test_overwrite_existing_manifest(self) -> None:
         with TemporaryDirectory() as directory:
@@ -399,6 +428,35 @@ class TestDataManifestStoreListManifests(unittest.TestCase):
         self.assertEqual(store.list_manifests(), [])
         self.assertIsNone(store.read_latest(source="x", symbol="y", interval="z"))
 
+    def test_list_skips_backtest_run_manifests(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = DataManifestStore(root=root)
+            store.write(
+                DataManifest(
+                    data_version="qs-yfinance-AAPL-1d-v1",
+                    source="yfinance",
+                    symbol="AAPL",
+                    interval="1d",
+                )
+            )
+            (root / "run_ubt_1.json").write_text(
+                json.dumps(
+                    {
+                        "run_id": "ubt_1",
+                        "engine": "event_driven",
+                        "data_version": "qs-yfinance-SPY-1d-run",
+                        "source": "yfinance",
+                        "symbol": "SPY",
+                        "interval": "1d",
+                    }
+                )
+            )
+
+            manifests = store.list_manifests()
+            self.assertEqual(len(manifests), 1)
+            self.assertEqual(manifests[0].data_version, "qs-yfinance-AAPL-1d-v1")
+
 
 class TestBuildManifestFromQuality(unittest.TestCase):
     """build_manifest_from_quality with complete and incomplete data."""
@@ -436,12 +494,15 @@ class TestBuildManifestFromQuality(unittest.TestCase):
         self.assertEqual(manifest.symbol, "AAPL")  # uppercased
         self.assertEqual(manifest.interval, "1d")
         self.assertEqual(manifest.asset_class, "equity")
+        self.assertEqual(manifest.timezone, "UTC")
+        self.assertEqual(manifest.adjustment, "raw")
         self.assertEqual(manifest.start, "2024-01-01T00:00:00+00:00")
         self.assertEqual(manifest.end, "2024-12-31T23:59:59+00:00")
         self.assertEqual(manifest.row_count, 252)
         self.assertEqual(manifest.expected_rows, 252)
         self.assertEqual(manifest.coverage_pct, 100.0)
         self.assertEqual(manifest.fingerprint, "a" * 64)
+        self.assertEqual(manifest.checksum, "a" * 64)
         self.assertEqual(manifest.quality_score, 95.0)
         self.assertEqual(
             manifest.fields,
@@ -485,6 +546,7 @@ class TestBuildManifestFromQuality(unittest.TestCase):
         self.assertEqual(manifest.expected_rows, 0)
         self.assertEqual(manifest.coverage_pct, 0.0)
         self.assertEqual(manifest.fingerprint, "")
+        self.assertEqual(manifest.checksum, "")
         self.assertEqual(manifest.quality_score, 0.0)
         self.assertEqual(manifest.fields, ["timestamp_utc", "symbol", "open", "high", "low", "close", "volume"])
         self.assertEqual(manifest.issues, [])
@@ -631,6 +693,90 @@ class TestBuildManifestFromQualityRoundTrip(unittest.TestCase):
             self.assertEqual(loaded.raw_path, manifest.raw_path)
             self.assertEqual(loaded.cleaned_path, manifest.cleaned_path)
             self.assertEqual(loaded.git_commit, manifest.git_commit)
+
+
+class TestDataManifestPromotionValidation(unittest.TestCase):
+    """Promotion-grade manifest validation should fail fast on unsafe data lineage."""
+
+    def _valid_manifest(self, **overrides) -> DataManifest:
+        payload = {
+            "data_version": "qs-yfinance-AAPL-1d-test",
+            "source": "yfinance",
+            "symbol": "AAPL",
+            "interval": "1d",
+            "asset_class": "equity",
+            "timezone": "UTC",
+            "adjustment": "raw",
+            "start": "2024-01-01T00:00:00+00:00",
+            "end": "2024-12-31T00:00:00+00:00",
+            "row_count": 252,
+            "expected_rows": 252,
+            "coverage_pct": 100.0,
+            "fingerprint": "a" * 64,
+            "checksum": "a" * 64,
+            "quality_score": 98.0,
+            "cleaning": {
+                "duplicate_timestamps_removed": 0,
+                "invalid_ohlc_removed": 0,
+                "non_positive_prices_removed": 0,
+                "cleaning_loss_rows": 0,
+                "missing_bars": 0,
+            },
+        }
+        payload.update(overrides)
+        return DataManifest(**payload)
+
+    def test_valid_manifest_passes(self) -> None:
+        result = validate_manifest_for_promotion(
+            self._valid_manifest(),
+            now=datetime(2026, 5, 9, tzinfo=timezone.utc),
+        )
+        self.assertTrue(result.ok)
+        self.assertEqual(result.reasons, [])
+        self.assertEqual(result.metrics["source"], "yfinance")
+
+    def test_fixture_manifest_is_blocked(self) -> None:
+        result = validate_manifest_for_promotion(self._valid_manifest(source="fixture"))
+        self.assertFalse(result.ok)
+        self.assertIn("fixture_data_not_allowed", result.reasons)
+
+    def test_crypto_asset_is_blocked(self) -> None:
+        result = validate_manifest_for_promotion(self._valid_manifest(asset_class="crypto"))
+        self.assertFalse(result.ok)
+        self.assertIn("asset_class_not_allowed:crypto", result.reasons)
+
+    def test_missing_checksum_is_blocked(self) -> None:
+        result = validate_manifest_for_promotion(
+            self._valid_manifest(fingerprint="", checksum="")
+        )
+        self.assertFalse(result.ok)
+        self.assertIn("missing_checksum", result.reasons)
+
+    def test_future_timestamp_is_blocked(self) -> None:
+        result = validate_manifest_for_promotion(
+            self._valid_manifest(end="2027-01-01T00:00:00+00:00"),
+            now=datetime(2026, 5, 9, tzinfo=timezone.utc),
+        )
+        self.assertFalse(result.ok)
+        self.assertTrue(any(reason.startswith("future_timestamp") for reason in result.reasons))
+
+    def test_bad_bar_cleaning_counts_are_blocked(self) -> None:
+        result = validate_manifest_for_promotion(
+            self._valid_manifest(
+                cleaning={
+                    "duplicate_timestamps_removed": 1,
+                    "invalid_ohlc_removed": 2,
+                    "non_positive_prices_removed": 3,
+                    "cleaning_loss_rows": 6,
+                    "missing_bars": 4,
+                }
+            )
+        )
+        self.assertFalse(result.ok)
+        self.assertIn("duplicate_timestamps:1", result.reasons)
+        self.assertIn("invalid_ohlc:2", result.reasons)
+        self.assertIn("non_positive_prices:3", result.reasons)
+        self.assertIn("missing_bars:4", result.warnings)
 
 
 if __name__ == "__main__":

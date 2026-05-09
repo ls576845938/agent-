@@ -35,6 +35,28 @@ def generate(
     return _generate_standard(experiment_id, data_root=data_root)
 
 
+class ExperimentReportGenerator:
+    def __init__(self, data_root: str = "data") -> None:
+        self.data_root = Path(data_root)
+
+    def generate(self, experiment_id: str) -> dict[str, Any]:
+        exp_dir = self.data_root / "research" / "experiments" / experiment_id
+        manifest_path = exp_dir / "manifest.json"
+        if not manifest_path.exists():
+            raise ValueError(f"Experiment {experiment_id} not found")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        candidates_path = exp_dir / "candidates.json"
+        candidates = []
+        if candidates_path.exists():
+            candidates = json.loads(candidates_path.read_text(encoding="utf-8"))
+        return {
+            "experiment_id": experiment_id,
+            "strategy_id": manifest.get("strategy_id", ""),
+            "candidate_count": len(candidates),
+            "candidates": candidates,
+        }
+
+
 def _generate_standard(experiment_id: str, data_root: str = "data") -> str:
     """Standard report — basic experiment summary."""
     data_path = Path(data_root)
@@ -119,11 +141,15 @@ def generate_v2(experiment_id: str, data_root: str = "data") -> str:
     sections.append(_v2_gate_section(gate_results))
     sections.append("")
 
-    # Section 6: Ready for paper review summary
+    # Section 6: Unified backtest evidence summary
+    sections.append(_v2_backtest_evidence_section(gate_results))
+    sections.append("")
+
+    # Section 7: Ready for paper review summary
     sections.append(_v2_ready_summary(gate_results))
     sections.append("")
 
-    # Section 7: Next research actions
+    # Section 8: Next research actions
     sections.append(_v2_next_actions(gate_results))
     sections.append("")
 
@@ -266,6 +292,35 @@ def _v2_gate_section(
             f"| {gr.get('decision', '?'):25s} "
             f"| {reasons} "
             f"| {warnings} |\n"
+        )
+    return "".join(lines)
+
+
+def _v2_backtest_evidence_section(gate_results: list[dict]) -> str:
+    if not gate_results:
+        return "## Unified Backtest Evidence\n\nNo candidates evaluated.\n"
+
+    lines = [
+        "## Unified Backtest Evidence\n",
+    ]
+    for gr in gate_results:
+        evidence = gr.get("evidence", {}) if isinstance(gr, dict) else {}
+        if not isinstance(evidence, dict):
+            evidence = {}
+
+        reconciliation = _extract_reconciliation_evidence(evidence)
+        corporate_actions = _extract_corporate_actions_evidence(evidence)
+
+        lines.extend(
+            [
+                f"### {gr.get('candidate_id', '?')}\n",
+                f"- Reconciliation Passed: {_format_bool(reconciliation.get('passed'))}\n",
+                f"- Max Abs Diff: {_format_number(reconciliation.get('max_abs_diff'))}\n",
+                f"- Max Pct Diff: {_format_number(reconciliation.get('max_pct_diff'))}\n",
+                f"- Failed Snapshot Summary: {reconciliation.get('failed_snapshot_summary', 'none')}\n",
+                f"- Corporate Actions Digest: {corporate_actions}\n",
+                "\n",
+            ]
         )
     return "".join(lines)
 
@@ -417,3 +472,130 @@ def _evaluate_promotion_gate(
         except (ValueError, FileNotFoundError, json.JSONDecodeError):
             continue
     return results
+
+
+def _extract_reconciliation_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
+    reconciliation = evidence.get("reconciliation")
+    if isinstance(reconciliation, dict):
+        summary = reconciliation.get("summary", {})
+        snapshots = reconciliation.get("snapshots", [])
+    else:
+        summary = evidence.get("reconciliation_summary", {})
+        snapshots = evidence.get("reconciliation_snapshots", [])
+
+    if not isinstance(summary, dict):
+        summary = {}
+    if not isinstance(snapshots, list):
+        snapshots = []
+
+    failed_summary = evidence.get("reconciliation_failed_snapshot_summary", "none")
+    if failed_summary == "none":
+        failed_snapshots = [
+            snap for snap in snapshots if _coerce_bool(snap.get("passed", False)) is not True
+        ]
+        failed_summary = _summarize_failed_snapshot_list(failed_snapshots)
+
+    return {
+        "passed": summary.get("passed"),
+        "max_abs_diff": summary.get("max_abs_diff"),
+        "max_pct_diff": summary.get("max_pct_diff"),
+        "failed_snapshot_summary": failed_summary,
+    }
+
+
+def _extract_corporate_actions_evidence(evidence: dict[str, Any]) -> str:
+    corporate_actions = evidence.get("corporate_actions")
+    if isinstance(corporate_actions, dict):
+        digest = corporate_actions.get("digest", {})
+        if isinstance(digest, dict):
+            return _format_digest(digest)
+
+    digest = evidence.get("corporate_actions_digest", {})
+    if isinstance(digest, dict):
+        return _format_digest(digest)
+    return "none"
+
+
+def _format_bool(value: Any) -> str:
+    coerced = _coerce_bool(value)
+    if coerced is None:
+        return "N/A"
+    return "True" if coerced else "False"
+
+
+def _coerce_bool(value: Any) -> bool | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "y", "passed", "pass"}:
+            return True
+        if normalized in {"0", "false", "no", "n", "failed", "fail"}:
+            return False
+        return None
+    return bool(value)
+
+
+def _format_number(value: Any) -> str:
+    if value is None:
+        return "N/A"
+    try:
+        return f"{float(value):.4f}"
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _format_digest(digest: dict[str, Any]) -> str:
+    if not digest:
+        return "none"
+
+    preferred_keys = [
+        "adjustment_count",
+        "split_event_count",
+        "total_dividends",
+        "total_borrow_fees",
+        "total_corporate_adjustments",
+    ]
+    parts: list[str] = []
+    seen: set[str] = set()
+
+    for key in preferred_keys:
+        if key in digest:
+            parts.append(f"{key}={_format_digest_value(digest.get(key))}")
+            seen.add(key)
+
+    for key in sorted(digest):
+        if key in seen:
+            continue
+        parts.append(f"{key}={_format_digest_value(digest.get(key))}")
+
+    return ", ".join(parts) if parts else "none"
+
+
+def _format_digest_value(value: Any) -> str:
+    if isinstance(value, bool):
+        return "True" if value else "False"
+    if isinstance(value, int):
+        return str(value)
+    return _format_number(value)
+
+
+def _summarize_failed_snapshot_list(snapshots: list[dict[str, Any]]) -> str:
+    if not snapshots:
+        return "none"
+
+    first = snapshots[0]
+    timestamp = first.get("timestamp_utc", "unknown")
+    cash_diff = first.get("cash_diff")
+    equity_diff = first.get("equity_diff")
+    max_abs_diff = first.get("max_abs_diff")
+    max_pct_diff = first.get("max_pct_diff")
+    return (
+        f"count={len(snapshots)}; first={timestamp}; "
+        f"cash_diff={_format_number(cash_diff)}; "
+        f"equity_diff={_format_number(equity_diff)}; "
+        f"max_abs_diff={_format_number(max_abs_diff)}; "
+        f"max_pct_diff={_format_number(max_pct_diff)}"
+    )

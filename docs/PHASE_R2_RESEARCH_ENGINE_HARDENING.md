@@ -83,7 +83,7 @@ R2 enforces 10 safety invariants:
 
 1. Research modules cannot submit real orders
 2. Research modules cannot access live brokers
-3. Max auto-promotion is PAPER_ELIGIBLE (marker only)
+3. Automated output stops at paper_review_ready evidence; PAPER_ELIGIBLE is manual
 4. Manual action required for all promotions beyond RESEARCH_ONLY
 5. Overfit candidates are automatically rejected
 6. Lookahead bias is detected and prevented

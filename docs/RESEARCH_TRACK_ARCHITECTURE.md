@@ -7,7 +7,7 @@ The QuantStation Research Track is a self-contained research environment for dev
 ## Architecture Principles
 
 1. **Zero Live Access**: Research modules never import from `quant_us.live` or `quant_us.execution`. No `submit_order()`, `AlpacaBroker`, or `QUANT_LIVE` references exist in research code.
-2. **Max Promotion: PAPER_ELIGIBLE**: The maximum automated promotion level is `PAPER_ELIGIBLE` (a marker). Further promotion requires manual CLI flags and external governance processes.
+2. **Manual PAPER_ELIGIBLE**: Automated research can only produce a `paper_review_ready` result and evidence pack. Setting `PAPER_ELIGIBLE` remains an explicit manual governance action.
 3. **No Lookahead**: All factor computations and regime detection use only data available at time `t`. Rolling/expanding windows, never full-dataset statistics.
 4. **Temporary Data Isolation**: Tests use `tmp_path` and fake data. No real API keys, no network calls.
 5. **Surgical Imports**: Research modules import only from `quant_us.core`, `quant_us.backtest`, `quant_us.data`, `quant_us.strategies`, and `quant_us.factors`. Never from execution or live modules.

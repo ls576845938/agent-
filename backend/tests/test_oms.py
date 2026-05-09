@@ -11,17 +11,21 @@ from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 from quant_us.core.enums import OrderSide, OrderStatus, OrderType, TimeInForce
-from quant_us.core.types import AccountState, Fill, Order, OrderIntent, RiskDecision, new_id
+from quant_us.core.types import AccountState, Fill, Order, OrderIntent, Position, RiskDecision, new_id
 from quant_us.execution.oms import OMSResult, OrderManagementSystem
 
 
-def _make_intent(client_order_id: str | None = None) -> OrderIntent:
+def _make_intent(
+    client_order_id: str | None = None,
+    side: OrderSide = OrderSide.BUY,
+    quantity: float = 100.0,
+) -> OrderIntent:
     return OrderIntent(
         timestamp_utc=datetime(2025, 6, 1, 14, 30, tzinfo=timezone.utc),
         strategy_id="utest",
         symbol="AAPL",
-        side=OrderSide.BUY,
-        quantity=100.0,
+        side=side,
+        quantity=quantity,
         order_type=OrderType.MARKET,
         time_in_force=TimeInForce.DAY,
         client_order_id=client_order_id or new_id("coid"),
@@ -36,6 +40,17 @@ def _make_account() -> AccountState:
         equity=1_000_000.0,
         buying_power=2_000_000.0,
     )
+
+
+def _make_account_with_position(quantity: float) -> AccountState:
+    account = _make_account()
+    account.positions["AAPL"] = Position(
+        symbol="AAPL",
+        quantity=quantity,
+        avg_price=150.0,
+        market_price=150.0,
+    )
+    return account
 
 
 def _make_fill(order_id: str) -> Fill:
@@ -334,6 +349,91 @@ class TestOrderManagementSystem(unittest.TestCase):
         result = oms_no_ks.handle_intent(intent, self.account, self.market_price)
 
         self.assertTrue(result.risk_decision.approved)
+        self.broker.submit_order.assert_called_once()
+
+    # ------------------------------------------------------------------
+    # Reduce-only path
+    # ------------------------------------------------------------------
+
+    def test_reduce_only_blocks_long_position_reversal(self, _mock_utcnow: MagicMock) -> None:
+        """Reduce-only must not allow a sell that crosses long exposure into short."""
+        self.kill_switch.update_equity.return_value = False
+        self.oms.reduce_only = True
+
+        intent = _make_intent(side=OrderSide.SELL, quantity=20.0)
+        result = self.oms.handle_intent(
+            intent,
+            _make_account_with_position(10.0),
+            self.market_price,
+        )
+
+        self.assertFalse(result.risk_decision.approved)
+        self.assertEqual(result.risk_decision.reason, "reduce_only_would_reverse_long")
+        self.risk_engine.evaluate.assert_not_called()
+        self.broker.submit_order.assert_not_called()
+
+    def test_reduce_only_allows_long_position_reduction(self, _mock_utcnow: MagicMock) -> None:
+        """Reduce-only still allows a sell that reduces an existing long."""
+        self.kill_switch.update_equity.return_value = False
+        self.oms.reduce_only = True
+        decision = RiskDecision(approved=True, reason="approved", order_intent_id="irrelevant")
+        self.risk_engine.evaluate.return_value = decision
+
+        intent = _make_intent(side=OrderSide.SELL, quantity=5.0)
+        submitted = Order.from_intent(intent, decision)
+        submitted.order_id = "ord_reduce"
+        submitted.status = OrderStatus.ACCEPTED
+        self.broker.submit_order.return_value = submitted
+
+        result = self.oms.handle_intent(
+            intent,
+            _make_account_with_position(10.0),
+            self.market_price,
+        )
+
+        self.assertTrue(result.risk_decision.approved)
+        self.risk_engine.evaluate.assert_called_once()
+        self.broker.submit_order.assert_called_once()
+
+    def test_reduce_only_blocks_short_position_reversal(self, _mock_utcnow: MagicMock) -> None:
+        """Reduce-only must not allow a buy that crosses short exposure into long."""
+        self.kill_switch.update_equity.return_value = False
+        self.oms.reduce_only = True
+
+        intent = _make_intent(side=OrderSide.BUY, quantity=20.0)
+        result = self.oms.handle_intent(
+            intent,
+            _make_account_with_position(-10.0),
+            self.market_price,
+        )
+
+        self.assertFalse(result.risk_decision.approved)
+        self.assertEqual(result.risk_decision.reason, "reduce_only_would_reverse_short")
+        self.risk_engine.evaluate.assert_not_called()
+        self.broker.submit_order.assert_not_called()
+
+    def test_reduce_only_allows_short_position_reduction(self, _mock_utcnow: MagicMock) -> None:
+        """Reduce-only allows a buy-to-cover that reduces an existing short."""
+        self.kill_switch.update_equity.return_value = False
+        self.oms.reduce_only = True
+        decision = RiskDecision(approved=True, reason="approved", order_intent_id="irrelevant")
+        self.risk_engine.evaluate.return_value = decision
+
+        intent = _make_intent(side=OrderSide.BUY, quantity=5.0)
+        submitted = Order.from_intent(intent, decision)
+        submitted.order_id = "ord_cover"
+        submitted.status = OrderStatus.ACCEPTED
+        self.broker.submit_order.return_value = submitted
+        self.broker.get_fills.return_value = []
+
+        result = self.oms.handle_intent(
+            intent,
+            _make_account_with_position(-10.0),
+            self.market_price,
+        )
+
+        self.assertTrue(result.risk_decision.approved)
+        self.risk_engine.evaluate.assert_called_once()
         self.broker.submit_order.assert_called_once()
 
 

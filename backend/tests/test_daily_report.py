@@ -22,6 +22,11 @@ from quant_us.monitoring.daily_report import (
     generate_daily_report,
     save_report,
 )
+from quant_us.monitoring.paper_review_status import (
+    build_paper_review_evidence_index,
+    inspect_paper_review_status,
+)
+from quant_us.research.evidence_registry import inspect_evidence_registry
 from quant_us.risk.kill_switch import KillSwitch, KillSwitchConfig
 
 
@@ -668,3 +673,229 @@ class TestFullIntegration:
         assert report.orders_pending == 1
         assert report.orders_filled == 0
         assert report.positions == {}
+
+
+class TestPaperReviewStatus:
+    """Tests for read-only paper review status inspection."""
+
+    def test_inspect_pending_review(self, tmp_path: Path) -> None:
+        review_dir = tmp_path / "research" / "paper_reviews" / "prev_001"
+        review_dir.mkdir(parents=True)
+        review_path = review_dir / "review.json"
+        review_path.write_text(
+            json.dumps(
+                {
+                    "paper_review_id": "prev_001",
+                    "strategy_manifest_id": "sman_001",
+                    "status": "PENDING_HUMAN_REVIEW",
+                    "created_at": "2026-05-08T12:00:00+00:00",
+                    "evidence_pack_path": str(tmp_path / "research" / "evidence_packs" / "pack_001.json"),
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        status = inspect_paper_review_status(tmp_path)
+
+        assert status.status == "PENDING_HUMAN_REVIEW"
+        assert status.paper_review_entry_allowed is True
+        assert status.manual_review_pending is True
+        assert status.review_path == str(review_path)
+
+    def test_inspect_manifest_without_review(self, tmp_path: Path) -> None:
+        manifest_dir = tmp_path / "research" / "manifests" / "sman_001"
+        manifest_dir.mkdir(parents=True)
+        manifest_path = manifest_dir / "manifest.json"
+        manifest_path.write_text(
+            json.dumps(
+                {
+                    "strategy_candidate_id": "sman_001",
+                    "source_candidate_id": "cand_001",
+                    "source_experiment_id": "exp_001",
+                    "promotion_status": "READY_FOR_PORTFOLIO_SIM",
+                    "created_at": "2026-05-08T12:00:00+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        status = inspect_paper_review_status(tmp_path)
+
+        assert status.status == "ELIGIBLE_FOR_PAPER_REVIEW"
+        assert status.paper_review_entry_allowed is True
+        assert status.manual_review_pending is False
+        assert status.manifest_path == str(manifest_path)
+
+    def test_inspect_no_evidence(self, tmp_path: Path) -> None:
+        status = inspect_paper_review_status(tmp_path)
+
+        assert status.status == "NO_PAPER_REVIEW_EVIDENCE"
+        assert status.paper_review_entry_allowed is False
+        assert status.manual_review_pending is False
+        assert status.evidence_path == ""
+
+    def test_build_index_and_inspect_rebuilds_stale_index(self, tmp_path: Path) -> None:
+        review_dir = tmp_path / "research" / "paper_reviews" / "prev_001"
+        review_dir.mkdir(parents=True)
+        indexed_review = review_dir / "review.json"
+        indexed_review.write_text(
+            json.dumps(
+                {
+                    "paper_review_id": "prev_001",
+                    "status": "PENDING_HUMAN_REVIEW",
+                    "created_at": "2026-05-08T12:00:00+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        index = build_paper_review_evidence_index(tmp_path)
+        assert index["latest_review_path"] == str(indexed_review)
+        assert index["review_count"] == 1
+        assert (tmp_path / "research" / "paper_review_index.json").exists()
+
+        newer_review_dir = tmp_path / "research" / "paper_reviews" / "prev_002"
+        newer_review_dir.mkdir(parents=True)
+        (newer_review_dir / "review.json").write_text(
+            json.dumps(
+                {
+                    "paper_review_id": "prev_002",
+                    "status": "REJECTED",
+                    "created_at": "2026-05-09T12:00:00+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        indexed_status = inspect_paper_review_status(tmp_path)
+        scanned_status = inspect_paper_review_status(tmp_path, use_index=False)
+
+        assert indexed_status.status == "REJECTED"
+        assert indexed_status.review_path == str(newer_review_dir / "review.json")
+        assert scanned_status.status == "REJECTED"
+
+    def test_rebuild_registry_writes_full_registry_and_legacy_index(self, tmp_path: Path) -> None:
+        manifest_dir = tmp_path / "research" / "manifests" / "sman_001"
+        manifest_dir.mkdir(parents=True)
+        (manifest_dir / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "strategy_candidate_id": "sman_001",
+                    "source_candidate_id": "cand_001",
+                    "promotion_status": "READY_FOR_PORTFOLIO_SIM",
+                    "created_at": "2026-05-08T12:00:00+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        index = build_paper_review_evidence_index(tmp_path)
+
+        assert index["manifest_count"] == 1
+        assert (tmp_path / "research" / "paper_review_index.json").exists()
+        registry_path = tmp_path / "research" / "evidence_registry.json"
+        assert registry_path.exists()
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        assert registry["schema_version"] == "evidence_registry_v1"
+        assert registry["counts"]["strategy_manifest_count"] == 1
+
+    def test_inspect_registry_rebuilds_when_missing(self, tmp_path: Path) -> None:
+        registry = inspect_evidence_registry(tmp_path, use_saved=True, rebuild_if_missing=True)
+
+        assert registry["registry_status"] == "rebuilt"
+        assert (tmp_path / "research" / "evidence_registry.json").exists()
+
+    def test_inspect_registry_marks_saved_index_stale_when_new_evidence_arrives(self, tmp_path: Path) -> None:
+        build_paper_review_evidence_index(tmp_path)
+
+        review_dir = tmp_path / "research" / "paper_reviews" / "prev_001"
+        review_dir.mkdir(parents=True)
+        (review_dir / "review.json").write_text(
+            json.dumps(
+                {
+                    "paper_review_id": "prev_001",
+                    "strategy_manifest_id": "sman_001",
+                    "status": "PENDING_HUMAN_REVIEW",
+                    "created_at": "2026-05-09T12:00:00+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        registry = inspect_evidence_registry(tmp_path, use_saved=True, rebuild_if_missing=False)
+
+        assert registry["registry_status"] == "stale"
+
+    def test_inspect_registry_marks_saved_index_stale_when_evidence_is_deleted(self, tmp_path: Path) -> None:
+        review_dir = tmp_path / "research" / "paper_reviews" / "prev_001"
+        review_dir.mkdir(parents=True)
+        review_path = review_dir / "review.json"
+        review_path.write_text(
+            json.dumps(
+                {
+                    "paper_review_id": "prev_001",
+                    "status": "PENDING_HUMAN_REVIEW",
+                    "created_at": "2026-05-09T12:00:00+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
+        build_paper_review_evidence_index(tmp_path)
+
+        review_path.unlink()
+
+        registry = inspect_evidence_registry(tmp_path, use_saved=True, rebuild_if_missing=False)
+        status = inspect_paper_review_status(tmp_path)
+
+        assert registry["registry_status"] == "stale"
+        assert any(note.startswith("missing_artifact:") for note in registry["registry_notes"])
+        assert status.status == "NO_PAPER_REVIEW_EVIDENCE"
+        assert status.review_path == ""
+
+    def test_inspect_registry_marks_saved_index_changed_when_review_content_changes_in_place(self, tmp_path: Path) -> None:
+        review_dir = tmp_path / "research" / "paper_reviews" / "prev_001"
+        review_dir.mkdir(parents=True)
+        review_path = review_dir / "review.json"
+        created_at = "2026-05-09T12:00:00+00:00"
+        review_path.write_text(
+            json.dumps(
+                {
+                    "paper_review_id": "prev_001",
+                    "strategy_manifest_id": "sman_001",
+                    "status": "PENDING_HUMAN_REVIEW",
+                    "created_at": created_at,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        build_paper_review_evidence_index(tmp_path)
+        original_registry = inspect_evidence_registry(tmp_path, use_saved=True, rebuild_if_missing=False)
+        original_review = original_registry["evidence"]["paper_reviews"][0]
+
+        review_path.write_text(
+            json.dumps(
+                {
+                    "paper_review_id": "prev_001",
+                    "strategy_manifest_id": "sman_001",
+                    "status": "APPROVED_FOR_PAPER_ONLY",
+                    "created_at": created_at,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        changed_registry = inspect_evidence_registry(tmp_path, use_saved=True, rebuild_if_missing=False)
+        status = inspect_paper_review_status(tmp_path)
+        live_registry = inspect_evidence_registry(tmp_path, use_saved=False, rebuild_if_missing=False)
+        live_review = live_registry["evidence"]["paper_reviews"][0]
+
+        assert changed_registry["registry_status"] == "changed"
+        assert any(note.startswith("content_changed:") for note in changed_registry["registry_notes"])
+        assert changed_registry["evidence"]["paper_reviews"][0]["status"] == "present"
+        assert status.status == "APPROVED_FOR_PAPER_ONLY"
+        assert live_review["details"]["status"] == "APPROVED_FOR_PAPER_ONLY"
+        assert live_review["created_at"] == created_at
+        assert live_review["sha256"] != original_review["sha256"]
+        assert live_review["size_bytes"] != 0
+        assert live_review["mtime_ns"] >= original_review["mtime_ns"]

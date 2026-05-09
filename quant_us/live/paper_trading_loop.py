@@ -220,7 +220,8 @@ class PaperTradingLoop:
         start_equity = account.equity
 
         # Gate: block new orders if data is too stale
-        if self.data_freshness.block_new_orders:
+        freshness_blocked_this_run = self.data_freshness.block_new_orders
+        if freshness_blocked_this_run:
             self.oms.reduce_only = True
             logging.getLogger("paper_trading").warning(
                 "Data freshness block: reduce_only=True (last_fresh=%s)",
@@ -239,6 +240,7 @@ class PaperTradingLoop:
         for bar in bars:
             freshness = self.data_freshness.evaluate_bar(bar)
             if not freshness.fresh:
+                freshness_blocked_this_run = True
                 stale += 1
                 self.kill_switch.check_data_staleness(freshness.delay_seconds)
                 continue  # skip stale bars, do not trade on them
@@ -315,6 +317,8 @@ class PaperTradingLoop:
         self._pg_write_snapshots([snapshot])
 
         recon_result = self._reconcile()
+        if freshness_blocked_this_run or self.data_freshness.block_new_orders:
+            self.oms.reduce_only = True
         self.kill_switch.update_equity(end_equity)
 
         daily_pnl = end_equity - start_equity

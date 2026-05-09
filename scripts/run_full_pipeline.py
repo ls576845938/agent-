@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""End-to-end quant pipeline: data ingestion -> backtest -> promotion gate -> paper trading.
+"""End-to-end quant pipeline: data ingestion -> backtest -> promotion gate -> paper-review handoff.
 
 Usage:
     python scripts/run_full_pipeline.py --symbol AAPL --start 2020-01-01 --end 2024-12-31
@@ -9,7 +9,7 @@ Stages:
     1. Data ingestion + manifest generation
     2. Event-driven backtest
     3. Promotion gate evaluation
-    4. Paper trading dry-run (if gate passes)
+    4. Paper review handoff (if gate passes; no trading is started)
 """
 
 from __future__ import annotations
@@ -23,14 +23,13 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-_VALID_GATE_SOURCES = {"fixture", "sqlite", "auto"}
+_VALID_GATE_SOURCES = {"fixture", "sqlite", "auto", "yfinance", "alpaca"}
 
 
 def _gate_source(source: str) -> str:
     if source in _VALID_GATE_SOURCES:
         return source
-    print(f"  WARN: source={source!r} not in {_VALID_GATE_SOURCES}; defaulting to 'fixture'")
-    return "fixture"
+    raise ValueError(f"source must be one of {sorted(_VALID_GATE_SOURCES)}")
 
 
 def run_pipeline(
@@ -58,7 +57,7 @@ def run_pipeline(
     ``gate``
         above plus promotion_decision, promotion_next_stage, gate_result
     ``full``
-        above plus paper_pnl, paper_recon (or paper_skipped if gate failed)
+        above plus paper_review_required/manual_review_required. It never starts paper trading.
 
     Stages that are not reached (because of a shallower *mode*) are simply
     omitted from the returned dict.
@@ -89,7 +88,10 @@ def run_pipeline(
             print(f"  FAIL: {r.symbol} {r.interval} -- {r.error}")
             sys.exit(1)
         print(f"  {r.symbol} {r.interval}: {r.row_count} rows, data_version={r.data_version}")
+        if getattr(r, "manifest_path", ""):
+            print(f"    manifest: {r.manifest_path}")
     results["data_version"] = ingest_results[0].data_version if ingest_results else "unknown"
+    results["data_manifest_path"] = getattr(ingest_results[0], "manifest_path", "") if ingest_results else ""
 
     # ------------------------------------------------------------------
     # Stage 2: Event-driven backtest
@@ -97,7 +99,6 @@ def run_pipeline(
     print(f"\n{'='*60}")
     print(f"STAGE 2: Event-driven backtest -- {symbol}")
     print(f"{'='*60}")
-    from quant_us.backtest.data_bridge import bars_from_dataframe
     from quant_us.backtest.unified_runner import UnifiedBacktestConfig, UnifiedBacktestRunner
     from quant_us.strategies.factory import build_strategy
 
@@ -139,6 +140,8 @@ def run_pipeline(
         print(f"  {key}: {val}")
     print(f"  Equity consistent: {unified_result.equity_consistent}")
     results["run_id"] = unified_result.run_id
+    results["backtest_manifest_id"] = getattr(unified_result, "manifest_id", unified_result.run_id)
+    results["backtest_manifest_path"] = str(Path(data_root) / "manifests" / f"run_{getattr(unified_result, 'manifest_id', unified_result.run_id)}.json")
     results["sharpe"] = str(unified_result.summary.get("sharpe_ratio", "N/A"))
     results["equity_consistent"] = unified_result.equity_consistent
 
@@ -191,39 +194,27 @@ def run_pipeline(
         return results
 
     # ------------------------------------------------------------------
-    # Stage 4: Paper trading dry-run (only if gate passes)
+    # Stage 4: Paper review handoff (only if gate passes)
     # ------------------------------------------------------------------
     if gate_result["decision"] not in ("pass",):
-        print(f"\nPromotion gate did not pass (decision={gate_result['decision']}). Skipping paper trading.")
+        print(f"\nPromotion gate did not pass (decision={gate_result['decision']}). Skipping paper review handoff.")
         results["mode"] = "full"
         results["paper_skipped"] = True
         return results
 
     print(f"\n{'='*60}")
-    print(f"STAGE 4: Paper trading dry-run -- {symbol}")
+    print(f"STAGE 4: Paper review handoff -- {symbol}")
     print(f"{'='*60}")
-    from quant_us.live.paper_trading_loop import PaperTradingConfig, PaperTradingLoop
+    print("  RESULT: READY_FOR_MANUAL_PAPER_REVIEW")
+    print("  No paper trading session was started by this script.")
+    print("  Required next action: create/approve a paper review manually before any paper run.")
+    print(f"  Evidence: data_manifest={results.get('data_manifest_path') or results.get('data_version')}")
+    print(f"  Evidence: backtest_manifest={results.get('backtest_manifest_path')}")
+    print(f"  Evidence: promotion_manifest={gate_result.get('manifest_id', 'N/A')}")
 
-    paper_config = PaperTradingConfig(
-        initial_cash=capital,
-        commission_rate=commission,
-        slippage_bps=slippage,
-    )
-    paper_loop = PaperTradingLoop(config=paper_config)
-
-    bars = bars_from_dataframe(frame, source=source, session="regular")
-    day_result = paper_loop.run_day(bars=bars, strategies=[strategy_instance])
-
-    print(f"  Orders: {day_result.orders_submitted} submitted, {day_result.orders_filled} filled")
-    print(f"  PnL: ${day_result.daily_pnl:,.2f} ({day_result.daily_return_pct:.2f}%)")
-    print(f"  Reconciliation: {'PASS' if day_result.reconciliation_passed else 'FAIL'}")
-    print(f"  Kill switch: {'TRIGGERED' if day_result.kill_switch_triggered else 'OK'}")
-
-    status = paper_loop.status_summary()
-    print(f"  Healthy: {status['healthy']}")
-
-    results["paper_pnl"] = f"${day_result.daily_pnl:,.2f}"
-    results["paper_recon"] = "PASS" if day_result.reconciliation_passed else "FAIL"
+    results["paper_review_required"] = True
+    results["manual_review_required"] = True
+    results["paper_not_started"] = True
 
     results["mode"] = "full"
     print(f"\n{'='*60}")

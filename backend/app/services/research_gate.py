@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -10,6 +11,10 @@ from backend.app.core.config import settings
 from backend.app.domain.strategy_registry import strategy_registry
 from backend.app.services.backtests import ResearchBacktestService
 from backend.app.services.market_data import inspect_market_data_quality
+from quant_us.data.storage.data_manifest import (
+    build_manifest_from_quality,
+    validate_manifest_for_promotion,
+)
 from quant_us.research.experiments import ArtifactRef, ExperimentRegistry, ExperimentSpec
 
 
@@ -128,6 +133,14 @@ class ResearchPromotionGateService:
             end=base_request["end"],
             db_path=base_request.get("data_db_path", ""),
         )
+        data_manifest = build_manifest_from_quality(
+            quality=quality,
+            source=base_request["source"],
+            symbol=base_request["symbol"],
+            interval=base_request["interval"],
+            asset_class=str(request.get("asset_class") or self._asset_class(base_request["symbol"])),
+        )
+        data_manifest_validation = validate_manifest_for_promotion(data_manifest)
 
         if mode == "single":
             strategy_id = request.get("strategy_id") or "trend_macd"
@@ -146,6 +159,8 @@ class ResearchPromotionGateService:
 
         gates = [
             self._data_quality_gate(quality),
+            self._data_manifest_gate(data_manifest_validation),
+            self._evidence_scope_gate(quality, base_request, request),
             self._backtest_survival_gate(artifacts.summary, interval=base_request.get("interval", "1d"), mode=mode),
             self._execution_gate(artifacts.diagnostics.get("execution", {}), artifacts.summary),
             self._risk_gate(artifacts.summary, artifacts.diagnostics.get("exposure", {})),
@@ -184,10 +199,19 @@ class ResearchPromotionGateService:
             "data_version": quality["data_version"],
             "data_fingerprint": quality["fingerprint"],
             "config_version": _fingerprint({k: request.get(k) for k in ["rebalance_buffer_pct", "min_holding_bars", "cost_aware_filter", "max_annual_turnover_pct"] if k in request})[:16],
+            "data_manifest": asdict(data_manifest),
+            "data_manifest_validation": {
+                "ok": data_manifest_validation.ok,
+                "reasons": data_manifest_validation.reasons,
+                "warnings": data_manifest_validation.warnings,
+                "metrics": data_manifest_validation.metrics,
+            },
             "summary": artifacts.summary,
             "gates": gates,
             "decision": decision,
             "next_stage": next_stage,
+            "promotion_authority": self._promotion_authority(next_stage),
+            "canonical_validation": self._canonical_validation(mode, deep_checks, skip_deep),
             "deep_checks": {key: value for key, value in deep_checks.items() if key != "gates"},
         }
         manifest_id = _fingerprint(manifest)[:24]
@@ -217,13 +241,22 @@ class ResearchPromotionGateService:
             "framework": _promotion_framework(),
             "decision": decision,
             "next_stage": next_stage,
+            "promotion_authority": manifest["promotion_authority"],
             "manifest_id": manifest_id,
             "manifest_path": manifest_path,
             "strategy_version": strategy_version,
             "experiment_record": experiment_record,
             "data_quality": quality,
+            "data_manifest": asdict(data_manifest),
+            "data_manifest_validation": {
+                "ok": data_manifest_validation.ok,
+                "reasons": data_manifest_validation.reasons,
+                "warnings": data_manifest_validation.warnings,
+                "metrics": data_manifest_validation.metrics,
+            },
             "backtest_summary": artifacts.summary,
             "gates": gates,
+            "canonical_validation": manifest["canonical_validation"],
             "recommendations": self._recommendations(gates, decision),
         }
 
@@ -292,6 +325,66 @@ class ResearchPromotionGateService:
                 "data_version": quality["data_version"],
             },
             threshold="usable=true, coverage>=95%, score>=95 for pass; coverage<85% = fail",
+        )
+
+    def _data_manifest_gate(self, validation) -> dict[str, Any]:
+        failed = not validation.ok
+        warned = bool(validation.warnings)
+        if failed:
+            message = "数据 manifest 不满足 paper candidate 级别的数据谱系与完整性要求。"
+        elif warned:
+            message = "数据 manifest 可用，但存在缺失 K 线等需要记录的非阻断警告。"
+        else:
+            message = "数据 manifest schema、来源、校验和、时区与质量指标满足晋级要求。"
+        return _gate(
+            name="data_manifest",
+            status=_gate_status(failed=failed, warned=warned),
+            message=message,
+            metrics={
+                **validation.metrics,
+                "reasons": validation.reasons,
+                "warnings": validation.warnings,
+            },
+            threshold="source in {yfinance, alpaca, sqlite}; equity only; UTC; checksum/fingerprint present; coverage>=90%; quality>=80%; no duplicate/invalid/non-positive bars or future timestamps",
+        )
+
+    def _evidence_scope_gate(
+        self,
+        quality: dict[str, Any],
+        base_request: dict[str, Any],
+        request: dict[str, Any],
+    ) -> dict[str, Any]:
+        requested_source = str(base_request.get("source", "")).lower()
+        actual_source = str(quality.get("actual_source") or quality.get("source") or requested_source).lower()
+        symbol = str(base_request.get("symbol", "")).upper()
+        asset_class = str(request.get("asset_class") or self._asset_class(symbol)).lower()
+        allowed_sources = {"yfinance", "alpaca", "sqlite"}
+        fixture_used = requested_source == "fixture" or actual_source == "fixture"
+        failed = fixture_used or asset_class != "equity" or actual_source not in allowed_sources
+        warned = not failed and (requested_source == "auto" or actual_source == "sqlite")
+        if fixture_used:
+            message = "晋级证据不能来自 fixture 数据；fixture 只允许用于本地测试或演示。"
+        elif asset_class != "equity":
+            message = "晋级证据必须限定在美股 equity 范围，crypto/非 equity 标的不得进入 paper candidate。"
+        elif actual_source not in allowed_sources:
+            message = "晋级证据来源不在受支持的数据谱系中。"
+        elif warned:
+            message = "数据来源可研究使用，但进入 paper candidate 前需要显式的 yfinance/Alpaca 或受治理 SQLite 证据确认。"
+        else:
+            message = "晋级证据限定在 US equity 数据谱系内，且未使用 fixture。"
+        return _gate(
+            name="evidence_scope",
+            status=_gate_status(failed=failed, warned=warned),
+            message=message,
+            metrics={
+                "requested_source": requested_source,
+                "actual_source": actual_source,
+                "symbol": symbol,
+                "asset_class": asset_class,
+                "fixture_used": fixture_used,
+                "allowed_actual_sources": sorted(allowed_sources),
+            },
+            threshold="paper candidate requires US equity evidence and no fixture fallback; auto/sqlite evidence stays research_iteration until explicitly governed",
         )
 
     def _backtest_survival_gate(self, summary: dict[str, float | int], interval: str = "1d", mode: str = "single") -> dict[str, Any]:
@@ -370,25 +463,14 @@ class ResearchPromotionGateService:
     def _single_deep_checks(self, request: dict[str, Any], base_request: dict[str, Any]) -> dict[str, Any]:
         strategy_id = request.get("strategy_id") or "trend_macd"
         strategy_params = dict(request.get("strategy_params", {}) or {})
-        use_event_driven = str(request.get("engine", "")).lower() == "event_driven"
-        if use_event_driven:
-            cost = self.research_service.run_event_driven_cost_stress(
-                {
-                    **base_request,
-                    "strategy_id": strategy_id,
-                    "strategy_params": strategy_params,
-                    "max_scenarios": min(int(request.get("max_scenarios", 2)), 3),
-                }
-            )
-        else:
-            cost = self.research_service.run_cost_stress(
-                {
-                    **base_request,
-                    "strategy_id": strategy_id,
-                    "strategy_params": strategy_params,
-                    "max_scenarios": min(int(request.get("max_scenarios", 2)), 3),
-                }
-            )
+        cost = self.research_service.run_event_driven_cost_stress(
+            {
+                **base_request,
+                "strategy_id": strategy_id,
+                "strategy_params": strategy_params,
+                "max_scenarios": min(int(request.get("max_scenarios", 2)), 3),
+            }
+        )
         walk = self.research_service.run_walk_forward(
             {
                 **base_request,
@@ -406,16 +488,40 @@ class ResearchPromotionGateService:
             walk_stability.get("fold_pass_rate_pct") or walk_stability.get("pass_rate_pct", 0.0)
         ) if walk_stability else 0.0
         is_insufficient = walk.get("status") == "insufficient_data"
+        cost_engine = str(cost.get("engine", "unknown"))
+        cost_ledger_consistency_pct = float(cost.get("ledger_consistency_pct", 0.0))
+        cost_metrics = {
+            "engine": cost_engine,
+            "survival_rate_pct": cost["survival_rate_pct"],
+            "ledger_consistency_pct": cost_ledger_consistency_pct,
+            "ledger_equity_consistent_scenarios": int(cost.get("ledger_equity_consistent_scenarios", 0)),
+            "baseline_fill_count": int(cost.get("baseline_fill_count", 0)),
+            "baseline_order_count": int(cost.get("baseline_order_count", 0)),
+            "total_fill_count": int(cost.get("total_fill_count", 0)),
+            "total_order_count": int(cost.get("total_order_count", 0)),
+        }
+        cost_metrics["has_ledger_trade_metadata"] = all(
+            int(cost_metrics[key]) > 0
+            for key in ("baseline_fill_count", "baseline_order_count", "total_fill_count", "total_order_count")
+        )
         return {
             "cost_stress": cost,
             "walk_forward": walk,
             "gates": [
                 _gate(
                     name="cost_stress",
-                    status=_gate_status(failed=float(cost["survival_rate_pct"]) < 60.0, warned=float(cost["survival_rate_pct"]) < 100.0),
-                    message="成本压力场景存活率检查。",
-                    metrics={"survival_rate_pct": cost["survival_rate_pct"]},
-                    threshold="pass=100%, warn>=60%, fail<60%",
+                    status=_gate_status(
+                        failed=(
+                            cost_engine != "event_driven"
+                            or float(cost["survival_rate_pct"]) < 60.0
+                            or cost_ledger_consistency_pct < 100.0
+                            or not bool(cost_metrics["has_ledger_trade_metadata"])
+                        ),
+                        warned=float(cost["survival_rate_pct"]) < 100.0,
+                    ),
+                    message="事件驱动成本压力场景存活率与 ledger 一致性检查。",
+                    metrics=cost_metrics,
+                    threshold="event_driven required; pass=100% survival and 100% ledger consistency, warn survival>=60%, fail survival<60% or ledger mismatch",
                 ),
                 _gate(
                     name="walk_forward",
@@ -459,6 +565,36 @@ class ResearchPromotionGateService:
             ],
         }
 
+    def _canonical_validation(
+        self,
+        mode: str,
+        deep_checks: dict[str, Any],
+        skip_deep_checks: bool,
+    ) -> dict[str, Any]:
+        if skip_deep_checks:
+            return {
+                "engine": "not_validated",
+                "ledger_verified": False,
+                "reason": "deep validation skipped",
+            }
+        if mode != "single":
+            return {
+                "engine": "portfolio_optimization",
+                "ledger_verified": False,
+                "reason": "portfolio gate requires separate allocation validation before paper review",
+            }
+        cost = deep_checks.get("cost_stress", {})
+        ledger_consistency_pct = float(cost.get("ledger_consistency_pct", 0.0))
+        return {
+            "engine": cost.get("engine", "event_driven"),
+            "ledger_verified": ledger_consistency_pct >= 100.0,
+            "ledger_consistency_pct": ledger_consistency_pct,
+            "baseline_fill_count": int(cost.get("baseline_fill_count", 0)),
+            "baseline_order_count": int(cost.get("baseline_order_count", 0)),
+            "total_fill_count": int(cost.get("total_fill_count", 0)),
+            "total_order_count": int(cost.get("total_order_count", 0)),
+        }
+
     def _decision(self, gates: list[dict[str, Any]]) -> str:
         statuses = {gate["status"] for gate in gates}
         if "fail" in statuses:
@@ -476,9 +612,25 @@ class ResearchPromotionGateService:
             return "research_iteration"
         return "blocked"
 
+    def _promotion_authority(self, next_stage: str) -> dict[str, Any]:
+        return {
+            "service_layer_stage": next_stage,
+            "paper_candidate": next_stage == "paper_candidate",
+            "service_layer_only": True,
+            "automation_gate_required": True,
+            "paper_review_required": True,
+            "paper_runtime_approved": False,
+            "message": (
+                "research_gate 只输出服务层研究评估结果；"
+                "paper_candidate/next_stage 不等于 paper runtime approval。"
+            ),
+        }
+
     def _recommendations(self, gates: list[dict[str, Any]], decision: str) -> list[str]:
         if decision == "pass":
-            return ["核心准入门通过；若深度检查也通过，可以把该配置登记为候选实验。"]
+            return [
+                "核心准入门通过；当前结果仅表示服务层 paper_candidate 候选，仍需 automation promotion gate 最终裁决后才能进入人工 paper review。"
+            ]
         failed = [gate for gate in gates if gate["status"] == "fail"]
         warned = [gate for gate in gates if gate["status"] == "warn"]
         recommendations: list[str] = []

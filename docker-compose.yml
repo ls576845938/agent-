@@ -4,7 +4,10 @@ services:
     environment:
       QS_API_HOST: 0.0.0.0
       QS_API_PORT: 8000
-      QS_DEFAULT_DATA_SOURCE: fixture
+      QS_DEFAULT_DATA_SOURCE: yfinance
+      QS_DEFAULT_SYMBOL: SPY
+      QS_DEFAULT_INTERVAL: 1d
+      QS_ALLOW_FIXTURE_FALLBACK: "false"
       QS_DATA_DB_PATH: /app/data/market_data.sqlite
       QS_REPORT_DIR: /app/reports
     ports:

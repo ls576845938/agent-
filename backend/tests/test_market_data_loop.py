@@ -399,7 +399,7 @@ class PaperTradingLoopFreshnessGateTests(unittest.TestCase):
         self.assertFalse(loop.oms.reduce_only)
 
         bar = Bar(
-            timestamp_utc=utc_now() - timedelta(seconds=5),
+            timestamp_utc=datetime(2026, 5, 8, 20, 0, tzinfo=timezone.utc),
             symbol="AAPL",
             open=100.0,
             high=101.0,

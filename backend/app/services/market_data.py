@@ -40,7 +40,7 @@ def _normalize_frame(frame: pd.DataFrame) -> pd.DataFrame:
     data = data[(data["open"] > 0) & (data["high"] > 0) & (data["low"] > 0) & (data["close"] > 0)]
     data = data[data["high"] >= data["low"]]
     data = data.set_index("timestamp")
-    return data
+    return data[["open", "high", "low", "close", "volume"]]
 
 
 def load_from_sqlite(
@@ -168,11 +168,15 @@ def load_market_frame(
                 end=end,
             )
             if not frame.empty:
-                frame = frame.rename(columns={"timestamp_utc": "timestamp"}).set_index("timestamp")
+                frame = frame.rename(columns={"timestamp_utc": "timestamp"})
                 return _normalize_frame(frame)
-        except Exception:
-            pass
-        source = "auto"
+        except DataNotAvailableError:
+            raise
+        except Exception as exc:
+            raise DataNotAvailableError(f"Failed to load {source} data from parquet store: {exc}") from exc
+        raise DataNotAvailableError(
+            f"No {source} market data found for {symbol.upper()} {interval} in the requested range."
+        )
 
     if source == "fixture":
         return load_fixture_frame(symbol=symbol, interval=interval, start=start, end=end)
@@ -187,6 +191,11 @@ def load_market_frame(
         except DataNotAvailableError:
             if not settings.allow_fixture_fallback:
                 raise
+        if not settings.allow_fixture_fallback:
+            raise DataNotAvailableError(
+                "No local market data found and fixture fallback is disabled. "
+                "Use source='fixture' explicitly for tests, or set QS_ALLOW_FIXTURE_FALLBACK=true for local demos."
+            )
         return load_fixture_frame(symbol=symbol, interval=interval, start=start, end=end)
 
     raise DataNotAvailableError(f"Unsupported market data source: {source}")
@@ -317,10 +326,7 @@ def inspect_market_data_quality(
         except Exception:
             pass
 
-    if raw.empty:
-        if source in ("yfinance", "alpaca"):
-            source = "auto"
-
+    if raw.empty and source not in ("yfinance", "alpaca"):
         try:
             if source == "fixture":
                 raw = load_fixture_frame(symbol=symbol, interval=interval, start=start, end=end).reset_index()
@@ -332,6 +338,8 @@ def inspect_market_data_quality(
                     raw = _load_raw_sqlite_frame(db_path=db_path, symbol=symbol, interval=interval, start=start, end=end)
                     actual_source = "sqlite"
                 except DataNotAvailableError:
+                    if not settings.allow_fixture_fallback:
+                        raise
                     raw = load_fixture_frame(symbol=symbol, interval=interval, start=start, end=end).reset_index()
                     actual_source = "fixture"
             else:

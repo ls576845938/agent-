@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from quant_us.live.g6_episode import MicroPilotEpisode, MicroPilotEpisodeManager
+from quant_us.live.g6_episode import MicroPilotEpisode, MicroPilotEpisodeManager, _utc_now
 
 
 class TestMicroPilotEpisode:
@@ -139,7 +139,7 @@ class TestMicroPilotEpisodeManager:
             max_cumulative_notional=300.0,
         )
         ep.status = "WAITING_NEXT_ONE_SHOT_REVIEW"
-        ep.last_order_date = "2026-05-08"  # same as "today"
+        ep.last_order_date = _utc_now().strftime("%Y-%m-%d")
         mgr.save(ep)
 
         allowed, reason = mgr.can_add_next_order("ep_same_day", new_notional=50.0)

@@ -37,6 +37,7 @@ from quant_us.core.types import (
     Signal,
     new_id,
 )
+from quant_us.live.fake_alpaca_paper_adapter import FakeAlpacaPaperBrokerAdapter
 from quant_us.live.paper_runtime import PaperRuntime, PaperRuntimeConfig, PaperSessionMetrics
 from quant_us.live.paper_scheduler import PaperScheduler, PaperSchedulerConfig
 from quant_us.strategies.base import Strategy, StrategyContext
@@ -112,6 +113,56 @@ class FakeStrategy(Strategy):
         return self._signals
 
 
+class FakeAdapterPaperRuntime(PaperRuntime):
+    @staticmethod
+    def _alpaca_paper_adapter_enabled() -> bool:
+        return True
+
+    @staticmethod
+    def _alpaca_paper_adapter_factory_present() -> bool:
+        return True
+
+    @staticmethod
+    def _alpaca_paper_adapter_capabilities() -> dict[str, bool]:
+        return FakeAlpacaPaperBrokerAdapter.contract_capabilities()
+
+    def _create_alpaca_paper_broker(self) -> FakeAlpacaPaperBrokerAdapter:
+        return FakeAlpacaPaperBrokerAdapter(initial_cash=self.config.capital)
+
+
+class FailingSyncFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
+    def __init__(self, *args, fail_on_call: str, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._fail_on_call = fail_on_call
+
+    def _create_alpaca_paper_broker(self) -> FakeAlpacaPaperBrokerAdapter:
+        return FakeAlpacaPaperBrokerAdapter(
+            initial_cash=self.config.capital,
+            fail_on_call=self._fail_on_call,
+        )
+
+
+def _write_paper_review(review_path: Path) -> None:
+    review_path.write_text(
+        json.dumps(
+            {
+                "paper_review_id": "paper_runtime_backend_test",
+                "status": "APPROVED_FOR_PAPER_ONLY",
+                "reviewer": "risk-reviewer",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def _startup_sync_artifact(ledger_root: str) -> dict[str, Any]:
+    return json.loads(
+        (Path(ledger_root) / "audit" / "paper_broker_adapter_startup_sync.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+
 # ======================================================================
 # PaperRuntime tests
 # ======================================================================
@@ -185,6 +236,166 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         runtime.bootstrap(strategy=None)
         self.assertTrue(runtime._bootstrapped)
         self.assertIsNone(runtime.strategy)
+
+    @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
+    def test_bootstrap_uses_fake_alpaca_paper_adapter_when_contract_ready(
+        self,
+        mock_mdl: mock.MagicMock,
+    ) -> None:
+        review_path = Path(self.tmpdir.name) / "paper_review.json"
+        _write_paper_review(review_path)
+        config = PaperRuntimeConfig(
+            symbols=["AAPL"],
+            ledger_root=self.ledger_root,
+            reconcile_on_start=False,
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+        )
+        runtime = FakeAdapterPaperRuntime(config=config)
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "APCA_API_KEY_ID": "paper_key",
+                "APCA_API_SECRET_KEY": "paper_secret",
+                "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+                "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+            },
+            clear=True,
+        ):
+            runtime.bootstrap(strategy=FakeStrategy())
+
+        self.assertIsInstance(runtime.broker, FakeAlpacaPaperBrokerAdapter)
+        self.assertEqual(runtime._paper_broker_backend(), "alpaca_paper")
+        self.assertTrue(
+            any(event["event"] == "paper_broker_adapter_activated" for event in runtime.audit_events)
+        )
+
+        bar = _make_bar(symbol="AAPL", price=150.0)
+        runtime.broker.update_market(bar)
+        intent = OrderIntent(
+            timestamp_utc=bar.timestamp_utc,
+            strategy_id="test_strategy",
+            symbol="AAPL",
+            side=OrderSide.BUY,
+            quantity=1.0,
+            client_order_id="backend_fake_adapter_001",
+        )
+        result = runtime.oms.handle_intent(
+            intent,
+            runtime.broker.get_account(),
+            market_price=150.0,
+            timestamp=bar.timestamp_utc,
+        )
+
+        self.assertTrue(result.risk_decision.approved)
+        self.assertEqual(result.order.status, OrderStatus.FILLED)
+        self.assertEqual(len(runtime.broker.poll_orders()), 1)
+        self.assertEqual(len(runtime.broker.sync_fills(result.order.order_id)), 1)
+        self.assertIn("AAPL", runtime.broker.sync_positions())
+        self.assertGreater(runtime.broker.sync_account().equity, 0.0)
+        self.assertEqual(
+            runtime.broker.cancel_order(result.order.order_id).status,
+            OrderStatus.CANCELLED,
+        )
+
+    @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
+    def test_bootstrap_accepts_exact_paper_endpoint_with_trailing_slash(
+        self,
+        mock_mdl: mock.MagicMock,
+    ) -> None:
+        review_path = Path(self.tmpdir.name) / "paper_review.json"
+        _write_paper_review(review_path)
+        runtime = FakeAdapterPaperRuntime(
+            config=PaperRuntimeConfig(
+                symbols=["AAPL"],
+                ledger_root=self.ledger_root,
+                reconcile_on_start=False,
+                paper_broker="alpaca",
+                paper_review_path=str(review_path),
+            )
+        )
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "APCA_API_KEY_ID": "paper_key",
+                "APCA_API_SECRET_KEY": "paper_secret",
+                "APCA_API_BASE_URL": "https://paper-api.alpaca.markets/",
+                "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+            },
+            clear=True,
+        ):
+            runtime.bootstrap(strategy=FakeStrategy())
+
+        entry_gate = runtime.audit_events[0]["details"]["checks"]
+        self.assertTrue(entry_gate["paper_credential_audit"]["base_url_valid"])
+        self.assertEqual(
+            entry_gate["paper_credential_audit"]["normalized_base_url"],
+            "https://paper-api.alpaca.markets",
+        )
+        self.assertEqual(runtime.broker.sync_call_log, [
+            "poll_orders",
+            "sync_fills",
+            "sync_account",
+            "sync_positions",
+        ])
+        self.assertEqual(runtime.broker.submit_call_count, 0)
+        artifact = _startup_sync_artifact(self.ledger_root)
+        self.assertEqual(artifact["status"], "ok")
+        self.assertEqual(artifact["backend"], "alpaca_paper")
+        self.assertEqual(artifact["contract_version"], "paper_adapter_contract_v3")
+        self.assertEqual(artifact["sync"]["poll_orders"]["call_count"], 1)
+        self.assertEqual(artifact["sync"]["sync_fills"]["call_count"], 1)
+        self.assertEqual(artifact["sync"]["sync_account"]["account_id"], "alpaca_paper_fake")
+        self.assertEqual(artifact["sync"]["sync_positions"]["symbols"], [])
+
+    @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
+    def test_bootstrap_blocks_when_paper_adapter_startup_sync_fails(
+        self,
+        mock_mdl: mock.MagicMock,
+    ) -> None:
+        review_path = Path(self.tmpdir.name) / "paper_review.json"
+        _write_paper_review(review_path)
+        runtime = FailingSyncFakeAdapterPaperRuntime(
+            config=PaperRuntimeConfig(
+                symbols=["AAPL"],
+                ledger_root=self.ledger_root,
+                reconcile_on_start=False,
+                paper_broker="alpaca",
+                paper_review_path=str(review_path),
+            ),
+            fail_on_call="sync_account",
+        )
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "APCA_API_KEY_ID": "paper_key",
+                "APCA_API_SECRET_KEY": "paper_secret",
+                "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+                "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+            },
+            clear=True,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "alpaca_paper_startup_sync_failed"):
+                runtime.bootstrap(strategy=FakeStrategy())
+
+        self.assertTrue(runtime.kill_switch.triggered)
+        self.assertTrue(runtime.oms.reduce_only)
+        self.assertEqual(runtime.audit_events[-1]["event"], "paper_broker_adapter_startup_sync_failed")
+        self.assertEqual(runtime.broker.submit_call_count, 0)
+        artifact = _startup_sync_artifact(self.ledger_root)
+        self.assertEqual(artifact["status"], "failed")
+        self.assertEqual(artifact["backend"], "alpaca_paper")
+        self.assertEqual(artifact["contract_version"], "paper_adapter_contract_v3")
+        self.assertEqual(artifact["error"], "sync_account_failed")
+        self.assertTrue(artifact["reduce_only"])
+        self.assertTrue(artifact["halt_reconciliation"])
+        self.assertEqual(artifact["sync"]["poll_orders"]["call_count"], 1)
+        self.assertEqual(artifact["sync"]["sync_fills"]["call_count"], 1)
+        self.assertEqual(artifact["sync"]["sync_account"]["call_count"], 1)
+        self.assertEqual(artifact["sync"]["sync_account"]["account_id"], "")
 
 
 class TestPaperRuntimeCycle(unittest.TestCase):

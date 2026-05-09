@@ -176,9 +176,13 @@ class MetricsEndpointTests(unittest.TestCase):
 
     def test_metrics_endpoint_returns_200(self) -> None:
         """Send GET /metrics to the test client and assert 200."""
+        import importlib.util
+
+        if not importlib.util.find_spec("httpx"):
+            self.skipTest("fastapi TestClient dependency httpx not available")
         try:
             from fastapi.testclient import TestClient
-        except ImportError:
+        except (ImportError, RuntimeError):
             self.skipTest("fastapi.testclient not available")
 
         from backend.app.api.app_factory import create_app

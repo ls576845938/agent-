@@ -188,7 +188,7 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
     setUSLoading(true); setUSMessage('');
     try {
       const result = await apiPost<EventDrivenCostStressResponse>('/api/backtests/cost-stress/event-driven', {
-        source: 'fixture', symbol: usForm.symbol, interval: '1h', strategy_id: usForm.strategyId,
+        source: 'yfinance', symbol: usForm.symbol, interval: usForm.barSize, strategy_id: usForm.strategyId,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
         capital: 100000, max_scenarios: 5,

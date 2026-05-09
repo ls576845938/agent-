@@ -1,0 +1,147 @@
+# CLI Report Commands
+
+These commands are read-only report and evidence inspection helpers. They do not submit broker orders and do not approve paper trading.
+
+## Baseline Entry
+
+The current P0 baseline report lives at [docs/report/baseline/2026-05-09-vnext-minimal-closed-loop/](./baseline/2026-05-09-vnext-minimal-closed-loop/).
+
+Use that report for the current scope, change slices, verification commands, and evidence map.
+
+## Manifest
+
+List recent manifests:
+
+```bash
+python -m quant_us.cli manifest list --kind all --limit 20
+```
+
+Filter the list by data source, symbol, or interval:
+
+```bash
+python -m quant_us.cli manifest list --kind data --source yfinance --symbol AAPL --interval 1d --limit 20
+```
+
+Inspect a data manifest or backtest run manifest by ID or JSON path:
+
+```bash
+python -m quant_us.cli manifest inspect --manifest qs-yfinance-AAPL-1d-07ff0bf4c583
+python -m quant_us.cli manifest inspect --manifest ubt_000bd9a6e7794fff
+python -m quant_us.cli manifest inspect --manifest data/manifests/run_ubt_000bd9a6e7794fff.json
+```
+
+## Backtest Report
+
+Render a backtest report from persisted manifest evidence:
+
+```bash
+python -m quant_us.cli report backtest --run-id ubt_000bd9a6e7794fff
+python -m quant_us.cli report backtest --manifest data/manifests/run_ubt_000bd9a6e7794fff.json
+```
+
+The output highlights `data_version`, `strategy_version`, `commit_hash`, cost model, slippage, and the manifest path.
+The backtest manifest is ledger-backed and event-driven, so the report is meant to be read from persisted evidence rather than live engine state.
+Promotion-grade manifests also expose data-manifest binding: manifest id, checksum/fingerprint, and whether the binding was missing.
+
+## Daily Paper Report
+
+Render the latest paper daily report:
+
+```bash
+python -m quant_us.cli report daily --latest
+```
+
+Render a specific date:
+
+```bash
+python -m quant_us.cli report daily --date 2026-05-08
+```
+
+The output includes the daily report path, ledger root, validation-state evidence pointers,
+and a read-only paper-review status block:
+
+- whether research evidence currently allows entry into `PAPER_REVIEW`
+- whether the item is only `manual review pending`
+- the review or manifest evidence path used for that conclusion
+
+This report does not approve paper trading and does not enable any order path.
+
+## Readiness
+
+Run readiness with traceable evidence paths:
+
+```bash
+python -m quant_us.cli readiness --profile simulated
+python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json
+python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json --check-credentials
+```
+
+For small-live gate checks, validation state is required:
+
+```bash
+python -m quant_us.cli readiness --small-live --validation-state data/reports/paper_production/validation_state.json
+```
+
+The same readiness gate is used as an input to guarded live mode. Live remains default-blocked until
+`allow_live_orders`, `confirm_live`, `live_submission_enabled`, and readiness all pass.
+
+Readiness output also prints the current paper-review status and evidence path. This is evidence-only:
+it does not approve paper trading, and it does not enable paper/live order submission.
+
+The paper-review status reader now consumes the full Evidence Registry at
+`data/research/evidence_registry.json` and still writes the legacy mirror at
+`data/research/paper_review_index.json`. The registry is authoritative; the legacy mirror exists for compatibility.
+Status values are `present`, `missing`, and `stale`.
+Rebuild from persisted evidence before operator review handoff:
+
+```python
+from quant_us.monitoring.paper_review_status import build_paper_review_evidence_index
+build_paper_review_evidence_index("data")
+```
+
+Inspect a candidate evidence chain directly:
+
+```python
+from quant_us.research.evidence_registry import inspect_candidate_evidence
+inspect_candidate_evidence("cand_123", "data")
+```
+
+## Research Promotion Gate
+
+Evaluate whether a candidate can enter human paper-review consideration:
+
+```bash
+python -m quant_us.cli research promotion-gate --candidate-id cand_123
+```
+
+This command only evaluates evidence. It does not start paper trading.
+The result is `READY_FOR_PAPER_REVIEW` at best; paper runtime still needs separate manual approval.
+Inline backtest manifests remain diagnostic only. Promotion evidence must come from a persisted canonical `backtest_manifest_path`.
+
+## Legacy Candidate Migration
+
+Audit historical candidates that are missing `backtest_manifest_path` and verify whether a canonical
+`research/backtests/<candidate_id>/run_manifest.json` exists:
+
+```bash
+python scripts/migrate_backtest_manifest_path.py --data-root data
+```
+
+Persist the canonical relative manifest path back into `candidate.json` only when the manifest exists:
+
+```bash
+python scripts/migrate_backtest_manifest_path.py --data-root data --apply
+```
+
+Default mode is dry-run. Inline `backtest_manifest` payloads are never accepted as promotion evidence and are reported for follow-up instead of migrated.
+
+## Full Pipeline Boundary
+
+`scripts/run_full_pipeline.py --mode full` stops at manual paper-review handoff. It prints manifest/evidence references and does not start a paper trading session.
+
+```bash
+python scripts/run_full_pipeline.py --symbol AAPL --mode full --start 2024-01-01 --end 2024-03-31
+```
+
+Paper trading still requires a separate operator action after human review approval.
+Until a real Alpaca paper broker adapter is implemented, `paper_broker=alpaca` is expected to fail closed; use the simulated paper backend for local validation.

@@ -316,7 +316,7 @@ class TestGateMode(unittest.TestCase):
 
 
 class TestFullMode(unittest.TestCase):
-    """run_pipeline(mode='full') -- all four stages execute."""
+    """run_pipeline(mode='full') -- ends at manual paper-review handoff."""
 
     def setUp(self):
         self._ingest_patcher = patch(
@@ -355,7 +355,7 @@ class TestFullMode(unittest.TestCase):
     # -- happy path: gate passes --
 
     def test_full_mode_all_keys_present(self):
-        """Result contains backtest, gate, and paper keys."""
+        """Result contains backtest, gate, and manual paper-review keys."""
         self.mock_gate.evaluate.return_value = _make_gate_result(decision="pass")
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -368,32 +368,38 @@ class TestFullMode(unittest.TestCase):
         self.assertIn("sharpe", result)
         self.assertIn("promotion_decision", result)
         self.assertIn("gate_result", result)
-        self.assertIn("paper_pnl", result)
-        self.assertIn("paper_recon", result)
+        self.assertTrue(result.get("paper_review_required"))
+        self.assertTrue(result.get("manual_review_required"))
+        self.assertTrue(result.get("paper_not_started"))
+        self.assertNotIn("paper_pnl", result)
+        self.assertNotIn("paper_recon", result)
         self.assertNotIn("paper_skipped", result)
 
-    def test_full_mode_paper_trading_executed(self):
-        """Paper trading loop is called when gate passes."""
-        self.mock_gate.evaluate.return_value = _make_gate_result(decision="pass")
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            data_root = _create_parquet_fixture(tmpdir)
-            self._run(data_root=data_root)
-
-        self.mock_paper_cls.assert_called_once()
-        self.mock_paper.run_day.assert_called_once()
-        self.mock_paper.status_summary.assert_called_once()
-
-    def test_full_mode_paper_pnl_reflects_mock(self):
-        """paper_pnl matches the mocked PaperTradingDayResult."""
+    def test_full_mode_does_not_start_paper_trading(self):
+        """Paper trading loop is not called when gate passes; human review is required."""
         self.mock_gate.evaluate.return_value = _make_gate_result(decision="pass")
 
         with tempfile.TemporaryDirectory() as tmpdir:
             data_root = _create_parquet_fixture(tmpdir)
             result = self._run(data_root=data_root)
 
-        self.assertEqual(result["paper_pnl"], "$1,234.56")
-        self.assertEqual(result["paper_recon"], "PASS")
+        self.assertTrue(result["manual_review_required"])
+        self.mock_paper_cls.assert_not_called()
+        self.mock_paper.run_day.assert_not_called()
+        self.mock_paper.status_summary.assert_not_called()
+
+    def test_full_mode_includes_traceability_evidence(self):
+        """Full-mode handoff returns manifest/evidence references."""
+        self.mock_gate.evaluate.return_value = _make_gate_result(decision="pass")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_root = _create_parquet_fixture(tmpdir)
+            result = self._run(data_root=data_root)
+
+        self.assertEqual(result["data_manifest_path"], "/tmp/test_manifest.json")
+        self.assertIn("backtest_manifest_id", result)
+        self.assertIn("backtest_manifest_path", result)
+        self.assertEqual(result["gate_result"]["manifest_id"], "test_manifest_123")
 
     # -- gate fails path --
 

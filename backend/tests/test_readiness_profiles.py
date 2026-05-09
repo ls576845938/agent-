@@ -1,7 +1,9 @@
 """Test readiness profiles: simulated, paper, live."""
 
 import os
+import io
 import pytest
+from unittest.mock import patch
 
 
 class TestSimulatedProfile:
@@ -29,6 +31,39 @@ class TestSimulatedProfile:
                 os.environ["APCA_API_KEY_ID"] = old_key
             if old_secret:
                 os.environ["APCA_API_SECRET_KEY"] = old_secret
+
+    def test_broker_credentials_fail_in_paper(self):
+        """Missing broker credentials in paper profile → FAIL."""
+        from quant_us.reports.live_readiness import LiveReadinessGate
+
+        with patch.dict(os.environ, {}, clear=True):
+            check = LiveReadinessGate._check_broker_credentials(profile="paper")
+
+        assert check.passed is False, "paper profile should FAIL for missing broker credentials"
+        assert check.warn is False
+        assert "APCA_API_KEY_ID" in check.detail
+
+    def test_broker_connectivity_fail_in_paper_even_when_env_is_set(self):
+        """Paper profile requires a reachable paper broker, not just env vars."""
+        from quant_us.reports.live_readiness import LiveReadinessGate
+
+        with (
+            patch.dict(
+                os.environ,
+                {
+                    "APCA_API_KEY_ID": "paper_key",
+                    "APCA_API_SECRET_KEY": "paper_secret",
+                },
+                clear=True,
+            ),
+            patch("quant_us.execution.alpaca_broker.AlpacaBroker") as broker_cls,
+        ):
+            broker_cls.return_value.get_account.side_effect = RuntimeError("paper adapter unavailable")
+            check = LiveReadinessGate._check_broker_credentials(profile="paper")
+
+        assert check.passed is False
+        assert check.warn is False
+        assert "paper adapter unavailable" in check.detail
 
     def test_telegram_warn_in_simulated(self):
         """Missing Telegram in simulated profile → WARN, not FAIL."""
@@ -60,6 +95,41 @@ class TestSimulatedProfile:
 
         check = LiveReadinessGate._check_paper_30_day_clean(None, profile="live")
         assert check.passed is False, "live should FAIL for missing validation_state"
+
+    def test_cli_simulated_ready_does_not_claim_live_ready(self):
+        """Simulated readiness output must be explicit and not say live trading is ready."""
+        from quant_us.cli import main
+        from quant_us.reports.live_readiness import LiveReadinessReport, ReadinessCheck
+
+        report = LiveReadinessReport(checks=[ReadinessCheck(name="simulated_profile", passed=True)])
+        with (
+            patch("quant_us.reports.live_readiness.LiveReadinessGate") as gate_cls,
+            patch("sys.stdout", new_callable=io.StringIO) as stdout,
+        ):
+            gate_cls.return_value.check_all.return_value = report
+            main(["readiness", "--profile", "simulated"])
+
+        text = stdout.getvalue()
+        assert "RESULT: SIMULATED READY." in text
+        assert "READY for live trading" not in text
+
+    def test_cli_paper_ready_does_not_claim_live_ready(self):
+        """Paper readiness output must be paper-specific."""
+        from quant_us.cli import main
+        from quant_us.reports.live_readiness import LiveReadinessReport, ReadinessCheck
+
+        report = LiveReadinessReport(checks=[ReadinessCheck(name="paper_profile", passed=True)])
+        with (
+            patch("quant_us.reports.live_readiness.LiveReadinessGate") as gate_cls,
+            patch("sys.stdout", new_callable=io.StringIO) as stdout,
+        ):
+            gate_cls.return_value.check_all.return_value = report
+            main(["readiness", "--profile", "paper"])
+
+        text = stdout.getvalue()
+        assert "profile:      paper" in text
+        assert "RESULT: READINESS CHECKS PASSED for paper-stage evaluation only." in text
+        assert "READY for live trading" not in text
 
 
 class TestReadinessCheckWarn:

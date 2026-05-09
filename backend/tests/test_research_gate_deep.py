@@ -3,8 +3,8 @@
 Exercises evaluate() with skip_deep_checks=False to verify cost_stress,
 walk_forward gates, next_stage transitions, and error handling.
 
-Uses fixture data (no network calls). Mocks only where real data cannot
-produce the required condition (e.g., walk-forward with < 50 bars).
+Uses local yfinance parquet data (no network calls). Mocks only where real
+data cannot produce the required condition (e.g., all gates passing).
 """
 
 from __future__ import annotations
@@ -69,8 +69,45 @@ def _mock_artifacts(
     )
 
 
+def _event_cost(survival_rate_pct: float = 100.0, ledger_consistency_pct: float = 100.0) -> dict:
+    return {
+        "engine": "event_driven",
+        "survival_rate_pct": survival_rate_pct,
+        "ledger_consistency_pct": ledger_consistency_pct,
+        "ledger_equity_consistent_scenarios": 2,
+        "baseline_fill_count": 1,
+        "baseline_order_count": 1,
+        "total_fill_count": 2,
+        "total_order_count": 2,
+        "status": "completed",
+    }
+
+
+def _quality(source: str = "yfinance", actual_source: str = "yfinance", symbol: str = "SPY") -> dict:
+    return {
+        "is_usable": True,
+        "coverage_pct": 100.0,
+        "quality_score": 100.0,
+        "missing_bars": 0,
+        "row_count": 252,
+        "expected_rows": 252,
+        "data_version": f"qs-{actual_source}-{symbol}-1d-test",
+        "fingerprint": "test-fingerprint",
+        "first_timestamp": "2024-01-01T00:00:00+00:00",
+        "last_timestamp": "2024-12-31T00:00:00+00:00",
+        "actual_source": actual_source,
+        "source": source,
+        "symbol": symbol,
+        "issues": [],
+        "duplicate_timestamps": 0,
+        "invalid_ohlc": 0,
+        "non_positive_prices": 0,
+        "cleaning_loss_rows": 0,
+    }
+
+
 class ResearchPromotionGateDeepTests(unittest.TestCase):
-    """Exercise the skip_deep_checks=False path with fixture data and targeted mocks."""
+    """Exercise the skip_deep_checks=False path with local US equity data and targeted mocks."""
 
     def setUp(self) -> None:
         self.tmpdir = TemporaryDirectory()
@@ -79,16 +116,17 @@ class ResearchPromotionGateDeepTests(unittest.TestCase):
             manifest_root=Path(self.tmpdir.name) / "manifests",
             experiment_root=Path(self.tmpdir.name) / "experiments",
         )
-        # Use a data range that generates enough bars for both cost stress and walk-forward
+        # Use local yfinance parquet data for a US equity symbol.
         self.base_request: dict = {
             "mode": "single",
-            "source": "fixture",
-            "symbol": "BTCUSDT",
-            "interval": "1h",
-            "start": datetime(2024, 1, 1),
-            "end": datetime(2024, 2, 15),
+            "source": "yfinance",
+            "symbol": "SPY",
+            "interval": "1d",
+            "start": datetime(2024, 1, 2),
+            "end": datetime(2024, 3, 29),
             "strategy_id": "trend_macd",
             "strategy_params": {},
+            "symbols": ["SPY", "MSFT", "AAPL"],
             "skip_deep_checks": False,
         }
 
@@ -128,6 +166,44 @@ class ResearchPromotionGateDeepTests(unittest.TestCase):
         self.assertNotIn("walk_forward", gate_names,
                          "walk_forward gate omitted when skip_deep_checks=True")
 
+    def test_fixture_evidence_blocks_promotion_scope(self) -> None:
+        """Fixture evidence is blocked before a config can become a paper candidate."""
+        request = {
+            **self.base_request,
+            "source": "fixture",
+            "symbol": "SPY",
+            "skip_deep_checks": True,
+        }
+        with (
+            patch("backend.app.services.research_gate.inspect_market_data_quality",
+                  return_value=_quality(source="fixture", actual_source="fixture", symbol="SPY")),
+            patch.object(ResearchBacktestService, "run_single", return_value=_mock_artifacts()),
+        ):
+            result = self.service.evaluate(request)
+        scope_gate = next(g for g in result["gates"] if g["name"] == "evidence_scope")
+        self.assertEqual(scope_gate["status"], "fail")
+        self.assertTrue(scope_gate["metrics"]["fixture_used"])
+        self.assertEqual(result["next_stage"], "blocked")
+
+    def test_crypto_symbol_blocks_promotion_scope(self) -> None:
+        """Crypto-like symbols cannot enter the US equity paper-candidate path."""
+        request = {
+            **self.base_request,
+            "source": "yfinance",
+            "symbol": "BTCUSDT",
+            "skip_deep_checks": True,
+        }
+        with (
+            patch("backend.app.services.research_gate.inspect_market_data_quality",
+                  return_value=_quality(source="yfinance", actual_source="yfinance", symbol="BTCUSDT")),
+            patch.object(ResearchBacktestService, "run_single", return_value=_mock_artifacts()),
+        ):
+            result = self.service.evaluate(request)
+        scope_gate = next(g for g in result["gates"] if g["name"] == "evidence_scope")
+        self.assertEqual(scope_gate["status"], "fail")
+        self.assertEqual(scope_gate["metrics"]["asset_class"], "crypto")
+        self.assertEqual(result["next_stage"], "blocked")
+
     def test_deep_checks_gate_counts_increase(self) -> None:
         """Number of gates with deep checks > number without."""
         deep_request = {**self.base_request, "skip_deep_checks": False}
@@ -145,6 +221,52 @@ class ResearchPromotionGateDeepTests(unittest.TestCase):
             self.assertIn(key, cost_gate, f"cost_stress gate missing '{key}'")
         self.assertIn("survival_rate_pct", cost_gate["metrics"],
                       "cost_stress metrics must include survival_rate_pct")
+        self.assertEqual(cost_gate["metrics"]["engine"], "event_driven")
+        self.assertIn("ledger_consistency_pct", cost_gate["metrics"])
+        self.assertIn("baseline_fill_count", cost_gate["metrics"])
+        self.assertIn("baseline_order_count", cost_gate["metrics"])
+
+    def test_single_deep_checks_default_to_event_driven_cost_stress(self) -> None:
+        """Promotion deep checks use the event-driven cost stress path without engine request."""
+        with (
+            patch.object(
+                ResearchBacktestService,
+                "run_event_driven_cost_stress",
+                return_value=_event_cost(),
+            ) as event_cost,
+            patch.object(ResearchBacktestService, "run_cost_stress") as vector_cost,
+            patch.object(
+                ResearchBacktestService,
+                "run_walk_forward",
+                return_value={"stability": {"pass_rate_pct": 100.0, "window_count": 2}},
+            ),
+            patch.object(ResearchBacktestService, "run_single", return_value=_mock_artifacts()),
+        ):
+            result = self.service.evaluate(dict(self.base_request))
+            event_cost.assert_called_once()
+            vector_cost.assert_not_called()
+            cost_gate = next(g for g in result["gates"] if g["name"] == "cost_stress")
+            self.assertEqual(cost_gate["metrics"]["engine"], "event_driven")
+
+    def test_cost_stress_missing_ledger_trade_metadata_fails(self) -> None:
+        """A 100% ledger consistency claim without fills/orders is not promotion evidence."""
+        incomplete_cost = _event_cost()
+        for key in ("baseline_fill_count", "baseline_order_count", "total_fill_count", "total_order_count"):
+            incomplete_cost.pop(key)
+        with (
+            patch.object(ResearchBacktestService, "run_event_driven_cost_stress",
+                         return_value=incomplete_cost),
+            patch.object(ResearchBacktestService, "run_walk_forward",
+                         return_value={"stability": {"pass_rate_pct": 100.0, "window_count": 2}}),
+            patch.object(ResearchBacktestService, "run_single",
+                         return_value=_mock_artifacts()),
+            patch("backend.app.services.research_gate.inspect_market_data_quality",
+                  return_value=_quality()),
+        ):
+            result = self.service.evaluate(dict(self.base_request))
+        cost_gate = next(g for g in result["gates"] if g["name"] == "cost_stress")
+        self.assertEqual(cost_gate["status"], "fail")
+        self.assertFalse(cost_gate["metrics"]["has_ledger_trade_metadata"])
 
     def test_walk_forward_gate_has_expected_structure(self) -> None:
         """Each walk_forward gate entry has required fields."""
@@ -160,8 +282,8 @@ class ResearchPromotionGateDeepTests(unittest.TestCase):
     def test_next_stage_is_blocked_when_walk_forward_fails(self) -> None:
         """All deep checks present, walk-forward gate=fail => decision=fail => next_stage=blocked."""
         with (
-            patch.object(ResearchBacktestService, "run_cost_stress",
-                         return_value={"survival_rate_pct": 100.0, "status": "completed"}),
+            patch.object(ResearchBacktestService, "run_event_driven_cost_stress",
+                         return_value=_event_cost()),
             patch.object(ResearchBacktestService, "run_walk_forward",
                          return_value={"stability": {"pass_rate_pct": 0.0, "window_count": 0}}),
             patch.object(ResearchBacktestService, "run_single",
@@ -179,8 +301,8 @@ class ResearchPromotionGateDeepTests(unittest.TestCase):
     def test_next_stage_is_research_iteration_when_warn_only(self) -> None:
         """All deep checks pass, cost_stress warns only => decision=warn => next_stage=research_iteration."""
         with (
-            patch.object(ResearchBacktestService, "run_cost_stress",
-                         return_value={"survival_rate_pct": 99.0, "status": "completed"}),
+            patch.object(ResearchBacktestService, "run_event_driven_cost_stress",
+                         return_value=_event_cost(survival_rate_pct=99.0)),
             patch.object(ResearchBacktestService, "run_walk_forward",
                          return_value={"stability": {"pass_rate_pct": 100.0, "window_count": 2}}),
             patch.object(ResearchBacktestService, "run_single",
@@ -196,12 +318,14 @@ class ResearchPromotionGateDeepTests(unittest.TestCase):
     def test_next_stage_is_paper_candidate_when_all_deep_pass(self) -> None:
         """All gates pass and deep not skipped => next_stage=paper_candidate."""
         with (
-            patch.object(ResearchBacktestService, "run_cost_stress",
-                         return_value={"survival_rate_pct": 100.0, "status": "completed"}),
+            patch.object(ResearchBacktestService, "run_event_driven_cost_stress",
+                         return_value=_event_cost()),
             patch.object(ResearchBacktestService, "run_walk_forward",
                          return_value={"stability": {"pass_rate_pct": 100.0, "window_count": 2}}),
             patch.object(ResearchBacktestService, "run_single",
                          return_value=_mock_artifacts()),
+            patch("backend.app.services.research_gate.inspect_market_data_quality",
+                  return_value=_quality()),
         ):
             result = self.service.evaluate(dict(self.base_request))
             gate_map = {g["name"]: g["status"] for g in result["gates"]}
@@ -209,12 +333,17 @@ class ResearchPromotionGateDeepTests(unittest.TestCase):
             self.assertEqual(gate_map["walk_forward"], "pass")
             self.assertEqual(result["decision"], "pass")
             self.assertEqual(result["next_stage"], "paper_candidate")
+            self.assertTrue(result["promotion_authority"]["paper_candidate"])
+            self.assertTrue(result["promotion_authority"]["automation_gate_required"])
+            self.assertFalse(result["promotion_authority"]["paper_runtime_approved"])
+            self.assertEqual(result["canonical_validation"]["engine"], "event_driven")
+            self.assertTrue(result["canonical_validation"]["ledger_verified"])
 
     def test_next_stage_blocked_when_basic_gate_fails_independent_of_deep(self) -> None:
         """A failing basic gate (data_quality) produces 'blocked' regardless of deep check outcome."""
         with (
-            patch.object(ResearchBacktestService, "run_cost_stress",
-                         return_value={"survival_rate_pct": 100.0, "status": "completed"}),
+            patch.object(ResearchBacktestService, "run_event_driven_cost_stress",
+                         return_value=_event_cost()),
             patch.object(ResearchBacktestService, "run_walk_forward",
                          return_value={"stability": {"pass_rate_pct": 100.0, "window_count": 2}}),
             patch.object(ResearchBacktestService, "run_single",
@@ -232,8 +361,8 @@ class ResearchPromotionGateDeepTests(unittest.TestCase):
     def test_deep_gates_contribute_to_overall_decision(self) -> None:
         """When deep gates are present, their statuses affect decision."""
         with (
-            patch.object(ResearchBacktestService, "run_cost_stress",
-                         return_value={"survival_rate_pct": 50.0, "status": "completed"}),
+            patch.object(ResearchBacktestService, "run_event_driven_cost_stress",
+                         return_value=_event_cost(survival_rate_pct=50.0)),
             patch.object(ResearchBacktestService, "run_walk_forward",
                          return_value={"stability": {"pass_rate_pct": 100.0, "window_count": 2}}),
             patch.object(ResearchBacktestService, "run_single",
@@ -320,11 +449,11 @@ class ResearchPromotionGateDeepTests(unittest.TestCase):
         ):
             result = self.service.evaluate({
                 "mode": "portfolio",
-                "source": "fixture",
-                "symbol": "BTCUSDT",
-                "interval": "1h",
-                "start": datetime(2024, 1, 1),
-                "end": datetime(2024, 2, 15),
+                "source": "yfinance",
+                "symbol": "SPY",
+                "interval": "1d",
+                "start": datetime(2024, 1, 2),
+                "end": datetime(2024, 3, 29),
                 "weights": [
                     {"strategy_id": "trend_macd", "weight": 0.6},
                     {"strategy_id": "reversion_rsi", "weight": 0.4},

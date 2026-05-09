@@ -55,6 +55,10 @@ from quant_us.live.live_state_store import (
     LiveStateStore,
 )
 from quant_us.live.market_data_loop import MarketDataLoop
+from quant_us.live.readonly_live_broker import (
+    ReadOnlyLiveBrokerProxy,
+    classify_alpaca_endpoint,
+)
 from quant_us.live.reconciliation_service import ReconciliationService
 from quant_us.live.session_clock import SessionClock
 from quant_us.risk.kill_switch import KillSwitch, KillSwitchConfig
@@ -369,7 +373,7 @@ class ShadowLiveGate:
 # ---------------------------------------------------------------------------
 
 
-class ReadOnlyBrokerProxy(BrokerBase):
+class ReadOnlyBrokerProxy(ReadOnlyLiveBrokerProxy):
     """Wraps a :class:`BrokerBase` to block write operations.
 
     Only ``get_account``, ``get_positions``, ``get_orders``, and
@@ -385,36 +389,61 @@ class ReadOnlyBrokerProxy(BrokerBase):
         read_only.submit_order(order)       # raises RuntimeError
     """
 
-    def __init__(self, inner: BrokerBase) -> None:
-        self._inner = inner
+    def __init__(
+        self,
+        inner: BrokerBase,
+        audit_log_path: str = "",
+        audit_context: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            inner,
+            audit_log_path=audit_log_path,
+            audit_context=audit_context,
+        )
 
     @property
     def broker_name(self) -> str:
         return f"readonly_{self._inner.broker_name}"
 
-    def get_account(self) -> AccountState:
-        return self._inner.get_account()
-
-    def get_positions(self) -> dict[str, Position]:
-        return self._inner.get_positions()
-
-    def get_orders(self) -> list[Order]:
-        return self._inner.get_orders()
-
     def submit_order(self, order: Order) -> Order:
+        self._forbidden_call_count += 1
+        self._audit_forbidden("submit_order", order.symbol)
         raise RuntimeError(
-            "Read-only broker proxy: submit_order() is blocked. "
+            "Read-only broker proxy: submit_order() is blocked and FORBIDDEN. "
             "This proxy is for account queries only.",
         )
 
     def cancel_order(self, order_id: str) -> Order:
+        self._forbidden_call_count += 1
+        self._audit_forbidden("cancel_order", order_id)
         raise RuntimeError(
-            "Read-only broker proxy: cancel_order() is blocked. "
+            "Read-only broker proxy: cancel_order() is blocked and FORBIDDEN. "
             "This proxy is for account queries only.",
         )
 
-    def get_fills(self, order_id: str | None = None) -> list[Fill]:
-        return self._inner.get_fills(order_id)
+    def replace_order(self, order_id: str, order: Order) -> Order:
+        self._forbidden_call_count += 1
+        self._audit_forbidden("replace_order", order_id)
+        raise RuntimeError(
+            "Read-only broker proxy: replace_order() is blocked and FORBIDDEN. "
+            "This proxy is for account queries only.",
+        )
+
+    def close_position(self, symbol: str) -> Order:
+        self._forbidden_call_count += 1
+        self._audit_forbidden("close_position", symbol)
+        raise RuntimeError(
+            "Read-only broker proxy: close_position() is blocked and FORBIDDEN. "
+            "This proxy is for account queries only.",
+        )
+
+    def close_all_positions(self) -> list[Order]:
+        self._forbidden_call_count += 1
+        self._audit_forbidden("close_all_positions", "ALL")
+        raise RuntimeError(
+            "Read-only broker proxy: close_all_positions() is blocked and FORBIDDEN. "
+            "This proxy is for account queries only.",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -568,7 +597,15 @@ class ShadowLiveRunner:
         # 5. Real broker (read-only wrapper)
         try:
             raw_broker = self._create_real_broker()
-            self.real_broker = ReadOnlyBrokerProxy(raw_broker)
+            self.real_broker = ReadOnlyBrokerProxy(
+                raw_broker,
+                audit_log_path=str(Path(self.config.ledger_root) / "shadow_live_readonly_audit.jsonl"),
+                audit_context=self._readonly_broker_audit_context(),
+            )
+            self._logger.info(
+                "Shadow live readonly broker audit: %s",
+                self.readonly_broker_audit(),
+            )
         except Exception as exc:
             self._logger.exception("Failed to create real broker: %s", exc)
             return False
@@ -1146,10 +1183,7 @@ class ShadowLiveRunner:
         The returned broker is later wrapped in ``ReadOnlyBrokerProxy``.
         """
         paper_mode = self.config.broker_account_mode != "live_readonly"
-        if paper_mode:
-            base_url = "https://paper-api.alpaca.markets"
-        else:
-            base_url = "https://api.alpaca.markets"
+        base_url = self._readonly_broker_base_url()
 
         return AlpacaBroker(
             AlpacaBrokerConfig(
@@ -1197,4 +1231,39 @@ class ShadowLiveRunner:
             "max_runtime_hours": self.config.max_runtime_hours,
             "symbols": list(self.config.symbols),
             "submit_real_orders": False,
+            "readonly_broker_audit": self.readonly_broker_audit(),
+        }
+
+    def readonly_broker_audit(self) -> dict[str, Any]:
+        """Return explicit proof that shadow-live is attached through a readonly path."""
+        if self.real_broker is None:
+            return {
+                "configured": False,
+                "runtime_mode": "shadow_live",
+                "real_submit_capability": False,
+                "credential_audit": self._readonly_broker_audit_context(),
+                "proof": "Readonly broker not bootstrapped yet.",
+            }
+        audit = self.real_broker.audit_no_real_submit()
+        audit["configured"] = True
+        audit["runtime_mode"] = "shadow_live"
+        audit["real_submit_capability"] = False
+        return audit
+
+    def _readonly_broker_base_url(self) -> str:
+        if self.config.broker_account_mode != "live_readonly":
+            return "https://paper-api.alpaca.markets"
+        return "https://api.alpaca.markets"
+
+    def _readonly_broker_audit_context(self) -> dict[str, Any]:
+        base_url = self._readonly_broker_base_url()
+        return {
+            "runtime_mode": "shadow_live",
+            "broker_account_mode": self.config.broker_account_mode,
+            "api_key": self.config.broker_api_key,
+            "api_secret": self.config.broker_api_secret,
+            "base_url": base_url,
+            "endpoint_kind": classify_alpaca_endpoint(base_url),
+            "readonly_expected": True,
+            "real_submit_capability": False,
         }

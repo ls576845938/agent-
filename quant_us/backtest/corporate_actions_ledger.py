@@ -39,6 +39,38 @@ class LedgerAdjustment:
     adjustment_type: str
     amount: float
     description: str = ""
+    quantity_multiplier: float = 1.0
+    avg_price_multiplier: float | None = None
+
+    def normalized_symbol(self) -> str:
+        return self.symbol.upper()
+
+    def effective_avg_price_multiplier(self) -> float:
+        if self.avg_price_multiplier is not None:
+            return float(self.avg_price_multiplier)
+        if self.adjustment_type == "split":
+            if self.quantity_multiplier == 0:
+                raise ValueError("Split quantity_multiplier must be non-zero")
+            return 1.0 / float(self.quantity_multiplier)
+        return 1.0
+
+    def has_position_impact(self) -> bool:
+        avg_multiplier = self.effective_avg_price_multiplier()
+        return (
+            self.adjustment_type == "split"
+            or abs(float(self.quantity_multiplier) - 1.0) > 1e-12
+            or abs(avg_multiplier - 1.0) > 1e-12
+        )
+
+    def key(self) -> tuple[str, str, str, float, float, float]:
+        return (
+            self.timestamp_utc.isoformat(),
+            self.normalized_symbol(),
+            self.adjustment_type,
+            float(self.amount),
+            float(self.quantity_multiplier),
+            float(self.effective_avg_price_multiplier()),
+        )
 
 
 @dataclass
@@ -54,12 +86,16 @@ class LedgerAdjustmentLog:
     def total_corporate_adjustments(self) -> float:
         return sum(a.amount for a in self.adjustments if a.adjustment_type == "corporate_action")
 
+    def split_event_count(self) -> int:
+        return sum(1 for adjustment in self.adjustments if adjustment.has_position_impact())
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "total_dividends": round(self.total_dividends(), 4),
             "total_borrow_fees": round(self.total_borrow_fees(), 4),
             "total_corporate_adjustments": round(self.total_corporate_adjustments(), 4),
             "adjustment_count": len(self.adjustments),
+            "split_event_count": self.split_event_count(),
         }
 
 
@@ -108,14 +144,34 @@ def reconstruct_equity_with_adjustments(
     cash = initial_cash
     positions: dict[str, float] = {}
 
-    for fill in sorted(fills, key=lambda f: f.filled_at):
-        signed_qty = fill.quantity if fill.side == OrderSide.BUY else -fill.quantity
-        cash -= fill.quantity * fill.price if fill.side == OrderSide.BUY else -fill.quantity * fill.price
-        cash -= fill.commission
-        positions[fill.symbol] = positions.get(fill.symbol, 0.0) + signed_qty
+    events: list[tuple[datetime, int, int, LedgerAdjustment | Fill]] = []
+    for index, adjustment in enumerate(adjustments.adjustments):
+        events.append((adjustment.timestamp_utc, 0, index, adjustment))
+    for index, fill in enumerate(fills):
+        events.append((fill.filled_at, 1, index, fill))
 
-    for adj in adjustments.adjustments:
-        cash += adj.amount
+    for _, priority, _, item in sorted(events, key=lambda event: (event[0], event[1], event[2])):
+        if priority == 0:
+            adjustment = item
+            assert isinstance(adjustment, LedgerAdjustment)
+            cash += adjustment.amount
+            if adjustment.has_position_impact():
+                symbol = adjustment.normalized_symbol()
+                qty = positions.get(symbol, 0.0)
+                if abs(qty) <= 1e-10:
+                    continue
+                qty_multiplier = float(adjustment.quantity_multiplier)
+                if qty_multiplier <= 0:
+                    raise ValueError(f"Position adjustment quantity multiplier must be positive for {symbol}")
+                positions[symbol] = round(qty * qty_multiplier, 8)
+        else:
+            fill = item
+            assert isinstance(fill, Fill)
+            signed_qty = fill.quantity if fill.side == OrderSide.BUY else -fill.quantity
+            cash -= fill.quantity * fill.price if fill.side == OrderSide.BUY else -fill.quantity * fill.price
+            cash -= fill.commission
+            symbol = fill.symbol.upper()
+            positions[symbol] = positions.get(symbol, 0.0) + signed_qty
 
     position_value = sum(
         qty * market_prices.get(sym, 0.0)

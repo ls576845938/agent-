@@ -80,10 +80,10 @@ class PaperReviewManager:
         if request is None:
             raise ValueError(f"Portfolio simulation request {sim_id} not found")
 
-        if result.decision not in ("PORTFOLIO_PASS", "WATCHLIST"):
+        if result.decision != "PORTFOLIO_PASS":
             raise ValueError(
                 f"Simulation {sim_id} decision is '{result.decision}'. "
-                "Only PORTFOLIO_PASS or WATCHLIST can proceed to paper review."
+                "Only PORTFOLIO_PASS can proceed to paper review."
             )
 
         # Load manifests to get proposed symbols and capital
@@ -93,8 +93,14 @@ class PaperReviewManager:
         all_symbols: list[str] = []
         for mid in request.strategy_manifest_ids:
             m = manifest_mgr.load(mid)
-            if m is not None:
-                all_symbols.extend(m.symbols)
+            if m is None:
+                raise ValueError(f"Strategy manifest {mid} not found")
+            if m.promotion_status != "READY_FOR_PORTFOLIO_SIM":
+                raise ValueError(
+                    f"Strategy manifest {mid} has promotion_status '{m.promotion_status}'. "
+                    "Paper review requires READY_FOR_PORTFOLIO_SIM manifest evidence."
+                )
+            all_symbols.extend(m.symbols)
 
         all_symbols = list(dict.fromkeys(all_symbols))
         final_equity = result.equity_curve[-1] if result.equity_curve else request.capital
@@ -287,15 +293,22 @@ class PaperReviewManager:
             dict.fromkeys(candidate_data.get("symbols", []))
         )
 
-        # Extract promotion gate decision for readiness assessment
+        # Extract promotion gate decision for readiness assessment.
+        # READY_FOR_PAPER_REVIEW only grants entry into the human review queue.
+        # It is not an approval for paper runtime.
         promotion_gate = sections.get("promotion_gate", {})
         gate_decision = promotion_gate.get("decision", "BLOCKED")
 
-        # Only allow creation from evidence packs that passed the gate
-        if gate_decision == "BLOCKED":
+        disallowed_gate_decisions = {"WATCHLIST", "NEED_MORE_RESEARCH", "BLOCKED"}
+        if gate_decision in disallowed_gate_decisions:
             raise ValueError(
                 f"Evidence pack {portfolio_evidence_pack_id} has gate decision "
-                f"BLOCKED. Cannot create paper review from blocked candidate."
+                f"{gate_decision}. Paper review requires READY_FOR_PAPER_REVIEW."
+            )
+        if gate_decision != "READY_FOR_PAPER_REVIEW":
+            raise ValueError(
+                f"Evidence pack {portfolio_evidence_pack_id} has gate decision "
+                f"{gate_decision}. Paper review requires READY_FOR_PAPER_REVIEW."
             )
 
         review_id = new_id("prev")

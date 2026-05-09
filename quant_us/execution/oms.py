@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.clock import utc_now
-from quant_us.core.enums import OrderStatus
+from quant_us.core.enums import OrderSide, OrderStatus
 from quant_us.core.events import BrokerOrderEvent, Event, FillEvent, RiskEvent
 from quant_us.core.types import AccountState, Fill, Order, OrderIntent, RiskDecision
 from quant_us.execution.broker_base import BrokerBase
@@ -180,14 +180,10 @@ class OrderManagementSystem:
         if self.reduce_only:
             current_pos = account.positions.get(intent.symbol)
             current_qty = current_pos.quantity if current_pos else 0.0
-            from quant_us.core.enums import OrderSide
-            if intent.side == OrderSide.BUY:
-                decision = RiskDecision(False, "reduce_only_no_new_buys", intent.order_intent_id)
-                self._log_risk_rejection("reduce_only_no_new_buys", intent, decision)
-                return OMSResult(intent=intent, risk_decision=decision, events=[RiskEvent.from_decision(decision)])
-            if intent.side == OrderSide.SELL and current_qty <= 1e-9:
-                decision = RiskDecision(False, "reduce_only_no_new_shorts", intent.order_intent_id)
-                self._log_risk_rejection("reduce_only_no_new_shorts", intent, decision)
+            allowed, reason = self._reduce_only_allows(intent, current_qty)
+            if not allowed:
+                decision = RiskDecision(False, reason, intent.order_intent_id)
+                self._log_risk_rejection(reason, intent, decision)
                 return OMSResult(intent=intent, risk_decision=decision, events=[RiskEvent.from_decision(decision)])
 
         decision = self.risk_engine.evaluate(intent, account, market_price, effective_time)
@@ -233,3 +229,33 @@ class OrderManagementSystem:
         events.append(BrokerOrderEvent.from_order(submitted))
         events.extend(FillEvent.from_fill(fill) for fill in fills)
         return OMSResult(intent=intent, risk_decision=decision, order=submitted, fills=fills, events=events)
+
+    @staticmethod
+    def _reduce_only_allows(intent: OrderIntent, current_qty: float) -> tuple[bool, str]:
+        """Allow only orders that strictly reduce exposure without crossing zero."""
+        eps = 1e-9
+        qty = float(intent.quantity)
+        if abs(current_qty) <= eps:
+            if intent.side == OrderSide.BUY:
+                return False, "reduce_only_no_new_buys"
+            return False, "reduce_only_no_new_shorts"
+
+        signed_delta = qty if intent.side == OrderSide.BUY else -qty
+        projected_qty = current_qty + signed_delta
+
+        if current_qty > eps:
+            if intent.side == OrderSide.BUY:
+                return False, "reduce_only_no_new_buys"
+            if projected_qty < -eps:
+                return False, "reduce_only_would_reverse_long"
+            if abs(projected_qty) >= abs(current_qty) - eps:
+                return False, "reduce_only_would_not_reduce_long"
+            return True, "ok"
+
+        if intent.side == OrderSide.SELL:
+            return False, "reduce_only_no_new_shorts"
+        if projected_qty > eps:
+            return False, "reduce_only_would_reverse_short"
+        if abs(projected_qty) >= abs(current_qty) - eps:
+            return False, "reduce_only_would_not_reduce_short"
+        return True, "ok"

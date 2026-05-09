@@ -9,7 +9,10 @@ close_position(), close_all_positions() ALL raise RuntimeError.
 
 from __future__ import annotations
 
+import json
 import logging
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from quant_us.core.types import AccountState, Fill, Order, Position
@@ -40,10 +43,16 @@ class ReadOnlyLiveBrokerProxy(BrokerBase):
         - close_all_positions()
     """
 
-    def __init__(self, inner: BrokerBase, audit_log_path: str = "") -> None:
+    def __init__(
+        self,
+        inner: BrokerBase,
+        audit_log_path: str = "",
+        audit_context: dict[str, Any] | None = None,
+    ) -> None:
         self._inner = inner
         self._audit_log_path = audit_log_path
         self._forbidden_call_count: int = 0
+        self._audit_context = dict(audit_context or {})
 
     # ------------------------------------------------------------------
     # Identity
@@ -193,12 +202,33 @@ class ReadOnlyLiveBrokerProxy(BrokerBase):
     # ------------------------------------------------------------------
 
     def _audit_forbidden(self, method: str, target: str) -> None:
+        entry = {
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            "event": "readonly_live_broker_forbidden_call",
+            "method": method,
+            "target": target,
+            "count": self._forbidden_call_count,
+            "broker": self.broker_name,
+            "real_submit": False,
+            "readonly": True,
+            "credential_audit": self.credential_audit(),
+        }
+        if self._audit_context:
+            entry["audit_context"] = dict(self._audit_context)
         msg = (
             f"FORBIDDEN_CALL | method={method} | target={target} | "
             f"count={self._forbidden_call_count} | "
             f"broker={self.broker_name}"
         )
         _logger.warning(msg)
+        if self._audit_log_path:
+            try:
+                audit_path = Path(self._audit_log_path)
+                audit_path.parent.mkdir(parents=True, exist_ok=True)
+                with audit_path.open("a", encoding="utf-8") as fh:
+                    fh.write(json.dumps(entry, default=str) + "\n")
+            except OSError:
+                _logger.exception("Failed to write readonly live broker audit record")
 
     def audit_no_real_submit(self) -> dict[str, Any]:
         """Return proof that no real orders were submitted through this proxy."""
@@ -207,9 +237,30 @@ class ReadOnlyLiveBrokerProxy(BrokerBase):
             "is_readonly": True,
             "forbidden_call_count": self._forbidden_call_count,
             "no_real_order_submitted": self._forbidden_call_count == 0,
+            "credential_audit": self.credential_audit(),
             "proof": (
                 "All write methods blocked with RuntimeError. "
                 "forbidden_call_count == 0 confirms no attempt to even call forbidden methods."
+            ),
+        }
+
+    def credential_audit(self) -> dict[str, Any]:
+        """Return masked credential and endpoint metadata for readonly audits."""
+        key = str(self._audit_context.get("api_key", ""))
+        secret = str(self._audit_context.get("api_secret", ""))
+        base_url = str(self._audit_context.get("base_url", ""))
+        endpoint_kind = str(
+            self._audit_context.get("endpoint_kind", classify_alpaca_endpoint(base_url))
+        )
+        return {
+            "api_key_present": bool(key),
+            "api_secret_present": bool(secret),
+            "api_key_masked": mask_secret(key),
+            "api_secret_masked": mask_secret(secret),
+            "base_url": base_url,
+            "endpoint_kind": endpoint_kind,
+            "readonly_expected": bool(
+                self._audit_context.get("readonly_expected", True)
             ),
         }
 
@@ -283,3 +334,15 @@ def mask_account_id(account_id: str) -> str:
     if len(account_id) <= 8:
         return account_id[:4] + "****"
     return account_id[:4] + "..." + account_id[-4:]
+
+
+def classify_alpaca_endpoint(base_url: str) -> str:
+    """Classify an Alpaca endpoint for audit output."""
+    lowered = base_url.lower().strip()
+    if not lowered:
+        return "unset"
+    if "paper-api.alpaca.markets" in lowered or "paper" in lowered:
+        return "paper"
+    if "api.alpaca.markets" in lowered:
+        return "live"
+    return "custom"

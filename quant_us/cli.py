@@ -15,6 +15,7 @@ All subcommands accept --data-root and --symbols at the top level.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from datetime import date, datetime, timezone
@@ -38,6 +39,76 @@ def _shared_parent() -> argparse.ArgumentParser:
 
 def _parse_symbols(raw: str) -> list[str]:
     return [s.strip().upper() for s in raw.split(",") if s.strip()]
+
+
+def _read_json_file(path: Path) -> dict[str, Any]:
+    """Read a JSON object with operator-friendly error messages."""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        print(f"ERROR: file not found: {path}", file=sys.stderr)
+        sys.exit(1)
+    except json.JSONDecodeError as exc:
+        print(f"ERROR: invalid JSON in {path}: {exc}", file=sys.stderr)
+        sys.exit(1)
+    except OSError as exc:
+        print(f"ERROR: cannot read {path}: {exc}", file=sys.stderr)
+        sys.exit(1)
+    if not isinstance(payload, dict):
+        print(f"ERROR: expected JSON object in {path}", file=sys.stderr)
+        sys.exit(1)
+    return payload
+
+
+def _manifest_root(data_root: str) -> Path:
+    return Path(data_root) / "manifests"
+
+
+def _resolve_manifest_path(data_root: str, manifest_ref: str) -> Path:
+    """Resolve manifest id or path, accepting bare backtest run IDs."""
+    ref_path = Path(manifest_ref)
+    if ref_path.exists():
+        return ref_path
+
+    root = _manifest_root(data_root)
+    candidates = [root / f"{manifest_ref}.json"]
+    if not manifest_ref.startswith("run_"):
+        candidates.append(root / f"run_{manifest_ref}.json")
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    print(f"ERROR: manifest not found: {manifest_ref}", file=sys.stderr)
+    print(f"       looked in: {root}", file=sys.stderr)
+    sys.exit(1)
+
+
+def _latest_file(directory: Path, pattern: str) -> Path | None:
+    files = sorted(directory.glob(pattern), reverse=True)
+    return files[0] if files else None
+
+
+def _print_paper_review_status(data_root: str, indent: str = "  ") -> None:
+    from quant_us.monitoring.paper_review_status import inspect_paper_review_status
+
+    status = inspect_paper_review_status(data_root)
+    print(f"{indent}paper_review_status: {status.status}")
+    print(
+        f"{indent}paper_review_entry_allowed: "
+        f"{'YES' if status.paper_review_entry_allowed else 'NO'}"
+    )
+    print(
+        f"{indent}manual_review_pending: "
+        f"{'YES' if status.manual_review_pending else 'NO'}"
+    )
+    print(f"{indent}paper_review_note: {status.summary}")
+    print(f"{indent}evidence:     paper_review_status={status.evidence_path or '(not found)'}")
+    if status.review_path:
+        print(f"{indent}evidence:     paper_review={status.review_path}")
+    if status.manifest_path:
+        print(f"{indent}evidence:     strategy_manifest={status.manifest_path}")
+    if status.evidence_pack_path:
+        print(f"{indent}evidence:     evidence_pack={status.evidence_pack_path}")
 
 
 # ---------------------------------------------------------------------------
@@ -212,6 +283,189 @@ def _add_backtest_parser(subparsers: Any) -> None:
     p.add_argument("--commission-rate", type=float, default=0.0001, help="Commission rate (default: 0.0001)")
     p.add_argument("--slippage-bps", type=float, default=1.0, help="Slippage in bps (default: 1.0)")
     p.set_defaults(func=cmd_backtest)
+
+
+# ---------------------------------------------------------------------------
+# manifest / report
+# ---------------------------------------------------------------------------
+
+
+def _manifest_kind(payload: dict[str, Any]) -> str:
+    if payload.get("run_id") or "config" in payload:
+        return "backtest"
+    if payload.get("data_version") or payload.get("source"):
+        return "data"
+    return "unknown"
+
+
+def cmd_manifest_list(args: argparse.Namespace) -> None:
+    """List data and backtest manifests under data/manifests."""
+    root = _manifest_root(args.data_root)
+    if not root.exists():
+        print(f"No manifests found. Directory does not exist: {root}")
+        return
+
+    rows: list[tuple[str, str, str, str, str, str]] = []
+    for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        payload = _read_json_file(path)
+        kind = _manifest_kind(payload)
+        if args.kind != "all" and kind != args.kind:
+            continue
+        if args.source and str(payload.get("source", "")) != args.source:
+            continue
+        if args.symbol and str(payload.get("symbol", "")).upper() != args.symbol.upper():
+            continue
+        if args.interval and str(payload.get("interval", "")) != args.interval:
+            continue
+        ident = str(payload.get("data_version") or payload.get("run_id") or path.stem)
+        created = str(payload.get("created_at") or payload.get("end_time") or "")
+        lineage = str(payload.get("data_version") or payload.get("strategy_version") or "")
+        rows.append((kind, ident, str(payload.get("symbol", "")), str(payload.get("interval", "")), lineage, created))
+        if len(rows) >= args.limit:
+            break
+
+    if not rows:
+        print(f"No manifests matched in {root}.")
+        return
+
+    print(f"Manifest root: {root}")
+    print(f"{'kind':<10} {'id':<48} {'symbol':<8} {'int':<5} {'lineage':<24} {'created'}")
+    print("-" * 116)
+    for kind, ident, symbol, interval, lineage, created in rows:
+        print(f"{kind:<10} {ident:<48} {symbol:<8} {interval:<5} {lineage:<24} {created[:25]}")
+
+
+def cmd_manifest_inspect(args: argparse.Namespace) -> None:
+    """Inspect a single manifest with lineage fields highlighted."""
+    path = _resolve_manifest_path(args.data_root, args.manifest)
+    payload = _read_json_file(path)
+    kind = _manifest_kind(payload)
+
+    print("Manifest")
+    print("=" * 60)
+    print(f"  kind:        {kind}")
+    print(f"  path:        {path}")
+    print(f"  id:          {payload.get('data_version') or payload.get('run_id') or path.stem}")
+    print(f"  data:        {payload.get('data_version', '(not set)')}")
+    print(f"  strategy:    {payload.get('strategy_version', '(not set)')}")
+    print(f"  commit:      {payload.get('git_commit') or payload.get('commit_hash') or '(not set)'}")
+    if kind == "data":
+        print(f"  source:      {payload.get('source', '(not set)')}")
+        print(f"  symbol:      {payload.get('symbol', '(not set)')}")
+        print(f"  interval:    {payload.get('interval', '(not set)')}")
+        print(f"  range:       {payload.get('start', '?')} -> {payload.get('end', '?')}")
+        print(f"  rows:        {payload.get('row_count', 0)} / expected {payload.get('expected_rows', 0)}")
+        print(f"  quality:     {payload.get('quality_score', 0)}  coverage={payload.get('coverage_pct', 0)}%")
+        print(f"  raw_path:    {payload.get('raw_path') or '(not set)'}")
+        print(f"  cleaned:     {payload.get('cleaned_path') or '(not set)'}")
+    else:
+        config = payload.get("config", {})
+        print(f"  run_id:      {payload.get('run_id', '(not set)')}")
+        print(f"  started:     {payload.get('start_time', '(not set)')}")
+        print(f"  ended:       {payload.get('end_time', '(not set)')}")
+        print(f"  cash:        {config.get('initial_cash', '(not set)')}")
+        print(f"  cost_model:  commission_rate={config.get('commission_rate', '(not set)')}")
+        print(f"  slippage:    {config.get('slippage_bps', '(not set)')} bps")
+    print("=" * 60)
+
+
+def _add_manifest_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser("manifest", help="List or inspect data/backtest manifests")
+    manifest_sub = p.add_subparsers(dest="manifest_command", required=True)
+
+    list_p = manifest_sub.add_parser("list", help="List manifests")
+    list_p.add_argument("--data-root", default="data", help="Data root directory")
+    list_p.add_argument("--kind", choices=["all", "data", "backtest"], default="all", help="Manifest kind")
+    list_p.add_argument("--source", default="", help="Filter data manifests by source")
+    list_p.add_argument("--symbol", default="", help="Filter data manifests by symbol")
+    list_p.add_argument("--interval", default="", help="Filter data manifests by interval")
+    list_p.add_argument("--limit", type=int, default=20, help="Max rows to print")
+    list_p.set_defaults(func=cmd_manifest_list)
+
+    inspect_p = manifest_sub.add_parser("inspect", help="Inspect one manifest by ID or path")
+    inspect_p.add_argument("--manifest", required=True, help="Manifest ID, backtest run ID, or JSON path")
+    inspect_p.add_argument("--data-root", default="data", help="Data root directory")
+    inspect_p.set_defaults(func=cmd_manifest_inspect)
+
+
+def cmd_report_backtest(args: argparse.Namespace) -> None:
+    """Print a backtest report from its persisted run manifest."""
+    manifest_ref = args.manifest or args.run_id
+    if not manifest_ref:
+        print("ERROR: provide --run-id or --manifest", file=sys.stderr)
+        sys.exit(2)
+    path = _resolve_manifest_path(args.data_root, manifest_ref)
+    payload = _read_json_file(path)
+    if _manifest_kind(payload) != "backtest":
+        print(f"ERROR: manifest is not a backtest run manifest: {path}", file=sys.stderr)
+        sys.exit(1)
+
+    config = payload.get("config", {})
+    print("Backtest Report")
+    print("=" * 60)
+    print(f"  run_id:        {payload.get('run_id', path.stem.replace('run_', ''))}")
+    print(f"  manifest:      {path}")
+    print(f"  data_version:  {payload.get('data_version') or '(missing)'}")
+    print(f"  strategy_ver:  {payload.get('strategy_version') or '(missing)'}")
+    print(f"  commit_hash:   {payload.get('commit_hash') or '(missing)'}")
+    print(f"  period:        {payload.get('start_time', '?')} -> {payload.get('end_time', '?')}")
+    print(f"  initial_cash:  {config.get('initial_cash', '(missing)')}")
+    print(f"  cost_model:    commission_rate={config.get('commission_rate', '(missing)')}")
+    print(f"  slippage:      {config.get('slippage_bps', '(missing)')} bps")
+    print(f"  evidence:      manifest_path={path}")
+    print("=" * 60)
+
+
+def cmd_report_daily(args: argparse.Namespace) -> None:
+    """Print a paper daily report with ledger/evidence pointers."""
+    ledger_root = Path(args.ledger_root) if args.ledger_root else Path(args.data_root) / "paper_ledger"
+    report_dir = ledger_root / "daily_reports"
+    if args.latest or not args.date:
+        path = _latest_file(report_dir, "daily_report_*.json")
+        if path is None:
+            print(f"ERROR: no daily reports found in {report_dir}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        path = report_dir / f"daily_report_{args.date}.json"
+        if not path.exists():
+            print(f"ERROR: daily report not found: {path}", file=sys.stderr)
+            sys.exit(1)
+
+    payload = _read_json_file(path)
+    validation_state = Path(args.data_root) / "reports" / "paper_production" / "validation_state.json"
+    print("Daily Paper Report")
+    print("=" * 60)
+    print(f"  report:       {path}")
+    print(f"  date:         {payload.get('report_date') or payload.get('date') or path.stem.removeprefix('daily_report_')}")
+    print(f"  generated_at: {payload.get('generated_at', '(missing)')}")
+    print(f"  ending_eq:    ${float(payload.get('ending_equity', 0.0)):,.2f}")
+    print(f"  daily_pnl:    ${float(payload.get('daily_pnl', 0.0)):+,.2f}")
+    print(f"  orders:       {payload.get('orders_submitted', 0)} submitted / {payload.get('orders_filled', 0)} filled")
+    print(f"  recon:        {payload.get('reconciliation_status', 'unknown')}")
+    print(f"  kill_switch:  {'TRIGGERED' if payload.get('kill_switch_triggered') else 'ok'}")
+    print(f"  evidence:     ledger_root={ledger_root}")
+    print(f"  evidence:     validation_state={validation_state if validation_state.exists() else '(not found)'}")
+    _print_paper_review_status(args.data_root)
+    print("  note:         Reporting only. This does not approve or start paper/live trading.")
+    print("=" * 60)
+
+
+def _add_report_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser("report", help="Render traceable runtime/backtest reports")
+    report_sub = p.add_subparsers(dest="report_command", required=True)
+
+    bt_p = report_sub.add_parser("backtest", help="Render a backtest report from manifest evidence")
+    bt_p.add_argument("--run-id", default="", help="Backtest run ID")
+    bt_p.add_argument("--manifest", default="", help="Manifest ID or JSON path")
+    bt_p.add_argument("--data-root", default="data", help="Data root directory")
+    bt_p.set_defaults(func=cmd_report_backtest)
+
+    daily_p = report_sub.add_parser("daily", help="Render a paper daily report")
+    daily_p.add_argument("--latest", action="store_true", help="Use latest daily report")
+    daily_p.add_argument("--date", default="", help="Report date YYYY-MM-DD")
+    daily_p.add_argument("--data-root", default="data", help="Data root directory")
+    daily_p.add_argument("--ledger-root", default="", help="Override paper ledger root")
+    daily_p.set_defaults(func=cmd_report_daily)
 
 
 # ---------------------------------------------------------------------------
@@ -482,7 +736,8 @@ def _cmd_paper_ready(symbols: list[str], args: argparse.Namespace) -> None:
     print(f"  max-runtime:    {args.max_runtime_hours}h")
     print()
     print("INFO: PaperTradingLoop ready (dry-run mode).")
-    print("      Run with --run to start a live paper session.")
+    print("      Run with --run to start a gated simulated paper session.")
+    print("      Alpaca paper submission remains fail-closed until an adapter is wired.")
     print()
     print(f"  healthy:  {loop.is_healthy()}")
     print(f"  status:   {loop.status_summary()}")
@@ -634,10 +889,10 @@ def cmd_paper_start(args: argparse.Namespace) -> None:
 
         if enable_orders:
             print()
-            print(f"  Paper orders ENABLED — will submit to Alpaca Paper API")
+            print(f"  Paper orders ENABLED — PaperRuntime paper profile gates will be enforced")
             print(f"  Endpoint: {PAPER_BASE_URL}")
-            print(f"  WARNING: This will create real paper orders on Alpaca.")
-            print(f"  To proceed, re-run with --enable-paper-orders flag.")
+            print("  real_order_submission: DISABLED")
+            print("  WARNING: Requires paper credentials and approved paper review/promotion evidence.")
             print()
             # Delegate to paper production loop
             _start_paper_production_loop(symbols, args)
@@ -807,6 +1062,8 @@ def cmd_paper_report(args: argparse.Namespace) -> None:
             print(f"  Errors:         {data['errors']}")
     except Exception:
         print(f"  (unable to parse report)")
+    _print_paper_review_status(str(data_root))
+    print("  Note:           Reporting only. No paper/live order path is enabled here.")
     print("=" * 60)
     print()
 
@@ -848,7 +1105,8 @@ def _cmd_paper_run(symbols: list[str], args: argparse.Namespace) -> None:
     from quant_us.live.paper_runtime import PaperRuntimeConfig
 
     # Validate broker selection
-    if args.broker == "alpaca" and args.submit_orders:
+    broker = str(getattr(args, "broker", "simulated"))
+    if broker == "alpaca" and args.submit_orders:
         api_key = os.environ.get("APCA_API_KEY_ID", "")
         api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
         if not api_key or not api_secret:
@@ -867,6 +1125,7 @@ def _cmd_paper_run(symbols: list[str], args: argparse.Namespace) -> None:
         ledger_root=args.data_root.rstrip("/") + "/paper_ledger",
         max_runtime_hours=float(args.max_runtime_hours),
         submit_orders=submit_orders,
+        paper_broker=broker,
         data_vendor=args.data_vendor,
         bar_size=args.bar_size,
         reconcile_on_start=True,
@@ -874,7 +1133,7 @@ def _cmd_paper_run(symbols: list[str], args: argparse.Namespace) -> None:
         kill_on_recon_fail=True,
     )
 
-    print(f"Paper runtime session: strategy={args.strategy}, broker={args.broker}")
+    print(f"Paper runtime session: strategy={args.strategy}, broker={broker}")
     print(f"  symbols:       {', '.join(symbols)}")
     print(f"  cash:          ${args.initial_cash:,.0f}")
     print(f"  submit-orders: {submit_orders}")
@@ -947,7 +1206,15 @@ def _add_paper_parser(subparsers: Any) -> None:
     start.add_argument("--initial-cash", type=float, default=100_000.0, help="Initial capital")
     start.add_argument("--commission-rate", type=float, default=0.0001, help="Commission rate")
     start.add_argument("--slippage-bps", type=float, default=1.0, help="Slippage in bps")
-    start.add_argument("--enable-paper-orders", action="store_true", default=False, help="Submit orders to Alpaca Paper (default: dry-run)")
+    start.add_argument(
+        "--enable-paper-orders",
+        action="store_true",
+        default=False,
+        help=(
+            "Submit through the gated paper runtime; Alpaca paper remains "
+            "fail-closed until an adapter is wired (default: dry-run)"
+        ),
+    )
     start.set_defaults(func=cmd_paper_start)
 
     # paper resume
@@ -1614,6 +1881,12 @@ def cmd_readiness(args: argparse.Namespace) -> None:
     print(f"  generated_at: {generated_at}")
     print(f"  gate_version: 1.2.0")
     print(f"  profile:      {profile}")
+    print(f"  evidence:     validation_state={args.validation_state or '(not provided)'}")
+    data_root = getattr(args, "data_root", "data")
+    latest_daily = _latest_file(Path(data_root) / "paper_ledger" / "daily_reports", "daily_report_*.json")
+    print(f"  evidence:     latest_daily_report={latest_daily or '(not found)'}")
+    print(f"  evidence:     manifest_root={_manifest_root(data_root)}")
+    _print_paper_review_status(data_root)
     if force_rerun:
         print("  force_rerun:  True (ignoring any stale results)")
     if no_cache:
@@ -1625,7 +1898,14 @@ def cmd_readiness(args: argparse.Namespace) -> None:
         print(f"         {check.detail}")
     print("=" * 60)
     if report.is_ready():
-        print("  RESULT: SYSTEM IS READY for live trading.")
+        if profile == "live":
+            print("  RESULT: SYSTEM IS READY for live trading.")
+        elif profile == "paper":
+            print("  RESULT: READINESS CHECKS PASSED for paper-stage evaluation only.")
+        elif profile == "shadow_live":
+            print("  RESULT: SHADOW-LIVE READY for read-only validation.")
+        else:
+            print("  RESULT: SIMULATED READY.")
     elif profile != "live" and report.checks:
         failed = [c for c in report.checks if not c.passed and not getattr(c, "warn", False)]
         if not failed:
@@ -1634,6 +1914,7 @@ def cmd_readiness(args: argparse.Namespace) -> None:
             print(f"  RESULT: BLOCKED. {len(failed)} hard failures.")
     else:
         print("  RESULT: SYSTEM IS NOT READY. Fix failing checks above.")
+    print("  NOTE: Readiness output is evidence-only. Separate manual review and operator gates are still required before any paper/live order path.")
 
 
 def _cmd_readiness_small_live(args: argparse.Namespace) -> None:
@@ -1700,6 +1981,7 @@ def _add_readiness_parser(subparsers: Any) -> None:
         default="",
         help="Path to validation_state.json from paper trading (optional, for 30-day check)",
     )
+    p.add_argument("--data-root", default="data", help="Data root directory for evidence pointers")
     p.add_argument(
         "--small-live",
         action="store_true",
@@ -1886,7 +2168,19 @@ def _start_paper_production_loop(symbols: list[str], args: argparse.Namespace) -
     from quant_us.live.paper_runtime import PaperRuntime, PaperRuntimeConfig
     from quant_us.strategies.factory import build_strategy as _build
 
-    submit_orders = bool(args.submit_orders)
+    submit_orders = bool(
+        getattr(args, "submit_orders", getattr(args, "enable_paper_orders", False))
+    )
+    broker = str(
+        getattr(
+            args,
+            "broker",
+            "alpaca" if bool(getattr(args, "enable_paper_orders", False)) else "simulated",
+        )
+    )
+    data_root = str(getattr(args, "data_root", "data"))
+    poll_interval = float(getattr(args, "poll_interval", 60.0))
+    max_runtime_hours = float(getattr(args, "max_runtime_hours", 8.0))
 
     config = PaperRuntimeConfig(
         symbols=symbols,
@@ -1894,11 +2188,12 @@ def _start_paper_production_loop(symbols: list[str], args: argparse.Namespace) -
         capital=args.initial_cash,
         commission_rate=args.commission_rate,
         slippage_bps=args.slippage_bps,
-        poll_interval_seconds=float(args.poll_interval),
-        data_root=args.data_root,
-        ledger_root=args.data_root.rstrip("/") + "/paper_ledger",
-        max_runtime_hours=float(args.max_runtime_hours),
+        poll_interval_seconds=poll_interval,
+        data_root=data_root,
+        ledger_root=data_root.rstrip("/") + "/paper_ledger",
+        max_runtime_hours=max_runtime_hours,
         submit_orders=submit_orders,
+        paper_broker=broker,
         data_vendor=args.data_vendor,
         bar_size=args.bar_size,
         reconcile_on_start=True,
@@ -1907,14 +2202,14 @@ def _start_paper_production_loop(symbols: list[str], args: argparse.Namespace) -
     )
 
     strategy = _build(args.strategy, {})
-    print(f"Paper Production Loop: strategy={args.strategy}")
+    print(f"Paper Production Loop: strategy={args.strategy}, broker={broker}")
     print(f"  symbols:       {', '.join(symbols)}")
     print(f"  cash:          ${args.initial_cash:,.0f}")
     print(f"  submit-orders: {submit_orders}")
-    print(f"  poll-interval: {args.poll_interval}s")
+    print(f"  poll-interval: {poll_interval}s")
     print(f"  bar-size:      {args.bar_size}")
     print(f"  data-vendor:   {args.data_vendor}")
-    print(f"  max-runtime:   {args.max_runtime_hours}h")
+    print(f"  max-runtime:   {max_runtime_hours}h")
     print()
 
     runtime_instance = PaperRuntime(config=config)
@@ -7465,6 +7760,8 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="subcommand", required=True, help="Subcommand")
     _add_ingest_parser(subparsers)
     _add_backtest_parser(subparsers)
+    _add_manifest_parser(subparsers)
+    _add_report_parser(subparsers)
     _add_regime_parser(subparsers)
     _add_paper_parser(subparsers)
     _add_shadow_live_parser(subparsers)

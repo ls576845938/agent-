@@ -99,7 +99,7 @@ def load_settings() -> Settings:
         frontend_root=frontend_root,
         logs_dir=logs_dir,
         reports_dir=reports_dir,
-        default_data_source=os.getenv("QS_DEFAULT_DATA_SOURCE", "fixture"),
+        default_data_source=os.getenv("QS_DEFAULT_DATA_SOURCE", "yfinance"),
         data_db_path=os.getenv("QS_DATA_DB_PATH", str(repo_root / "data" / "market_data.sqlite")),
         binance_base_url=os.getenv("QS_BINANCE_BASE_URL", "https://api.binance.com"),
         binance_fallback_base_urls=_env_csv(
@@ -110,17 +110,17 @@ def load_settings() -> Settings:
         http_timeout_seconds=_env_float("QS_HTTP_TIMEOUT_SECONDS", 20.0),
         data_update_interval_seconds=_env_int("QS_DATA_UPDATE_INTERVAL_SECONDS", 86400),
         data_default_backfill_days=_env_int("QS_DATA_DEFAULT_BACKFILL_DAYS", 30),
-        default_symbol=os.getenv("QS_DEFAULT_SYMBOL", "BTCUSDT"),
-        default_interval=os.getenv("QS_DEFAULT_INTERVAL", "1h"),
+        default_symbol=os.getenv("QS_DEFAULT_SYMBOL", "SPY"),
+        default_interval=os.getenv("QS_DEFAULT_INTERVAL", "1d"),
         timezone_name=os.getenv("QS_TIMEZONE", "UTC"),
         web_api_key=os.getenv("QS_WEB_API_KEY", ""),
         api_host=os.getenv("QS_API_HOST", "127.0.0.1"),
         api_port=_env_int("QS_API_PORT", 8000),
-        default_commission_rate=_env_float("QS_DEFAULT_COMMISSION_RATE", 0.0004),
-        default_slippage=_env_float("QS_DEFAULT_SLIPPAGE", 4.0),
+        default_commission_rate=_env_float("QS_DEFAULT_COMMISSION_RATE", 0.0001),
+        default_slippage=_env_float("QS_DEFAULT_SLIPPAGE", 1.0),
         default_leverage=_env_float("QS_DEFAULT_LEVERAGE", 1.0),
         default_capital=_env_float("QS_DEFAULT_CAPITAL", 100000.0),
-        allow_fixture_fallback=_env_bool("QS_ALLOW_FIXTURE_FALLBACK", True),
+        allow_fixture_fallback=_env_bool("QS_ALLOW_FIXTURE_FALLBACK", False),
     )
 
 

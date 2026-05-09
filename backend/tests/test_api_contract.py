@@ -15,10 +15,29 @@ from quant_us.core.enums import OrderSide
 from quant_us.core.types import Fill
 
 
-FASTAPI_AVAILABLE = bool(importlib.util.find_spec("fastapi"))
+TESTCLIENT_AVAILABLE = bool(importlib.util.find_spec("fastapi")) and bool(importlib.util.find_spec("httpx"))
 
 
-@unittest.skipUnless(FASTAPI_AVAILABLE, "FastAPI is not installed in the current environment")
+class ApiSchemaDefaultTests(unittest.TestCase):
+    def test_backtest_request_defaults_are_us_equity(self) -> None:
+        from backend.app.api.schemas import BaseBacktestRequest, DataQualityRequest
+
+        payload = {
+            "start": "2024-01-01T00:00:00Z",
+            "end": "2024-02-01T00:00:00Z",
+        }
+        backtest = BaseBacktestRequest.model_validate(payload)
+        quality = DataQualityRequest.model_validate(payload)
+
+        self.assertEqual(backtest.source, "yfinance")
+        self.assertEqual(backtest.symbol, "SPY")
+        self.assertEqual(backtest.interval, "1d")
+        self.assertEqual(quality.source, "yfinance")
+        self.assertEqual(quality.symbol, "SPY")
+        self.assertEqual(quality.interval, "1d")
+
+
+@unittest.skipUnless(TESTCLIENT_AVAILABLE, "FastAPI TestClient dependencies are not installed in the current environment")
 class ApiContractTests(unittest.TestCase):
     def setUp(self) -> None:
         from fastapi.testclient import TestClient
