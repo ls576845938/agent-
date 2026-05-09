@@ -16,6 +16,9 @@ from backend.app.api.schemas import (
     DataSyncRequest,
     DataSyncRunResponse,
     DatabaseStatusResponse,
+    FeatureBuildRequest,
+    FeatureSnapshotResponse,
+    FeatureValidateResponse,
     HealthResponse,
     KlinePreviewResponse,
     LatestDataUpdateRequest,
@@ -533,6 +536,37 @@ def create_app():
         result = gate.evaluate(candidate_id)
         return result.__dict__
 
+    # ------------------------------------------------------------------
+    # R4: Research orchestration endpoints
+    # ------------------------------------------------------------------
+
+    @router.get("/research/batches/{batch_id}")
+    async def get_research_batch(batch_id: str):
+        """Get status of a research batch plan."""
+        try:
+            from quant_us.research.orchestration.queue import ExperimentQueue
+            queue = ExperimentQueue()
+            status = queue.get_status(batch_id)
+            if "error" in status:
+                from fastapi import HTTPException
+                raise HTTPException(status_code=404, detail=status["error"])
+            return status
+        except ImportError:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=503, detail="research orchestration unavailable")
+
+    @router.post("/research/batches/{batch_id}/run")
+    async def run_research_batch(batch_id: str, dry_run: bool = False):
+        """Run (or dry-run) a research batch plan."""
+        try:
+            from quant_us.research.orchestration.queue import ExperimentQueue
+            queue = ExperimentQueue()
+            result = queue.run_batch(batch_id=batch_id, dry_run=dry_run)
+            return result
+        except ImportError:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=503, detail="research orchestration unavailable")
+
     @router.get("/portfolio/status")
     async def portfolio_status():
         """Return current portfolio construction status."""
@@ -555,6 +589,158 @@ def create_app():
             return {"status": "ok", "portfolio_count": 0, "latest_portfolio": None}
         except Exception as exc:
             return {"status": "error", "detail": str(exc)}
+
+    # ------------------------------------------------------------------
+    # R3: Feature Store endpoints
+    # ------------------------------------------------------------------
+
+    @router.get("/research/features", response_model=list[FeatureSnapshotResponse])
+    async def list_feature_snapshots():
+        """List all feature snapshots."""
+        from quant_us.research.features.snapshot import FeatureSnapshotManager
+
+        mgr = FeatureSnapshotManager()
+        return [FeatureSnapshotResponse(**s.__dict__) for s in mgr.list_snapshots()]
+
+    @router.post("/research/features/build", response_model=FeatureSnapshotResponse)
+    async def build_feature_snapshot(request: FeatureBuildRequest):
+        """Build a feature snapshot."""
+        from quant_us.research.features.snapshot import FeatureSnapshotManager
+
+        mgr = FeatureSnapshotManager(data_root=request.data_root)
+        snapshot = mgr.build(
+            feature_id=request.feature_id,
+            version=request.version,
+            symbols=request.symbols,
+            start=request.start,
+            end=request.end,
+        )
+        return FeatureSnapshotResponse(**snapshot.__dict__)
+
+    @router.get("/research/features/{snapshot_id}", response_model=FeatureSnapshotResponse)
+    async def get_feature_snapshot(snapshot_id: str):
+        """Get metadata for a specific feature snapshot."""
+        from quant_us.research.features.snapshot import FeatureSnapshotManager
+
+        mgr = FeatureSnapshotManager()
+        snapshots = [s for s in mgr.list_snapshots() if s.snapshot_id == snapshot_id]
+        if not snapshots:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail=f"Snapshot '{snapshot_id}' not found")
+        return FeatureSnapshotResponse(**snapshots[0].__dict__)
+
+    @router.post("/research/features/{snapshot_id}/validate", response_model=FeatureValidateResponse)
+    async def validate_feature_snapshot(snapshot_id: str):
+        """Validate a feature snapshot checksum."""
+        from quant_us.research.features.snapshot import FeatureSnapshotManager
+
+        mgr = FeatureSnapshotManager()
+        ok, reason = mgr.validate(snapshot_id)
+        return FeatureValidateResponse(snapshot_id=snapshot_id, valid=ok, reason=reason)
+
+    # ------------------------------------------------------------------
+    # R5: Strategy Factory & Portfolio Promotion Bridge
+    # ------------------------------------------------------------------
+
+    @router.get("/research/portfolio-sims/{sim_id}")
+    async def get_portfolio_sim(sim_id: str):
+        """Get portfolio simulation results."""
+        from quant_us.research.portfolio_sim_bridge import PortfolioSimBridge
+        from fastapi import HTTPException
+
+        bridge = PortfolioSimBridge()
+        try:
+            return bridge.get_report(sim_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @router.post("/research/portfolio-sims/run")
+    async def run_portfolio_sim(request: dict):
+        """Run a portfolio simulation. Body: {manifest_ids: [...], config: {...}}"""
+        from quant_us.research.portfolio_sim_bridge import PortfolioSimBridge
+        from fastapi import HTTPException
+
+        manifest_ids = request.get("manifest_ids", [])
+        config = request.get("config", {})
+        bridge = PortfolioSimBridge()
+        try:
+            sim_request = bridge.create_simulation(manifest_ids, config)
+            result = bridge.run_simulation(sim_request.portfolio_sim_id)
+            return {
+                "portfolio_sim_id": result.portfolio_sim_id,
+                "decision": result.decision,
+                "risk_breach_count": result.risk_breach_count,
+                "final_equity": result.equity_curve[-1] if result.equity_curve else 0.0,
+                "strategy_count": len(result.contribution_by_strategy),
+            }
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/research/paper-review/create")
+    async def create_paper_review(request: dict):
+        """Create a paper review from a portfolio simulation."""
+        from quant_us.research.paper_review_bridge import PaperReviewManager
+        from fastapi import HTTPException
+
+        sim_id = request.get("portfolio_sim_id", "")
+        if not sim_id:
+            raise HTTPException(status_code=400, detail="portfolio_sim_id is required")
+        mgr = PaperReviewManager()
+        try:
+            review = mgr.create_review(sim_id)
+            return {
+                "paper_review_id": review.paper_review_id,
+                "status": review.status,
+                "proposed_symbols": review.proposed_symbols,
+                "proposed_capital": review.proposed_capital,
+                "created_at": review.created_at,
+            }
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.get("/research/paper-review/pending")
+    async def list_pending_reviews():
+        """List pending paper reviews."""
+        from quant_us.research.paper_review_bridge import PaperReviewManager
+
+        mgr = PaperReviewManager()
+        reviews = mgr.list_pending()
+        return [
+            {
+                "paper_review_id": r.paper_review_id,
+                "strategy_manifest_id": r.strategy_manifest_id,
+                "portfolio_sim_id": r.portfolio_sim_id,
+                "status": r.status,
+                "proposed_symbols": r.proposed_symbols,
+                "proposed_capital": r.proposed_capital,
+                "created_at": r.created_at,
+            }
+            for r in reviews
+        ]
+
+    @router.post("/research/paper-review/{review_id}/approve")
+    async def approve_paper_review(review_id: str, request: dict):
+        """Approve a paper review. Requires --manual (body: {reviewer: "...", manual: true})."""
+        from quant_us.research.paper_review_bridge import PaperReviewManager
+        from fastapi import HTTPException
+
+        manual = request.get("manual", False)
+        reviewer = request.get("reviewer", "")
+        if not manual:
+            raise HTTPException(status_code=400, detail="manual flag required for approval")
+        if not reviewer:
+            raise HTTPException(status_code=400, detail="reviewer name required")
+        mgr = PaperReviewManager()
+        try:
+            review = mgr.approve(review_id, reviewer)
+            return {
+                "paper_review_id": review.paper_review_id,
+                "status": review.status,
+                "reviewer": review.reviewer,
+                "note": "APPROVED_FOR_PAPER_ONLY - does NOT trigger paper trading",
+            }
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     app.include_router(router)
     return app

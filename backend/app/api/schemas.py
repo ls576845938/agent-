@@ -520,6 +520,36 @@ class USFeatureBuildResponse(BaseModel):
     error: Optional[str] = None
 
 
+class FeatureSnapshotResponse(BaseModel):
+    snapshot_id: str
+    feature_id: str
+    feature_version: str
+    symbols: List[str]
+    start: str
+    end: str
+    data_version: str
+    config_hash: str
+    created_at: str
+    row_count: int = 0
+    checksum: str = ""
+    path: str = ""
+
+
+class FeatureBuildRequest(BaseModel):
+    feature_id: str
+    version: str = "v1"
+    symbols: List[str]
+    start: str
+    end: str
+    data_root: str = "data"
+
+
+class FeatureValidateResponse(BaseModel):
+    snapshot_id: str
+    valid: bool
+    reason: str
+
+
 class USCorporateActionInput(BaseModel):
     symbol: str
     action_type: str

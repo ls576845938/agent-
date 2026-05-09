@@ -127,6 +127,57 @@ class ResearchCache:
                     count += 1
         return count
 
+    def invalidate_by_hash(self, config_hash: str) -> int:
+        """Invalidate all cache entries matching a config_hash.
+
+        Looks for cached entries whose metadata file contains the given
+        config_hash and removes them.
+
+        Args:
+            config_hash: The config hash string to match.
+
+        Returns:
+            Number of cache entries invalidated.
+        """
+        count = 0
+        # Look through metadata manifest
+        meta_dir = self.cache_root / "meta"
+        if not meta_dir.exists():
+            return 0
+        for meta_file in meta_dir.glob("*.json"):
+            try:
+                meta = json.loads(meta_file.read_text(encoding="utf-8"))
+                if meta.get("config_hash") == config_hash:
+                    cache_key = meta.get("key", "")
+                    if self.invalidate(cache_key):
+                        count += 1
+                    meta_file.unlink()
+            except (json.JSONDecodeError, OSError):
+                continue
+        return count
+
+    def generate_key(
+        self,
+        prefix: str,
+        config_hash: str,
+        data_version: str,
+        feature_snapshot_ids: list[str],
+    ) -> str:
+        """Generate a deterministic cache key from experiment metadata.
+
+        Args:
+            prefix: Cache key prefix (e.g. 'backtest', 'features').
+            config_hash: Hash of the experiment configuration.
+            data_version: Data version string.
+            feature_snapshot_ids: Feature snapshot IDs sorted for determinism.
+
+        Returns:
+            A cache key string.
+        """
+        parts = [prefix, config_hash, data_version]
+        parts.extend(sorted(feature_snapshot_ids))
+        return ":".join(parts)
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------

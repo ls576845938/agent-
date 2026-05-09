@@ -1,2 +1,2 @@
-"""Research and machine-learning dataset utilities."""
+"""Research, machine-learning datasets, and feature snapshots."""
 

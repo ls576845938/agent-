@@ -44,6 +44,8 @@ class FactorDefinition:
         winsorize_pct: Fraction to winsorize at each tail before z-score.
         zscore: Whether to z-score standardize the cross-section.
         rank_method: ``"percentile"``, ``"zscore"``, or ``"raw"`` output.
+        version: Version string for the factor definition (default ``"v1"``).
+        created_at: ISO-8601 timestamp of when this definition was created.
     """
 
     factor_id: str
@@ -56,6 +58,8 @@ class FactorDefinition:
     winsorize_pct: float = 0.01
     zscore: bool = True
     rank_method: str = "percentile"
+    version: str = "v1"
+    created_at: str = ""
 
     def __post_init__(self) -> None:
         if self.category not in FACTOR_CATEGORIES:
@@ -90,8 +94,14 @@ class FactorLibrary:
     # Public API
     # ------------------------------------------------------------------
 
-    def register(self, factor: FactorDefinition) -> None:
-        """Register a factor definition. Overwrites if already exists."""
+    def register(self, factor: FactorDefinition, version: str | None = None) -> None:
+        """Register a factor definition. Overwrites if already exists.
+
+        If *version* is provided, it overrides the ``version`` field
+        on the factor before registration.
+        """
+        if version is not None:
+            factor.version = version
         self._registry[factor.factor_id] = factor
 
     def get(self, factor_id: str) -> FactorDefinition:

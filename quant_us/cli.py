@@ -5232,8 +5232,9 @@ def _add_research_parser(subparsers: Any) -> None:
     cand_dedup.set_defaults(func=cmd_research_candidate_dedup)
 
     # --- batch-run ---
-    batch_p = research_sub.add_parser("batch-run", help="Run multiple experiments in batch")
-    batch_p.add_argument("--experiment-ids", required=True, help="Comma-separated experiment IDs")
+    batch_p = research_sub.add_parser("batch-run", help="Run a batch plan (use batch-create first)")
+    batch_p.add_argument("--batch-id", required=True, help="Batch plan ID")
+    batch_p.add_argument("--dry-run", action="store_true", help="Simulate without executing experiments")
     batch_p.add_argument("--data-root", default="data", help="Data root path")
     batch_p.set_defaults(func=cmd_research_batch_run)
 
@@ -5292,6 +5293,212 @@ def _add_research_parser(subparsers: Any) -> None:
     comp_p.add_argument("--metric", default="score", help="Metric to compare (default: score)")
     comp_p.add_argument("--data-root", default="data", help="Data root path")
     comp_p.set_defaults(func=cmd_research_compare)
+
+    # --- feature (R3 Feature Store) ---
+    feat_p = research_sub.add_parser(
+        "feature", help="R3 Feature Store: build, list, inspect, validate snapshots"
+    )
+    feat_sub = feat_p.add_subparsers(dest="feature_command")
+
+    # feature list
+    fl = feat_sub.add_parser("list", help="List all feature snapshots")
+    fl.add_argument("--data-root", default="data", help="Data root path")
+    fl.set_defaults(func=cmd_research_feature_list)
+
+    # feature build
+    fb = feat_sub.add_parser("build", help="Build a feature snapshot")
+    fb.add_argument("--feature-id", required=True, help="Factor ID (e.g. momentum_60d)")
+    fb.add_argument("--version", default="v1", help="Feature version (default: v1)")
+    fb.add_argument("--symbols", required=True, help="Comma-separated symbols")
+    fb.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
+    fb.add_argument("--end", default="", help="End date YYYY-MM-DD (default: today)")
+    fb.add_argument("--data-root", default="data", help="Data root path")
+    fb.set_defaults(func=cmd_research_feature_build)
+
+    # feature inspect
+    fi = feat_sub.add_parser("inspect", help="Inspect a feature snapshot")
+    fi.add_argument("--snapshot-id", required=True, help="Snapshot ID")
+    fi.add_argument("--data-root", default="data", help="Data root path")
+    fi.set_defaults(func=cmd_research_feature_inspect)
+
+    # feature validate
+    fv = feat_sub.add_parser("validate", help="Validate a feature snapshot checksum")
+    fv.add_argument("--snapshot-id", required=True, help="Snapshot ID")
+    fv.add_argument("--data-root", default="data", help="Data root path")
+    fv.set_defaults(func=cmd_research_feature_validate)
+
+    # ------------------------------------------------------------------
+    # R4: Experiment Orchestration & Compute Efficiency
+    # ------------------------------------------------------------------
+
+    # --- batch-create ---
+    bc_p = research_sub.add_parser(
+        "batch-create",
+        help="Create a new batch plan from config YAML",
+    )
+    bc_p.add_argument("--config", required=True, help="Path to YAML config with experiment list")
+    bc_p.add_argument("--max-parallel", type=int, default=1, help="Max parallel experiments (default: 1)")
+    bc_p.add_argument("--data-root", default="data", help="Data root path")
+    bc_p.set_defaults(func=cmd_research_batch_create)
+
+    # --- batch-status ---
+    bs_p = research_sub.add_parser(
+        "batch-status",
+        help="Show status of a batch plan",
+    )
+    bs_p.add_argument("--batch-id", required=True, help="Batch plan ID")
+    bs_p.add_argument("--data-root", default="data", help="Data root path")
+    bs_p.set_defaults(func=cmd_research_batch_status)
+
+    # --- batch-cancel ---
+    bcncl_p = research_sub.add_parser(
+        "batch-cancel",
+        help="Cancel a batch plan",
+    )
+    bcncl_p.add_argument("--batch-id", required=True, help="Batch plan ID")
+    bcncl_p.add_argument("--data-root", default="data", help="Data root path")
+    bcncl_p.set_defaults(func=cmd_research_batch_cancel)
+
+    # --- cache-list ---
+    cl_p = research_sub.add_parser(
+        "cache-list",
+        help="List cache entries with metadata",
+    )
+    cl_p.add_argument("--data-root", default="data", help="Data root path")
+    cl_p.set_defaults(func=cmd_research_cache_list)
+
+    # --- cache-inspect ---
+    ci_p = research_sub.add_parser(
+        "cache-inspect",
+        help="Inspect a specific cache entry",
+    )
+    ci_p.add_argument("--key", required=True, help="Cache key to inspect")
+    ci_p.add_argument("--data-root", default="data", help="Data root path")
+    ci_p.set_defaults(func=cmd_research_cache_inspect)
+
+    # --- cache-clear ---
+    cclr_p = research_sub.add_parser(
+        "cache-clear",
+        help="Clear research cache with safety flag",
+    )
+    cclr_p.add_argument("--safe", action="store_true", required=True,
+                        help="Safety confirmation flag (required)")
+    cclr_p.add_argument("--data-root", default="data", help="Data root path")
+    cclr_p.set_defaults(func=cmd_research_cache_clear)
+
+    # --- resource-status ---
+    rs_p = research_sub.add_parser(
+        "resource-status",
+        help="Show current resource usage status",
+    )
+    rs_p.add_argument("--data-root", default="data", help="Data root path")
+    rs_p.set_defaults(func=cmd_research_resource_status)
+
+    # --- dataset-preview ---
+    dp_p = research_sub.add_parser(
+        "dataset-preview",
+        help="Preview a feature snapshot dataset",
+    )
+    dp_p.add_argument("--feature-snapshot-id", required=True, help="Feature snapshot ID")
+    dp_p.add_argument("--columns", default="", help="Comma-separated columns to preview")
+    dp_p.add_argument("--limit", type=int, default=10, help="Row limit (default: 10)")
+    dp_p.add_argument("--data-root", default="data", help="Data root path")
+    dp_p.set_defaults(func=cmd_research_dataset_preview)
+
+    # ------------------------------------------------------------------
+    # R5: Strategy Factory & Portfolio Promotion Bridge
+    # ------------------------------------------------------------------
+
+    # --- strategy-manifest-create ---
+    smc_p = research_sub.add_parser(
+        "strategy-manifest-create",
+        help="Create a strategy manifest from a candidate that passed promotion gate",
+    )
+    smc_p.add_argument("--candidate-id", required=True, help="Candidate ID to create manifest from")
+    smc_p.add_argument("--data-root", default="data", help="Data root path")
+    smc_p.set_defaults(func=cmd_research_strategy_manifest_create)
+
+    # --- strategy-manifest-inspect ---
+    smi_p = research_sub.add_parser(
+        "strategy-manifest-inspect",
+        help="Inspect a strategy candidate manifest",
+    )
+    smi_p.add_argument("--strategy-candidate-id", required=True, help="Strategy candidate manifest ID")
+    smi_p.add_argument("--data-root", default="data", help="Data root path")
+    smi_p.set_defaults(func=cmd_research_strategy_manifest_inspect)
+
+    # --- portfolio-sim-create ---
+    psc_p = research_sub.add_parser(
+        "portfolio-sim-create",
+        help="Create a portfolio simulation request from strategy manifests",
+    )
+    psc_p.add_argument("--strategy-manifest-ids", required=True,
+                       help="Comma-separated strategy manifest IDs")
+    psc_p.add_argument("--allocation-method", default="equal_weight",
+                       help="Allocation method: equal_weight|vol_target|inverse_vol|risk_budget")
+    psc_p.add_argument("--config", default="{}", help="JSON config dict for simulation parameters")
+    psc_p.add_argument("--data-root", default="data", help="Data root path")
+    psc_p.set_defaults(func=cmd_research_portfolio_sim_create)
+
+    # --- portfolio-sim-run ---
+    psr_p = research_sub.add_parser(
+        "portfolio-sim-run",
+        help="Run a portfolio simulation",
+    )
+    psr_p.add_argument("--portfolio-sim-id", required=True, help="Portfolio simulation ID")
+    psr_p.add_argument("--data-root", default="data", help="Data root path")
+    psr_p.set_defaults(func=cmd_research_portfolio_sim_run)
+
+    # --- portfolio-sim-report ---
+    psrp_p = research_sub.add_parser(
+        "portfolio-sim-report",
+        help="Get portfolio simulation report",
+    )
+    psrp_p.add_argument("--portfolio-sim-id", required=True, help="Portfolio simulation ID")
+    psrp_p.add_argument("--data-root", default="data", help="Data root path")
+    psrp_p.set_defaults(func=cmd_research_portfolio_sim_report)
+
+    # --- paper-review-create ---
+    prc_p = research_sub.add_parser(
+        "paper-review-create",
+        help="Create a paper review from a portfolio simulation",
+    )
+    prc_p.add_argument("--portfolio-sim-id", required=True, help="Portfolio simulation ID")
+    prc_p.add_argument("--data-root", default="data", help="Data root path")
+    prc_p.set_defaults(func=cmd_research_paper_review_create)
+
+    # --- paper-review-list ---
+    prl_p = research_sub.add_parser(
+        "paper-review-list",
+        help="List pending paper reviews",
+    )
+    prl_p.add_argument("--all", action="store_true", help="List all reviews (not just pending)")
+    prl_p.add_argument("--data-root", default="data", help="Data root path")
+    prl_p.set_defaults(func=cmd_research_paper_review_list)
+
+    # --- paper-review-approve ---
+    pra_p = research_sub.add_parser(
+        "paper-review-approve",
+        help="Approve a paper review (manual only, does NOT trigger paper trading)",
+    )
+    pra_p.add_argument("--paper-review-id", required=True, help="Paper review ID")
+    pra_p.add_argument("--manual", action="store_true", required=True,
+                       help="Manual confirmation flag (required)")
+    pra_p.add_argument("--reviewer", required=True, help="Human reviewer name")
+    pra_p.add_argument("--data-root", default="data", help="Data root path")
+    pra_p.set_defaults(func=cmd_research_paper_review_approve)
+
+    # --- evidence-pack ---
+    ep_p = research_sub.add_parser(
+        "evidence-pack",
+        help="Generate evidence pack for a candidate",
+    )
+    ep_p.add_argument("--candidate-id", required=True, help="Candidate ID")
+    ep_p.add_argument("--output-dir", default="", help="Output directory (optional)")
+    ep_p.add_argument("--save", action="store_true", help="Save evidence pack to disk")
+    ep_p.add_argument("--markdown", action="store_true", help="Output as markdown")
+    ep_p.add_argument("--data-root", default="data", help="Data root path")
+    ep_p.set_defaults(func=cmd_research_evidence_pack)
 
 
 def cmd_research_experiment_create(args: argparse.Namespace) -> None:
@@ -5549,27 +5756,109 @@ def cmd_research_compare(args: argparse.Namespace) -> None:
         )
 
 
+def cmd_research_feature_list(args: argparse.Namespace) -> None:
+    """List all feature snapshots."""
+    from quant_us.research.features.snapshot import FeatureSnapshotManager
+
+    mgr = FeatureSnapshotManager(data_root=args.data_root)
+    snapshots = mgr.list_snapshots()
+
+    if not snapshots:
+        print("No feature snapshots found.")
+        return
+
+    print(f"{'Snapshot ID':42s} {'Feature':20s} {'Version':8s} {'Rows':8s} {'Created At'}")
+    print("-" * 100)
+    for s in snapshots:
+        print(f"{s.snapshot_id:42s} {s.feature_id:20s} {s.feature_version:8s} {str(s.row_count):8s} {s.created_at[:19]}")
+    print(f"\nTotal: {len(snapshots)} snapshot(s)")
+
+
+def cmd_research_feature_build(args: argparse.Namespace) -> None:
+    """Build a feature snapshot."""
+    from datetime import date
+
+    from quant_us.research.features.snapshot import FeatureSnapshotManager
+
+    symbols = _parse_symbols(args.symbols)
+    end = args.end or date.today().isoformat()
+    mgr = FeatureSnapshotManager(data_root=args.data_root)
+    snapshot = mgr.build(
+        feature_id=args.feature_id,
+        version=args.version,
+        symbols=symbols,
+        start=args.start,
+        end=end,
+    )
+
+    print(f"Feature snapshot built:")
+    print(f"  snapshot_id:     {snapshot.snapshot_id}")
+    print(f"  feature_id:      {snapshot.feature_id}")
+    print(f"  version:         {snapshot.feature_version}")
+    print(f"  symbols:         {len(snapshot.symbols)} symbols")
+    print(f"  date range:      {snapshot.start} -> {snapshot.end}")
+    print(f"  rows:            {snapshot.row_count}")
+    print(f"  checksum:        {snapshot.checksum}")
+    print(f"  path:            {snapshot.path}")
+
+
+def cmd_research_feature_inspect(args: argparse.Namespace) -> None:
+    """Inspect a feature snapshot."""
+    from quant_us.research.features.snapshot import FeatureSnapshotManager
+
+    mgr = FeatureSnapshotManager(data_root=args.data_root)
+    snapshots = [s for s in mgr.list_snapshots() if s.snapshot_id == args.snapshot_id]
+
+    if not snapshots:
+        print(f"Snapshot '{args.snapshot_id}' not found.")
+        return
+
+    s = snapshots[0]
+    print(f"Feature Snapshot: {s.snapshot_id}")
+    print(f"  feature_id:       {s.feature_id}")
+    print(f"  version:          {s.feature_version}")
+    print(f"  symbols:          {', '.join(s.symbols[:10])}{'...' if len(s.symbols) > 10 else ''}")
+    print(f"  date range:       {s.start} -> {s.end}")
+    print(f"  data_version:     {s.data_version}")
+    print(f"  config_hash:      {s.config_hash}")
+    print(f"  created_at:       {s.created_at}")
+    print(f"  row_count:        {s.row_count}")
+    print(f"  checksum:         {s.checksum}")
+    print(f"  path:             {s.path}")
+
+
+def cmd_research_feature_validate(args: argparse.Namespace) -> None:
+    """Validate a feature snapshot checksum."""
+    from quant_us.research.features.snapshot import FeatureSnapshotManager
+
+    mgr = FeatureSnapshotManager(data_root=args.data_root)
+    ok, reason = mgr.validate(args.snapshot_id)
+
+    if ok:
+        print(f"VALID: {reason}")
+    else:
+        print(f"INVALID: {reason}")
+
+
 def cmd_research_batch_run(args: argparse.Namespace) -> None:
-    """Run multiple experiments in batch."""
-    from quant_us.research.lab.batch_runner import BatchBacktestRunner
+    """Run (or dry-run) a batch of experiments via ExperimentQueue."""
+    from quant_us.research.orchestration.queue import ExperimentQueue
 
-    experiment_ids = [eid.strip() for eid in args.experiment_ids.split(",") if eid.strip()]
-
-    runner = BatchBacktestRunner(data_root=args.data_root)
-    results = runner.run_experiments(experiment_ids)
-
-    ok = sum(1 for r in results if r.get("status") == "COMPLETED")
-    fail = sum(1 for r in results if r.get("status") == "FAILED")
-    print(f"Batch run complete: {ok} ok, {fail} failed")
-    for r in results:
-        status = r.get("status", "UNKNOWN")
-        eid = r.get("experiment_id", "?")
-        if status == "COMPLETED":
-            metrics = r.get("metrics", {})
-            sharpe = metrics.get("sharpe_ratio", "N/A")
-            print(f"  {eid}: {status} (sharpe={sharpe})")
-        else:
-            print(f"  {eid}: {status} — {r.get('error', '')}")
+    queue = ExperimentQueue(data_root=args.data_root)
+    result = queue.run_batch(
+        batch_id=args.batch_id,
+        dry_run=getattr(args, "dry_run", False),
+    )
+    print(f"Batch {args.batch_id}:")
+    print(f"  Status:    {result.get('status', '?')}")
+    print(f"  Completed: {result.get('completed', 0)}")
+    print(f"  Failed:    {result.get('failed', 0)}")
+    if "error" in result:
+        print(f"  Error:     {result['error']}", file=sys.stderr)
+    if "message" in result:
+        print(f"  Message:   {result['message']}")
+    if "reason" in result:
+        print(f"  Reason:    {result['reason']}")
 
 
 def cmd_research_scorecard(args: argparse.Namespace) -> None:
@@ -5873,6 +6162,194 @@ def cmd_research_report(args: argparse.Namespace) -> None:
     print(report)
 
 
+# ---------------------------------------------------------------------------
+# R4: Research orchestration command implementations
+# ---------------------------------------------------------------------------
+
+
+def cmd_research_batch_create(args: argparse.Namespace) -> None:
+    """Create a batch plan from a YAML config."""
+    import yaml
+
+    from quant_us.research.orchestration.queue import ExperimentQueue
+
+    with open(args.config) as f:
+        config = yaml.safe_load(f)
+
+    experiment_ids = config.get("experiment_ids", config.get("experiments", []))
+    if not experiment_ids:
+        print("ERROR: Config must contain 'experiment_ids' or 'experiments' list.", file=sys.stderr)
+        return
+
+    queue = ExperimentQueue(data_root=args.data_root)
+    plan = queue.create_batch(
+        experiment_ids=experiment_ids,
+        max_parallel=args.max_parallel,
+    )
+    print(f"Batch created: {plan.batch_id}")
+    print(f"  Experiments: {len(plan.experiment_ids)}")
+    print(f"  Max parallel: {plan.max_parallel}")
+    print(f"  Status: {plan.status}")
+    print()
+    print(f"Run with: research batch-run --batch-id {plan.batch_id}")
+
+
+def cmd_research_batch_status(args: argparse.Namespace) -> None:
+    """Show status of a batch plan."""
+    from quant_us.research.orchestration.queue import ExperimentQueue
+
+    queue = ExperimentQueue(data_root=args.data_root)
+    status = queue.get_status(args.batch_id)
+    if "error" in status:
+        print(f"ERROR: {status['error']}", file=sys.stderr)
+        return
+    print(f"Batch ID:     {status['batch_id']}")
+    print(f"Status:       {status['status']}")
+    print(f"Progress:     {status['progress']}")
+    print(f"Completed:    {len(status['completed'])}")
+    print(f"Failed:       {len(status['failed'])}")
+    print(f"Max parallel: {status['max_parallel']}")
+    print(f"Created:      {status['created_at']}")
+
+
+def cmd_research_batch_cancel(args: argparse.Namespace) -> None:
+    """Cancel a batch plan."""
+    from quant_us.research.orchestration.queue import ExperimentQueue
+
+    queue = ExperimentQueue(data_root=args.data_root)
+    queue.cancel_batch(args.batch_id)
+    print(f"Batch {args.batch_id} cancelled.")
+
+
+def cmd_research_cache_list(args: argparse.Namespace) -> None:
+    """List cache entries."""
+    from pathlib import Path
+
+    cache_root = Path(args.data_root) / "cache"
+    if not cache_root.exists():
+        print("Cache directory is empty or does not exist.")
+        return
+
+    total_size = 0
+    entry_count = 0
+    for subdir in ["parquet", "json"]:
+        d = cache_root / subdir
+        if d.exists():
+            files = list(d.iterdir())
+            for f in files:
+                if f.is_file():
+                    size = f.stat().st_size
+                    total_size += size
+                    entry_count += 1
+                    print(f"  [{subdir}] {f.name}  ({size / 1024:.1f} KB)")
+
+    print(f"\nTotal: {entry_count} entries, {total_size / 1024:.1f} KB")
+
+
+def cmd_research_cache_inspect(args: argparse.Namespace) -> None:
+    """Inspect a specific cache entry."""
+    from quant_us.research.cache import ResearchCache
+
+    cache = ResearchCache(cache_root=f"{args.data_root}/cache")
+    key = args.key
+    has_parquet = cache.has(key)
+    if not has_parquet:
+        print(f"Cache entry not found: {key}")
+        return
+    print(f"Cache key: {key}")
+    print(f"  Hash:     {cache._hash_key(key)}")
+    print(f"  Parquet:  {cache._path(key)}")
+    print(f"  JSON:     {cache._json_path(key)}")
+    # Try loading a snippet
+    df = cache.get(key)
+    if df is not None:
+        print(f"  Shape:    {df.shape}")
+        print(f"  Columns:  {list(df.columns)}")
+        print(f"  Head:")
+        print(df.head(5).to_string())
+
+
+def cmd_research_cache_clear(args: argparse.Namespace) -> None:
+    """Clear all cache entries (requires --safe flag)."""
+    if not args.safe:
+        print("ERROR: --safe flag is required to clear cache.", file=sys.stderr)
+        return
+    from quant_us.research.cache import ResearchCache
+
+    cache = ResearchCache(cache_root=f"{args.data_root}/cache")
+    count = cache.clear()
+    print(f"Cache cleared: {count} files removed.")
+
+
+def cmd_research_resource_status(args: argparse.Namespace) -> None:
+    """Show current resource usage status."""
+    from quant_us.research.orchestration.resource_guard import (
+        ResourceBudget,
+        ResourceBudgetGuard,
+    )
+
+    guard = ResourceBudgetGuard()
+    ok, message = guard.check()
+    budget = guard.budget
+    print("Resource Status:")
+    print(f"  Budget: CPU {budget.max_cpu_pct}% | Memory {budget.max_memory_mb}MB | "
+          f"Runtime {budget.max_runtime_seconds}s | Parallel {budget.max_parallel_jobs}")
+    print(f"  Check:  {'PASS' if ok else 'FAIL'} — {message}")
+
+
+def cmd_research_dataset_preview(args: argparse.Namespace) -> None:
+    """Preview a feature snapshot dataset."""
+    from pathlib import Path
+
+    from quant_us.research.orchestration.lazy_query import LazyDataset
+
+    # Locate the feature snapshot parquet directory
+    snap_dir = (
+        Path(args.data_root)
+        / "research"
+        / "features"
+        / args.feature_snapshot_id
+    )
+    if not snap_dir.exists():
+        # Try alternative location
+        alt_dir = (
+            Path(args.data_root)
+            / "ml_datasets"
+            / "features"
+            / args.feature_snapshot_id
+        )
+        if not alt_dir.exists():
+            print(f"Feature snapshot not found: {args.feature_snapshot_id}", file=sys.stderr)
+            print(f"  Looked in: {snap_dir}")
+            print(f"  Looked in: {alt_dir}")
+            return
+        snap_dir = alt_dir
+
+    columns = [c.strip() for c in args.columns.split(",") if c.strip()] if args.columns else None
+    ds = LazyDataset(str(snap_dir))
+    if columns:
+        ds = ds.select(columns)
+
+    stats = ds.stats()
+    if stats:
+        print(f"Dataset: {args.feature_snapshot_id}")
+        print(f"  Path:    {snap_dir}")
+        print(f"  Rows:    {stats.get('row_count', '?')}")
+        print(f"  Columns: {', '.join(stats.get('columns', []))}")
+        print(f"  Date:    {stats.get('date_min', '?')} -> {stats.get('date_max', '?')}")
+        print(f"  Symbols: {stats.get('symbol_count', '?')}")
+        print()
+
+    df = ds.collect()
+    if df.empty:
+        print("(empty dataset)")
+        return
+
+    limit = min(args.limit, len(df))
+    print(f"Preview ({limit} rows):")
+    print(df.head(limit).to_string())
+
+
 def _resolve_factor_ids(raw: str) -> list[str]:
     """Parse comma-separated factor IDs."""
     return [s.strip() for s in raw.split(",") if s.strip()]
@@ -6050,6 +6527,248 @@ def cmd_factor_check_lookahead(args: argparse.Namespace) -> None:
     else:
         print(f"OK: No lookahead detected for '{factor_id}'")
         print(f"  {message}")
+
+
+# R5: Strategy Factory & Portfolio Promotion Bridge
+# ---------------------------------------------------------------------------
+
+
+def cmd_research_strategy_manifest_create(args: argparse.Namespace) -> None:
+    """Create a strategy manifest from a candidate."""
+    import json
+
+    from quant_us.research.strategy_manifest import StrategyManifestManager
+
+    mgr = StrategyManifestManager(data_root=args.data_root)
+
+    try:
+        manifest = mgr.create_from_candidate(args.candidate_id)
+        print(f"Created strategy manifest: {manifest.strategy_candidate_id}")
+        print(f"  Source Candidate: {manifest.source_candidate_id}")
+        print(f"  Source Experiment: {manifest.source_experiment_id}")
+        print(f"  Status: {manifest.promotion_status}")
+        print(f"  Params Frozen: {manifest.params_frozen}")
+        print(f"  Created At: {manifest.created_at}")
+        if manifest.symbols:
+            print(f"  Symbols: {', '.join(manifest.symbols)}")
+        print(f"  NOTE: Params are now FROZEN. Manifest ready for portfolio simulation.")
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        raise
+
+
+def cmd_research_strategy_manifest_inspect(args: argparse.Namespace) -> None:
+    """Inspect a strategy candidate manifest."""
+    import json
+
+    from quant_us.research.strategy_manifest import StrategyManifestManager
+
+    mgr = StrategyManifestManager(data_root=args.data_root)
+    manifest = mgr.load(args.strategy_candidate_id)
+
+    if manifest is None:
+        print(f"Strategy manifest {args.strategy_candidate_id} not found.")
+        return
+
+    print(f"Strategy Candidate ID: {manifest.strategy_candidate_id}")
+    print(f"Source Candidate ID:   {manifest.source_candidate_id}")
+    print(f"Source Experiment ID:  {manifest.source_experiment_id}")
+    print(f"Lineage ID:            {manifest.lineage_id or '(none)'}")
+    print(f"Strategy Template:     {manifest.strategy_template or '(not set)'}")
+    print(f"Timeframe:             {manifest.timeframe}")
+    print(f"Expected Hold Period:  {manifest.expected_holding_period or '(not set)'}")
+    print(f"Promotion Status:      {manifest.promotion_status}")
+    print(f"Params Frozen:         {manifest.params_frozen}")
+    print(f"Created At:            {manifest.created_at}")
+    print(f"Symbols:               {', '.join(manifest.symbols) if manifest.symbols else '(empty)'}")
+    print(f"Robustness Score:      {manifest.robustness_score}")
+    print(f"Walk-Forward Score:    {manifest.walk_forward_score}")
+    print(f"Overfit Risk:          {manifest.overfit_risk}")
+    if manifest.params:
+        print(f"Params: {json.dumps(manifest.params, indent=2, default=str)[:200]}...")
+    if manifest.scorecard:
+        print(f"Scorecard: {json.dumps(manifest.scorecard, indent=2, default=str)[:200]}...")
+
+
+def cmd_research_portfolio_sim_create(args: argparse.Namespace) -> None:
+    """Create a portfolio simulation request from strategy manifests."""
+    import json
+
+    from quant_us.research.portfolio_sim_bridge import PortfolioSimBridge
+
+    manifest_ids = [mid.strip() for mid in args.strategy_manifest_ids.split(",") if mid.strip()]
+    if not manifest_ids:
+        print("ERROR: at least one strategy manifest ID required", file=sys.stderr)
+        return
+
+    config = {}
+    if args.config and args.config != "{}":
+        config = json.loads(args.config)
+    config["allocation_method"] = args.allocation_method
+
+    bridge = PortfolioSimBridge(data_root=args.data_root)
+
+    try:
+        request = bridge.create_simulation(manifest_ids, config)
+        print(f"Created portfolio simulation: {request.portfolio_sim_id}")
+        print(f"  Allocation Method: {request.allocation_method}")
+        print(f"  Strategy Manifests: {', '.join(request.strategy_manifest_ids)}")
+        print(f"  Capital:           ${request.capital:,.2f}")
+        print(f"  Rebalance:         {request.rebalance_frequency}")
+        print(f"  Symbols:           {len(request.symbols)} total")
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        raise
+
+
+def cmd_research_portfolio_sim_run(args: argparse.Namespace) -> None:
+    """Run a portfolio simulation."""
+    from quant_us.research.portfolio_sim_bridge import PortfolioSimBridge
+
+    bridge = PortfolioSimBridge(data_root=args.data_root)
+
+    try:
+        result = bridge.run_simulation(args.portfolio_sim_id)
+        print(f"Portfolio simulation {args.portfolio_sim_id} completed.")
+        print(f"  Decision:           {result.decision}")
+        print(f"  Risk Breach Count:  {result.risk_breach_count}")
+        print(f"  Equity Curve:       {len(result.equity_curve)} points")
+        print(f"  Final Equity:       ${result.equity_curve[-1]:,.2f}" if result.equity_curve else "  Final Equity: N/A")
+        print(f"  Turnover Est:       {result.turnover:.2%}")
+        print(f"  Strategy Count:     {len(result.contribution_by_strategy)}")
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        raise
+
+
+def cmd_research_portfolio_sim_report(args: argparse.Namespace) -> None:
+    """Get portfolio simulation report."""
+    import json
+
+    from quant_us.research.portfolio_sim_bridge import PortfolioSimBridge
+
+    bridge = PortfolioSimBridge(data_root=args.data_root)
+
+    try:
+        report = bridge.get_report(args.portfolio_sim_id)
+        print(f"Portfolio Sim Report: {args.portfolio_sim_id}")
+        print(f"  Decision:           {report['decision']}")
+        print(f"  Allocation Method:  {report.get('allocation_method', 'unknown')}")
+        print(f"  Capital:            ${report.get('capital', 0):,.2f}")
+        print(f"  Final Equity:       ${report.get('final_equity', 0):,.2f}")
+        print(f"  Strategy Count:     {report.get('strategy_count', 0)}")
+        print(f"  Risk Breach Count:  {report.get('risk_breach_count', 0)}")
+        print(f"  Max Drawdown Est:   {report.get('max_drawdown_est', 0):.4%}")
+        print(f"  Turnover Est:       {report.get('turnover_est', 0):.2%}")
+        print(f"  Contribution by Strategy:")
+        for sid, contrib in report.get('contribution_by_strategy', {}).items():
+            print(f"    {sid}: {contrib}")
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        raise
+
+
+def cmd_research_paper_review_create(args: argparse.Namespace) -> None:
+    """Create a paper review from a portfolio simulation."""
+    from quant_us.research.paper_review_bridge import PaperReviewManager
+
+    mgr = PaperReviewManager(data_root=args.data_root)
+
+    try:
+        review = mgr.create_review(args.portfolio_sim_id)
+        print(f"Created paper review: {review.paper_review_id}")
+        print(f"  Status:             {review.status}")
+        print(f"  Strategy Manifest:  {review.strategy_manifest_id}")
+        print(f"  Portfolio Sim:      {review.portfolio_sim_id}")
+        print(f"  Proposed Symbols:   {', '.join(review.proposed_symbols[:10])}")
+        if len(review.proposed_symbols) > 10:
+            print(f"    ... and {len(review.proposed_symbols) - 10} more")
+        print(f"  Proposed Capital:   ${review.proposed_capital:,.2f}")
+        print(f"  Created At:         {review.created_at}")
+        print(f"  NOTE: Review is PENDING_HUMAN_REVIEW. Requires manual approval.")
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        raise
+
+
+def cmd_research_paper_review_list(args: argparse.Namespace) -> None:
+    """List paper reviews."""
+    from quant_us.research.paper_review_bridge import PaperReviewManager
+
+    mgr = PaperReviewManager(data_root=args.data_root)
+
+    if args.all:
+        reviews = mgr.list_all()
+        print(f"All paper reviews ({len(reviews)} total):")
+    else:
+        reviews = mgr.list_pending()
+        print(f"Pending paper reviews ({len(reviews)}):")
+
+    if not reviews:
+        print("  (none)")
+        return
+
+    print(f"{'Review ID':<22} {'Manifest ID':<20} {'Status':<24} {'Reviewer':<16} {'Created'}")
+    print("-" * 95)
+    for r in reviews:
+        print(
+            f"{r.paper_review_id:<22} {r.strategy_manifest_id:<20} "
+            f"{r.status:<24} {r.reviewer or '-':<16} {r.created_at[:19]}"
+        )
+
+
+def cmd_research_paper_review_approve(args: argparse.Namespace) -> None:
+    """Approve a paper review (manual only, does NOT trigger paper trading)."""
+    if not args.manual:
+        print("ERROR: --manual flag required for paper review approval.")
+        print("Paper review approval is a manual action and does NOT trigger paper trading.")
+        return
+
+    from quant_us.research.paper_review_bridge import PaperReviewManager
+
+    mgr = PaperReviewManager(data_root=args.data_root)
+
+    try:
+        review = mgr.approve(args.paper_review_id, args.reviewer)
+        print(f"Paper review {args.paper_review_id} approved by {args.reviewer}.")
+        print(f"  Status: {review.status}")
+        print(f"  NOTE: This does NOT trigger paper trading.")
+        print(f"  The manifest is now APPROVED_FOR_PAPER_ONLY.")
+        print(f"  A separate operator action is required to enter paper trading.")
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        raise
+
+
+def cmd_research_evidence_pack(args: argparse.Namespace) -> None:
+    """Generate evidence pack for a candidate."""
+    import json
+
+    from quant_us.research.evidence_pack import EvidencePackGenerator
+
+    gen = EvidencePackGenerator(data_root=args.data_root)
+
+    try:
+        evidence = gen.generate(args.candidate_id)
+
+        if args.markdown:
+            print(gen.to_markdown(evidence))
+        else:
+            print(f"Evidence pack for candidate {args.candidate_id}:")
+            sections = evidence.get("sections", {})
+            for sec_key, sec_data in sections.items():
+                status = "OK" if "error" not in str(sec_data) else "MISSING"
+                if isinstance(sec_data, dict) and "error" in sec_data:
+                    status = f"ERROR: {sec_data['error']}"
+                print(f"  {sec_key}: {status}")
+
+        if args.save or args.output_dir:
+            path = gen.save(args.candidate_id, args.output_dir)
+            print(f"Evidence pack saved to: {path}")
+
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        raise
 
 
 def _add_factor_parser(subparsers: Any) -> None:
