@@ -1,0 +1,419 @@
+"""Research report generation for strategy candidates.
+
+Provides:
+- generate(): Standard report with basic summary.
+- generate_v2(): Enhanced report with walk-forward summary, anti-overfit
+  findings, structured reject reasons, and next research actions.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+
+def generate(
+    experiment_id: str, data_root: str = "data", v2: bool = False
+) -> str:
+    """Generate a research report for an experiment.
+
+    Args:
+        experiment_id: The experiment to report on.
+        data_root: Data root path.
+        v2: If True, generate enhanced v2 report with walk-forward,
+            anti-overfit findings, and next actions.
+
+    Returns:
+        Markdown report string.
+
+    Raises:
+        ValueError: If the experiment is not found.
+    """
+    if v2:
+        return generate_v2(experiment_id, data_root=data_root)
+    return _generate_standard(experiment_id, data_root=data_root)
+
+
+def _generate_standard(experiment_id: str, data_root: str = "data") -> str:
+    """Standard report — basic experiment summary."""
+    data_path = Path(data_root)
+    manifest_path = (
+        data_path / "research" / "experiments" / experiment_id / "manifest.json"
+    )
+    if not manifest_path.exists():
+        raise ValueError(f"Experiment {experiment_id} not found")
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    lines = [
+        f"# Research Report: {experiment_id}",
+        "",
+        f"**Strategy:** {manifest.get('strategy_id', 'unknown')}  ",
+        f"**Status:** {manifest.get('status', 'UNKNOWN')}  ",
+        f"**Created:** {manifest.get('created_at', 'unknown')}  ",
+        "",
+    ]
+
+    metrics = manifest.get("metrics", {})
+    if metrics:
+        lines.append("## Metrics\n")
+        lines.append("| Metric | Value |\n|--------|-------|\n")
+        for key, value in sorted(metrics.items()):
+            if isinstance(value, float):
+                lines.append(f"| {key} | {value:.4f} |\n")
+            else:
+                lines.append(f"| {key} | {value} |\n")
+
+    return "".join(lines)
+
+
+def generate_v2(experiment_id: str, data_root: str = "data") -> str:
+    """Enhanced v2 report with full analysis sections.
+
+    Sections:
+    1. Experiment summary
+    2. Candidate scorecards
+    3. Walk-forward summary
+    4. Anti-overfit findings
+    5. Promotion gate evaluation
+    6. "Ready for Paper Review" summary table
+    7. Next research actions
+    """
+    data_path = Path(data_root)
+    manifest_path = (
+        data_path / "research" / "experiments" / experiment_id / "manifest.json"
+    )
+    if not manifest_path.exists():
+        raise ValueError(f"Experiment {experiment_id} not found")
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    # Find candidates linked to this experiment
+    candidate_ids = _find_candidates_for_experiment(experiment_id, data_root)
+
+    sections: list[str] = [
+        f"# Research Report v2: {experiment_id}",
+        "",
+        _v2_header(manifest),
+        "",
+        _v2_experiment_summary(manifest),
+        "",
+    ]
+
+    # Section 2: Candidate scorecards
+    scorecards = _load_scorecards(candidate_ids, data_root)
+    sections.append(_v2_candidate_section(scorecards))
+    sections.append("")
+
+    # Section 3: Walk-forward summary
+    sections.append(_v2_walk_forward_section(scorecards))
+    sections.append("")
+
+    # Section 4: Anti-overfit findings
+    sections.append(_v2_anti_overfit_section(candidate_ids, data_root))
+    sections.append("")
+
+    # Section 5: Promotion gate results
+    gate_results = _evaluate_promotion_gate(candidate_ids, data_root)
+    sections.append(_v2_gate_section(gate_results))
+    sections.append("")
+
+    # Section 6: Ready for paper review summary
+    sections.append(_v2_ready_summary(gate_results))
+    sections.append("")
+
+    # Section 7: Next research actions
+    sections.append(_v2_next_actions(gate_results))
+    sections.append("")
+
+    return "\n".join(sections)
+
+
+# ---------------------------------------------------------------------------
+# Section builders
+# ---------------------------------------------------------------------------
+
+
+def _v2_header(manifest: dict) -> str:
+    return (
+        f"**Strategy:** {manifest.get('strategy_id', 'unknown')}  \n"
+        f"**Status:** {manifest.get('status', 'UNKNOWN')}  \n"
+        f"**Created:** {manifest.get('created_at', 'unknown')}  \n"
+        f"**Symbols:** {', '.join(manifest.get('symbols', [])) or 'N/A'}  \n"
+    )
+
+
+def _v2_experiment_summary(manifest: dict) -> str:
+    lines = [
+        "## Experiment Summary\n",
+        "| Field | Value |\n|-------|-------|\n",
+        f"| Experiment ID | {manifest.get('experiment_id', '?')} |\n",
+        f"| Strategy Family | {manifest.get('strategy_family', 'N/A')} |\n",
+        f"| Data Version | {manifest.get('data_version', 'N/A')} |\n",
+        f"| Date Range | {manifest.get('start_date', '?')} -> {manifest.get('end_date', '?')} |\n",
+        f"| Cost Model | {manifest.get('cost_model', 'default')} |\n",
+        f"| Walk Forward Config | {json.dumps(manifest.get('walk_forward_config', {}))} |\n",
+    ]
+
+    metrics = manifest.get("metrics", {})
+    if metrics:
+        lines.append("\n### Metrics\n\n| Metric | Value |\n|--------|-------|\n")
+        for key, value in sorted(metrics.items()):
+            if isinstance(value, float):
+                lines.append(f"| {key} | {value:.4f} |\n")
+            else:
+                lines.append(f"| {key} | {value} |\n")
+
+    return "".join(lines)
+
+
+def _v2_candidate_section(scorecards: list[dict]) -> str:
+    if not scorecards:
+        return "## Candidate Scorecards\n\nNo candidates found.\n"
+
+    lines = [
+        "## Candidate Scorecards\n",
+        "| Candidate | Sharpe | CAGR | MaxDD | OOS Deg | WFR | Overfit | Robust |\n",
+        "|-----------|--------|------|-------|---------|-----|---------|--------|\n",
+    ]
+    for sc in scorecards:
+        lines.append(
+            f"| {sc.get('candidate_id', '?')[:16]} "
+            f"| {sc.get('sharpe', 0.0):.2f} "
+            f"| {sc.get('cagr', 0.0):.2%} "
+            f"| {sc.get('max_drawdown', 0.0):.2%} "
+            f"| {sc.get('oos_degradation', 0.0):.2%} "
+            f"| {sc.get('walk_forward_pass_rate', 0.0):.2%} "
+            f"| {sc.get('overfit_risk', '?'):8s} "
+            f"| {sc.get('robustness_score', 0.0):.2f} |\n"
+        )
+    return "".join(lines)
+
+
+def _v2_walk_forward_section(scorecards: list[dict]) -> str:
+    if not scorecards:
+        return "## Walk-Forward Summary\n\nNo candidates to evaluate.\n"
+
+    lines = [
+        "## Walk-Forward Summary\n",
+        "| Candidate | WFR Pass Rate | OOS Degradation | Stability Score |\n",
+        "|-----------|---------------|-----------------|-----------------|\n",
+    ]
+    for sc in scorecards:
+        lines.append(
+            f"| {sc.get('candidate_id', '?')[:16]} "
+            f"| {sc.get('walk_forward_pass_rate', 0.0):.2%} "
+            f"| {sc.get('oos_degradation', 0.0):.2%} "
+            f"| {sc.get('stability_score', 0.0):.2f} |\n"
+        )
+    return "".join(lines)
+
+
+def _v2_anti_overfit_section(
+    candidate_ids: list[str], data_root: str
+) -> str:
+    if not candidate_ids:
+        return "## Anti-Overfit Findings\n\nNo candidates to evaluate.\n"
+
+    from quant_us.research.automation.overfit import OverfitDetector
+
+    detector = OverfitDetector(data_root=data_root)
+
+    lines = [
+        "## Anti-Overfit Findings\n",
+        "| Candidate | Overfit | Degradation | Param Sens | Year Conc | Sym Conc | Reasons |\n",
+        "|-----------|---------|-------------|------------|-----------|----------|--------|\n",
+    ]
+
+    for cid in candidate_ids:
+        try:
+            report = detector.check(cid)
+            reasons_summary = "; ".join(report.reasons[:2])
+            if len(report.reasons) > 2:
+                reasons_summary += f" ... (+{len(report.reasons) - 2} more)"
+            lines.append(
+                f"| {cid[:16]} "
+                f"| {'YES' if report.is_overfit else 'no':7s} "
+                f"| {report.degradation_pct:.1%} "
+                f"| {report.param_sensitivity:.3f} "
+                f"| {report.single_year_concentration:.1%} "
+                f"| {report.single_symbol_concentration:.1%} "
+                f"| {reasons_summary or 'none'} |\n"
+            )
+        except ValueError:
+            lines.append(f"| {cid[:16]} | ERROR | - | - | - | - | not found |\n")
+
+    return "".join(lines)
+
+
+def _v2_gate_section(
+    gate_results: list[dict],
+) -> str:
+    if not gate_results:
+        return "## Promotion Gate\n\nNo candidates evaluated.\n"
+
+    lines = [
+        "## Promotion Gate Evaluation\n",
+        "| Candidate | Decision | Reasons | Warnings |\n",
+        "|-----------|----------|---------|----------|\n",
+    ]
+    for gr in gate_results:
+        reasons = "; ".join(gr.get("reasons", [])[:2]) or "none"
+        warnings = "; ".join(gr.get("warnings", [])[:2]) or "none"
+        lines.append(
+            f"| {gr.get('candidate_id', '?')[:16]} "
+            f"| {gr.get('decision', '?'):25s} "
+            f"| {reasons} "
+            f"| {warnings} |\n"
+        )
+    return "".join(lines)
+
+
+def _v2_ready_summary(gate_results: list[dict]) -> str:
+    """Summary table showing which candidates are Ready for Paper Review."""
+    ready = [
+        g for g in gate_results if g.get("decision") == "READY_FOR_PAPER_REVIEW"
+    ]
+    blocked = [g for g in gate_results if g.get("decision") == "BLOCKED"]
+    watchlist = [g for g in gate_results if g.get("decision") == "WATCHLIST"]
+
+    lines = [
+        "## \"Ready for Paper Review\" Summary\n",
+        f"**Total evaluated:** {len(gate_results)}  \n",
+        f"**READY_FOR_PAPER_REVIEW:** {len(ready)}  \n",
+        f"**WATCHLIST:** {len(watchlist)}  \n",
+        f"**BLOCKED:** {len(blocked)}  \n",
+        "",
+    ]
+
+    if ready:
+        lines.append("### Ready for Human Review\n")
+        lines.append("| Candidate |\n|-----------|\n")
+        for g in ready:
+            lines.append(f"| {g.get('candidate_id', '?')} |\n")
+        lines.append(
+            "\n*These candidates are ready for HUMAN paper-review evaluation. "
+            "No automatic promotion to paper trading occurs.*\n"
+        )
+
+    return "".join(lines)
+
+
+def _v2_next_actions(gate_results: list[dict]) -> str:
+    """Generate next research actions based on gate evaluation."""
+    blocked = [g for g in gate_results if g.get("decision") == "BLOCKED"]
+    watchlist = [g for g in gate_results if g.get("decision") == "WATCHLIST"]
+    ready = [
+        g for g in gate_results if g.get("decision") == "READY_FOR_PAPER_REVIEW"
+    ]
+
+    lines = [
+        "## Next Research Actions\n",
+    ]
+
+    if blocked:
+        b_ids = ", ".join(g.get("candidate_id", "?")[:16] for g in blocked)
+        lines.append(
+            f"1. **Review blocked candidates** ({b_ids}): "
+            f"Address blocking issues before re-evaluation.\n"
+        )
+
+    if watchlist:
+        w_ids = ", ".join(g.get("candidate_id", "?")[:16] for g in watchlist)
+        lines.append(
+            f"2. **Investigate watchlist candidates** ({w_ids}): "
+            f"Run walk-forward analysis or gather more trade data.\n"
+        )
+
+    if ready:
+        r_ids = ", ".join(g.get("candidate_id", "?")[:16] for g in ready)
+        lines.append(
+            f"3. **Submit for human review** ({r_ids}): "
+            f"Generate dossier and escalate to paper review pool.\n"
+        )
+
+    lines.append(
+        "4. **NOTE**: READY_FOR_PAPER_REVIEW does NOT enter paper trading. "
+        "It only enters the human review pool.\n"
+    )
+
+    if not any([blocked, watchlist, ready]):
+        lines.append("No candidates evaluated. No actions needed.\n")
+
+    return "".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+
+def _find_candidates_for_experiment(
+    experiment_id: str, data_root: str
+) -> list[str]:
+    """Find all candidate IDs linked to an experiment."""
+    data_path = Path(data_root)
+    candidates_dir = data_path / "research" / "candidates"
+    if not candidates_dir.exists():
+        return []
+
+    ids: list[str] = []
+    for d in sorted(candidates_dir.iterdir()):
+        if not d.is_dir():
+            continue
+        cand_path = d / "candidate.json"
+        if not cand_path.exists():
+            continue
+        try:
+            data = json.loads(cand_path.read_text(encoding="utf-8"))
+            if data.get("experiment_id") == experiment_id:
+                ids.append(data.get("candidate_id", d.name))
+        except (json.JSONDecodeError, OSError):
+            continue
+    return ids
+
+
+def _load_scorecards(
+    candidate_ids: list[str], data_root: str
+) -> list[dict]:
+    """Load persisted scorecards for the given candidate IDs."""
+    data_path = Path(data_root)
+    scorecards_dir = data_path / "research" / "scorecards"
+    scorecards: list[dict] = []
+
+    for cid in candidate_ids:
+        path = scorecards_dir / f"{cid}.json"
+        if path.exists():
+            try:
+                scorecards.append(json.loads(path.read_text(encoding="utf-8")))
+            except (json.JSONDecodeError, OSError):
+                continue
+    return scorecards
+
+
+def _evaluate_promotion_gate(
+    candidate_ids: list[str], data_root: str
+) -> list[dict]:
+    """Run promotion gate evaluation for all candidates."""
+    from quant_us.research.automation.promotion_gate import (
+        ResearchPromotionGate,
+    )
+
+    gate = ResearchPromotionGate(data_root=data_root)
+    results: list[dict] = []
+    for cid in candidate_ids:
+        try:
+            result = gate.evaluate(cid)
+            results.append(
+                {
+                    "candidate_id": result.candidate_id,
+                    "decision": result.decision,
+                    "reasons": result.reasons,
+                    "warnings": result.warnings,
+                    "evidence": result.evidence,
+                }
+            )
+        except (ValueError, FileNotFoundError, json.JSONDecodeError):
+            continue
+    return results

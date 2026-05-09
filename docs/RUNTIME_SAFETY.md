@@ -398,3 +398,66 @@ Research automation modules are strictly isolated from live execution:
 8. Portfolio construction outputs allocation targets, not orders
 9. No research module references QUANT_LIVE environment variable
 10. All research tests use tmp_path and fake data -- no real API keys or network calls
+
+## R2 Research Engine Hardening Safety (Added Phase R2)
+
+### Manifest Reproducibility
+
+Every experiment manifest contains full reproducibility metadata:
+- Strategy version, data version, feature version
+- Parameters and parameter grid
+- Deterministic config hash for duplicate detection
+- Archive support for experiment preservation
+
+Manifests are validated for presence before any promotion gate check.
+
+### Candidate Lineage Safety
+
+Lineage tracking ensures:
+- Each candidate records its parent candidates
+- Chain traversal is bounded (no infinite loops)
+- Circular references are detected and blocked
+- Orphaned candidates (missing parent) are handled gracefully
+
+### Deduplication Safety
+
+Candidate deduplication is hash-based and non-destructive:
+- Duplicates are marked (`is_duplicate = True`), never deleted
+- Original candidate is preserved
+- Same params_hash = same configuration = duplicate detection
+
+### Promotion Gate Safety
+
+The ResearchPromotionGate enforces 6 checks before any promotion:
+
+1. **Manifest exists**: Experiment manifest must be present and complete
+2. **Not overfit**: OverfitDetector must return False
+3. **Sharpe above threshold**: Minimum Sharpe >= 0.5
+4. **Trade count sufficient**: At least 10 trades
+5. **Cost stress passes**: Must survive at 1x costs (minimum)
+6. **Walk-forward passes**: Must survive 50%+ of walk-forward folds
+
+Gate statuses:
+- **BLOCKED**: Any check fails -- promotion is rejected with reason
+- **PASS**: All checks pass -- ready for manual review
+
+### Max Stage: PAPER_ELIGIBLE
+
+The promotion gate can never promote beyond PAPER_ELIGIBLE:
+- PAPER_ELIGIBLE is a status marker only, not an execution capability
+- No method in the research engine calls `submit_order()`
+- No research module imports from `quant_us.live` or `quant_us.execution`
+- No research module references `AlpacaBroker` or any broker class
+
+### R2 Safety Invariants
+
+1. Research modules cannot submit real orders
+2. Research modules cannot access live brokers
+3. Max auto-promotion is PAPER_ELIGIBLE (marker only)
+4. Manual action required for all promotions beyond RESEARCH_ONLY
+5. Overfit candidates are automatically rejected
+6. Lookahead bias is detected and prevented
+7. Time-split is enforced in all dataset construction
+8. Portfolio construction outputs allocation targets, not orders
+9. No research module references QUANT_LIVE environment variable
+10. All research tests use tmp_path and fake data -- no real API keys or network calls

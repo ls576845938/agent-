@@ -5197,6 +5197,11 @@ def _add_research_parser(subparsers: Any) -> None:
     exp_inspect.add_argument("--data-root", default="data", help="Data root path")
     exp_inspect.set_defaults(func=cmd_research_experiment_inspect)
 
+    exp_archive = exp_sub.add_parser("archive", help="Archive an experiment (mark as ARCHIVED)")
+    exp_archive.add_argument("--experiment-id", required=True, help="Experiment ID")
+    exp_archive.add_argument("--data-root", default="data", help="Data root path")
+    exp_archive.set_defaults(func=cmd_research_experiment_archive)
+
     # --- candidate ---
     cand_p = research_sub.add_parser("candidate", help="Manage strategy candidates")
     cand_sub = cand_p.add_subparsers(dest="candidate_command")
@@ -5211,6 +5216,21 @@ def _add_research_parser(subparsers: Any) -> None:
     cand_promote.add_argument("--data-root", default="data", help="Data root path")
     cand_promote.set_defaults(func=cmd_research_candidate_promote)
 
+    cand_inspect = cand_sub.add_parser("inspect", help="Inspect candidate details")
+    cand_inspect.add_argument("--candidate-id", required=True, help="Candidate ID")
+    cand_inspect.add_argument("--data-root", default="data", help="Data root path")
+    cand_inspect.set_defaults(func=cmd_research_candidate_inspect)
+
+    cand_lineage = cand_sub.add_parser("lineage", help="Show candidate lineage chain")
+    cand_lineage.add_argument("--candidate-id", required=True, help="Candidate ID")
+    cand_lineage.add_argument("--data-root", default="data", help="Data root path")
+    cand_lineage.set_defaults(func=cmd_research_candidate_lineage)
+
+    cand_dedup = cand_sub.add_parser("dedup", help="Find and mark duplicate candidates")
+    cand_dedup.add_argument("--experiment-id", required=True, help="Experiment ID to check")
+    cand_dedup.add_argument("--data-root", default="data", help="Data root path")
+    cand_dedup.set_defaults(func=cmd_research_candidate_dedup)
+
     # --- batch-run ---
     batch_p = research_sub.add_parser("batch-run", help="Run multiple experiments in batch")
     batch_p.add_argument("--experiment-ids", required=True, help="Comma-separated experiment IDs")
@@ -5223,6 +5243,55 @@ def _add_research_parser(subparsers: Any) -> None:
     sc_p.add_argument("--data-root", default="data", help="Data root path")
     sc_p.add_argument("--markdown", action="store_true", help="Output as markdown")
     sc_p.set_defaults(func=cmd_research_scorecard)
+
+    # --- score (robust scoring) ---
+    score_p = research_sub.add_parser(
+        "score", help="Score an experiment with robust scoring"
+    )
+    score_p.add_argument("--experiment-id", required=True, help="Experiment ID")
+    score_p.add_argument("--data-root", default="data", help="Data root path")
+    score_p.add_argument("--robust", action="store_true", help="Enable robust weighted scoring")
+    score_p.set_defaults(func=cmd_research_score)
+
+    # --- walk-forward ---
+    wf_p = research_sub.add_parser(
+        "walk-forward", help="Evaluate walk-forward performance for an experiment"
+    )
+    wf_p.add_argument("--experiment-id", required=True, help="Experiment ID")
+    wf_p.add_argument("--data-root", default="data", help="Data root path")
+    wf_p.set_defaults(func=cmd_research_walk_forward)
+
+    # --- anti-overfit ---
+    ao_p = research_sub.add_parser(
+        "anti-overfit", help="Run anti-overfit checks for an experiment"
+    )
+    ao_p.add_argument("--experiment-id", required=True, help="Experiment ID")
+    ao_p.add_argument("--data-root", default="data", help="Data root path")
+    ao_p.set_defaults(func=cmd_research_anti_overfit)
+
+    # --- promotion-gate ---
+    pg_p = research_sub.add_parser(
+        "promotion-gate", help="Evaluate candidate readiness for paper review promotion"
+    )
+    pg_p.add_argument("--candidate-id", required=True, help="Candidate ID")
+    pg_p.add_argument("--data-root", default="data", help="Data root path")
+    pg_p.set_defaults(func=cmd_research_promotion_gate)
+
+    # --- report (v2) ---
+    rep_p = research_sub.add_parser(
+        "report", help="Generate research report for an experiment"
+    )
+    rep_p.add_argument("--experiment-id", required=True, help="Experiment ID")
+    rep_p.add_argument("--data-root", default="data", help="Data root path")
+    rep_p.add_argument("--v2", action="store_true", help="Generate enhanced v2 report")
+    rep_p.set_defaults(func=cmd_research_report)
+
+    # --- compare ---
+    comp_p = research_sub.add_parser("compare", help="Compare multiple experiments by a metric")
+    comp_p.add_argument("--experiment-ids", required=True, help="Comma-separated experiment IDs")
+    comp_p.add_argument("--metric", default="score", help="Metric to compare (default: score)")
+    comp_p.add_argument("--data-root", default="data", help="Data root path")
+    comp_p.set_defaults(func=cmd_research_compare)
 
 
 def cmd_research_experiment_create(args: argparse.Namespace) -> None:
@@ -5332,6 +5401,19 @@ def cmd_research_experiment_inspect(args: argparse.Namespace) -> None:
                 print(f"  {key}: {value}")
 
 
+def cmd_research_experiment_archive(args: argparse.Namespace) -> None:
+    """Archive an experiment (mark as ARCHIVED, no data deletion)."""
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+
+    try:
+        mgr.archive_experiment(args.experiment_id)
+        print(f"Experiment {args.experiment_id} archived.")
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+
+
 def cmd_research_candidate_list(args: argparse.Namespace) -> None:
     """List all candidates."""
     from quant_us.research.lab.manifest import ExperimentManager
@@ -5371,6 +5453,100 @@ def cmd_research_candidate_promote(args: argparse.Namespace) -> None:
     except ValueError as exc:
         print(f"ERROR: {exc}")
         raise
+
+
+def cmd_research_candidate_inspect(args: argparse.Namespace) -> None:
+    """Inspect candidate details."""
+    import json
+
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+    candidate = mgr._load_candidate(args.candidate_id)
+
+    if candidate is None:
+        print(f"Candidate {args.candidate_id} not found.")
+        return
+
+    print(f"Candidate ID:          {candidate.candidate_id}")
+    print(f"Experiment ID:         {candidate.experiment_id}")
+    print(f"Strategy ID:           {candidate.strategy_id}")
+    print(f"Candidate Hash:        {candidate.candidate_hash or '(not set)'}")
+    print(f"Parent Candidate ID:   {candidate.parent_candidate_id or '(none)'}")
+    print(f"Promotion Status:      {candidate.promotion_status}")
+    if candidate.reject_reason:
+        print(f"Reject Reason:         {candidate.reject_reason}")
+    print(f"Data Version:          {candidate.data_version or '(not set)'}")
+    print(f"Created At:            {candidate.created_at}")
+    if candidate.metrics:
+        print(f"Metrics:")
+        for key, value in sorted(candidate.metrics.items()):
+            if isinstance(value, float):
+                print(f"  {key}: {value:.4f}")
+            else:
+                print(f"  {key}: {value}")
+
+
+def cmd_research_candidate_lineage(args: argparse.Namespace) -> None:
+    """Show candidate lineage chain."""
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+
+    try:
+        lineage = mgr.get_lineage(args.candidate_id)
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        return
+
+    print(f"Candidate ID:        {lineage['candidate_id']}")
+    print(f"Parent Candidate ID: {lineage['parent_candidate_id'] or '(none)'}")
+    print(f"Children:            {', '.join(lineage['children']) if lineage['children'] else '(none)'}")
+    print(f"Experiment ID:       {lineage['experiment_id']}")
+    print(f"Promotion Status:    {lineage['generation_method']}")
+
+
+def cmd_research_candidate_dedup(args: argparse.Namespace) -> None:
+    """Find and mark duplicate candidates."""
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+
+    try:
+        result = mgr.deduplicate_candidates(args.experiment_id)
+        print(f"Deduplication results for experiment {args.experiment_id}:")
+        print(f"  Total candidates:    {result['total']}")
+        print(f"  Duplicates found:    {result['duplicates_found']}")
+        print(f"  Duplicates marked:   {result['duplicates_marked']}")
+        print(f"  Unique remaining:    {result['unique_remaining']}")
+    except Exception as exc:
+        print(f"ERROR: {exc}")
+
+
+def cmd_research_compare(args: argparse.Namespace) -> None:
+    """Compare multiple experiments by a metric."""
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    experiment_ids = [eid.strip() for eid in args.experiment_ids.split(",") if eid.strip()]
+    mgr = ExperimentManager(data_root=args.data_root)
+    results = mgr.compare_experiments(experiment_ids, metric=args.metric)
+
+    if not results:
+        print("No experiments found to compare.")
+        return
+
+    print(f"{'Experiment ID':<22} {'Strategy':<18} {'Status':<14} {args.metric:<12} {'Created'}")
+    print("-" * 80)
+    for r in results:
+        val = r.get(args.metric, "N/A")
+        if isinstance(val, float):
+            val_str = f"{val:.4f}"
+        else:
+            val_str = str(val)
+        print(
+            f"{r['experiment_id']:<22} {r['strategy_id']:<18} "
+            f"{r['status']:<14} {val_str:<12} {r['created_at'][:19]}"
+        )
 
 
 def cmd_research_batch_run(args: argparse.Namespace) -> None:
@@ -5423,10 +5599,278 @@ def cmd_research_scorecard(args: argparse.Namespace) -> None:
             else:
                 print(f"  {field_name}: {value}")
 
+    if args.robust:
+        print()
+        print("  Robust Scoring Breakdown:")
+        print(f"    return_weight=0.20  risk_weight=0.25  stability_weight=0.25")
+        print(f"    cost_weight=0.15    robustness_weight=0.15")
+        print(f"    weighted_robust_score={scorecard.robustness_score:.4f}")
 
-# ---------------------------------------------------------------------------
-# factor
-# ---------------------------------------------------------------------------
+
+def cmd_research_score(args: argparse.Namespace) -> None:
+    """Score an experiment with robust scoring."""
+    from quant_us.research.lab.manifest import ExperimentManager
+
+    mgr = ExperimentManager(data_root=args.data_root)
+    manifest = mgr.load(args.experiment_id)
+    if manifest is None:
+        print(f"ERROR: Experiment {args.experiment_id} not found")
+        return
+
+    print(f"Experiment: {args.experiment_id}")
+    print(f"  Strategy: {manifest.strategy_id}")
+    print(f"  Status:   {manifest.status}")
+
+    if manifest.status != "COMPLETED":
+        print("  NOTE: Experiment is not COMPLETED. Score may be incomplete.")
+
+    # Find the candidate linked to this experiment
+    candidate_ids: list[str] = []
+    candidates_dir = Path(args.data_root) / "research" / "candidates"
+    if candidates_dir.exists():
+        for d in sorted(candidates_dir.iterdir()):
+            if not d.is_dir():
+                continue
+            cand_path = d / "candidate.json"
+            if not cand_path.exists():
+                continue
+            try:
+                data = json.loads(cand_path.read_text(encoding="utf-8"))
+                if data.get("experiment_id") == args.experiment_id:
+                    cid = data.get("candidate_id", d.name)
+                    candidate_ids.append(cid)
+            except (json.JSONDecodeError, OSError):
+                continue
+
+    if not candidate_ids:
+        print("  No candidates linked to this experiment.")
+        print("  Run 'research candidate promote --experiment-id <id> --manual' first.")
+        return
+
+    from quant_us.research.lab.scorecard import ResearchScorecardBuilder
+
+    builder = ResearchScorecardBuilder(data_root=args.data_root)
+    for cid in candidate_ids:
+        try:
+            sc = builder.build(cid)
+            print()
+            print(f"  Candidate: {cid}")
+            print(f"    Sharpe:          {sc.sharpe:.4f}")
+            print(f"    CAGR:            {sc.cagr:.2%}")
+            print(f"    Max Drawdown:    {sc.max_drawdown:.2%}")
+            print(f"    Overfit Risk:    {sc.overfit_risk} (score={sc.overfit_risk_score:.4f})")
+            print(f"    Stability Score: {sc.stability_score:.4f}")
+            print(f"    Robustness:      {sc.robustness_score:.4f} (weighted)")
+        except (ValueError, FileNotFoundError, json.JSONDecodeError) as exc:
+            print(f"  Candidate {cid}: ERROR — {exc}")
+
+
+def cmd_research_walk_forward(args: argparse.Namespace) -> None:
+    """Evaluate walk-forward performance for an experiment."""
+    from quant_us.research.automation.walk_forward_scorer import WalkForwardScorer
+
+    # Find candidates for this experiment
+    candidates_dir = Path(args.data_root) / "research" / "candidates"
+    if not candidates_dir.exists():
+        print(f"No candidates directory found at {candidates_dir}")
+        return
+
+    candidate_ids: list[str] = []
+    for d in sorted(candidates_dir.iterdir()):
+        if not d.is_dir():
+            continue
+        cand_path = d / "candidate.json"
+        if not cand_path.exists():
+            continue
+        try:
+            data = json.loads(cand_path.read_text(encoding="utf-8"))
+            if data.get("experiment_id") == args.experiment_id:
+                candidate_ids.append(data.get("candidate_id", d.name))
+        except (json.JSONDecodeError, OSError):
+            continue
+
+    if not candidate_ids:
+        print(f"No candidates found for experiment {args.experiment_id}")
+        return
+
+    scorer = WalkForwardScorer(data_root=args.data_root)
+    for cid in candidate_ids:
+        # Build mock fold results from candidate metrics if walk-forward data exists
+        # For now, demonstrate the scorer with a single-fold default
+        try:
+            cand_path = candidates_dir / cid / "candidate.json"
+            data = json.loads(cand_path.read_text(encoding="utf-8"))
+            metrics = data.get("metrics", {})
+
+            # Create a minimal fold result from the candidate's own metrics
+            fold_results: list[dict] = []
+            wf_pass_rate = float(metrics.get("walk_forward_pass_rate", -1.0))
+            if wf_pass_rate >= 0:
+                # Build fold results from available metrics
+                fold_results = _build_wf_fold_results(metrics)
+
+            if fold_results:
+                result = scorer.score(cid, fold_results)
+                print(f"\nCandidate: {cid}")
+                print(f"  Fold Count:       {result.fold_count}")
+                print(f"  Pass Rate:        {result.pass_rate:.2%}")
+                print(f"  Avg OOS Sharpe:   {result.avg_oos_sharpe:.4f}")
+                print(f"  Worst DD:         {result.worst_fold_drawdown:.2%}")
+                print(f"  Fold Stability:   {result.fold_stability:.4f}")
+                print(f"  Status:           {result.status}")
+            else:
+                print(f"\nCandidate {cid}: No walk-forward data available")
+        except (ValueError, FileNotFoundError, json.JSONDecodeError) as exc:
+            print(f"\nCandidate {cid}: ERROR — {exc}")
+
+
+def _build_wf_fold_results(metrics: dict) -> list[dict]:
+    """Build walk-forward fold result dicts from candidate metrics."""
+    results: list[dict] = []
+
+    # Use available fold-level metrics if stored
+    wf_sharpes = metrics.get("wf_fold_sharpes", [])
+    wf_returns = metrics.get("wf_fold_returns", [])
+    wf_trades = metrics.get("wf_fold_trades", [])
+    wf_drawdowns = metrics.get("wf_fold_drawdowns", [])
+
+    # If stored as lists, use them
+    if wf_sharpes and isinstance(wf_sharpes, list):
+        for i in range(max(len(wf_sharpes), len(wf_returns), len(wf_trades), len(wf_drawdowns))):
+            results.append({
+                "sharpe_ratio": float(wf_sharpes[i]) if i < len(wf_sharpes) else 0.0,
+                "total_return_pct": float(wf_returns[i]) if i < len(wf_returns) else 0.0,
+                "trade_count": int(wf_trades[i]) if i < len(wf_trades) else 0,
+                "max_drawdown_pct": float(wf_drawdowns[i]) if i < len(wf_drawdowns) else 0.0,
+            })
+    else:
+        # Fall back to single fold with aggregate metrics
+        results.append({
+            "sharpe_ratio": float(metrics.get("sharpe_ratio", 0.0)),
+            "total_return_pct": float(metrics.get("total_return_pct", 0.0)),
+            "trade_count": int(metrics.get("trade_count", 0)),
+            "max_drawdown_pct": abs(float(metrics.get("max_drawdown_pct", 0.0))),
+        })
+
+    return results
+
+
+def cmd_research_anti_overfit(args: argparse.Namespace) -> None:
+    """Run anti-overfit checks for an experiment."""
+    from quant_us.research.automation.overfit import OverfitDetector
+
+    # Find candidates for this experiment
+    candidates_dir = Path(args.data_root) / "research" / "candidates"
+    if not candidates_dir.exists():
+        print(f"No candidates directory found at {candidates_dir}")
+        return
+
+    candidate_ids: list[str] = []
+    for d in sorted(candidates_dir.iterdir()):
+        if not d.is_dir():
+            continue
+        cand_path = d / "candidate.json"
+        if not cand_path.exists():
+            continue
+        try:
+            data = json.loads(cand_path.read_text(encoding="utf-8"))
+            if data.get("experiment_id") == args.experiment_id:
+                candidate_ids.append(data.get("candidate_id", d.name))
+        except (json.JSONDecodeError, OSError):
+            continue
+
+    if not candidate_ids:
+        print(f"No candidates found for experiment {args.experiment_id}")
+        return
+
+    detector = OverfitDetector(data_root=args.data_root)
+    for cid in candidate_ids:
+        try:
+            report = detector.check(cid)
+            print(f"\nCandidate: {cid}")
+            print(f"  Is Overfit:         {report.is_overfit}")
+            print(f"  In-Sample Sharpe:   {report.in_sample_sharpe:.4f}")
+            print(f"  Out-of-Sample Sharpe: {report.out_of_sample_sharpe:.4f}")
+            print(f"  Degradation:         {report.degradation_pct:.1%}")
+            print(f"  Param Sensitivity:   {report.param_sensitivity:.4f}")
+            print(f"  Trade Count:         {report.trade_count}")
+            print(f"  Single Year Conc:    {report.single_year_concentration:.1%}")
+            print(f"  Single Symbol Conc:  {report.single_symbol_concentration:.1%}")
+            print(f"  Cost Sensitivity:    {report.cost_sensitivity:.4f}")
+
+            # Also run standalone checks
+            month_conc, month_pct = detector.check_single_month_concentration(cid)
+            print(f"  Single Month Conc:   {month_pct:.1%} (>40%? {month_conc})")
+
+            sym_conc, sym_pct = detector.check_single_symbol_concentration(cid)
+            print(f"  Single Symbol Conc:  {sym_pct:.1%} (>60%? {sym_conc})")
+
+            if report.reasons:
+                print(f"  Reasons:")
+                for r in report.reasons:
+                    print(f"    - {r}")
+            else:
+                print(f"  Reasons: none")
+        except (ValueError, FileNotFoundError, json.JSONDecodeError) as exc:
+            print(f"\nCandidate {cid}: ERROR — {exc}")
+
+
+def cmd_research_promotion_gate(args: argparse.Namespace) -> None:
+    """Evaluate candidate readiness for paper review promotion."""
+    from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+    gate = ResearchPromotionGate(data_root=args.data_root)
+    result = gate.evaluate(args.candidate_id)
+
+    print()
+    print("=" * 60)
+    print("  Research Promotion Gate Evaluation")
+    print("=" * 60)
+    print(f"  Candidate:  {result.candidate_id}")
+    print(f"  Decision:   {result.decision}")
+    print()
+
+    if result.reasons:
+        print("  Blocking Reasons:")
+        for r in result.reasons:
+            print(f"    - {r}")
+    else:
+        print("  Blocking Reasons: none")
+
+    if result.warnings:
+        print()
+        print("  Warnings:")
+        for w in result.warnings:
+            print(f"    - {w}")
+
+    print()
+    print("  Evidence:")
+    for key, value in result.evidence.items():
+        if isinstance(value, dict):
+            print(f"    {key}:")
+            for k, v in value.items():
+                print(f"      {k}: {v}")
+        else:
+            print(f"    {key}: {value}")
+
+    print()
+    if result.decision == "READY_FOR_PAPER_REVIEW":
+        print("  NOTE: READY_FOR_PAPER_REVIEW does NOT enter paper trading.")
+        print("  It only enters the human review pool.")
+    print("=" * 60)
+    print()
+
+
+def cmd_research_report(args: argparse.Namespace) -> None:
+    """Generate research report for an experiment."""
+    from quant_us.research.automation.report_gen import generate
+
+    report = generate(
+        args.experiment_id,
+        data_root=args.data_root,
+        v2=getattr(args, "v2", False),
+    )
+    print(report)
 
 
 def _resolve_factor_ids(raw: str) -> list[str]:

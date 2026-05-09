@@ -145,6 +145,73 @@ class OverfitDetector:
             return 0.0
         return max(0.0, (in_sample_sharpe - out_of_sample_sharpe) / in_sample_sharpe)
 
+    # ------------------------------------------------------------------
+    # Standalone anti-overfit checks
+    # ------------------------------------------------------------------
+
+    def check_single_month_concentration(self, candidate_id: str) -> tuple[bool, float]:
+        """Check if >40% of returns come from a single month.
+
+        Uses the stored metrics if available, otherwise returns (False, 0.0).
+
+        Args:
+            candidate_id: The candidate to check.
+
+        Returns:
+            Tuple of (is_concentrated, max_month_pct).
+        """
+        metrics = self._load_metrics(candidate_id)
+        concentration = float(metrics.get("single_month_concentration", 0.0))
+        is_concentrated = concentration > 0.40
+        return (is_concentrated, concentration)
+
+    def check_single_symbol_concentration(self, candidate_id: str) -> tuple[bool, float]:
+        """Check if >60% of returns come from a single symbol.
+
+        Args:
+            candidate_id: The candidate to check.
+
+        Returns:
+            Tuple of (is_concentrated, max_symbol_pct).
+        """
+        metrics = self._load_metrics(candidate_id)
+        concentration = float(metrics.get("single_symbol_concentration", 0.0))
+        is_concentrated = concentration > 0.60
+        return (is_concentrated, concentration)
+
+    def check_param_sensitivity(
+        self, candidate_id: str, param_neighbors: list[dict] | None = None
+    ) -> float:
+        """Check performance variance across nearby parameter values.
+
+        If param_neighbors is provided, computes variance of sharpe ratios
+        across the neighbor configurations. Otherwise falls back to the
+        stored param_sensitivity metric.
+
+        A value > 0.5 indicates possible parameter overfitting.
+
+        Args:
+            candidate_id: The candidate to check.
+            param_neighbors: Optional list of dicts, each with at least
+                a "sharpe_ratio" key.
+
+        Returns:
+            Float sensitivity score. >0.5 implies overfit.
+        """
+        if param_neighbors:
+            sharpes: list[float] = []
+            for neighbor in param_neighbors:
+                sharpes.append(float(neighbor.get("sharpe_ratio", 0.0)))
+            if sharpes:
+                mean_sharpe = sum(sharpes) / len(sharpes)
+                variance = sum((s - mean_sharpe) ** 2 for s in sharpes) / len(sharpes)
+                # Scale variance to 0-1 range; variance of ~0.1 maps to ~0.5
+                return round(min(variance * 5.0, 1.0), 4)
+
+        # Fall back to stored metric
+        metrics = self._load_metrics(candidate_id)
+        return float(metrics.get("param_sensitivity", 0.0))
+
 
 class LookaheadBiasChecker:
     """Heuristic detection of lookahead bias in factors and experiments.

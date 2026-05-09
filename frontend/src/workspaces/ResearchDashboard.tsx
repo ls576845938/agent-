@@ -5,6 +5,7 @@ import {LoadingSpinner} from '../components/LoadingSpinner';
 import ExperimentList from './research/ExperimentList';
 import CandidateTable from './research/CandidateTable';
 import ExperimentReport from './research/ExperimentReport';
+import ExperimentCompare from './research/ExperimentCompare';
 
 interface Experiment {
   experiment_id: string;
@@ -45,6 +46,7 @@ interface Candidate {
 const tabs = [
   {key: 'experiments', label: '实验列表'},
   {key: 'candidates', label: '候选排名'},
+  {key: 'compare', label: '实验对比'},
   {key: 'report', label: '实验报告'},
 ];
 
@@ -132,6 +134,9 @@ export default function ResearchDashboard() {
       )}
       {tab === 'candidates' && (
         <CandidateTable candidates={candidatesForExp} />
+      )}
+      {tab === 'compare' && (
+        <ExperimentCompare />
       )}
       {tab === 'report' && (
         <ExperimentReport

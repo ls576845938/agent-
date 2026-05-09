@@ -33,6 +33,8 @@ class ResearchScorecard:
     oos_degradation: float = 0.0
     robustness_score: float = 0.0
     overfit_risk: str = "UNKNOWN"
+    overfit_risk_score: float = 0.0  # 0.0-1.0, from OverfitDetector
+    stability_score: float = 0.0     # from walk-forward pass rate and OOS degradation
 
 
 class ResearchScorecardBuilder:
@@ -86,9 +88,20 @@ class ResearchScorecardBuilder:
             cost_sensitivity=self._compute_cost_sensitivity(metrics),
             walk_forward_pass_rate=metrics.get("walk_forward_pass_rate", 0.0),
             oos_degradation=metrics.get("oos_degradation", 0.0),
-            robustness_score=self._compute_robustness(metrics),
-            overfit_risk=self._assess_overfit_risk(metrics),
+            robustness_score=0.0,  # computed below
+            overfit_risk="UNKNOWN",
+            overfit_risk_score=0.0,
+            stability_score=0.0,
         )
+
+        # Enrich with OverfitDetector and weighted robust scoring
+        overfit_risk = self._assess_overfit_risk(candidate_id)
+        scorecard.overfit_risk = overfit_risk
+        scorecard.overfit_risk_score = self._compute_overfit_risk_score(metrics)
+        scorecard.stability_score = self._compute_stability_score(
+            scorecard.walk_forward_pass_rate, scorecard.oos_degradation
+        )
+        scorecard.robustness_score = self._compute_robust_score(scorecard)
 
         self._save(scorecard)
         return scorecard
@@ -135,6 +148,8 @@ class ResearchScorecardBuilder:
             f"| OOS Degradation | {scorecard.oos_degradation:.2%} |",
             f"| Robustness Score | {scorecard.robustness_score:.2f} |",
             f"| Overfit Risk | {scorecard.overfit_risk} |",
+            f"| Overfit Risk Score | {scorecard.overfit_risk_score:.4f} |",
+            f"| Stability Score | {scorecard.stability_score:.4f} |",
             "",
         ]
         return "\n".join(lines)
@@ -148,29 +163,130 @@ class ResearchScorecardBuilder:
         """Placeholder: cost sensitivity from metrics."""
         return float(metrics.get("cost_sensitivity", 0.0))
 
-    @staticmethod
-    def _compute_robustness(metrics: dict[str, Any]) -> float:
-        """Compute a simple robustness score from Sharpe and drawdown."""
-        sharpe = float(metrics.get("sharpe_ratio", 0.0))
-        dd = abs(float(metrics.get("max_drawdown_pct", 0.0)))
-        if dd > 0:
-            return round(sharpe / (dd * 10), 4)
-        return round(sharpe, 4)
+    def _assess_overfit_risk(self, candidate_id: str) -> str:
+        """Use OverfitDetector for real overfit assessment.
 
-    @staticmethod
-    def _assess_overfit_risk(metrics: dict[str, Any]) -> str:
-        """Heuristic overfit risk assessment based on Sharpe ratio.
+        Args:
+            candidate_id: The candidate to check.
 
-        Very high Sharpe ratios often indicate overfitting in research.
+        Returns:
+            One of HIGH | MODERATE | LOW | NEGATIVE.
         """
-        sharpe = float(metrics.get("sharpe_ratio", 0.0))
-        if sharpe > 3.0:
+        from quant_us.research.automation.overfit import OverfitDetector
+
+        detector = OverfitDetector(data_root=str(self.data_root))
+        report = detector.check(candidate_id)
+        if report.is_overfit:
             return "HIGH"
-        elif sharpe > 2.0:
+        if report.degradation_pct > 0.20:
             return "MODERATE"
-        elif sharpe <= 0.0:
+        sharpe = report.in_sample_sharpe or report.out_of_sample_sharpe
+        if sharpe <= 0:
             return "NEGATIVE"
         return "LOW"
+
+    @staticmethod
+    def _compute_overfit_risk_score(metrics: dict[str, Any]) -> float:
+        """Compute a continuous overfit risk score 0.0-1.0 from metrics.
+
+        Evaluates multiple overfit signals:
+        - OOS degradation
+        - Parameter sensitivity
+        - Single-year concentration
+        - Single-symbol concentration
+        - Cost sensitivity
+        - Low trade count
+
+        Returns:
+            Float 0.0 (no risk) to 1.0 (high risk).
+        """
+        triggers = 0
+        checks = 6
+
+        degradation = float(metrics.get("oos_degradation", 0.0))
+        if degradation > 0.40:
+            triggers += 1
+
+        param_sens = float(metrics.get("param_sensitivity", 0.0))
+        if param_sens > 0.5:
+            triggers += 1
+
+        trade_count = int(metrics.get("trade_count", 0))
+        if 0 < trade_count < 10:
+            triggers += 1
+
+        year_conc = float(metrics.get("single_year_concentration", 0.0))
+        if year_conc > 0.50:
+            triggers += 1
+
+        sym_conc = float(metrics.get("single_symbol_concentration", 0.0))
+        if sym_conc > 0.60:
+            triggers += 1
+
+        cost_sens = float(metrics.get("cost_sensitivity", 0.0))
+        if cost_sens > 0.5:
+            triggers += 1
+
+        return round(triggers / checks, 4)
+
+    @staticmethod
+    def _compute_stability_score(
+        walk_forward_pass_rate: float, oos_degradation: float
+    ) -> float:
+        """Compute stability score 0.0-1.0 from walk-forward pass rate and OOS degradation.
+
+        Args:
+            walk_forward_pass_rate: Pass rate (0.0-1.0).
+            oos_degradation: Out-of-sample degradation (0.0+).
+
+        Returns:
+            Float 0.0 (unstable) to 1.0 (highly stable).
+        """
+        wf_score = walk_forward_pass_rate  # already 0-1
+        deg_score = max(1.0 - oos_degradation, 0.0)
+        return round(0.6 * wf_score + 0.4 * deg_score, 4)
+
+    def _compute_robust_score(self, scorecard: ResearchScorecard) -> float:
+        """Compute weighted robust score.
+
+        Weights:
+            return   0.20
+            risk     0.25
+            stability 0.25
+            cost     0.15
+            robustness 0.15
+
+        Each component is normalized to 0.0-1.0.
+
+        Args:
+            scorecard: The fully populated scorecard.
+
+        Returns:
+            Float 0.0-1.0 weighted score.
+        """
+        # Normalize CAGR: 0-1 based on 0-50% range
+        ret_score = min(scorecard.cagr / 0.50, 1.0) if scorecard.cagr > 0 else 0.0
+
+        # Risk: 1 - normalized max_drawdown (0-50% range)
+        risk_score = max(1.0 - min(scorecard.max_drawdown / 0.50, 1.0), 0.0)
+
+        # Stability: from walk-forward pass rate and OOS degradation
+        stab_score = scorecard.stability_score
+
+        # Cost: 1 - normalized cost_sensitivity
+        cost_score = max(1.0 - min(scorecard.cost_sensitivity / 0.5, 1.0), 0.0)
+
+        # Robustness: 1 - overfit_risk_score (inverted)
+        rob_score = 1.0 - scorecard.overfit_risk_score
+
+        return round(
+            0.20 * ret_score
+            + 0.25 * risk_score
+            + 0.25 * stab_score
+            + 0.15 * cost_score
+            + 0.15 * rob_score,
+            4,
+        )
 
     def _save(self, scorecard: ResearchScorecard) -> None:
         path = self.scorecards_dir / f"{scorecard.candidate_id}.json"

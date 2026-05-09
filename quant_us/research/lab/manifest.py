@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -66,6 +67,9 @@ class StrategyCandidate:
     risk_score: float = 0.0
     turnover_score: float = 0.0
     promotion_status: str = "RESEARCH_ONLY"  # RESEARCH_ONLY|CANDIDATE|PAPER_ELIGIBLE|REJECTED
+    parent_candidate_id: str = ""  # for lineage tracking
+    candidate_hash: str = ""  # SHA256 of (strategy_id + json.dumps(params, sort_keys=True))
+    reject_reason: str = ""  # populated when REJECTED
     created_at: str = ""
     metrics: dict = field(default_factory=dict)
 
@@ -241,6 +245,9 @@ class ExperimentManager:
             candidate_id=candidate_id,
             experiment_id=experiment_id,
             strategy_id=manifest.strategy_id,
+            candidate_hash=self.compute_candidate_hash(
+                manifest.strategy_id, manifest.params
+            ),
             data_version=manifest.data_version,
             backtest_result_path=manifest.run_result_path,
             metrics=manifest.metrics,
@@ -253,6 +260,245 @@ class ExperimentManager:
         self._save_manifest(manifest)
 
         return candidate
+
+    def register_manifest(
+        self,
+        experiment_id: str,
+        git_commit: str = "",
+        data_version: str = "",
+        config_hash: str = "",
+        created_by: str = "",
+    ) -> dict:
+        """Generate a full experiment manifest with reproducibility metadata.
+
+        Tries to get git_commit from subprocess, falls back to 'unknown'.
+        Computes config_hash if not provided by hashing the experiment's config.
+        Stores manifest alongside experiment data.
+
+        Args:
+            experiment_id: The experiment to register.
+            git_commit: Git commit hash (auto-detected if empty).
+            data_version: Data version string.
+            config_hash: Config hash (auto-computed if empty).
+            created_by: Who created the experiment.
+
+        Returns:
+            Dict containing the full manifest with reproducibility metadata.
+        """
+        manifest = self.load(experiment_id)
+        if manifest is None:
+            raise ValueError(f"Experiment {experiment_id} not found")
+
+        if not git_commit:
+            git_commit = self._detect_git_commit()
+
+        if not config_hash:
+            config_hash = hashlib.sha256(
+                json.dumps(manifest.params, sort_keys=True).encode("utf-8")
+            ).hexdigest()[:16]
+
+        if manifest.data_version and not data_version:
+            data_version = manifest.data_version
+
+        full_manifest = {
+            "experiment_id": manifest.experiment_id,
+            "strategy_id": manifest.strategy_id,
+            "strategy_version": manifest.strategy_version,
+            "strategy_family": manifest.strategy_family,
+            "symbols": manifest.symbols,
+            "params": manifest.params,
+            "param_grid": manifest.param_grid,
+            "data_version": data_version,
+            "feature_version": manifest.feature_version,
+            "git_commit": git_commit,
+            "config_hash": config_hash,
+            "created_by": created_by,
+            "created_at": manifest.created_at,
+            "status": manifest.status,
+            "metrics": manifest.metrics,
+            "registered_at": utc_now().isoformat(),
+        }
+
+        # Persist alongside experiment data
+        reg_path = self.experiments_dir / experiment_id / "manifest_registry.json"
+        reg_path.parent.mkdir(parents=True, exist_ok=True)
+        reg_path.write_text(
+            json.dumps(full_manifest, indent=2, default=str), encoding="utf-8"
+        )
+
+        return full_manifest
+
+    def archive_experiment(self, experiment_id: str) -> None:
+        """Mark experiment as ARCHIVED. Does NOT delete data.
+
+        Args:
+            experiment_id: The experiment to archive.
+
+        Raises:
+            ValueError: If the experiment is not found.
+        """
+        manifest = self.load(experiment_id)
+        if manifest is None:
+            raise ValueError(f"Experiment {experiment_id} not found")
+        manifest.status = "ARCHIVED"
+        self._save_manifest(manifest)
+
+    def get_manifest(self, experiment_id: str) -> dict | None:
+        """Get experiment manifest with reproducibility metadata.
+
+        Args:
+            experiment_id: The experiment to inspect.
+
+        Returns:
+            Dict manifest if found, None otherwise.
+        """
+        manifest = self.load(experiment_id)
+        if manifest is None:
+            return None
+        return asdict(manifest)
+
+    def compare_experiments(
+        self, experiment_ids: list[str], metric: str = "score"
+    ) -> list[dict]:
+        """Compare multiple experiments by a metric. Returns sorted list.
+
+        Args:
+            experiment_ids: List of experiment IDs to compare.
+            metric: Metric key to sort by (default: 'score').
+
+        Returns:
+            List of dicts sorted by metric descending.
+        """
+        results: list[dict] = []
+        for eid in experiment_ids:
+            manifest = self.load(eid)
+            if manifest is None:
+                continue
+            entry = {
+                "experiment_id": manifest.experiment_id,
+                "strategy_id": manifest.strategy_id,
+                "status": manifest.status,
+                "created_at": manifest.created_at,
+            }
+            if isinstance(manifest.metrics, dict):
+                entry["metrics"] = manifest.metrics
+                entry[metric] = manifest.metrics.get(metric, 0.0)
+            else:
+                entry["metrics"] = {}
+                entry[metric] = 0.0
+            results.append(entry)
+
+        results.sort(key=lambda r: float(r.get(metric, 0.0) or 0.0), reverse=True)
+        return results
+
+    def get_lineage(self, candidate_id: str) -> dict:
+        """Get the full lineage chain for a candidate.
+
+        Traces parent chain upward and finds all children.
+
+        Args:
+            candidate_id: The candidate to trace.
+
+        Returns:
+            Dict with candidate_id, parent_candidate_id, children,
+            experiment_id, generation_method, params.
+
+        Raises:
+            ValueError: If the candidate is not found.
+        """
+        candidate = self._load_candidate(candidate_id)
+        if candidate is None:
+            raise ValueError(f"Candidate {candidate_id} not found")
+
+        children = self._find_children(candidate_id)
+
+        return {
+            "candidate_id": candidate.candidate_id,
+            "parent_candidate_id": candidate.parent_candidate_id,
+            "children": children,
+            "experiment_id": candidate.experiment_id,
+            "generation_method": candidate.promotion_status,
+            "params": candidate.metrics,
+        }
+
+    def set_parent(self, child_id: str, parent_id: str) -> None:
+        """Set parent-child relationship between candidates.
+
+        Args:
+            child_id: The child candidate ID.
+            parent_id: The parent candidate ID.
+
+        Raises:
+            ValueError: If either candidate is not found.
+        """
+        child = self._load_candidate(child_id)
+        if child is None:
+            raise ValueError(f"Candidate {child_id} not found")
+        parent = self._load_candidate(parent_id)
+        if parent is None:
+            raise ValueError(f"Parent candidate {parent_id} not found")
+
+        child.parent_candidate_id = parent_id
+        self._save_candidate(child)
+
+    def deduplicate_candidates(self, experiment_id: str) -> dict:
+        """Find and mark duplicate candidates.
+
+        Two candidates are duplicates if they have the same candidate_hash
+        (strategy_id + sorted params).
+
+        Args:
+            experiment_id: The experiment to check candidates for.
+
+        Returns:
+            Dict with total, duplicates_found, duplicates_marked, unique_remaining.
+        """
+        candidates = self.list_candidates()
+        exp_candidates = [c for c in candidates if c.experiment_id == experiment_id]
+
+        total = len(exp_candidates)
+        seen_hashes: dict[str, list[StrategyCandidate]] = {}
+
+        for c in exp_candidates:
+            h = c.candidate_hash or self.compute_candidate_hash(c.strategy_id, c.metrics)
+            if h not in seen_hashes:
+                seen_hashes[h] = []
+            seen_hashes[h].append(c)
+
+        duplicates_found = 0
+        duplicates_marked = 0
+
+        for h, group in seen_hashes.items():
+            if len(group) > 1:
+                duplicates_found += len(group) - 1
+                # Keep the first one, mark the rest
+                for dup in group[1:]:
+                    if dup.promotion_status != "REJECTED":
+                        dup.promotion_status = "REJECTED"
+                        dup.reject_reason = f"DUPLICATE of {group[0].candidate_id}"
+                        self._save_candidate(dup)
+                        duplicates_marked += 1
+
+        unique_remaining = total - duplicates_marked
+        return {
+            "total": total,
+            "duplicates_found": duplicates_found,
+            "duplicates_marked": duplicates_marked,
+            "unique_remaining": unique_remaining,
+        }
+
+    def compute_candidate_hash(self, strategy_id: str, params: dict) -> str:
+        """SHA256 of strategy_id + sorted params JSON. Deterministic.
+
+        Args:
+            strategy_id: The strategy ID.
+            params: Strategy parameters dict.
+
+        Returns:
+            Hex digest string (16 chars).
+        """
+        raw = strategy_id + json.dumps(params, sort_keys=True)
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
     def load(self, experiment_id: str) -> ResearchExperimentManifest | None:
         """Load an experiment manifest from disk.
@@ -327,3 +573,36 @@ class ExperimentManager:
         path.write_text(
             json.dumps(asdict(candidate), indent=2, default=str), encoding="utf-8"
         )
+
+    def _load_candidate(self, candidate_id: str) -> StrategyCandidate | None:
+        """Load a candidate from disk by ID."""
+        path = self.candidates_dir / candidate_id / "candidate.json"
+        if not path.exists():
+            return None
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return StrategyCandidate(**data)
+
+    def _find_children(self, candidate_id: str) -> list[str]:
+        """Find all candidates that have the given candidate_id as parent."""
+        children: list[str] = []
+        for c in self.list_candidates():
+            if c.parent_candidate_id == candidate_id:
+                children.append(c.candidate_id)
+        return children
+
+    @staticmethod
+    def _detect_git_commit() -> str:
+        """Detect current git commit hash. Returns 'unknown' on failure."""
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["git", "rev-parse", "--short", "HEAD"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if result.returncode == 0:
+                return result.stdout.strip()
+        except Exception:
+            pass
+        return "unknown"

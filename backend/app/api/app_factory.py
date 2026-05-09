@@ -499,6 +499,40 @@ def create_app():
         except Exception:
             return []
 
+    @router.get("/research/experiments/{experiment_id}/ranking")
+    async def experiment_ranking(experiment_id: str):
+        """Get ranked candidates for an experiment."""
+        from quant_us.research.automation.scorer import CandidateScorer
+        scorer = CandidateScorer()
+        scores = scorer.score(experiment_id)
+        ranked = scorer.rank(scores)
+        return [s.__dict__ for s in ranked]
+
+    @router.post("/research/experiments/compare")
+    async def compare_experiments(request: dict):
+        """Compare multiple experiments. Body: {experiment_ids: [...], metric: "score"}"""
+        from quant_us.research.lab.manifest import ExperimentManager
+        mgr = ExperimentManager()
+        return mgr.compare_experiments(
+            request.get("experiment_ids", []),
+            request.get("metric", "score"),
+        )
+
+    @router.get("/research/candidates/{candidate_id}/lineage")
+    async def candidate_lineage(candidate_id: str):
+        """Get candidate lineage chain."""
+        from quant_us.research.lab.manifest import ExperimentManager
+        mgr = ExperimentManager()
+        return mgr.get_lineage(candidate_id)
+
+    @router.post("/research/candidates/{candidate_id}/promotion-gate")
+    async def check_promotion_gate(candidate_id: str):
+        """Evaluate candidate through research promotion gate."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+        gate = ResearchPromotionGate()
+        result = gate.evaluate(candidate_id)
+        return result.__dict__
+
     @router.get("/portfolio/status")
     async def portfolio_status():
         """Return current portfolio construction status."""
