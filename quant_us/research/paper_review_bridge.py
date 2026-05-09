@@ -233,6 +233,92 @@ class PaperReviewManager:
             "note": "Evidence pack not yet generated. Use 'evidence-pack' command.",
         }
 
+    def create_from_portfolio_evidence(
+        self, portfolio_evidence_pack_id: str
+    ) -> PaperReviewCandidate:
+        """Create paper review from a portfolio evidence pack.
+
+        Requires portfolio-level evidence collected from an EvidencePackGenerator
+        that contains portfolio simulation data. This method allows creating a
+        paper review directly from evidence data rather than from a simulation run.
+
+        Args:
+            portfolio_evidence_pack_id: The ID of a portfolio-level evidence pack
+                                        (typically stored under
+                                        data/research/evidence_packs/<id>/).
+
+        Returns:
+            The created PaperReviewCandidate (persisted to disk).
+
+        Raises:
+            ValueError: If the evidence pack is not found, or does not contain
+                        portfolio-level evidence.
+        """
+        # Load the evidence pack
+        ev_path = (
+            self.data_root
+            / "research"
+            / "evidence_packs"
+            / portfolio_evidence_pack_id
+            / "evidence_pack.json"
+        )
+        if not ev_path.exists():
+            raise ValueError(
+                f"Portfolio evidence pack {portfolio_evidence_pack_id} not found "
+                f"at {ev_path}"
+            )
+
+        evidence = json.loads(ev_path.read_text(encoding="utf-8"))
+        sections = evidence.get("sections", {})
+
+        # Verify portfolio-level evidence exists
+        portfolio_sim = sections.get("portfolio_sim", {})
+        if not portfolio_sim or portfolio_sim.get("status") in ("not_created",):
+            raise ValueError(
+                f"Evidence pack {portfolio_evidence_pack_id} does not contain "
+                f"portfolio-level evidence. Cannot create paper review."
+            )
+
+        # Extract candidate data for proposed symbols and risk envelope
+        candidate_data = sections.get("candidate_data", {})
+        metrics = candidate_data.get("metrics", {})
+
+        proposed_symbols = list(
+            dict.fromkeys(candidate_data.get("symbols", []))
+        )
+
+        # Extract promotion gate decision for readiness assessment
+        promotion_gate = sections.get("promotion_gate", {})
+        gate_decision = promotion_gate.get("decision", "BLOCKED")
+
+        # Only allow creation from evidence packs that passed the gate
+        if gate_decision == "BLOCKED":
+            raise ValueError(
+                f"Evidence pack {portfolio_evidence_pack_id} has gate decision "
+                f"BLOCKED. Cannot create paper review from blocked candidate."
+            )
+
+        review_id = new_id("prev")
+        review = PaperReviewCandidate(
+            paper_review_id=review_id,
+            strategy_manifest_id=candidate_data.get("candidate_id", ""),
+            portfolio_sim_id=portfolio_sim.get("portfolio_sim_id", ""),
+            evidence_pack_path=str(ev_path),
+            proposed_symbols=proposed_symbols,
+            proposed_capital=float(portfolio_sim.get("final_equity", 100000.0)),
+            proposed_risk_envelope={
+                "max_drawdown_pct": abs(
+                    float(metrics.get("max_drawdown_pct", 0.3))
+                ),
+                "portfolio_decision": portfolio_sim.get("decision", "WATCHLIST"),
+            },
+            status="PENDING_HUMAN_REVIEW",
+            created_at=utc_now().isoformat(),
+        )
+
+        self._save_review(review)
+        return review
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------

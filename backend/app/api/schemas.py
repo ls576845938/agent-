@@ -751,3 +751,48 @@ class PaperBacktestResponse(BaseModel):
 class PaperResetResponse(BaseModel):
     status: str
     message: str
+
+
+# ------------------------------------------------------------------
+# R6: Alpha Robustness & Evidence Engine
+# ------------------------------------------------------------------
+
+
+class RobustnessMonteCarloSection(BaseModel):
+    n_simulations: int = 500
+    survival_rate: float = 0.0
+    median_return: float = 0.0
+    p5_return: float = 0.0
+    p95_drawdown: float = 0.0
+    tail_risk_score: float = 0.0
+
+
+class RobustnessAlphaDecaySection(BaseModel):
+    alpha_half_life: Optional[float] = None
+    decay_warning: Optional[str] = None
+    recommended_holding_period: Optional[str] = None
+    ic_decay_curve: list[float] = Field(default_factory=list)
+
+
+class RobustnessParamStabilitySection(BaseModel):
+    stability_score: Optional[float] = None
+    cliff_count: int = 0
+    robust_region_ratio: float = 0.0
+
+
+class RobustnessRunRequest(BaseModel):
+    strategy_manifest_id: str = Field(description="Strategy manifest ID or candidate ID")
+    n_simulations: int = Field(default=500, ge=10, le=10000)
+    data_root: str = "data"
+
+
+class RobustnessRunResponse(BaseModel):
+    run_id: str
+    candidate_id: str
+    strategy_manifest: str
+    generated_at: str
+    monte_carlo_shuffle: RobustnessMonteCarloSection
+    monte_carlo_bootstrap: RobustnessMonteCarloSection
+    monte_carlo_stress: RobustnessMonteCarloSection
+    alpha_decay: Optional[RobustnessAlphaDecaySection] = None
+    param_stability: Optional[RobustnessParamStabilitySection] = None

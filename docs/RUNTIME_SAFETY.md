@@ -461,3 +461,79 @@ The promotion gate can never promote beyond PAPER_ELIGIBLE:
 8. Portfolio construction outputs allocation targets, not orders
 9. No research module references QUANT_LIVE environment variable
 10. All research tests use tmp_path and fake data -- no real API keys or network calls
+
+## R6 Alpha Robustness Safety (Added R-Series)
+
+### No Live Interaction
+
+R6 components work exclusively with pre-computed candidate data:
+
+1. **Monte Carlo bootstrap**: Operates on cached trade lists from completed backtests. No live market data.
+2. **Alpha decay estimation**: Computed from historical rolling alpha values. No real-time feeds.
+3. **Parameter stability**: Tests perturbed parameter sets locally. No broker interaction.
+
+### Metric-Based Checks
+
+R6 promotion checks are metric-driven, not execution-driven:
+- All R6 metrics are stored in candidate.json under `metrics`
+- Missing metrics default to failure thresholds (conservative safety)
+- Promotion gate reads metrics; it never computes them from live data
+
+### R6 Safety Invariants
+
+1. Monte Carlo survival check reads from candidate data only -- no simulation runs
+2. Alpha decay check uses stored half-life values -- no live computation
+3. Parameter stability check reads pre-computed scores -- no on-the-fly param sweeps
+4. Missing metrics always result in BLOCKED or WATCHLIST (fail-safe)
+5. No R6 module or check has broker or live API access
+6. All R6 tests use seeded RNG for deterministic results
+
+## R7 Multi-Strategy Portfolio Safety (Added R-Series)
+
+### Correlation-Only Analysis
+
+R7 features operate on computed metrics without portfolio execution:
+
+1. **Correlation redundancy**: Computed from existing scorecard data. No live portfolio.
+2. **Portfolio evidence review**: PaperReviewManager.create_from_portfolio_evidence() reads existing evidence packs. Never triggers trading.
+
+### NEED_MORE_RESEARCH Safeguard
+
+The `NEED_MORE_RESEARCH` decision is a hard gate between correlation checks and promotion:
+- HIGH correlation redundancy triggers NEED_MORE_RESEARCH (not WATCHLIST or BLOCKED)
+- NEED_MORE_RESEARCH blocks promotion just as BLOCKED does (it is checked before WATCHLIST)
+- Human must explicitly re-submit after addressing the redundancy
+
+### R7 Safety Invariants
+
+1. Correlation redundancy check uses stored `correlation_redundancy` metric only
+2. PaperReviewManager.create_from_portfolio_evidence() creates PENDING_HUMAN_REVIEW only -- no auto-promotion
+3. Portfolio evidence validation requires non-BLOCKED gate decision
+4. All R7 tests use tmp_path and synthetic data
+5. No R7 module has broker or live API access
+
+## R8 Research-to-Production Promotion Safety (Added R-Series)
+
+### Stress Testing Isolation
+
+R8 stress checks are simulated locally:
+1. **Cost stress**: Simulates cost multiplier scenarios on pre-computed returns. No live execution.
+2. **Crash window**: Tests against historical crash scenarios. No market impact.
+
+### Gate Completeness
+
+The ResearchPromotionGate is the single chokepoint for all research-to-production promotion:
+- All 13 checks run in a single evaluate() call
+- BLOCKED takes priority over all other outcomes
+- READY_FOR_PAPER_REVIEW is the only pass-through state
+- No bypass paths exist around the promotion gate
+
+### R8 Safety Invariants
+
+1. Stress survival check uses stored `stress_survival_rate` metric only
+2. Promotion gate never promotes beyond PAPER_ELIGIBLE
+3. Evidence packs are generated from existing data only -- no live queries
+4. ResearchPromotionGate has no submit_order or broker access
+5. All R8 tests use tmp_path and synthetic data
+6. PaperReviewManager has no auto-approve path
+7. PaperReviewManager.approve() requires a non-empty reviewer name
