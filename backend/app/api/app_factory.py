@@ -475,5 +475,52 @@ def create_app():
             raise HTTPException(status_code=404, detail="No chart data available for this run")
         return ChartSeriesPayload.model_validate(record.result.chart)
 
+    # ------------------------------------------------------------------
+    # R-series: Research & Portfolio endpoints
+    # ------------------------------------------------------------------
+
+    @router.get("/research/experiments")
+    async def list_research_experiments():
+        """List research experiments from the lab."""
+        try:
+            from quant_us.research.lab.manifest import ExperimentManager
+            mgr = ExperimentManager()
+            return mgr.list_experiments()
+        except Exception:
+            return []
+
+    @router.get("/research/candidates")
+    async def list_research_candidates():
+        """List strategy candidates from the lab."""
+        try:
+            from quant_us.research.lab.manifest import ExperimentManager
+            mgr = ExperimentManager()
+            return mgr.list_candidates()
+        except Exception:
+            return []
+
+    @router.get("/portfolio/status")
+    async def portfolio_status():
+        """Return current portfolio construction status."""
+        try:
+            from quant_us.portfolio.construction.engine import PortfolioConstructionEngine
+            engine = PortfolioConstructionEngine()
+            # Return a summary - look for saved portfolio targets
+            import json
+            from pathlib import Path
+            target_dir = Path("data/portfolio/targets")
+            if target_dir.exists():
+                targets = sorted(target_dir.glob("*.json"))
+                if targets:
+                    latest = json.loads(targets[-1].read_text())
+                    return {
+                        "status": "ok",
+                        "portfolio_count": len(targets),
+                        "latest_portfolio": latest,
+                    }
+            return {"status": "ok", "portfolio_count": 0, "latest_portfolio": None}
+        except Exception as exc:
+            return {"status": "error", "detail": str(exc)}
+
     app.include_router(router)
     return app

@@ -1,126 +1,145 @@
 import {useEffect, useState} from 'react';
 
-import {apiGet, ApiError} from '../lib/api';
+import {apiGet} from '../lib/api';
 import {LoadingSpinner} from '../components/LoadingSpinner';
+import ExperimentList from './research/ExperimentList';
+import CandidateTable from './research/CandidateTable';
+import ExperimentReport from './research/ExperimentReport';
 
-type Experiment = {
+interface Experiment {
   experiment_id: string;
-  experiment_name: string;
   strategy_id: string;
+  strategy_family: string;
+  symbols: string[];
   status: string;
+  start_date: string;
+  end_date: string;
   created_at: string;
-  updated_at?: string;
-  stage?: string;
-};
+}
 
-type Candidate = {
+interface Candidate {
   candidate_id: string;
+  experiment_id: string;
   strategy_id: string;
-  score: number;
-  stage: string;
-  status: string;
+  strategy_family?: string;
+  promotion_status: string;
+  robustness_score: number;
+  overfit_score: number;
+  alpha_score: number;
+  risk_score: number;
+  turnover_score: number;
+  score?: number;
+  sharpe?: number;
+  max_drawdown?: number;
+  rank?: number;
+  parameters?: Record<string, number>;
+  warnings?: string[];
+  cagr?: number;
+  sortino?: number;
+  calmar?: number;
+  win_rate?: number;
+  profit_factor?: number;
   created_at: string;
-};
+}
 
-type ResearchState = {
-  experiments: Experiment[];
-  candidates: Candidate[];
-};
+const tabs = [
+  {key: 'experiments', label: '实验列表'},
+  {key: 'candidates', label: '候选排名'},
+  {key: 'report', label: '实验报告'},
+];
 
 export default function ResearchDashboard() {
-  const [data, setData] = useState<ResearchState | null>(null);
+  const [experiments, setExperiments] = useState<Experiment[]>([]);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('experiments');
+  const [selectedExp, setSelectedExp] = useState<Experiment | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const fetchData = async () => {
+    (async () => {
       try {
-        const [experiments, candidates] = await Promise.all([
+        const [exps, cands] = await Promise.all([
           apiGet<Experiment[]>('/api/research/experiments').catch(() => [] as Experiment[]),
           apiGet<Candidate[]>('/api/research/candidates').catch(() => [] as Candidate[]),
         ]);
-        if (!cancelled) setData({experiments, candidates});
-      } catch (e) {
-        if (!cancelled) setError(e instanceof ApiError ? e.message : 'Failed to load research data');
+        if (!cancelled) {
+          setExperiments(exps || []);
+          setCandidates(cands || []);
+        }
+      } catch (e: unknown) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load');
       } finally {
         if (!cancelled) setLoading(false);
       }
-    };
-    void fetchData();
+    })();
     return () => { cancelled = true; };
   }, []);
 
   if (loading) return <LoadingSpinner text="加载研究数据..." />;
   if (error) return (
-    <main className="live-dashboard">
+    <div style={{padding: 24}}>
       <h2>研究台</h2>
-      <div className="panel error-panel">
-        <div className="panel-header"><h3>连接错误</h3></div>
-        <p>{error}</p>
+      <div style={{color: '#ef4444', padding: 16, background: 'rgba(239,68,68,0.1)', borderRadius: 8}}>
+        连接错误: {error}
       </div>
-    </main>
+    </div>
   );
-  if (!data || (data.experiments.length === 0 && data.candidates.length === 0)) return (
-    <main className="live-dashboard">
-      <h2>研究台</h2>
-      <div className="panel">
-        <div className="panel-header"><h3>暂无数据</h3></div>
-        <p style={{padding: '12px 0', color: 'var(--muted)'}}>尚未找到实验记录或候选策略。运行研究管道以生成数据。</p>
-      </div>
-    </main>
-  );
+
+  const candidatesForExp = selectedExp
+    ? candidates.filter(c => c.experiment_id === selectedExp.experiment_id)
+    : candidates;
 
   return (
-    <main className="live-dashboard">
-      <h2>研究台</h2>
-      <p style={{color: 'var(--muted)', margin: '0 0 16px'}}>实验管理 · 候选策略 · 晋升门控</p>
+    <div style={{padding: 24, color: '#e2e8f0'}}>
+      <h2 style={{margin: '0 0 4px'}}>研究台</h2>
+      <p style={{color: '#94a3b8', margin: '0 0 20px', fontSize: '0.875rem'}}>
+        实验管理 · 候选策略 · 晋升门控
+      </p>
 
-      {/* Experiments */}
-      {data.experiments.length > 0 && (
-        <section className="panel" style={{marginBottom: 16}}>
-          <div className="panel-header">
-            <h3>实验记录</h3>
-            <span>{data.experiments.length} 项</span>
-          </div>
-          <div className="paper-results-table">
-            {data.experiments.map(exp => (
-              <div key={exp.experiment_id} className="paper-result-row">
-                <span>{exp.experiment_name || exp.experiment_id}</span>
-                <span className="status-tag neutral">{exp.status}</span>
-                <span>{exp.strategy_id}</span>
-                <span>{exp.stage || '—'}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Tab navigation */}
+      <div style={{display: 'flex', gap: 4, borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 20}}>
+        {tabs.map(t => {
+          const active = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              style={{
+                padding: '8px 16px',
+                fontSize: '0.85rem',
+                borderRadius: '4px 4px 0 0',
+                border: 'none',
+                background: active ? 'rgba(99,102,241,0.2)' : 'transparent',
+                color: active ? '#a5b4fc' : '#94a3b8',
+                cursor: 'pointer',
+                borderBottom: active ? '2px solid #6366f1' : '2px solid transparent',
+              }}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
 
-      {/* Candidates */}
-      {data.candidates.length > 0 && (
-        <section className="panel">
-          <div className="panel-header">
-            <h3>晋升候选</h3>
-            <span>{data.candidates.length} 项</span>
-          </div>
-          <div className="strategy-grid">
-            {data.candidates.map(c => (
-              <div key={c.candidate_id} className="strategy-card">
-                <div className="strategy-card-header">
-                  <strong>{c.strategy_id}</strong>
-                  <span className={`status-tag ${c.status === 'pass' ? 'good' : c.status === 'fail' ? 'bad' : 'neutral'}`}>
-                    {c.stage}
-                  </span>
-                </div>
-                <p>分数: {c.score.toFixed(3)}</p>
-                <p style={{fontSize: '0.75rem', color: 'var(--muted)'}}>
-                  创建: {new Date(c.created_at).toLocaleDateString('zh-CN')}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+      {/* Tab content */}
+      {tab === 'experiments' && (
+        <ExperimentList
+          experiments={experiments}
+          onSelectExperiment={setSelectedExp}
+        />
       )}
-    </main>
+      {tab === 'candidates' && (
+        <CandidateTable candidates={candidatesForExp} />
+      )}
+      {tab === 'report' && (
+        <ExperimentReport
+          experiments={experiments}
+          candidates={candidatesForExp}
+          selectedExpId={selectedExp?.experiment_id}
+        />
+      )}
+    </div>
   );
 }

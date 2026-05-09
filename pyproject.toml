@@ -33,6 +33,14 @@ live = [
   "vnpy>=3.9"
 ]
 
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "integration_live: marks tests requiring live broker (skip in CI)",
+    "e2e: end-to-end tests",
+]
+
 [project.scripts]
 quant-us = "quant_us.cli:main"
 

@@ -1,137 +1,107 @@
 import {useEffect, useState} from 'react';
 
-import {apiGet, ApiError} from '../lib/api';
+import {apiGet} from '../lib/api';
 import {LoadingSpinner} from '../components/LoadingSpinner';
-import {formatPrice} from '../lib/utils';
+import PortfolioOverview from './portfolio/PortfolioOverview';
+import PortfolioAllocation from './portfolio/PortfolioAllocation';
+import PortfolioRisk from './portfolio/PortfolioRisk';
 
-type PortfolioHolding = {
-  symbol: string;
-  quantity: number;
-  market_value: number;
-  cost_basis: number;
-  unrealized_pnl: number;
-  unrealized_return_pct: number;
-  weight_pct: number;
-};
+interface PortfolioData {
+  status: string;
+  portfolio_count: number;
+  latest_portfolio: {
+    portfolio_id: string;
+    date: string;
+    strategy_weights: Record<string, number>;
+    total_capital: number;
+    expected_return: number;
+    expected_volatility: number;
+    symbol_exposures: Record<string, number>;
+  } | null;
+}
 
-type PortfolioStatus = {
-  total_equity: number;
-  cash: number;
-  market_value: number;
-  day_pnl: number;
-  day_return_pct: number;
-  total_pnl: number;
-  total_return_pct: number;
-  holdings: PortfolioHolding[];
-  updated_at: string;
-};
+const tabs = [
+  {key: 'overview', label: '总览'},
+  {key: 'allocation', label: '配置'},
+  {key: 'risk', label: '风险'},
+];
 
 export default function PortfolioMonitor() {
-  const [data, setData] = useState<PortfolioStatus | null>(null);
+  const [data, setData] = useState<PortfolioData | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('overview');
 
   useEffect(() => {
     let cancelled = false;
-    const fetchData = async () => {
+    (async () => {
       try {
-        const result = await apiGet<PortfolioStatus>('/api/portfolio/status');
+        const result = await apiGet<PortfolioData>('/api/portfolio/status');
         if (!cancelled) setData(result);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof ApiError ? e.message : 'Failed to load portfolio');
+      } catch (e: unknown) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load');
       } finally {
         if (!cancelled) setLoading(false);
       }
-    };
-    void fetchData();
+    })();
     return () => { cancelled = true; };
   }, []);
 
   if (loading) return <LoadingSpinner text="加载投资组合..." />;
   if (error) return (
-    <main className="live-dashboard">
+    <div style={{padding: 24, color: '#e2e8f0'}}>
       <h2>投资组合</h2>
-      <div className="panel error-panel">
-        <div className="panel-header"><h3>连接错误</h3></div>
-        <p>{error}</p>
+      <div style={{color: '#ef4444', padding: 16, background: 'rgba(239,68,68,0.1)', borderRadius: 8}}>
+        连接错误: {error}
       </div>
-    </main>
-  );
-  if (!data) return (
-    <main className="live-dashboard">
-      <h2>投资组合</h2>
-      <div className="panel">
-        <div className="panel-header"><h3>暂无数据</h3></div>
-        <p style={{padding: '12px 0', color: 'var(--muted)'}}>等待组合数据...</p>
-      </div>
-    </main>
+    </div>
   );
 
-  const holdings = data.holdings ?? [];
+  const pf = data?.latest_portfolio ?? null;
 
   return (
-    <main className="live-dashboard">
-      <h2>投资组合监控</h2>
-      <p style={{color: 'var(--muted)', margin: '0 0 16px'}}>
-        更新于 {data.updated_at ? new Date(data.updated_at).toLocaleString('zh-CN') : '—'}
+    <div style={{padding: 24, color: '#e2e8f0'}}>
+      <h2 style={{margin: '0 0 4px'}}>投资组合监控</h2>
+      <p style={{color: '#94a3b8', margin: '0 0 20px', fontSize: '0.875rem'}}>
+        {pf ? `${pf.portfolio_id} · ${pf.date?.slice(0, 10)}` : ''}
       </p>
 
-      {/* Summary metrics */}
-      <section className="metrics-grid" style={{marginBottom: 16}}>
-        <div className="metric-card">
-          <span>总权益</span>
-          <strong>{formatPrice(data.total_equity)}</strong>
-        </div>
-        <div className="metric-card">
-          <span>可用现金</span>
-          <strong>{formatPrice(data.cash)}</strong>
-        </div>
-        <div className="metric-card">
-          <span>市值</span>
-          <strong>{formatPrice(data.market_value)}</strong>
-        </div>
-        <div className={`metric-card ${data.day_pnl >= 0 ? 'metric-good' : 'metric-bad'}`}>
-          <span>当日 PnL</span>
-          <strong>{data.day_pnl >= 0 ? '+' : ''}{formatPrice(data.day_pnl)} ({data.day_return_pct.toFixed(2)}%)</strong>
-        </div>
-        <div className={`metric-card ${data.total_pnl >= 0 ? 'metric-good' : 'metric-bad'}`}>
-          <span>累计 PnL</span>
-          <strong>{data.total_pnl >= 0 ? '+' : ''}{formatPrice(data.total_pnl)} ({data.total_return_pct.toFixed(2)}%)</strong>
-        </div>
-      </section>
+      {/* Tab navigation */}
+      <div style={{display: 'flex', gap: 4, borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 20}}>
+        {tabs.map(t => {
+          const active = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              style={{
+                padding: '8px 16px',
+                fontSize: '0.85rem',
+                borderRadius: '4px 4px 0 0',
+                border: 'none',
+                background: active ? 'rgba(99,102,241,0.2)' : 'transparent',
+                color: active ? '#a5b4fc' : '#94a3b8',
+                cursor: 'pointer',
+                borderBottom: active ? '2px solid #6366f1' : '2px solid transparent',
+              }}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
 
-      {/* Holdings table */}
-      {holdings.length > 0 ? (
-        <section className="panel">
-          <div className="panel-header">
-            <h3>持仓明细</h3>
-            <span>{holdings.length} 只</span>
-          </div>
-          <div className="portfolio-table" style={{marginTop: 8}}>
-            <div className="portfolio-row" style={{borderTop: 'none', color: 'var(--text)'}}>
-              <span>标的</span>
-              <span>数量</span>
-              <span>市值</span>
-              <span>盈亏</span>
-            </div>
-            {holdings.map(h => (
-              <div key={h.symbol} className="portfolio-row">
-                <span>{h.symbol}</span>
-                <span>{h.quantity}</span>
-                <span>{formatPrice(h.market_value)}</span>
-                <span style={{color: h.unrealized_pnl >= 0 ? 'var(--good)' : 'var(--bad)'}}>
-                  {h.unrealized_pnl >= 0 ? '+' : ''}{formatPrice(h.unrealized_pnl)} ({h.unrealized_return_pct.toFixed(2)}%)
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
+      {!pf ? (
+        <div style={{padding: 30, textAlign: 'center', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', borderRadius: 8}}>
+          暂无投资组合数据
+        </div>
       ) : (
-        <section className="panel">
-          <div className="panel-header"><h3>持仓明细</h3></div>
-          <p style={{padding: '12px 0', color: 'var(--muted)'}}>当前无持仓</p>
-        </section>
+        <>
+          {tab === 'overview' && <PortfolioOverview pf={pf} />}
+          {tab === 'allocation' && <PortfolioAllocation pf={pf} />}
+          {tab === 'risk' && <PortfolioRisk pf={pf} />}
+        </>
       )}
-    </main>
+    </div>
   );
 }

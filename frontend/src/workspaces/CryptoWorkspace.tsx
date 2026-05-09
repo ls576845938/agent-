@@ -350,8 +350,6 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     setForm((c) => ({...c, dataDbPath: next.dbPath}));
   };
 
-  void health;
-
   return (
     <main className="layout">
       <aside className="side-column">
