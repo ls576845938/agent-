@@ -19,6 +19,8 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.app.services.market_data import inspect_market_data_quality
 from quant_us.data.storage.data_manifest import (
+    ACCEPTED_ADJUSTMENT_POLICIES,
+    ACCEPTED_SURVIVORSHIP_BIAS_RISKS,
     DataManifestStore,
     build_manifest_from_quality,
     validate_manifest_for_promotion,
@@ -45,6 +47,10 @@ def generate_one(
     db_path: str = "",
     store: DataManifestStore | None = None,
     validate: bool = False,
+    universe_id: str = "",
+    universe_source: str = "",
+    survivorship_bias_risk: str = "unknown",
+    adjustment_policy: str = "",
 ) -> str:
     quality = inspect_market_data_quality(
         source=source,
@@ -61,12 +67,22 @@ def generate_one(
         interval=interval,
         asset_class="equity" if not symbol.upper().endswith(("USDT", "BTC", "ETH")) else "crypto",
         git_commit=get_git_commit(),
+        universe_id=universe_id,
+        universe_source=universe_source,
+        survivorship_bias_risk=survivorship_bias_risk,
+        adjustment_policy=adjustment_policy,
     )
     store = store or DataManifestStore()
     path = store.write(manifest)
     print(f"  {manifest.data_version}")
     print(f"    coverage: {manifest.coverage_pct:.2f}%  quality: {manifest.quality_score:.1f}  rows: {manifest.row_count}")
     print(f"    checksum: {manifest.effective_checksum or '(missing)'}  timezone: {manifest.timezone}  adjustment: {manifest.adjustment}")
+    print(
+        "    "
+        f"adjustment_policy: {manifest.adjustment_policy or '(implicit)'}  "
+        f"universe_id: {manifest.universe_id or '(missing)'}  "
+        f"survivorship_bias_risk: {manifest.survivorship_bias_risk}"
+    )
     print(f"    written to {path}")
     if validate:
         validation = validate_manifest_for_promotion(manifest)
@@ -93,6 +109,20 @@ def main() -> None:
     parser.add_argument("--list", action="store_true", help="List existing manifests")
     parser.add_argument("--manifest-root", default="data/manifests", help="Directory where data manifests are stored")
     parser.add_argument("--validate", action="store_true", help="Fail if the generated manifest is not promotion-grade")
+    parser.add_argument("--universe-id", default="", help="Universe identifier recorded in the manifest")
+    parser.add_argument("--universe-source", default="", help="Universe source or builder recorded in the manifest")
+    parser.add_argument(
+        "--survivorship-bias-risk",
+        default="unknown",
+        choices=sorted(ACCEPTED_SURVIVORSHIP_BIAS_RISKS),
+        help="Survivorship bias risk classification",
+    )
+    parser.add_argument(
+        "--adjustment-policy",
+        default="",
+        choices=["", *sorted(ACCEPTED_ADJUSTMENT_POLICIES)],
+        help="Explicit corporate action adjustment policy",
+    )
     args = parser.parse_args()
 
     store = DataManifestStore(root=args.manifest_root)
@@ -127,6 +157,10 @@ def main() -> None:
                         db_path=args.db_path,
                         store=store,
                         validate=args.validate,
+                        universe_id=args.universe_id,
+                        universe_source=args.universe_source,
+                        survivorship_bias_risk=args.survivorship_bias_risk,
+                        adjustment_policy=args.adjustment_policy,
                     )
                 except Exception as exc:
                     print(f"  SKIP {symbol} {interval}: {exc}")
@@ -140,6 +174,10 @@ def main() -> None:
             db_path=args.db_path,
             store=store,
             validate=args.validate,
+            universe_id=args.universe_id,
+            universe_source=args.universe_source,
+            survivorship_bias_risk=args.survivorship_bias_risk,
+            adjustment_policy=args.adjustment_policy,
         )
 
     print(f"\nDone. {len(store.list_manifests())} manifests in {store.root}")

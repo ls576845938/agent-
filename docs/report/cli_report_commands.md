@@ -51,6 +51,8 @@ python -m quant_us.cli report backtest --manifest data/manifests/run_ubt_000bd9a
 The output highlights `data_version`, `strategy_version`, `commit_hash`, cost model, slippage, and the manifest path.
 The backtest manifest is ledger-backed and event-driven, so the report is meant to be read from persisted evidence rather than live engine state.
 Promotion-grade manifests also expose data-manifest binding: manifest id, checksum/fingerprint, and whether the binding was missing.
+Data Manifest v2 fields such as `universe_id`, `universe_source`, `survivorship_bias_risk`, `adjustment_policy`, and `corporate_action_adjustment`
+are printed when present.
 The output includes `evidence_state: PASS manifest_path` when the manifest exists, plus `scope: report only, no execution`.
 
 ## Evidence Registry Report
@@ -63,6 +65,8 @@ python -m quant_us.cli report evidence-registry --data-root data
 
 The registry status is rendered as one of `PASS`, `STALE`, `MISSING`, or `CONFLICT`.
 `CONFLICT` means saved registry content no longer matches the current artifact content.
+The report also prints the saved subject index schema and bucket counts for `candidate_id`, `strategy_manifest_id`,
+`paper_review_id`, `backtest_run_id`, `data_version`, `report_date`, and `session_id`.
 This command is report-only and does not start paper/live execution.
 The readiness/report/paper runtime gate reads this saved registry state directly. It does not implicitly rebuild from `review.json` or any legacy mirror.
 
@@ -81,6 +85,7 @@ python -m quant_us.cli report daily --date 2026-05-08
 ```
 
 The output includes the daily report path, ledger root, validation-state evidence pointers,
+paper session manifest, startup sync artifact, ledger reconciliation artifact summary,
 and a read-only paper-review status block:
 
 - whether research evidence currently allows entry into `PAPER_REVIEW`
@@ -89,7 +94,8 @@ and a read-only paper-review status block:
 
 This report does not approve paper trading and does not enable any order path.
 It prints `report_state`, `readiness_state`, `evidence_registry_state`, and `scope: report only, no execution`.
-It is evidence-only and cannot submit paper/live orders.
+It is evidence-only and cannot submit paper/live orders. Paper session manifests and no-submit proofs are audit evidence,
+not broker-write authorization.
 Ledger-derived report artifacts must be idempotent across repeated report runs. If a future command writes ledger state,
 it should use a file lock or document why the artifact is single-writer/rebuild-only; the report commands listed here
 are read-only evidence views.

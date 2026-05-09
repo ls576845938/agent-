@@ -25,6 +25,17 @@ from typing import Any
 from config.v1_universe import V1_INTERVALS, V1_SOURCE, V1_START, V1_SYMBOLS
 
 
+_SUBJECT_INDEX_BUCKETS = (
+    "candidate_id",
+    "strategy_manifest_id",
+    "paper_review_id",
+    "backtest_run_id",
+    "data_version",
+    "report_date",
+    "session_id",
+)
+
+
 def _shared_parent() -> argparse.ArgumentParser:
     """Return a parent parser with shared arguments used by all subcommands."""
     parent = argparse.ArgumentParser(add_help=False)
@@ -106,6 +117,12 @@ def _path_evidence_state(path: Path | str | None) -> str:
     return "PASS" if path and Path(path).exists() else "MISSING"
 
 
+def _display_value(value: Any, missing: str = "(missing)") -> str:
+    if value is None or value == "":
+        return missing
+    return str(value)
+
+
 def _print_report_only_note(indent: str = "  ") -> None:
     print(f"{indent}scope:       report only, no execution")
 
@@ -151,6 +168,14 @@ def _print_evidence_registry_status(data_root: str, indent: str = "  ") -> None:
     path = _saved_evidence_registry_path(data_root)
     print(f"{indent}evidence_registry_state: {_evidence_state(raw_status)} ({raw_status})")
     print(f"{indent}evidence:     evidence_registry={path if path.exists() else '(not found)'}")
+    subject_index = registry.get("subject_index", {})
+    if isinstance(subject_index, dict):
+        schema_version = _display_value(registry.get("subject_index_schema_version"))
+        print(f"{indent}subject_index_schema: {schema_version}")
+        for bucket in _SUBJECT_INDEX_BUCKETS:
+            entries = subject_index.get(bucket, {})
+            count = len(entries) if isinstance(entries, dict) else 0
+            print(f"{indent}subject_index_{bucket}_count: {count}")
     if notes:
         print(f"{indent}evidence_registry_notes: {'; '.join(str(n) for n in notes[:3])}")
 
@@ -400,6 +425,72 @@ def _manifest_kind(payload: dict[str, Any]) -> str:
     return "unknown"
 
 
+def _data_manifest_v2_fields(payload: dict[str, Any]) -> dict[str, Any]:
+    embedded = payload.get("data_manifest", {})
+    if isinstance(embedded, dict):
+        source = dict(embedded)
+        for key in (
+            "universe_id",
+            "universe_source",
+            "survivorship_bias_risk",
+            "adjustment_policy",
+            "corporate_action_adjustment",
+        ):
+            source.setdefault(key, payload.get(key, ""))
+        return source
+    return payload
+
+
+def _print_data_manifest_v2_fields(payload: dict[str, Any], indent: str = "  ") -> None:
+    fields = _data_manifest_v2_fields(payload)
+    print(f"{indent}universe_id: {_display_value(fields.get('universe_id'))}")
+    print(f"{indent}universe_source: {_display_value(fields.get('universe_source'))}")
+    print(f"{indent}survivorship_bias_risk: {_display_value(fields.get('survivorship_bias_risk'))}")
+    print(f"{indent}adjustment_policy: {_display_value(fields.get('adjustment_policy'))}")
+    print(f"{indent}corporate_action_adjustment: {_display_value(fields.get('corporate_action_adjustment'))}")
+
+
+def _latest_ledger_reconciliation_artifact(ledger_root: Path) -> Path | None:
+    recon_dir = ledger_root / "reconciliation"
+    if not recon_dir.exists():
+        return None
+    artifacts = list(recon_dir.glob("ledger_recon_artifact_*.json"))
+    if not artifacts:
+        return None
+    return max(artifacts, key=lambda path: (path.stat().st_mtime_ns, path.name))
+
+
+def _print_paper_session_artifacts(ledger_root: Path, indent: str = "  ") -> None:
+    audit_root = ledger_root / "audit"
+    session_manifest = audit_root / "paper_session_manifest.json"
+    startup_sync = audit_root / "paper_broker_adapter_startup_sync.json"
+    print(f"{indent}evidence:     paper_session_manifest={session_manifest if session_manifest.exists() else '(not found)'}")
+    if session_manifest.exists():
+        payload = _read_json_file(session_manifest)
+        print(f"{indent}paper_session_id: {_display_value(payload.get('session_id'))}")
+        print(f"{indent}paper_session_mode: {_display_value(payload.get('mode'))}")
+        print(f"{indent}paper_session_broker_backend: {_display_value(payload.get('broker_backend'))}")
+        print(f"{indent}paper_session_submit_orders: {bool(payload.get('submit_orders', False))}")
+        proof = payload.get("no_real_order_submission_proof", {})
+        proof_status = proof.get("status", "") if isinstance(proof, dict) else ""
+        print(f"{indent}paper_session_no_submit_proof: {_display_value(proof_status)}")
+    print(f"{indent}evidence:     startup_sync={startup_sync if startup_sync.exists() else '(not found)'}")
+    if startup_sync.exists():
+        payload = _read_json_file(startup_sync)
+        print(f"{indent}startup_sync_status: {_display_value(payload.get('status'))}")
+
+
+def _print_ledger_reconciliation_artifact(payload: dict[str, Any], ledger_root: Path, indent: str = "  ") -> None:
+    artifact_hash = str(payload.get("ledger_artifact_hash", "") or "")
+    artifact_path = _latest_ledger_reconciliation_artifact(ledger_root)
+    print(f"{indent}evidence:     ledger_reconciliation_artifact={artifact_path if artifact_path else '(not found)'}")
+    if artifact_hash:
+        print(f"{indent}ledger_artifact_hash: {artifact_hash}")
+        print(f"{indent}ledger_fill_hash: {_display_value(payload.get('ledger_fill_hash'))}")
+        print(f"{indent}ledger_fill_dup_conflict: {int(payload.get('ledger_duplicate_fill_count', 0) or 0)}/{int(payload.get('ledger_conflict_fill_count', 0) or 0)}")
+        print(f"{indent}ledger_pnl: ${float(payload.get('ledger_pnl', 0.0) or 0.0):+,.2f}")
+
+
 def cmd_manifest_list(args: argparse.Namespace) -> None:
     """List data and backtest manifests under data/manifests."""
     root = _manifest_root(args.data_root)
@@ -458,6 +549,7 @@ def cmd_manifest_inspect(args: argparse.Namespace) -> None:
         print(f"  range:       {payload.get('start', '?')} -> {payload.get('end', '?')}")
         print(f"  rows:        {payload.get('row_count', 0)} / expected {payload.get('expected_rows', 0)}")
         print(f"  quality:     {payload.get('quality_score', 0)}  coverage={payload.get('coverage_pct', 0)}%")
+        _print_data_manifest_v2_fields(payload)
         print(f"  raw_path:    {payload.get('raw_path') or '(not set)'}")
         print(f"  cleaned:     {payload.get('cleaned_path') or '(not set)'}")
     else:
@@ -514,6 +606,7 @@ def cmd_report_backtest(args: argparse.Namespace) -> None:
     print(f"  initial_cash:  {config.get('initial_cash', '(missing)')}")
     print(f"  cost_model:    commission_rate={config.get('commission_rate', '(missing)')}")
     print(f"  slippage:      {config.get('slippage_bps', '(missing)')} bps")
+    _print_data_manifest_v2_fields(payload)
     print(f"  evidence_state: {_path_evidence_state(path)} manifest_path")
     print(f"  evidence:      manifest_path={path}")
     _print_report_only_note()
@@ -551,6 +644,8 @@ def cmd_report_daily(args: argparse.Namespace) -> None:
     print(f"  readiness_state: {_path_evidence_state(validation_state)} validation_state")
     print(f"  evidence:     ledger_root={ledger_root}")
     print(f"  evidence:     validation_state={validation_state if validation_state.exists() else '(not found)'}")
+    _print_paper_session_artifacts(ledger_root)
+    _print_ledger_reconciliation_artifact(payload, ledger_root)
     _print_evidence_registry_status(args.data_root)
     _print_paper_review_status(args.data_root)
     _print_report_only_note()
@@ -579,6 +674,13 @@ def cmd_report_evidence_registry(args: argparse.Namespace) -> None:
     print(f"  evidence:       evidence_registry={path if path.exists() else '(not found)'}")
     for key in sorted(counts):
         print(f"  {key}: {counts[key]}")
+    subject_index = registry.get("subject_index", {})
+    print(f"  subject_index_schema: {_display_value(registry.get('subject_index_schema_version'))}")
+    if isinstance(subject_index, dict):
+        for bucket in _SUBJECT_INDEX_BUCKETS:
+            entries = subject_index.get(bucket, {})
+            count = len(entries) if isinstance(entries, dict) else 0
+            print(f"  subject_index_{bucket}_count: {count}")
     notes = list(registry.get("registry_notes", []))
     if notes:
         print("  notes:")

@@ -30,6 +30,11 @@ from quant_us.data.storage.data_manifest import (
 
 ALLOWED_DATA_SOURCES = {"yfinance", "alpaca", "sqlite"}
 CRYPTO_SYMBOL_SUFFIXES = ("USDT", "USD", "BTC", "ETH")
+DATA_MANIFEST_ADVISORY_WARNINGS = {
+    "universe_id_missing",
+    "universe_source_missing",
+    "survivorship_bias_risk_unmarked",
+}
 
 
 @dataclass
@@ -786,7 +791,11 @@ class ResearchPromotionGate:
                 f"candidate={asset_class}"
             )
         reasons.extend(f"data_manifest_invalid:{reason}" for reason in validation.reasons)
-        warnings.extend(f"data_manifest_warning:{warning}" for warning in validation.warnings)
+        warnings.extend(
+            f"data_manifest_warning:{warning}"
+            for warning in validation.warnings
+            if warning not in DATA_MANIFEST_ADVISORY_WARNINGS
+        )
 
     def _compare_embedded_data_manifest(
         self,

@@ -363,6 +363,70 @@ class TestGenerateDataManifestCLI(unittest.TestCase):
         _, inspect_kwargs = mock_inspect.call_args
         self.assertEqual(inspect_kwargs["symbol"], "aapl")
 
+    @patch("scripts.generate_data_manifest.get_git_commit", return_value="abc123")
+    @patch("scripts.generate_data_manifest.build_manifest_from_quality")
+    @patch("scripts.generate_data_manifest.inspect_market_data_quality")
+    @patch("scripts.generate_data_manifest.DataManifestStore")
+    def test_universe_and_adjustment_args_are_forwarded(
+        self,
+        mock_store_cls: MagicMock,
+        mock_inspect: MagicMock,
+        mock_build: MagicMock,
+        mock_git: MagicMock,
+    ) -> None:
+        mock_inspect.return_value = {
+            "data_version": "v2",
+            "row_count": 10,
+            "expected_rows": 10,
+            "coverage_pct": 100.0,
+            "quality_score": 100.0,
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 0,
+        }
+        mock_manifest = DataManifest(
+            data_version="v2",
+            source="sqlite",
+            symbol="AAPL",
+            interval="1d",
+            coverage_pct=100.0,
+            quality_score=100.0,
+            row_count=10,
+            universe_id="us-core-v2",
+            universe_source="universe_builder:v2",
+            survivorship_bias_risk="clean",
+            adjustment_policy="split_adjusted",
+            corporate_action_adjustment="split_adjusted",
+        )
+        mock_build.return_value = mock_manifest
+
+        mock_store = MagicMock()
+        mock_store.list_manifests.return_value = []
+        mock_store_cls.return_value = mock_store
+
+        out, err, exc = self._run_main(
+            [
+                "--source", "sqlite",
+                "--symbol", "AAPL",
+                "--interval", "1d",
+                "--universe-id", "us-core-v2",
+                "--universe-source", "universe_builder:v2",
+                "--survivorship-bias-risk", "clean",
+                "--adjustment-policy", "split_adjusted",
+            ]
+        )
+
+        self.assertIsNone(exc)
+        _, build_kwargs = mock_build.call_args
+        self.assertEqual(build_kwargs["universe_id"], "us-core-v2")
+        self.assertEqual(build_kwargs["universe_source"], "universe_builder:v2")
+        self.assertEqual(build_kwargs["survivorship_bias_risk"], "clean")
+        self.assertEqual(build_kwargs["adjustment_policy"], "split_adjusted")
+        self.assertIn("adjustment_policy: split_adjusted", out)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from quant_us.research.evidence_registry import (
+    find_registry_subject_evidence,
     inspect_candidate_evidence,
     inspect_evidence_registry,
     inspect_saved_evidence_registry,
@@ -32,6 +33,7 @@ def _write_candidate_chain_fixture(
     include_backtest: bool = True,
     include_review: bool = True,
     duplicate_data_manifest: bool = False,
+    daily_report_session_id: str | None = None,
 ) -> dict[str, str]:
     _write_json(
         root / "research" / "candidates" / candidate_id / "candidate.json",
@@ -106,15 +108,18 @@ def _write_candidate_chain_fixture(
                 "created_at": "2026-05-09T12:05:00+00:00",
             },
         )
+    daily_report_payload = {
+        "report_date": "2026-05-09",
+        "generated_at": "2026-05-09T20:00:00+00:00",
+        "reconciliation_status": "clean",
+        "orders_submitted": 2,
+        "kill_switch_triggered": False,
+    }
+    if daily_report_session_id:
+        daily_report_payload["session_id"] = daily_report_session_id
     _write_json(
         root / "daily_reports" / "daily_report_2026-05-09.json",
-        {
-            "report_date": "2026-05-09",
-            "generated_at": "2026-05-09T20:00:00+00:00",
-            "reconciliation_status": "clean",
-            "orders_submitted": 2,
-            "kill_switch_triggered": False,
-        },
+        daily_report_payload,
     )
     if include_review:
         _write_json(
@@ -319,3 +324,209 @@ def test_saved_registry_projection_allows_approved_review_with_pack(tmp_path: Pa
     assert projection["registry_status"] == "present"
     assert status.status == "APPROVED_FOR_PAPER_ONLY"
     assert status.paper_review_entry_allowed is True
+
+
+def test_registry_subject_index_indexes_candidate_review_backtest_data_and_daily_report(
+    tmp_path: Path,
+) -> None:
+    ids = _write_candidate_chain_fixture(
+        tmp_path,
+        daily_report_session_id="session_open",
+    )
+
+    registry = rebuild_evidence_registry(tmp_path)
+    subject_index = registry["subject_index"]
+
+    assert registry["subject_index_schema_version"] == "subject_evidence_index_v1"
+
+    candidate_entry = subject_index["candidate_id"][ids["candidate_id"]][0]
+    assert candidate_entry["strategy_manifest_id"] == ids["strategy_manifest_id"]
+    assert candidate_entry["paper_review_id"] == ids["review_id"]
+    assert candidate_entry["backtest_run_id"] == f"run_{ids['candidate_id']}"
+    assert candidate_entry["data_version"] == ids["data_version"]
+    assert candidate_entry["paths"]["candidate"].endswith("candidate.json")
+    assert candidate_entry["paths"]["paper_review"].endswith("review.json")
+
+    paper_review_entry = subject_index["paper_review_id"][ids["review_id"]][0]
+    assert paper_review_entry["candidate_id"] == ids["candidate_id"]
+
+    backtest_entry = subject_index["backtest_run_id"][f"run_{ids['candidate_id']}"][0]
+    assert backtest_entry["paths"]["backtest_manifest"].endswith("run_manifest.json")
+
+    data_entry = subject_index["data_version"][ids["data_version"]][0]
+    assert data_entry["candidate_id"] == ids["candidate_id"]
+
+    daily_by_date = subject_index["report_date"]["2026-05-09"][0]
+    assert daily_by_date["session_id"] == "session_open"
+    assert daily_by_date["paths"]["daily_report"].endswith("daily_report_2026-05-09.json")
+
+    daily_by_session = subject_index["session_id"]["session_open"][0]
+    assert daily_by_session["report_date"] == "2026-05-09"
+
+
+def test_find_registry_subject_evidence_reads_saved_subject_index(tmp_path: Path) -> None:
+    ids = _write_candidate_chain_fixture(
+        tmp_path,
+        daily_report_session_id="session_open",
+    )
+    rebuild_evidence_registry(tmp_path)
+
+    candidate_lookup = find_registry_subject_evidence(
+        tmp_path,
+        candidate_id=ids["candidate_id"],
+    )
+    assert candidate_lookup["matched"] is True
+    assert candidate_lookup["reason"] == "ok"
+    assert candidate_lookup["entries"][0]["paper_review_id"] == ids["review_id"]
+
+    paper_review_lookup = find_registry_subject_evidence(
+        tmp_path,
+        paper_review_id=ids["review_id"],
+    )
+    assert paper_review_lookup["matched"] is True
+    assert paper_review_lookup["entries"][0]["strategy_manifest_id"] == ids["strategy_manifest_id"]
+
+    backtest_lookup = find_registry_subject_evidence(
+        tmp_path,
+        backtest_run_id=f"run_{ids['candidate_id']}",
+    )
+    assert backtest_lookup["matched"] is True
+    assert backtest_lookup["entries"][0]["data_version"] == ids["data_version"]
+
+    data_lookup = find_registry_subject_evidence(
+        tmp_path,
+        data_version=ids["data_version"],
+    )
+    assert data_lookup["matched"] is True
+    assert data_lookup["entries"][0]["candidate_id"] == ids["candidate_id"]
+
+    daily_lookup = find_registry_subject_evidence(
+        tmp_path,
+        report_date="2026-05-09",
+        session_id="session_open",
+    )
+    assert daily_lookup["matched"] is True
+    assert daily_lookup["entries"][0]["entry_kind"] == "daily_report"
+
+
+def test_find_registry_subject_evidence_uses_report_date_when_session_missing(
+    tmp_path: Path,
+) -> None:
+    _write_candidate_chain_fixture(tmp_path)
+    rebuild_evidence_registry(tmp_path)
+
+    daily_lookup = find_registry_subject_evidence(
+        tmp_path,
+        report_date="2026-05-09",
+    )
+
+    assert daily_lookup["matched"] is True
+    assert len(daily_lookup["entries"]) == 1
+    assert daily_lookup["entries"][0]["session_id"] == ""
+    assert daily_lookup["entries"][0]["paths"]["daily_report"].endswith(
+        "daily_report_2026-05-09.json"
+    )
+
+
+def test_subject_index_includes_orphan_backtest_and_data_artifacts(tmp_path: Path) -> None:
+    data_version = "qs-yfinance-AAPL-1d-orphan"
+    run_id = "ubt_orphan"
+    _write_json(
+        tmp_path / "manifests" / f"{data_version}.json",
+        {
+            "data_version": data_version,
+            "source": "yfinance",
+            "symbol": "AAPL",
+            "interval": "1d",
+            "quality_score": 99.0,
+            "created_at": "2026-05-09T11:55:00+00:00",
+        },
+    )
+    _write_json(
+        tmp_path / "manifests" / f"run_{run_id}.json",
+        {
+            "run_id": run_id,
+            "engine": "event_driven",
+            "canonical_for_promotion": True,
+            "data_version": data_version,
+            "commit_hash": "deadbee",
+            "created_at": "2026-05-09T12:05:00+00:00",
+        },
+    )
+    rebuild_evidence_registry(tmp_path)
+
+    backtest_lookup = find_registry_subject_evidence(
+        tmp_path,
+        backtest_run_id=run_id,
+    )
+    data_lookup = find_registry_subject_evidence(
+        tmp_path,
+        data_version=data_version,
+    )
+
+    assert backtest_lookup["matched"] is True
+    assert any(entry["entry_kind"] == "backtest_manifest" for entry in backtest_lookup["entries"])
+    assert data_lookup["matched"] is True
+    assert any(entry["entry_kind"] == "data_manifest" for entry in data_lookup["entries"])
+
+
+def test_find_registry_subject_evidence_fails_closed_for_unready_registry(
+    tmp_path: Path,
+) -> None:
+    ids = _write_candidate_chain_fixture(tmp_path)
+
+    missing = find_registry_subject_evidence(
+        tmp_path,
+        candidate_id=ids["candidate_id"],
+    )
+    assert missing["matched"] is False
+    assert missing["registry_status"] == "missing"
+    assert missing["entries"] == []
+
+    rebuild_evidence_registry(tmp_path)
+    _write_json(
+        tmp_path / "research" / "paper_reviews" / "prev_extra" / "review.json",
+        {
+            "paper_review_id": "prev_extra",
+            "status": "APPROVED_FOR_PAPER_ONLY",
+            "reviewer": "risk_committee",
+            "evidence_pack_path": str(
+                tmp_path / "research" / "evidence_packs" / "pack_evidence" / "evidence_pack.json"
+            ),
+        },
+    )
+    stale = find_registry_subject_evidence(
+        tmp_path,
+        candidate_id=ids["candidate_id"],
+    )
+    assert stale["matched"] is False
+    assert stale["registry_status"] == "stale"
+    assert stale["entries"] == []
+
+    extra_review = tmp_path / "research" / "paper_reviews" / "prev_extra" / "review.json"
+    extra_review.unlink()
+    rebuild_evidence_registry(tmp_path)
+    review_path = tmp_path / "research" / "paper_reviews" / ids["review_id"] / "review.json"
+    review = json.loads(review_path.read_text(encoding="utf-8"))
+    review["review_notes"] = "changed_after_registry"
+    review_path.write_text(json.dumps(review, indent=2), encoding="utf-8")
+    changed = find_registry_subject_evidence(
+        tmp_path,
+        candidate_id=ids["candidate_id"],
+    )
+    assert changed["matched"] is False
+    assert changed["registry_status"] == "changed"
+    assert changed["entries"] == []
+
+    rebuild_evidence_registry(tmp_path)
+    registry_path = tmp_path / "research" / "evidence_registry.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    registry["evidence"]["paper_reviews"][0]["integrity_status"] = "CONFLICT"
+    registry_path.write_text(json.dumps(registry, indent=2), encoding="utf-8")
+    conflict = find_registry_subject_evidence(
+        tmp_path,
+        candidate_id=ids["candidate_id"],
+    )
+    assert conflict["matched"] is False
+    assert conflict["registry_status"] == "conflict"
+    assert conflict["entries"] == []

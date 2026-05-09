@@ -64,6 +64,53 @@ def _write_saved_evidence_registry(data_root: str | Path) -> None:
     rebuild_evidence_registry(data_root, write=True)
 
 
+def _write_empty_subject_registry(data_root: str | Path) -> None:
+    registry_path = Path(data_root) / "research" / "evidence_registry.json"
+    registry_path.parent.mkdir(parents=True, exist_ok=True)
+    subject_index = {
+        "candidate_id": {"cand_001": [{"candidate_id": "cand_001"}]},
+        "strategy_manifest_id": {"sman_001": [{"strategy_manifest_id": "sman_001"}]},
+        "paper_review_id": {},
+        "backtest_run_id": {"abc123": [{"backtest_run_id": "abc123"}]},
+        "data_version": {"data_v2": [{"data_version": "data_v2"}]},
+        "report_date": {"2026-05-08": [{"report_date": "2026-05-08"}]},
+        "session_id": {"sess_001": [{"session_id": "sess_001"}]},
+    }
+    registry_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "evidence_registry_v1",
+                "generated_at": "2099-01-01T00:00:00+00:00",
+                "registry_path": str(registry_path),
+                "registry_notes": [],
+                "counts": {
+                    "candidate_count": 0,
+                    "data_manifest_count": 0,
+                    "backtest_manifest_count": 0,
+                    "promotion_result_count": 0,
+                    "strategy_manifest_count": 0,
+                    "paper_review_count": 0,
+                    "daily_report_count": 0,
+                },
+                "evidence": {
+                    "data_manifests": [],
+                    "backtest_manifests": [],
+                    "promotion_results": [],
+                    "strategy_manifests": [],
+                    "paper_reviews": [],
+                    "daily_reports": [],
+                    "candidates": [],
+                },
+                "chains": {},
+                "subject_index_schema_version": "subject_evidence_index_v1",
+                "subject_index": subject_index,
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+
 class CliHelpTests(unittest.TestCase):
     """Each subcommand must display --help without error."""
 
@@ -525,6 +572,38 @@ class CliManifestReportTests(unittest.TestCase):
             )
             main(["manifest", "inspect", "--manifest", "abc123", "--data-root", tmp])
 
+    def test_manifest_inspect_prints_data_manifest_v2_fields(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "data_v2.json").write_text(
+                json.dumps(
+                    {
+                        "data_version": "data_v2",
+                        "source": "yfinance",
+                        "symbol": "AAPL",
+                        "interval": "1d",
+                        "start": "2026-05-01",
+                        "end": "2026-05-08",
+                        "universe_id": "us-core",
+                        "universe_source": "explicit",
+                        "survivorship_bias_risk": "low",
+                        "adjustment_policy": "split_adjusted",
+                        "corporate_action_adjustment": "split_adjusted",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["manifest", "inspect", "--manifest", "data_v2", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("universe_id: us-core", text)
+            self.assertIn("survivorship_bias_risk: low", text)
+            self.assertIn("adjustment_policy: split_adjusted", text)
+
     def test_report_backtest_prints_state_and_report_only_scope(self) -> None:
         with TemporaryDirectory() as tmp:
             manifest_dir = Path(tmp) / "manifests"
@@ -549,6 +628,40 @@ class CliManifestReportTests(unittest.TestCase):
             text = out.getvalue()
             self.assertIn("evidence_state: PASS manifest_path", text)
             self.assertIn("scope:       report only, no execution", text)
+
+    def test_report_backtest_prints_embedded_data_manifest_v2_fields(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "run_abc123.json").write_text(
+                json.dumps(
+                    {
+                        "run_id": "abc123",
+                        "data_version": "data_v2",
+                        "strategy_version": "strat_v1",
+                        "commit_hash": "deadbee",
+                        "start_time": "2026-05-01T00:00:00+00:00",
+                        "end_time": "2026-05-01T00:01:00+00:00",
+                        "config": {"initial_cash": 100000, "commission_rate": 0.0001, "slippage_bps": 1.0},
+                        "data_manifest": {
+                            "universe_id": "us-core",
+                            "universe_source": "explicit",
+                            "survivorship_bias_risk": "low",
+                            "adjustment_policy": "split_adjusted",
+                            "corporate_action_adjustment": "split_adjusted",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "backtest", "--run-id", "abc123", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("universe_id: us-core", text)
+            self.assertIn("corporate_action_adjustment: split_adjusted", text)
 
     def test_report_backtest_requires_identifier(self) -> None:
         with self.assertRaises(SystemExit) as ctx:
@@ -581,6 +694,20 @@ class CliManifestReportTests(unittest.TestCase):
             self.assertIn("registry_state: CONFLICT (conflict)", text)
             self.assertIn("registry_error: inspect_failed", text)
 
+    def test_report_evidence_registry_prints_subject_index_counts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_empty_subject_registry(tmp)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "evidence-registry", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("registry_state: PASS (present)", text)
+            self.assertIn("subject_index_schema: subject_evidence_index_v1", text)
+            self.assertIn("subject_index_candidate_id_count: 1", text)
+            self.assertIn("subject_index_session_id_count: 1", text)
+
     def test_report_daily_latest_uses_ledger_report(self) -> None:
         with TemporaryDirectory() as tmp:
             report_dir = Path(tmp) / "paper_ledger" / "daily_reports"
@@ -588,14 +715,50 @@ class CliManifestReportTests(unittest.TestCase):
             (report_dir / "daily_report_2026-05-08.json").write_text(
                 """{
                   "report_date": "2026-05-08",
+                  "session_id": "sess_001",
                   "generated_at": "2026-05-08T21:00:00+00:00",
                   "ending_equity": 101000.0,
                   "daily_pnl": 1000.0,
                   "orders_submitted": 2,
                   "orders_filled": 2,
                   "reconciliation_status": "clean",
+                  "ledger_artifact_hash": "aaaaaaaaaaaaaaaa",
+                  "ledger_fill_hash": "bbbbbbbbbbbbbbbb",
+                  "ledger_duplicate_fill_count": 1,
+                  "ledger_conflict_fill_count": 0,
+                  "ledger_pnl": 123.45,
                   "kill_switch_triggered": false
                 }""",
+                encoding="utf-8",
+            )
+            audit_dir = Path(tmp) / "paper_ledger" / "audit"
+            audit_dir.mkdir(parents=True)
+            (audit_dir / "paper_session_manifest.json").write_text(
+                json.dumps(
+                    {
+                        "artifact_type": "paper_session_manifest",
+                        "artifact_version": "paper_session_manifest_v1",
+                        "session_id": "sess_001",
+                        "mode": "paper",
+                        "symbols": ["AAPL"],
+                        "broker_backend": "simulated",
+                        "submit_orders": False,
+                        "registry_evidence": {"allowed": False},
+                        "startup_sync_status": {"status": "no_submit"},
+                        "no_real_order_submission_proof": {"status": "PASS"},
+                        "created_at": "2026-05-08T20:00:00+00:00",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (audit_dir / "paper_broker_adapter_startup_sync.json").write_text(
+                json.dumps({"status": "no_submit", "no_real_order_submission": True}),
+                encoding="utf-8",
+            )
+            recon_dir = Path(tmp) / "paper_ledger" / "reconciliation"
+            recon_dir.mkdir(parents=True)
+            (recon_dir / "ledger_recon_artifact_aaaaaaaaaaaaaaaa.json").write_text(
+                json.dumps({"artifact_hash": "aaaaaaaaaaaaaaaa"}),
                 encoding="utf-8",
             )
             _write_review_json(tmp, status="APPROVED_FOR_PAPER_ONLY")
@@ -611,6 +774,14 @@ class CliManifestReportTests(unittest.TestCase):
             self.assertIn("manual_review_pending: NO", text)
             self.assertIn("report_state: PASS daily_report", text)
             self.assertIn("readiness_state: MISSING validation_state", text)
+            self.assertIn("evidence:     paper_session_manifest=", text)
+            self.assertIn("paper_session_id: sess_001", text)
+            self.assertIn("paper_session_no_submit_proof: PASS", text)
+            self.assertIn("startup_sync_status: no_submit", text)
+            self.assertIn("evidence:     ledger_reconciliation_artifact=", text)
+            self.assertIn("ledger_artifact_hash: aaaaaaaaaaaaaaaa", text)
+            self.assertIn("ledger_fill_dup_conflict: 1/0", text)
+            self.assertIn("ledger_pnl: $+123.45", text)
             self.assertIn("evidence_registry_state: MISSING (missing)", text)
             self.assertIn("scope:       report only, no execution", text)
             self.assertIn("Reporting only. This does not approve or start paper/live trading.", text)

@@ -17,6 +17,15 @@ Indexed evidence types:
 - strategy manifest
 - paper review
 - daily report
+- subject index buckets for `candidate_id`, `strategy_manifest_id`, `paper_review_id`, `backtest_run_id`, `data_version`, `report_date`, and `session_id`
+
+Related persisted runtime evidence:
+
+- `paper_ledger/audit/paper_session_manifest.json`
+- `paper_ledger/audit/paper_broker_adapter_startup_sync.json`
+- `paper_ledger/reconciliation/ledger_recon_artifact_<hash>.json`
+
+These artifacts are evidence and audit inputs. They do not authorize paper or live order submission.
 
 Python API:
 
@@ -25,12 +34,14 @@ from quant_us.research.evidence_registry import (
     inspect_candidate_evidence,
     inspect_evidence_registry,
     inspect_saved_evidence_registry,
+    find_registry_subject_evidence,
     rebuild_evidence_registry,
 )
 
 registry = rebuild_evidence_registry("data")
 snapshot = inspect_saved_evidence_registry("data")
 chain = inspect_candidate_evidence("cand_123", "data")
+subject = find_registry_subject_evidence("data", session_id="sess_123")
 ```
 
 Integrity metadata:

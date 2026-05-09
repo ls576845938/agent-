@@ -48,6 +48,8 @@ Useful options supported by the script:
 The manifest records `data_version`, `source`, `symbol`, `interval`, `asset_class`, `timezone`,
 `adjustment`, `start`, `end`, `row_count`, `expected_rows`, `coverage_pct`, `fingerprint`,
 `checksum`, `quality_score`, `cleaning`, and `git_commit`.
+Data Manifest v2 additionally records `universe_id`, `universe_source`, `survivorship_bias_risk`,
+`adjustment_policy`, and `corporate_action_adjustment`.
 
 Promotion-grade validation blocks:
 
@@ -221,8 +223,10 @@ python -m quant_us.cli report evidence-registry --data-root data
 ```
 
 The report includes the report path, ledger root, ending equity, daily PnL, order counts, reconciliation status,
-validation-state evidence pointers, evidence-registry status, and `report only, no execution`.
+validation-state evidence pointers, evidence-registry status, paper session manifest, startup sync artifact,
+ledger reconciliation artifact hash/fill hash/duplicate and conflict fill counts/ledger PnL, and `report only, no execution`.
 This report is review-only and does not submit paper or live orders.
+Paper session manifests and startup sync files are persisted audit evidence only; they do not enable broker writes.
 Ledger-derived report artifacts must remain idempotent. Runtime/report writers should use a file lock for ledger writes
 or explicitly document when a path is single-writer/rebuild-only; read-only report commands must not imply a write lock
 that has not been implemented.
@@ -233,9 +237,10 @@ that has not been implemented.
 - Every order must pass risk.
 - PnL comes from fills and ledger.
 - Every backtest should have a manifest.
-- Reconciliation detail is the next doc/report bridge to land in promotion and daily/backtest reports; until then, report pages remain evidence views, not execution flow.
+- Ledger reconciliation artifacts are persisted evidence views, not execution flow.
 - Promotion stops at `READY_FOR_PAPER_REVIEW`; paper/live are separate manual gates.
 - Paper startup sync artifacts are audit inputs only and stay fail-closed; they do not mean real trading has been enabled.
+- Evidence Registry subject indexes are lookup aids over saved evidence and do not replace gate decisions.
 - Saved Evidence Registry state is the gate input. `paper_review_index` remains a legacy view, and `review.json` alone does not authorize paper runtime startup.
 - Live runtime stays disabled for execution; current live mode is review-only even when live-gate evidence passes.
 - Paper order submission is default-off and requires an explicit paper submit path.

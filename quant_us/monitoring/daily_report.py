@@ -74,6 +74,11 @@ class DailyTradingReport:
     reconciliation_status: str = "unknown"  # clean / breaks_detected / unknown
     reconciliation_diff_count: int = 0
     reconciliation_halt: bool = False
+    ledger_artifact_hash: str = ""
+    ledger_fill_hash: str = ""
+    ledger_duplicate_fill_count: int = 0
+    ledger_conflict_fill_count: int = 0
+    ledger_pnl: float = 0.0
 
     # -- Data quality --
     stale_bars: int = 0
@@ -167,6 +172,7 @@ def generate_daily_report(
 
     # -- Reconciliation status from latest report file --
     recon_status, recon_diff_count, recon_halt = _read_reconciliation_status(ledger)
+    artifact_summary = _read_latest_ledger_artifact(ledger)
 
     return DailyTradingReport(
         report_date=report_date,
@@ -188,6 +194,11 @@ def generate_daily_report(
         reconciliation_status=recon_status,
         reconciliation_diff_count=recon_diff_count,
         reconciliation_halt=recon_halt,
+        ledger_artifact_hash=artifact_summary["artifact_hash"],
+        ledger_fill_hash=artifact_summary["fill_hash"],
+        ledger_duplicate_fill_count=artifact_summary["duplicate_fill_count"],
+        ledger_conflict_fill_count=artifact_summary["conflict_fill_count"],
+        ledger_pnl=artifact_summary["net_pnl"],
     )
 
 
@@ -276,6 +287,39 @@ def _read_reconciliation_status(
         return "unknown", 0, False
 
 
+def _read_latest_ledger_artifact(ledger: JsonlLedgerStore) -> dict[str, Any]:
+    recon_dir = Path(ledger.root) / "reconciliation"
+    empty = {
+        "artifact_hash": "",
+        "fill_hash": "",
+        "duplicate_fill_count": 0,
+        "conflict_fill_count": 0,
+        "net_pnl": 0.0,
+    }
+    if not recon_dir.exists():
+        return empty
+
+    try:
+        artifact_files = sorted(recon_dir.glob("ledger_recon_artifact_*.json"), reverse=True)
+        if not artifact_files:
+            return empty
+        latest_path = max(artifact_files, key=lambda path: (path.stat().st_mtime_ns, path.name))
+        latest = json.loads(latest_path.read_text(encoding="utf-8"))
+        fills = latest.get("fills", {})
+        hashes = latest.get("hashes", {})
+        pnl = latest.get("pnl", {})
+        return {
+            "artifact_hash": str(latest.get("artifact_hash", "")),
+            "fill_hash": str(hashes.get("fills_hash", "")) if isinstance(hashes, dict) else "",
+            "duplicate_fill_count": int(fills.get("duplicate_fill_count", 0)) if isinstance(fills, dict) else 0,
+            "conflict_fill_count": int(fills.get("conflict_fill_count", 0)) if isinstance(fills, dict) else 0,
+            "net_pnl": float(pnl.get("net_pnl", 0.0)) if isinstance(pnl, dict) else 0.0,
+        }
+    except Exception:
+        _logger.warning("Failed to read latest ledger reconciliation artifact", exc_info=True)
+        return empty
+
+
 # ---------------------------------------------------------------------------
 # Formatting
 # ---------------------------------------------------------------------------
@@ -345,6 +389,11 @@ def format_report_text(report: DailyTradingReport) -> str:
     lines.append(f"  Status:    {report.reconciliation_status}")
     lines.append(f"  Diffs:     {report.reconciliation_diff_count}")
     lines.append(f"  Halt:      {'YES' if report.reconciliation_halt else 'no'}")
+    if report.ledger_artifact_hash:
+        lines.append(f"  Artifact:  {report.ledger_artifact_hash[:16]}")
+        lines.append(f"  Fill hash: {report.ledger_fill_hash[:16]}")
+        lines.append(f"  Fill dup/conflict: {report.ledger_duplicate_fill_count}/{report.ledger_conflict_fill_count}")
+        lines.append(f"  Ledger PnL: ${report.ledger_pnl:>12,.2f}")
     lines.append("")
 
     # -- Data quality --

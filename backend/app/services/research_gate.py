@@ -18,6 +18,13 @@ from quant_us.data.storage.data_manifest import (
 from quant_us.research.experiments import ArtifactRef, ExperimentRegistry, ExperimentSpec
 
 
+DATA_MANIFEST_ADVISORY_WARNINGS = {
+    "universe_id_missing",
+    "universe_source_missing",
+    "survivorship_bias_risk_unmarked",
+}
+
+
 def _now() -> datetime:
     return datetime.now(tz=timezone.utc)
 
@@ -329,7 +336,12 @@ class ResearchPromotionGateService:
 
     def _data_manifest_gate(self, validation) -> dict[str, Any]:
         failed = not validation.ok
-        warned = bool(validation.warnings)
+        decision_warnings = [
+            warning
+            for warning in validation.warnings
+            if warning not in DATA_MANIFEST_ADVISORY_WARNINGS
+        ]
+        warned = bool(decision_warnings)
         if failed:
             message = "数据 manifest 不满足 paper candidate 级别的数据谱系与完整性要求。"
         elif warned:

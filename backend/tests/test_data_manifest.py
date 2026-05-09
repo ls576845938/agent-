@@ -32,6 +32,8 @@ class TestDataManifestConstruction(unittest.TestCase):
         self.assertEqual(m.asset_class, "equity")  # default
         self.assertEqual(m.timezone, "UTC")
         self.assertEqual(m.adjustment, "raw")
+        self.assertEqual(m.adjustment_policy, "")
+        self.assertEqual(m.corporate_action_adjustment, "")
         self.assertEqual(m.checksum, "")
         self.assertEqual(m.effective_checksum, "")
         self.assertEqual(m.start, "")
@@ -46,6 +48,9 @@ class TestDataManifestConstruction(unittest.TestCase):
         self.assertEqual(m.raw_path, "")
         self.assertEqual(m.cleaned_path, "")
         self.assertEqual(m.git_commit, "")
+        self.assertEqual(m.universe_id, "")
+        self.assertEqual(m.universe_source, "")
+        self.assertEqual(m.survivorship_bias_risk, "unknown")
         self.assertIsInstance(m.created_at, str)
 
     def test_manifest_id_is_deterministic(self) -> None:
@@ -164,6 +169,8 @@ class TestDataManifestStoreRoundTrip(unittest.TestCase):
                 asset_class="equity",
                 timezone="UTC",
                 adjustment="split_adjusted",
+                adjustment_policy="split_adjusted",
+                corporate_action_adjustment="split_adjusted",
                 start="2024-01-01T00:00:00+00:00",
                 end="2024-12-31T23:59:59+00:00",
                 row_count=252,
@@ -178,6 +185,9 @@ class TestDataManifestStoreRoundTrip(unittest.TestCase):
                 raw_path="/data/raw/test.parquet",
                 cleaned_path="/data/cleaned/test.parquet",
                 git_commit="abc123def456",
+                universe_id="us-core-v1",
+                universe_source="universe_builder",
+                survivorship_bias_risk="clean",
             )
 
             store.write(original)
@@ -191,6 +201,8 @@ class TestDataManifestStoreRoundTrip(unittest.TestCase):
             self.assertEqual(loaded.asset_class, original.asset_class)
             self.assertEqual(loaded.timezone, original.timezone)
             self.assertEqual(loaded.adjustment, original.adjustment)
+            self.assertEqual(loaded.adjustment_policy, original.adjustment_policy)
+            self.assertEqual(loaded.corporate_action_adjustment, original.corporate_action_adjustment)
             self.assertEqual(loaded.start, original.start)
             self.assertEqual(loaded.end, original.end)
             self.assertEqual(loaded.row_count, original.row_count)
@@ -205,6 +217,35 @@ class TestDataManifestStoreRoundTrip(unittest.TestCase):
             self.assertEqual(loaded.raw_path, original.raw_path)
             self.assertEqual(loaded.cleaned_path, original.cleaned_path)
             self.assertEqual(loaded.git_commit, original.git_commit)
+            self.assertEqual(loaded.universe_id, original.universe_id)
+            self.assertEqual(loaded.universe_source, original.universe_source)
+            self.assertEqual(loaded.survivorship_bias_risk, original.survivorship_bias_risk)
+
+    def test_read_legacy_manifest_defaults_v2_fields(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            payload = {
+                "data_version": "qs-v1-test-AAPL-1d-legacy",
+                "source": "test",
+                "symbol": "AAPL",
+                "interval": "1d",
+                "adjustment": "raw",
+                "coverage_pct": 100.0,
+                "quality_score": 95.0,
+                "row_count": 252,
+                "checksum": "a" * 64,
+            }
+            (root / "qs-v1-test-AAPL-1d-legacy.json").write_text(json.dumps(payload), encoding="utf-8")
+
+            loaded = DataManifestStore(root=directory).read("qs-v1-test-AAPL-1d-legacy")
+
+            self.assertIsNotNone(loaded)
+            self.assertEqual(loaded.adjustment, "raw")
+            self.assertEqual(loaded.adjustment_policy, "raw")
+            self.assertEqual(loaded.corporate_action_adjustment, "raw")
+            self.assertEqual(loaded.universe_id, "")
+            self.assertEqual(loaded.universe_source, "")
+            self.assertEqual(loaded.survivorship_bias_risk, "unknown")
 
     def test_read_returns_none_for_missing_version(self) -> None:
         with TemporaryDirectory() as directory:
@@ -496,6 +537,8 @@ class TestBuildManifestFromQuality(unittest.TestCase):
         self.assertEqual(manifest.asset_class, "equity")
         self.assertEqual(manifest.timezone, "UTC")
         self.assertEqual(manifest.adjustment, "raw")
+        self.assertEqual(manifest.adjustment_policy, "raw")
+        self.assertEqual(manifest.corporate_action_adjustment, "raw")
         self.assertEqual(manifest.start, "2024-01-01T00:00:00+00:00")
         self.assertEqual(manifest.end, "2024-12-31T23:59:59+00:00")
         self.assertEqual(manifest.row_count, 252)
@@ -524,6 +567,9 @@ class TestBuildManifestFromQuality(unittest.TestCase):
         self.assertEqual(manifest.raw_path, "/data/raw/test.parquet")
         self.assertEqual(manifest.cleaned_path, "/data/cleaned/test.parquet")
         self.assertEqual(manifest.git_commit, "abc123")
+        self.assertEqual(manifest.universe_id, "")
+        self.assertEqual(manifest.universe_source, "")
+        self.assertEqual(manifest.survivorship_bias_risk, "unknown")
         self.assertIsInstance(manifest.created_at, str)
 
     def test_missing_keys_uses_defaults(self) -> None:
@@ -563,6 +609,9 @@ class TestBuildManifestFromQuality(unittest.TestCase):
         self.assertEqual(manifest.raw_path, "")
         self.assertEqual(manifest.cleaned_path, "")
         self.assertEqual(manifest.git_commit, "")
+        self.assertEqual(manifest.adjustment_policy, "raw")
+        self.assertEqual(manifest.corporate_action_adjustment, "raw")
+        self.assertEqual(manifest.survivorship_bias_risk, "unknown")
 
     def test_partial_quality_dict(self) -> None:
         """Only some keys provided; missing ones get defaults."""
@@ -734,6 +783,50 @@ class TestDataManifestPromotionValidation(unittest.TestCase):
         self.assertTrue(result.ok)
         self.assertEqual(result.reasons, [])
         self.assertEqual(result.metrics["source"], "yfinance")
+        self.assertIn("universe_id_missing", result.warnings)
+        self.assertIn("universe_source_missing", result.warnings)
+        self.assertIn("survivorship_bias_risk_unmarked", result.warnings)
+
+    def test_explicit_clean_universe_passes_without_metadata_warnings(self) -> None:
+        result = validate_manifest_for_promotion(
+            self._valid_manifest(
+                universe_id="us-core-v2",
+                universe_source="universe_builder:v2",
+                survivorship_bias_risk="clean",
+                adjustment_policy="split_adjusted",
+            ),
+            now=datetime(2026, 5, 9, tzinfo=timezone.utc),
+        )
+        self.assertTrue(result.ok)
+        self.assertEqual(result.reasons, [])
+        self.assertNotIn("universe_id_missing", result.warnings)
+        self.assertNotIn("universe_source_missing", result.warnings)
+        self.assertNotIn("survivorship_bias_risk_unmarked", result.warnings)
+        self.assertNotIn("adjustment_policy:unknown", result.warnings)
+
+    def test_survivorship_bias_risk_prone_is_warning(self) -> None:
+        result = validate_manifest_for_promotion(
+            self._valid_manifest(
+                universe_id="sp500-current-members",
+                universe_source="manual_snapshot",
+                survivorship_bias_risk="prone",
+            )
+        )
+        self.assertTrue(result.ok)
+        self.assertIn("survivorship_bias_risk:prone", result.warnings)
+
+    def test_unknown_adjustment_policy_is_warning(self) -> None:
+        result = validate_manifest_for_promotion(
+            self._valid_manifest(
+                universe_id="us-core-v2",
+                universe_source="universe_builder:v2",
+                survivorship_bias_risk="clean",
+                adjustment="mystery_adjustment",
+                adjustment_policy="mystery_adjustment",
+            )
+        )
+        self.assertTrue(result.ok)
+        self.assertIn("adjustment_policy:unknown", result.warnings)
 
     def test_fixture_manifest_is_blocked(self) -> None:
         result = validate_manifest_for_promotion(self._valid_manifest(source="fixture"))

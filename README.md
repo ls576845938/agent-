@@ -52,6 +52,7 @@ python scripts/run_full_pipeline.py --symbol AAPL --mode full --start 2024-01-01
 
 - 这里的快速开始只覆盖当前可用的研究、回测、报告和门禁检查入口。
 - CLI report/readiness/evidence registry 输出统一使用 `PASS` / `STALE` / `MISSING` / `CONFLICT`，并标明 `report only, no execution`。
+- CLI 会展示 Data Manifest v2 lineage、Evidence Registry subject index、paper session manifest、startup sync artifact、ledger reconciliation artifact 等 persisted evidence；这些只是只读证据。
 - Canonical path 是 `manifest -> ledger-backed backtest -> promotion handoff -> paper/runtime readiness report`。
 - readiness / report / paper runtime gate 默认只消费已保存的 Evidence Registry，不会隐式 rebuild；`MISSING`、`STALE`、`CONFLICT` 都是 fail-closed。
 - `paper_review_index` 只是 legacy view，不是 paper/runtime gate 的权威来源。

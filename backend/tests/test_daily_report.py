@@ -11,6 +11,7 @@ from typing import Any
 
 import pytest
 
+from quant_us.backtest.ledger_pnl import build_ledger_reconciliation_artifact
 from quant_us.core.enums import OrderSide, OrderStatus, OrderType, TimeInForce
 from quant_us.core.types import AccountState, Fill, Order, Position
 from quant_us.execution.broker_base import BrokerBase
@@ -333,6 +334,23 @@ class TestDailyTradingReport:
         assert report.reconciliation_status == "breaks_detected"
         assert report.reconciliation_diff_count == 1
         assert report.reconciliation_halt is True
+
+    def test_generate_includes_ledger_reconciliation_artifact(
+        self, ledger: JsonlLedgerStore, broker: StubBroker, kill_switch: KillSwitch
+    ) -> None:
+        _stub_fills(ledger)
+        _stub_snapshot(ledger, equity=100_000.0)
+        _stub_recon_report(ledger, status="clean")
+        artifact = build_ledger_reconciliation_artifact(ledger, initial_cash=100_000.0)
+        ledger.write_reconciliation_artifact(artifact)
+
+        report = generate_daily_report(date(2026, 5, 3), ledger, broker, kill_switch)
+
+        assert report.ledger_artifact_hash == artifact.artifact_hash
+        assert report.ledger_fill_hash == artifact.hashes["fills_hash"]
+        assert report.ledger_duplicate_fill_count == 0
+        assert report.ledger_conflict_fill_count == 0
+        assert report.ledger_pnl == pytest.approx(artifact.pnl["net_pnl"])
 
     def test_generate_with_kill_switch_triggered(
         self, ledger: JsonlLedgerStore, broker: StubBroker

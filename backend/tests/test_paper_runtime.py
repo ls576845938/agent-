@@ -177,6 +177,14 @@ def _startup_sync_artifact(ledger_root: str) -> dict[str, Any]:
     )
 
 
+def _session_manifest(ledger_root: str) -> dict[str, Any]:
+    return json.loads(
+        (Path(ledger_root) / "audit" / "paper_session_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+
 # ======================================================================
 # PaperRuntime tests
 # ======================================================================
@@ -227,6 +235,13 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
 
         # Ledger root must exist
         self.assertTrue(Path(self.ledger_root).exists())
+        manifest = _session_manifest(self.ledger_root)
+        self.assertEqual(manifest["mode"], "paper")
+        self.assertEqual(manifest["symbols"], ["AAPL", "MSFT"])
+        self.assertEqual(manifest["broker_backend"], "simulated")
+        self.assertFalse(manifest["submit_orders"])
+        self.assertEqual(manifest["startup_sync_status"]["status"], "skipped")
+        self.assertFalse(manifest["no_real_order_submission_proof"]["real_order_submission"])
 
     @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
     def test_bootstrap_reconcile_on_start_passes(self, mock_mdl: mock.MagicMock) -> None:
@@ -359,10 +374,23 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         self.assertEqual(artifact["status"], "ok")
         self.assertEqual(artifact["backend"], "alpaca_paper")
         self.assertEqual(artifact["contract_version"], PAPER_ADAPTER_CONTRACT_VERSION)
+        self.assertEqual(artifact["readiness"]["adapter"], "alpaca_paper_fake")
+        self.assertFalse(artifact["no_submit_proof"]["submit_order_invoked"])
+        self.assertEqual(artifact["no_submit_proof"]["submit_call_count_before"], 0)
+        self.assertEqual(artifact["no_submit_proof"]["submit_call_count_after"], 0)
+        self.assertEqual(artifact["no_submit_proof"]["submit_call_count_delta"], 0)
         self.assertEqual(artifact["sync"]["poll_orders"]["call_count"], 1)
         self.assertEqual(artifact["sync"]["sync_fills"]["call_count"], 1)
         self.assertEqual(artifact["sync"]["sync_account"]["account_id"], "alpaca_paper_fake")
         self.assertEqual(artifact["sync"]["sync_positions"]["symbols"], [])
+        manifest = _session_manifest(self.ledger_root)
+        self.assertEqual(manifest["session_id"], runtime.session_id)
+        self.assertEqual(manifest["broker_backend"], "alpaca_paper")
+        self.assertEqual(manifest["registry_evidence_id"], "paper_runtime_backend_test")
+        self.assertEqual(manifest["startup_sync_status"]["status"], "ok")
+        self.assertTrue(manifest["startup_sync_status"]["no_submit"])
+        self.assertTrue(manifest["no_real_order_submission_proof"]["startup_sync_no_submit"])
+        self.assertFalse(manifest["no_real_order_submission_proof"]["real_order_submission"])
 
     @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
     def test_bootstrap_blocks_when_paper_adapter_startup_sync_fails(
@@ -406,6 +434,8 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         self.assertEqual(artifact["error"], "sync_account_failed")
         self.assertTrue(artifact["reduce_only"])
         self.assertTrue(artifact["halt_reconciliation"])
+        self.assertFalse(artifact["no_submit_proof"]["submit_order_invoked"])
+        self.assertEqual(artifact["no_submit_proof"]["submit_call_count_delta"], 0)
         self.assertEqual(artifact["sync"]["poll_orders"]["call_count"], 1)
         self.assertEqual(artifact["sync"]["sync_fills"]["call_count"], 1)
         self.assertEqual(artifact["sync"]["sync_account"]["call_count"], 1)

@@ -12,6 +12,7 @@ REGISTRY_SCHEMA_VERSION = "evidence_registry_v1"
 LEGACY_INDEX_SCHEMA_VERSION = "paper_review_evidence_index_v2"
 EVIDENCE_REF_SCHEMA_VERSION = "evidence_ref_v1"
 CANDIDATE_CHAIN_SCHEMA_VERSION = "candidate_evidence_chain_v1"
+SUBJECT_INDEX_SCHEMA_VERSION = "subject_evidence_index_v1"
 
 INTEGRITY_PASS = "PASS/STABLE"
 INTEGRITY_STALE = "STALE/CHANGED"
@@ -194,6 +195,78 @@ def inspect_saved_evidence_registry(
     return result
 
 
+def find_registry_subject_evidence(
+    data_root: str | Path = "data",
+    *,
+    candidate_id: str = "",
+    strategy_manifest_id: str = "",
+    paper_review_id: str = "",
+    backtest_run_id: str = "",
+    data_version: str = "",
+    report_date: str = "",
+    session_id: str = "",
+) -> dict[str, Any]:
+    """Read-only subject lookup against the saved registry subject index."""
+    root = Path(data_root)
+    registry = inspect_saved_evidence_registry(root)
+    registry_status = str(registry.get("registry_status", "missing"))
+    registry_integrity = str(
+        registry.get("registry_integrity_status", INTEGRITY_MISSING)
+    )
+    query = {
+        "candidate_id": str(candidate_id or "").strip(),
+        "strategy_manifest_id": str(strategy_manifest_id or "").strip(),
+        "paper_review_id": str(paper_review_id or "").strip(),
+        "backtest_run_id": str(backtest_run_id or "").strip(),
+        "data_version": str(data_version or "").strip(),
+        "report_date": str(report_date or "").strip(),
+        "session_id": str(session_id or "").strip(),
+    }
+    result: dict[str, Any] = {
+        "matched": False,
+        "reason": "",
+        "query": query,
+        "registry_status": registry_status,
+        "registry_integrity_status": registry_integrity,
+        "registry_notes": list(registry.get("registry_notes", [])),
+        "subject_index_schema_version": str(
+            registry.get("subject_index_schema_version", "")
+        ),
+        "entries": [],
+    }
+    if registry_status != "present" or registry_integrity != INTEGRITY_PASS:
+        result["reason"] = (
+            f"registry_not_ready:{registry_status}:{registry_integrity}"
+        )
+        return result
+
+    subject_index = registry.get("subject_index", {})
+    if (
+        str(registry.get("subject_index_schema_version", "")) != SUBJECT_INDEX_SCHEMA_VERSION
+        or not isinstance(subject_index, dict)
+    ):
+        result["reason"] = "subject_index_unavailable"
+        return result
+
+    selectors = [(key, value) for key, value in query.items() if value]
+    if not selectors:
+        result["reason"] = "subject_selector_missing"
+        return result
+
+    primary_key, primary_value = selectors[0]
+    entries = _subject_index_entries(subject_index, primary_key, primary_value)
+    if len(selectors) > 1:
+        entries = [
+            entry
+            for entry in entries
+            if all(str(entry.get(key, "")) == value for key, value in selectors[1:])
+        ]
+    result["entries"] = entries
+    result["matched"] = bool(entries)
+    result["reason"] = "ok" if entries else "subject_evidence_not_found"
+    return result
+
+
 def project_saved_paper_review_evidence(
     data_root: str | Path = "data",
     *,
@@ -339,11 +412,13 @@ def _build_registry_payload(root: Path, scanned: dict[str, Any]) -> dict[str, An
                 latest_daily_report=latest_daily_report,
             )
         )
+    subject_index = _build_subject_index(scanned, chains)
 
     return {
         "schema_version": REGISTRY_SCHEMA_VERSION,
         "evidence_ref_schema_version": EVIDENCE_REF_SCHEMA_VERSION,
         "candidate_chain_schema_version": CANDIDATE_CHAIN_SCHEMA_VERSION,
+        "subject_index_schema_version": SUBJECT_INDEX_SCHEMA_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "registry_path": str(_registry_path(root)),
         "legacy_index_path": str(_legacy_index_path(root)),
@@ -373,7 +448,282 @@ def _build_registry_payload(root: Path, scanned: dict[str, Any]) -> dict[str, An
             "candidates": list(scanned["candidates"].values()),
         },
         "chains": chains,
+        "subject_index": subject_index,
     }
+
+
+def _build_subject_index(
+    scanned: dict[str, Any],
+    chains: dict[str, dict[str, Any]],
+) -> dict[str, dict[str, list[dict[str, Any]]]]:
+    subject_index: dict[str, dict[str, list[dict[str, Any]]]] = {
+        "candidate_id": {},
+        "strategy_manifest_id": {},
+        "paper_review_id": {},
+        "backtest_run_id": {},
+        "data_version": {},
+        "report_date": {},
+        "session_id": {},
+    }
+    for candidate_id, chain in chains.items():
+        if not isinstance(chain, dict):
+            continue
+        candidate_row = scanned["candidates"].get(candidate_id, {})
+        if not isinstance(candidate_row, dict):
+            candidate_row = {}
+        entry = _candidate_subject_entry(candidate_id, candidate_row, chain)
+        _add_subject_index_entry(subject_index, "candidate_id", entry["candidate_id"], entry)
+        _add_subject_index_entry(
+            subject_index,
+            "strategy_manifest_id",
+            entry["strategy_manifest_id"],
+            entry,
+        )
+        _add_subject_index_entry(
+            subject_index,
+            "paper_review_id",
+            entry["paper_review_id"],
+            entry,
+        )
+        _add_subject_index_entry(
+            subject_index,
+            "backtest_run_id",
+            entry["backtest_run_id"],
+            entry,
+        )
+        _add_subject_index_entry(
+            subject_index,
+            "data_version",
+            entry["data_version"],
+            entry,
+        )
+    for row in scanned["daily_reports"]:
+        if not isinstance(row, dict):
+            continue
+        entry = _daily_report_subject_entry(row)
+        _add_subject_index_entry(subject_index, "report_date", entry["report_date"], entry)
+        _add_subject_index_entry(subject_index, "session_id", entry["session_id"], entry)
+    for row in scanned["data_manifests"]:
+        if not isinstance(row, dict):
+            continue
+        entry = _artifact_subject_entry(row, entry_kind="data_manifest")
+        _add_subject_index_entry(subject_index, "data_version", entry["data_version"], entry)
+    for row in scanned["backtest_manifests"]:
+        if not isinstance(row, dict):
+            continue
+        entry = _artifact_subject_entry(row, entry_kind="backtest_manifest")
+        _add_subject_index_entry(subject_index, "candidate_id", entry["candidate_id"], entry)
+        _add_subject_index_entry(subject_index, "backtest_run_id", entry["backtest_run_id"], entry)
+        _add_subject_index_entry(subject_index, "data_version", entry["data_version"], entry)
+    for row in scanned["strategy_manifests"]:
+        if not isinstance(row, dict):
+            continue
+        entry = _artifact_subject_entry(row, entry_kind="strategy_manifest")
+        _add_subject_index_entry(subject_index, "candidate_id", entry["candidate_id"], entry)
+        _add_subject_index_entry(subject_index, "strategy_manifest_id", entry["strategy_manifest_id"], entry)
+    for row in scanned["paper_reviews"]:
+        if not isinstance(row, dict):
+            continue
+        entry = _artifact_subject_entry(row, entry_kind="paper_review")
+        _add_subject_index_entry(subject_index, "candidate_id", entry["candidate_id"], entry)
+        _add_subject_index_entry(subject_index, "strategy_manifest_id", entry["strategy_manifest_id"], entry)
+        _add_subject_index_entry(subject_index, "paper_review_id", entry["paper_review_id"], entry)
+    return subject_index
+
+
+def _candidate_subject_entry(
+    candidate_id: str,
+    candidate_row: dict[str, Any],
+    chain: dict[str, Any],
+) -> dict[str, Any]:
+    data_ref = dict(chain.get("data_manifest", {}))
+    backtest_ref = dict(chain.get("backtest_manifest", {}))
+    promotion_ref = dict(chain.get("promotion_result", {}))
+    strategy_ref = dict(chain.get("strategy_manifest", {}))
+    review_ref = dict(chain.get("paper_review", {}))
+    daily_ref = dict(chain.get("daily_report", {}))
+    daily_details = dict(daily_ref.get("details", {}))
+    paths = {
+        "candidate": str(chain.get("candidate_path", "") or candidate_row.get("path", "")),
+        "data_manifest": str(data_ref.get("path", "")),
+        "backtest_manifest": str(backtest_ref.get("path", "")),
+        "promotion_result": str(promotion_ref.get("path", "")),
+        "strategy_manifest": str(strategy_ref.get("path", "")),
+        "paper_review": str(review_ref.get("path", "")),
+        "daily_report": str(daily_ref.get("path", "")),
+    }
+    return {
+        "entry_id": str(candidate_id),
+        "entry_kind": "candidate_chain",
+        "candidate_id": str(candidate_id),
+        "strategy_manifest_id": str(strategy_ref.get("evidence_id", "")),
+        "paper_review_id": str(review_ref.get("evidence_id", "")),
+        "backtest_run_id": str(backtest_ref.get("evidence_id", "")),
+        "data_version": str(data_ref.get("evidence_id", "")),
+        "report_date": str(daily_details.get("report_date", "")),
+        "session_id": str(daily_details.get("session_id", "")),
+        "integrity_status": str(chain.get("chain_status", INTEGRITY_MISSING)),
+        "paths": paths,
+        "trace": _subject_trace_items(
+            [
+                {
+                    "evidence_type": "candidate",
+                    "evidence_id": candidate_id,
+                    "path": paths["candidate"],
+                    "integrity_status": INTEGRITY_PASS,
+                    "status": "present",
+                },
+                data_ref,
+                backtest_ref,
+                promotion_ref,
+                strategy_ref,
+                review_ref,
+                daily_ref,
+            ]
+        ),
+    }
+
+
+def _daily_report_subject_entry(row: dict[str, Any]) -> dict[str, Any]:
+    details = dict(row.get("details", {}))
+    report_date = str(row.get("report_date", "") or details.get("report_date", ""))
+    session_id = str(row.get("session_id", "") or details.get("session_id", ""))
+    path = str(row.get("path", ""))
+    return {
+        "entry_id": str(path or f"{report_date}:{session_id}"),
+        "entry_kind": "daily_report",
+        "candidate_id": "",
+        "strategy_manifest_id": "",
+        "paper_review_id": "",
+        "backtest_run_id": "",
+        "data_version": "",
+        "report_date": report_date,
+        "session_id": session_id,
+        "integrity_status": str(row.get("integrity_status", INTEGRITY_MISSING)),
+        "paths": {
+            "daily_report": path,
+        },
+        "trace": _subject_trace_items([row]),
+    }
+
+
+def _artifact_subject_entry(row: dict[str, Any], *, entry_kind: str) -> dict[str, Any]:
+    details = dict(row.get("details", {}))
+    candidate_id = str(
+        row.get("candidate_id", "")
+        or row.get("source_candidate_id", "")
+        or details.get("candidate_id", "")
+    )
+    strategy_manifest_id = str(
+        row.get("strategy_manifest_id", "")
+        or row.get("strategy_candidate_id", "")
+        or ""
+    )
+    paper_review_id = str(row.get("id", "")) if entry_kind == "paper_review" else ""
+    backtest_run_id = str(row.get("id", "")) if entry_kind == "backtest_manifest" else ""
+    data_version = str(row.get("data_version", "") or details.get("data_version", ""))
+    path = str(row.get("path", ""))
+    paths = {
+        "candidate": "",
+        "data_manifest": path if entry_kind == "data_manifest" else "",
+        "backtest_manifest": path if entry_kind == "backtest_manifest" else "",
+        "promotion_result": "",
+        "strategy_manifest": path if entry_kind == "strategy_manifest" else "",
+        "paper_review": path if entry_kind == "paper_review" else "",
+        "daily_report": "",
+    }
+    return {
+        "entry_id": f"{entry_kind}:{row.get('id', '') or path}",
+        "entry_kind": entry_kind,
+        "candidate_id": candidate_id,
+        "strategy_manifest_id": strategy_manifest_id,
+        "paper_review_id": paper_review_id,
+        "backtest_run_id": backtest_run_id,
+        "data_version": data_version,
+        "report_date": "",
+        "session_id": "",
+        "integrity_status": str(row.get("integrity_status", INTEGRITY_MISSING)),
+        "paths": paths,
+        "trace": _subject_trace_items([row]),
+    }
+
+
+def _subject_trace_items(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    trace: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        evidence_type = str(row.get("evidence_type", ""))
+        if not evidence_type:
+            path_text = str(row.get("path", ""))
+            evidence_type = "candidate" if path_text.endswith("candidate.json") else ""
+        trace.append(
+            {
+                "evidence_type": evidence_type,
+                "evidence_id": str(
+                    row.get("evidence_id")
+                    or row.get("id")
+                    or row.get("data_version")
+                    or ""
+                ),
+                "path": str(row.get("path", "")),
+                "status": str(row.get("status", "")),
+                "integrity_status": str(
+                    row.get("integrity_status", INTEGRITY_MISSING)
+                ),
+            }
+        )
+    return trace
+
+
+def _add_subject_index_entry(
+    subject_index: dict[str, dict[str, list[dict[str, Any]]]],
+    subject_type: str,
+    subject_id: str,
+    entry: dict[str, Any],
+) -> None:
+    subject_key = str(subject_id or "").strip()
+    if not subject_key:
+        return
+    bucket = subject_index.setdefault(subject_type, {})
+    entries = bucket.setdefault(subject_key, [])
+    if any(str(existing.get("entry_id", "")) == str(entry.get("entry_id", "")) for existing in entries):
+        return
+    entries.append(dict(entry))
+    entries.sort(key=_subject_index_sort_key)
+
+
+def _subject_index_sort_key(item: dict[str, Any]) -> tuple[int, str, str]:
+    kind_order = {
+        "candidate_chain": 0,
+        "data_manifest": 1,
+        "backtest_manifest": 1,
+        "strategy_manifest": 1,
+        "paper_review": 1,
+        "daily_report": 1,
+    }
+    entry_kind = str(item.get("entry_kind", ""))
+    return (
+        kind_order.get(entry_kind, 9),
+        entry_kind,
+        str(item.get("entry_id", "")),
+    )
+
+
+def _subject_index_entries(
+    subject_index: dict[str, Any],
+    subject_type: str,
+    subject_id: str,
+) -> list[dict[str, Any]]:
+    if not isinstance(subject_index, dict):
+        return []
+    bucket = subject_index.get(subject_type, {})
+    if not isinstance(bucket, dict):
+        return []
+    entries = bucket.get(subject_id, [])
+    if not isinstance(entries, list):
+        return []
+    return [dict(entry) for entry in entries if isinstance(entry, dict)]
 
 
 def _build_candidate_chain(
@@ -851,10 +1201,17 @@ def _scan_daily_reports(root: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for path in sorted(root.glob("**/daily_report_*.json")):
         payload = _load_json(path)
+        report_date = str(payload.get("report_date", ""))
+        session_id = str(payload.get("session_id", ""))
         rows.append(
             {
-                "id": str(payload.get("report_date") or path.stem),
-                "report_date": str(payload.get("report_date", "")),
+                "id": (
+                    f"{report_date}:{session_id}"
+                    if report_date and session_id
+                    else str(payload.get("report_date") or path.stem)
+                ),
+                "report_date": report_date,
+                "session_id": session_id,
                 "path": str(path),
                 "created_at": str(payload.get("generated_at", "")) or _payload_created_at(payload, path),
                 "status": "present",
@@ -865,6 +1222,8 @@ def _scan_daily_reports(root: Path) -> list[dict[str, Any]]:
                 "content_type": _content_type(path),
                 "summary": str(payload.get("reconciliation_status", "")),
                 "details": {
+                    "report_date": report_date,
+                    "session_id": session_id,
                     "orders_submitted": int(payload.get("orders_submitted", 0)),
                     "kill_switch_triggered": bool(payload.get("kill_switch_triggered", False)),
                 },

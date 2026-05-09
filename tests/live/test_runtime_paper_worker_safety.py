@@ -152,6 +152,12 @@ def _startup_sync_artifact(ledger_root: Path) -> dict[str, object]:
     )
 
 
+def _session_manifest(ledger_root: Path) -> dict[str, object]:
+    return json.loads(
+        (ledger_root / "audit" / "paper_session_manifest.json").read_text(encoding="utf-8")
+    )
+
+
 class RecordingSession:
     def __init__(self) -> None:
         self.requests: list[dict[str, object]] = []
@@ -205,6 +211,18 @@ class FailingSyncFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
             initial_cash=self.config.capital,
             fail_on_call=self._fail_on_call,
         )
+
+
+class NoSubmitCounterFakeAlpacaPaperBrokerAdapter(FakeAlpacaPaperBrokerAdapter):
+    def __getattribute__(self, name: str):
+        if name in {"submit_call_count", "submit_count"}:
+            raise AttributeError(name)
+        return super().__getattribute__(name)
+
+
+class NoSubmitCounterFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
+    def _create_alpaca_paper_broker(self) -> FakeAlpacaPaperBrokerAdapter:
+        return NoSubmitCounterFakeAlpacaPaperBrokerAdapter(initial_cash=self.config.capital)
 
 
 def test_alpaca_paper_runtime_blocks_without_apca_credentials(tmp_path: Path) -> None:
@@ -342,6 +360,41 @@ def test_paper_runtime_blocks_when_registry_missing_even_with_review_json(tmp_pa
     assert not registry_path.exists()
 
 
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_runtime_bootstrap_blocks_when_registry_missing_even_with_review_json(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = _write_unregistered_review(tmp_path)
+    runtime = FakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match="paper_review_registry_not_ready:missing:MISSING"):
+            runtime.bootstrap()
+
+    checks = runtime.audit_events[-1]["details"]["checks"]
+    assert checks["paper_review_or_promotion_evidence"] is False
+    assert checks["paper_adapter_contract"]["submit_capable"] is False
+
+
 def test_paper_runtime_blocks_stale_changed_and_conflict_registry(tmp_path: Path) -> None:
     review_path = _write_registered_review(tmp_path)
     runtime = PaperRuntime(
@@ -377,6 +430,63 @@ def test_paper_runtime_blocks_stale_changed_and_conflict_registry(tmp_path: Path
     ok, reason = runtime._has_paper_entry_evidence()
     assert ok is False
     assert reason == "paper_review_registry_not_ready:conflict:CONFLICT"
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+@pytest.mark.parametrize(
+    ("mutate_registry", "reason"),
+    [
+        ("stale", "paper_review_registry_not_ready:stale:STALE/CHANGED"),
+        ("changed", "paper_review_registry_not_ready:changed:STALE/CHANGED"),
+        ("conflict", "paper_review_registry_not_ready:conflict:CONFLICT"),
+    ],
+)
+def test_paper_runtime_bootstrap_blocks_stale_changed_and_conflict_registry(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+    mutate_registry: str,
+    reason: str,
+) -> None:
+    review_path = _write_registered_review(tmp_path)
+    if mutate_registry == "stale":
+        _write_unregistered_review(tmp_path, review_id="paper_review_extra")
+    elif mutate_registry == "changed":
+        review = json.loads(review_path.read_text(encoding="utf-8"))
+        review["review_notes"] = "changed_after_registry"
+        review_path.write_text(json.dumps(review), encoding="utf-8")
+    else:
+        registry_path = tmp_path / "research" / "evidence_registry.json"
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        registry["evidence"]["paper_reviews"][0]["integrity_status"] = "CONFLICT"
+        registry_path.write_text(json.dumps(registry), encoding="utf-8")
+
+    runtime = FakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match=reason):
+            runtime.bootstrap()
+
+    checks = runtime.audit_events[-1]["details"]["checks"]
+    assert checks["paper_review_or_promotion_evidence"] is False
+    assert checks["paper_adapter_contract"]["reason"] == reason
 
 
 @patch("quant_us.live.paper_runtime.MarketDataLoop")
@@ -430,6 +540,99 @@ def test_promotion_manifest_id_is_not_paper_entry_evidence(tmp_path: Path) -> No
 
     assert ok is False
     assert reason == "promotion_manifest_id_not_registry_source"
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_runtime_bootstrap_blocks_promotion_manifest_id_as_entry_evidence(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    runtime = FakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            promotion_manifest_id="g7_legacy_manifest",
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match="promotion_manifest_id_not_registry_source"):
+            runtime.bootstrap()
+
+    checks = runtime.audit_events[-1]["details"]["checks"]
+    assert checks["paper_review_or_promotion_evidence"] is False
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+@pytest.mark.parametrize(
+    ("reviewer", "include_pack", "reason"),
+    [
+        ("", True, "paper_review_reviewer_missing"),
+        ("risk-reviewer", False, "paper_review_evidence_pack_missing"),
+    ],
+)
+def test_paper_runtime_bootstrap_blocks_approved_review_without_reviewer_or_evidence_pack(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+    reviewer: str,
+    include_pack: bool,
+    reason: str,
+) -> None:
+    review_id = "approved_but_incomplete"
+    review_path = tmp_path / "research" / "paper_reviews" / review_id / "review.json"
+    review_path.parent.mkdir(parents=True, exist_ok=True)
+    review_payload = {
+        "paper_review_id": review_id,
+        "status": "APPROVED_FOR_PAPER_ONLY",
+        "reviewer": reviewer,
+    }
+    if include_pack:
+        evidence_pack_path = tmp_path / "research" / "evidence_packs" / review_id / "evidence_pack.json"
+        evidence_pack_path.parent.mkdir(parents=True, exist_ok=True)
+        evidence_pack_path.write_text(json.dumps({"paper_review_id": review_id}), encoding="utf-8")
+        review_payload["evidence_pack_path"] = str(evidence_pack_path)
+    review_path.write_text(json.dumps(review_payload), encoding="utf-8")
+    rebuild_evidence_registry(tmp_path)
+
+    runtime = FakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match=reason):
+            runtime.bootstrap()
+
+    checks = runtime.audit_events[-1]["details"]["checks"]
+    assert checks["paper_review_or_promotion_evidence"] is False
+    assert checks["paper_adapter_contract"]["reason"] == reason
 
 
 @patch("quant_us.live.paper_runtime.MarketDataLoop")
@@ -1038,7 +1241,11 @@ def test_fake_adapter_accepts_exact_paper_endpoint_with_trailing_slash(
         "sync_positions",
     ]
     assert runtime.broker.submit_call_count == 0
-    assert runtime.audit_events[-1]["event"] == "paper_broker_adapter_startup_sync_complete"
+    assert any(
+        event["event"] == "paper_broker_adapter_startup_sync_complete"
+        for event in runtime.audit_events
+    )
+    assert runtime.audit_events[-1]["event"] == "paper_session_manifest_written"
     artifact = _startup_sync_artifact(Path(runtime.config.ledger_root))
     assert artifact["mode"] == "paper"
     assert artifact["runtime_mode"] == "paper"
@@ -1050,6 +1257,11 @@ def test_fake_adapter_accepts_exact_paper_endpoint_with_trailing_slash(
     assert artifact["paper_order_submission"] is False
     assert artifact["adapter_contract"]["effective_backend"] == "alpaca_paper"
     assert artifact["contract_version"] == "paper_adapter_contract_v4"
+    assert artifact["readiness"]["adapter"] == "alpaca_paper_fake"
+    assert artifact["no_submit_proof"]["submit_order_invoked"] is False
+    assert artifact["no_submit_proof"]["submit_call_count_before"] == 0
+    assert artifact["no_submit_proof"]["submit_call_count_after"] == 0
+    assert artifact["no_submit_proof"]["submit_call_count_delta"] == 0
     assert artifact["sync"]["poll_orders"]["call_count"] == 1
     assert artifact["sync"]["poll_orders"]["order_count"] == 0
     assert artifact["sync"]["sync_fills"]["call_count"] == 1
@@ -1058,9 +1270,27 @@ def test_fake_adapter_accepts_exact_paper_endpoint_with_trailing_slash(
     assert artifact["sync"]["sync_account"]["account_id"] == "alpaca_paper_fake"
     assert artifact["sync"]["sync_positions"]["call_count"] == 1
     assert artifact["sync"]["sync_positions"]["symbols"] == []
-    assert runtime.audit_events[-1]["details"]["artifact_path"].endswith(
+    sync_event = next(
+        event for event in runtime.audit_events
+        if event["event"] == "paper_broker_adapter_startup_sync_complete"
+    )
+    assert sync_event["details"]["artifact_path"].endswith(
         "audit/paper_broker_adapter_startup_sync.json"
     )
+    manifest = _session_manifest(Path(runtime.config.ledger_root))
+    assert manifest["session_id"] == runtime.session_id
+    assert manifest["mode"] == "paper"
+    assert manifest["symbols"] == ["SPY"]
+    assert manifest["broker_backend"] == "alpaca_paper"
+    assert manifest["submit_orders"] is False
+    assert manifest["registry_evidence_id"] == "paper_review_test"
+    assert manifest["registry_evidence_path"].endswith(
+        "research/paper_reviews/paper_review_test/review.json"
+    )
+    assert manifest["startup_sync_status"]["status"] == "ok"
+    assert manifest["startup_sync_status"]["no_submit"] is True
+    assert manifest["no_real_order_submission_proof"]["real_order_submission"] is False
+    assert manifest["no_real_order_submission_proof"]["startup_sync_no_submit"] is True
 
 
 @patch("quant_us.live.paper_runtime.MarketDataLoop")
@@ -1111,6 +1341,8 @@ def test_fake_adapter_startup_sync_failure_blocks_bootstrap(
     assert artifact["error"] == "sync_positions_failed"
     assert artifact["reduce_only"] is True
     assert artifact["halt_reconciliation"] is True
+    assert artifact["no_submit_proof"]["submit_order_invoked"] is False
+    assert artifact["no_submit_proof"]["submit_call_count_delta"] == 0
     assert artifact["sync"]["poll_orders"]["call_count"] == 1
     assert artifact["sync"]["sync_fills"]["call_count"] == 1
     assert artifact["sync"]["sync_account"]["call_count"] == 1
@@ -1119,6 +1351,43 @@ def test_fake_adapter_startup_sync_failure_blocks_bootstrap(
     assert runtime.audit_events[-1]["details"]["artifact_path"].endswith(
         "audit/paper_broker_adapter_startup_sync.json"
     )
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_alpaca_startup_sync_blocks_when_submit_counter_unavailable(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = _write_registered_review(tmp_path)
+    runtime = NoSubmitCounterFakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match="alpaca_paper_startup_sync_failed"):
+            runtime.bootstrap()
+
+    artifact = _startup_sync_artifact(Path(runtime.config.ledger_root))
+    assert artifact["status"] == "failed"
+    assert artifact["error"] == "alpaca_paper_startup_sync_submit_counter_unavailable"
+    assert artifact["no_submit_proof"]["submit_call_count_available"] is False
+    assert artifact["no_submit_proof"]["submit_order_invoked"] is True
 
 
 @patch("quant_us.live.paper_runtime.MarketDataLoop")
@@ -1273,8 +1542,15 @@ def test_paper_runtime_bootstrap_loads_idempotency_before_orders(
 
     assert duplicate.risk_decision.approved is False
     assert duplicate.risk_decision.reason == "duplicate_client_order_id"
-    assert runtime.audit_events[-1]["event"] == "paper_oms_idempotency_recovered"
-    assert runtime.audit_events[-1]["details"]["idempotency_loaded_count"] == 1
+    recovery_event = next(
+        event for event in runtime.audit_events
+        if event["event"] == "paper_oms_idempotency_recovered"
+    )
+    assert recovery_event["details"]["idempotency_loaded_count"] == 1
+    manifest = _session_manifest(ledger_root)
+    assert manifest["broker_backend"] == "simulated"
+    assert manifest["startup_sync_status"]["status"] == "skipped"
+    assert manifest["no_real_order_submission_proof"]["real_order_submission"] is False
     runtime.shutdown()
 
 

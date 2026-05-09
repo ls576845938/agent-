@@ -11,6 +11,18 @@ from quant_us.core.clock import utc_now
 
 
 PROMOTION_SOURCES = {"yfinance", "alpaca", "sqlite"}
+ACCEPTED_ADJUSTMENT_POLICIES = frozenset(
+    {
+        "raw",
+        "split_adjusted",
+        "dividend_adjusted",
+        "split_dividend_adjusted",
+        "total_return",
+        "unknown",
+        "implicit",
+    }
+)
+ACCEPTED_SURVIVORSHIP_BIAS_RISKS = frozenset({"clean", "prone", "mixed", "unknown"})
 
 
 @dataclass(frozen=True)
@@ -22,6 +34,8 @@ class DataManifest:
     asset_class: str = "equity"
     timezone: str = "UTC"
     adjustment: str = "raw"
+    adjustment_policy: str = ""
+    corporate_action_adjustment: str = ""
     start: str = ""
     end: str = ""
     row_count: int = 0
@@ -37,6 +51,9 @@ class DataManifest:
     raw_path: str = ""
     cleaned_path: str = ""
     git_commit: str = ""
+    universe_id: str = ""
+    universe_source: str = ""
+    survivorship_bias_risk: str = "unknown"
 
     @property
     def is_usable(self) -> bool:
@@ -122,10 +139,23 @@ def _manifest_to_dict(manifest: DataManifest) -> dict[str, Any]:
     result = asdict(manifest)
     if not result.get("checksum"):
         result["checksum"] = manifest.fingerprint
+    policy = _resolve_adjustment_policy(
+        manifest.adjustment_policy,
+        manifest.corporate_action_adjustment,
+        manifest.adjustment,
+    )
+    result["adjustment_policy"] = policy
+    result["corporate_action_adjustment"] = policy
     return result
 
 
 def _dict_to_manifest(data: dict[str, Any]) -> DataManifest:
+    adjustment = str(data.get("adjustment", "raw"))
+    adjustment_policy = _resolve_adjustment_policy(
+        data.get("adjustment_policy"),
+        data.get("corporate_action_adjustment"),
+        adjustment,
+    )
     return DataManifest(
         data_version=str(data.get("data_version", "")),
         source=str(data.get("source", "")),
@@ -133,7 +163,9 @@ def _dict_to_manifest(data: dict[str, Any]) -> DataManifest:
         interval=str(data.get("interval", "")),
         asset_class=str(data.get("asset_class", "equity")),
         timezone=str(data.get("timezone", "UTC")),
-        adjustment=str(data.get("adjustment", "raw")),
+        adjustment=adjustment,
+        adjustment_policy=adjustment_policy,
+        corporate_action_adjustment=adjustment_policy,
         start=str(data.get("start", "")),
         end=str(data.get("end", "")),
         row_count=int(data.get("row_count", 0)),
@@ -149,6 +181,9 @@ def _dict_to_manifest(data: dict[str, Any]) -> DataManifest:
         raw_path=str(data.get("raw_path", "")),
         cleaned_path=str(data.get("cleaned_path", "")),
         git_commit=str(data.get("git_commit", "")),
+        universe_id=str(data.get("universe_id", "")),
+        universe_source=str(data.get("universe_source", "")),
+        survivorship_bias_risk=_normalize_survivorship_bias_risk(data.get("survivorship_bias_risk")),
     )
 
 
@@ -174,11 +209,20 @@ def build_manifest_from_quality(
     asset_class: str = "equity",
     timezone_name: str = "UTC",
     adjustment: str = "raw",
+    adjustment_policy: str = "",
     raw_path: str = "",
     cleaned_path: str = "",
     git_commit: str = "",
+    universe_id: str = "",
+    universe_source: str = "",
+    survivorship_bias_risk: str = "unknown",
 ) -> DataManifest:
     fingerprint = str(_safe_get(quality, "fingerprint", ""))
+    normalized_adjustment_policy = _resolve_adjustment_policy(
+        adjustment_policy,
+        quality.get("corporate_action_adjustment"),
+        adjustment,
+    )
     return DataManifest(
         data_version=str(_safe_get(quality, "data_version", "")),
         source=str(_safe_get(quality, "actual_source", source)),
@@ -187,6 +231,8 @@ def build_manifest_from_quality(
         asset_class=asset_class,
         timezone=timezone_name,
         adjustment=adjustment,
+        adjustment_policy=normalized_adjustment_policy,
+        corporate_action_adjustment=normalized_adjustment_policy,
         start=str(_safe_get(quality, "first_timestamp", "")),
         end=str(_safe_get(quality, "last_timestamp", "")),
         row_count=int(_safe_get(quality, "row_count", 0)),
@@ -208,6 +254,9 @@ def build_manifest_from_quality(
         raw_path=raw_path,
         cleaned_path=cleaned_path,
         git_commit=git_commit,
+        universe_id=universe_id,
+        universe_source=universe_source,
+        survivorship_bias_risk=_normalize_survivorship_bias_risk(survivorship_bias_risk),
     )
 
 
@@ -228,6 +277,12 @@ def validate_manifest_for_promotion(
 
     source = manifest.source.lower()
     asset_class = manifest.asset_class.lower()
+    adjustment_policy = _resolve_adjustment_policy(
+        manifest.adjustment_policy,
+        manifest.corporate_action_adjustment,
+        manifest.adjustment,
+    )
+    survivorship_bias_risk = _normalize_survivorship_bias_risk(manifest.survivorship_bias_risk)
     if not manifest.data_version:
         reasons.append("missing_data_version")
     if source == "fixture":
@@ -246,6 +301,16 @@ def validate_manifest_for_promotion(
         reasons.append(f"quality_below_threshold:{manifest.quality_score:.2f}")
     if manifest.timezone.upper() != "UTC":
         reasons.append(f"timezone_not_utc:{manifest.timezone}")
+    if not manifest.universe_id:
+        warnings.append("universe_id_missing")
+    if not manifest.universe_source:
+        warnings.append("universe_source_missing")
+    if survivorship_bias_risk == "unknown":
+        warnings.append("survivorship_bias_risk_unmarked")
+    elif survivorship_bias_risk in {"prone", "mixed"}:
+        warnings.append(f"survivorship_bias_risk:{survivorship_bias_risk}")
+    if adjustment_policy in {"unknown", "implicit"}:
+        warnings.append(f"adjustment_policy:{adjustment_policy}")
 
     duplicate_count = int(manifest.cleaning.get("duplicate_timestamps_removed", 0))
     invalid_ohlc = int(manifest.cleaning.get("invalid_ohlc_removed", 0))
@@ -274,6 +339,10 @@ def validate_manifest_for_promotion(
             "symbol": manifest.symbol,
             "interval": manifest.interval,
             "asset_class": manifest.asset_class,
+            "universe_id": manifest.universe_id,
+            "universe_source": manifest.universe_source,
+            "survivorship_bias_risk": survivorship_bias_risk,
+            "adjustment_policy": adjustment_policy,
             "coverage_pct": manifest.coverage_pct,
             "quality_score": manifest.quality_score,
             "row_count": manifest.row_count,
@@ -293,6 +362,43 @@ def _parse_manifest_datetime(value: str) -> datetime | None:
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=timezone.utc)
     return parsed.astimezone(timezone.utc)
+
+
+def _resolve_adjustment_policy(*values: Any) -> str:
+    for value in values:
+        normalized = _normalize_adjustment_policy(value)
+        if normalized != "implicit":
+            return normalized
+    return "implicit"
+
+
+def _normalize_adjustment_policy(value: Any) -> str:
+    if value is None:
+        return "implicit"
+    text = str(value).strip().lower()
+    if not text:
+        return "implicit"
+    aliases = {
+        "none": "raw",
+        "unadjusted": "raw",
+        "split_and_dividend_adjusted": "split_dividend_adjusted",
+        "split+dividend_adjusted": "split_dividend_adjusted",
+        "fully_adjusted": "split_dividend_adjusted",
+        "adjusted": "split_dividend_adjusted",
+    }
+    normalized = aliases.get(text, text)
+    if normalized in ACCEPTED_ADJUSTMENT_POLICIES:
+        return normalized
+    return "unknown"
+
+
+def _normalize_survivorship_bias_risk(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    if not text:
+        return "unknown"
+    if text in ACCEPTED_SURVIVORSHIP_BIAS_RISKS:
+        return text
+    return "unknown"
 
 
 validate_data_manifest_for_promotion = validate_manifest_for_promotion

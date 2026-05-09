@@ -5,6 +5,7 @@ from datetime import date, datetime
 from enum import Enum
 import json
 from pathlib import Path
+import hashlib
 import threading
 from typing import Any
 
@@ -121,6 +122,29 @@ class JsonlLedgerStore:
                 return []
             return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
+    def read_fills(self) -> list[Fill]:
+        return [_fill_from_record(row) for row in self.read_records("fills.jsonl")]
+
+    def records_hash(self, name: str) -> str:
+        return stable_json_hash(self.read_records(name))
+
+    def ledger_hash(self, names: tuple[str, ...] = ("orders.jsonl", "fills.jsonl", "portfolio_snapshots.jsonl")) -> str:
+        return stable_json_hash({name: self.read_records(name) for name in names})
+
+    def write_reconciliation_artifact(self, artifact: Any) -> Path:
+        recon_dir = self.root / "reconciliation"
+        data = artifact.to_dict() if hasattr(artifact, "to_dict") else artifact
+        jsonable = _to_jsonable(data)
+        artifact_hash = str(jsonable.get("artifact_hash") or stable_json_hash(jsonable))
+        path = recon_dir / f"ledger_recon_artifact_{artifact_hash[:16]}.json"
+        with self._lock:
+            recon_dir.mkdir(parents=True, exist_ok=True)
+            path.write_text(
+                json.dumps(jsonable, sort_keys=True, indent=2, default=str) + "\n",
+                encoding="utf-8",
+            )
+        return path
+
     def latest_cash_from_fills(self, initial_cash: float = 0.0) -> float:
         """Derive current cash from all fill records starting from *initial_cash*."""
         cash = initial_cash
@@ -171,6 +195,16 @@ def _to_jsonable(value: Any) -> Any:
     if isinstance(value, Enum):
         return value.value
     return value
+
+
+def stable_json_hash(value: Any) -> str:
+    payload = json.dumps(
+        _to_jsonable(value),
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _fill_from_record(row: dict[str, Any]) -> Fill:

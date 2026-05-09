@@ -131,6 +131,7 @@ class PaperSessionMetrics:
 _EMPTY_BARS_CACHE = pd.DataFrame()
 _ALLOWED_ALPACA_PAPER_BASE_URLS = ALLOWED_ALPACA_PAPER_BASE_URLS
 _PAPER_STARTUP_SYNC_ARTIFACT_VERSION = "paper_broker_adapter_startup_sync_v1"
+_PAPER_SESSION_MANIFEST_ARTIFACT_VERSION = "paper_session_manifest_v1"
 
 
 class PaperRuntime:
@@ -156,6 +157,7 @@ class PaperRuntime:
         self.metrics_log: list[PaperSessionMetrics] = []
         self.audit_events: list[dict[str, Any]] = []
         self._fill_index = FillIdempotencyIndex()
+        self.session_id: str = new_id("paper_session")
 
         # Wired in bootstrap() — declared for type-checking
         self.calendar: USEquityCalendar
@@ -191,6 +193,7 @@ class PaperRuntime:
             _logger.warning("PaperRuntime already bootstrapped; resetting.")
             self.shutdown()
 
+        self.session_id = new_id("paper_session")
         entry_gate = self._check_runtime_entry_gate()
         self._audit_runtime_event("paper_runtime_entry_gate", entry_gate)
         if not entry_gate["ok"]:
@@ -269,6 +272,15 @@ class PaperRuntime:
             self._reconcile_or_start()
         else:
             self._halt_reconciliation = False
+
+        manifest_path = self._write_paper_session_manifest()
+        self._audit_runtime_event(
+            "paper_session_manifest_written",
+            {
+                "artifact_path": manifest_path,
+                "session_id": self.session_id,
+            },
+        )
 
         self._bootstrapped = True
         _logger.info(
@@ -936,6 +948,21 @@ class PaperRuntime:
             "status": "in_progress",
             "reduce_only": False,
             "halt_reconciliation": False,
+            "readiness": {},
+            "no_submit_proof": {
+                "allowed_operations": [
+                    "readiness_report",
+                    "poll_orders",
+                    "sync_fills",
+                    "sync_account",
+                    "sync_positions",
+                ],
+                "submit_order_invoked": False,
+                "submit_call_count_available": self._broker_submit_call_count() is not None,
+                "submit_call_count_before": self._broker_submit_call_count(),
+                "submit_call_count_after": None,
+                "submit_call_count_delta": None,
+            },
             "sync": {
                 "poll_orders": {
                     "call_count": 0,
@@ -962,6 +989,8 @@ class PaperRuntime:
         }
 
         try:
+            artifact["readiness"] = self.broker.readiness_report()
+
             artifact["sync"]["poll_orders"]["call_count"] = 1
             polled_orders = list(self.broker.poll_orders())
             polled_order_ids = self._sorted_unique_strings(
@@ -1004,7 +1033,14 @@ class PaperRuntime:
             artifact["sync"]["sync_positions"]["symbols"] = self._sorted_unique_strings(
                 positions.keys()
             )
+
+            self._finalize_startup_sync_no_submit_proof(artifact)
+            if not artifact["no_submit_proof"].get("submit_call_count_available", False):
+                raise RuntimeError("alpaca_paper_startup_sync_submit_counter_unavailable")
+            if artifact["no_submit_proof"]["submit_order_invoked"]:
+                raise RuntimeError("alpaca_paper_startup_sync_submitted_order_fail_closed")
         except Exception as exc:
+            self._finalize_startup_sync_no_submit_proof(artifact)
             self._halt_reconciliation = True
             self.oms.reduce_only = True
             self.kill_switch.trip("alpaca_paper_startup_sync_failed")
@@ -1110,18 +1146,21 @@ class PaperRuntime:
         if self.config.promotion_manifest_id:
             return False, "promotion_manifest_id_not_registry_source"
 
-        review_path = self._paper_review_path()
         try:
-            evidence = project_saved_paper_review_evidence(
-                self.config.promotion_data_root,
-                paper_review_id=self.config.paper_review_id,
-                paper_review_path=str(review_path or ""),
-            )
+            evidence = self._paper_entry_evidence_projection()
         except Exception as exc:
             return False, f"paper_review_registry_error:{exc}"
         if not evidence.get("allowed"):
             return False, str(evidence.get("reason", "paper_review_evidence_missing"))
         return True, "ok"
+
+    def _paper_entry_evidence_projection(self) -> dict[str, Any]:
+        review_path = self._paper_review_path()
+        return project_saved_paper_review_evidence(
+            self.config.promotion_data_root,
+            paper_review_id=self.config.paper_review_id,
+            paper_review_path=str(review_path or ""),
+        )
 
     def _paper_review_path(self) -> Path | None:
         if self.config.paper_review_path:
@@ -1203,6 +1242,9 @@ class PaperRuntime:
     def _startup_sync_artifact_path(self) -> Path:
         return Path(self.config.ledger_root) / "audit" / "paper_broker_adapter_startup_sync.json"
 
+    def _paper_session_manifest_path(self) -> Path:
+        return Path(self.config.ledger_root) / "audit" / "paper_session_manifest.json"
+
     def _write_startup_sync_artifact(self, artifact: dict[str, Any]) -> str:
         artifact_path = self._startup_sync_artifact_path()
         payload = dict(artifact)
@@ -1213,6 +1255,175 @@ class PaperRuntime:
             encoding="utf-8",
         )
         return str(artifact_path)
+
+    def _write_paper_session_manifest(self) -> str:
+        manifest_path = self._paper_session_manifest_path()
+        created_at = utc_now().isoformat()
+        startup_sync = self._startup_sync_status()
+        registry_evidence = self._registry_evidence_summary()
+        if self._alpaca_paper_requested() and not registry_evidence.get("allowed"):
+            self._halt_reconciliation = True
+            if hasattr(self, "oms"):
+                self.oms.reduce_only = True
+            if hasattr(self, "kill_switch"):
+                self.kill_switch.trip("paper_session_manifest_evidence_not_allowed")
+            reason = str(registry_evidence.get("reason", "paper_review_evidence_missing"))
+            raise RuntimeError(f"paper_session_manifest_evidence_not_allowed:{reason}")
+        no_real_order_submission_proof = self._no_real_order_submission_proof(startup_sync)
+        manifest = {
+            "artifact_type": "paper_session_manifest",
+            "artifact_version": _PAPER_SESSION_MANIFEST_ARTIFACT_VERSION,
+            "session_id": self.session_id,
+            "mode": "paper",
+            "runtime_mode": "paper",
+            "canonical_runtime": "PaperRuntime",
+            "symbols": list(self.config.symbols),
+            "strategy_id": self.config.strategy_id,
+            "paper_broker": self.config.paper_broker,
+            "broker_backend": self._paper_broker_backend(),
+            "submit_orders": bool(self.config.submit_orders),
+            "allow_live_orders": bool(self.config.allow_live_orders),
+            "registry_evidence_id": registry_evidence["evidence_id"],
+            "registry_evidence_path": registry_evidence["path"],
+            "registry_evidence": registry_evidence,
+            "startup_sync_status": startup_sync,
+            "created_at": created_at,
+            "no_real_order_submission_proof": no_real_order_submission_proof,
+            "reduce_only": bool(getattr(self.oms, "reduce_only", False)),
+            "halt_reconciliation": self._halt_reconciliation,
+            "adapter_contract": self._paper_adapter_contract(),
+        }
+        try:
+            manifest_path.parent.mkdir(parents=True, exist_ok=True)
+            manifest_path.write_text(
+                json.dumps(manifest, sort_keys=True, indent=2, default=str),
+                encoding="utf-8",
+            )
+        except OSError as exc:
+            self._halt_reconciliation = True
+            if hasattr(self, "oms"):
+                self.oms.reduce_only = True
+            if hasattr(self, "kill_switch"):
+                self.kill_switch.trip("paper_session_manifest_write_failed")
+            raise RuntimeError(f"paper_session_manifest_write_failed: {exc}") from exc
+        return str(manifest_path)
+
+    def _startup_sync_status(self) -> dict[str, Any]:
+        if self._paper_broker_backend() != "alpaca_paper":
+            return {
+                "status": "skipped",
+                "artifact_path": "",
+                "reason": "non_alpaca_paper_backend",
+                "no_submit": True,
+            }
+
+        artifact_path = self._startup_sync_artifact_path()
+        if not artifact_path.exists():
+            return {
+                "status": "missing",
+                "artifact_path": str(artifact_path),
+                "reason": "startup_sync_artifact_missing",
+                "no_submit": False,
+            }
+        try:
+            artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            return {
+                "status": "conflict",
+                "artifact_path": str(artifact_path),
+                "reason": f"startup_sync_artifact_unreadable:{exc}",
+                "no_submit": False,
+            }
+        no_submit_proof = dict(artifact.get("no_submit_proof", {}))
+        return {
+            "status": str(artifact.get("status", "missing")),
+            "artifact_path": str(artifact_path),
+            "backend": str(artifact.get("backend", "")),
+            "contract_version": str(artifact.get("contract_version", "")),
+            "no_submit": (
+                bool(no_submit_proof.get("submit_call_count_available", False))
+                and not bool(no_submit_proof.get("submit_order_invoked", True))
+            ),
+            "submit_call_count_delta": no_submit_proof.get("submit_call_count_delta"),
+            "submit_call_count_available": bool(no_submit_proof.get("submit_call_count_available", False)),
+        }
+
+    def _registry_evidence_summary(self) -> dict[str, Any]:
+        registry_path = Path(self.config.promotion_data_root) / "research" / "evidence_registry.json"
+        if not self._alpaca_paper_requested():
+            return {
+                "required": False,
+                "allowed": True,
+                "reason": "not_required_for_simulated_paper_backend",
+                "evidence_id": "",
+                "path": "",
+                "evidence_pack_path": "",
+                "registry_path": str(registry_path),
+                "registry_status": "not_required",
+                "registry_integrity_status": "not_required",
+            }
+
+        evidence = self._paper_entry_evidence_projection()
+        review = dict(evidence.get("review", {}))
+        return {
+            "required": True,
+            "allowed": bool(evidence.get("allowed")),
+            "reason": str(evidence.get("reason", "")),
+            "evidence_id": str(
+                review.get("evidence_id", "")
+                or review.get("id", "")
+                or self.config.paper_review_id
+            ),
+            "path": str(evidence.get("review_path", "") or review.get("path", "") or self._paper_review_path() or ""),
+            "evidence_pack_path": str(evidence.get("evidence_pack_path", "")),
+            "registry_path": str(registry_path),
+            "registry_status": str(evidence.get("registry_status", "")),
+            "registry_integrity_status": str(evidence.get("registry_integrity_status", "")),
+            "registry_notes": list(evidence.get("registry_notes", [])),
+        }
+
+    def _no_real_order_submission_proof(self, startup_sync: dict[str, Any]) -> dict[str, Any]:
+        startup_sync_no_submit = bool(startup_sync.get("no_submit", True))
+        passed = (
+            not bool(self.config.allow_live_orders)
+            and startup_sync_no_submit
+        )
+        return {
+            "status": "PASS" if passed else "FAIL",
+            "mode": "paper",
+            "canonical_runtime": "PaperRuntime",
+            "allow_live_orders": bool(self.config.allow_live_orders),
+            "real_order_submission": False,
+            "real_broker_backend": False,
+            "broker_backend": self._paper_broker_backend(),
+            "startup_sync_no_submit": startup_sync_no_submit,
+            "startup_sync_submit_call_count_delta": startup_sync.get("submit_call_count_delta"),
+            "submit_orders": bool(self.config.submit_orders),
+            "submit_order_path": "paper_only" if self.config.submit_orders else "disabled",
+        }
+
+    def _broker_submit_call_count(self) -> int | None:
+        broker = getattr(self, "broker", None)
+        for attr in ("submit_call_count", "submit_count"):
+            value = getattr(broker, attr, None)
+            if isinstance(value, int):
+                return value
+        return None
+
+    def _finalize_startup_sync_no_submit_proof(self, artifact: dict[str, Any]) -> None:
+        proof = dict(artifact.get("no_submit_proof", {}))
+        before = proof.get("submit_call_count_before")
+        after = self._broker_submit_call_count()
+        proof["submit_call_count_available"] = isinstance(before, int) and isinstance(after, int)
+        proof["submit_call_count_after"] = after
+        if isinstance(before, int) and isinstance(after, int):
+            delta = after - before
+            proof["submit_call_count_delta"] = delta
+            proof["submit_order_invoked"] = delta != 0
+        else:
+            proof["submit_call_count_delta"] = None
+            proof["submit_order_invoked"] = True
+        artifact["no_submit_proof"] = proof
 
     def _audit_runtime_event(self, event: str, details: dict[str, Any]) -> None:
         adapter_contract = self._paper_adapter_contract()
