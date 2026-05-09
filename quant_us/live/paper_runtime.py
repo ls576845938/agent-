@@ -48,6 +48,7 @@ from quant_us.monitoring.daily_report import generate_daily_report, save_report
 from quant_us.monitoring.telegram_alerts import AlertPriority, TelegramAlertService, load_telegram_config_from_env
 from quant_us.portfolio.position_sizer import PercentOfEquitySizer, PositionSizerConfig
 from quant_us.portfolio.rebalance import RebalanceConfig, RebalancePlanner
+from quant_us.research.evidence_registry import project_saved_paper_review_evidence
 from quant_us.risk.data_freshness import DataFreshnessConfig, DataFreshnessGuard
 from quant_us.risk.kill_switch import KillSwitch, KillSwitchConfig
 from quant_us.risk.pre_trade import PreTradeRiskConfig, PreTradeRiskEngine
@@ -1107,38 +1108,19 @@ class PaperRuntime:
 
     def _has_paper_entry_evidence(self) -> tuple[bool, str]:
         if self.config.promotion_manifest_id:
-            try:
-                from quant_us.live.g7_manifest import StrategyPromotionManifestManager
-
-                valid, reason = StrategyPromotionManifestManager(
-                    data_root=self.config.promotion_data_root
-                ).is_valid_for_g8(self.config.promotion_manifest_id)
-                if valid:
-                    return True, "ok"
-                return False, f"promotion_evidence_not_approved: {reason}"
-            except Exception as exc:
-                return False, f"promotion_evidence_error: {exc}"
+            return False, "promotion_manifest_id_not_registry_source"
 
         review_path = self._paper_review_path()
-        if review_path is None:
-            return False, "paper_review_or_promotion_evidence_missing"
-        if not review_path.exists():
-            return False, f"paper_review_evidence_not_found: {review_path}"
-
         try:
-            review = json.loads(review_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError) as exc:
-            return False, f"paper_review_evidence_unreadable: {exc}"
-
-        if review.get("status") != "APPROVED_FOR_PAPER_ONLY":
-            return False, f"paper_review_not_approved: {review.get('status', 'missing')}"
-        if not review.get("reviewer"):
-            return False, "paper_review_reviewer_missing"
-
-        evidence_pack_path = review.get("evidence_pack_path", "")
-        if evidence_pack_path and not Path(evidence_pack_path).exists():
-            return False, f"paper_review_evidence_pack_not_found: {evidence_pack_path}"
-
+            evidence = project_saved_paper_review_evidence(
+                self.config.promotion_data_root,
+                paper_review_id=self.config.paper_review_id,
+                paper_review_path=str(review_path or ""),
+            )
+        except Exception as exc:
+            return False, f"paper_review_registry_error:{exc}"
+        if not evidence.get("allowed"):
+            return False, str(evidence.get("reason", "paper_review_evidence_missing"))
         return True, "ok"
 
     def _paper_review_path(self) -> Path | None:

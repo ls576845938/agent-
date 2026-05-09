@@ -110,15 +110,37 @@ def _print_report_only_note(indent: str = "  ") -> None:
     print(f"{indent}scope:       report only, no execution")
 
 
-def _print_evidence_registry_status(data_root: str, indent: str = "  ") -> None:
-    from quant_us.research.evidence_registry import inspect_evidence_registry
+def _saved_evidence_registry_path(data_root: str | Path) -> Path:
+    return Path(data_root) / "research" / "evidence_registry.json"
 
+
+def _saved_evidence_registry_corrupt(data_root: str | Path) -> str:
+    path = _saved_evidence_registry_path(data_root)
+    if not path.exists():
+        return ""
     try:
-        registry = inspect_evidence_registry(
-            data_root,
-            use_saved=True,
-            rebuild_if_missing=False,
-        )
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return f"{type(exc).__name__}: {exc}"
+    if not isinstance(payload, dict):
+        return "registry payload is not a JSON object"
+    if payload.get("schema_version") != "evidence_registry_v1":
+        return f"unexpected schema_version: {payload.get('schema_version', '(missing)')}"
+    return ""
+
+
+def _inspect_saved_evidence_registry(data_root: str | Path) -> dict[str, Any]:
+    from quant_us.research.evidence_registry import inspect_saved_evidence_registry
+
+    corrupt_note = _saved_evidence_registry_corrupt(data_root)
+    if corrupt_note:
+        raise ValueError(f"corrupt saved evidence registry: {corrupt_note}")
+    return inspect_saved_evidence_registry(data_root)
+
+
+def _print_evidence_registry_status(data_root: str, indent: str = "  ") -> None:
+    try:
+        registry = _inspect_saved_evidence_registry(data_root)
     except Exception as exc:
         print(f"{indent}evidence_registry_state: CONFLICT (inspect_failed)")
         print(f"{indent}evidence:     evidence_registry=(inspect failed)")
@@ -126,61 +148,46 @@ def _print_evidence_registry_status(data_root: str, indent: str = "  ") -> None:
         return
     raw_status = str(registry.get("registry_status", "missing"))
     notes = list(registry.get("registry_notes", []))
-    path = Path(data_root) / "research" / "evidence_registry.json"
+    path = _saved_evidence_registry_path(data_root)
     print(f"{indent}evidence_registry_state: {_evidence_state(raw_status)} ({raw_status})")
     print(f"{indent}evidence:     evidence_registry={path if path.exists() else '(not found)'}")
     if notes:
         print(f"{indent}evidence_registry_notes: {'; '.join(str(n) for n in notes[:3])}")
 
 
-def _fallback_latest_paper_review(data_root: str) -> dict[str, str] | None:
-    """Best-effort read of paper review JSON when registry inspection fails."""
-    review_root = Path(data_root) / "research" / "paper_reviews"
-    rows: list[tuple[str, float, Path, dict[str, Any]]] = []
-    for path in review_root.glob("*/review.json"):
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-            if isinstance(payload, dict):
-                rows.append((str(payload.get("created_at", "")), path.stat().st_mtime, path, payload))
-        except (OSError, json.JSONDecodeError):
-            continue
-    if not rows:
-        return None
-    _, _, path, payload = sorted(rows, reverse=True)[0]
-    return {
-        "status": str(payload.get("status", "UNKNOWN")),
-        "path": str(path),
-        "evidence_pack_path": str(payload.get("evidence_pack_path", "") or ""),
-    }
-
-
 def _print_paper_review_status(data_root: str, indent: str = "  ") -> None:
     from quant_us.monitoring.paper_review_status import inspect_paper_review_status
 
     try:
+        registry = _inspect_saved_evidence_registry(data_root)
+    except Exception as exc:
+        print(f"{indent}paper_review_status: CONFLICT")
+        print(f"{indent}paper_review_entry_allowed: NO")
+        print(f"{indent}manual_review_pending: NO")
+        print(f"{indent}paper_review_note: evidence registry inspection failed: {type(exc).__name__}: {exc}")
+        print(f"{indent}evidence:     paper_review_status=CONFLICT (registry inspect failed)")
+        return
+
+    raw_registry_status = str(registry.get("registry_status", "missing"))
+    registry_state = _evidence_state(raw_registry_status)
+    if registry_state == "MISSING":
+        print(f"{indent}paper_review_status: BLOCKED_MISSING_REGISTRY")
+        print(f"{indent}paper_review_entry_allowed: NO")
+        print(f"{indent}manual_review_pending: NO")
+        print(f"{indent}paper_review_note: saved evidence registry is missing; paper-review status is blocked.")
+        print(f"{indent}evidence:     paper_review_status=(missing registry)")
+        return
+    if registry_state in {"STALE", "CONFLICT"}:
+        print(f"{indent}paper_review_status: CONFLICT")
+        print(f"{indent}paper_review_entry_allowed: NO")
+        print(f"{indent}manual_review_pending: NO")
+        print(f"{indent}paper_review_note: saved evidence registry state is {raw_registry_status}; rebuild explicitly before readiness/report review.")
+        print(f"{indent}evidence:     paper_review_status=CONFLICT (registry {raw_registry_status})")
+        return
+
+    try:
         status = inspect_paper_review_status(data_root)
     except Exception as exc:
-        fallback = _fallback_latest_paper_review(data_root)
-        if fallback is not None:
-            review_status = fallback["status"]
-            print(f"{indent}paper_review_status: {review_status}")
-            print(
-                f"{indent}paper_review_entry_allowed: "
-                f"{'YES' if review_status in {'PENDING_HUMAN_REVIEW', 'APPROVED_FOR_PAPER_ONLY'} else 'NO'}"
-            )
-            print(
-                f"{indent}manual_review_pending: "
-                f"{'YES' if review_status == 'PENDING_HUMAN_REVIEW' else 'NO'}"
-            )
-            print(
-                f"{indent}paper_review_note: fallback review scan used; "
-                f"evidence registry inspect failed: {type(exc).__name__}: {exc}"
-            )
-            print(f"{indent}evidence:     paper_review_status=CONFLICT (registry inspect failed)")
-            print(f"{indent}evidence:     paper_review={fallback['path']}")
-            if fallback["evidence_pack_path"]:
-                print(f"{indent}evidence:     evidence_pack={fallback['evidence_pack_path']}")
-            return
         print(f"{indent}paper_review_status: CONFLICT")
         print(f"{indent}paper_review_entry_allowed: NO")
         print(f"{indent}manual_review_pending: NO")
@@ -553,21 +560,15 @@ def cmd_report_daily(args: argparse.Namespace) -> None:
 
 def cmd_report_evidence_registry(args: argparse.Namespace) -> None:
     """Print the persisted evidence registry status without rebuilding it."""
-    from quant_us.research.evidence_registry import inspect_evidence_registry
-
     try:
-        registry = inspect_evidence_registry(
-            args.data_root,
-            use_saved=True,
-            rebuild_if_missing=False,
-        )
+        registry = _inspect_saved_evidence_registry(args.data_root)
         inspect_error = ""
     except Exception as exc:
         registry = {"registry_status": "conflict", "registry_notes": [f"{type(exc).__name__}: {exc}"]}
         inspect_error = "inspect_failed"
     raw_status = str(registry.get("registry_status", "missing"))
     counts = dict(registry.get("counts", {}))
-    path = Path(args.data_root) / "research" / "evidence_registry.json"
+    path = _saved_evidence_registry_path(args.data_root)
 
     print("Evidence Registry Report")
     print("=" * 60)

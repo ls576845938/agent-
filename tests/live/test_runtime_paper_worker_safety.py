@@ -20,6 +20,7 @@ from quant_us.live.paper_runtime import PaperRuntime, PaperRuntimeConfig, PaperS
 from quant_us.live.readonly_live_broker import ReadOnlyLiveBrokerProxy
 from quant_us.live.runtime import LiveRuntime
 from quant_us.live.runtime_config import LiveRuntimeConfig
+from quant_us.research.evidence_registry import rebuild_evidence_registry
 
 
 UTC = timezone.utc
@@ -73,16 +74,76 @@ def _write_review(
     status: str = "APPROVED_FOR_PAPER_ONLY",
     reviewer: str = "risk-reviewer",
 ) -> None:
+    review_path.parent.mkdir(parents=True, exist_ok=True)
+    evidence_pack_path = review_path.parents[2] / "evidence_packs" / review_path.parent.name / "evidence_pack.json"
+    evidence_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    evidence_pack_path.write_text(
+        json.dumps({"paper_review_id": review_path.parent.name}),
+        encoding="utf-8",
+    )
     review_path.write_text(
         json.dumps(
             {
-                "paper_review_id": "paper_review_test",
+                "paper_review_id": review_path.parent.name,
                 "status": status,
                 "reviewer": reviewer,
+                "evidence_pack_path": str(evidence_pack_path),
             }
         ),
         encoding="utf-8",
     )
+    data_root = _data_root_from_review_path(review_path)
+    if data_root is not None:
+        rebuild_evidence_registry(data_root)
+
+
+def _write_registered_review(
+    data_root: Path,
+    *,
+    review_id: str = "paper_review_test",
+    status: str = "APPROVED_FOR_PAPER_ONLY",
+    reviewer: str = "risk-reviewer",
+) -> Path:
+    review_path = data_root / "research" / "paper_reviews" / review_id / "review.json"
+    _write_review(review_path, status=status, reviewer=reviewer)
+    return review_path
+
+
+def _write_unregistered_review(
+    data_root: Path,
+    *,
+    review_id: str = "paper_review_test",
+    status: str = "APPROVED_FOR_PAPER_ONLY",
+    reviewer: str = "risk-reviewer",
+) -> Path:
+    review_path = data_root / "research" / "paper_reviews" / review_id / "review.json"
+    evidence_pack_path = data_root / "research" / "evidence_packs" / review_id / "evidence_pack.json"
+    evidence_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    evidence_pack_path.write_text(
+        json.dumps({"paper_review_id": review_id}),
+        encoding="utf-8",
+    )
+    review_path.parent.mkdir(parents=True, exist_ok=True)
+    review_path.write_text(
+        json.dumps(
+            {
+                "paper_review_id": review_id,
+                "status": status,
+                "reviewer": reviewer,
+                "evidence_pack_path": str(evidence_pack_path),
+            }
+        ),
+        encoding="utf-8",
+    )
+    return review_path
+
+
+def _data_root_from_review_path(review_path: Path) -> Path | None:
+    parts = review_path.parts
+    for index, part in enumerate(parts):
+        if part == "research" and index + 3 < len(parts) and parts[index + 1] == "paper_reviews":
+            return Path(*parts[:index])
+    return None
 
 
 def _startup_sync_artifact(ledger_root: Path) -> dict[str, object]:
@@ -233,16 +294,11 @@ def test_alpaca_paper_runtime_requires_approved_paper_review(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    review_path.write_text(
-        json.dumps(
-            {
-                "paper_review_id": "prev_test",
-                "status": "PENDING_HUMAN_REVIEW",
-                "reviewer": "",
-            }
-        ),
-        encoding="utf-8",
+    review_path = _write_registered_review(
+        tmp_path,
+        review_id="prev_test",
+        status="PENDING_HUMAN_REVIEW",
+        reviewer="",
     )
     runtime = PaperRuntime(
         PaperRuntimeConfig(
@@ -251,6 +307,7 @@ def test_alpaca_paper_runtime_requires_approved_paper_review(
             data_vendor="alpaca",
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         )
     )
@@ -262,6 +319,117 @@ def test_alpaca_paper_runtime_requires_approved_paper_review(
     ):
         with pytest.raises(RuntimeError, match="paper_review_not_approved"):
             runtime.bootstrap()
+
+
+def test_paper_runtime_blocks_when_registry_missing_even_with_review_json(tmp_path: Path) -> None:
+    review_path = _write_unregistered_review(tmp_path)
+    registry_path = tmp_path / "research" / "evidence_registry.json"
+    runtime = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    ok, reason = runtime._has_paper_entry_evidence()
+
+    assert ok is False
+    assert reason == "paper_review_registry_not_ready:missing:MISSING"
+    assert not registry_path.exists()
+
+
+def test_paper_runtime_blocks_stale_changed_and_conflict_registry(tmp_path: Path) -> None:
+    review_path = _write_registered_review(tmp_path)
+    runtime = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    _write_unregistered_review(tmp_path, review_id="paper_review_extra")
+    ok, reason = runtime._has_paper_entry_evidence()
+    assert ok is False
+    assert reason == "paper_review_registry_not_ready:stale:STALE/CHANGED"
+
+    (tmp_path / "research" / "paper_reviews" / "paper_review_extra" / "review.json").unlink()
+    rebuild_evidence_registry(tmp_path)
+    review = json.loads(review_path.read_text(encoding="utf-8"))
+    review["review_notes"] = "changed_after_registry"
+    review_path.write_text(json.dumps(review), encoding="utf-8")
+    ok, reason = runtime._has_paper_entry_evidence()
+    assert ok is False
+    assert reason == "paper_review_registry_not_ready:changed:STALE/CHANGED"
+
+    rebuild_evidence_registry(tmp_path)
+    registry_path = tmp_path / "research" / "evidence_registry.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    registry["evidence"]["paper_reviews"][0]["integrity_status"] = "CONFLICT"
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    ok, reason = runtime._has_paper_entry_evidence()
+    assert ok is False
+    assert reason == "paper_review_registry_not_ready:conflict:CONFLICT"
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_approved_registry_review_reaches_adapter_contract_stage(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = _write_registered_review(tmp_path)
+    runtime = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match="alpaca_paper_broker_adapter_not_configured"):
+            runtime.bootstrap()
+
+    checks = runtime.audit_events[-1]["details"]["checks"]
+    assert checks["paper_review_or_promotion_evidence"] is True
+    assert checks["paper_adapter_contract"]["reason"] == "alpaca_paper_broker_adapter_not_configured"
+
+
+def test_promotion_manifest_id_is_not_paper_entry_evidence(tmp_path: Path) -> None:
+    runtime = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            promotion_manifest_id="g7_legacy_manifest",
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    ok, reason = runtime._has_paper_entry_evidence()
+
+    assert ok is False
+    assert reason == "promotion_manifest_id_not_registry_source"
 
 
 @patch("quant_us.live.paper_runtime.MarketDataLoop")
@@ -296,23 +464,14 @@ def test_alpaca_paper_broker_blocks_when_adapter_is_not_wired(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    review_path.write_text(
-        json.dumps(
-            {
-                "paper_review_id": "prev_test",
-                "status": "APPROVED_FOR_PAPER_ONLY",
-                "reviewer": "risk-reviewer",
-            }
-        ),
-        encoding="utf-8",
-    )
+    review_path = _write_registered_review(tmp_path, review_id="prev_test")
     runtime = PaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         )
     )
@@ -528,23 +687,14 @@ def test_real_alpaca_paper_adapter_default_submit_is_fail_closed_without_network
 def test_alpaca_paper_runtime_contract_stays_fail_closed_when_env_requests(
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    review_path.write_text(
-        json.dumps(
-            {
-                "paper_review_id": "prev_test",
-                "status": "APPROVED_FOR_PAPER_ONLY",
-                "reviewer": "risk-reviewer",
-            }
-        ),
-        encoding="utf-8",
-    )
+    review_path = _write_registered_review(tmp_path, review_id="prev_test")
     runtime = PaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         )
     )
@@ -574,14 +724,14 @@ def test_fake_alpaca_paper_adapter_contract_surface_works_without_network(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    _write_review(review_path)
+    review_path = _write_registered_review(tmp_path)
     runtime = FakeAdapterPaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         )
     )
@@ -645,14 +795,18 @@ def test_fake_adapter_does_not_bypass_paper_review_gate(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    _write_review(review_path, status="PENDING_HUMAN_REVIEW", reviewer="")
+    review_path = _write_registered_review(
+        tmp_path,
+        status="PENDING_HUMAN_REVIEW",
+        reviewer="",
+    )
     runtime = FakeAdapterPaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         )
     )
@@ -680,14 +834,14 @@ def test_fake_adapter_does_not_bypass_paper_credential_gate(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    _write_review(review_path)
+    review_path = _write_registered_review(tmp_path)
     runtime = FakeAdapterPaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         )
     )
@@ -712,14 +866,14 @@ def test_fake_adapter_does_not_bypass_explicit_enable_gate(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    _write_review(review_path)
+    review_path = _write_registered_review(tmp_path)
     runtime = FakeAdapterPaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         )
     )
@@ -777,14 +931,14 @@ def test_fake_adapter_does_not_bypass_paper_endpoint_gate(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    _write_review(review_path)
+    review_path = _write_registered_review(tmp_path)
     runtime = FakeAdapterPaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         )
     )
@@ -813,14 +967,14 @@ def test_fake_adapter_does_not_bypass_pseudo_paper_endpoint_gate(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    _write_review(review_path)
+    review_path = _write_registered_review(tmp_path)
     runtime = FakeAdapterPaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         )
     )
@@ -849,14 +1003,14 @@ def test_fake_adapter_accepts_exact_paper_endpoint_with_trailing_slash(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    _write_review(review_path)
+    review_path = _write_registered_review(tmp_path)
     runtime = FakeAdapterPaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         )
     )
@@ -914,14 +1068,14 @@ def test_fake_adapter_startup_sync_failure_blocks_bootstrap(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    _write_review(review_path)
+    review_path = _write_registered_review(tmp_path)
     runtime = FailingSyncFakeAdapterPaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
         ),
         fail_on_call="sync_positions",
@@ -972,8 +1126,7 @@ def test_paper_runtime_kill_switch_blocks_adapter_submit(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    _write_review(review_path)
+    review_path = _write_registered_review(tmp_path)
     runtime = FakeAdapterPaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
@@ -981,6 +1134,7 @@ def test_paper_runtime_kill_switch_blocks_adapter_submit(
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
             submit_orders=True,
         )
@@ -1034,8 +1188,7 @@ def test_paper_runtime_reduce_only_blocks_adapter_submit(
     _mock_loop: MagicMock,
     tmp_path: Path,
 ) -> None:
-    review_path = tmp_path / "review.json"
-    _write_review(review_path)
+    review_path = _write_registered_review(tmp_path)
     runtime = FakeAdapterPaperRuntime(
         PaperRuntimeConfig(
             symbols=["SPY"],
@@ -1043,6 +1196,7 @@ def test_paper_runtime_reduce_only_blocks_adapter_submit(
             ledger_root=str(tmp_path / "ledger"),
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
             reconcile_on_start=False,
             submit_orders=True,
             reduce_only=True,

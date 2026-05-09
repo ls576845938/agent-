@@ -4,6 +4,8 @@ These commands are read-only report and evidence inspection helpers. They do not
 Operator-facing evidence states are normalized to `PASS`, `STALE`, `MISSING`, and `CONFLICT`; report surfaces also print `report only, no execution`.
 Passing evidence is not execution authorization. In the current baseline, `LiveRuntime` is a safety shell, `live start`
 is review-only/fail-closed, and live mode does not submit orders even if live-gate evidence passes.
+For readiness, report, and paper runtime gating, the commands consume the saved Evidence Registry as source of truth. They do not implicitly rebuild the registry.
+`MISSING`, `STALE`, and `CONFLICT` all fail closed.
 
 Canonical closed-loop path for the current baseline:
 
@@ -62,6 +64,7 @@ python -m quant_us.cli report evidence-registry --data-root data
 The registry status is rendered as one of `PASS`, `STALE`, `MISSING`, or `CONFLICT`.
 `CONFLICT` means saved registry content no longer matches the current artifact content.
 This command is report-only and does not start paper/live execution.
+The readiness/report/paper runtime gate reads this saved registry state directly. It does not implicitly rebuild from `review.json` or any legacy mirror.
 
 ## Daily Paper Report
 
@@ -117,16 +120,10 @@ Readiness output also prints validation-state, latest daily report, evidence reg
 it does not approve paper trading, and it does not enable paper/live order submission.
 `report` and `readiness` are review-only surfaces; they stop at evidence and do not trigger any broker action.
 
-The paper-review status reader now consumes the full Evidence Registry at
-`data/research/evidence_registry.json` and still writes the legacy mirror at
-`data/research/paper_review_index.json`. The registry is authoritative; the legacy mirror exists for compatibility.
+The paper-review status reader consumes the saved Evidence Registry at
+`data/research/evidence_registry.json`. `paper_review_index` is a legacy view kept for compatibility only.
 CLI status values are rendered as `PASS`, `STALE`, `MISSING`, and `CONFLICT`; persisted registry internals may still store `present`, `missing`, `stale`, or `changed`.
-Rebuild from persisted evidence before operator review handoff:
-
-```python
-from quant_us.monitoring.paper_review_status import build_paper_review_evidence_index
-build_paper_review_evidence_index("data")
-```
+Only `review.json` is not enough to start paper runtime. The registry must be rebuilt explicitly before a readiness or paper runtime gate can rely on it.
 
 Inspect a candidate evidence chain directly:
 

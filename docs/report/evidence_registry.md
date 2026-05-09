@@ -24,11 +24,12 @@ Python API:
 from quant_us.research.evidence_registry import (
     inspect_candidate_evidence,
     inspect_evidence_registry,
+    inspect_saved_evidence_registry,
     rebuild_evidence_registry,
 )
 
 registry = rebuild_evidence_registry("data")
-snapshot = inspect_evidence_registry("data")
+snapshot = inspect_saved_evidence_registry("data")
 chain = inspect_candidate_evidence("cand_123", "data")
 ```
 
@@ -62,11 +63,13 @@ Registry note semantics:
 
 Rebuild behavior:
 
-- if the saved registry is missing, `inspect_evidence_registry(..., rebuild_if_missing=True)` rebuilds it from persisted artifacts
-- if the saved registry is `stale` or `changed`, rebuild updates both canonical and legacy files
+- read-only gates use the saved registry only and fail closed when the saved registry is missing, stale, changed, or conflicting
+- `rebuild_evidence_registry("data")` is the explicit maintenance action that refreshes both canonical and legacy files
+- `inspect_evidence_registry(..., rebuild_if_missing=True)` may rebuild from persisted artifacts and must be treated as a maintenance/rebuild path, not as a readiness, report, or runtime gate path
+- if the saved registry is `stale` or `changed`, an explicit rebuild updates both canonical and legacy files
 - the compatibility mirror is regenerated from the registry; callers should treat the legacy file as read-only output
 - paper-review readers must not trust a saved review when the registry reports `stale` or `changed`;
-  they should rebuild from the underlying artifacts first
+  they should block and require an explicit registry rebuild first
 
 Candidate traceability:
 
@@ -85,4 +88,4 @@ Manual paper approvals:
 
 - approved reviews now persist an `approval` object under `review.json`
 - the approval object records `reviewer`, `reason`, `timestamp`, `candidate_id`, `commit_hash`, `source`, `source_sha256`, and a persisted promotion `gate_snapshot`
-- approval evidence remains record-only; it does not auto-enter paper trading
+- approval evidence remains record-only; paper runtime also requires the approved review to be present in the saved registry with a reviewer and an existing evidence pack

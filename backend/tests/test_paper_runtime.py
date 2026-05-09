@@ -41,6 +41,7 @@ from quant_us.live.fake_alpaca_paper_adapter import FakeAlpacaPaperBrokerAdapter
 from quant_us.live.paper_adapter_contract import PAPER_ADAPTER_CONTRACT_VERSION
 from quant_us.live.paper_runtime import PaperRuntime, PaperRuntimeConfig, PaperSessionMetrics
 from quant_us.live.paper_scheduler import PaperScheduler, PaperSchedulerConfig
+from quant_us.research.evidence_registry import rebuild_evidence_registry
 from quant_us.strategies.base import Strategy, StrategyContext
 
 UTC = timezone.utc
@@ -143,17 +144,29 @@ class FailingSyncFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
         )
 
 
-def _write_paper_review(review_path: Path) -> None:
+def _write_registered_paper_review(data_root: Path) -> Path:
+    review_id = "paper_runtime_backend_test"
+    evidence_pack_path = data_root / "research" / "evidence_packs" / review_id / "evidence_pack.json"
+    evidence_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    evidence_pack_path.write_text(
+        json.dumps({"paper_review_id": review_id}),
+        encoding="utf-8",
+    )
+    review_path = data_root / "research" / "paper_reviews" / review_id / "review.json"
+    review_path.parent.mkdir(parents=True, exist_ok=True)
     review_path.write_text(
         json.dumps(
             {
-                "paper_review_id": "paper_runtime_backend_test",
+                "paper_review_id": review_id,
                 "status": "APPROVED_FOR_PAPER_ONLY",
                 "reviewer": "risk-reviewer",
+                "evidence_pack_path": str(evidence_pack_path),
             }
         ),
         encoding="utf-8",
     )
+    rebuild_evidence_registry(data_root)
+    return review_path
 
 
 def _startup_sync_artifact(ledger_root: str) -> dict[str, Any]:
@@ -243,14 +256,14 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         self,
         mock_mdl: mock.MagicMock,
     ) -> None:
-        review_path = Path(self.tmpdir.name) / "paper_review.json"
-        _write_paper_review(review_path)
+        review_path = _write_registered_paper_review(Path(self.tmpdir.name))
         config = PaperRuntimeConfig(
             symbols=["AAPL"],
             ledger_root=self.ledger_root,
             reconcile_on_start=False,
             paper_broker="alpaca",
             paper_review_path=str(review_path),
+            promotion_data_root=self.tmpdir.name,
         )
         runtime = FakeAdapterPaperRuntime(config=config)
 
@@ -305,8 +318,7 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         self,
         mock_mdl: mock.MagicMock,
     ) -> None:
-        review_path = Path(self.tmpdir.name) / "paper_review.json"
-        _write_paper_review(review_path)
+        review_path = _write_registered_paper_review(Path(self.tmpdir.name))
         runtime = FakeAdapterPaperRuntime(
             config=PaperRuntimeConfig(
                 symbols=["AAPL"],
@@ -314,6 +326,7 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
                 reconcile_on_start=False,
                 paper_broker="alpaca",
                 paper_review_path=str(review_path),
+                promotion_data_root=self.tmpdir.name,
             )
         )
 
@@ -356,8 +369,7 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         self,
         mock_mdl: mock.MagicMock,
     ) -> None:
-        review_path = Path(self.tmpdir.name) / "paper_review.json"
-        _write_paper_review(review_path)
+        review_path = _write_registered_paper_review(Path(self.tmpdir.name))
         runtime = FailingSyncFakeAdapterPaperRuntime(
             config=PaperRuntimeConfig(
                 symbols=["AAPL"],
@@ -365,6 +377,7 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
                 reconcile_on_start=False,
                 paper_broker="alpaca",
                 paper_review_path=str(review_path),
+                promotion_data_root=self.tmpdir.name,
             ),
             fail_on_call="sync_account",
         )

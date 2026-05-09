@@ -13,6 +13,7 @@ Canonical path for this baseline:
 `manifest -> ledger-backed backtest -> promotion handoff -> paper/runtime readiness report`
 
 It does not describe automatic paper trading or live trading. Promotion is not execution, and this page should not be read as an automation promise.
+The readiness/report/paper runtime gate in this baseline consumes the saved Evidence Registry by default. It does not implicitly rebuild the registry. Missing, `STALE`, or `CONFLICT` registry state is fail-closed.
 
 ## 1) Data Manifest
 
@@ -151,6 +152,7 @@ The gate also validates data scope:
 
 The paper runtime code is in `quant_us/live/paper_runtime.py`.
 The unified live runtime boundary is in `quant_us/live/runtime.py`.
+The paper/runtime gate reads the saved Evidence Registry as source of truth. It does not implicitly rebuild the registry during readiness or report evaluation.
 
 Important rules enforced in code:
 
@@ -158,6 +160,8 @@ Important rules enforced in code:
 - Alpaca paper access requires `APCA_API_KEY_ID` and `APCA_API_SECRET_KEY`
 - if `APCA_API_BASE_URL` is set, it must be a paper URL
 - paper/runtime readiness consumes evidence and renders a report only; it does not submit paper or live orders
+- readiness/report/paper runtime gate only consumes the saved Evidence Registry; it does not rebuild from `review.json` or any other legacy input
+- if registry state is `MISSING`, `STALE`, or `CONFLICT`, the gate fails closed
 - `paper_broker=alpaca` is fail-closed by default in the current runtime path
 - paper orders are not submitted by default; enabling paper submission requires an explicit paper path separate from readiness/report commands
 - the real Alpaca paper adapter is not in the automatic submit path in this baseline
@@ -188,6 +192,8 @@ The paper adapter contract is fail-closed by default.
 - The local fake adapter is only for contract tests and offline validation.
 - `paper_broker=alpaca` remains blocked unless a separate adapter implementation, credentials, and approved evidence are all present and explicitly wired in a later change.
 - Paper-review approval and paper readiness do not submit orders; an explicit paper execution path is required before any broker write can occur.
+- `paper_review_index` is a legacy view for compatibility. It is not the source of truth for readiness or paper runtime gating.
+- `review.json` alone is not enough to start paper runtime. The registry must be rebuilt explicitly before the gate can consume it.
 
 ## 6) Paper Review Boundary
 
@@ -230,6 +236,7 @@ that has not been implemented.
 - Reconciliation detail is the next doc/report bridge to land in promotion and daily/backtest reports; until then, report pages remain evidence views, not execution flow.
 - Promotion stops at `READY_FOR_PAPER_REVIEW`; paper/live are separate manual gates.
 - Paper startup sync artifacts are audit inputs only and stay fail-closed; they do not mean real trading has been enabled.
+- Saved Evidence Registry state is the gate input. `paper_review_index` remains a legacy view, and `review.json` alone does not authorize paper runtime startup.
 - Live runtime stays disabled for execution; current live mode is review-only even when live-gate evidence passes.
 - Paper order submission is default-off and requires an explicit paper submit path.
 

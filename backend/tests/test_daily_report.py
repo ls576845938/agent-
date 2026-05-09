@@ -695,11 +695,37 @@ class TestPaperReviewStatus:
             encoding="utf-8",
         )
 
+        build_paper_review_evidence_index(tmp_path)
         status = inspect_paper_review_status(tmp_path)
 
         assert status.status == "PENDING_HUMAN_REVIEW"
         assert status.paper_review_entry_allowed is True
         assert status.manual_review_pending is True
+        assert status.review_path == str(review_path)
+
+    def test_inspect_approved_review_requires_reviewer_and_pack(self, tmp_path: Path) -> None:
+        review_dir = tmp_path / "research" / "paper_reviews" / "prev_001"
+        review_dir.mkdir(parents=True)
+        review_path = review_dir / "review.json"
+        review_path.write_text(
+            json.dumps(
+                {
+                    "paper_review_id": "prev_001",
+                    "strategy_manifest_id": "sman_001",
+                    "status": "APPROVED_FOR_PAPER_ONLY",
+                    "created_at": "2026-05-08T12:00:00+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
+        build_paper_review_evidence_index(tmp_path)
+
+        status = inspect_paper_review_status(tmp_path)
+
+        assert status.status == "PAPER_REVIEW_EVIDENCE_INVALID"
+        assert status.paper_review_entry_allowed is False
+        assert status.manual_review_pending is False
+        assert "paper_review_reviewer_missing" in status.summary
         assert status.review_path == str(review_path)
 
     def test_inspect_manifest_without_review(self, tmp_path: Path) -> None:
@@ -719,6 +745,7 @@ class TestPaperReviewStatus:
             encoding="utf-8",
         )
 
+        build_paper_review_evidence_index(tmp_path)
         status = inspect_paper_review_status(tmp_path)
 
         assert status.status == "ELIGIBLE_FOR_PAPER_REVIEW"
@@ -727,6 +754,7 @@ class TestPaperReviewStatus:
         assert status.manifest_path == str(manifest_path)
 
     def test_inspect_no_evidence(self, tmp_path: Path) -> None:
+        build_paper_review_evidence_index(tmp_path)
         status = inspect_paper_review_status(tmp_path)
 
         assert status.status == "NO_PAPER_REVIEW_EVIDENCE"
@@ -734,7 +762,7 @@ class TestPaperReviewStatus:
         assert status.manual_review_pending is False
         assert status.evidence_path == ""
 
-    def test_build_index_and_inspect_rebuilds_stale_index(self, tmp_path: Path) -> None:
+    def test_build_index_and_inspect_blocks_stale_registry(self, tmp_path: Path) -> None:
         review_dir = tmp_path / "research" / "paper_reviews" / "prev_001"
         review_dir.mkdir(parents=True)
         indexed_review = review_dir / "review.json"
@@ -770,9 +798,11 @@ class TestPaperReviewStatus:
         indexed_status = inspect_paper_review_status(tmp_path)
         scanned_status = inspect_paper_review_status(tmp_path, use_index=False)
 
-        assert indexed_status.status == "REJECTED"
-        assert indexed_status.review_path == str(newer_review_dir / "review.json")
-        assert scanned_status.status == "REJECTED"
+        assert indexed_status.status == "REGISTRY_STALE"
+        assert indexed_status.paper_review_entry_allowed is False
+        assert indexed_status.review_path == ""
+        assert scanned_status.status == "REGISTRY_STALE"
+        assert scanned_status.paper_review_entry_allowed is False
 
     def test_rebuild_registry_writes_full_registry_and_legacy_index(self, tmp_path: Path) -> None:
         manifest_dir = tmp_path / "research" / "manifests" / "sman_001"
@@ -849,7 +879,8 @@ class TestPaperReviewStatus:
 
         assert registry["registry_status"] == "stale"
         assert any(note.startswith("missing_artifact:") for note in registry["registry_notes"])
-        assert status.status == "NO_PAPER_REVIEW_EVIDENCE"
+        assert status.status == "REGISTRY_STALE"
+        assert status.paper_review_entry_allowed is False
         assert status.review_path == ""
 
     def test_inspect_registry_marks_saved_index_changed_when_review_content_changes_in_place(self, tmp_path: Path) -> None:
@@ -893,7 +924,8 @@ class TestPaperReviewStatus:
         assert changed_registry["registry_status"] == "changed"
         assert any(note.startswith("content_changed:") for note in changed_registry["registry_notes"])
         assert changed_registry["evidence"]["paper_reviews"][0]["status"] == "present"
-        assert status.status == "APPROVED_FOR_PAPER_ONLY"
+        assert status.status == "REGISTRY_CHANGED"
+        assert status.paper_review_entry_allowed is False
         assert live_review["details"]["status"] == "APPROVED_FOR_PAPER_ONLY"
         assert live_review["created_at"] == created_at
         assert live_review["sha256"] != original_review["sha256"]

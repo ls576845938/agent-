@@ -6,8 +6,11 @@ from pathlib import Path
 from quant_us.research.evidence_registry import (
     inspect_candidate_evidence,
     inspect_evidence_registry,
+    inspect_saved_evidence_registry,
+    project_saved_paper_review_evidence,
     rebuild_evidence_registry,
 )
+from quant_us.monitoring.paper_review_status import inspect_paper_review_status
 from quant_us.research.paper_review_bridge import (
     PaperReviewCandidate,
     PaperReviewManager,
@@ -114,6 +117,14 @@ def _write_candidate_chain_fixture(
         },
     )
     if include_review:
+        _write_json(
+            root / "research" / "evidence_packs" / "pack_evidence" / "evidence_pack.json",
+            {
+                "paper_review_id": review_id,
+                "candidate_id": candidate_id,
+                "created_at": "2026-05-09T12:19:00+00:00",
+            },
+        )
         PaperReviewManager(data_root=str(root))._save_review(
             PaperReviewCandidate(
                 paper_review_id=review_id,
@@ -213,3 +224,98 @@ def test_registry_marks_conflicting_data_manifest_and_candidate_chain(tmp_path: 
     assert chain.data_manifest.integrity_status == "CONFLICT"
     assert chain.chain_status == "CONFLICT"
     assert any(note.startswith("data_manifest_conflict:") for note in chain.notes)
+
+
+def test_saved_registry_projection_blocks_missing_without_rebuild(tmp_path: Path) -> None:
+    ids = _write_candidate_chain_fixture(tmp_path)
+    review_path = (
+        tmp_path / "research" / "paper_reviews" / ids["review_id"] / "review.json"
+    )
+    review = json.loads(review_path.read_text(encoding="utf-8"))
+    review["status"] = "APPROVED_FOR_PAPER_ONLY"
+    review["reviewer"] = "risk_committee"
+    review_path.write_text(json.dumps(review, indent=2), encoding="utf-8")
+    registry_path = tmp_path / "research" / "evidence_registry.json"
+
+    projection = project_saved_paper_review_evidence(
+        tmp_path,
+        paper_review_id=ids["review_id"],
+    )
+    status = inspect_paper_review_status(tmp_path)
+
+    assert projection["allowed"] is False
+    assert projection["registry_status"] == "missing"
+    assert status.paper_review_entry_allowed is False
+    assert status.status == "REGISTRY_MISSING"
+    assert not registry_path.exists()
+
+
+def test_saved_registry_projection_blocks_stale_changed_and_conflict(tmp_path: Path) -> None:
+    ids = _write_candidate_chain_fixture(tmp_path)
+    manager = PaperReviewManager(data_root=str(tmp_path))
+    manager.approve(ids["review_id"], reviewer="risk_committee")
+    rebuild_evidence_registry(tmp_path)
+
+    extra_review = (
+        tmp_path / "research" / "paper_reviews" / "prev_extra" / "review.json"
+    )
+    _write_json(
+        extra_review,
+        {
+            "paper_review_id": "prev_extra",
+            "status": "APPROVED_FOR_PAPER_ONLY",
+            "reviewer": "risk_committee",
+            "evidence_pack_path": str(
+                tmp_path / "research" / "evidence_packs" / "pack_evidence" / "evidence_pack.json"
+            ),
+        },
+    )
+    stale = project_saved_paper_review_evidence(
+        tmp_path,
+        paper_review_id=ids["review_id"],
+    )
+    assert stale["allowed"] is False
+    assert stale["registry_status"] == "stale"
+
+    extra_review.unlink()
+    rebuild_evidence_registry(tmp_path)
+    review_path = (
+        tmp_path / "research" / "paper_reviews" / ids["review_id"] / "review.json"
+    )
+    review = json.loads(review_path.read_text(encoding="utf-8"))
+    review["review_notes"] = "changed_after_registry"
+    review_path.write_text(json.dumps(review, indent=2), encoding="utf-8")
+    changed = project_saved_paper_review_evidence(
+        tmp_path,
+        paper_review_id=ids["review_id"],
+    )
+    assert changed["allowed"] is False
+    assert changed["registry_status"] == "changed"
+
+    rebuild_evidence_registry(tmp_path)
+    registry_path = tmp_path / "research" / "evidence_registry.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    registry["evidence"]["paper_reviews"][0]["integrity_status"] = "CONFLICT"
+    registry_path.write_text(json.dumps(registry, indent=2), encoding="utf-8")
+    conflict = inspect_saved_evidence_registry(tmp_path)
+    assert conflict["registry_status"] == "conflict"
+    assert conflict["registry_integrity_status"] == "CONFLICT"
+
+
+def test_saved_registry_projection_allows_approved_review_with_pack(tmp_path: Path) -> None:
+    ids = _write_candidate_chain_fixture(tmp_path)
+    manager = PaperReviewManager(data_root=str(tmp_path))
+    manager.approve(ids["review_id"], reviewer="risk_committee")
+    rebuild_evidence_registry(tmp_path)
+
+    projection = project_saved_paper_review_evidence(
+        tmp_path,
+        paper_review_id=ids["review_id"],
+    )
+    status = inspect_paper_review_status(tmp_path)
+
+    assert projection["allowed"] is True
+    assert projection["reason"] == "ok"
+    assert projection["registry_status"] == "present"
+    assert status.status == "APPROVED_FOR_PAPER_ONLY"
+    assert status.paper_review_entry_allowed is True

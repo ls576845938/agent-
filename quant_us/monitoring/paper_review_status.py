@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Any
 
 from quant_us.research.evidence_registry import (
-    inspect_evidence_registry,
+    inspect_saved_evidence_registry,
+    project_saved_paper_review_evidence,
     rebuild_evidence_registry,
 )
 
@@ -30,16 +31,32 @@ def inspect_paper_review_status(
     use_index: bool = True,
 ) -> PaperReviewStatus:
     """Inspect persisted registry evidence and summarize paper-review state."""
-    registry = inspect_evidence_registry(
-        data_root,
-        use_saved=use_index,
-        rebuild_if_missing=True,
-    )
-    if registry.get("registry_status") in {"stale", "changed"}:
-        registry = inspect_evidence_registry(
-            data_root,
-            use_saved=False,
-            rebuild_if_missing=True,
+    registry = inspect_saved_evidence_registry(data_root)
+    registry_status = str(registry.get("registry_status", "missing"))
+    registry_integrity = str(registry.get("registry_integrity_status", "MISSING"))
+    if registry_status != "present" or registry_integrity != "PASS/STABLE":
+        return PaperReviewStatus(
+            status=f"REGISTRY_{registry_status.upper()}",
+            paper_review_entry_allowed=False,
+            manual_review_pending=False,
+            summary=(
+                "Saved evidence registry is not ready; paper-review status is "
+                f"blocked until registry is explicitly rebuilt. Integrity={registry_integrity}."
+            ),
+            evidence_path=str(registry.get("registry_path", "")),
+        )
+    if any(
+        isinstance(row, dict) and row.get("integrity_status") == "CONFLICT"
+        for section in registry.get("evidence", {}).values()
+        if isinstance(section, list)
+        for row in section
+    ):
+        return PaperReviewStatus(
+            status="CONFLICT",
+            paper_review_entry_allowed=False,
+            manual_review_pending=False,
+            summary="Saved evidence registry contains conflicting evidence; paper-review entry is blocked.",
+            evidence_path=str(registry.get("registry_path", "")),
         )
     reviews = list(registry.get("evidence", {}).get("paper_reviews", []))
     manifests = list(registry.get("evidence", {}).get("strategy_manifests", []))
@@ -76,6 +93,25 @@ def inspect_paper_review_status(
                 evidence_pack_path=evidence_pack_path,
             )
         if status == "APPROVED_FOR_PAPER_ONLY":
+            projection = project_saved_paper_review_evidence(
+                data_root,
+                paper_review_id=str(latest_review.get("id", "") or ""),
+                paper_review_path=review_path,
+            )
+            if not projection.get("allowed"):
+                reason = str(projection.get("reason", "paper_review_evidence_invalid"))
+                return PaperReviewStatus(
+                    status="PAPER_REVIEW_EVIDENCE_INVALID",
+                    paper_review_entry_allowed=False,
+                    manual_review_pending=False,
+                    summary=(
+                        "Approved paper review evidence is incomplete or stale; "
+                        f"paper-review entry is blocked. Reason={reason}."
+                    ),
+                    evidence_path=review_path,
+                    review_path=review_path,
+                    evidence_pack_path=evidence_pack_path,
+                )
             approval_tail = ""
             if isinstance(approval, dict) and approval:
                 reviewer = str(approval.get("reviewer", reviewer) or reviewer)

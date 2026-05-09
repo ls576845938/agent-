@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import json
 import unittest
 import sys
 from contextlib import redirect_stdout
@@ -22,6 +23,45 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from quant_us.cli import build_parser, main
+
+
+def _write_review_json(
+    data_root: str | Path,
+    status: str = "PENDING_HUMAN_REVIEW",
+    *,
+    reviewer: str = "",
+    with_evidence_pack: bool = False,
+) -> Path:
+    review_dir = Path(data_root) / "research" / "paper_reviews" / "prev_001"
+    review_dir.mkdir(parents=True)
+    review_path = review_dir / "review.json"
+    payload = {
+        "paper_review_id": "prev_001",
+        "strategy_manifest_id": "sman_001",
+        "status": status,
+        "created_at": "2026-05-08T12:00:00+00:00",
+    }
+    if reviewer:
+        payload["reviewer"] = reviewer
+    if with_evidence_pack:
+        pack_path = Path(data_root) / "research" / "evidence_packs" / "prev_001" / "evidence_pack.json"
+        pack_path.parent.mkdir(parents=True, exist_ok=True)
+        pack_path.write_text(
+            json.dumps({"paper_review_id": "prev_001"}),
+            encoding="utf-8",
+        )
+        payload["evidence_pack_path"] = str(pack_path)
+    review_path.write_text(
+        json.dumps(payload, indent=2),
+        encoding="utf-8",
+    )
+    return review_path
+
+
+def _write_saved_evidence_registry(data_root: str | Path) -> None:
+    from quant_us.research.evidence_registry import rebuild_evidence_registry
+
+    rebuild_evidence_registry(data_root, write=True)
 
 
 class CliHelpTests(unittest.TestCase):
@@ -312,19 +352,10 @@ class CliReadinessTests(unittest.TestCase):
         self.assertIn("RESULT: BLOCKED for small-live review", text)
         self.assertIn("scope:  report only, no execution", text)
 
-    def test_readiness_prints_paper_review_status(self) -> None:
+    def test_readiness_missing_registry_blocks_without_creating_registry(self) -> None:
         with TemporaryDirectory() as tmp:
-            review_dir = Path(tmp) / "research" / "paper_reviews" / "prev_001"
-            review_dir.mkdir(parents=True)
-            (review_dir / "review.json").write_text(
-                """{
-                  "paper_review_id": "prev_001",
-                  "strategy_manifest_id": "sman_001",
-                  "status": "PENDING_HUMAN_REVIEW",
-                  "created_at": "2026-05-08T12:00:00+00:00"
-                }""",
-                encoding="utf-8",
-            )
+            _write_review_json(tmp)
+            registry_path = Path(tmp) / "research" / "evidence_registry.json"
 
             out = io.StringIO()
             with redirect_stdout(out):
@@ -334,10 +365,70 @@ class CliReadinessTests(unittest.TestCase):
             self.assertIn("scope:       report only, no execution", text)
             self.assertIn("validation_state_state: MISSING", text)
             self.assertIn("latest_daily_report_state: MISSING", text)
+            self.assertIn("evidence_registry_state: MISSING (missing)", text)
+            self.assertIn("paper_review_status: BLOCKED_MISSING_REGISTRY", text)
+            self.assertIn("paper_review_entry_allowed: NO", text)
+            self.assertIn("manual_review_pending: NO", text)
+            self.assertFalse(registry_path.exists())
+
+    def test_readiness_legacy_index_cannot_replace_canonical_registry(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_review_json(tmp)
+            _write_saved_evidence_registry(tmp)
+            registry_path = Path(tmp) / "research" / "evidence_registry.json"
+            legacy_index_path = Path(tmp) / "research" / "paper_review_index.json"
+            shadow_registry_path = Path(tmp) / "research" / "shadow_registry.json"
+            shadow_registry_path.write_text(registry_path.read_text(encoding="utf-8"), encoding="utf-8")
+            legacy_index = json.loads(legacy_index_path.read_text(encoding="utf-8"))
+            legacy_index["registry_path"] = str(shadow_registry_path)
+            legacy_index_path.write_text(json.dumps(legacy_index, indent=2), encoding="utf-8")
+            registry_path.unlink()
+
+            readiness_out = io.StringIO()
+            with redirect_stdout(readiness_out):
+                main(["readiness", "--data-root", tmp])
+            readiness_text = readiness_out.getvalue()
+            self.assertIn("evidence_registry_state: MISSING (missing)", readiness_text)
+            self.assertIn("paper_review_status: BLOCKED_MISSING_REGISTRY", readiness_text)
+
+            registry_out = io.StringIO()
+            with redirect_stdout(registry_out):
+                main(["report", "evidence-registry", "--data-root", tmp])
+            registry_text = registry_out.getvalue()
+            self.assertIn("registry_state: MISSING (missing)", registry_text)
+            self.assertIn("evidence:       evidence_registry=(not found)", registry_text)
+
+    def test_readiness_saved_registry_prints_paper_review_status(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_review_json(tmp)
+            _write_saved_evidence_registry(tmp)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["readiness", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("evidence_registry_state: PASS (present)", text)
             self.assertIn("paper_review_status: PENDING_HUMAN_REVIEW", text)
             self.assertIn("paper_review_entry_allowed: YES", text)
             self.assertIn("manual_review_pending: YES", text)
             self.assertIn("evidence:     paper_review=", text)
+
+    def test_readiness_corrupt_registry_reports_conflict(self) -> None:
+        with TemporaryDirectory() as tmp:
+            registry_path = Path(tmp) / "research" / "evidence_registry.json"
+            registry_path.parent.mkdir(parents=True)
+            registry_path.write_text("{not-json", encoding="utf-8")
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["readiness", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("evidence_registry_state: CONFLICT (inspect_failed)", text)
+            self.assertIn("paper_review_status: CONFLICT", text)
+            self.assertIn("paper_review_entry_allowed: NO", text)
+            self.assertIn("evidence:     paper_review_status=CONFLICT (registry inspect failed)", text)
 
 
 class CliLiveSafetyTests(unittest.TestCase):
@@ -475,6 +566,21 @@ class CliManifestReportTests(unittest.TestCase):
             self.assertIn("registry_state: MISSING (missing)", text)
             self.assertIn("scope:       report only, no execution", text)
 
+    def test_report_evidence_registry_corrupt_reports_conflict(self) -> None:
+        with TemporaryDirectory() as tmp:
+            registry_path = Path(tmp) / "research" / "evidence_registry.json"
+            registry_path.parent.mkdir(parents=True)
+            registry_path.write_text("{not-json", encoding="utf-8")
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "evidence-registry", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("Evidence Registry Report", text)
+            self.assertIn("registry_state: CONFLICT (conflict)", text)
+            self.assertIn("registry_error: inspect_failed", text)
+
     def test_report_daily_latest_uses_ledger_report(self) -> None:
         with TemporaryDirectory() as tmp:
             report_dir = Path(tmp) / "paper_ledger" / "daily_reports"
@@ -492,27 +598,85 @@ class CliManifestReportTests(unittest.TestCase):
                 }""",
                 encoding="utf-8",
             )
-            review_dir = Path(tmp) / "research" / "paper_reviews" / "prev_001"
-            review_dir.mkdir(parents=True)
-            (review_dir / "review.json").write_text(
-                """{
-                  "paper_review_id": "prev_001",
-                  "strategy_manifest_id": "sman_001",
-                  "status": "APPROVED_FOR_PAPER_ONLY",
-                  "created_at": "2026-05-08T22:00:00+00:00"
-                }""",
-                encoding="utf-8",
-            )
+            _write_review_json(tmp, status="APPROVED_FOR_PAPER_ONLY")
+            registry_path = Path(tmp) / "research" / "evidence_registry.json"
 
             out = io.StringIO()
             with redirect_stdout(out):
                 main(["report", "daily", "--latest", "--data-root", tmp])
 
             text = out.getvalue()
-            self.assertIn("paper_review_status: APPROVED_FOR_PAPER_ONLY", text)
+            self.assertIn("paper_review_status: BLOCKED_MISSING_REGISTRY", text)
+            self.assertIn("paper_review_entry_allowed: NO", text)
             self.assertIn("manual_review_pending: NO", text)
             self.assertIn("report_state: PASS daily_report", text)
             self.assertIn("readiness_state: MISSING validation_state", text)
             self.assertIn("evidence_registry_state: MISSING (missing)", text)
             self.assertIn("scope:       report only, no execution", text)
             self.assertIn("Reporting only. This does not approve or start paper/live trading.", text)
+            self.assertFalse(registry_path.exists())
+
+    def test_report_daily_saved_registry_prints_review_status(self) -> None:
+        with TemporaryDirectory() as tmp:
+            report_dir = Path(tmp) / "paper_ledger" / "daily_reports"
+            report_dir.mkdir(parents=True)
+            (report_dir / "daily_report_2026-05-08.json").write_text(
+                """{
+                  "report_date": "2026-05-08",
+                  "generated_at": "2026-05-08T21:00:00+00:00",
+                  "ending_equity": 101000.0,
+                  "daily_pnl": 1000.0,
+                  "orders_submitted": 2,
+                  "orders_filled": 2,
+                  "reconciliation_status": "clean",
+                  "kill_switch_triggered": false
+                }""",
+                encoding="utf-8",
+            )
+            _write_review_json(
+                tmp,
+                status="APPROVED_FOR_PAPER_ONLY",
+                reviewer="risk-reviewer",
+                with_evidence_pack=True,
+            )
+            _write_saved_evidence_registry(tmp)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "daily", "--latest", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("evidence_registry_state: PASS (present)", text)
+            self.assertIn("paper_review_status: APPROVED_FOR_PAPER_ONLY", text)
+            self.assertIn("paper_review_entry_allowed: YES", text)
+            self.assertIn("manual_review_pending: NO", text)
+
+    def test_report_daily_saved_registry_blocks_invalid_approved_review(self) -> None:
+        with TemporaryDirectory() as tmp:
+            report_dir = Path(tmp) / "paper_ledger" / "daily_reports"
+            report_dir.mkdir(parents=True)
+            (report_dir / "daily_report_2026-05-08.json").write_text(
+                """{
+                  "report_date": "2026-05-08",
+                  "generated_at": "2026-05-08T21:00:00+00:00",
+                  "ending_equity": 101000.0,
+                  "daily_pnl": 1000.0,
+                  "orders_submitted": 2,
+                  "orders_filled": 2,
+                  "reconciliation_status": "clean",
+                  "kill_switch_triggered": false
+                }""",
+                encoding="utf-8",
+            )
+            _write_review_json(tmp, status="APPROVED_FOR_PAPER_ONLY")
+            _write_saved_evidence_registry(tmp)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "daily", "--latest", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("evidence_registry_state: PASS (present)", text)
+            self.assertIn("paper_review_status: PAPER_REVIEW_EVIDENCE_INVALID", text)
+            self.assertIn("paper_review_entry_allowed: NO", text)
+            self.assertIn("paper_review_note: Approved paper review evidence is incomplete", text)

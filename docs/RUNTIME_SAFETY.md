@@ -12,6 +12,7 @@
 review material only and does not unlock order submission in this runtime boundary.
 The `live start` operator path is review-only and fail-closed: it may render gate/evidence state, but it must not submit orders.
 Any future executable live path must be introduced as a separate, explicit implementation with its own approved gate.
+Readiness, report, and paper runtime gates in this baseline consume the saved Evidence Registry as source of truth. They do not implicitly rebuild it. Missing, `STALE`, or `CONFLICT` registry state must fail closed.
 
 ## Shadow Live vs Paper vs Live Boundaries
 
@@ -40,6 +41,8 @@ Current baseline expectations:
 - Fake Alpaca adapters are contract-test tools only and are not production paper execution.
 - Daily paper reports read persisted ledger evidence; they do not imply that paper orders were submitted.
 - Startup sync artifacts are audit inputs only and do not enable paper or live writes.
+- `paper_review_index` is a legacy view only; it is not the authority for runtime gating.
+- `review.json` alone cannot start paper runtime. The registry must be rebuilt explicitly, then the saved registry is consumed by readiness/report/runtime gates.
 
 ## QUANT_LIVE_SUBMISSION_ENABLED Safety
 
@@ -108,6 +111,7 @@ Ledger writes must be idempotent under repeated report/runtime invocations. If t
 artifacts, it must either use a file lock around the write or document why the artifact is single-writer and safe to
 rebuild. Reports that only read existing ledger files must preserve this distinction and should not claim locking for
 paths that are not implemented yet.
+This idempotency rule does not imply automatic registry rebuild. Registry rebuilds, when required, must be explicit.
 
 ## G3 Live Pilot Safety (Added Phase G3)
 

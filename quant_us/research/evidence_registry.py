@@ -126,6 +126,163 @@ def inspect_evidence_registry(
     return result
 
 
+def inspect_saved_evidence_registry(
+    data_root: str | Path = "data",
+) -> dict[str, Any]:
+    """Inspect only the saved evidence registry snapshot.
+
+    This helper is intentionally read-only and never falls back to rebuilding or
+    to the legacy paper review index.
+    """
+    root = Path(data_root)
+    registry_path = _registry_path(root)
+    if not registry_path.exists():
+        return {
+            "schema_version": REGISTRY_SCHEMA_VERSION,
+            "generated_at": "",
+            "registry_path": str(registry_path),
+            "registry_status": "missing",
+            "registry_integrity_status": INTEGRITY_MISSING,
+            "registry_notes": ["missing_registry_snapshot"],
+            "rebuild_available": True,
+            "counts": {},
+            "evidence": {},
+            "chains": {},
+        }
+
+    try:
+        saved = json.loads(registry_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        return {
+            "schema_version": REGISTRY_SCHEMA_VERSION,
+            "generated_at": "",
+            "registry_path": str(registry_path),
+            "registry_status": "conflict",
+            "registry_integrity_status": INTEGRITY_CONFLICT,
+            "registry_notes": [f"registry_snapshot_unreadable:{exc}"],
+            "rebuild_available": True,
+            "counts": {},
+            "evidence": {},
+            "chains": {},
+        }
+    if not isinstance(saved, dict) or saved.get("schema_version") != REGISTRY_SCHEMA_VERSION:
+        return {
+            "schema_version": REGISTRY_SCHEMA_VERSION,
+            "generated_at": "",
+            "registry_path": str(registry_path),
+            "registry_status": "conflict",
+            "registry_integrity_status": INTEGRITY_CONFLICT,
+            "registry_notes": ["registry_snapshot_schema_mismatch"],
+            "rebuild_available": True,
+            "counts": {},
+            "evidence": {},
+            "chains": {},
+        }
+
+    current = _scan_all_evidence(root)
+    saved_status, saved_notes = _registry_storage_status(saved, current)
+    result = dict(saved)
+    result["registry_status"] = saved_status
+    result["registry_integrity_status"] = _registry_integrity_status(saved_status)
+    result["registry_notes"] = saved_notes
+    result["rebuild_available"] = True
+    conflict_notes = _registry_conflict_notes(result)
+    if conflict_notes:
+        result["registry_status"] = "conflict"
+        result["registry_integrity_status"] = INTEGRITY_CONFLICT
+        result["registry_notes"] = saved_notes + conflict_notes
+    return result
+
+
+def project_saved_paper_review_evidence(
+    data_root: str | Path = "data",
+    *,
+    paper_review_id: str = "",
+    paper_review_path: str | Path = "",
+) -> dict[str, Any]:
+    """Project saved registry paper-review evidence for runtime gates."""
+    root = Path(data_root)
+    registry = inspect_saved_evidence_registry(root)
+    registry_status = str(registry.get("registry_status", "missing"))
+    registry_integrity = str(registry.get("registry_integrity_status", INTEGRITY_MISSING))
+    projection: dict[str, Any] = {
+        "allowed": False,
+        "reason": "",
+        "registry_status": registry_status,
+        "registry_integrity_status": registry_integrity,
+        "registry_notes": list(registry.get("registry_notes", [])),
+        "review": {},
+        "review_path": "",
+        "evidence_pack_path": "",
+    }
+    if registry_status != "present" or registry_integrity != INTEGRITY_PASS:
+        projection["reason"] = (
+            f"paper_review_registry_not_ready:{registry_status}:{registry_integrity}"
+        )
+        return projection
+
+    review_id = str(paper_review_id or "").strip()
+    review_path_text = str(paper_review_path or "").strip()
+    if not review_id and not review_path_text:
+        projection["reason"] = "paper_review_evidence_missing"
+        return projection
+
+    reviews = list(registry.get("evidence", {}).get("paper_reviews", []))
+    matches = [
+        row
+        for row in reviews
+        if isinstance(row, dict)
+        and _paper_review_row_matches(
+            row,
+            paper_review_id=review_id,
+            paper_review_path=review_path_text,
+        )
+    ]
+    if len(matches) != 1:
+        projection["reason"] = (
+            "paper_review_evidence_not_found"
+            if not matches
+            else "paper_review_evidence_conflict"
+        )
+        return projection
+
+    row = dict(matches[0])
+    details = dict(row.get("details", {}))
+    row_integrity = str(row.get("integrity_status", INTEGRITY_MISSING))
+    projection["review"] = row
+    projection["review_path"] = str(row.get("path", ""))
+    if row_integrity != INTEGRITY_PASS:
+        projection["reason"] = f"paper_review_integrity_not_stable:{row_integrity}"
+        return projection
+
+    status = str(details.get("status", row.get("summary", "missing")) or "missing")
+    if status != "APPROVED_FOR_PAPER_ONLY":
+        projection["reason"] = f"paper_review_not_approved:{status}"
+        return projection
+
+    approval = details.get("approval", {})
+    if not isinstance(approval, dict):
+        approval = {}
+    reviewer = str(details.get("reviewer", "") or approval.get("reviewer", "")).strip()
+    if not reviewer:
+        projection["reason"] = "paper_review_reviewer_missing"
+        return projection
+
+    evidence_pack_path = str(details.get("evidence_pack_path", "") or "").strip()
+    projection["evidence_pack_path"] = evidence_pack_path
+    if not evidence_pack_path:
+        projection["reason"] = "paper_review_evidence_pack_missing"
+        return projection
+    resolved_pack_path = _resolve_registry_artifact_path(root, evidence_pack_path)
+    if not resolved_pack_path.exists():
+        projection["reason"] = f"paper_review_evidence_pack_not_found:{evidence_pack_path}"
+        return projection
+
+    projection["allowed"] = True
+    projection["reason"] = "ok"
+    return projection
+
+
 def inspect_candidate_evidence(
     candidate_id: str,
     data_root: str | Path = "data",
@@ -918,6 +1075,53 @@ def _registry_evidence_meta(registry: dict[str, Any]) -> dict[str, dict[str, Any
     return rows
 
 
+def _registry_conflict_notes(registry: dict[str, Any]) -> list[str]:
+    notes: list[str] = []
+    evidence = registry.get("evidence", {})
+    if isinstance(evidence, dict):
+        for section_name, rows in evidence.items():
+            if not isinstance(rows, list):
+                continue
+            for row in rows:
+                if isinstance(row, dict) and row.get("integrity_status") == INTEGRITY_CONFLICT:
+                    notes.append(
+                        "conflicting_registry_evidence:"
+                        f"{section_name}:{row.get('path') or row.get('id') or 'unknown'}"
+                    )
+    chains = registry.get("chains", {})
+    if isinstance(chains, dict):
+        for candidate_id, chain in chains.items():
+            if isinstance(chain, dict) and chain.get("chain_status") == INTEGRITY_CONFLICT:
+                notes.append(f"conflicting_registry_chain:{candidate_id}")
+    return _dedupe_notes(notes)
+
+
+def _paper_review_row_matches(
+    row: dict[str, Any],
+    *,
+    paper_review_id: str,
+    paper_review_path: str,
+) -> bool:
+    if paper_review_id and str(row.get("id", "")) != paper_review_id:
+        return False
+    if paper_review_path and not _same_artifact_path(str(row.get("path", "")), paper_review_path):
+        return False
+    return bool(paper_review_id or paper_review_path)
+
+
+def _same_artifact_path(left: str, right: str) -> bool:
+    if not left or not right:
+        return False
+    return Path(left).resolve(strict=False) == Path(right).resolve(strict=False)
+
+
+def _resolve_registry_artifact_path(root: Path, path_text: str) -> Path:
+    path = Path(path_text)
+    if path.is_absolute():
+        return path
+    return root / path
+
+
 def _scanned_evidence_meta(scanned: dict[str, Any]) -> dict[str, dict[str, Any]]:
     rows: dict[str, dict[str, Any]] = {}
     for section_name in (
@@ -1155,6 +1359,8 @@ def _registry_integrity_status(status: str) -> str:
         return INTEGRITY_MISSING
     if status in {"stale", "changed"}:
         return INTEGRITY_STALE
+    if status == "conflict":
+        return INTEGRITY_CONFLICT
     return INTEGRITY_PASS
 
 
