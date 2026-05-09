@@ -90,8 +90,8 @@ class TestPaperEligibleRequiresManual(unittest.TestCase):
         self.assertEqual(candidate.promotion_status, "RESEARCH_ONLY")
         self.assertNotEqual(candidate.promotion_status, "PAPER_ELIGIBLE")
 
-    def test_pipeline_auto_promote_stops_at_paper_eligible(self) -> None:
-        """Pipeline's auto-promote should mark PAPER_ELIGIBLE but not LIVE."""
+    def test_pipeline_does_not_auto_mark_paper_eligible(self) -> None:
+        """Pipeline can report readiness but PAPER_ELIGIBLE remains manual."""
         pipeline = ResearchAutomationPipeline(data_root=self.tmp.name)
         config = {
             "experiment_name": "manual_test",
@@ -106,7 +106,8 @@ class TestPaperEligibleRequiresManual(unittest.TestCase):
         if result["status"] == "failed":
             self.fail(f"Pipeline failed with error: {result.get('error')}")
         self.assertEqual(result["status"], "completed")
-        for cid in result["promoted"]:
+        self.assertEqual(result["paper_review_ready"], [])
+        for cid in result["candidate_ids"]:
             cand_path = (
                 Path(self.tmp.name)
                 / "research"
@@ -115,8 +116,46 @@ class TestPaperEligibleRequiresManual(unittest.TestCase):
                 / "candidate.json"
             )
             data = json.loads(cand_path.read_text(encoding="utf-8"))
-            self.assertEqual(data["promotion_status"], "PAPER_ELIGIBLE")
+            self.assertNotEqual(data["promotion_status"], "PAPER_ELIGIBLE")
             self.assertNotEqual(data["promotion_status"], "LIVE")
+
+    def test_step_promote_requires_manual_flag_without_approved_review(self) -> None:
+        """Explicit caller approval is required when no approved paper review exists."""
+        pipeline = ResearchAutomationPipeline(data_root=self.tmp.name)
+        eid = self._create_completed_experiment()
+        candidate = self.manager.promote_to_candidate(eid)
+
+        with (
+            patch.object(
+                pipeline,
+                "_evaluate_promotion_gate",
+                return_value={"decision": "READY_FOR_PAPER_REVIEW", "reasons": []},
+            ),
+            patch.object(pipeline, "_has_approved_paper_review", return_value=False),
+        ):
+            with self.assertRaisesRegex(ValueError, "manual_approval=True"):
+                pipeline.step_promote(candidate.candidate_id)
+
+            promoted = pipeline.step_promote(
+                candidate.candidate_id,
+                manual_approval=True,
+            )
+
+        self.assertEqual(promoted.promotion_status, "PAPER_ELIGIBLE")
+
+    def test_step_promote_manual_flag_cannot_bypass_gate(self) -> None:
+        """manual_approval does not replace a READY_FOR_PAPER_REVIEW gate result."""
+        pipeline = ResearchAutomationPipeline(data_root=self.tmp.name)
+        eid = self._create_completed_experiment()
+        candidate = self.manager.promote_to_candidate(eid)
+
+        with patch.object(
+            pipeline,
+            "_evaluate_promotion_gate",
+            return_value={"decision": "BLOCKED", "reasons": ["missing_scorecard"]},
+        ):
+            with self.assertRaisesRegex(ValueError, "READY_FOR_PAPER_REVIEW"):
+                pipeline.step_promote(candidate.candidate_id, manual_approval=True)
 
     def test_no_live_promotion_method_exists(self) -> None:
         """No promote_to_live method should exist in research modules."""

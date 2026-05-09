@@ -71,6 +71,7 @@ class LiveReadinessReport:
 class LiveRunnerConfig:
     require_reconciliation_clean: bool = True
     allow_live_orders: bool = False
+    explicit_live_gate_passed: bool = False
 
     # Paper-mode specific settings
     market_data_symbols: list[str] | None = None
@@ -118,6 +119,11 @@ class LiveRunner:
     _logger: logging.Logger = field(
         default_factory=lambda: logging.getLogger("live_runner"), init=False,
     )
+    _known_fill_keys: set[str] = field(default_factory=set, init=False)
+    _known_fill_fingerprints: dict[str, tuple[Any, ...]] = field(
+        default_factory=dict, init=False,
+    )
+    _fill_index_loaded: bool = field(default=False, init=False)
 
     def __post_init__(self) -> None:
         self._session_clock = SessionClock(self.calendar)
@@ -196,10 +202,10 @@ class LiveRunner:
         if dry_run:
             self._logger.info("Dry-run mode – readiness checks passed")
             return report
-        if self.config.allow_live_orders:
-            self._logger.warning(
-                "Live mode: order submission will use the configured OMS broker. "
-                "Ensure the readiness gate has passed before proceeding."
+        if self.config.allow_live_orders and not self.config.explicit_live_gate_passed:
+            self.state = LiveRunnerState.ERROR
+            raise RuntimeError(
+                "explicit_live_gate_required_when_allow_live_orders_true"
             )
 
         # ── Start market-data / strategy loop ───────────────────────
@@ -399,16 +405,131 @@ class LiveRunner:
     def poll_order_status(self) -> None:
         """Query broker for open orders and sync fills to ledger."""
         try:
+            self._ensure_fill_index_loaded()
             open_orders = self.oms.broker.get_orders()
             for order in open_orders:
                 fills = self.oms.broker.get_fills(order.order_id)
                 for fill in fills:
-                    if self.ledger is not None:
-                        self.ledger.append_fill(fill)
+                    self._append_fill_if_new(fill)
         except Exception as exc:
             self._logger.exception(
                 "Failed to poll order status: %s", exc,
             )
+
+    def _ensure_fill_index_loaded(self) -> None:
+        """Prime the in-memory fill index from the existing ledger once."""
+        if self._fill_index_loaded:
+            return
+        if self.ledger is None:
+            return
+
+        for record in self.ledger.read_records("fills.jsonl"):
+            key = self._fill_key_from_record(record)
+            if not key:
+                continue
+            self._known_fill_keys.add(key)
+            self._known_fill_fingerprints[key] = self._fill_fingerprint_from_record(
+                record,
+            )
+
+        self._fill_index_loaded = True
+
+    def _append_fill_if_new(self, fill: Any) -> None:
+        if self.ledger is None:
+            return
+
+        fill_key = self._fill_key(fill)
+        fill_fingerprint = self._fill_fingerprint(fill)
+
+        if fill_key and fill_key in self._known_fill_keys:
+            existing = self._known_fill_fingerprints.get(fill_key)
+            if existing is not None and existing != fill_fingerprint:
+                self._logger.error(
+                    "Conflicting duplicate fill detected during polling: key=%s",
+                    fill_key,
+                )
+            return
+
+        self.ledger.append_fill(fill)
+        if fill_key:
+            self._known_fill_keys.add(fill_key)
+            self._known_fill_fingerprints[fill_key] = fill_fingerprint
+
+    @staticmethod
+    def _fill_key(fill: Any) -> str:
+        fill_id = str(getattr(fill, "fill_id", "") or "")
+        if fill_id:
+            return f"fill_id:{fill_id}"
+
+        order_id = str(getattr(fill, "order_id", "") or "")
+        if not order_id:
+            return ""
+
+        return (
+            f"order:{order_id}|symbol:{str(getattr(fill, 'symbol', '') or '').upper()}"
+            f"|side:{LiveRunner._enum_value(getattr(fill, 'side', ''))}"
+            f"|qty:{float(getattr(fill, 'quantity', 0.0))}"
+            f"|price:{float(getattr(fill, 'price', 0.0))}"
+            f"|commission:{float(getattr(fill, 'commission', 0.0))}"
+            f"|filled_at:{LiveRunner._datetime_value(getattr(fill, 'filled_at', None))}"
+        )
+
+    @staticmethod
+    def _fill_key_from_record(record: dict[str, Any]) -> str:
+        fill_id = str(record.get("fill_id", "") or "")
+        if fill_id:
+            return f"fill_id:{fill_id}"
+
+        order_id = str(record.get("order_id", "") or "")
+        if not order_id:
+            return ""
+
+        return (
+            f"order:{order_id}|symbol:{str(record.get('symbol', '') or '').upper()}"
+            f"|side:{str(record.get('side', '') or '')}"
+            f"|qty:{float(record.get('quantity', 0.0))}"
+            f"|price:{float(record.get('price', 0.0))}"
+            f"|commission:{float(record.get('commission', 0.0))}"
+            f"|filled_at:{str(record.get('filled_at', '') or '')}"
+        )
+
+    @staticmethod
+    def _fill_fingerprint(fill: Any) -> tuple[Any, ...]:
+        return (
+            str(getattr(fill, "order_id", "") or ""),
+            str(getattr(fill, "symbol", "") or "").upper(),
+            LiveRunner._enum_value(getattr(fill, "side", "")),
+            float(getattr(fill, "quantity", 0.0)),
+            float(getattr(fill, "price", 0.0)),
+            float(getattr(fill, "commission", 0.0)),
+            LiveRunner._datetime_value(getattr(fill, "filled_at", None)),
+            str(getattr(fill, "broker_order_id", "") or ""),
+            str(getattr(fill, "broker", "") or ""),
+        )
+
+    @staticmethod
+    def _fill_fingerprint_from_record(record: dict[str, Any]) -> tuple[Any, ...]:
+        return (
+            str(record.get("order_id", "") or ""),
+            str(record.get("symbol", "") or "").upper(),
+            str(record.get("side", "") or ""),
+            float(record.get("quantity", 0.0)),
+            float(record.get("price", 0.0)),
+            float(record.get("commission", 0.0)),
+            str(record.get("filled_at", "") or ""),
+            str(record.get("broker_order_id", "") or ""),
+            str(record.get("broker", "") or ""),
+        )
+
+    @staticmethod
+    def _enum_value(value: Any) -> str:
+        return str(getattr(value, "value", value) or "")
+
+    @staticmethod
+    def _datetime_value(value: Any) -> str:
+        if value is None:
+            return ""
+        return value.isoformat() if hasattr(value, "isoformat") else str(value)
 
     def reconcile(self) -> None:
         """Run full reconciliation; set ``reduce_only`` on breaks.

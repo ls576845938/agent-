@@ -113,16 +113,19 @@ print(f"Decision: {result.decision}")
 
 ### 8. Promote Candidate
 
-Manual promotion to PAPER_ELIGIBLE (requires explicit intent):
+Manual promotion to PAPER_ELIGIBLE requires the canonical promotion gate to
+return `READY_FOR_PAPER_REVIEW` plus either an approved paper review or an
+explicit manual approval flag:
 
 ```python
 from quant_us.research.automation.pipeline import ResearchAutomationPipeline
 
 pipeline = ResearchAutomationPipeline(data_root="data")
-pipeline.step_promote("cand_002")
+pipeline.step_promote("cand_002", manual_approval=True)
 ```
 
-**Note**: This is a manual step. The pipeline never auto-promotes.
+**Note**: This is a manual step. The pipeline never auto-promotes, and
+`manual_approval=True` cannot bypass a blocked promotion gate.
 
 ### 9. Generate Research Dossier
 

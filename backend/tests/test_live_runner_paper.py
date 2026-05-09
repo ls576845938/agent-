@@ -12,11 +12,15 @@ Covers:
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import threading
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
+from quant_us.core.enums import OrderSide
+from quant_us.core.types import Fill
+from quant_us.execution.ledger import JsonlLedgerStore
 from quant_us.live.runner import (
     LiveReadinessReport,
     LiveRunner,
@@ -162,16 +166,33 @@ class TestLiveRunnerPaper:
             f"Expected RUNNING, got {runner.state}"
         )
 
-    # ── test 2: live mode starts paper mode with warning ──────────────
+    # ── test 2: live mode requires explicit gate ─────────────────────
 
     @patch("quant_us.live.runner.threading.Thread")
-    def test_live_mode_proceeds_with_warning(
+    def test_live_mode_hard_fails_without_explicit_gate(
         self, mock_thread: MagicMock, runner: LiveRunner,
     ) -> None:
-        """allow_live_orders=True logs warning and proceeds to paper mode."""
         runner.config.allow_live_orders = True
+
+        with pytest.raises(
+            RuntimeError,
+            match="explicit_live_gate_required_when_allow_live_orders_true",
+        ):
+            runner.start(dry_run=False)
+
+        assert runner.state == LiveRunnerState.ERROR
+        mock_thread.assert_not_called()
+
+    @patch("quant_us.live.runner.threading.Thread")
+    def test_live_mode_proceeds_after_explicit_gate(
+        self, mock_thread: MagicMock, runner: LiveRunner,
+    ) -> None:
+        """allow_live_orders=True requires explicit gate, then proceeds."""
+        runner.config.allow_live_orders = True
+        runner.config.explicit_live_gate_passed = True
         report = runner.start(dry_run=False)
-        assert report is not None
+        assert report.ready
+        assert runner.state == LiveRunnerState.RUNNING
 
     # ── test 3: state transitions ────────────────────────────────────
 
@@ -352,3 +373,32 @@ class TestLiveRunnerPaper:
         assert not report.ready
         # State stays initial because _start_paper_mode is never called
         assert runner.state == LiveRunnerState.BOOTSTRAPPING
+
+    def test_poll_order_status_dedupes_duplicate_fills(
+        self, runner: LiveRunner, tmp_path,
+    ) -> None:
+        """Repeated broker fills with the same identity are only ledgered once."""
+        runner.ledger = JsonlLedgerStore(tmp_path)
+
+        fill = Fill(
+            order_id="ord_duplicate_fill",
+            symbol="AAPL",
+            side=OrderSide.BUY,
+            quantity=10.0,
+            price=150.0,
+            commission=1.25,
+            filled_at=datetime(2024, 1, 2, 15, 30, tzinfo=timezone.utc),
+            fill_id="fill_duplicate_001",
+        )
+        runner.oms.broker.get_orders.return_value = [
+            MagicMock(order_id="ord_duplicate_fill"),
+        ]
+        runner.oms.broker.get_fills.return_value = [fill, fill]
+
+        runner.poll_order_status()
+        runner.poll_order_status()
+
+        records = runner.ledger.read_records("fills.jsonl")
+        assert len(records) == 1
+        assert records[0]["fill_id"] == "fill_duplicate_001"
+        assert runner.ledger.latest_positions_from_fills()["AAPL"].quantity == 10.0

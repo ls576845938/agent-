@@ -205,22 +205,54 @@ class ReconciliationService:
         broker_orders: list[Any],
     ) -> dict[str, dict[str, Any]]:
         """Compare order status and quantity by order_id."""
-        local_by_id = {r.get("order_id", ""): r for r in local_records}
-        broker_by_id = {o.order_id: o for o in broker_orders}
+        local_groups: dict[str, list[dict[str, Any]]] = {}
+        for record in local_records:
+            order_id = str(record.get("order_id", "") or "")
+            if order_id:
+                local_groups.setdefault(order_id, []).append(record)
+        local_by_id = {order_id: records[-1] for order_id, records in local_groups.items()}
+        broker_by_id = {
+            str(getattr(o, "order_id", "") or ""): o
+            for o in broker_orders
+            if str(getattr(o, "order_id", "") or "")
+        }
         all_ids = set(local_by_id) | set(broker_by_id)
         diffs: dict[str, dict[str, Any]] = {}
         for oid in sorted(all_ids):
             local = local_by_id.get(oid)
             broker = broker_by_id.get(oid)
+            local_group = local_groups.get(oid, [])
+            if len(local_group) > 1:
+                statuses = sorted({str(r.get("status", "N/A")) for r in local_group})
+                quantities = sorted({float(r.get("quantity", 0.0)) for r in local_group})
+                if len(statuses) > 1 or len(quantities) > 1:
+                    diffs.setdefault(oid, {}).update({
+                        "local_conflict": True,
+                        "local_statuses": statuses,
+                        "local_quantities": quantities,
+                    })
             local_status = str(local.get("status", "N/A")) if local else "MISSING"
-            broker_status = broker.status.value if broker else "MISSING"
-            if local_status != broker_status:
-                diffs[oid] = {
+            broker_status = (
+                ReconciliationService._enum_value(getattr(broker, "status", ""))
+                if broker
+                else "MISSING"
+            )
+            local_quantity = float(local.get("quantity", 0.0)) if local else 0.0
+            broker_quantity = float(getattr(broker, "quantity", 0.0)) if broker else 0.0
+            status_mismatch = local_status != broker_status
+            quantity_diff = broker_quantity - local_quantity
+            quantity_mismatch = abs(quantity_diff) > 1e-8
+            if status_mismatch or quantity_mismatch:
+                diffs.setdefault(oid, {}).update({
                     "local_status": local_status,
                     "broker_status": broker_status,
-                    "local_quantity": float(local.get("quantity", 0.0)) if local else 0.0,
-                    "broker_quantity": float(broker.quantity) if broker else 0.0,
-                }
+                    "local_quantity": local_quantity,
+                    "broker_quantity": broker_quantity,
+                })
+                if status_mismatch:
+                    diffs[oid]["status_mismatch"] = True
+                if quantity_mismatch:
+                    diffs[oid]["quantity_diff"] = quantity_diff
         return diffs
 
     @staticmethod
@@ -228,46 +260,120 @@ class ReconciliationService:
         local_records: list[dict[str, Any]],
         broker_fills: list[Fill],
     ) -> dict[str, dict[str, Any]]:
-        """Compare fill quantity and price by fill_id (fallback to order_id)."""
-        local_by_id: dict[str, dict[str, Any]] = {}
+        """Compare fill payload by fill_id (fallback to order_id)."""
+        local_groups: dict[str, list[dict[str, Any]]] = {}
         for r in local_records:
             fid = r.get("fill_id", "") or r.get("order_id", "")
             if not fid:
                 continue
-            local_by_id[fid] = r
+            local_groups.setdefault(str(fid), []).append(r)
+        local_by_id: dict[str, dict[str, Any]] = {
+            fill_id: records[-1] for fill_id, records in local_groups.items()
+        }
 
         broker_by_id: dict[str, Fill] = {}
         for f in broker_fills:
-            broker_by_id[f.fill_id] = f
+            fid = str(getattr(f, "fill_id", "") or getattr(f, "order_id", "") or "")
+            if fid:
+                broker_by_id[fid] = f
 
         all_ids = set(local_by_id) | set(broker_by_id)
         diffs: dict[str, dict[str, Any]] = {}
         for fid in sorted(all_ids):
             local = local_by_id.get(fid)
             broker = broker_by_id.get(fid)
+            local_group = local_groups.get(fid, [])
+            if len(local_group) > 1:
+                quantities = sorted({float(r.get("quantity", 0.0)) for r in local_group})
+                prices = sorted({float(r.get("price", 0.0)) for r in local_group})
+                commissions = sorted({float(r.get("commission", 0.0)) for r in local_group})
+                sides = sorted({str(r.get("side", "") or "") for r in local_group})
+                symbols = sorted({str(r.get("symbol", "") or "").upper() for r in local_group})
+                if (
+                    len(quantities) > 1
+                    or len(prices) > 1
+                    or len(commissions) > 1
+                    or len(sides) > 1
+                    or len(symbols) > 1
+                ):
+                    diffs.setdefault(fid, {}).update({
+                        "local_conflict": True,
+                        "local_quantities": quantities,
+                        "local_prices": prices,
+                        "local_commissions": commissions,
+                        "local_sides": sides,
+                        "local_symbols": symbols,
+                    })
             if local and broker:
                 local_qty = float(local.get("quantity", 0.0))
-                broker_qty = broker.quantity
-                if abs(local_qty - broker_qty) > 1e-8:
-                    diffs[fid] = {
+                broker_qty = float(getattr(broker, "quantity", 0.0))
+                local_price = float(local.get("price", 0.0))
+                broker_price = float(getattr(broker, "price", 0.0))
+                local_commission = float(local.get("commission", 0.0))
+                broker_commission = float(getattr(broker, "commission", 0.0))
+                local_side = str(local.get("side", "") or "")
+                broker_side = ReconciliationService._enum_value(getattr(broker, "side", ""))
+                local_symbol = str(local.get("symbol", "") or "").upper()
+                broker_symbol = str(getattr(broker, "symbol", "") or "").upper()
+
+                quantity_diff = broker_qty - local_qty
+                price_diff = broker_price - local_price
+                commission_diff = broker_commission - local_commission
+
+                if (
+                    abs(quantity_diff) > 1e-8
+                    or abs(price_diff) > 1e-8
+                    or abs(commission_diff) > 1e-8
+                    or local_side != broker_side
+                    or local_symbol != broker_symbol
+                ):
+                    diffs.setdefault(fid, {}).update({
                         "local_quantity": local_qty,
                         "broker_quantity": broker_qty,
-                        "quantity_diff": broker_qty - local_qty,
-                        "local_price": float(local.get("price", 0.0)),
-                        "broker_price": broker.price,
-                    }
+                        "local_price": local_price,
+                        "broker_price": broker_price,
+                        "local_commission": local_commission,
+                        "broker_commission": broker_commission,
+                        "local_side": local_side,
+                        "broker_side": broker_side,
+                        "local_symbol": local_symbol,
+                        "broker_symbol": broker_symbol,
+                    })
+                    if abs(quantity_diff) > 1e-8:
+                        diffs[fid]["quantity_diff"] = quantity_diff
+                    if abs(price_diff) > 1e-8:
+                        diffs[fid]["price_diff"] = price_diff
+                    if abs(commission_diff) > 1e-8:
+                        diffs[fid]["commission_diff"] = commission_diff
+                    if local_side != broker_side:
+                        diffs[fid]["side_mismatch"] = True
+                    if local_symbol != broker_symbol:
+                        diffs[fid]["symbol_mismatch"] = True
             elif local and not broker:
                 diffs[fid] = {
                     "local_only": True,
                     "local_quantity": float(local.get("quantity", 0.0)),
+                    "local_price": float(local.get("price", 0.0)),
+                    "local_commission": float(local.get("commission", 0.0)),
+                    "local_side": str(local.get("side", "") or ""),
+                    "local_symbol": str(local.get("symbol", "") or "").upper(),
                 }
             elif broker and not local:
                 diffs[fid] = {
                     "broker_only": True,
-                    "broker_quantity": broker.quantity,
-                    "broker_price": broker.price,
+                    "broker_quantity": float(getattr(broker, "quantity", 0.0)),
+                    "broker_price": float(getattr(broker, "price", 0.0)),
+                    "broker_commission": float(getattr(broker, "commission", 0.0)),
+                    "broker_side": ReconciliationService._enum_value(
+                        getattr(broker, "side", "")
+                    ),
+                    "broker_symbol": str(getattr(broker, "symbol", "") or "").upper(),
                 }
         return diffs
+
+    @staticmethod
+    def _enum_value(value: Any) -> str:
+        return str(getattr(value, "value", value) or "")
 
     @staticmethod
     def _send_recon_alert(alerts: TelegramAlertService, report_data: dict[str, Any]) -> None:

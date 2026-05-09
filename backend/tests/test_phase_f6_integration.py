@@ -13,6 +13,7 @@ import pandas as pd
 from quant_us.cli import main
 from quant_us.core.types import AccountState, OrderIntent
 from quant_us.core.enums import OrderSide, OrderType, TimeInForce
+from quant_us.live.live_order_submission_gate import SubmissionGateDecision
 from quant_us.live.modes import RuntimeMode
 from quant_us.live.runtime import LiveRuntime
 from quant_us.live.runtime_config import LiveRuntimeConfig
@@ -148,43 +149,114 @@ class TestLiveRuntimeLiveOrders(unittest.TestCase):
         self.assertIn("allow_live_orders", result["rejected"][0]["reason"])
 
     def test_live_orders_rejected_without_oms(self) -> None:
-        runtime = LiveRuntime(
-            LiveRuntimeConfig(
-                mode=RuntimeMode.LIVE,
-                allow_live_orders=True,
-                confirm_live=True,
-                live_submission_enabled=True,
-                require_readiness_gate=False,
+        with mock.patch.dict(
+            os.environ,
+            {"APCA_API_KEY_ID": "test_key", "APCA_API_SECRET_KEY": "test_secret"},
+        ):
+            runtime = LiveRuntime(
+                LiveRuntimeConfig(
+                    mode=RuntimeMode.LIVE,
+                    allow_live_orders=True,
+                    confirm_live=True,
+                    live_submission_enabled=True,
+                    require_readiness_gate=False,
+                )
             )
-        )
-        runtime.bootstrap()
-        runtime.oms = None
-        result = runtime.submit_orders([_make_intent()])
+            runtime.bootstrap()
+            with mock.patch.object(
+                runtime._live_submission_gate,
+                "check",
+                return_value=SubmissionGateDecision(decision="APPROVED_FOR_SUBMIT"),
+            ):
+                decision = runtime.configure_live_submission_gate(
+                    approval_id="approved_live_order",
+                    envelope_id="approved_envelope",
+                    dossier_decision="GO_FOR_SMALL_LIVE_REVIEW",
+                    live_endpoint_ok=True,
+                    reconciliation_clean=True,
+                    emergency_stop_armed=True,
+                    in_regular_session=True,
+                    oms_idempotency_ok=True,
+                )
+                self.assertTrue(decision.approved)
+            runtime.oms = None
+            result = runtime.submit_orders([_make_intent()])
         self.assertGreater(len(result["rejected"]), 0)
         self.assertIn("oms", result["rejected"][0]["reason"].lower())
 
-    def test_live_orders_pass_through_to_oms_when_gates_clear(self) -> None:
-        runtime = LiveRuntime(
-            LiveRuntimeConfig(
-                mode=RuntimeMode.LIVE,
-                allow_live_orders=True,
-                confirm_live=True,
-                live_submission_enabled=True,
-                require_readiness_gate=False,
+    def test_live_orders_do_not_handle_intent_without_explicit_gate(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {"APCA_API_KEY_ID": "test_key", "APCA_API_SECRET_KEY": "test_secret"},
+        ):
+            runtime = LiveRuntime(
+                LiveRuntimeConfig(
+                    mode=RuntimeMode.LIVE,
+                    allow_live_orders=True,
+                    confirm_live=True,
+                    live_submission_enabled=True,
+                    require_readiness_gate=False,
+                )
             )
-        )
-        runtime.bootstrap()
-        runtime.oms = _make_mock_oms()
+            runtime.bootstrap()
+            runtime.oms = _make_mock_oms()
 
-        intent = _make_intent()
-        account = AccountState(
-            timestamp_utc=datetime(2026, 5, 4, 14, 30, tzinfo=UTC),
-            account_id="live",
-            cash=100_000.0,
-            equity=100_000.0,
-            buying_power=100_000.0,
-        )
-        result = runtime.submit_orders([intent], account=account, market_price=100.0)
+            intent = _make_intent("test-intent-gate-missing")
+            account = AccountState(
+                timestamp_utc=datetime(2026, 5, 4, 14, 30, tzinfo=UTC),
+                account_id="live",
+                cash=100_000.0,
+                equity=100_000.0,
+                buying_power=100_000.0,
+            )
+            result = runtime.submit_orders([intent], account=account, market_price=100.0)
+
+        self.assertEqual(len(result["submitted"]), 0)
+        self.assertIn("live_submission_gate_not_completed", result["rejected"][0]["reason"])
+        runtime.oms.handle_intent.assert_not_called()
+
+    def test_live_orders_pass_through_to_oms_when_gates_clear(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {"APCA_API_KEY_ID": "test_key", "APCA_API_SECRET_KEY": "test_secret"},
+        ):
+            runtime = LiveRuntime(
+                LiveRuntimeConfig(
+                    mode=RuntimeMode.LIVE,
+                    allow_live_orders=True,
+                    confirm_live=True,
+                    live_submission_enabled=True,
+                    require_readiness_gate=False,
+                )
+            )
+            runtime.bootstrap()
+            runtime.oms = _make_mock_oms()
+            with mock.patch.object(
+                runtime._live_submission_gate,
+                "check",
+                return_value=SubmissionGateDecision(decision="APPROVED_FOR_SUBMIT"),
+            ):
+                decision = runtime.configure_live_submission_gate(
+                    approval_id="approved_live_order",
+                    envelope_id="approved_envelope",
+                    dossier_decision="GO_FOR_SMALL_LIVE_REVIEW",
+                    live_endpoint_ok=True,
+                    reconciliation_clean=True,
+                    emergency_stop_armed=True,
+                    in_regular_session=True,
+                    oms_idempotency_ok=True,
+                )
+                self.assertTrue(decision.approved)
+
+                intent = _make_intent()
+                account = AccountState(
+                    timestamp_utc=datetime(2026, 5, 4, 14, 30, tzinfo=UTC),
+                    account_id="live",
+                    cash=100_000.0,
+                    equity=100_000.0,
+                    buying_power=100_000.0,
+                )
+                result = runtime.submit_orders([intent], account=account, market_price=100.0)
 
         self.assertEqual(len(result["submitted"]), 1)
         self.assertEqual(len(result["rejected"]), 0)

@@ -18,6 +18,7 @@ import pandas as pd
 
 from quant_us.backtest.engine import BacktestConfig, EventDrivenBacktestEngine
 from quant_us.backtest.slippage import BpsSlippage
+from quant_us.backtest.walk_forward import WalkForwardConfig, build_walk_forward_windows
 from quant_us.core.enums import SignalDirection
 from quant_us.core.events import MarketEvent
 from quant_us.core.types import Bar
@@ -65,6 +66,30 @@ def _make_bars(n: int = 60, start_price: float = 100.0) -> list[Bar]:
                 volume=float(np.random.default_rng(100 + i).integers(5000, 50000)),
             )
         )
+    return bars
+
+
+def _make_multisymbol_bars(
+    timestamps: int,
+    symbols: tuple[str, ...] = ("AAPL", "MSFT"),
+) -> list[Bar]:
+    bars: list[Bar] = []
+    start = datetime(2024, 1, 2, 9, 30, tzinfo=timezone.utc)
+    for i in range(timestamps):
+        ts = start + pd.Timedelta(minutes=i).to_pytimedelta()
+        for offset, symbol in enumerate(symbols):
+            price = 100.0 + i + offset
+            bars.append(
+                Bar(
+                    timestamp_utc=ts,
+                    symbol=symbol,
+                    open=price,
+                    high=price + 1.0,
+                    low=price - 1.0,
+                    close=price + 0.25,
+                    volume=10_000.0,
+                )
+            )
     return bars
 
 
@@ -217,6 +242,31 @@ class AntiLookaheadFeatureTests(unittest.TestCase):
 
 class AntiLookaheadEngineTests(unittest.TestCase):
     """Verify the event-driven engine processes bars strictly in order."""
+
+    def test_walk_forward_folds_do_not_share_timestamps_with_multisymbol_bars(self):
+        """Walk-forward train/test slices must be timestamp-disjoint per fold."""
+        bars = _make_multisymbol_bars(timestamps=7)
+        windows = build_walk_forward_windows(
+            bars,
+            WalkForwardConfig(train_bars=3, test_bars=2, step_bars=2),
+        )
+
+        self.assertEqual(len(windows), 2)
+        for window in windows:
+            train_ts = {
+                bar.timestamp_utc
+                for bar in bars
+                if window.train_start <= bar.timestamp_utc <= window.train_end
+            }
+            test_ts = {
+                bar.timestamp_utc
+                for bar in bars
+                if window.test_start <= bar.timestamp_utc <= window.test_end
+            }
+            self.assertTrue(train_ts)
+            self.assertTrue(test_ts)
+            self.assertTrue(train_ts.isdisjoint(test_ts))
+            self.assertLess(max(train_ts), min(test_ts))
 
     def test_bars_processed_in_temporal_order(self):
         """Even if bars are shuffled, engine must process them in time order."""

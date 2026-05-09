@@ -361,8 +361,8 @@ Research automation modules are strictly isolated from live execution:
 
 ### Promotion Safety
 
-6. **Max auto-promotion**: The maximum automated promotion level is `PAPER_ELIGIBLE` (a status marker only).
-7. **Manual promotion required**: `ResearchAutomationPipeline.step_promote()` requires explicit caller intent. No auto-promote path exists.
+6. **No PAPER_ELIGIBLE auto-promotion**: Automated research can only produce a `paper_review_ready` evidence result; `PAPER_ELIGIBLE` remains manual.
+7. **Manual promotion required**: `ResearchAutomationPipeline.step_promote()` requires canonical gate approval plus approved paper review or explicit `manual_approval=True`. No auto-promote path exists.
 8. **Cannot promote past PAPER_ELIGIBLE**: Once a candidate reaches `PAPER_ELIGIBLE`, `step_promote()` raises `ValueError`.
 9. **REJECTED is terminal**: Overfit or otherwise rejected candidates cannot be promoted.
 10. **No live promotion method**: There is no `promote_to_live()` method anywhere in the research track.
@@ -390,7 +390,7 @@ Research automation modules are strictly isolated from live execution:
 
 1. Research modules cannot submit real orders
 2. Research modules cannot access live brokers
-3. Max auto-promotion is PAPER_ELIGIBLE (marker only)
+3. Automated output stops at paper_review_ready evidence; PAPER_ELIGIBLE is manual
 4. Manual action required for all promotions beyond RESEARCH_ONLY
 5. Overfit candidates are automatically rejected
 6. Lookahead bias is detected and prevented
@@ -453,7 +453,7 @@ The promotion gate can never promote beyond PAPER_ELIGIBLE:
 
 1. Research modules cannot submit real orders
 2. Research modules cannot access live brokers
-3. Max auto-promotion is PAPER_ELIGIBLE (marker only)
+3. Automated output stops at paper_review_ready evidence; PAPER_ELIGIBLE is manual
 4. Manual action required for all promotions beyond RESEARCH_ONLY
 5. Overfit candidates are automatically rejected
 6. Lookahead bias is detected and prevented

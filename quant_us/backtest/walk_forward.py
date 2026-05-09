@@ -82,22 +82,45 @@ class WalkForwardAggregate:
 
 
 def build_walk_forward_windows(bars: list[Bar], config: WalkForwardConfig) -> list[WalkForwardWindow]:
+    """Build walk-forward windows on unique timestamps.
+
+    Multi-symbol datasets often contain several bars for the same market
+    timestamp. Splitting on raw bar counts can place identical timestamps on
+    both sides of a train/test boundary, which leaks information across folds.
+    Windows therefore advance on the ordered set of unique timestamps and the
+    returned boundaries are always timestamp-disjoint within a fold.
+    """
     ordered = sorted(bars, key=lambda item: item.timestamp_utc)
+    ordered_timestamps = sorted({bar.timestamp_utc for bar in ordered})
     windows: list[WalkForwardWindow] = []
     start = 0
-    while start + config.train_bars + config.test_bars <= len(ordered):
-        train_slice = ordered[start : start + config.train_bars]
-        test_slice = ordered[start + config.train_bars : start + config.train_bars + config.test_bars]
+    while start + config.train_bars + config.test_bars <= len(ordered_timestamps):
+        train_slice = ordered_timestamps[start : start + config.train_bars]
+        test_slice = ordered_timestamps[start + config.train_bars : start + config.train_bars + config.test_bars]
         windows.append(
             WalkForwardWindow(
-                train_start=train_slice[0].timestamp_utc,
-                train_end=train_slice[-1].timestamp_utc,
-                test_start=test_slice[0].timestamp_utc,
-                test_end=test_slice[-1].timestamp_utc,
+                train_start=train_slice[0],
+                train_end=train_slice[-1],
+                test_start=test_slice[0],
+                test_end=test_slice[-1],
             )
         )
         start += config.step_bars
     return windows
+
+
+def _select_window_bars(ordered: list[Bar], window: WalkForwardWindow) -> tuple[list[Bar], list[Bar]]:
+    train_bars = [
+        bar
+        for bar in ordered
+        if window.train_start <= bar.timestamp_utc <= window.train_end
+    ]
+    test_bars = [
+        bar
+        for bar in ordered
+        if window.test_start <= bar.timestamp_utc <= window.test_end
+    ]
+    return train_bars, test_bars
 
 
 def run_walk_forward(
@@ -112,16 +135,7 @@ def run_walk_forward(
     windows = build_walk_forward_windows(ordered, wf_config)
     results: list[WalkForwardResult] = []
     for window in windows:
-        train_bars = [
-            bar
-            for bar in ordered
-            if window.train_start <= bar.timestamp_utc <= window.train_end
-        ]
-        test_bars = [
-            bar
-            for bar in ordered
-            if window.test_start <= bar.timestamp_utc <= window.test_end
-        ]
+        train_bars, test_bars = _select_window_bars(ordered, window)
         strategy = strategy_factory()
         if not isinstance(strategy, Strategy):
             raise TypeError("strategy_factory must return a Strategy")
@@ -155,14 +169,7 @@ def run_walk_forward_unified(
     results: list[UnifiedWalkForwardResult] = []
 
     for window in windows:
-        train_bars = [
-            bar for bar in ordered
-            if window.train_start <= bar.timestamp_utc <= window.train_end
-        ]
-        test_bars = [
-            bar for bar in ordered
-            if window.test_start <= bar.timestamp_utc <= window.test_end
-        ]
+        train_bars, test_bars = _select_window_bars(ordered, window)
 
         strategy = strategy_factory()
         if not isinstance(strategy, Strategy):

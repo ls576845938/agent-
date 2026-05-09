@@ -16,6 +16,7 @@ import json
 import tempfile
 import unittest
 from datetime import datetime, timezone
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 from quant_us.backtest.broker_simulator import SimulatedBroker
@@ -249,6 +250,62 @@ class TestReconciliationFlow(unittest.TestCase):
             f"got: {report.order_diffs}",
         )
 
+    def test_order_mismatch_same_status_different_quantity_detected(self):
+        """Same order_id and status with conflicting local qty is a reconciliation break."""
+        bar = _make_bar(price=150.0, symbol="AAPL")
+        order, _fills = self._buy_sync(bar, qty=50.0)
+        local_order_1 = Order(
+            timestamp_utc=order.timestamp_utc,
+            strategy_id=order.strategy_id,
+            symbol=order.symbol,
+            side=order.side,
+            quantity=45.0,
+            order_type=order.order_type,
+            time_in_force=order.time_in_force,
+            client_order_id=order.client_order_id,
+            broker_order_id=order.broker_order_id,
+            status=order.status,
+            created_at=order.created_at,
+            updated_at=order.updated_at,
+            order_id=order.order_id,
+        )
+        local_order_2 = Order(
+            timestamp_utc=order.timestamp_utc,
+            strategy_id=order.strategy_id,
+            symbol=order.symbol,
+            side=order.side,
+            quantity=50.0,
+            order_type=order.order_type,
+            time_in_force=order.time_in_force,
+            client_order_id=order.client_order_id,
+            broker_order_id=order.broker_order_id,
+            status=order.status,
+            created_at=order.created_at,
+            updated_at=order.updated_at,
+            order_id=order.order_id,
+        )
+
+        self.ledger.append_order(local_order_1)
+        self.ledger.append_order(local_order_2)
+        diffs = self.service._compare_orders(
+            self.ledger.read_records("orders.jsonl"),
+            [order],
+        )
+
+        self.assertIn(order.order_id, diffs)
+        self.assertTrue(diffs[order.order_id]["local_conflict"])
+        self.assertEqual(diffs[order.order_id]["local_statuses"], [order.status.value])
+        self.assertEqual(diffs[order.order_id]["local_quantities"], [45.0, 50.0])
+
+    def test_compare_orders_accepts_plain_string_broker_status(self):
+        """Broker adapters may return string status values, not only enums."""
+        diffs = self.service._compare_orders(
+            [{"order_id": "ord_plain", "status": "filled", "quantity": 25.0}],
+            [SimpleNamespace(order_id="ord_plain", status="filled", quantity=25.0)],
+        )
+
+        self.assertEqual(diffs, {})
+
     # ------------------------------------------------------------------
     # Test: Fill mismatch  --  detected in report
     # ------------------------------------------------------------------
@@ -287,6 +344,80 @@ class TestReconciliationFlow(unittest.TestCase):
             f"Expected at least one fill diff with quantity_diff, "
             f"got: {report.fill_diffs}",
         )
+
+    def test_fill_mismatch_same_fill_id_different_price_or_commission_detected(self):
+        """Same fill_id with conflicting local price/commission is a break."""
+        bar = _make_bar(price=150.0, symbol="AAPL")
+        order, fills = self._buy_sync(bar, qty=100.0)
+        self.assertTrue(fills)
+        broker_fill = fills[0]
+        local_fill_1 = Fill(
+            order_id=broker_fill.order_id,
+            symbol=broker_fill.symbol,
+            side=broker_fill.side,
+            quantity=broker_fill.quantity,
+            price=broker_fill.price - 1.5,
+            commission=broker_fill.commission + 0.25,
+            filled_at=broker_fill.filled_at,
+            fill_id=broker_fill.fill_id,
+        )
+        local_fill_2 = Fill(
+            order_id=broker_fill.order_id,
+            symbol=broker_fill.symbol,
+            side=broker_fill.side,
+            quantity=broker_fill.quantity,
+            price=broker_fill.price,
+            commission=broker_fill.commission,
+            filled_at=broker_fill.filled_at,
+            fill_id=broker_fill.fill_id,
+        )
+        self.ledger.append_fill(local_fill_1)
+        self.ledger.append_fill(local_fill_2)
+
+        diffs = self.service._compare_fills(
+            self.ledger.read_records("fills.jsonl"),
+            [broker_fill],
+        )
+
+        self.assertIn(broker_fill.fill_id, diffs)
+        self.assertTrue(diffs[broker_fill.fill_id]["local_conflict"])
+        self.assertEqual(
+            diffs[broker_fill.fill_id]["local_quantities"],
+            [broker_fill.quantity],
+        )
+        self.assertEqual(
+            diffs[broker_fill.fill_id]["local_prices"],
+            [broker_fill.price - 1.5, broker_fill.price],
+        )
+        self.assertEqual(
+            diffs[broker_fill.fill_id]["local_commissions"],
+            [broker_fill.commission, broker_fill.commission + 0.25],
+        )
+
+    def test_compare_fills_uses_order_id_fallback_for_broker_fill_without_fill_id(self):
+        """A broker fill without fill_id must still match the local order_id fallback."""
+        local = {
+            "order_id": "ord_fallback",
+            "fill_id": "",
+            "symbol": "AAPL",
+            "side": "buy",
+            "quantity": 12.0,
+            "price": 150.0,
+            "commission": 0.05,
+        }
+        broker_fill = SimpleNamespace(
+            order_id="ord_fallback",
+            fill_id="",
+            symbol="AAPL",
+            side="buy",
+            quantity=12.0,
+            price=150.0,
+            commission=0.05,
+        )
+
+        diffs = self.service._compare_fills([local], [broker_fill])
+
+        self.assertEqual(diffs, {})
 
     def test_fill_missing_from_ledger_detected(self):
         """Fill exists in broker but not in ledger -> detected."""

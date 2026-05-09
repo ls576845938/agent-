@@ -1,15 +1,80 @@
 """Test multi-symbol walk-forward integration with promotion gate."""
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
+from quant_us.backtest.walk_forward import build_walk_forward_windows
 from quant_us.backtest.walk_forward import (
     WalkForwardConfig,
     WalkForwardAggregate,
     aggregate_walk_forward,
 )
+from quant_us.core.types import Bar
+
+
+def _make_multisymbol_bars(
+    timestamps: int,
+    symbols: tuple[str, ...] = ("AAPL", "MSFT"),
+) -> list[Bar]:
+    start = datetime(2024, 1, 2, 14, 30, tzinfo=timezone.utc)
+    rows: list[Bar] = []
+    for minute in range(timestamps):
+        ts = start + timedelta(minutes=minute)
+        for offset, symbol in enumerate(symbols):
+            price = 100.0 + minute + offset
+            rows.append(
+                Bar(
+                    timestamp_utc=ts,
+                    symbol=symbol,
+                    open=price,
+                    high=price + 1.0,
+                    low=price - 1.0,
+                    close=price + 0.5,
+                    volume=1_000.0,
+                )
+            )
+    return rows
 
 
 class TestWalkForwardMultiSymbol:
     """Verify multi-symbol walk-forward support and manifest generation."""
+
+    def test_windows_split_on_unique_timestamps(self):
+        """Train/test boundaries must not share a timestamp inside one fold."""
+        bars = _make_multisymbol_bars(timestamps=7)
+        cfg = WalkForwardConfig(train_bars=3, test_bars=2, step_bars=2)
+
+        windows = build_walk_forward_windows(bars, cfg)
+
+        assert len(windows) == 2
+        assert windows[0].train_end < windows[0].test_start
+        assert windows[1].train_end < windows[1].test_start
+
+        for window in windows:
+            train_ts = {
+                bar.timestamp_utc
+                for bar in bars
+                if window.train_start <= bar.timestamp_utc <= window.train_end
+            }
+            test_ts = {
+                bar.timestamp_utc
+                for bar in bars
+                if window.test_start <= bar.timestamp_utc <= window.test_end
+            }
+            assert train_ts
+            assert test_ts
+            assert train_ts.isdisjoint(test_ts)
+
+    def test_windows_require_enough_unique_timestamps(self):
+        """Repeated symbols at one timestamp do not count as extra fold capacity."""
+        bars = _make_multisymbol_bars(timestamps=2, symbols=("AAPL", "MSFT", "NVDA", "AMZN"))
+
+        windows = build_walk_forward_windows(
+            bars,
+            WalkForwardConfig(train_bars=2, test_bars=1, step_bars=1),
+        )
+
+        assert windows == []
 
     def test_config_supports_symbols(self):
         """WalkForwardConfig must accept symbols list."""

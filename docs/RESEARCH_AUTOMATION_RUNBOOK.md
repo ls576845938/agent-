@@ -77,8 +77,9 @@ for cid, score, breakdown in ranked:
 ### Manual Promotion to PAPER_ELIGIBLE
 
 ```python
-# Requires explicit action -- this is the manual step
-candidate = pipeline.step_promote("cand_abc123")
+# Requires the canonical gate to return READY_FOR_PAPER_REVIEW and either an
+# approved paper review or explicit human approval.
+candidate = pipeline.step_promote("cand_abc123", manual_approval=True)
 print(f"Promoted {candidate.candidate_id} to {candidate.promotion_status}")
 
 # Attempting to promote again will raise ValueError
@@ -168,7 +169,7 @@ print(f"Recommendation: {rec}")
 ## Safety Rules
 
 1. **No live promotion**: Max promotion is PAPER_ELIGIBLE (a marker, not execution)
-2. **Manual promotion required**: step_promote() requires explicit caller intent
+2. **Manual promotion required**: step_promote() requires canonical gate approval plus approved paper review or explicit manual_approval=True
 3. **No submit_order**: Pipeline has no order submission capability
 4. **No broker access**: Pipeline does not import from live/execution modules
 5. **Overfit guard**: Overfit candidates are marked REJECTED, not promoted
