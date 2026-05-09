@@ -1008,6 +1008,7 @@ class ManifestPropagationTests(unittest.TestCase):
             manifest_path = runner.manifest_store.root / f"run_{result.run_id}.json"
             self.assertTrue(manifest_path.exists(), f"Run manifest should exist at {manifest_path}")
             import json
+            from pathlib import Path
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             self.assertEqual(manifest["run_id"], result.run_id)
             self.assertEqual(manifest["data_version"], "manifest_test_v1")
@@ -1017,6 +1018,8 @@ class ManifestPropagationTests(unittest.TestCase):
             self.assertIn("start_time", manifest)
             self.assertIn("end_time", manifest)
             self.assertEqual(manifest["ledger_artifact_hash"], result.evidence["ledger_artifact_hash"])
+            self.assertEqual(manifest["ledger_artifact_path"], result.evidence["ledger_artifact_path"])
+            self.assertTrue(Path(manifest["ledger_artifact_path"]).exists())
             self.assertEqual(manifest["ledger_hash"], result.evidence["ledger_hash"])
             self.assertEqual(manifest["fills_hash"], result.evidence["fills_hash"])
             self.assertIn("config", manifest)
@@ -1030,6 +1033,10 @@ class ManifestPropagationTests(unittest.TestCase):
             self.assertTrue(manifest["reconciliation"]["passed"])
             self.assertIn("ledger_artifact", manifest)
             self.assertEqual(manifest["ledger_artifact"]["artifact_hash"], manifest["ledger_artifact_hash"])
+            self.assertEqual(
+                json.loads(Path(manifest["ledger_artifact_path"]).read_text(encoding="utf-8")),
+                manifest["ledger_artifact"],
+            )
             self.assertIn("corporate_actions", manifest)
             self.assertEqual(manifest["corporate_actions"]["adjustment_count"], 0)
 

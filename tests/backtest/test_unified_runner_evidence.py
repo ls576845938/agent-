@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -167,6 +168,9 @@ def test_event_driven_evidence_and_manifest_are_promotion_grade(tmp_path):
     assert evidence["data_manifest"]["data_version_matches_requested"] is True
     assert evidence["generated_at"] == evidence["as_of_utc"]
     assert evidence["ledger_artifact_hash"] == evidence["ledger_artifact"]["artifact_hash"]
+    assert Path(evidence["ledger_artifact_path"]).exists()
+    artifact_file = json.loads(Path(evidence["ledger_artifact_path"]).read_text(encoding="utf-8"))
+    assert artifact_file == evidence["ledger_artifact"]
     assert evidence["ledger_hash"] == evidence["ledger_artifact"]["hashes"]["ledger_hash"]
     assert evidence["fills_hash"] == evidence["ledger_artifact"]["hashes"]["fills_hash"]
     assert evidence["orders_hash"] == evidence["ledger_artifact"]["hashes"]["orders_hash"]
@@ -204,6 +208,7 @@ def test_event_driven_evidence_and_manifest_are_promotion_grade(tmp_path):
     assert manifest["generated_at"] == evidence["generated_at"]
     assert manifest["data_version"] == "qs-yfinance-AAPL-1d-test"
     assert manifest["ledger_artifact_hash"] == evidence["ledger_artifact_hash"]
+    assert manifest["ledger_artifact_path"] == evidence["ledger_artifact_path"]
     assert manifest["ledger_hash"] == evidence["ledger_hash"]
     assert manifest["fills_hash"] == evidence["fills_hash"]
     assert manifest["cost_model"]
@@ -216,6 +221,7 @@ def test_event_driven_evidence_and_manifest_are_promotion_grade(tmp_path):
     assert manifest["evidence"]["data_manifest"]["data_version_matches_requested"] is True
     assert manifest["reconciliation"]["passed"] is True
     assert manifest["ledger_artifact"]["artifact_hash"] == evidence["ledger_artifact_hash"]
+    assert json.loads(Path(manifest["ledger_artifact_path"]).read_text(encoding="utf-8")) == manifest["ledger_artifact"]
     assert manifest["ledger_artifact"]["reconciliation"]["summary"] == manifest["reconciliation"]
     assert manifest["corporate_actions"]["adjustment_count"] == 0
 
@@ -245,7 +251,10 @@ def test_manifest_write_failure_is_not_silent(tmp_path):
     root_file.write_text("occupied", encoding="utf-8")
     runner = _runner(root_file, run_id="ubt_manifest_failure")
 
-    with pytest.raises(RuntimeError, match="Unable to write backtest run manifest"):
+    with pytest.raises(
+        RuntimeError,
+        match="Unable to write (backtest run manifest|ledger reconciliation artifact)",
+    ):
         runner.run(
             strategies=[AlwaysLongStrategy(strength=1.0)],
             bars_override=_bars(),

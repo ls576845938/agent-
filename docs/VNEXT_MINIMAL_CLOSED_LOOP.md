@@ -95,7 +95,7 @@ The report highlights:
 - `strategy_version`
 - `commit_hash`
 - commission and slippage configuration
-- ledger reconciliation binding: `ledger_artifact_hash`, `ledger_hash`, `fills_hash`, `orders_hash`, `portfolio_snapshots_hash`
+- ledger reconciliation binding: `ledger_artifact_path`, `ledger_artifact_hash`, `ledger_hash`, `fills_hash`, `orders_hash`, `portfolio_snapshots_hash`
 - evidence timestamps: `generated_at` and `as_of_utc`
 - artifact consistency and completeness states, with absent fields shown as `(missing)`
 - manifest path

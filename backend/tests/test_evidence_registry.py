@@ -729,6 +729,26 @@ def test_rebuild_registry_serializes_concurrent_writers_with_lock(
     assert not evidence_registry_module._registry_lock_path(tmp_path).exists()
 
 
+def test_rebuild_registry_removes_stale_dead_pid_lock(tmp_path: Path) -> None:
+    _write_candidate_chain_fixture(tmp_path)
+    lock_path = evidence_registry_module._registry_lock_path(tmp_path)
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path.write_text(
+        json.dumps(
+            {
+                "pid": 999_999_999,
+                "created_at": "2026-05-09T00:00:00+00:00",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    registry = rebuild_evidence_registry(tmp_path)
+
+    assert registry["schema_version"] == "evidence_registry_v1"
+    assert not lock_path.exists()
+
+
 def test_registry_subject_index_includes_runtime_and_ledger_evidence(
     tmp_path: Path,
 ) -> None:

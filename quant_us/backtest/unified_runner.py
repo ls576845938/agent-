@@ -270,6 +270,12 @@ class UnifiedBacktestRunner:
             commit_hash=commit_hash,
             manifest_store=self.manifest_store,
         )
+        ledger_artifact_path = _write_ledger_reconciliation_artifact(
+            self.manifest_store.root,
+            ledger_artifact,
+        )
+        evidence["ledger_artifact_path"] = str(ledger_artifact_path)
+        evidence["completeness"]["ledger_artifact_file_written"] = True
 
         start_time = start_dt.isoformat()
         end_time = datetime.now(timezone.utc).isoformat()
@@ -286,6 +292,7 @@ class UnifiedBacktestRunner:
             "start_time": start_time,
             "end_time": end_time,
             "ledger_artifact_hash": evidence["ledger_artifact_hash"],
+            "ledger_artifact_path": evidence["ledger_artifact_path"],
             "ledger_hash": evidence["ledger_hash"],
             "fills_hash": evidence["fills_hash"],
             "config": {
@@ -383,6 +390,26 @@ def _write_run_manifest(root, manifest_id: str, manifest: dict[str, Any]):
         path.write_text(json.dumps(manifest, indent=2, sort_keys=True, default=str), encoding="utf-8")
     except Exception as exc:
         raise RuntimeError(f"Unable to write backtest run manifest at {path}: {exc}") from exc
+    return path
+
+
+def _write_ledger_reconciliation_artifact(
+    root,
+    artifact: LedgerReconciliationArtifact,
+):
+    payload = artifact.to_dict()
+    artifact_hash = str(payload.get("artifact_hash", ""))
+    path = root / "reconciliation" / f"ledger_recon_artifact_{artifact_hash[:16]}.json"
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n",
+            encoding="utf-8",
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            f"Unable to write ledger reconciliation artifact at {path}: {exc}"
+        ) from exc
     return path
 
 

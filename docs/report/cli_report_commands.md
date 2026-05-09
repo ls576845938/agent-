@@ -53,7 +53,7 @@ The backtest manifest is ledger-backed and event-driven, so the report is meant 
 Promotion-grade manifests also expose data-manifest binding: manifest id, checksum/fingerprint, and whether the binding was missing.
 Data Manifest v2 fields such as `universe_id`, `universe_source`, `survivorship_bias_risk`, `adjustment_policy`, and `corporate_action_adjustment`
 are printed when present.
-Unified backtest evidence fields are printed when present: `generated_at`, `as_of_utc`, `ledger_artifact_hash`,
+Unified backtest evidence fields are printed when present: `generated_at`, `as_of_utc`, `ledger_artifact_hash`, `ledger_artifact_path`,
 `ledger_hash`, `fills_hash`, `orders_hash`, and `portfolio_snapshots_hash`.
 The report also summarizes `artifact_consistency_state` and `artifact_completeness_state`; absent fields are rendered as `(missing)` and the state is `MISSING`.
 The output includes `evidence_state: PASS manifest_path` when the manifest exists, plus `scope: report only, no execution`.

@@ -1623,6 +1623,19 @@ def _evidence_registry_lock(
         try:
             fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
         except FileExistsError:
+            stale_reason = _registry_lock_stale_reason(
+                lock_path,
+                stale_after_seconds=timeout_seconds,
+            )
+            if stale_reason:
+                try:
+                    lock_path.unlink()
+                except FileNotFoundError:
+                    continue
+                except OSError:
+                    pass
+                else:
+                    continue
             if time.monotonic() >= deadline:
                 raise TimeoutError(f"evidence_registry_lock_timeout:{lock_path}")
             time.sleep(poll_interval_seconds)
@@ -1639,6 +1652,63 @@ def _evidence_registry_lock(
             lock_path.unlink()
         except FileNotFoundError:
             pass
+
+
+def _registry_lock_stale_reason(
+    lock_path: Path,
+    *,
+    stale_after_seconds: float,
+) -> str:
+    try:
+        raw = lock_path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError:
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+
+    pid = _lock_payload_pid(payload)
+    if pid is not None:
+        if pid == os.getpid():
+            return ""
+        if not _pid_is_running(pid):
+            return f"dead_pid:{pid}"
+        return ""
+
+    created_at = _parse_dt(str(payload.get("created_at", "")))
+    if created_at is not None:
+        age = (datetime.now(timezone.utc) - created_at).total_seconds()
+    else:
+        try:
+            age = time.time() - lock_path.stat().st_mtime
+        except OSError:
+            return ""
+    if age >= stale_after_seconds:
+        return "stale_unowned_lock"
+    return ""
+
+
+def _lock_payload_pid(payload: dict[str, Any]) -> int | None:
+    try:
+        pid = int(payload.get("pid", 0) or 0)
+    except (TypeError, ValueError):
+        return None
+    return pid if pid > 0 else None
+
+
+def _pid_is_running(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except OSError:
+        return True
+    return True
 
 
 def _write_registry_snapshots(root: Path, registry: dict[str, Any]) -> None:

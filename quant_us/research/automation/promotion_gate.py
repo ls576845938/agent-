@@ -648,6 +648,20 @@ class ResearchPromotionGate:
             )
             return False
 
+        raw_artifact_path = str(
+            backtest_manifest.get("ledger_artifact_path")
+            or manifest_evidence.get("ledger_artifact_path")
+            or ""
+        )
+        evidence["ledger_artifact_path"] = raw_artifact_path
+        artifact_file_ok = self._validate_standalone_ledger_artifact(
+            raw_artifact_path=raw_artifact_path,
+            embedded_artifact=artifact,
+            embedded_artifact_hash=artifact_hash,
+            reasons=reasons,
+            evidence=evidence,
+        )
+
         required_bindings = {
             "artifact_hash": str(
                 backtest_manifest.get("ledger_artifact_hash")
@@ -784,7 +798,80 @@ class ResearchPromotionGate:
             and count_match
             and pnl_match
             and integrity_passed
+            and artifact_file_ok
         )
+
+    def _validate_standalone_ledger_artifact(
+        self,
+        *,
+        raw_artifact_path: str,
+        embedded_artifact: dict[str, Any],
+        embedded_artifact_hash: str,
+        reasons: list[str],
+        evidence: dict[str, Any],
+    ) -> bool:
+        artifact_path = self._resolve_ledger_artifact_path(raw_artifact_path)
+        evidence["ledger_artifact_file_present"] = False
+        evidence["ledger_artifact_file_hash_match"] = False
+        evidence["ledger_artifact_file_payload_match"] = False
+        evidence["ledger_artifact_resolved_path"] = str(artifact_path) if artifact_path else ""
+
+        if artifact_path is None:
+            reasons.append(
+                "ledger_reconciliation_artifact_path_missing: manifest must bind a standalone ledger artifact file path"
+            )
+            return False
+        if not artifact_path.exists():
+            reasons.append(
+                f"ledger_reconciliation_artifact_path_not_found: {artifact_path}"
+            )
+            return False
+
+        try:
+            file_artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            reasons.append(
+                f"ledger_reconciliation_artifact_file_unreadable: {artifact_path}: {exc}"
+            )
+            return False
+        if not isinstance(file_artifact, dict):
+            reasons.append(
+                f"ledger_reconciliation_artifact_file_invalid: {artifact_path}"
+            )
+            return False
+
+        evidence["ledger_artifact_file_present"] = True
+        file_artifact_hash = str(file_artifact.get("artifact_hash", "") or "")
+        file_expected_hash = compute_ledger_reconciliation_artifact_hash(file_artifact)
+        hash_match = (
+            bool(file_artifact_hash)
+            and file_artifact_hash == file_expected_hash
+            and file_artifact_hash == embedded_artifact_hash
+        )
+        payload_match = file_artifact == embedded_artifact
+        evidence["ledger_artifact_file_hash"] = file_artifact_hash
+        evidence["ledger_artifact_file_hash_match"] = hash_match
+        evidence["ledger_artifact_file_payload_match"] = payload_match
+        if not hash_match:
+            reasons.append(
+                "ledger_reconciliation_artifact_file_hash_mismatch: standalone artifact hash does not match manifest artifact"
+            )
+        if not payload_match:
+            reasons.append(
+                "ledger_reconciliation_artifact_file_payload_mismatch: standalone artifact payload differs from manifest artifact"
+            )
+        return hash_match and payload_match
+
+    def _resolve_ledger_artifact_path(self, raw_path: str) -> Path | None:
+        if not raw_path:
+            return None
+        candidate = Path(str(raw_path))
+        if candidate.exists() or candidate.is_absolute():
+            return candidate
+        data_relative = self.data_root / candidate
+        if data_relative.exists():
+            return data_relative
+        return candidate
 
     def _record_unified_backtest_report_evidence(
         self,

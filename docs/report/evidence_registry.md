@@ -112,5 +112,5 @@ Paper runtime evidence:
 - paper runtime writes a latest paper session manifest and a history copy under `audit/paper_session_manifests/<session_id>.json`
 - the manifest records `history_artifact_path`, broker backend, submit intent, registry evidence, startup sync status, and no-submit proof
 - startup sync wraps the broker adapter boundary before submit paths are considered and remains audit evidence only
-- ledger reconciliation artifacts bind `artifact_hash`, `generated_at`, `as_of_utc`, `ledger_hash`, `fills_hash`, `orders_hash`, and `portfolio_snapshots_hash`
+- ledger reconciliation artifacts bind `artifact_hash`, `generated_at`, `as_of_utc`, `ledger_artifact_path`, `ledger_hash`, `fills_hash`, `orders_hash`, and `portfolio_snapshots_hash`
 - promotion and report surfaces should treat missing ledger reconciliation fields as `MISSING`, not as an implicit pass

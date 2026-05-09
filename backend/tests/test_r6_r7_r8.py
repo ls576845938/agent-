@@ -585,12 +585,24 @@ class TestPromotionGateEnhanced:
             },
         }
         ledger_artifact["artifact_hash"] = compute_ledger_reconciliation_artifact_hash(ledger_artifact)
+        ledger_artifact_path = (
+            root
+            / "manifests"
+            / "reconciliation"
+            / f"ledger_recon_artifact_{ledger_artifact['artifact_hash'][:16]}.json"
+        )
+        ledger_artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        ledger_artifact_path.write_text(
+            json.dumps(ledger_artifact, sort_keys=True),
+            encoding="utf-8",
+        )
         manifest = {
             "engine": engine,
             "canonical_for_promotion": canonical_for_promotion,
             "generated_at": generated_at,
             "data_version": data_version,
             "ledger_artifact_hash": ledger_artifact["artifact_hash"],
+            "ledger_artifact_path": str(ledger_artifact_path),
             "ledger_hash": ledger_artifact["hashes"]["ledger_hash"],
             "fills_hash": ledger_artifact["hashes"]["fills_hash"],
             "data_manifest": {
@@ -646,6 +658,7 @@ class TestPromotionGateEnhanced:
                     "summary": reconciliation_summary,
                 },
                 "ledger_artifact_hash": ledger_artifact["artifact_hash"],
+                "ledger_artifact_path": str(ledger_artifact_path),
                 "ledger_hash": ledger_artifact["hashes"]["ledger_hash"],
                 "fills_hash": ledger_artifact["hashes"]["fills_hash"],
                 "ledger_artifact": ledger_artifact,
@@ -1073,10 +1086,12 @@ class TestPromotionGateEnhanced:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         manifest.pop("ledger_artifact", None)
         manifest.pop("ledger_artifact_hash", None)
+        manifest.pop("ledger_artifact_path", None)
         manifest.pop("ledger_hash", None)
         manifest.pop("fills_hash", None)
         manifest["evidence"].pop("ledger_artifact", None)
         manifest["evidence"].pop("ledger_artifact_hash", None)
+        manifest["evidence"].pop("ledger_artifact_path", None)
         manifest["evidence"].pop("ledger_hash", None)
         manifest["evidence"].pop("fills_hash", None)
         manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
@@ -1101,6 +1116,70 @@ class TestPromotionGateEnhanced:
         assert result.decision == "BLOCKED"
         assert result.evidence["ledger_artifact_present"] is False
         assert any("missing_ledger_reconciliation_artifact" in r for r in result.reasons)
+
+    def test_missing_standalone_ledger_artifact_path_is_blocked(self, tmp_path: Path) -> None:
+        """Promotion evidence must bind the standalone ledger artifact file."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_missing_ledger_artifact_path"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest.pop("ledger_artifact_path", None)
+        manifest["evidence"].pop("ledger_artifact_path", None)
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        self._write_candidate(tmp_path, candidate_id, {
+            "monte_carlo_survival_rate": 0.90,
+            "alpha_decay_half_life_days": 15.0,
+            "param_stability_score": 0.8,
+            "correlation_redundancy": 0.30,
+            "stress_survival_rate": 0.85,
+            "sharpe": 1.5,
+            "walk_forward_pass_rate": 0.8,
+            "trade_count": 50,
+            "cost_sensitivity": 0.2,
+            "max_drawdown_pct": 0.15,
+        }, backtest_manifest_path=str(manifest_path))
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert any("ledger_reconciliation_artifact_path_missing" in r for r in result.reasons)
+
+    def test_tampered_standalone_ledger_artifact_file_is_blocked(self, tmp_path: Path) -> None:
+        """Standalone artifact file must match the manifest-embedded artifact."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_tampered_ledger_artifact_file"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        artifact_path = Path(manifest["ledger_artifact_path"])
+        file_artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        file_artifact["pnl"]["net_pnl"] = 1.0
+        artifact_path.write_text(json.dumps(file_artifact, sort_keys=True), encoding="utf-8")
+
+        self._write_candidate(tmp_path, candidate_id, {
+            "monte_carlo_survival_rate": 0.90,
+            "alpha_decay_half_life_days": 15.0,
+            "param_stability_score": 0.8,
+            "correlation_redundancy": 0.30,
+            "stress_survival_rate": 0.85,
+            "sharpe": 1.5,
+            "walk_forward_pass_rate": 0.8,
+            "trade_count": 50,
+            "cost_sensitivity": 0.2,
+            "max_drawdown_pct": 0.15,
+        }, backtest_manifest_path=str(manifest_path))
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert any("ledger_reconciliation_artifact_file_hash_mismatch" in r for r in result.reasons)
+        assert any("ledger_reconciliation_artifact_file_payload_mismatch" in r for r in result.reasons)
 
     def test_tampered_ledger_artifact_hash_binding_is_blocked(self, tmp_path: Path) -> None:
         """Hash bindings must match the artifact payload and manifest references."""

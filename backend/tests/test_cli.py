@@ -642,6 +642,7 @@ class CliManifestReportTests(unittest.TestCase):
                   "generated_at": "2026-05-01T00:02:00+00:00",
                   "as_of_utc": "2026-05-01T00:02:00+00:00",
                   "ledger_artifact_hash": "artifacthash",
+                  "ledger_artifact_path": "data/manifests/reconciliation/ledger_recon_artifact_artifacthash.json",
                   "ledger_hash": "ledgerhash",
                   "fills_hash": "fillshash",
                   "orders_hash": "ordershash",
@@ -678,6 +679,7 @@ class CliManifestReportTests(unittest.TestCase):
             self.assertIn("generated_at: 2026-05-01T00:02:00+00:00", text)
             self.assertIn("as_of_utc:    2026-05-01T00:02:00+00:00", text)
             self.assertIn("ledger_artifact_hash: artifacthash", text)
+            self.assertIn("ledger_artifact_path: data/manifests/reconciliation/ledger_recon_artifact_artifacthash.json", text)
             self.assertIn("ledger_hash: ledgerhash", text)
             self.assertIn("fills_hash: fillshash", text)
             self.assertIn("orders_hash: ordershash", text)
@@ -709,6 +711,7 @@ class CliManifestReportTests(unittest.TestCase):
 
             text = out.getvalue()
             self.assertIn("ledger_artifact_hash: (missing)", text)
+            self.assertIn("ledger_artifact_path: (missing)", text)
             self.assertIn("ledger_hash: (missing)", text)
             self.assertIn("fills_hash: (missing)", text)
             self.assertIn("orders_hash: (missing)", text)
