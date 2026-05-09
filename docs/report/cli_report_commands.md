@@ -1,6 +1,7 @@
 # CLI Report Commands
 
 These commands are read-only report and evidence inspection helpers. They do not submit broker orders and do not approve paper trading.
+Operator-facing evidence states are normalized to `PASS`, `STALE`, `MISSING`, and `CONFLICT`; report surfaces also print `report only, no execution`.
 
 ## Baseline Entry
 
@@ -42,6 +43,19 @@ python -m quant_us.cli report backtest --manifest data/manifests/run_ubt_000bd9a
 The output highlights `data_version`, `strategy_version`, `commit_hash`, cost model, slippage, and the manifest path.
 The backtest manifest is ledger-backed and event-driven, so the report is meant to be read from persisted evidence rather than live engine state.
 Promotion-grade manifests also expose data-manifest binding: manifest id, checksum/fingerprint, and whether the binding was missing.
+The output includes `evidence_state: PASS manifest_path` when the manifest exists, plus `scope: report only, no execution`.
+
+## Evidence Registry Report
+
+Inspect the saved evidence registry without rebuilding it:
+
+```bash
+python -m quant_us.cli report evidence-registry --data-root data
+```
+
+The registry status is rendered as one of `PASS`, `STALE`, `MISSING`, or `CONFLICT`.
+`CONFLICT` means saved registry content no longer matches the current artifact content.
+This command is report-only and does not start paper/live execution.
 
 ## Daily Paper Report
 
@@ -65,6 +79,7 @@ and a read-only paper-review status block:
 - the review or manifest evidence path used for that conclusion
 
 This report does not approve paper trading and does not enable any order path.
+It prints `report_state`, `readiness_state`, `evidence_registry_state`, and `scope: report only, no execution`.
 
 ## Readiness
 
@@ -85,13 +100,13 @@ python -m quant_us.cli readiness --small-live --validation-state data/reports/pa
 The same readiness gate is used as an input to guarded live mode. Live remains default-blocked until
 `allow_live_orders`, `confirm_live`, `live_submission_enabled`, and readiness all pass.
 
-Readiness output also prints the current paper-review status and evidence path. This is evidence-only:
+Readiness output also prints validation-state, latest daily report, evidence registry, and paper-review status paths. This is evidence-only:
 it does not approve paper trading, and it does not enable paper/live order submission.
 
 The paper-review status reader now consumes the full Evidence Registry at
 `data/research/evidence_registry.json` and still writes the legacy mirror at
 `data/research/paper_review_index.json`. The registry is authoritative; the legacy mirror exists for compatibility.
-Status values are `present`, `missing`, and `stale`.
+CLI status values are rendered as `PASS`, `STALE`, `MISSING`, and `CONFLICT`; persisted registry internals may still store `present`, `missing`, `stale`, or `changed`.
 Rebuild from persisted evidence before operator review handoff:
 
 ```python

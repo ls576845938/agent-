@@ -17,7 +17,6 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse, urlunparse
 
 import pandas as pd
 
@@ -29,10 +28,16 @@ from quant_us.core.clock import ensure_utc, utc_now
 from quant_us.core.enums import OrderSide, OrderStatus, SessionName, TradingMode
 from quant_us.core.events import MarketEvent
 from quant_us.core.types import AccountState, Bar, Signal, TargetPosition, new_id
+from quant_us.execution.fill_idempotency import (
+    FillIdempotencyIndex,
+    append_fill_idempotent,
+)
 from quant_us.execution.ledger import JsonlLedgerStore
 from quant_us.live.paper_adapter_contract import (
     ALLOWED_ALPACA_PAPER_BASE_URLS,
+    audit_apca_paper_credentials,
     evaluate_paper_adapter_contract,
+    normalize_alpaca_base_url,
     paper_adapter_capability_defaults,
 )
 from quant_us.execution.oms import OrderManagementSystem
@@ -149,6 +154,7 @@ class PaperRuntime:
         self.session_metrics: list[PaperSessionMetrics] = []
         self.metrics_log: list[PaperSessionMetrics] = []
         self.audit_events: list[dict[str, Any]] = []
+        self._fill_index = FillIdempotencyIndex()
 
         # Wired in bootstrap() — declared for type-checking
         self.calendar: USEquityCalendar
@@ -234,6 +240,7 @@ class PaperRuntime:
 
         # Ledger
         self.ledger = JsonlLedgerStore(self.config.ledger_root)
+        self._fill_index = FillIdempotencyIndex.from_ledger(self.ledger)
         self._recover_oms_idempotency()
         self._run_paper_adapter_startup_sync()
 
@@ -655,7 +662,21 @@ class PaperRuntime:
             if result.order:
                 self.ledger.append_order(result.order)
             for fill in result.fills:
-                self.ledger.append_fill(fill)
+                fill_append = append_fill_idempotent(
+                    self.ledger,
+                    fill,
+                    index=self._fill_index,
+                    logger=_logger,
+                )
+                if fill_append.conflict:
+                    self._audit_runtime_event(
+                        "paper_fill_conflict_skipped",
+                        {
+                            "key": fill_append.key,
+                            "client_order_id": intent.client_order_id,
+                            "symbol": intent.symbol,
+                        },
+                    )
 
     # ------------------------------------------------------------------
     # Reconciliation
@@ -801,25 +822,29 @@ class PaperRuntime:
             "paper_credential_audit": credential_audit,
         }
 
+        def add_reason(reason: str) -> None:
+            if reason and reason not in reasons:
+                reasons.append(reason)
+
         if self.config.allow_live_orders:
-            reasons.append("paper_runtime_cannot_allow_live_orders")
+            add_reason("paper_runtime_cannot_allow_live_orders")
 
         if paper_broker not in {"simulated", "alpaca"}:
-            reasons.append(f"unsupported_paper_broker: {self.config.paper_broker}")
+            add_reason(f"unsupported_paper_broker: {self.config.paper_broker}")
 
         if self._alpaca_paper_requested():
             credentials_ok, credential_reason = self._has_apca_paper_credentials()
             checks["paper_credentials_present"] = credentials_ok
             if not credentials_ok:
-                reasons.append(credential_reason)
+                add_reason(credential_reason)
 
             evidence_ok, evidence_reason = self._has_paper_entry_evidence()
             checks["paper_review_or_promotion_evidence"] = evidence_ok
             if not evidence_ok:
-                reasons.append(evidence_reason)
+                add_reason(evidence_reason)
 
             if bool(adapter_contract["fail_closed"]):
-                reasons.append(str(adapter_contract["reason"]))
+                add_reason(str(adapter_contract["reason"]))
 
         return {"ok": not reasons, "checks": checks, "reasons": reasons}
 
@@ -1015,6 +1040,14 @@ class PaperRuntime:
             in {"1", "true", "yes"}
         )
         credential_audit = self._paper_credential_audit()
+        if self._alpaca_paper_requested():
+            credentials_present, credential_reason = self._has_apca_paper_credentials()
+            approved_evidence, evidence_reason = self._has_paper_entry_evidence()
+        else:
+            credentials_present = True
+            credential_reason = "ok"
+            approved_evidence = True
+            evidence_reason = "ok"
         return evaluate_paper_adapter_contract(
             self.config.paper_broker,
             adapter_enabled=self._alpaca_paper_adapter_enabled(),
@@ -1023,70 +1056,27 @@ class PaperRuntime:
             env_requested=env_requested,
             endpoint_kind=str(credential_audit["endpoint_kind"]),
             base_url_valid=bool(credential_audit["base_url_valid"]),
+            credentials_present=credentials_present,
+            credential_reason=credential_reason,
+            approved_evidence=approved_evidence,
+            evidence_reason=evidence_reason,
             allowed_base_urls=tuple(credential_audit["allowed_base_urls"]),
         ).to_dict()
 
     def _paper_broker_backend(self) -> str:
+        broker = getattr(self, "broker", None)
+        broker_name = str(getattr(broker, "broker_name", ""))
+        if broker_name.startswith("alpaca_paper"):
+            return "alpaca_paper"
         return str(self._paper_adapter_contract()["effective_backend"])
 
     @staticmethod
     def _normalize_alpaca_base_url(base_url: str) -> str:
-        raw = base_url.strip()
-        if not raw:
-            return ""
-
-        parsed = urlparse(raw)
-        if not parsed.scheme or not parsed.netloc:
-            return raw.rstrip("/").lower()
-
-        normalized_path = parsed.path.rstrip("/")
-        return urlunparse(
-            (
-                parsed.scheme.lower(),
-                parsed.netloc.lower(),
-                normalized_path,
-                parsed.params,
-                parsed.query,
-                parsed.fragment,
-            )
-        )
+        return normalize_alpaca_base_url(base_url)
 
     @classmethod
     def _paper_endpoint_audit(cls) -> dict[str, Any]:
-        base_url = os.environ.get("APCA_API_BASE_URL", "")
-        normalized_base_url = cls._normalize_alpaca_base_url(base_url)
-        allowed_base_urls = list(_ALLOWED_ALPACA_PAPER_BASE_URLS)
-
-        if not normalized_base_url:
-            endpoint_kind = "unset"
-        else:
-            parsed = urlparse(normalized_base_url)
-            host = parsed.netloc.lower()
-            path = parsed.path
-            if normalized_base_url in _ALLOWED_ALPACA_PAPER_BASE_URLS:
-                endpoint_kind = "paper"
-            elif host == "api.alpaca.markets" and path in {"", "/"}:
-                endpoint_kind = "live"
-            elif host == "paper-api.alpaca.markets":
-                endpoint_kind = "paper_lookalike"
-            elif "paper-api.alpaca.markets" in host or "paper" in normalized_base_url.lower():
-                endpoint_kind = "paper_lookalike"
-            elif host.endswith("alpaca.markets") or "alpaca" in host:
-                endpoint_kind = "custom_alpaca"
-            else:
-                endpoint_kind = "custom"
-
-        return {
-            "api_key_present": bool(os.environ.get("APCA_API_KEY_ID")),
-            "api_secret_present": bool(os.environ.get("APCA_API_SECRET_KEY")),
-            "base_url": base_url,
-            "normalized_base_url": normalized_base_url,
-            "endpoint_kind": endpoint_kind,
-            "base_url_valid": normalized_base_url in _ALLOWED_ALPACA_PAPER_BASE_URLS,
-            "allowed_base_url": _ALLOWED_ALPACA_PAPER_BASE_URLS[0],
-            "allowed_base_urls": allowed_base_urls,
-            "readonly": False,
-        }
+        return audit_apca_paper_credentials()
 
     @classmethod
     def _has_apca_paper_credentials(cls) -> tuple[bool, str]:

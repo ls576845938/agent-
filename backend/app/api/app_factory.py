@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 from typing import Any
 
 from backend.app import __version__
@@ -731,17 +732,19 @@ def create_app():
 
         manual = request.get("manual", False)
         reviewer = request.get("reviewer", "")
+        reason = request.get("reason", "")
         if not manual:
             raise HTTPException(status_code=400, detail="manual flag required for approval")
         if not reviewer:
             raise HTTPException(status_code=400, detail="reviewer name required")
         mgr = PaperReviewManager()
         try:
-            review = mgr.approve(review_id, reviewer)
+            review = mgr.approve(review_id, reviewer, reason=reason)
             return {
                 "paper_review_id": review.paper_review_id,
                 "status": review.status,
                 "reviewer": review.reviewer,
+                "approval": asdict(review.approval) if review.approval else None,
                 "note": "APPROVED_FOR_PAPER_ONLY - does NOT trigger paper trading",
             }
         except ValueError as exc:

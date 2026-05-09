@@ -22,6 +22,11 @@ class JsonlLedgerStore:
     def append_fill(self, fill: Any) -> None:
         self._append("fills.jsonl", fill)
 
+    def append_fill_idempotent(self, fill: Any) -> Any:
+        from quant_us.execution.fill_idempotency import append_fill_idempotent
+
+        return append_fill_idempotent(self, fill)
+
     def append_snapshot(self, snapshot: Any) -> None:
         self._append("portfolio_snapshots.jsonl", snapshot)
 

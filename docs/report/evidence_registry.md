@@ -37,22 +37,22 @@ Integrity metadata:
 Every indexed evidence row, and every `EvidenceRef` inside a candidate chain, now carries
 stable file-observation fields:
 
+- `schema_version`
 - `sha256`
-- `size_bytes`
-- `mtime_ns`
+- `size`
+- `mtime`
 - `observed_at`
 - `content_type`
 
-These fields are emitted in addition to the v1-compatible row shape, so older readers that
-only consume `path`, `status`, `created_at`, `summary`, and `details` keep working.
+Compatibility fields `size_bytes` and `mtime_ns` are still emitted so older readers that
+only consume the pre-v1 row shape keep working.
 
 Status semantics:
 
-- `present`: evidence exists and the chain points to it directly
-- `missing`: required evidence path or artifact is absent
-- `stale`: evidence exists but the stored linkage is outdated, or the saved registry snapshot is older than source evidence
-- `changed`: the saved registry snapshot still points at the same path set, but one or more
-  artifacts changed in place (`sha256` / `size_bytes` / `mtime_ns` drift)
+- `integrity_status=PASS/STABLE`: evidence exists, hash metadata is observed, and no ambiguity is detected
+- `integrity_status=STALE/CHANGED`: linkage is stale, the saved registry drifted, or the artifact changed in place
+- `integrity_status=MISSING`: required evidence path or artifact is absent
+- `integrity_status=CONFLICT`: more than one artifact claims the same evidence identity with divergent path/hash
 
 Registry note semantics:
 
@@ -78,4 +78,11 @@ Each candidate chain records:
 - linked strategy manifest
 - latest paper review for that manifest or candidate
 - latest daily report snapshot
+- `chain_status` plus candidate-local notes when saved evidence drifted, a referenced path disappeared, or a hash changed in place
 - integrity metadata for each resolved evidence ref, so callers can surface the exact hash / size / mtime that backed the decision
+
+Manual paper approvals:
+
+- approved reviews now persist an `approval` object under `review.json`
+- the approval object records `reviewer`, `reason`, `timestamp`, `candidate_id`, `commit_hash`, `source`, `source_sha256`, and a persisted promotion `gate_snapshot`
+- approval evidence remains record-only; it does not auto-enter paper trading

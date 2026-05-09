@@ -9,9 +9,13 @@ import pytest
 
 from quant_us.core.enums import OrderSide, OrderStatus, OrderType, SignalDirection, TimeInForce
 from quant_us.core.types import AccountState, Bar, Order, OrderIntent, Position, Signal
+from quant_us.live.alpaca_paper_adapter import AlpacaPaperBrokerAdapter
 from quant_us.live.fake_alpaca_paper_adapter import FakeAlpacaPaperBrokerAdapter
 from quant_us.live.modes import RuntimeMode
-from quant_us.live.paper_adapter_contract import evaluate_paper_adapter_contract
+from quant_us.live.paper_adapter_contract import (
+    audit_apca_paper_credentials,
+    evaluate_paper_adapter_contract,
+)
 from quant_us.live.paper_runtime import PaperRuntime, PaperRuntimeConfig, PaperSessionMetrics
 from quant_us.live.readonly_live_broker import ReadOnlyLiveBrokerProxy
 from quant_us.live.runtime import LiveRuntime
@@ -85,6 +89,32 @@ def _startup_sync_artifact(ledger_root: Path) -> dict[str, object]:
     return json.loads(
         (ledger_root / "audit" / "paper_broker_adapter_startup_sync.json").read_text(encoding="utf-8")
     )
+
+
+class RecordingSession:
+    def __init__(self) -> None:
+        self.requests: list[dict[str, object]] = []
+
+    def request(self, method: str, url: str, **kwargs: object) -> MagicMock:
+        self.requests.append({"method": method, "url": url, "kwargs": kwargs})
+        response = MagicMock()
+        response.status_code = 200
+        if url.endswith("/v2/account"):
+            response.json.return_value = {
+                "id": "paper_test_account",
+                "cash": "100000",
+                "equity": "100000",
+                "buying_power": "100000",
+            }
+        elif url.endswith("/v2/positions"):
+            response.json.return_value = []
+        elif url.endswith("/v2/orders"):
+            response.json.return_value = []
+        elif url.endswith("/v2/account/activities"):
+            response.json.return_value = []
+        else:
+            response.json.return_value = {}
+        return response
 
 
 class FakeAdapterPaperRuntime(PaperRuntime):
@@ -311,6 +341,137 @@ def test_alpaca_paper_adapter_contract_requires_full_sync_surface() -> None:
     assert contract.capabilities["sync_positions"] is False
     assert contract.endpoint_kind == "paper_lookalike"
     assert contract.base_url_valid is False
+
+
+def test_alpaca_paper_adapter_contract_requires_paper_endpoint_credentials_and_evidence() -> None:
+    capabilities = FakeAlpacaPaperBrokerAdapter.contract_capabilities()
+    live_endpoint_contract = evaluate_paper_adapter_contract(
+        "alpaca",
+        adapter_enabled=True,
+        adapter_factory_present=True,
+        adapter_capabilities=capabilities,
+        env_requested=True,
+        endpoint_kind="live",
+        base_url_valid=False,
+        credentials_present=True,
+        approved_evidence=True,
+    )
+    missing_credential_contract = evaluate_paper_adapter_contract(
+        "alpaca",
+        adapter_enabled=True,
+        adapter_factory_present=True,
+        adapter_capabilities=capabilities,
+        env_requested=True,
+        endpoint_kind="paper",
+        base_url_valid=True,
+        credentials_present=False,
+        credential_reason="apca_paper_credentials_missing",
+        approved_evidence=True,
+    )
+    missing_evidence_contract = evaluate_paper_adapter_contract(
+        "alpaca",
+        adapter_enabled=True,
+        adapter_factory_present=True,
+        adapter_capabilities=capabilities,
+        env_requested=True,
+        endpoint_kind="paper",
+        base_url_valid=True,
+        credentials_present=True,
+        approved_evidence=False,
+        evidence_reason="paper_review_not_approved: PENDING_HUMAN_REVIEW",
+    )
+
+    assert live_endpoint_contract.fail_closed is True
+    assert live_endpoint_contract.reason == "apca_base_url_not_allowed"
+    assert live_endpoint_contract.effective_backend == "simulated"
+    assert live_endpoint_contract.adapter_ready is False
+    assert missing_credential_contract.reason == "apca_paper_credentials_missing"
+    assert missing_credential_contract.credentials_present is False
+    assert missing_evidence_contract.reason == "paper_review_not_approved: PENDING_HUMAN_REVIEW"
+    assert missing_evidence_contract.approved_evidence is False
+
+
+def test_apca_paper_credential_audit_classifies_only_exact_paper_endpoint() -> None:
+    paper = audit_apca_paper_credentials(
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets/",
+        }
+    )
+    live = audit_apca_paper_credentials(
+        {
+            "APCA_API_KEY_ID": "live_key",
+            "APCA_API_SECRET_KEY": "live_secret",
+            "APCA_API_BASE_URL": "https://api.alpaca.markets",
+        }
+    )
+    lookalike = audit_apca_paper_credentials(
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets.evil.example",
+        }
+    )
+
+    assert paper["endpoint_kind"] == "paper"
+    assert paper["base_url_valid"] is True
+    assert paper["normalized_base_url"] == "https://paper-api.alpaca.markets"
+    assert live["endpoint_kind"] == "live"
+    assert live["base_url_valid"] is False
+    assert lookalike["endpoint_kind"] == "paper_lookalike"
+    assert lookalike["base_url_valid"] is False
+
+
+def test_real_alpaca_paper_adapter_blocks_missing_credentials_and_live_endpoint() -> None:
+    with pytest.raises(RuntimeError, match="apca_paper_credentials_missing"):
+        AlpacaPaperBrokerAdapter.from_env(
+            {
+                "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+                "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+            },
+            session=RecordingSession(),
+        )
+
+    with pytest.raises(RuntimeError, match="apca_base_url_not_allowed"):
+        AlpacaPaperBrokerAdapter.from_env(
+            {
+                "APCA_API_KEY_ID": "key",
+                "APCA_API_SECRET_KEY": "secret",
+                "APCA_API_BASE_URL": "https://api.alpaca.markets",
+                "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+            },
+            session=RecordingSession(),
+        )
+
+
+def test_real_alpaca_paper_adapter_default_submit_is_fail_closed_without_network() -> None:
+    session = RecordingSession()
+    adapter = AlpacaPaperBrokerAdapter.from_env(
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        session=session,
+    )
+    order = Order(
+        timestamp_utc=datetime(2026, 5, 9, 14, 30, tzinfo=UTC),
+        strategy_id="test",
+        symbol="SPY",
+        side=OrderSide.BUY,
+        quantity=1.0,
+        order_type=OrderType.MARKET,
+        time_in_force=TimeInForce.DAY,
+        client_order_id="paper_submit_blocked",
+    )
+
+    with pytest.raises(RuntimeError, match="alpaca_paper_network_submit_disabled_fail_closed"):
+        adapter.submit_order(order)
+
+    assert session.requests == []
+    assert adapter.readiness_report()["network_submit_enabled"] is False
 
 
 def test_alpaca_paper_runtime_contract_stays_fail_closed_when_env_requests(
@@ -641,7 +802,7 @@ def test_fake_adapter_accepts_exact_paper_endpoint_with_trailing_slash(
     artifact = _startup_sync_artifact(Path(runtime.config.ledger_root))
     assert artifact["status"] == "ok"
     assert artifact["backend"] == "alpaca_paper"
-    assert artifact["contract_version"] == "paper_adapter_contract_v3"
+    assert artifact["contract_version"] == "paper_adapter_contract_v4"
     assert artifact["sync"]["poll_orders"]["call_count"] == 1
     assert artifact["sync"]["poll_orders"]["order_count"] == 0
     assert artifact["sync"]["sync_fills"]["call_count"] == 1
@@ -699,7 +860,7 @@ def test_fake_adapter_startup_sync_failure_blocks_bootstrap(
     artifact = _startup_sync_artifact(Path(runtime.config.ledger_root))
     assert artifact["status"] == "failed"
     assert artifact["backend"] == "alpaca_paper"
-    assert artifact["contract_version"] == "paper_adapter_contract_v3"
+    assert artifact["contract_version"] == "paper_adapter_contract_v4"
     assert artifact["error"] == "sync_positions_failed"
     assert artifact["reduce_only"] is True
     assert artifact["halt_reconciliation"] is True

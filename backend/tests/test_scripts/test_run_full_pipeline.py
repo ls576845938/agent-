@@ -7,8 +7,10 @@ Covers three modes (backtest, gate, full) plus determinism and error paths.
 from __future__ import annotations
 
 import importlib.util
+import io
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -400,6 +402,48 @@ class TestFullMode(unittest.TestCase):
         self.assertIn("backtest_manifest_id", result)
         self.assertIn("backtest_manifest_path", result)
         self.assertEqual(result["gate_result"]["manifest_id"], "test_manifest_123")
+
+    def test_minimal_closed_loop_e2e_stops_at_readiness_handoff_report(self):
+        """manifest -> unified backtest evidence -> gate handoff, with no paper/live execution."""
+        self.mock_gate.evaluate.return_value = _make_gate_result(decision="pass")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_root = _create_parquet_fixture(tmpdir)
+            out = io.StringIO()
+            with redirect_stdout(out):
+                result = self._run(data_root=data_root)
+
+        text = out.getvalue()
+        self.assertEqual(result["mode"], "full")
+        self.assertTrue(result["paper_review_required"])
+        self.assertTrue(result["manual_review_required"])
+        self.assertTrue(result["paper_not_started"])
+        self.assertIn("data_manifest_path", result)
+        self.assertIn("backtest_manifest_path", result)
+        self.assertIn("promotion_decision", result)
+        self.assertIn("Promotion gate handoff/readiness report", text)
+        self.assertIn("report only, no execution", text)
+        self.assertIn("No paper/live trading session was started", text)
+        self.mock_paper_cls.assert_not_called()
+        self.mock_paper.run_day.assert_not_called()
+
+    def test_legacy_paper_mode_is_report_only_alias(self):
+        """The compatibility mode named 'paper' still stops before execution."""
+        self.mock_gate.evaluate.return_value = _make_gate_result(decision="pass")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_root = _create_parquet_fixture(tmpdir)
+            out = io.StringIO()
+            with redirect_stdout(out):
+                result = self._run(data_root=data_root, mode="paper")
+
+        text = out.getvalue()
+        self.assertEqual(result["mode"], "full")
+        self.assertEqual(result["requested_mode"], "paper")
+        self.assertTrue(result["paper_not_started"])
+        self.assertIn("--mode paper is a legacy alias", text)
+        self.assertIn("report only, no execution", text)
+        self.mock_paper_cls.assert_not_called()
 
     # -- gate fails path --
 

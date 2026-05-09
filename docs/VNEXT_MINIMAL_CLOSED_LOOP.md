@@ -166,9 +166,10 @@ python -m quant_us.cli readiness --profile simulated
 python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json
 python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json --check-credentials
 python -m quant_us.cli readiness --small-live --validation-state data/reports/paper_production/validation_state.json
+python -m quant_us.cli report evidence-registry --data-root data
 ```
 
-The readiness output is read-only. It does not submit paper or live orders.
+The readiness and evidence-registry outputs are read-only. They render evidence as `PASS`, `STALE`, `MISSING`, or `CONFLICT`, print `report only, no execution`, and do not submit paper or live orders.
 
 ## 5) Paper Adapter Contract
 
@@ -189,6 +190,8 @@ python -m quant_us.cli research paper-review-approve --paper-review-id <paper_re
 ```
 
 Approval is manual and does not start trading. The paper runtime gate only consumes approved evidence.
+The persisted paper review record now includes an approval object with reviewer, reason, timestamp,
+candidate provenance, and a promotion-gate snapshot so the approval can be audited after the fact.
 
 ## 7) Daily Report
 
@@ -197,10 +200,11 @@ Daily paper reports are persisted under the paper ledger root.
 ```bash
 python -m quant_us.cli report daily --latest
 python -m quant_us.cli report daily --date 2026-05-08
+python -m quant_us.cli report evidence-registry --data-root data
 ```
 
 The report includes the report path, ledger root, ending equity, daily PnL, order counts, reconciliation status,
-and validation-state evidence pointers.
+validation-state evidence pointers, evidence-registry status, and `report only, no execution`.
 
 ## 8) Minimal Boundary Summary
 

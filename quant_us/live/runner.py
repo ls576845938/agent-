@@ -22,6 +22,10 @@ from typing import Any
 
 from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.clock import utc_now
+from quant_us.execution.fill_idempotency import (
+    FillIdempotencyIndex,
+    append_fill_idempotent,
+)
 from quant_us.execution.ledger import JsonlLedgerStore
 from quant_us.execution.oms import OrderManagementSystem
 from quant_us.live.heartbeat import Heartbeat
@@ -119,9 +123,8 @@ class LiveRunner:
     _logger: logging.Logger = field(
         default_factory=lambda: logging.getLogger("live_runner"), init=False,
     )
-    _known_fill_keys: set[str] = field(default_factory=set, init=False)
-    _known_fill_fingerprints: dict[str, tuple[Any, ...]] = field(
-        default_factory=dict, init=False,
+    _fill_index: FillIdempotencyIndex = field(
+        default_factory=FillIdempotencyIndex, init=False,
     )
     _fill_index_loaded: bool = field(default=False, init=False)
 
@@ -423,37 +426,25 @@ class LiveRunner:
         if self.ledger is None:
             return
 
-        for record in self.ledger.read_records("fills.jsonl"):
-            key = self._fill_key_from_record(record)
-            if not key:
-                continue
-            self._known_fill_keys.add(key)
-            self._known_fill_fingerprints[key] = self._fill_fingerprint_from_record(
-                record,
-            )
-
+        self._fill_index.load_ledger(self.ledger)
         self._fill_index_loaded = True
 
     def _append_fill_if_new(self, fill: Any) -> None:
         if self.ledger is None:
             return
 
-        fill_key = self._fill_key(fill)
-        fill_fingerprint = self._fill_fingerprint(fill)
-
-        if fill_key and fill_key in self._known_fill_keys:
-            existing = self._known_fill_fingerprints.get(fill_key)
-            if existing is not None and existing != fill_fingerprint:
-                self._logger.error(
-                    "Conflicting duplicate fill detected during polling: key=%s",
-                    fill_key,
-                )
+        result = append_fill_idempotent(
+            self.ledger,
+            fill,
+            index=self._fill_index,
+            logger=self._logger,
+        )
+        if result.conflict:
+            self._logger.error(
+                "Conflicting duplicate fill detected during polling: key=%s",
+                result.key,
+            )
             return
-
-        self.ledger.append_fill(fill)
-        if fill_key:
-            self._known_fill_keys.add(fill_key)
-            self._known_fill_fingerprints[fill_key] = fill_fingerprint
 
     @staticmethod
     def _fill_key(fill: Any) -> str:

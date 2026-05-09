@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -10,6 +10,13 @@ from typing import Any
 
 REGISTRY_SCHEMA_VERSION = "evidence_registry_v1"
 LEGACY_INDEX_SCHEMA_VERSION = "paper_review_evidence_index_v2"
+EVIDENCE_REF_SCHEMA_VERSION = "evidence_ref_v1"
+CANDIDATE_CHAIN_SCHEMA_VERSION = "candidate_evidence_chain_v1"
+
+INTEGRITY_PASS = "PASS/STABLE"
+INTEGRITY_STALE = "STALE/CHANGED"
+INTEGRITY_MISSING = "MISSING"
+INTEGRITY_CONFLICT = "CONFLICT"
 
 
 @dataclass(frozen=True)
@@ -18,8 +25,12 @@ class EvidenceRef:
     evidence_id: str
     path: str
     status: str
+    schema_version: str = EVIDENCE_REF_SCHEMA_VERSION
+    integrity_status: str = INTEGRITY_MISSING
     created_at: str = ""
     sha256: str = ""
+    size: int = 0
+    mtime: str = ""
     size_bytes: int = 0
     mtime_ns: int = 0
     observed_at: str = ""
@@ -33,6 +44,8 @@ class CandidateEvidenceChain:
     candidate_id: str
     status: str
     candidate_path: str
+    schema_version: str = CANDIDATE_CHAIN_SCHEMA_VERSION
+    chain_status: str = INTEGRITY_MISSING
     experiment_id: str = ""
     notes: list[str] = field(default_factory=list)
     data_manifest: EvidenceRef = field(
@@ -90,6 +103,7 @@ def inspect_evidence_registry(
             saved_status, saved_notes = _registry_storage_status(saved, current)
             result = dict(saved)
             result["registry_status"] = saved_status
+            result["registry_integrity_status"] = _registry_integrity_status(saved_status)
             result["registry_notes"] = saved_notes
             result["rebuild_available"] = True
             return result
@@ -98,6 +112,7 @@ def inspect_evidence_registry(
                 "schema_version": REGISTRY_SCHEMA_VERSION,
                 "generated_at": "",
                 "registry_status": "missing",
+                "registry_integrity_status": INTEGRITY_MISSING,
                 "registry_notes": ["missing_registry_snapshot"],
                 "rebuild_available": True,
                 "counts": {},
@@ -105,6 +120,7 @@ def inspect_evidence_registry(
             }
     result = rebuild_evidence_registry(root, write=rebuild_if_missing)
     result["registry_status"] = "rebuilt"
+    result["registry_integrity_status"] = INTEGRITY_PASS
     result["registry_notes"] = []
     result["rebuild_available"] = True
     return result
@@ -117,17 +133,27 @@ def inspect_candidate_evidence(
     use_saved: bool = True,
     rebuild_if_missing: bool = True,
 ) -> CandidateEvidenceChain:
+    root = Path(data_root)
+    saved_registry = _load_saved_registry(root) if use_saved else None
     registry = inspect_evidence_registry(
         data_root,
         use_saved=use_saved,
         rebuild_if_missing=rebuild_if_missing,
     )
     if use_saved and registry.get("registry_status") in {"stale", "changed"}:
-        registry = inspect_evidence_registry(
+        live_registry = inspect_evidence_registry(
             data_root,
             use_saved=False,
             rebuild_if_missing=rebuild_if_missing,
         )
+        live_chain = _chain_from_registry(live_registry, candidate_id)
+        saved_chain = _chain_from_registry(saved_registry or {}, candidate_id)
+        if live_chain is not None:
+            return _merge_saved_chain_delta(
+                saved_chain=saved_chain,
+                live_chain=live_chain,
+            )
+        registry = live_registry
     chain = registry.get("chains", {}).get(candidate_id)
     if isinstance(chain, dict):
         return _dict_to_chain(chain)
@@ -135,6 +161,7 @@ def inspect_candidate_evidence(
         candidate_id=candidate_id,
         status="missing",
         candidate_path="",
+        chain_status=INTEGRITY_MISSING,
         notes=[f"candidate_not_indexed:{candidate_id}"],
     )
 
@@ -158,6 +185,8 @@ def _build_registry_payload(root: Path, scanned: dict[str, Any]) -> dict[str, An
 
     return {
         "schema_version": REGISTRY_SCHEMA_VERSION,
+        "evidence_ref_schema_version": EVIDENCE_REF_SCHEMA_VERSION,
+        "candidate_chain_schema_version": CANDIDATE_CHAIN_SCHEMA_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "registry_path": str(_registry_path(root)),
         "legacy_index_path": str(_legacy_index_path(root)),
@@ -216,12 +245,12 @@ def _build_candidate_chain(
         fallback_id=data_version,
         missing_summary=f"missing_data_manifest:{data_version or 'unknown'}",
     )
+    notes.extend(_ref_notes(data_ref))
 
     backtest_ref = _resolve_backtest_manifest(root, candidate_id, payload)
     if backtest_ref.status == "stale":
         notes.append("backtest_manifest_link_missing_but_recoverable")
-    if backtest_ref.status == "missing":
-        notes.append("backtest_manifest_missing")
+    notes.extend(_ref_notes(backtest_ref))
 
     promotion_row = _latest_row(
         [row for row in promotion_results if candidate_id in row.get("candidate_ids", [])]
@@ -232,6 +261,7 @@ def _build_candidate_chain(
         fallback_id=candidate_id,
         missing_summary=f"missing_promotion_result:{candidate_id}",
     )
+    notes.extend(_ref_notes(promotion_ref))
 
     strategy_row = _latest_row(
         [
@@ -247,6 +277,7 @@ def _build_candidate_chain(
         fallback_id=candidate_id,
         missing_summary=f"missing_strategy_manifest:{candidate_id}",
     )
+    notes.extend(_ref_notes(strategy_ref))
 
     strategy_manifest_id = str(strategy_row.get("strategy_candidate_id", "")) if strategy_row else ""
     paper_row = _latest_row(
@@ -262,27 +293,30 @@ def _build_candidate_chain(
         fallback_id=strategy_manifest_id or candidate_id,
         missing_summary=f"missing_paper_review:{strategy_manifest_id or candidate_id}",
     )
+    notes.extend(_ref_notes(paper_ref))
 
     daily_ref = _daily_report_ref(latest_daily_report)
     if daily_ref.status != "present":
         notes.append(f"daily_report_{daily_ref.status}")
+    notes.extend(_ref_notes(daily_ref, optional=True))
 
     chain_status = _chain_status(
         [
-            data_ref.status,
-            backtest_ref.status,
-            promotion_ref.status,
-            strategy_ref.status,
-            paper_ref.status,
-            daily_ref.status,
+            data_ref,
+            backtest_ref,
+            promotion_ref,
+            strategy_ref,
+            paper_ref,
+            daily_ref,
         ]
     )
     return CandidateEvidenceChain(
         candidate_id=candidate_id,
-        status=chain_status,
+        status=_legacy_chain_status(chain_status),
         candidate_path=str(candidate_row.get("path", "")),
+        chain_status=chain_status,
         experiment_id=experiment_id,
-        notes=notes,
+        notes=_dedupe_notes(notes),
         data_manifest=data_ref,
         backtest_manifest=backtest_ref,
         promotion_result=promotion_ref,
@@ -308,8 +342,11 @@ def _resolve_backtest_manifest(
             evidence_id=str(payload.get("run_id") or candidate_id),
             path=str(manifest_path),
             status="present",
+            integrity_status=INTEGRITY_PASS,
             created_at=_payload_created_at(payload, manifest_path),
             sha256=_file_sha256(manifest_path),
+            size=_file_size_bytes(manifest_path),
+            mtime=_file_mtime(manifest_path),
             size_bytes=_file_size_bytes(manifest_path),
             mtime_ns=_file_mtime_ns(manifest_path),
             observed_at=_observed_at(),
@@ -318,6 +355,7 @@ def _resolve_backtest_manifest(
             details={
                 "canonical_for_promotion": bool(payload.get("canonical_for_promotion", False)),
                 "data_version": str(payload.get("data_version", "")),
+                "commit_hash": str(payload.get("commit_hash", "")),
             },
         )
     if raw_path and manifest_path is not None and not manifest_path.exists():
@@ -326,6 +364,7 @@ def _resolve_backtest_manifest(
             evidence_id=fallback_id,
             path=str(manifest_path),
             status="missing",
+            integrity_status=INTEGRITY_MISSING,
             observed_at=_observed_at(),
             content_type=_content_type(manifest_path),
             summary=f"missing_backtest_manifest:{manifest_path}",
@@ -337,8 +376,11 @@ def _resolve_backtest_manifest(
             evidence_id=str(payload.get("run_id") or candidate_id),
             path=str(canonical_path),
             status="stale",
+            integrity_status=INTEGRITY_STALE,
             created_at=_payload_created_at(payload, canonical_path),
             sha256=_file_sha256(canonical_path),
+            size=_file_size_bytes(canonical_path),
+            mtime=_file_mtime(canonical_path),
             size_bytes=_file_size_bytes(canonical_path),
             mtime_ns=_file_mtime_ns(canonical_path),
             observed_at=_observed_at(),
@@ -347,6 +389,7 @@ def _resolve_backtest_manifest(
             details={
                 "canonical_for_promotion": bool(payload.get("canonical_for_promotion", False)),
                 "data_version": str(payload.get("data_version", "")),
+                "commit_hash": str(payload.get("commit_hash", "")),
             },
         )
     return EvidenceRef(
@@ -354,6 +397,7 @@ def _resolve_backtest_manifest(
         evidence_id=fallback_id,
         path=str(canonical_path if not raw_path else _resolve_reference_path(root, raw_path) or canonical_path),
         status="missing",
+        integrity_status=INTEGRITY_MISSING,
         observed_at=_observed_at(),
         content_type=_content_type(canonical_path if not raw_path else _resolve_reference_path(root, raw_path) or canonical_path),
         summary=f"missing_backtest_manifest:{candidate_id}",
@@ -367,22 +411,27 @@ def _daily_report_ref(row: dict[str, Any] | None) -> EvidenceRef:
             evidence_id="",
             path="",
             status="missing",
+            integrity_status=INTEGRITY_MISSING,
             observed_at=_observed_at(),
             summary="missing_daily_report",
         )
     report_date = str(row.get("report_date", "") or "")
     status = "present"
+    integrity_status = INTEGRITY_PASS
     try:
         if report_date and date.fromisoformat(report_date) < datetime.now(timezone.utc).date():
             status = "stale"
+            integrity_status = INTEGRITY_STALE
     except ValueError:
         status = "stale"
+        integrity_status = INTEGRITY_STALE
     return _row_to_ref(
         row,
         evidence_type="daily_report",
         fallback_id=report_date,
         missing_summary="missing_daily_report",
         override_status=status,
+        override_integrity_status=integrity_status,
     )
 
 
@@ -393,6 +442,7 @@ def _row_to_ref(
     fallback_id: str,
     missing_summary: str,
     override_status: str | None = None,
+    override_integrity_status: str | None = None,
 ) -> EvidenceRef:
     if row is None:
         return EvidenceRef(
@@ -400,6 +450,7 @@ def _row_to_ref(
             evidence_id=fallback_id,
             path="",
             status="missing",
+            integrity_status=INTEGRITY_MISSING,
             observed_at=_observed_at(),
             summary=missing_summary,
         )
@@ -408,8 +459,12 @@ def _row_to_ref(
         evidence_id=str(row.get("id") or row.get("data_version") or fallback_id),
         path=str(row.get("path", "")),
         status=override_status or str(row.get("status", "present")),
+        schema_version=str(row.get("schema_version", EVIDENCE_REF_SCHEMA_VERSION)),
+        integrity_status=override_integrity_status or str(row.get("integrity_status", _legacy_ref_integrity_status(str(row.get("status", "present"))))),
         created_at=str(row.get("created_at", "")),
         sha256=str(row.get("sha256", "")),
+        size=int(row.get("size", row.get("size_bytes", 0)) or 0),
+        mtime=str(row.get("mtime", "")),
         size_bytes=int(row.get("size_bytes", 0) or 0),
         mtime_ns=int(row.get("mtime_ns", 0) or 0),
         observed_at=str(row.get("observed_at", "")),
@@ -419,12 +474,15 @@ def _row_to_ref(
     )
 
 
-def _chain_status(statuses: list[str]) -> str:
-    if any(status == "missing" for status in statuses[:-1]):
-        return "missing"
-    if any(status == "stale" for status in statuses):
-        return "stale"
-    return "complete"
+def _chain_status(refs: list[EvidenceRef]) -> str:
+    required_refs = refs[:-1]
+    if any(ref.integrity_status == INTEGRITY_CONFLICT for ref in refs):
+        return INTEGRITY_CONFLICT
+    if any(ref.integrity_status == INTEGRITY_MISSING for ref in required_refs):
+        return INTEGRITY_MISSING
+    if any(ref.integrity_status == INTEGRITY_STALE for ref in refs):
+        return INTEGRITY_STALE
+    return INTEGRITY_PASS
 
 
 def _scan_all_evidence(root: Path) -> dict[str, Any]:
@@ -443,7 +501,8 @@ def _scan_candidates(root: Path) -> dict[str, dict[str, Any]]:
     rows: dict[str, dict[str, Any]] = {}
     for path, payload in _scan_json_rows(root / "research" / "candidates", "candidate.json"):
         candidate_id = str(payload.get("candidate_id") or path.parent.name)
-        rows[candidate_id] = {
+        rows[candidate_id] = _normalize_scanned_row(
+            {
             "id": candidate_id,
             "path": str(path),
             "created_at": _payload_created_at(payload, path),
@@ -454,7 +513,8 @@ def _scan_candidates(root: Path) -> dict[str, dict[str, Any]]:
             "observed_at": _observed_at(),
             "content_type": _content_type(path),
             "payload": payload,
-        }
+            }
+        )
     return rows
 
 
@@ -489,7 +549,7 @@ def _scan_data_manifests(root: Path) -> list[dict[str, Any]]:
                 },
             }
         )
-    return _sort_rows(rows)
+    return _sort_rows(_normalize_scanned_rows(rows))
 
 
 def _scan_backtest_manifests(root: Path) -> list[dict[str, Any]]:
@@ -513,6 +573,7 @@ def _scan_backtest_manifests(root: Path) -> list[dict[str, Any]]:
                 "details": {
                     "canonical_for_promotion": bool(payload.get("canonical_for_promotion", False)),
                     "data_version": str(payload.get("data_version", "")),
+                    "commit_hash": str(payload.get("commit_hash", "")),
                 },
             }
         )
@@ -534,10 +595,11 @@ def _scan_backtest_manifests(root: Path) -> list[dict[str, Any]]:
                 "details": {
                     "canonical_for_promotion": bool(payload.get("canonical_for_promotion", False)),
                     "data_version": str(payload.get("data_version", "")),
+                    "commit_hash": str(payload.get("commit_hash", "")),
                 },
             }
         )
-    return _sort_rows(rows)
+    return _sort_rows(_normalize_scanned_rows(rows))
 
 
 def _scan_promotion_results(root: Path) -> list[dict[str, Any]]:
@@ -566,7 +628,7 @@ def _scan_promotion_results(root: Path) -> list[dict[str, Any]]:
                 },
             }
         )
-    return _sort_rows(rows)
+    return _sort_rows(_normalize_scanned_rows(rows))
 
 
 def _scan_strategy_manifests(root: Path) -> list[dict[str, Any]]:
@@ -592,12 +654,15 @@ def _scan_strategy_manifests(root: Path) -> list[dict[str, Any]]:
                 },
             }
         )
-    return _sort_rows(rows)
+    return _sort_rows(_normalize_scanned_rows(rows))
 
 
 def _scan_paper_reviews(root: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for path, payload in _scan_json_rows(root / "research" / "paper_reviews", "review.json"):
+        approval = payload.get("approval", {})
+        if not isinstance(approval, dict):
+            approval = {}
         rows.append(
             {
                 "id": str(payload.get("paper_review_id") or path.parent.name),
@@ -614,10 +679,15 @@ def _scan_paper_reviews(root: Path) -> list[dict[str, Any]]:
                 "details": {
                     "status": str(payload.get("status", "")),
                     "evidence_pack_path": str(payload.get("evidence_pack_path", "")),
+                    "candidate_id": str(approval.get("candidate_id", "")),
+                    "reviewer": str(payload.get("reviewer", "")),
+                    "reviewed_at": str(payload.get("reviewed_at", "")),
+                    "reason": str(payload.get("review_notes", "")),
+                    "approval": dict(approval),
                 },
             }
         )
-    return _sort_rows(rows)
+    return _sort_rows(_normalize_scanned_rows(rows))
 
 
 def _scan_daily_reports(root: Path) -> list[dict[str, Any]]:
@@ -643,7 +713,7 @@ def _scan_daily_reports(root: Path) -> list[dict[str, Any]]:
                 },
             }
         )
-    return _sort_rows(rows)
+    return _sort_rows(_normalize_scanned_rows(rows))
 
 
 def _legacy_index_payload(registry: dict[str, Any]) -> dict[str, Any]:
@@ -862,9 +932,62 @@ def _scanned_evidence_meta(scanned: dict[str, Any]) -> dict[str, dict[str, Any]]
             if row.get("path"):
                 rows[str(row["path"])] = row
     for row in scanned["candidates"].values():
-        if row.get("path"):
-            rows[str(row["path"])] = row
+            if row.get("path"):
+                rows[str(row["path"])] = row
     return rows
+
+
+def _normalize_scanned_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    normalized = [_normalize_scanned_row(row) for row in rows]
+    _mark_conflicts(normalized)
+    return normalized
+
+
+def _normalize_scanned_row(row: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(row)
+    status = str(normalized.get("status", "present"))
+    normalized["schema_version"] = str(
+        normalized.get("schema_version", EVIDENCE_REF_SCHEMA_VERSION)
+    )
+    normalized["integrity_status"] = str(
+        normalized.get("integrity_status", _legacy_ref_integrity_status(status))
+    )
+    normalized["size"] = int(
+        normalized.get("size", normalized.get("size_bytes", 0)) or 0
+    )
+    normalized["mtime"] = str(
+        normalized.get("mtime", _mtime_ns_to_iso(normalized.get("mtime_ns", 0)))
+    )
+    return normalized
+
+
+def _mark_conflicts(rows: list[dict[str, Any]]) -> None:
+    by_id: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        row_id = str(row.get("id", "")).strip()
+        if not row_id:
+            continue
+        by_id.setdefault(row_id, []).append(row)
+    for row_id, group in by_id.items():
+        if len(group) < 2:
+            continue
+        path_set = {str(row.get("path", "")) for row in group if row.get("path")}
+        hash_set = {str(row.get("sha256", "")) for row in group if row.get("sha256")}
+        if len(path_set) <= 1 and len(hash_set) <= 1:
+            continue
+        for row in group:
+            row["status"] = "conflict"
+            row["integrity_status"] = INTEGRITY_CONFLICT
+            details = dict(row.get("details", {}))
+            details["conflict_paths"] = sorted(path_set)
+            details["conflict_hashes"] = sorted(hash_set)
+            details["conflict_id"] = row_id
+            row["details"] = details
+            summary = str(row.get("summary", "")).strip()
+            if summary:
+                row["summary"] = f"conflict:{summary}"
+            else:
+                row["summary"] = f"conflict:{row_id}"
 
 
 def _scan_json_rows(root: Path, leaf_name: str) -> list[tuple[Path, dict[str, Any]]]:
@@ -967,6 +1090,10 @@ def _file_mtime_ns(path: Path) -> int:
         return 0
 
 
+def _file_mtime(path: Path) -> str:
+    return _mtime_ns_to_iso(_file_mtime_ns(path))
+
+
 def _file_sha256(path: Path) -> str:
     digest = hashlib.sha256()
     try:
@@ -990,14 +1117,158 @@ def _artifact_meta_matches(saved_row: dict[str, Any], current_row: dict[str, Any
     )
 
 
+def _mtime_ns_to_iso(value: Any) -> str:
+    try:
+        mtime_ns = int(value or 0)
+    except (TypeError, ValueError):
+        return ""
+    if mtime_ns <= 0:
+        return ""
+    return datetime.fromtimestamp(
+        mtime_ns / 1_000_000_000,
+        tz=timezone.utc,
+    ).isoformat()
+
+
+def _legacy_ref_integrity_status(status: str) -> str:
+    if status == "missing":
+        return INTEGRITY_MISSING
+    if status in {"stale", "changed"}:
+        return INTEGRITY_STALE
+    if status == "conflict":
+        return INTEGRITY_CONFLICT
+    return INTEGRITY_PASS
+
+
+def _legacy_chain_status(chain_status: str) -> str:
+    if chain_status == INTEGRITY_MISSING:
+        return "missing"
+    if chain_status == INTEGRITY_CONFLICT:
+        return "conflict"
+    if chain_status == INTEGRITY_STALE:
+        return "stale"
+    return "complete"
+
+
+def _registry_integrity_status(status: str) -> str:
+    if status == "missing":
+        return INTEGRITY_MISSING
+    if status in {"stale", "changed"}:
+        return INTEGRITY_STALE
+    return INTEGRITY_PASS
+
+
+def _ref_notes(ref: EvidenceRef, *, optional: bool = False) -> list[str]:
+    prefix = ref.evidence_type
+    if ref.integrity_status == INTEGRITY_CONFLICT:
+        return [f"{prefix}_conflict:{ref.path or ref.evidence_id or 'unknown'}"]
+    if ref.integrity_status == INTEGRITY_MISSING:
+        if optional:
+            return [f"{prefix}_missing_optional"]
+        return [f"{prefix}_missing"]
+    if ref.integrity_status == INTEGRITY_STALE:
+        return [f"{prefix}_stale_or_changed"]
+    return []
+
+
+def _dedupe_notes(notes: list[str]) -> list[str]:
+    return list(dict.fromkeys(note for note in notes if note))
+
+
+def _chain_from_registry(
+    registry: dict[str, Any],
+    candidate_id: str,
+) -> CandidateEvidenceChain | None:
+    chains = registry.get("chains", {}) if isinstance(registry, dict) else {}
+    if not isinstance(chains, dict):
+        return None
+    chain = chains.get(candidate_id)
+    if isinstance(chain, dict):
+        return _dict_to_chain(chain)
+    return None
+
+
+def _merge_saved_chain_delta(
+    *,
+    saved_chain: CandidateEvidenceChain | None,
+    live_chain: CandidateEvidenceChain,
+) -> CandidateEvidenceChain:
+    if saved_chain is None:
+        return live_chain
+    notes = list(live_chain.notes)
+    chain_status = live_chain.chain_status
+    for evidence_type in (
+        "data_manifest",
+        "backtest_manifest",
+        "promotion_result",
+        "strategy_manifest",
+        "paper_review",
+        "daily_report",
+    ):
+        saved_ref = getattr(saved_chain, evidence_type)
+        live_ref = getattr(live_chain, evidence_type)
+        if saved_ref.path and live_ref.integrity_status == INTEGRITY_MISSING:
+            notes.append(f"missing_evidence:{evidence_type}:{saved_ref.path}")
+            chain_status = _merge_integrity_status(chain_status, INTEGRITY_MISSING)
+            continue
+        if saved_ref.path and live_ref.path and saved_ref.path != live_ref.path:
+            notes.append(
+                f"path_changed:{evidence_type}:{saved_ref.path}->{live_ref.path}"
+            )
+            chain_status = _merge_integrity_status(chain_status, INTEGRITY_STALE)
+        if (
+            saved_ref.path
+            and live_ref.path
+            and saved_ref.path == live_ref.path
+            and saved_ref.sha256
+            and live_ref.sha256
+            and saved_ref.sha256 != live_ref.sha256
+        ):
+            notes.append(f"hash_changed:{evidence_type}:{live_ref.path}")
+            chain_status = _merge_integrity_status(chain_status, INTEGRITY_STALE)
+        if live_ref.integrity_status == INTEGRITY_CONFLICT:
+            notes.append(f"conflicting_evidence:{evidence_type}:{live_ref.path}")
+            chain_status = _merge_integrity_status(chain_status, INTEGRITY_CONFLICT)
+    if saved_chain.experiment_id and live_chain.experiment_id != saved_chain.experiment_id:
+        notes.append(
+            f"candidate_changed:experiment_id:{saved_chain.experiment_id}->{live_chain.experiment_id}"
+        )
+        chain_status = _merge_integrity_status(chain_status, INTEGRITY_STALE)
+    return replace(
+        live_chain,
+        status=_legacy_chain_status(chain_status),
+        chain_status=chain_status,
+        notes=_dedupe_notes(notes),
+    )
+
+
+def _merge_integrity_status(current: str, new: str) -> str:
+    precedence = {
+        INTEGRITY_PASS: 0,
+        INTEGRITY_STALE: 1,
+        INTEGRITY_MISSING: 2,
+        INTEGRITY_CONFLICT: 3,
+    }
+    return new if precedence[new] > precedence[current] else current
+
+
 def _dict_to_ref(data: dict[str, Any]) -> EvidenceRef:
     return EvidenceRef(
         evidence_type=str(data.get("evidence_type", "")),
         evidence_id=str(data.get("evidence_id", "")),
         path=str(data.get("path", "")),
         status=str(data.get("status", "")),
+        schema_version=str(data.get("schema_version", EVIDENCE_REF_SCHEMA_VERSION)),
+        integrity_status=str(
+            data.get(
+                "integrity_status",
+                _legacy_ref_integrity_status(str(data.get("status", ""))),
+            )
+        ),
         created_at=str(data.get("created_at", "")),
         sha256=str(data.get("sha256", "")),
+        size=int(data.get("size", data.get("size_bytes", 0)) or 0),
+        mtime=str(data.get("mtime", "")),
         size_bytes=int(data.get("size_bytes", 0) or 0),
         mtime_ns=int(data.get("mtime_ns", 0) or 0),
         observed_at=str(data.get("observed_at", "")),
@@ -1008,10 +1279,20 @@ def _dict_to_ref(data: dict[str, Any]) -> EvidenceRef:
 
 
 def _dict_to_chain(data: dict[str, Any]) -> CandidateEvidenceChain:
+    chain_status = str(
+        data.get(
+            "chain_status",
+            data.get("integrity_status", ""),
+        )
+    ) or _registry_integrity_status(str(data.get("status", "missing")))
     return CandidateEvidenceChain(
         candidate_id=str(data.get("candidate_id", "")),
         status=str(data.get("status", "")),
         candidate_path=str(data.get("candidate_path", "")),
+        schema_version=str(
+            data.get("schema_version", CANDIDATE_CHAIN_SCHEMA_VERSION)
+        ),
+        chain_status=chain_status,
         experiment_id=str(data.get("experiment_id", "")),
         notes=[str(item) for item in data.get("notes", [])],
         data_manifest=_dict_to_ref(dict(data.get("data_manifest", {}))),

@@ -47,8 +47,23 @@ def inspect_paper_review_status(
     latest_manifest = manifests[0] if manifests else None
 
     if latest_review is not None:
+        integrity_status = str(latest_review.get("integrity_status", "PASS/STABLE"))
+        if integrity_status == "CONFLICT":
+            review_path = str(latest_review.get("path", ""))
+            return PaperReviewStatus(
+                status="CONFLICT",
+                paper_review_entry_allowed=False,
+                manual_review_pending=False,
+                summary="Latest paper review evidence is conflicting; resolve duplicate or divergent review artifacts before promotion.",
+                evidence_path=review_path,
+                review_path=review_path,
+                evidence_pack_path=str(latest_review.get("details", {}).get("evidence_pack_path", "") or ""),
+            )
         status = str(latest_review.get("details", {}).get("status", latest_review.get("summary", "UNKNOWN")))
         evidence_pack_path = str(latest_review.get("details", {}).get("evidence_pack_path", "") or "")
+        approval = latest_review.get("details", {}).get("approval", {})
+        reviewer = str(latest_review.get("details", {}).get("reviewer", "") or "")
+        reviewed_at = str(latest_review.get("details", {}).get("reviewed_at", "") or "")
         review_path = str(latest_review.get("path", ""))
         if status == "PENDING_HUMAN_REVIEW":
             return PaperReviewStatus(
@@ -61,11 +76,22 @@ def inspect_paper_review_status(
                 evidence_pack_path=evidence_pack_path,
             )
         if status == "APPROVED_FOR_PAPER_ONLY":
+            approval_tail = ""
+            if isinstance(approval, dict) and approval:
+                reviewer = str(approval.get("reviewer", reviewer) or reviewer)
+                reviewed_at = str(approval.get("timestamp", reviewed_at) or reviewed_at)
+            if reviewer:
+                approval_tail = f" Reviewer={reviewer}."
+            if reviewed_at:
+                approval_tail = f"{approval_tail} Approved_at={reviewed_at}."
             return PaperReviewStatus(
                 status=status,
                 paper_review_entry_allowed=True,
                 manual_review_pending=False,
-                summary="Human paper review is approved for paper-only consideration; no order path is enabled here.",
+                summary=(
+                    "Human paper review is approved for paper-only consideration; "
+                    f"no order path is enabled here.{approval_tail}"
+                ).strip(),
                 evidence_path=review_path,
                 review_path=review_path,
                 evidence_pack_path=evidence_pack_path,
@@ -81,7 +107,17 @@ def inspect_paper_review_status(
         )
 
     if latest_manifest is not None:
+        integrity_status = str(latest_manifest.get("integrity_status", "PASS/STABLE"))
         manifest_path = str(latest_manifest.get("path", ""))
+        if integrity_status == "CONFLICT":
+            return PaperReviewStatus(
+                status="CONFLICT",
+                paper_review_entry_allowed=False,
+                manual_review_pending=False,
+                summary="Latest strategy manifest evidence is conflicting; paper-review entry is blocked until manifest lineage is resolved.",
+                evidence_path=manifest_path,
+                manifest_path=manifest_path,
+            )
         status = str(
             latest_manifest.get("details", {}).get(
                 "promotion_status",

@@ -5,7 +5,10 @@ import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from quant_us.core.types import Fill
+from quant_us.execution.fill_idempotency import (
+    FillIdempotencyIndex,
+    append_fill_idempotent,
+)
 
 if TYPE_CHECKING:
     from quant_us.execution.broker_base import BrokerBase
@@ -19,6 +22,7 @@ class FillSyncResult:
     fills_found: int = 0
     fills_new: int = 0
     fills_duplicate: int = 0
+    fills_conflict: int = 0
     errors: list[str] = field(default_factory=list)
 
 
@@ -38,7 +42,7 @@ class FillSync:
         self._ledger = ledger
         self._lock = threading.Lock()
         self._log = logging.getLogger(self.__class__.__name__)
-        self._seen_fill_ids: set[str] = set()
+        self._fill_index = FillIdempotencyIndex()
 
     # ------------------------------------------------------------------
     # Public API
@@ -66,18 +70,25 @@ class FillSync:
 
         for fill in fills or []:
             result.fills_found += 1
-            if not fill.fill_id:
-                self._log.warning("Fill without fill_id: %s", fill)
-                continue
 
             with self._lock:
-                if fill.fill_id in self._seen_fill_ids:
-                    result.fills_duplicate += 1
+                try:
+                    appended = append_fill_idempotent(
+                        self._ledger,
+                        fill,
+                        index=self._fill_index,
+                        logger=self._log,
+                    )
+                except Exception as exc:
+                    self._log.error(
+                        "Failed to write fill %s to ledger: %s",
+                        fill.fill_id,
+                        exc,
+                    )
+                    result.errors.append(str(exc))
                     continue
-                self._seen_fill_ids.add(fill.fill_id)
 
-            try:
-                self._ledger.append_fill(fill)
+            if appended.appended:
                 result.fills_new += 1
                 self._log.info(
                     "New fill synced: fill_id=%s order=%s qty=%s price=%s",
@@ -86,13 +97,11 @@ class FillSync:
                     fill.quantity,
                     fill.price,
                 )
-            except Exception as exc:
-                self._log.error(
-                    "Failed to write fill %s to ledger: %s",
-                    fill.fill_id,
-                    exc,
-                )
-                result.errors.append(str(exc))
+            elif appended.duplicate:
+                result.fills_duplicate += 1
+            elif appended.conflict:
+                result.fills_conflict += 1
+                result.errors.append(f"fill_conflict({appended.key})")
 
         return result
 
@@ -122,6 +131,7 @@ class FillSync:
             combined.fills_found += result.fills_found
             combined.fills_new += result.fills_new
             combined.fills_duplicate += result.fills_duplicate
+            combined.fills_conflict += result.fills_conflict
             combined.errors.extend(result.errors)
 
         self._log.info(
@@ -143,10 +153,5 @@ class FillSync:
 
         Safe to call multiple times; only loads once.
         """
-        if self._seen_fill_ids:
-            return
-        for record in self._ledger.read_records("fills.jsonl"):
-            fid = record.get("fill_id") or ""
-            if fid:
-                self._seen_fill_ids.add(fid)
-        self._log.info("Loaded %d existing fills from ledger", len(self._seen_fill_ids))
+        self._fill_index.load_ledger(self._ledger)
+        self._log.info("Loaded %d existing fills from ledger", len(self._fill_index))

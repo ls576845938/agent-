@@ -38,6 +38,7 @@ from quant_us.core.types import (
     new_id,
 )
 from quant_us.live.fake_alpaca_paper_adapter import FakeAlpacaPaperBrokerAdapter
+from quant_us.live.paper_adapter_contract import PAPER_ADAPTER_CONTRACT_VERSION
 from quant_us.live.paper_runtime import PaperRuntime, PaperRuntimeConfig, PaperSessionMetrics
 from quant_us.live.paper_scheduler import PaperScheduler, PaperSchedulerConfig
 from quant_us.strategies.base import Strategy, StrategyContext
@@ -344,7 +345,7 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         artifact = _startup_sync_artifact(self.ledger_root)
         self.assertEqual(artifact["status"], "ok")
         self.assertEqual(artifact["backend"], "alpaca_paper")
-        self.assertEqual(artifact["contract_version"], "paper_adapter_contract_v3")
+        self.assertEqual(artifact["contract_version"], PAPER_ADAPTER_CONTRACT_VERSION)
         self.assertEqual(artifact["sync"]["poll_orders"]["call_count"], 1)
         self.assertEqual(artifact["sync"]["sync_fills"]["call_count"], 1)
         self.assertEqual(artifact["sync"]["sync_account"]["account_id"], "alpaca_paper_fake")
@@ -388,7 +389,7 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         artifact = _startup_sync_artifact(self.ledger_root)
         self.assertEqual(artifact["status"], "failed")
         self.assertEqual(artifact["backend"], "alpaca_paper")
-        self.assertEqual(artifact["contract_version"], "paper_adapter_contract_v3")
+        self.assertEqual(artifact["contract_version"], PAPER_ADAPTER_CONTRACT_VERSION)
         self.assertEqual(artifact["error"], "sync_account_failed")
         self.assertTrue(artifact["reduce_only"])
         self.assertTrue(artifact["halt_reconciliation"])

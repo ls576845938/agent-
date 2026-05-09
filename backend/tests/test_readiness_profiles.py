@@ -131,6 +131,37 @@ class TestSimulatedProfile:
         assert "RESULT: READINESS CHECKS PASSED for paper-stage evaluation only." in text
         assert "READY for live trading" not in text
 
+    def test_cli_small_live_ready_is_readiness_only(self):
+        """Small-live readiness output must not look like execution approval."""
+        from quant_us.cli import main
+        from quant_us.reports.live_readiness import LiveReadinessReport, ReadinessCheck
+
+        checks = [
+            ReadinessCheck(name=name, passed=True, detail="ok")
+            for name in [
+                "paper_30_day_clean",
+                "oms_idempotency",
+                "kill_switch_coverage",
+                "recon_hard_gate",
+                "fill_traceability",
+                "order_recovery",
+                "daily_report",
+                "monitoring",
+            ]
+        ]
+        report = LiveReadinessReport(checks=checks)
+        with (
+            patch("quant_us.reports.live_readiness.LiveReadinessGate") as gate_cls,
+            patch("sys.stdout", new_callable=io.StringIO) as stdout,
+        ):
+            gate_cls.return_value.check_all.return_value = report
+            main(["readiness", "--small-live", "--validation-state", "state.json"])
+
+        text = stdout.getvalue()
+        assert "RESULT: READINESS EVIDENCE PASSED for small-live review only." in text
+        assert "scope:  readiness only, no execution" in text
+        assert "GO for small-live trading" not in text
+
 
 class TestReadinessCheckWarn:
     """Verify warn field on ReadinessCheck."""

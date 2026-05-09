@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import pytest
+from dataclasses import replace
 
+from quant_us.execution.fill_idempotency import append_fill_idempotent
 from quant_us.execution.fill_sync import FillSync, FillSyncResult
 
 from .conftest import make_fill, make_order
@@ -130,7 +131,7 @@ class TestFillSync:
         assert len(records) == 2
 
     def test_fill_without_fill_id(self, broker, ledger):
-        """Fill without fill_id is skipped."""
+        """Fill without fill_id uses deterministic fallback identity."""
         fill = make_fill(fill_id="")
         broker.fills.append(fill)
 
@@ -138,4 +139,54 @@ class TestFillSync:
         result = fs.sync_fills()
 
         assert result.fills_found == 1
-        assert result.fills_new == 0  # skipped due to missing fill_id
+        assert result.fills_new == 1
+        assert result.fills_duplicate == 0
+        records = ledger.read_records("fills.jsonl")
+        assert len(records) == 1
+        assert records[0]["order_id"] == fill.order_id
+
+    def test_duplicate_fill_without_fill_id_uses_fallback_key(self, broker, ledger):
+        """Historical no-fill_id rows are prewarmed and deduped."""
+        fill = make_fill(fill_id="")
+        ledger.append_fill(fill)
+        broker.fills.append(fill)
+
+        fs = FillSync(broker, ledger)
+        result = fs.sync_fills()
+
+        assert result.fills_found == 1
+        assert result.fills_new == 0
+        assert result.fills_duplicate == 1
+        assert len(ledger.read_records("fills.jsonl")) == 1
+
+    def test_conflicting_same_fill_id_is_reported_not_appended(self, broker, ledger):
+        """Same fill key with different payload is a conflict."""
+        existing = make_fill(fill_id="fill_conflict", price=150.0)
+        incoming = replace(existing, price=151.0)
+        ledger.append_fill(existing)
+        broker.fills.append(incoming)
+
+        fs = FillSync(broker, ledger)
+        result = fs.sync_fills()
+
+        assert result.fills_found == 1
+        assert result.fills_new == 0
+        assert result.fills_duplicate == 0
+        assert result.fills_conflict == 1
+        assert "fill_conflict(fill_id:fill_conflict)" in result.errors
+        records = ledger.read_records("fills.jsonl")
+        assert len(records) == 1
+        assert records[0]["price"] == 150.0
+
+    def test_append_fill_idempotent_duplicate_and_conflict(self, ledger):
+        """Ledger helper skips identical rows and reports payload conflicts."""
+        fill = make_fill(fill_id="fill_helper")
+
+        first = append_fill_idempotent(ledger, fill)
+        duplicate = append_fill_idempotent(ledger, fill)
+        conflict = append_fill_idempotent(ledger, replace(fill, quantity=99.0))
+
+        assert first.appended is True
+        assert duplicate.duplicate is True
+        assert conflict.conflict is True
+        assert len(ledger.read_records("fills.jsonl")) == 1

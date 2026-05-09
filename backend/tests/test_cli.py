@@ -321,6 +321,9 @@ class CliReadinessTests(unittest.TestCase):
                 main(["readiness", "--data-root", tmp])
 
             text = out.getvalue()
+            self.assertIn("scope:       report only, no execution", text)
+            self.assertIn("validation_state_state: MISSING", text)
+            self.assertIn("latest_daily_report_state: MISSING", text)
             self.assertIn("paper_review_status: PENDING_HUMAN_REVIEW", text)
             self.assertIn("paper_review_entry_allowed: YES", text)
             self.assertIn("manual_review_pending: YES", text)
@@ -348,10 +351,46 @@ class CliManifestReportTests(unittest.TestCase):
             )
             main(["manifest", "inspect", "--manifest", "abc123", "--data-root", tmp])
 
+    def test_report_backtest_prints_state_and_report_only_scope(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "run_abc123.json").write_text(
+                """{
+                  "run_id": "abc123",
+                  "data_version": "data_v1",
+                  "strategy_version": "strat_v1",
+                  "commit_hash": "deadbee",
+                  "start_time": "2026-05-01T00:00:00+00:00",
+                  "end_time": "2026-05-01T00:01:00+00:00",
+                  "config": {"initial_cash": 100000, "commission_rate": 0.0001, "slippage_bps": 1.0}
+                }""",
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "backtest", "--run-id", "abc123", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("evidence_state: PASS manifest_path", text)
+            self.assertIn("scope:       report only, no execution", text)
+
     def test_report_backtest_requires_identifier(self) -> None:
         with self.assertRaises(SystemExit) as ctx:
             main(["report", "backtest"])
         self.assertEqual(ctx.exception.code, 2)
+
+    def test_report_evidence_registry_missing_uses_required_state_word(self) -> None:
+        with TemporaryDirectory() as tmp:
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "evidence-registry", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("Evidence Registry Report", text)
+            self.assertIn("registry_state: MISSING (missing)", text)
+            self.assertIn("scope:       report only, no execution", text)
 
     def test_report_daily_latest_uses_ledger_report(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -389,4 +428,8 @@ class CliManifestReportTests(unittest.TestCase):
             text = out.getvalue()
             self.assertIn("paper_review_status: APPROVED_FOR_PAPER_ONLY", text)
             self.assertIn("manual_review_pending: NO", text)
+            self.assertIn("report_state: PASS daily_report", text)
+            self.assertIn("readiness_state: MISSING validation_state", text)
+            self.assertIn("evidence_registry_state: MISSING (missing)", text)
+            self.assertIn("scope:       report only, no execution", text)
             self.assertIn("Reporting only. This does not approve or start paper/live trading.", text)

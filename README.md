@@ -36,6 +36,7 @@ cd frontend && npm install && npm run dev
 python scripts/generate_data_manifest.py --source yfinance --symbol AAPL --interval 1d --start 2024-01-01 --end 2024-03-31 --validate
 python -m quant_us.cli manifest list --kind all --limit 20
 python -m quant_us.cli report backtest --run-id <run_id>
+python -m quant_us.cli report evidence-registry --data-root data
 python -m quant_us.cli report daily --latest
 python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json
 python -m quant_us.cli research promotion-gate --candidate-id <candidate_id>
@@ -47,6 +48,7 @@ python scripts/run_full_pipeline.py --symbol AAPL --mode full --start 2024-01-01
 说明：
 
 - 这里的快速开始只覆盖当前可用的研究、回测、报告和门禁检查入口。
+- CLI 报告/ready/evidence registry 输出统一使用 `PASS` / `STALE` / `MISSING` / `CONFLICT`，并标明 `report only, no execution`。
 - 真实 Alpaca paper 还未接入；`paper_broker=alpaca` 继续保持 fail-closed。
 - paper startup sync artifact 只用于审计和门禁判断，不代表真实交易已经开通。
 - 文档里出现的 paper/live 入口只代表边界和门禁，不代表自动提交订单。

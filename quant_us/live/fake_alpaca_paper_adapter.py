@@ -53,3 +53,12 @@ class FakeAlpacaPaperBrokerAdapter(SimulatedBroker):
     def sync_positions(self) -> dict[str, Position]:
         self._record_sync_call("sync_positions")
         return self.get_positions()
+
+    def readiness_report(self) -> dict[str, object]:
+        return {
+            "adapter": self.broker_name,
+            "network": "disabled",
+            "paper_only": True,
+            "submit_surface": True,
+            "fake_adapter": True,
+        }

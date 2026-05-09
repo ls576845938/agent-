@@ -8,7 +8,11 @@ from typing import TYPE_CHECKING, Any
 
 from quant_us.core.clock import utc_now
 from quant_us.core.enums import OrderSide, OrderStatus, OrderType, TimeInForce
-from quant_us.core.types import Fill, Order
+from quant_us.core.types import Order
+from quant_us.execution.fill_idempotency import (
+    FillIdempotencyIndex,
+    append_fill_idempotent,
+)
 
 if TYPE_CHECKING:
     from quant_us.execution.broker_base import BrokerBase
@@ -26,6 +30,7 @@ class BrokerSyncReport:
     orders_missing_broker: list[Order] = field(default_factory=list)
     fills_synced: int = 0
     fills_duplicate: int = 0
+    fills_conflict: int = 0
     positions_compared: int = 0
     positions_diverge: list[tuple[str, float, float]] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
@@ -39,7 +44,7 @@ class _SyncState:
     orders_missing_broker: list[Order] = field(default_factory=list)
     fills_synced: int = 0
     fills_duplicate: int = 0
-    local_fill_ids: set[str] = field(default_factory=set)
+    fills_conflict: int = 0
 
 
 class BrokerStateSync:
@@ -118,8 +123,8 @@ class BrokerStateSync:
         """
         report = BrokerSyncReport()
 
-        # Load existing local order IDs and fill IDs for dedup
-        local_fill_ids = _load_fill_ids(self._ledger)
+        # Load existing local order IDs and fill identities for dedup
+        local_fill_index = FillIdempotencyIndex.from_ledger(self._ledger)
         local_order_ids = _load_order_client_ids(self._ledger)
 
         # Fetch all broker orders
@@ -163,20 +168,28 @@ class BrokerStateSync:
                 continue
 
             for fill in fills or []:
-                if fill.fill_id and fill.fill_id not in local_fill_ids:
-                    try:
-                        self._ledger.append_fill(fill)
-                        local_fill_ids.add(fill.fill_id)
-                        report.fills_synced += 1
-                    except Exception as exc:
-                        self._log.error(
-                            "Failed to write restored fill %s: %s",
-                            fill.fill_id,
-                            exc,
-                        )
-                        report.errors.append(f"append_fill({fill.fill_id}): {exc}")
-                elif fill.fill_id:
+                try:
+                    appended = append_fill_idempotent(
+                        self._ledger,
+                        fill,
+                        index=local_fill_index,
+                        logger=self._log,
+                    )
+                except Exception as exc:
+                    self._log.error(
+                        "Failed to write restored fill %s: %s",
+                        fill.fill_id,
+                        exc,
+                    )
+                    report.errors.append(f"append_fill({fill.fill_id}): {exc}")
+                    continue
+                if appended.appended:
+                    report.fills_synced += 1
+                elif appended.duplicate:
                     report.fills_duplicate += 1
+                elif appended.conflict:
+                    report.fills_conflict += 1
+                    report.errors.append(f"fill_conflict({appended.key})")
 
             if broker_order.status not in {OrderStatus.FILLED, OrderStatus.CANCELLED}:
                 report.orders_status_synced += 1
@@ -279,7 +292,7 @@ class BrokerStateSync:
         Compares broker fills against local fills (by fill_id) and writes
         missing ones.
         """
-        state.local_fill_ids = _load_fill_ids(self._ledger)
+        local_fill_index = FillIdempotencyIndex.from_ledger(self._ledger)
 
         # Get all broker fill IDs so we can find ones we're missing
         try:
@@ -290,20 +303,28 @@ class BrokerStateSync:
             return
 
         for fill in all_fills or []:
-            if not fill.fill_id:
-                continue
-            if fill.fill_id in state.local_fill_ids:
-                state.fills_duplicate += 1
-                continue
             try:
-                self._ledger.append_fill(fill)
-                state.fills_synced += 1
-                state.local_fill_ids.add(fill.fill_id)
+                appended = append_fill_idempotent(
+                    self._ledger,
+                    fill,
+                    index=local_fill_index,
+                    logger=self._log,
+                )
             except Exception as exc:
                 report.errors.append(f"append_fill({fill.fill_id}): {exc}")
+                continue
+
+            if appended.appended:
+                state.fills_synced += 1
+            elif appended.duplicate:
+                state.fills_duplicate += 1
+            elif appended.conflict:
+                state.fills_conflict += 1
+                report.errors.append(f"fill_conflict({appended.key})")
 
         report.fills_synced = state.fills_synced
         report.fills_duplicate = state.fills_duplicate
+        report.fills_conflict = state.fills_conflict
 
     def _sync_positions(self, report: BrokerSyncReport) -> None:
         """Compare ledger-derived positions against broker positions."""
@@ -359,16 +380,6 @@ def _order_from_record(record: dict[str, Any]) -> Order:
         updated_at=_parse_dt(record["updated_at"]),
         order_id=str(record["order_id"]),
     )
-
-
-def _load_fill_ids(ledger: JsonlLedgerStore) -> set[str]:
-    """Load all fill_ids from the ledger's fills.jsonl."""
-    ids: set[str] = set()
-    for record in ledger.read_records("fills.jsonl"):
-        fid = record.get("fill_id") or ""
-        if fid:
-            ids.add(fid)
-    return ids
 
 
 def _load_order_client_ids(ledger: JsonlLedgerStore) -> set[str]:

@@ -64,6 +64,11 @@ def run_pipeline(
     """
     symbol = symbol.upper()
     results: dict[str, Any] = {}
+    requested_mode = mode
+    if mode == "paper":
+        print("NOTE: --mode paper is a legacy alias for --mode full.")
+        print("      This script produces a handoff/readiness report only, no execution.")
+        mode = "full"
 
     # ------------------------------------------------------------------
     # Stage 1: Data ingestion + manifest
@@ -154,8 +159,9 @@ def run_pipeline(
     # Stage 3: Promotion gate
     # ------------------------------------------------------------------
     print(f"\n{'='*60}")
-    print(f"STAGE 3: Promotion gate -- {symbol}")
+    print(f"STAGE 3: Promotion gate handoff/readiness report -- {symbol}")
     print(f"{'='*60}")
+    print("  Scope: report only, no execution. No paper/live session will be started.")
     from backend.app.services.research_gate import ResearchPromotionGateService
 
     gate_request: dict[str, Any] = {
@@ -199,14 +205,17 @@ def run_pipeline(
     if gate_result["decision"] not in ("pass",):
         print(f"\nPromotion gate did not pass (decision={gate_result['decision']}). Skipping paper review handoff.")
         results["mode"] = "full"
+        results["requested_mode"] = requested_mode
         results["paper_skipped"] = True
+        results["paper_not_started"] = True
         return results
 
     print(f"\n{'='*60}")
-    print(f"STAGE 4: Paper review handoff -- {symbol}")
+    print(f"STAGE 4: Promotion gate handoff/readiness report -- {symbol}")
     print(f"{'='*60}")
     print("  RESULT: READY_FOR_MANUAL_PAPER_REVIEW")
-    print("  No paper trading session was started by this script.")
+    print("  Scope: report only, no execution.")
+    print("  No paper/live trading session was started by this script.")
     print("  Required next action: create/approve a paper review manually before any paper run.")
     print(f"  Evidence: data_manifest={results.get('data_manifest_path') or results.get('data_version')}")
     print(f"  Evidence: backtest_manifest={results.get('backtest_manifest_path')}")
@@ -217,8 +226,9 @@ def run_pipeline(
     results["paper_not_started"] = True
 
     results["mode"] = "full"
+    results["requested_mode"] = requested_mode
     print(f"\n{'='*60}")
-    print("FULL PIPELINE COMPLETE")
+    print("FULL PIPELINE COMPLETE — REPORT ONLY, NO EXECUTION")
     print(f"{'='*60}")
     for key, val in results.items():
         if key != "gate_result":
@@ -239,7 +249,12 @@ def main() -> None:
     parser.add_argument("--commission", type=float, default=0.0001, help="Commission rate")
     parser.add_argument("--slippage", type=float, default=1.0, help="Slippage in bps")
     parser.add_argument("--strategy", default="trend_momentum", help="Strategy ID from the registry")
-    parser.add_argument("--mode", default="backtest", choices=["backtest", "gate", "paper", "full"], help="Pipeline depth")
+    parser.add_argument(
+        "--mode",
+        default="backtest",
+        choices=["backtest", "gate", "paper", "full"],
+        help="Pipeline depth; paper is a legacy alias for full handoff/report only, no execution",
+    )
     parser.add_argument("--register", action="store_true", help="Register as experiment")
     parser.add_argument("--data-db-path", default="", help="SQLite DB path")
     parser.add_argument("--data-root", default="data", help="Data lake root directory")

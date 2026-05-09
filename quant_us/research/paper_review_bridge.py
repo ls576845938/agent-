@@ -13,6 +13,39 @@ from typing import Any
 
 from quant_us.core.clock import utc_now
 from quant_us.core.types import new_id
+from quant_us.research.evidence_registry import inspect_candidate_evidence
+
+
+PAPER_REVIEW_APPROVAL_SCHEMA_VERSION = "paper_review_approval_v1"
+
+
+@dataclass
+class PaperReviewApproval:
+    schema_version: str = PAPER_REVIEW_APPROVAL_SCHEMA_VERSION
+    reviewer: str = ""
+    reason: str = ""
+    timestamp: str = ""
+    candidate_id: str = ""
+    commit_hash: str = ""
+    source: str = ""
+    source_sha256: str = ""
+    gate_snapshot: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "PaperReviewApproval":
+        return cls(
+            schema_version=str(
+                data.get("schema_version", PAPER_REVIEW_APPROVAL_SCHEMA_VERSION)
+            ),
+            reviewer=str(data.get("reviewer", "")),
+            reason=str(data.get("reason", "")),
+            timestamp=str(data.get("timestamp", "")),
+            candidate_id=str(data.get("candidate_id", "")),
+            commit_hash=str(data.get("commit_hash", "")),
+            source=str(data.get("source", "")),
+            source_sha256=str(data.get("source_sha256", "")),
+            gate_snapshot=dict(data.get("gate_snapshot", {})),
+        )
 
 
 @dataclass
@@ -36,6 +69,35 @@ class PaperReviewCandidate:
     reviewer: str = ""
     review_notes: str = ""
     created_at: str = ""
+    reviewed_at: str = ""
+    approval: PaperReviewApproval | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        data = asdict(self)
+        if self.approval is None:
+            data["approval"] = None
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "PaperReviewCandidate":
+        approval = data.get("approval")
+        return cls(
+            paper_review_id=str(data.get("paper_review_id", "")),
+            strategy_manifest_id=str(data.get("strategy_manifest_id", "")),
+            portfolio_sim_id=str(data.get("portfolio_sim_id", "")),
+            evidence_pack_path=str(data.get("evidence_pack_path", "")),
+            proposed_symbols=list(data.get("proposed_symbols", [])),
+            proposed_capital=float(data.get("proposed_capital", 0.0) or 0.0),
+            proposed_risk_envelope=dict(data.get("proposed_risk_envelope", {})),
+            status=str(data.get("status", "DRAFT")),
+            reviewer=str(data.get("reviewer", "")),
+            review_notes=str(data.get("review_notes", "")),
+            created_at=str(data.get("created_at", "")),
+            reviewed_at=str(data.get("reviewed_at", "")),
+            approval=PaperReviewApproval.from_dict(approval)
+            if isinstance(approval, dict)
+            else None,
+        )
 
 
 class PaperReviewManager:
@@ -126,7 +188,12 @@ class PaperReviewManager:
         self._save_review(review)
         return review
 
-    def approve(self, review_id: str, reviewer: str) -> PaperReviewCandidate:
+    def approve(
+        self,
+        review_id: str,
+        reviewer: str,
+        reason: str = "",
+    ) -> PaperReviewCandidate:
         """Human approves a review for PAPER_ONLY trading consideration.
 
         This does NOT trigger paper trading. It only updates status to
@@ -155,8 +222,12 @@ class PaperReviewManager:
         if not reviewer:
             raise ValueError("Reviewer name is required for approval")
 
+        approval = self._build_approval(review, reviewer=reviewer, reason=reason)
         review.status = "APPROVED_FOR_PAPER_ONLY"
         review.reviewer = reviewer
+        review.review_notes = reason
+        review.reviewed_at = approval.timestamp
+        review.approval = approval
         self._save_review(review)
         return review
 
@@ -236,6 +307,9 @@ class PaperReviewManager:
             "proposed_risk_envelope": review.proposed_risk_envelope,
             "status": review.status,
             "reviewer": review.reviewer,
+            "reviewed_at": review.reviewed_at,
+            "review_notes": review.review_notes,
+            "approval": asdict(review.approval) if review.approval is not None else None,
             "note": "Evidence pack not yet generated. Use 'evidence-pack' command.",
         }
 
@@ -341,7 +415,7 @@ class PaperReviewManager:
         path = self.reviews_dir / review.paper_review_id / "review.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(
-            json.dumps(asdict(review), indent=2, default=str), encoding="utf-8"
+            json.dumps(review.to_dict(), indent=2, default=str), encoding="utf-8"
         )
 
     def _load_review(self, review_id: str) -> PaperReviewCandidate | None:
@@ -350,7 +424,7 @@ class PaperReviewManager:
         if not path.exists():
             return None
         data = json.loads(path.read_text(encoding="utf-8"))
-        return PaperReviewCandidate(**data)
+        return PaperReviewCandidate.from_dict(data)
 
     def _list_reviews(self) -> list[PaperReviewCandidate]:
         """List all reviews sorted by created_at descending."""
@@ -365,10 +439,116 @@ class PaperReviewManager:
             if not rev_path.exists():
                 continue
             results.append(
-                PaperReviewCandidate(
-                    **json.loads(rev_path.read_text(encoding="utf-8"))
+                PaperReviewCandidate.from_dict(
+                    json.loads(rev_path.read_text(encoding="utf-8"))
                 )
             )
 
         results.sort(key=lambda r: r.created_at, reverse=True)
         return results
+
+    def _build_approval(
+        self,
+        review: PaperReviewCandidate,
+        *,
+        reviewer: str,
+        reason: str,
+    ) -> PaperReviewApproval:
+        timestamp = utc_now().isoformat()
+        candidate_id = self._resolve_candidate_id(review)
+        chain = (
+            inspect_candidate_evidence(
+                candidate_id,
+                self.data_root,
+                use_saved=False,
+                rebuild_if_missing=True,
+            )
+            if candidate_id
+            else None
+        )
+        gate_snapshot = self._gate_snapshot_from_chain(candidate_id, chain)
+        source = ""
+        source_sha256 = ""
+        commit_hash = ""
+        if chain is not None:
+            source = str(chain.data_manifest.details.get("source", "") or "")
+            if not source:
+                source = (
+                    chain.data_manifest.path
+                    or chain.backtest_manifest.path
+                    or review.evidence_pack_path
+                )
+            source_sha256 = (
+                chain.backtest_manifest.sha256
+                or chain.data_manifest.sha256
+                or str(gate_snapshot.get("source_sha256", ""))
+            )
+            commit_hash = str(
+                chain.backtest_manifest.details.get("commit_hash", "") or ""
+            )
+        if not source:
+            source = review.evidence_pack_path or review.strategy_manifest_id
+        return PaperReviewApproval(
+            reviewer=reviewer,
+            reason=reason,
+            timestamp=timestamp,
+            candidate_id=candidate_id,
+            commit_hash=commit_hash,
+            source=source,
+            source_sha256=source_sha256,
+            gate_snapshot=gate_snapshot,
+        )
+
+    def _resolve_candidate_id(self, review: PaperReviewCandidate) -> str:
+        manifest_path = (
+            self.data_root
+            / "research"
+            / "manifests"
+            / review.strategy_manifest_id
+            / "manifest.json"
+        )
+        if manifest_path.exists():
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            candidate_id = str(manifest.get("source_candidate_id", "")).strip()
+            if candidate_id:
+                return candidate_id
+        if review.evidence_pack_path:
+            ev_path = Path(review.evidence_pack_path)
+            if ev_path.exists():
+                evidence = json.loads(ev_path.read_text(encoding="utf-8"))
+                sections = evidence.get("sections", {})
+                candidate_data = sections.get("candidate_data", {})
+                candidate_id = str(
+                    candidate_data.get("candidate_id", evidence.get("candidate_id", ""))
+                ).strip()
+                if candidate_id:
+                    return candidate_id
+        return ""
+
+    def _gate_snapshot_from_chain(
+        self,
+        candidate_id: str,
+        chain: Any,
+    ) -> dict[str, Any]:
+        if chain is None:
+            return {
+                "status": "missing",
+                "candidate_id": candidate_id,
+            }
+        gate_results = chain.promotion_result.details.get("promotion_gate_results", {})
+        candidate_gate = gate_results.get(candidate_id, {}) if isinstance(gate_results, dict) else {}
+        return {
+            "candidate_id": candidate_id,
+            "decision": str(candidate_gate.get("decision", "")),
+            "reasons": list(candidate_gate.get("reasons", []))
+            if isinstance(candidate_gate.get("reasons", []), list)
+            else [],
+            "warnings": list(candidate_gate.get("warnings", []))
+            if isinstance(candidate_gate.get("warnings", []), list)
+            else [],
+            "promotion_result_path": chain.promotion_result.path,
+            "promotion_result_sha256": chain.promotion_result.sha256,
+            "promotion_result_integrity_status": chain.promotion_result.integrity_status,
+            "chain_status": chain.chain_status,
+            "notes": list(chain.notes),
+        }

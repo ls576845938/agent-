@@ -88,10 +88,105 @@ def _latest_file(directory: Path, pattern: str) -> Path | None:
     return files[0] if files else None
 
 
+def _evidence_state(raw_status: str) -> str:
+    """Normalize registry/report evidence states for operator-facing output."""
+    status = raw_status.strip().lower()
+    if status in {"present", "rebuilt", "complete", "ok", "pass", "passed"}:
+        return "PASS"
+    if status in {"missing", "not_found", "not found"}:
+        return "MISSING"
+    if status in {"stale", "expired"}:
+        return "STALE"
+    if status in {"changed", "conflict", "mismatch"}:
+        return "CONFLICT"
+    return "MISSING" if not status else status.upper()
+
+
+def _path_evidence_state(path: Path | str | None) -> str:
+    return "PASS" if path and Path(path).exists() else "MISSING"
+
+
+def _print_report_only_note(indent: str = "  ") -> None:
+    print(f"{indent}scope:       report only, no execution")
+
+
+def _print_evidence_registry_status(data_root: str, indent: str = "  ") -> None:
+    from quant_us.research.evidence_registry import inspect_evidence_registry
+
+    try:
+        registry = inspect_evidence_registry(
+            data_root,
+            use_saved=True,
+            rebuild_if_missing=False,
+        )
+    except Exception as exc:
+        print(f"{indent}evidence_registry_state: CONFLICT (inspect_failed)")
+        print(f"{indent}evidence:     evidence_registry=(inspect failed)")
+        print(f"{indent}evidence_registry_notes: {type(exc).__name__}: {exc}")
+        return
+    raw_status = str(registry.get("registry_status", "missing"))
+    notes = list(registry.get("registry_notes", []))
+    path = Path(data_root) / "research" / "evidence_registry.json"
+    print(f"{indent}evidence_registry_state: {_evidence_state(raw_status)} ({raw_status})")
+    print(f"{indent}evidence:     evidence_registry={path if path.exists() else '(not found)'}")
+    if notes:
+        print(f"{indent}evidence_registry_notes: {'; '.join(str(n) for n in notes[:3])}")
+
+
+def _fallback_latest_paper_review(data_root: str) -> dict[str, str] | None:
+    """Best-effort read of paper review JSON when registry inspection fails."""
+    review_root = Path(data_root) / "research" / "paper_reviews"
+    rows: list[tuple[str, float, Path, dict[str, Any]]] = []
+    for path in review_root.glob("*/review.json"):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(payload, dict):
+                rows.append((str(payload.get("created_at", "")), path.stat().st_mtime, path, payload))
+        except (OSError, json.JSONDecodeError):
+            continue
+    if not rows:
+        return None
+    _, _, path, payload = sorted(rows, reverse=True)[0]
+    return {
+        "status": str(payload.get("status", "UNKNOWN")),
+        "path": str(path),
+        "evidence_pack_path": str(payload.get("evidence_pack_path", "") or ""),
+    }
+
+
 def _print_paper_review_status(data_root: str, indent: str = "  ") -> None:
     from quant_us.monitoring.paper_review_status import inspect_paper_review_status
 
-    status = inspect_paper_review_status(data_root)
+    try:
+        status = inspect_paper_review_status(data_root)
+    except Exception as exc:
+        fallback = _fallback_latest_paper_review(data_root)
+        if fallback is not None:
+            review_status = fallback["status"]
+            print(f"{indent}paper_review_status: {review_status}")
+            print(
+                f"{indent}paper_review_entry_allowed: "
+                f"{'YES' if review_status in {'PENDING_HUMAN_REVIEW', 'APPROVED_FOR_PAPER_ONLY'} else 'NO'}"
+            )
+            print(
+                f"{indent}manual_review_pending: "
+                f"{'YES' if review_status == 'PENDING_HUMAN_REVIEW' else 'NO'}"
+            )
+            print(
+                f"{indent}paper_review_note: fallback review scan used; "
+                f"evidence registry inspect failed: {type(exc).__name__}: {exc}"
+            )
+            print(f"{indent}evidence:     paper_review_status=CONFLICT (registry inspect failed)")
+            print(f"{indent}evidence:     paper_review={fallback['path']}")
+            if fallback["evidence_pack_path"]:
+                print(f"{indent}evidence:     evidence_pack={fallback['evidence_pack_path']}")
+            return
+        print(f"{indent}paper_review_status: CONFLICT")
+        print(f"{indent}paper_review_entry_allowed: NO")
+        print(f"{indent}manual_review_pending: NO")
+        print(f"{indent}paper_review_note: evidence inspection failed: {type(exc).__name__}: {exc}")
+        print(f"{indent}evidence:     paper_review_status=CONFLICT (inspect failed)")
+        return
     print(f"{indent}paper_review_status: {status.status}")
     print(
         f"{indent}paper_review_entry_allowed: "
@@ -412,7 +507,9 @@ def cmd_report_backtest(args: argparse.Namespace) -> None:
     print(f"  initial_cash:  {config.get('initial_cash', '(missing)')}")
     print(f"  cost_model:    commission_rate={config.get('commission_rate', '(missing)')}")
     print(f"  slippage:      {config.get('slippage_bps', '(missing)')} bps")
+    print(f"  evidence_state: {_path_evidence_state(path)} manifest_path")
     print(f"  evidence:      manifest_path={path}")
+    _print_report_only_note()
     print("=" * 60)
 
 
@@ -443,10 +540,49 @@ def cmd_report_daily(args: argparse.Namespace) -> None:
     print(f"  orders:       {payload.get('orders_submitted', 0)} submitted / {payload.get('orders_filled', 0)} filled")
     print(f"  recon:        {payload.get('reconciliation_status', 'unknown')}")
     print(f"  kill_switch:  {'TRIGGERED' if payload.get('kill_switch_triggered') else 'ok'}")
+    print(f"  report_state: {_path_evidence_state(path)} daily_report")
+    print(f"  readiness_state: {_path_evidence_state(validation_state)} validation_state")
     print(f"  evidence:     ledger_root={ledger_root}")
     print(f"  evidence:     validation_state={validation_state if validation_state.exists() else '(not found)'}")
+    _print_evidence_registry_status(args.data_root)
     _print_paper_review_status(args.data_root)
+    _print_report_only_note()
     print("  note:         Reporting only. This does not approve or start paper/live trading.")
+    print("=" * 60)
+
+
+def cmd_report_evidence_registry(args: argparse.Namespace) -> None:
+    """Print the persisted evidence registry status without rebuilding it."""
+    from quant_us.research.evidence_registry import inspect_evidence_registry
+
+    try:
+        registry = inspect_evidence_registry(
+            args.data_root,
+            use_saved=True,
+            rebuild_if_missing=False,
+        )
+        inspect_error = ""
+    except Exception as exc:
+        registry = {"registry_status": "conflict", "registry_notes": [f"{type(exc).__name__}: {exc}"]}
+        inspect_error = "inspect_failed"
+    raw_status = str(registry.get("registry_status", "missing"))
+    counts = dict(registry.get("counts", {}))
+    path = Path(args.data_root) / "research" / "evidence_registry.json"
+
+    print("Evidence Registry Report")
+    print("=" * 60)
+    _print_report_only_note()
+    print(f"  registry_state: {_evidence_state(raw_status)} ({raw_status})")
+    if inspect_error:
+        print(f"  registry_error: {inspect_error}")
+    print(f"  evidence:       evidence_registry={path if path.exists() else '(not found)'}")
+    for key in sorted(counts):
+        print(f"  {key}: {counts[key]}")
+    notes = list(registry.get("registry_notes", []))
+    if notes:
+        print("  notes:")
+        for note in notes[:10]:
+            print(f"    - {note}")
     print("=" * 60)
 
 
@@ -466,6 +602,10 @@ def _add_report_parser(subparsers: Any) -> None:
     daily_p.add_argument("--data-root", default="data", help="Data root directory")
     daily_p.add_argument("--ledger-root", default="", help="Override paper ledger root")
     daily_p.set_defaults(func=cmd_report_daily)
+
+    registry_p = report_sub.add_parser("evidence-registry", help="Inspect evidence registry status")
+    registry_p.add_argument("--data-root", default="data", help="Data root directory")
+    registry_p.set_defaults(func=cmd_report_evidence_registry)
 
 
 # ---------------------------------------------------------------------------
@@ -1063,6 +1203,7 @@ def cmd_paper_report(args: argparse.Namespace) -> None:
     except Exception:
         print(f"  (unable to parse report)")
     _print_paper_review_status(str(data_root))
+    _print_report_only_note()
     print("  Note:           Reporting only. No paper/live order path is enabled here.")
     print("=" * 60)
     print()
@@ -1877,15 +2018,19 @@ def cmd_readiness(args: argparse.Namespace) -> None:
     report = gate.check_all(validation_state_path=args.validation_state, profile=profile)
 
     print("Live Readiness Report")
+    _print_report_only_note()
     print(f"  run_id:       {run_id}")
     print(f"  generated_at: {generated_at}")
     print(f"  gate_version: 1.2.0")
     print(f"  profile:      {profile}")
+    print(f"  validation_state_state: {_path_evidence_state(args.validation_state)}")
     print(f"  evidence:     validation_state={args.validation_state or '(not provided)'}")
     data_root = getattr(args, "data_root", "data")
     latest_daily = _latest_file(Path(data_root) / "paper_ledger" / "daily_reports", "daily_report_*.json")
+    print(f"  latest_daily_report_state: {_path_evidence_state(latest_daily)}")
     print(f"  evidence:     latest_daily_report={latest_daily or '(not found)'}")
     print(f"  evidence:     manifest_root={_manifest_root(data_root)}")
+    _print_evidence_registry_status(data_root)
     _print_paper_review_status(data_root)
     if force_rerun:
         print("  force_rerun:  True (ignoring any stale results)")
@@ -1950,7 +2095,8 @@ def _cmd_readiness_small_live(args: argparse.Namespace) -> None:
         if paper_check:
             print(f"  Paper 30-day clean: {paper_check.detail}")
         print()
-        print("  RESULT: GO for small-live trading.")
+        print("  RESULT: READINESS EVIDENCE PASSED for small-live review only.")
+        print("  scope:  readiness only, no execution")
         print()
         print("=== SMALL-LIVE PARAMETERS ===")
         print("  Max position size:      1% of account")
@@ -1965,6 +2111,7 @@ def _cmd_readiness_small_live(args: argparse.Namespace) -> None:
         print(f"  Failing checks: {', '.join(failed)}")
         print()
         print("  RESULT: NO-GO for small-live trading.")
+        print("  scope:  readiness only, no execution")
         print("  Fix failing checks above and re-run.")
 
 
@@ -5780,6 +5927,7 @@ def _add_research_parser(subparsers: Any) -> None:
     pra_p.add_argument("--manual", action="store_true", required=True,
                        help="Manual confirmation flag (required)")
     pra_p.add_argument("--reviewer", required=True, help="Human reviewer name")
+    pra_p.add_argument("--reason", default="", help="Human approval reason recorded in the approval object")
     pra_p.add_argument("--data-root", default="data", help="Data root path")
     pra_p.set_defaults(func=cmd_research_paper_review_approve)
 
@@ -7104,9 +7252,18 @@ def cmd_research_paper_review_approve(args: argparse.Namespace) -> None:
     mgr = PaperReviewManager(data_root=args.data_root)
 
     try:
-        review = mgr.approve(args.paper_review_id, args.reviewer)
+        review = mgr.approve(
+            args.paper_review_id,
+            args.reviewer,
+            reason=getattr(args, "reason", ""),
+        )
         print(f"Paper review {args.paper_review_id} approved by {args.reviewer}.")
         print(f"  Status: {review.status}")
+        if review.approval is not None:
+            print(f"  Approval: {review.approval.schema_version}")
+            print(f"  Approved At: {review.approval.timestamp}")
+            print(f"  Candidate: {review.approval.candidate_id or '(not linked)'}")
+            print(f"  Commit: {review.approval.commit_hash or '(not set)'}")
         print(f"  NOTE: This does NOT trigger paper trading.")
         print(f"  The manifest is now APPROVED_FOR_PAPER_ONLY.")
         print(f"  A separate operator action is required to enter paper trading.")
@@ -7130,11 +7287,12 @@ def cmd_research_evidence_pack(args: argparse.Namespace) -> None:
             print(gen.to_markdown(evidence))
         else:
             print(f"Evidence pack for candidate {args.candidate_id}:")
+            _print_report_only_note()
             sections = evidence.get("sections", {})
             for sec_key, sec_data in sections.items():
-                status = "OK" if "error" not in str(sec_data) else "MISSING"
+                status = "PASS" if "error" not in str(sec_data) else "MISSING"
                 if isinstance(sec_data, dict) and "error" in sec_data:
-                    status = f"ERROR: {sec_data['error']}"
+                    status = f"MISSING: {sec_data['error']}"
                 print(f"  {sec_key}: {status}")
 
         if args.save or args.output_dir:

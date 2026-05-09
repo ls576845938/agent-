@@ -26,6 +26,10 @@ from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.clock import utc_now
 from quant_us.core.enums import OrderStatus
 from quant_us.core.types import new_id
+from quant_us.execution.fill_idempotency import (
+    FillIdempotencyIndex,
+    append_fill_idempotent,
+)
 from quant_us.data.storage.postgres_store import PostgresConfig, PostgresStateStore
 from quant_us.execution.ledger import JsonlLedgerStore
 from quant_us.execution.oms import OrderManagementSystem
@@ -128,6 +132,7 @@ class PaperTradingLoop:
         )
 
         self.ledger = JsonlLedgerStore(self.config.ledger_root)
+        self._fill_index = FillIdempotencyIndex.from_ledger(self.ledger)
 
         # Optional PostgreSQL dual-write store
         self.pg_store: PostgresStateStore | None = None
@@ -303,8 +308,16 @@ class PaperTradingLoop:
                                 self.ledger.append_order(result.order)
                                 self._pg_write_orders([result.order])
                             for fill in result.fills:
-                                self.ledger.append_fill(fill)
-                                self._pg_write_fills([fill])
+                                fill_append = append_fill_idempotent(
+                                    self.ledger,
+                                    fill,
+                                    index=self._fill_index,
+                                    logger=logging.getLogger(__name__),
+                                )
+                                if fill_append.appended:
+                                    self._pg_write_fills([fill])
+                                elif fill_append.conflict:
+                                    errors.append(f"fill_conflict({fill_append.key})")
                 except Exception as exc:
                     errors.append(f"{bar.symbol} @ {bar.timestamp_utc}: {exc}")
                     self.kill_switch.record_order_failure()

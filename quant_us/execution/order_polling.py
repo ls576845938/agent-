@@ -9,7 +9,11 @@ from typing import TYPE_CHECKING, Any
 
 from quant_us.core.clock import utc_now
 from quant_us.core.enums import OrderSide, OrderStatus, OrderType, TimeInForce
-from quant_us.core.types import Fill, Order
+from quant_us.core.types import Order
+from quant_us.execution.fill_idempotency import (
+    FillIdempotencyIndex,
+    append_fill_idempotent,
+)
 
 if TYPE_CHECKING:
     from quant_us.execution.broker_base import BrokerBase
@@ -90,6 +94,7 @@ class OrderPollingLoop:
         self._lock = threading.Lock()
         self._orders: dict[str, Order] = {}
         self._processed_ids: set[str] = set()
+        self._fill_index = FillIdempotencyIndex()
         self._log = logging.getLogger(self.__class__.__name__)
 
     # ------------------------------------------------------------------
@@ -248,14 +253,26 @@ class OrderPollingLoop:
         try:
             fills = self._broker.get_fills(order_id=broker_order.order_id)
             for fill in fills or []:
-                self._ledger.append_fill(fill)
-                self._log.info(
-                    "Fill synced: order=%s fill=%s qty=%s price=%s",
-                    broker_order.client_order_id,
-                    fill.fill_id,
-                    fill.quantity,
-                    fill.price,
+                appended = append_fill_idempotent(
+                    self._ledger,
+                    fill,
+                    index=self._fill_index,
+                    logger=self._log,
                 )
+                if appended.appended:
+                    self._log.info(
+                        "Fill synced: order=%s fill=%s qty=%s price=%s",
+                        broker_order.client_order_id,
+                        fill.fill_id,
+                        fill.quantity,
+                        fill.price,
+                    )
+                elif appended.conflict:
+                    self._log.error(
+                        "Conflicting fill skipped: order=%s key=%s",
+                        broker_order.client_order_id,
+                        appended.key,
+                    )
         except Exception as exc:
             self._log.error(
                 "Failed to sync fills for order %s: %s",
