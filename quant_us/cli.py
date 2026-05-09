@@ -123,6 +123,13 @@ def _display_value(value: Any, missing: str = "(missing)") -> str:
     return str(value)
 
 
+def _first_present(*values: Any) -> Any:
+    for value in values:
+        if value is not None and value != "":
+            return value
+    return None
+
+
 def _print_report_only_note(indent: str = "  ") -> None:
     print(f"{indent}scope:       report only, no execution")
 
@@ -471,6 +478,8 @@ def _print_paper_session_artifacts(ledger_root: Path, indent: str = "  ") -> Non
         print(f"{indent}paper_session_mode: {_display_value(payload.get('mode'))}")
         print(f"{indent}paper_session_broker_backend: {_display_value(payload.get('broker_backend'))}")
         print(f"{indent}paper_session_submit_orders: {bool(payload.get('submit_orders', False))}")
+        if payload.get("history_artifact_path"):
+            print(f"{indent}paper_session_history_artifact_path: {payload.get('history_artifact_path')}")
         proof = payload.get("no_real_order_submission_proof", {})
         proof_status = proof.get("status", "") if isinstance(proof, dict) else ""
         print(f"{indent}paper_session_no_submit_proof: {_display_value(proof_status)}")
@@ -489,6 +498,87 @@ def _print_ledger_reconciliation_artifact(payload: dict[str, Any], ledger_root: 
         print(f"{indent}ledger_fill_hash: {_display_value(payload.get('ledger_fill_hash'))}")
         print(f"{indent}ledger_fill_dup_conflict: {int(payload.get('ledger_duplicate_fill_count', 0) or 0)}/{int(payload.get('ledger_conflict_fill_count', 0) or 0)}")
         print(f"{indent}ledger_pnl: ${float(payload.get('ledger_pnl', 0.0) or 0.0):+,.2f}")
+
+
+def _backtest_evidence_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    evidence = payload.get("evidence", {})
+    return evidence if isinstance(evidence, dict) else {}
+
+
+def _ledger_artifact_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    artifact = payload.get("ledger_artifact")
+    if isinstance(artifact, dict):
+        return artifact
+    evidence_artifact = _backtest_evidence_payload(payload).get("ledger_artifact")
+    return evidence_artifact if isinstance(evidence_artifact, dict) else {}
+
+
+def _ledger_artifact_hashes(payload: dict[str, Any]) -> dict[str, Any]:
+    artifact_hashes = _ledger_artifact_payload(payload).get("hashes", {})
+    return artifact_hashes if isinstance(artifact_hashes, dict) else {}
+
+
+def _backtest_evidence_value(payload: dict[str, Any], key: str) -> Any:
+    evidence = _backtest_evidence_payload(payload)
+    hashes = _ledger_artifact_hashes(payload)
+    return _first_present(payload.get(key), evidence.get(key), hashes.get(key))
+
+
+def _artifact_consistency_state(payload: dict[str, Any]) -> str:
+    artifact = _ledger_artifact_payload(payload)
+    hashes = _ledger_artifact_hashes(payload)
+    checks = [
+        ("ledger_artifact_hash", _backtest_evidence_value(payload, "ledger_artifact_hash"), artifact.get("artifact_hash")),
+        ("ledger_hash", _backtest_evidence_value(payload, "ledger_hash"), hashes.get("ledger_hash")),
+        ("fills_hash", _backtest_evidence_value(payload, "fills_hash"), hashes.get("fills_hash")),
+        ("orders_hash", _backtest_evidence_value(payload, "orders_hash"), hashes.get("orders_hash")),
+        (
+            "portfolio_snapshots_hash",
+            _backtest_evidence_value(payload, "portfolio_snapshots_hash"),
+            hashes.get("portfolio_snapshots_hash"),
+        ),
+    ]
+    if not artifact or not hashes:
+        return "MISSING"
+    missing = [name for name, left, right in checks if not left or not right]
+    if missing:
+        return "MISSING"
+    mismatched = [name for name, left, right in checks if str(left) != str(right)]
+    return "CONFLICT" if mismatched else "PASS"
+
+
+def _artifact_completeness_state(payload: dict[str, Any]) -> str:
+    completeness = _backtest_evidence_payload(payload).get("completeness", payload.get("completeness"))
+    if not isinstance(completeness, dict) or not completeness:
+        return "MISSING"
+    required = (
+        "ledger_evidence_complete",
+        "data_manifest_bound",
+        "promotion_evidence_complete",
+    )
+    values = [completeness.get(key) for key in required]
+    if any(value is None for value in values):
+        return "MISSING"
+    return "PASS" if all(bool(value) for value in values) else "CONFLICT"
+
+
+def _print_backtest_ledger_evidence(payload: dict[str, Any], indent: str = "  ") -> None:
+    evidence = _backtest_evidence_payload(payload)
+    artifact = _ledger_artifact_payload(payload)
+    completeness = evidence.get("completeness", payload.get("completeness"))
+    if not isinstance(completeness, dict):
+        completeness = {}
+    print(f"{indent}generated_at: {_display_value(_first_present(payload.get('generated_at'), evidence.get('generated_at')))}")
+    print(f"{indent}as_of_utc:    {_display_value(_first_present(payload.get('as_of_utc'), evidence.get('as_of_utc'), artifact.get('as_of_utc')))}")
+    print(f"{indent}ledger_artifact_hash: {_display_value(_backtest_evidence_value(payload, 'ledger_artifact_hash'))}")
+    print(f"{indent}ledger_hash: {_display_value(_backtest_evidence_value(payload, 'ledger_hash'))}")
+    print(f"{indent}fills_hash: {_display_value(_backtest_evidence_value(payload, 'fills_hash'))}")
+    print(f"{indent}orders_hash: {_display_value(_backtest_evidence_value(payload, 'orders_hash'))}")
+    print(f"{indent}portfolio_snapshots_hash: {_display_value(_backtest_evidence_value(payload, 'portfolio_snapshots_hash'))}")
+    print(f"{indent}artifact_consistency_state: {_artifact_consistency_state(payload)}")
+    print(f"{indent}artifact_completeness_state: {_artifact_completeness_state(payload)}")
+    for key in ("ledger_evidence_complete", "data_manifest_bound", "promotion_evidence_complete"):
+        print(f"{indent}completeness_{key}: {_display_value(completeness.get(key))}")
 
 
 def cmd_manifest_list(args: argparse.Namespace) -> None:
@@ -607,6 +697,7 @@ def cmd_report_backtest(args: argparse.Namespace) -> None:
     print(f"  cost_model:    commission_rate={config.get('commission_rate', '(missing)')}")
     print(f"  slippage:      {config.get('slippage_bps', '(missing)')} bps")
     _print_data_manifest_v2_fields(payload)
+    _print_backtest_ledger_evidence(payload)
     print(f"  evidence_state: {_path_evidence_state(path)} manifest_path")
     print(f"  evidence:      manifest_path={path}")
     _print_report_only_note()
@@ -1305,6 +1396,7 @@ def cmd_paper_report(args: argparse.Namespace) -> None:
             print(f"  Errors:         {data['errors']}")
     except Exception:
         print(f"  (unable to parse report)")
+    _print_paper_session_artifacts(data_root / "paper_ledger")
     _print_paper_review_status(str(data_root))
     _print_report_only_note()
     print("  Note:           Reporting only. No paper/live order path is enabled here.")

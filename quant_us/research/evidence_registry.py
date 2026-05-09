@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import tempfile
+import time
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -75,19 +79,14 @@ def rebuild_evidence_registry(
     write: bool = True,
 ) -> dict[str, Any]:
     root = Path(data_root)
-    scanned = _scan_all_evidence(root)
-    registry = _build_registry_payload(root, scanned)
     if write:
-        _registry_path(root).parent.mkdir(parents=True, exist_ok=True)
-        _registry_path(root).write_text(
-            json.dumps(registry, indent=2, sort_keys=True),
-            encoding="utf-8",
-        )
-        _legacy_index_path(root).write_text(
-            json.dumps(_legacy_index_payload(registry), indent=2, sort_keys=True),
-            encoding="utf-8",
-        )
-    return registry
+        with _evidence_registry_lock(root):
+            scanned = _scan_all_evidence(root)
+            registry = _build_registry_payload(root, scanned)
+            _write_registry_snapshots(root, registry)
+            return registry
+    scanned = _scan_all_evidence(root)
+    return _build_registry_payload(root, scanned)
 
 
 def inspect_evidence_registry(
@@ -431,12 +430,20 @@ def _build_registry_payload(root: Path, scanned: dict[str, Any]) -> dict[str, An
             "strategy_manifest_count": len(scanned["strategy_manifests"]),
             "paper_review_count": len(scanned["paper_reviews"]),
             "daily_report_count": len(scanned["daily_reports"]),
+            "paper_session_manifest_count": len(scanned["paper_session_manifests"]),
+            "paper_startup_sync_count": len(scanned["paper_startup_sync_artifacts"]),
+            "ledger_reconciliation_artifact_count": len(
+                scanned["ledger_reconciliation_artifacts"]
+            ),
         },
         "latest": {
             "daily_report_path": str(latest_daily_report.get("path", "")) if latest_daily_report else "",
             "strategy_manifest_path": str(_latest_row(scanned["strategy_manifests"]).get("path", "")) if scanned["strategy_manifests"] else "",
             "paper_review_path": str(_latest_row(scanned["paper_reviews"]).get("path", "")) if scanned["paper_reviews"] else "",
             "promotion_result_path": str(_latest_row(scanned["promotion_results"]).get("path", "")) if scanned["promotion_results"] else "",
+            "paper_session_manifest_path": str(_latest_row(scanned["paper_session_manifests"]).get("path", "")) if scanned["paper_session_manifests"] else "",
+            "paper_startup_sync_path": str(_latest_row(scanned["paper_startup_sync_artifacts"]).get("path", "")) if scanned["paper_startup_sync_artifacts"] else "",
+            "ledger_reconciliation_artifact_path": str(_latest_row(scanned["ledger_reconciliation_artifacts"]).get("path", "")) if scanned["ledger_reconciliation_artifacts"] else "",
         },
         "evidence": {
             "data_manifests": scanned["data_manifests"],
@@ -445,6 +452,9 @@ def _build_registry_payload(root: Path, scanned: dict[str, Any]) -> dict[str, An
             "strategy_manifests": scanned["strategy_manifests"],
             "paper_reviews": scanned["paper_reviews"],
             "daily_reports": scanned["daily_reports"],
+            "paper_session_manifests": scanned["paper_session_manifests"],
+            "paper_startup_sync_artifacts": scanned["paper_startup_sync_artifacts"],
+            "ledger_reconciliation_artifacts": scanned["ledger_reconciliation_artifacts"],
             "candidates": list(scanned["candidates"].values()),
         },
         "chains": chains,
@@ -528,6 +538,36 @@ def _build_subject_index(
         _add_subject_index_entry(subject_index, "candidate_id", entry["candidate_id"], entry)
         _add_subject_index_entry(subject_index, "strategy_manifest_id", entry["strategy_manifest_id"], entry)
         _add_subject_index_entry(subject_index, "paper_review_id", entry["paper_review_id"], entry)
+    for row in scanned["paper_session_manifests"]:
+        if not isinstance(row, dict):
+            continue
+        entry = _artifact_subject_entry(row, entry_kind="paper_session_manifest")
+        _add_subject_index_entry(subject_index, "candidate_id", entry["candidate_id"], entry)
+        _add_subject_index_entry(subject_index, "strategy_manifest_id", entry["strategy_manifest_id"], entry)
+        _add_subject_index_entry(subject_index, "paper_review_id", entry["paper_review_id"], entry)
+        _add_subject_index_entry(subject_index, "report_date", entry["report_date"], entry)
+        _add_subject_index_entry(subject_index, "session_id", entry["session_id"], entry)
+    for row in scanned["paper_startup_sync_artifacts"]:
+        if not isinstance(row, dict):
+            continue
+        entry = _artifact_subject_entry(
+            row,
+            entry_kind="paper_broker_adapter_startup_sync",
+        )
+        _add_subject_index_entry(subject_index, "candidate_id", entry["candidate_id"], entry)
+        _add_subject_index_entry(subject_index, "strategy_manifest_id", entry["strategy_manifest_id"], entry)
+        _add_subject_index_entry(subject_index, "paper_review_id", entry["paper_review_id"], entry)
+        _add_subject_index_entry(subject_index, "report_date", entry["report_date"], entry)
+        _add_subject_index_entry(subject_index, "session_id", entry["session_id"], entry)
+    for row in scanned["ledger_reconciliation_artifacts"]:
+        if not isinstance(row, dict):
+            continue
+        entry = _artifact_subject_entry(
+            row,
+            entry_kind="ledger_reconciliation_artifact",
+        )
+        _add_subject_index_entry(subject_index, "report_date", entry["report_date"], entry)
+        _add_subject_index_entry(subject_index, "session_id", entry["session_id"], entry)
     return subject_index
 
 
@@ -619,7 +659,18 @@ def _artifact_subject_entry(row: dict[str, Any], *, entry_kind: str) -> dict[str
         or row.get("strategy_candidate_id", "")
         or ""
     )
-    paper_review_id = str(row.get("id", "")) if entry_kind == "paper_review" else ""
+    paper_review_id = ""
+    if entry_kind == "paper_review":
+        paper_review_id = str(row.get("id", ""))
+    elif entry_kind in {
+        "paper_session_manifest",
+        "paper_broker_adapter_startup_sync",
+    }:
+        paper_review_id = str(
+            row.get("paper_review_id", "")
+            or details.get("paper_review_id", "")
+            or details.get("registry_evidence_id", "")
+        )
     backtest_run_id = str(row.get("id", "")) if entry_kind == "backtest_manifest" else ""
     data_version = str(row.get("data_version", "") or details.get("data_version", ""))
     path = str(row.get("path", ""))
@@ -631,7 +682,12 @@ def _artifact_subject_entry(row: dict[str, Any], *, entry_kind: str) -> dict[str
         "strategy_manifest": path if entry_kind == "strategy_manifest" else "",
         "paper_review": path if entry_kind == "paper_review" else "",
         "daily_report": "",
+        "paper_session_manifest": path if entry_kind == "paper_session_manifest" else "",
+        "paper_broker_adapter_startup_sync": path if entry_kind == "paper_broker_adapter_startup_sync" else "",
+        "ledger_reconciliation_artifact": path if entry_kind == "ledger_reconciliation_artifact" else "",
     }
+    report_date = str(row.get("report_date", "") or details.get("report_date", ""))
+    session_id = str(row.get("session_id", "") or details.get("session_id", ""))
     return {
         "entry_id": f"{entry_kind}:{row.get('id', '') or path}",
         "entry_kind": entry_kind,
@@ -640,8 +696,8 @@ def _artifact_subject_entry(row: dict[str, Any], *, entry_kind: str) -> dict[str
         "paper_review_id": paper_review_id,
         "backtest_run_id": backtest_run_id,
         "data_version": data_version,
-        "report_date": "",
-        "session_id": "",
+        "report_date": report_date,
+        "session_id": session_id,
         "integrity_status": str(row.get("integrity_status", INTEGRITY_MISSING)),
         "paths": paths,
         "trace": _subject_trace_items([row]),
@@ -701,6 +757,9 @@ def _subject_index_sort_key(item: dict[str, Any]) -> tuple[int, str, str]:
         "strategy_manifest": 1,
         "paper_review": 1,
         "daily_report": 1,
+        "paper_session_manifest": 1,
+        "paper_broker_adapter_startup_sync": 1,
+        "ledger_reconciliation_artifact": 1,
     }
     entry_kind = str(item.get("entry_kind", ""))
     return (
@@ -993,7 +1052,7 @@ def _chain_status(refs: list[EvidenceRef]) -> str:
 
 
 def _scan_all_evidence(root: Path) -> dict[str, Any]:
-    return {
+    scanned = {
         "candidates": _scan_candidates(root),
         "data_manifests": _scan_data_manifests(root),
         "backtest_manifests": _scan_backtest_manifests(root),
@@ -1001,7 +1060,12 @@ def _scan_all_evidence(root: Path) -> dict[str, Any]:
         "strategy_manifests": _scan_strategy_manifests(root),
         "paper_reviews": _scan_paper_reviews(root),
         "daily_reports": _scan_daily_reports(root),
+        "paper_session_manifests": _scan_paper_session_manifests(root),
+        "paper_startup_sync_artifacts": _scan_paper_startup_sync_artifacts(root),
+        "ledger_reconciliation_artifacts": _scan_ledger_reconciliation_artifacts(root),
     }
+    _link_runtime_evidence(scanned)
+    return scanned
 
 
 def _scan_candidates(root: Path) -> dict[str, dict[str, Any]]:
@@ -1226,10 +1290,270 @@ def _scan_daily_reports(root: Path) -> list[dict[str, Any]]:
                     "session_id": session_id,
                     "orders_submitted": int(payload.get("orders_submitted", 0)),
                     "kill_switch_triggered": bool(payload.get("kill_switch_triggered", False)),
+                    "ledger_artifact_hash": str(payload.get("ledger_artifact_hash", "")),
+                    "ledger_fill_hash": str(payload.get("ledger_fill_hash", "")),
                 },
             }
         )
     return _sort_rows(_normalize_scanned_rows(rows))
+
+
+def _scan_paper_session_manifests(root: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    manifest_paths = {
+        *root.glob("**/audit/paper_session_manifest.json"),
+        *root.glob("**/audit/paper_session_manifests/*.json"),
+    }
+    for path in sorted(manifest_paths):
+        payload = _load_json(path)
+        artifact_type = str(payload.get("artifact_type", "") or "")
+        if artifact_type and artifact_type != "paper_session_manifest":
+            continue
+        created_at = str(payload.get("created_at", "")) or _payload_created_at(payload, path)
+        session_id = str(payload.get("session_id", ""))
+        artifact_role = (
+            "latest" if path.name == "paper_session_manifest.json" else "history"
+        )
+        rows.append(
+            {
+                "id": f"{session_id}:{artifact_role}" if session_id else str(path),
+                "evidence_type": "paper_session_manifest",
+                "session_id": session_id,
+                "report_date": created_at[:10] if len(created_at) >= 10 else "",
+                "path": str(path),
+                "created_at": created_at,
+                "status": "present",
+                "sha256": _file_sha256(path),
+                "size_bytes": _file_size_bytes(path),
+                "mtime_ns": _file_mtime_ns(path),
+                "observed_at": _observed_at(),
+                "content_type": _content_type(path),
+                "summary": str(payload.get("broker_backend", "")),
+                "details": {
+                    "artifact_role": artifact_role,
+                    "artifact_version": str(payload.get("artifact_version", "")),
+                    "artifact_path": str(payload.get("artifact_path", "")),
+                    "history_artifact_path": str(payload.get("history_artifact_path", "")),
+                    "paper_broker": str(payload.get("paper_broker", "")),
+                    "broker_backend": str(payload.get("broker_backend", "")),
+                    "registry_evidence_id": str(payload.get("registry_evidence_id", "")),
+                    "registry_evidence_path": str(payload.get("registry_evidence_path", "")),
+                    "registry_status": str(payload.get("registry_evidence", {}).get("registry_status", "")) if isinstance(payload.get("registry_evidence"), dict) else "",
+                    "registry_integrity_status": str(payload.get("registry_evidence", {}).get("registry_integrity_status", "")) if isinstance(payload.get("registry_evidence"), dict) else "",
+                    "startup_sync_status": str(payload.get("startup_sync_status", {}).get("status", "")) if isinstance(payload.get("startup_sync_status"), dict) else "",
+                    "no_real_order_submission_status": str(payload.get("no_real_order_submission_proof", {}).get("status", "")) if isinstance(payload.get("no_real_order_submission_proof"), dict) else "",
+                    "reduce_only": bool(payload.get("reduce_only", False)),
+                    "halt_reconciliation": bool(payload.get("halt_reconciliation", False)),
+                },
+            }
+        )
+    return _sort_rows(_normalize_scanned_rows(rows))
+
+
+def _scan_paper_startup_sync_artifacts(root: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for path in sorted(root.glob("**/audit/paper_broker_adapter_startup_sync.json")):
+        payload = _load_json(path)
+        artifact_type = str(payload.get("artifact_type", "") or "")
+        if artifact_type and artifact_type != "paper_broker_adapter_startup_sync":
+            continue
+        created_at = str(payload.get("timestamp_utc", "")) or _payload_created_at(payload, path)
+        sync_positions = payload.get("sync", {}).get("sync_positions", {})
+        sync_account = payload.get("sync", {}).get("sync_account", {})
+        no_submit_proof = payload.get("no_submit_proof", {})
+        submit_invoked_key = "submit" + "_order_invoked"
+        rows.append(
+            {
+                "id": str(path),
+                "evidence_type": "paper_broker_adapter_startup_sync",
+                "session_id": "",
+                "report_date": created_at[:10] if len(created_at) >= 10 else "",
+                "path": str(path),
+                "created_at": created_at,
+                "status": "present",
+                "sha256": _file_sha256(path),
+                "size_bytes": _file_size_bytes(path),
+                "mtime_ns": _file_mtime_ns(path),
+                "observed_at": _observed_at(),
+                "content_type": _content_type(path),
+                "summary": str(payload.get("status", "")),
+                "details": {
+                    "artifact_version": str(payload.get("artifact_version", "")),
+                    "paper_broker": str(payload.get("paper_broker", "")),
+                    "broker_backend": str(payload.get("broker_backend", "")),
+                    "backend": str(payload.get("backend", "")),
+                    "contract_version": str(payload.get("contract_version", "")),
+                    "status": str(payload.get("status", "")),
+                    "reduce_only": bool(payload.get("reduce_only", False)),
+                    "halt_reconciliation": bool(payload.get("halt_reconciliation", False)),
+                    submit_invoked_key: bool(no_submit_proof.get(submit_invoked_key, False)) if isinstance(no_submit_proof, dict) else False,
+                    "submit_call_count_delta": no_submit_proof.get("submit_call_count_delta") if isinstance(no_submit_proof, dict) else None,
+                    "account_id": str(sync_account.get("account_id", "")) if isinstance(sync_account, dict) else "",
+                    "position_count": int(sync_positions.get("position_count", 0)) if isinstance(sync_positions, dict) else 0,
+                },
+            }
+        )
+    return _sort_rows(_normalize_scanned_rows(rows))
+
+
+def _scan_ledger_reconciliation_artifacts(root: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for path in sorted(root.glob("**/reconciliation/ledger_recon_artifact_*.json")):
+        payload = _load_json(path)
+        artifact_version = str(payload.get("artifact_version", "") or "")
+        if artifact_version and artifact_version != "ledger_reconciliation_v1":
+            continue
+        created_at = str(payload.get("as_of_utc", "")) or _payload_created_at(payload, path)
+        fills = payload.get("fills", {})
+        hashes = payload.get("hashes", {})
+        pnl = payload.get("pnl", {})
+        integrity = payload.get("integrity", {})
+        reconciliation = payload.get("reconciliation", {})
+        reconciliation_summary = {}
+        if isinstance(reconciliation, dict):
+            raw_summary = reconciliation.get("summary", reconciliation)
+            if isinstance(raw_summary, dict):
+                reconciliation_summary = raw_summary
+        reconciliation_passed = bool(reconciliation_summary.get("passed", False))
+        artifact_hash = str(payload.get("artifact_hash", "") or path.stem)
+        rows.append(
+            {
+                "id": artifact_hash,
+                "evidence_type": "ledger_reconciliation_artifact",
+                "report_date": created_at[:10] if len(created_at) >= 10 else "",
+                "session_id": "",
+                "path": str(path),
+                "created_at": created_at,
+                "status": "present",
+                "sha256": _file_sha256(path),
+                "size_bytes": _file_size_bytes(path),
+                "mtime_ns": _file_mtime_ns(path),
+                "observed_at": _observed_at(),
+                "content_type": _content_type(path),
+                "summary": "passed" if reconciliation_passed else "failed",
+                "details": {
+                    "artifact_version": str(payload.get("artifact_version", "")),
+                    "artifact_hash": artifact_hash,
+                    "generated_at": str(payload.get("generated_at", "")),
+                    "as_of_utc": str(payload.get("as_of_utc", "")),
+                    "fills_hash": str(hashes.get("fills_hash", "")) if isinstance(hashes, dict) else "",
+                    "ledger_hash": str(hashes.get("ledger_hash", "")) if isinstance(hashes, dict) else "",
+                    "orders_hash": str(hashes.get("orders_hash", "")) if isinstance(hashes, dict) else "",
+                    "portfolio_snapshots_hash": str(hashes.get("portfolio_snapshots_hash", "")) if isinstance(hashes, dict) else "",
+                    "net_pnl": float(pnl.get("net_pnl", 0.0)) if isinstance(pnl, dict) else 0.0,
+                    "duplicate_fill_count": int(fills.get("duplicate_fill_count", 0)) if isinstance(fills, dict) else 0,
+                    "conflict_fill_count": int(fills.get("conflict_fill_count", 0)) if isinstance(fills, dict) else 0,
+                    "integrity_passed": bool(integrity.get("passed", False)) if isinstance(integrity, dict) else False,
+                    "reconciliation_passed": reconciliation_passed,
+                },
+            }
+        )
+    return _sort_rows(_normalize_scanned_rows(rows))
+
+
+def _link_runtime_evidence(scanned: dict[str, Any]) -> None:
+    reviews_by_id = {
+        str(row.get("id", "")): row
+        for row in scanned["paper_reviews"]
+        if isinstance(row, dict) and row.get("id")
+    }
+    reviews_by_path = {
+        _normalized_artifact_path(str(row.get("path", ""))): row
+        for row in scanned["paper_reviews"]
+        if isinstance(row, dict) and row.get("path")
+    }
+    manifests_by_audit_dir: dict[str, dict[str, Any]] = {}
+    for row in scanned["paper_session_manifests"]:
+        if not isinstance(row, dict):
+            continue
+        details = dict(row.get("details", {}))
+        review = _linked_paper_review(
+            reviews_by_id,
+            reviews_by_path,
+            paper_review_id=str(details.get("registry_evidence_id", "")),
+            paper_review_path=str(details.get("registry_evidence_path", "")),
+        )
+        if review is not None:
+            row["paper_review_id"] = str(review.get("id", ""))
+            row["strategy_manifest_id"] = str(review.get("strategy_manifest_id", ""))
+            row["candidate_id"] = str(dict(review.get("details", {})).get("candidate_id", ""))
+            details["paper_review_id"] = str(review.get("id", ""))
+            details["strategy_manifest_id"] = str(review.get("strategy_manifest_id", ""))
+            details["candidate_id"] = row["candidate_id"]
+            details["registry_evidence_path"] = str(review.get("path", "")) or str(
+                details.get("registry_evidence_path", "")
+            )
+            row["details"] = details
+        manifests_by_audit_dir[str(Path(str(row.get("path", ""))).parent)] = row
+
+    for row in scanned["paper_startup_sync_artifacts"]:
+        if not isinstance(row, dict):
+            continue
+        audit_dir = str(Path(str(row.get("path", ""))).parent)
+        manifest = manifests_by_audit_dir.get(audit_dir)
+        if manifest is None:
+            continue
+        manifest_details = dict(manifest.get("details", {}))
+        row["session_id"] = str(manifest.get("session_id", ""))
+        row["report_date"] = str(manifest.get("report_date", "") or row.get("report_date", ""))
+        row["paper_review_id"] = str(manifest.get("paper_review_id", ""))
+        row["strategy_manifest_id"] = str(manifest.get("strategy_manifest_id", ""))
+        row["candidate_id"] = str(manifest.get("candidate_id", ""))
+        details = dict(row.get("details", {}))
+        details["paper_session_manifest_path"] = str(manifest.get("path", ""))
+        details["paper_review_id"] = str(manifest.get("paper_review_id", ""))
+        details["strategy_manifest_id"] = str(manifest.get("strategy_manifest_id", ""))
+        details["candidate_id"] = str(manifest.get("candidate_id", ""))
+        details["registry_evidence_id"] = str(
+            manifest_details.get("registry_evidence_id", "")
+        )
+        row["details"] = details
+
+    daily_reports_by_artifact_hash = {
+        str(dict(row.get("details", {})).get("ledger_artifact_hash", "")): row
+        for row in scanned["daily_reports"]
+        if isinstance(row, dict)
+        and str(dict(row.get("details", {})).get("ledger_artifact_hash", ""))
+    }
+    for row in scanned["ledger_reconciliation_artifacts"]:
+        if not isinstance(row, dict):
+            continue
+        details = dict(row.get("details", {}))
+        daily_report = daily_reports_by_artifact_hash.get(
+            str(details.get("artifact_hash", ""))
+        )
+        if daily_report is None:
+            continue
+        row["report_date"] = str(
+            daily_report.get("report_date", "") or row.get("report_date", "")
+        )
+        row["session_id"] = str(daily_report.get("session_id", ""))
+        details["daily_report_path"] = str(daily_report.get("path", ""))
+        details["report_date"] = str(daily_report.get("report_date", ""))
+        details["session_id"] = str(daily_report.get("session_id", ""))
+        row["details"] = details
+
+
+def _linked_paper_review(
+    reviews_by_id: dict[str, dict[str, Any]],
+    reviews_by_path: dict[str, dict[str, Any]],
+    *,
+    paper_review_id: str,
+    paper_review_path: str,
+) -> dict[str, Any] | None:
+    review_id = str(paper_review_id or "").strip()
+    if review_id and review_id in reviews_by_id:
+        return reviews_by_id[review_id]
+    normalized_path = _normalized_artifact_path(paper_review_path)
+    if normalized_path and normalized_path in reviews_by_path:
+        return reviews_by_path[normalized_path]
+    return None
+
+
+def _normalized_artifact_path(path_text: str) -> str:
+    if not path_text:
+        return ""
+    return str(Path(path_text).resolve(strict=False))
 
 
 def _legacy_index_payload(registry: dict[str, Any]) -> dict[str, Any]:
@@ -1274,6 +1598,81 @@ def _legacy_index_path(root: Path) -> Path:
     return root / "research" / "paper_review_index.json"
 
 
+def _registry_lock_path(root: Path) -> Path:
+    return root / "research" / "evidence_registry.lock"
+
+
+@contextmanager
+def _evidence_registry_lock(
+    root: Path,
+    *,
+    timeout_seconds: float = 30.0,
+    poll_interval_seconds: float = 0.05,
+):
+    lock_path = _registry_lock_path(root)
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(
+        {
+            "pid": os.getpid(),
+            "created_at": _observed_at(),
+        },
+        sort_keys=True,
+    ).encode("utf-8")
+    deadline = time.monotonic() + timeout_seconds
+    while True:
+        try:
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            if time.monotonic() >= deadline:
+                raise TimeoutError(f"evidence_registry_lock_timeout:{lock_path}")
+            time.sleep(poll_interval_seconds)
+            continue
+        try:
+            os.write(fd, payload)
+        finally:
+            os.close(fd)
+        break
+    try:
+        yield
+    finally:
+        try:
+            lock_path.unlink()
+        except FileNotFoundError:
+            pass
+
+
+def _write_registry_snapshots(root: Path, registry: dict[str, Any]) -> None:
+    _registry_path(root).parent.mkdir(parents=True, exist_ok=True)
+    _write_json_atomic(_registry_path(root), registry)
+    _write_json_atomic(_legacy_index_path(root), _legacy_index_payload(registry))
+
+
+def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temp_path = Path(handle.name)
+            handle.write(json.dumps(payload, indent=2, sort_keys=True))
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, path)
+    except Exception:
+        if temp_path is not None:
+            try:
+                temp_path.unlink()
+            except FileNotFoundError:
+                pass
+        raise
+
+
 def _load_saved_registry(root: Path) -> dict[str, Any] | None:
     for path in (_registry_path(root), _legacy_index_path(root)):
         if not path.exists():
@@ -1315,6 +1714,11 @@ def _registry_storage_status(saved: dict[str, Any], current: dict[str, Any]) -> 
         "strategy_manifest_count": len(current["strategy_manifests"]),
         "paper_review_count": len(current["paper_reviews"]),
         "daily_report_count": len(current["daily_reports"]),
+        "paper_session_manifest_count": len(current["paper_session_manifests"]),
+        "paper_startup_sync_count": len(current["paper_startup_sync_artifacts"]),
+        "ledger_reconciliation_artifact_count": len(
+            current["ledger_reconciliation_artifacts"]
+        ),
     }
     for key, current_count in current_counts.items():
         if int(saved_counts.get(key, 0)) != current_count:
@@ -1383,6 +1787,9 @@ def _registry_evidence_paths(registry: dict[str, Any]) -> set[str]:
         "strategy_manifests",
         "paper_reviews",
         "daily_reports",
+        "paper_session_manifests",
+        "paper_startup_sync_artifacts",
+        "ledger_reconciliation_artifacts",
         "candidates",
     ):
         rows = evidence.get(section_name, [])
@@ -1403,6 +1810,9 @@ def _scanned_evidence_paths(scanned: dict[str, Any]) -> set[str]:
         "strategy_manifests",
         "paper_reviews",
         "daily_reports",
+        "paper_session_manifests",
+        "paper_startup_sync_artifacts",
+        "ledger_reconciliation_artifacts",
     ):
         for row in scanned[section_name]:
             if row.get("path"):
@@ -1423,6 +1833,9 @@ def _registry_evidence_meta(registry: dict[str, Any]) -> dict[str, dict[str, Any
         "strategy_manifests",
         "paper_reviews",
         "daily_reports",
+        "paper_session_manifests",
+        "paper_startup_sync_artifacts",
+        "ledger_reconciliation_artifacts",
         "candidates",
     ):
         section_rows = evidence.get(section_name, [])
@@ -1490,6 +1903,9 @@ def _scanned_evidence_meta(scanned: dict[str, Any]) -> dict[str, dict[str, Any]]
         "strategy_manifests",
         "paper_reviews",
         "daily_reports",
+        "paper_session_manifests",
+        "paper_startup_sync_artifacts",
+        "ledger_reconciliation_artifacts",
     ):
         for row in scanned[section_name]:
             if row.get("path"):

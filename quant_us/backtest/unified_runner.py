@@ -27,7 +27,9 @@ from quant_us.backtest.engine import BacktestConfig, BacktestResult, EventDriven
 from quant_us.backtest.gap_session import GapConfig, SessionConfig, classify_session, is_bar_tradable
 from quant_us.backtest.ledger_pnl import (
     LedgerEquityCurve,
+    LedgerReconciliationArtifact,
     LedgerReconciliationReport,
+    build_ledger_reconciliation_artifact_from_records,
     build_reconciliation_report,
     derive_equity_from_fills,
     ledger_state_at_time,
@@ -240,6 +242,14 @@ class UnifiedBacktestRunner:
             market_prices_by_time=all_bar_prices,
             adjustments=self.config.adjustment_log,
         )
+        ledger_artifact = build_ledger_reconciliation_artifact_from_records(
+            order_records=event_result.orders,
+            fills=event_result.fills,
+            initial_cash=self.config.initial_cash,
+            market_prices_by_time=all_bar_prices,
+            snapshots=event_result.snapshots,
+            adjustments=self.config.adjustment_log,
+        )
         is_consistent, msg = reconciliation_report.passed, reconciliation_report.message
 
         commit_hash = _git_commit_hash()
@@ -256,6 +266,7 @@ class UnifiedBacktestRunner:
             data_version=data_version,
             strategy_version=strategy_version,
             config=self.config,
+            ledger_artifact=ledger_artifact,
             commit_hash=commit_hash,
             manifest_store=self.manifest_store,
         )
@@ -267,12 +278,16 @@ class UnifiedBacktestRunner:
             "engine": "event_driven",
             "canonical_for_promotion": True,
             "run_id": self.config.run_id,
+            "generated_at": evidence["generated_at"],
             "data_version": data_version,
             "strategy_version": evidence["strategy"]["strategy_version"],
             "strategy_params": evidence["strategy"]["strategies"],
             "commit_hash": commit_hash,
             "start_time": start_time,
             "end_time": end_time,
+            "ledger_artifact_hash": evidence["ledger_artifact_hash"],
+            "ledger_hash": evidence["ledger_hash"],
+            "fills_hash": evidence["fills_hash"],
             "config": {
                 "initial_cash": self.config.initial_cash,
                 "commission_rate": self.config.commission_rate,
@@ -287,6 +302,7 @@ class UnifiedBacktestRunner:
             "missing_data_manifest": evidence["missing_data_manifest"],
             "data_manifest": evidence["data_manifest"],
             "reconciliation": evidence["reconciliation"]["summary"],
+            "ledger_artifact": evidence["ledger_artifact"],
             "corporate_actions": evidence["corporate_actions"]["digest"],
             "evidence": evidence,
         }
@@ -607,6 +623,7 @@ def _build_promotion_evidence(
     data_version: str,
     strategy_version: str,
     config: UnifiedBacktestConfig,
+    ledger_artifact: LedgerReconciliationArtifact,
     commit_hash: str,
     manifest_store: DataManifestStore,
 ) -> dict[str, Any]:
@@ -629,6 +646,33 @@ def _build_promotion_evidence(
     total_commission = round(sum(float(fill.commission) for fill in event_result.fills), 6)
     ledger_final_equity = float(final_ledger_state["ledger_equity"])
     final_pnl = round(ledger_final_equity - initial_cash, 6)
+    ledger_artifact_data = ledger_artifact.to_dict()
+    ledger_artifact_generated_at = str(ledger_artifact_data.get("generated_at") or "")
+    ledger_artifact_hash = str(ledger_artifact_data.get("artifact_hash") or "")
+    ledger_hash = str(ledger_artifact.hashes.get("ledger_hash", ""))
+    fills_hash = str(ledger_artifact.hashes.get("fills_hash", ""))
+    orders_hash = str(ledger_artifact.hashes.get("orders_hash", ""))
+    snapshots_hash = str(ledger_artifact.hashes.get("portfolio_snapshots_hash", ""))
+    effective_fills_hash = str(ledger_artifact.hashes.get("effective_fills_hash", ""))
+    artifact_reconciliation = ledger_artifact.reconciliation
+    artifact_summary = artifact_reconciliation.get("summary", {}) if isinstance(artifact_reconciliation, dict) else {}
+    artifact_integrity = ledger_artifact.integrity if isinstance(ledger_artifact.integrity, dict) else {}
+    artifact_fills = ledger_artifact.fills if isinstance(ledger_artifact.fills, dict) else {}
+    artifact_orders = ledger_artifact.orders if isinstance(ledger_artifact.orders, dict) else {}
+    artifact_pnl = ledger_artifact.pnl if isinstance(ledger_artifact.pnl, dict) else {}
+    ledger_artifact_consistent = (
+        bool(ledger_artifact_hash)
+        and bool(ledger_artifact_generated_at)
+        and bool(ledger_hash)
+        and bool(fills_hash)
+        and bool(orders_hash)
+        and bool(snapshots_hash)
+        and artifact_summary == reconciliation_report.to_dict().get("summary", {})
+        and int(artifact_fills.get("effective_fill_count", -1)) == len(event_result.fills)
+        and int(artifact_orders.get("total_orders", -1)) == order_count
+        and str(artifact_pnl.get("source", "")) == "ledger_fills"
+        and bool(artifact_integrity.get("passed", False))
+    )
 
     required_fields = {
         "engine": "event_driven",
@@ -645,6 +689,7 @@ def _build_promotion_evidence(
         and bool(commit_hash)
         and all_orders_have_risk
         and all_fills_have_orders
+        and ledger_artifact_consistent
     )
 
     return {
@@ -652,6 +697,8 @@ def _build_promotion_evidence(
         "engine": "event_driven",
         "canonical_for_promotion": True,
         "approximate_scan_engine": False,
+        "generated_at": ledger_artifact_generated_at,
+        "as_of_utc": ledger_artifact_data.get("as_of_utc"),
         "data_version": data_version,
         "data_manifest_exists": data_manifest["exists"],
         "missing_data_manifest": data_manifest["missing_data_manifest"],
@@ -663,6 +710,12 @@ def _build_promotion_evidence(
         },
         "strategy": strategy_info,
         "commit_hash": commit_hash,
+        "ledger_artifact_hash": ledger_artifact_hash,
+        "ledger_hash": ledger_hash,
+        "fills_hash": fills_hash,
+        "orders_hash": orders_hash,
+        "portfolio_snapshots_hash": snapshots_hash,
+        "ledger_artifact": ledger_artifact_data,
         "costs": {
             "commission_rate": config.commission_rate,
             "slippage_bps": config.slippage_bps,
@@ -688,11 +741,14 @@ def _build_promotion_evidence(
             "oms_order_count": oms_order_count,
             "all_orders_created_by_oms": order_count == oms_order_count,
             "all_orders_have_risk_check_id": all_orders_have_risk,
+            "orders_hash": orders_hash,
         },
         "fills": {
             "count": len(event_result.fills),
             "filled_order_count": len(filled_order_ids),
             "all_fills_match_orders": all_fills_have_orders,
+            "fills_hash": fills_hash,
+            "effective_fills_hash": effective_fills_hash,
         },
         "risk": risk,
         "cash": {
@@ -733,6 +789,9 @@ def _build_promotion_evidence(
             "missing_required_fields": missing_required,
             "ledger_evidence_complete": ledger_evidence_complete,
             "data_manifest_bound": data_manifest_bound,
+            "ledger_artifact_present": bool(ledger_artifact_hash),
+            "ledger_artifact_generated": bool(ledger_artifact_generated_at),
+            "ledger_artifact_consistent": ledger_artifact_consistent,
             "promotion_evidence_complete": ledger_evidence_complete
             and not fixture_like_data_version
             and data_manifest_bound,

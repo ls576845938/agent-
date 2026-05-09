@@ -590,6 +590,10 @@ class UnifiedRunnerLedgerBackedScenarioTests(unittest.TestCase):
         self.assertAlmostEqual(result.evidence["corporate_actions"]["summary"]["total_dividends"], 10.0, places=6)
         self.assertEqual(result.evidence["corporate_actions"]["adjustments"][0]["adjustment_type"], "dividend")
         self.assertTrue(result.evidence["reconciliation"]["summary"]["passed"])
+        self.assertEqual(
+            result.evidence["ledger_artifact_hash"],
+            result.evidence["ledger_artifact"]["artifact_hash"],
+        )
         self.assertTrue(result.equity_consistent, result.equity_consistency_msg)
 
     def test_adjustment_log_is_visible_to_strategy_context_before_next_signal(self):
@@ -1008,9 +1012,13 @@ class ManifestPropagationTests(unittest.TestCase):
             self.assertEqual(manifest["run_id"], result.run_id)
             self.assertEqual(manifest["data_version"], "manifest_test_v1")
             self.assertEqual(manifest["strategy_version"], "s1")
+            self.assertEqual(manifest["generated_at"], result.evidence["generated_at"])
             self.assertIn("commit_hash", manifest)
             self.assertIn("start_time", manifest)
             self.assertIn("end_time", manifest)
+            self.assertEqual(manifest["ledger_artifact_hash"], result.evidence["ledger_artifact_hash"])
+            self.assertEqual(manifest["ledger_hash"], result.evidence["ledger_hash"])
+            self.assertEqual(manifest["fills_hash"], result.evidence["fills_hash"])
             self.assertIn("config", manifest)
             self.assertIn("initial_cash", manifest["config"])
             self.assertTrue(manifest["data_manifest_exists"])
@@ -1020,6 +1028,8 @@ class ManifestPropagationTests(unittest.TestCase):
             self.assertTrue(manifest["data_manifest"]["data_version_matches_requested"])
             self.assertIn("reconciliation", manifest)
             self.assertTrue(manifest["reconciliation"]["passed"])
+            self.assertIn("ledger_artifact", manifest)
+            self.assertEqual(manifest["ledger_artifact"]["artifact_hash"], manifest["ledger_artifact_hash"])
             self.assertIn("corporate_actions", manifest)
             self.assertEqual(manifest["corporate_actions"]["adjustment_count"], 0)
 

@@ -63,6 +63,12 @@ def test_artifact_derives_cash_position_and_pnl_from_effective_fills(tmp_path) -
     assert data["fees"]["total_fees"] == pytest.approx(2.0)
     assert data["pnl"]["final_equity"] == pytest.approx(10_158.0)
     assert data["pnl"]["net_pnl"] == pytest.approx(158.0)
+    assert data["generated_at"] == "2026-05-04T15:30:00+00:00"
+    assert data["as_of_utc"] == "2026-05-04T15:30:00+00:00"
+    assert data["hashes"]["ledger_hash"]
+    assert data["hashes"]["fills_hash"]
+    assert data["hashes"]["orders_hash"]
+    assert data["hashes"]["portfolio_snapshots_hash"]
     assert data["fills"]["raw_fill_count"] == 2
     assert data["fills"]["effective_fill_count"] == 2
     assert data["fills"]["duplicate_fill_count"] == 0
@@ -83,6 +89,7 @@ def test_idempotent_duplicate_skip_does_not_change_artifact(tmp_path) -> None:
     assert duplicate.duplicate is True
     assert before == after
     assert before["artifact_hash"] == after["artifact_hash"]
+    assert before["generated_at"] == after["generated_at"]
     assert after["fills"]["raw_fill_count"] == 1
     assert after["fills"]["duplicate_fill_count"] == 0
 

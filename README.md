@@ -53,8 +53,11 @@ python scripts/run_full_pipeline.py --symbol AAPL --mode full --start 2024-01-01
 - 这里的快速开始只覆盖当前可用的研究、回测、报告和门禁检查入口。
 - CLI report/readiness/evidence registry 输出统一使用 `PASS` / `STALE` / `MISSING` / `CONFLICT`，并标明 `report only, no execution`。
 - CLI 会展示 Data Manifest v2 lineage、Evidence Registry subject index、paper session manifest、startup sync artifact、ledger reconciliation artifact 等 persisted evidence；这些只是只读证据。
+- `report backtest` 会展示 ledger artifact hash、ledger/fills/orders/snapshot hash、`generated_at`、`as_of_utc`、artifact consistency/completeness 状态；缺字段显示 `(missing)`。
+- paper daily/report 输出会在存在时展示 `paper_session_history_artifact_path`，指向 `paper_ledger/audit/paper_session_manifests/<session_id>.json`。
 - Canonical path 是 `manifest -> ledger-backed backtest -> promotion handoff -> paper/runtime readiness report`。
 - readiness / report / paper runtime gate 默认只消费已保存的 Evidence Registry，不会隐式 rebuild；`MISSING`、`STALE`、`CONFLICT` 都是 fail-closed。
+- Evidence Registry 显式 rebuild 使用 atomic write 和 lock；report/readiness/paper runtime gate 只读 saved registry。
 - `paper_review_index` 只是 legacy view，不是 paper/runtime gate 的权威来源。
 - 只有 `review.json` 不足以启动 paper runtime；必须先显式 rebuild registry，再由 readiness / report / paper runtime gate 读取保存结果。
 - 真实 Alpaca paper 还未进入自动提交路径；`paper_broker=alpaca` 继续保持默认 fail-closed。

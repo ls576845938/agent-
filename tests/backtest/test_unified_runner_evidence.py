@@ -165,12 +165,21 @@ def test_event_driven_evidence_and_manifest_are_promotion_grade(tmp_path):
     assert evidence["data_manifest"]["coverage"]["coverage_pct"] == 100.0
     assert evidence["data_manifest"]["quality"]["quality_score"] == 95.0
     assert evidence["data_manifest"]["data_version_matches_requested"] is True
+    assert evidence["generated_at"] == evidence["as_of_utc"]
+    assert evidence["ledger_artifact_hash"] == evidence["ledger_artifact"]["artifact_hash"]
+    assert evidence["ledger_hash"] == evidence["ledger_artifact"]["hashes"]["ledger_hash"]
+    assert evidence["fills_hash"] == evidence["ledger_artifact"]["hashes"]["fills_hash"]
+    assert evidence["orders_hash"] == evidence["ledger_artifact"]["hashes"]["orders_hash"]
+    assert evidence["portfolio_snapshots_hash"] == evidence["ledger_artifact"]["hashes"]["portfolio_snapshots_hash"]
 
     assert evidence["orders"]["count"] > 0
     assert evidence["orders"]["all_orders_created_by_oms"] is True
     assert evidence["orders"]["all_orders_have_risk_check_id"] is True
+    assert evidence["orders"]["orders_hash"] == evidence["orders_hash"]
     assert evidence["fills"]["count"] > 0
     assert evidence["fills"]["all_fills_match_orders"] is True
+    assert evidence["fills"]["fills_hash"] == evidence["fills_hash"]
+    assert evidence["fills"]["effective_fills_hash"] == evidence["ledger_artifact"]["hashes"]["effective_fills_hash"]
     assert evidence["risk"]["risk_check_count"] >= evidence["orders"]["count"]
 
     assert evidence["cash"]["cash_consistent"] is True
@@ -192,7 +201,11 @@ def test_event_driven_evidence_and_manifest_are_promotion_grade(tmp_path):
     assert manifest_path.exists()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["engine"] == "event_driven"
+    assert manifest["generated_at"] == evidence["generated_at"]
     assert manifest["data_version"] == "qs-yfinance-AAPL-1d-test"
+    assert manifest["ledger_artifact_hash"] == evidence["ledger_artifact_hash"]
+    assert manifest["ledger_hash"] == evidence["ledger_hash"]
+    assert manifest["fills_hash"] == evidence["fills_hash"]
     assert manifest["cost_model"]
     assert manifest["commission_model"]
     assert manifest["slippage_model"]
@@ -202,6 +215,8 @@ def test_event_driven_evidence_and_manifest_are_promotion_grade(tmp_path):
     assert manifest["data_manifest"]["checksum"] == "abc123checksum"
     assert manifest["evidence"]["data_manifest"]["data_version_matches_requested"] is True
     assert manifest["reconciliation"]["passed"] is True
+    assert manifest["ledger_artifact"]["artifact_hash"] == evidence["ledger_artifact_hash"]
+    assert manifest["ledger_artifact"]["reconciliation"]["summary"] == manifest["reconciliation"]
     assert manifest["corporate_actions"]["adjustment_count"] == 0
 
 
@@ -222,6 +237,7 @@ def test_fixed_fixture_repeated_runs_have_identical_summary_and_evidence(tmp_pat
 
     assert first.summary == second.summary
     assert first.evidence == second.evidence
+    assert first.evidence["ledger_artifact"] == second.evidence["ledger_artifact"]
 
 
 def test_manifest_write_failure_is_not_silent(tmp_path):

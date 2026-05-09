@@ -163,6 +163,7 @@ class LedgerFillIntegritySummary:
 class LedgerReconciliationArtifact:
     artifact_version: str
     artifact_hash: str
+    generated_at: datetime | None
     as_of_utc: datetime | None
     initial_cash: float
     orders: dict[str, object]
@@ -180,6 +181,7 @@ class LedgerReconciliationArtifact:
         return {
             "artifact_version": self.artifact_version,
             "artifact_hash": self.artifact_hash,
+            "generated_at": self.generated_at.astimezone(timezone.utc).isoformat() if self.generated_at else None,
             "as_of_utc": self.as_of_utc.astimezone(timezone.utc).isoformat() if self.as_of_utc else None,
             "initial_cash": round(self.initial_cash, 6),
             "orders": self.orders,
@@ -566,6 +568,7 @@ def build_ledger_reconciliation_artifact(
     initial_cash: float,
     market_prices_by_time: dict[datetime, dict[str, float]] | None = None,
     snapshots: list[PortfolioSnapshot] | None = None,
+    adjustments: LedgerAdjustmentLog | None = None,
     tolerance_pct: float = 0.01,
     absolute_tolerance: float = 1e-6,
 ) -> LedgerReconciliationArtifact:
@@ -576,16 +579,41 @@ def build_ledger_reconciliation_artifact(
     for the effective replay; conflicting rows are counted and exposed while
     keeping the first observed ledger fill as the effective fill.
     """
-    order_records = ledger.read_records("orders.jsonl")
-    raw_fills = ledger.read_fills()
-    effective_fills, fill_integrity = _effective_fills_for_reconciliation(raw_fills)
     parsed_snapshots = snapshots if snapshots is not None else _read_portfolio_snapshots(ledger)
+    return build_ledger_reconciliation_artifact_from_records(
+        order_records=ledger.read_records("orders.jsonl"),
+        fills=ledger.read_fills(),
+        initial_cash=initial_cash,
+        market_prices_by_time=market_prices_by_time,
+        snapshots=parsed_snapshots,
+        adjustments=adjustments,
+        tolerance_pct=tolerance_pct,
+        absolute_tolerance=absolute_tolerance,
+    )
+
+
+def build_ledger_reconciliation_artifact_from_records(
+    *,
+    order_records: list[Any] | None = None,
+    fills: list[Fill] | None = None,
+    initial_cash: float,
+    market_prices_by_time: dict[datetime, dict[str, float]] | None = None,
+    snapshots: list[PortfolioSnapshot] | None = None,
+    adjustments: LedgerAdjustmentLog | None = None,
+    tolerance_pct: float = 0.01,
+    absolute_tolerance: float = 1e-6,
+) -> LedgerReconciliationArtifact:
+    raw_order_records = list(order_records or [])
+    raw_fills = list(fills or [])
+    parsed_snapshots = list(snapshots or [])
     prices = market_prices_by_time or {}
 
+    effective_fills, fill_integrity = _effective_fills_for_reconciliation(raw_fills)
     ledger_curve = derive_equity_from_fills(
         effective_fills,
         initial_cash,
         market_prices_by_time=prices,
+        adjustments=adjustments,
     )
     reconciliation_report = build_reconciliation_report(
         parsed_snapshots,
@@ -593,10 +621,12 @@ def build_ledger_reconciliation_artifact(
         tolerance_pct=tolerance_pct,
         fills=effective_fills,
         market_prices_by_time=prices if prices else None,
+        adjustments=adjustments,
         absolute_tolerance=absolute_tolerance,
     )
 
     as_of_utc = _artifact_as_of(effective_fills, parsed_snapshots, ledger_curve)
+    generated_at = as_of_utc
     if as_of_utc is None:
         positions: dict[str, float] = {}
         final_cash = initial_cash
@@ -604,15 +634,20 @@ def build_ledger_reconciliation_artifact(
         final_equity = initial_cash
         final_prices: dict[str, float] = {}
     else:
-        state = _replay_state_at(effective_fills, as_of_utc, initial_cash)
+        state = _replay_state_at(
+            effective_fills,
+            as_of_utc,
+            initial_cash,
+            adjustments=adjustments,
+        )
         final_prices = _final_prices_for_artifact(prices, as_of_utc, state.avg_prices)
         positions = {symbol: qty for symbol, qty in state.positions.items() if abs(qty) > 1e-10}
         final_cash = state.cash
         final_position_value = sum(qty * final_prices.get(symbol, 0.0) for symbol, qty in positions.items())
         final_equity = final_cash + final_position_value
 
+    orders_summary = _orders_summary(raw_order_records)
     fills_summary = _fills_summary(raw_fills, effective_fills, fill_integrity)
-    orders_summary = _orders_summary(order_records)
     position_summary = _positions_summary(positions, final_prices)
     cash_summary = {
         "initial_cash": round(initial_cash, 6),
@@ -628,12 +663,20 @@ def build_ledger_reconciliation_artifact(
         "net_pnl": round(final_equity - initial_cash, 6),
         "position_value": round(final_position_value, 6),
     }
+    canonical_orders, order_aliases = _canonical_order_records(raw_order_records)
+    canonical_raw_fills = _canonical_fill_records(raw_fills, order_aliases)
+    canonical_effective_fills = _canonical_fill_records(effective_fills, order_aliases)
+    canonical_snapshots = _canonical_snapshot_records(parsed_snapshots)
     hashes = {
-        "ledger_hash": ledger.ledger_hash(),
-        "orders_hash": ledger.records_hash("orders.jsonl"),
-        "fills_hash": ledger.records_hash("fills.jsonl"),
-        "portfolio_snapshots_hash": ledger.records_hash("portfolio_snapshots.jsonl"),
-        "effective_fills_hash": stable_json_hash([_fill_to_summary(fill) for fill in effective_fills]),
+        "ledger_hash": stable_json_hash({
+            "orders.jsonl": canonical_orders,
+            "fills.jsonl": canonical_raw_fills,
+            "portfolio_snapshots.jsonl": canonical_snapshots,
+        }),
+        "orders_hash": stable_json_hash(canonical_orders),
+        "fills_hash": stable_json_hash(canonical_raw_fills),
+        "portfolio_snapshots_hash": stable_json_hash(canonical_snapshots),
+        "effective_fills_hash": stable_json_hash(canonical_effective_fills),
     }
     integrity = {
         "fills": fill_integrity.to_dict(),
@@ -641,6 +684,7 @@ def build_ledger_reconciliation_artifact(
     }
     base_payload: dict[str, object] = {
         "artifact_version": "ledger_reconciliation_v1",
+        "generated_at": generated_at.astimezone(timezone.utc).isoformat() if generated_at else None,
         "as_of_utc": as_of_utc.astimezone(timezone.utc).isoformat() if as_of_utc else None,
         "initial_cash": round(initial_cash, 6),
         "orders": orders_summary,
@@ -654,11 +698,12 @@ def build_ledger_reconciliation_artifact(
         "integrity": integrity,
         "reconciliation": reconciliation_report.to_dict(),
     }
-    artifact_hash = stable_json_hash(base_payload)
+    artifact_hash = compute_ledger_reconciliation_artifact_hash(base_payload)
 
     return LedgerReconciliationArtifact(
         artifact_version="ledger_reconciliation_v1",
         artifact_hash=artifact_hash,
+        generated_at=generated_at,
         as_of_utc=as_of_utc,
         initial_cash=initial_cash,
         orders=orders_summary,
@@ -672,6 +717,12 @@ def build_ledger_reconciliation_artifact(
         integrity=integrity,
         reconciliation=reconciliation_report.to_dict(),
     )
+
+
+def compute_ledger_reconciliation_artifact_hash(payload: dict[str, Any]) -> str:
+    normalized_payload = dict(payload)
+    normalized_payload.pop("artifact_hash", None)
+    return stable_json_hash(normalized_payload)
 
 
 def _effective_fills_for_reconciliation(
@@ -714,11 +765,22 @@ def _effective_fills_for_reconciliation(
     )
 
 
-def _replay_state_at(fills: list[Fill], at_time: datetime, initial_cash: float) -> _LedgerReplayState:
+def _replay_state_at(
+    fills: list[Fill],
+    at_time: datetime,
+    initial_cash: float,
+    adjustments: LedgerAdjustmentLog | None = None,
+) -> _LedgerReplayState:
     state = _LedgerReplayState(cash=initial_cash)
-    for _, _priority, _, fill in _sorted_ledger_events(fills, at_time=at_time):
-        assert isinstance(fill, Fill)
-        _apply_fill_to_state(state, fill, {})
+    for _, priority, _, item in _sorted_ledger_events(fills, adjustments, at_time=at_time):
+        if priority == 0:
+            adjustment = item
+            assert isinstance(adjustment, LedgerAdjustment)
+            _apply_adjustment_to_state(state, adjustment)
+        else:
+            fill = item
+            assert isinstance(fill, Fill)
+            _apply_fill_to_state(state, fill, {})
     return state
 
 
@@ -765,12 +827,16 @@ def _artifact_as_of(
     return max((_normalize_timestamp(ts) for ts in timestamps), default=None)
 
 
-def _orders_summary(order_records: list[dict[str, Any]]) -> dict[str, object]:
+def _orders_summary(order_records: list[Any]) -> dict[str, object]:
     by_status: dict[str, int] = {}
     by_side: dict[str, int] = {}
     for row in order_records:
-        status = str(row.get("status", "unknown"))
-        side = str(row.get("side", "unknown")).lower()
+        if isinstance(row, dict):
+            status = str(row.get("status", "unknown"))
+            side = str(row.get("side", "unknown")).lower()
+        else:
+            status = str(getattr(getattr(row, "status", None), "value", getattr(row, "status", "unknown")))
+            side = str(getattr(getattr(row, "side", None), "value", getattr(row, "side", "unknown"))).lower()
         by_status[status] = by_status.get(status, 0) + 1
         by_side[side] = by_side.get(side, 0) + 1
     return {
@@ -778,6 +844,108 @@ def _orders_summary(order_records: list[dict[str, Any]]) -> dict[str, object]:
         "by_status": {key: by_status[key] for key in sorted(by_status)},
         "by_side": {key: by_side[key] for key in sorted(by_side)},
     }
+
+
+def _canonical_order_records(order_records: list[Any]) -> tuple[list[dict[str, object]], dict[str, str]]:
+    canonical: list[dict[str, object]] = []
+    aliases: dict[str, str] = {}
+    next_alias = 1
+    for index, row in enumerate(order_records):
+        order_id = str(_record_value(row, "order_id", "") or "")
+        if order_id:
+            alias = aliases.get(order_id)
+            if alias is None:
+                alias = f"order_{next_alias:04d}"
+                aliases[order_id] = alias
+                next_alias += 1
+        else:
+            alias = f"order_missing_{index:04d}"
+        canonical.append(
+            {
+                "order_ref": alias,
+                "timestamp_utc": _iso_or_empty(_record_value(row, "timestamp_utc")),
+                "strategy_id": str(_record_value(row, "strategy_id", "") or ""),
+                "symbol": str(_record_value(row, "symbol", "") or "").upper(),
+                "side": _enum_str(_record_value(row, "side", "unknown")).lower(),
+                "quantity": round(float(_record_value(row, "quantity", 0.0) or 0.0), 8),
+                "order_type": _enum_str(_record_value(row, "order_type", "")),
+                "time_in_force": _enum_str(_record_value(row, "time_in_force", "")),
+                "limit_price": _rounded_optional_float(_record_value(row, "limit_price")),
+                "status": _enum_str(_record_value(row, "status", "unknown")),
+            }
+        )
+    return canonical, aliases
+
+
+def _canonical_fill_records(
+    fills: list[Fill],
+    order_aliases: dict[str, str],
+) -> list[dict[str, object]]:
+    canonical: list[dict[str, object]] = []
+    fallback_aliases: dict[str, str] = {}
+    next_alias = len(order_aliases) + 1
+    for index, fill in enumerate(fills):
+        order_id = str(fill.order_id or "")
+        order_ref = order_aliases.get(order_id)
+        if order_ref is None:
+            fallback_key = order_id or f"missing_{index:04d}"
+            order_ref = fallback_aliases.get(fallback_key)
+            if order_ref is None:
+                order_ref = f"order_{next_alias:04d}"
+                fallback_aliases[fallback_key] = order_ref
+                next_alias += 1
+        canonical.append(
+            {
+                "order_ref": order_ref,
+                "symbol": fill.symbol,
+                "side": fill.side.value,
+                "quantity": round(fill.quantity, 8),
+                "price": round(fill.price, 8),
+                "commission": round(fill.commission, 8),
+                "filled_at": fill.filled_at.astimezone(timezone.utc).isoformat(),
+                "broker": fill.broker,
+            }
+        )
+    return canonical
+
+
+def _canonical_snapshot_records(
+    snapshots: list[PortfolioSnapshot],
+) -> list[dict[str, object]]:
+    return [
+        {
+            "timestamp_utc": snapshot.timestamp_utc.astimezone(timezone.utc).isoformat(),
+            "equity": round(snapshot.equity, 6),
+            "cash": round(snapshot.cash, 6),
+            "gross_exposure": round(snapshot.gross_exposure, 6),
+            "net_exposure": round(snapshot.net_exposure, 6),
+            "daily_pnl": round(snapshot.daily_pnl, 6),
+            "drawdown": round(snapshot.drawdown, 6),
+        }
+        for snapshot in snapshots
+    ]
+
+
+def _record_value(row: Any, key: str, default: Any = None) -> Any:
+    if isinstance(row, dict):
+        return row.get(key, default)
+    return getattr(row, key, default)
+
+
+def _enum_str(value: Any) -> str:
+    return str(getattr(value, "value", value))
+
+
+def _iso_or_empty(value: Any) -> str:
+    if not isinstance(value, datetime):
+        return ""
+    return value.astimezone(timezone.utc).isoformat()
+
+
+def _rounded_optional_float(value: Any) -> float | None:
+    if value is None:
+        return None
+    return round(float(value), 8)
 
 
 def _fills_summary(

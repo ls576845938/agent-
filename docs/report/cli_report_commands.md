@@ -53,6 +53,9 @@ The backtest manifest is ledger-backed and event-driven, so the report is meant 
 Promotion-grade manifests also expose data-manifest binding: manifest id, checksum/fingerprint, and whether the binding was missing.
 Data Manifest v2 fields such as `universe_id`, `universe_source`, `survivorship_bias_risk`, `adjustment_policy`, and `corporate_action_adjustment`
 are printed when present.
+Unified backtest evidence fields are printed when present: `generated_at`, `as_of_utc`, `ledger_artifact_hash`,
+`ledger_hash`, `fills_hash`, `orders_hash`, and `portfolio_snapshots_hash`.
+The report also summarizes `artifact_consistency_state` and `artifact_completeness_state`; absent fields are rendered as `(missing)` and the state is `MISSING`.
 The output includes `evidence_state: PASS manifest_path` when the manifest exists, plus `scope: report only, no execution`.
 
 ## Evidence Registry Report
@@ -67,6 +70,8 @@ The registry status is rendered as one of `PASS`, `STALE`, `MISSING`, or `CONFLI
 `CONFLICT` means saved registry content no longer matches the current artifact content.
 The report also prints the saved subject index schema and bucket counts for `candidate_id`, `strategy_manifest_id`,
 `paper_review_id`, `backtest_run_id`, `data_version`, `report_date`, and `session_id`.
+The registry indexes paper session manifests, paper broker adapter startup sync artifacts, and ledger reconciliation artifacts.
+Registry rebuild is an explicit maintenance operation, uses an atomic write with a lock, and refreshes the canonical registry plus the legacy mirror.
 This command is report-only and does not start paper/live execution.
 The readiness/report/paper runtime gate reads this saved registry state directly. It does not implicitly rebuild from `review.json` or any legacy mirror.
 
@@ -96,6 +101,8 @@ This report does not approve paper trading and does not enable any order path.
 It prints `report_state`, `readiness_state`, `evidence_registry_state`, and `scope: report only, no execution`.
 It is evidence-only and cannot submit paper/live orders. Paper session manifests and no-submit proofs are audit evidence,
 not broker-write authorization.
+When the latest paper session manifest records a history copy, the CLI prints `paper_session_history_artifact_path`
+pointing at `paper_ledger/audit/paper_session_manifests/<session_id>.json`.
 Ledger-derived report artifacts must be idempotent across repeated report runs. If a future command writes ledger state,
 it should use a file lock or document why the artifact is single-writer/rebuild-only; the report commands listed here
 are read-only evidence views.

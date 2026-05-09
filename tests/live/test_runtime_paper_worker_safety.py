@@ -158,6 +158,14 @@ def _session_manifest(ledger_root: Path) -> dict[str, object]:
     )
 
 
+def _session_manifest_history(ledger_root: Path, session_id: str) -> dict[str, object]:
+    return json.loads(
+        (ledger_root / "audit" / "paper_session_manifests" / f"{session_id}.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+
 class RecordingSession:
     def __init__(self) -> None:
         self.requests: list[dict[str, object]] = []
@@ -223,6 +231,37 @@ class NoSubmitCounterFakeAlpacaPaperBrokerAdapter(FakeAlpacaPaperBrokerAdapter):
 class NoSubmitCounterFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
     def _create_alpaca_paper_broker(self) -> FakeAlpacaPaperBrokerAdapter:
         return NoSubmitCounterFakeAlpacaPaperBrokerAdapter(initial_cash=self.config.capital)
+
+
+class NonCallableSubmitSurfaceFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
+    def _create_alpaca_paper_broker(self) -> FakeAlpacaPaperBrokerAdapter:
+        broker = FakeAlpacaPaperBrokerAdapter(initial_cash=self.config.capital)
+        broker.submit_order = None  # type: ignore[method-assign]
+        return broker
+
+
+class SubmitInPollFakeAlpacaPaperBrokerAdapter(FakeAlpacaPaperBrokerAdapter):
+    def poll_orders(self) -> list[Order]:
+        self._record_sync_call("poll_orders")
+        self.submit_order(
+            Order(
+                timestamp_utc=datetime(2026, 5, 9, 14, 30, tzinfo=UTC),
+                strategy_id="startup_sync_guard_fixture",
+                symbol="SPY",
+                side=OrderSide.BUY,
+                quantity=1.0,
+                order_type=OrderType.MARKET,
+                time_in_force=TimeInForce.DAY,
+                client_order_id="startup_sync_guard_fixture",
+                order_id="startup_sync_guard_order",
+            )
+        )
+        return []
+
+
+class SubmitInPollFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
+    def _create_alpaca_paper_broker(self) -> FakeAlpacaPaperBrokerAdapter:
+        return SubmitInPollFakeAlpacaPaperBrokerAdapter(initial_cash=self.config.capital)
 
 
 def test_alpaca_paper_runtime_blocks_without_apca_credentials(tmp_path: Path) -> None:
@@ -1294,6 +1333,42 @@ def test_fake_adapter_accepts_exact_paper_endpoint_with_trailing_slash(
 
 
 @patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_runtime_manifest_keeps_session_history_and_latest_copy(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    ledger_root = tmp_path / "ledger"
+    config = PaperRuntimeConfig(
+        symbols=["SPY"],
+        ledger_root=str(ledger_root),
+        reconcile_on_start=False,
+    )
+
+    first_runtime = PaperRuntime(config)
+    first_runtime.bootstrap()
+    first_session_id = first_runtime.session_id
+    first_history = _session_manifest_history(ledger_root, first_session_id)
+    first_runtime.shutdown()
+
+    second_runtime = PaperRuntime(config)
+    second_runtime.bootstrap()
+    second_session_id = second_runtime.session_id
+    latest_manifest = _session_manifest(ledger_root)
+    second_history = _session_manifest_history(ledger_root, second_session_id)
+
+    assert first_session_id != second_session_id
+    assert first_history["session_id"] == first_session_id
+    assert second_history["session_id"] == second_session_id
+    assert latest_manifest == second_history
+    assert latest_manifest["history_artifact_path"].endswith(
+        f"audit/paper_session_manifests/{second_session_id}.json"
+    )
+    assert Path(first_history["history_artifact_path"]).exists()
+    assert Path(second_history["history_artifact_path"]).exists()
+    second_runtime.shutdown()
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
 def test_fake_adapter_startup_sync_failure_blocks_bootstrap(
     _mock_loop: MagicMock,
     tmp_path: Path,
@@ -1388,6 +1463,117 @@ def test_alpaca_startup_sync_blocks_when_submit_counter_unavailable(
     assert artifact["error"] == "alpaca_paper_startup_sync_submit_counter_unavailable"
     assert artifact["no_submit_proof"]["submit_call_count_available"] is False
     assert artifact["no_submit_proof"]["submit_order_invoked"] is True
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_alpaca_startup_sync_guard_install_failure_writes_artifact_and_blocks(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = _write_registered_review(tmp_path)
+    runtime = NonCallableSubmitSurfaceFakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match="alpaca_paper_startup_sync_failed"):
+            runtime.bootstrap()
+
+    artifact = _startup_sync_artifact(Path(runtime.config.ledger_root))
+    assert artifact["status"] == "failed"
+    assert artifact["error"] == "alpaca_paper_startup_sync_submit_surface_missing"
+    assert artifact["reduce_only"] is True
+    assert artifact["halt_reconciliation"] is True
+    assert artifact["no_submit_proof"]["submit_order_guard_installed"] is False
+    assert artifact["no_submit_proof"]["submit_order_invoked"] is False
+    assert runtime.kill_switch.triggered is True
+    assert runtime.oms.reduce_only is True
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_alpaca_startup_sync_submit_guard_blocks_and_restores_submit_order(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = _write_registered_review(tmp_path)
+    runtime = SubmitInPollFakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match="alpaca_paper_startup_sync_failed"):
+            runtime.bootstrap()
+
+    artifact = _startup_sync_artifact(Path(runtime.config.ledger_root))
+    assert artifact["status"] == "failed"
+    assert artifact["error"] == "alpaca_paper_startup_sync_submit_order_blocked"
+    assert artifact["no_submit_proof"]["submit_order_invoked"] is True
+    assert artifact["no_submit_proof"]["submit_order_wrapper_invoked"] is True
+    assert artifact["no_submit_proof"]["submit_order_wrapper_blocked"] is True
+    assert artifact["no_submit_proof"]["submit_order_guard_installed"] is True
+    assert artifact["no_submit_proof"]["submit_order_guard_restored"] is True
+    assert artifact["no_submit_proof"]["submit_order_wrapper_order_ids"] == [
+        "startup_sync_guard_order"
+    ]
+
+    runtime.broker.update_market(
+        Bar(
+            timestamp_utc=datetime(2026, 5, 9, 14, 31, tzinfo=UTC),
+            symbol="SPY",
+            open=500.0,
+            high=501.0,
+            low=499.0,
+            close=500.0,
+            volume=10_000.0,
+            source="test",
+        )
+    )
+    runtime.broker.submit_order(
+        Order(
+            timestamp_utc=datetime(2026, 5, 9, 14, 31, tzinfo=UTC),
+            strategy_id="post_restore_check",
+            symbol="SPY",
+            side=OrderSide.BUY,
+            quantity=1.0,
+            order_type=OrderType.MARKET,
+            time_in_force=TimeInForce.DAY,
+            client_order_id="post_restore_check",
+            order_id="post_restore_order",
+        )
+    )
+    assert runtime.broker.submit_call_count == 1
 
 
 @patch("quant_us.live.paper_runtime.MarketDataLoop")

@@ -18,6 +18,7 @@ from pathlib import Path
 
 import pytest
 
+from quant_us.backtest.ledger_pnl import compute_ledger_reconciliation_artifact_hash
 from quant_us.data.storage.data_manifest import DataManifest, DataManifestStore
 
 
@@ -509,10 +510,89 @@ class TestPromotionGateEnhanced:
         """Helper to create canonical backtest manifest evidence for promotion tests."""
         manifest_dir = root / "research" / "backtests" / candidate_id
         manifest_dir.mkdir(parents=True, exist_ok=True)
+        generated_at = "2026-05-04T15:30:00+00:00"
+        reconciliation_summary = {
+            "snapshot_count": max(fill_count, 1),
+            "tolerance_pct": 0.01,
+            "absolute_tolerance": 1e-06,
+            "max_abs_diff": 0.0 if equity_consistent else 100.0,
+            "max_pct_diff": 0.0 if equity_consistent else 1.0,
+            "passed": equity_consistent,
+            "message": "fixture reconciliation summary",
+        }
+        ledger_artifact = {
+            "artifact_version": "ledger_reconciliation_v1",
+            "generated_at": generated_at,
+            "as_of_utc": generated_at,
+            "initial_cash": 100000.0,
+            "orders": {
+                "total_orders": order_count,
+                "by_status": {"filled": order_count} if order_count else {},
+                "by_side": {"buy": order_count} if order_count else {},
+            },
+            "fills": {
+                "raw_fill_count": fill_count,
+                "effective_fill_count": fill_count,
+                "duplicate_fill_count": 0,
+                "conflict_fill_count": 0,
+                "empty_identity_count": 0,
+                "duplicate_fill_keys": [],
+                "conflict_fill_keys": [],
+                "total_notional": float(fill_count * 1000.0),
+                "by_side": {"buy": fill_count} if fill_count else {},
+                "first_fill_at": generated_at if fill_count else None,
+                "last_fill_at": generated_at if fill_count else None,
+            },
+            "positions": {},
+            "cash": {
+                "initial_cash": 100000.0,
+                "final_cash": 100000.0,
+                "cash_change": 0.0,
+            },
+            "fees": {"total_fees": 0.0},
+            "slippage": {"realized_slippage_cost": 0.0},
+            "pnl": {
+                "source": "ledger_fills",
+                "initial_equity": 100000.0,
+                "final_equity": 100000.0,
+                "net_pnl": 0.0,
+                "position_value": 0.0,
+            },
+            "hashes": {
+                "ledger_hash": "ledger_hash_fixture",
+                "orders_hash": "orders_hash_fixture",
+                "fills_hash": "fills_hash_fixture",
+                "portfolio_snapshots_hash": "portfolio_snapshots_hash_fixture",
+                "effective_fills_hash": "effective_fills_hash_fixture",
+            },
+            "integrity": {
+                "fills": {
+                    "raw_fill_count": fill_count,
+                    "effective_fill_count": fill_count,
+                    "duplicate_fill_count": 0,
+                    "conflict_fill_count": 0,
+                    "empty_identity_count": 0,
+                    "duplicate_fill_keys": [],
+                    "conflict_fill_keys": [],
+                    "passed": True,
+                },
+                "passed": equity_consistent,
+            },
+            "reconciliation": {
+                "summary": reconciliation_summary,
+                "snapshots": [],
+                "adjustment_cross_check": None,
+            },
+        }
+        ledger_artifact["artifact_hash"] = compute_ledger_reconciliation_artifact_hash(ledger_artifact)
         manifest = {
             "engine": engine,
             "canonical_for_promotion": canonical_for_promotion,
+            "generated_at": generated_at,
             "data_version": data_version,
+            "ledger_artifact_hash": ledger_artifact["artifact_hash"],
+            "ledger_hash": ledger_artifact["hashes"]["ledger_hash"],
+            "fills_hash": ledger_artifact["hashes"]["fills_hash"],
             "data_manifest": {
                 "data_version": data_version,
                 "source": source,
@@ -557,10 +637,24 @@ class TestPromotionGateEnhanced:
                 "equity": {
                     "consistent": equity_consistent,
                 },
+                "pnl": {
+                    "source": "ledger_fills",
+                    "final_equity": 100000.0,
+                    "final_pnl": 0.0,
+                },
+                "reconciliation": {
+                    "summary": reconciliation_summary,
+                },
+                "ledger_artifact_hash": ledger_artifact["artifact_hash"],
+                "ledger_hash": ledger_artifact["hashes"]["ledger_hash"],
+                "fills_hash": ledger_artifact["hashes"]["fills_hash"],
+                "ledger_artifact": ledger_artifact,
                 "completeness": {
                     "promotion_evidence_complete": promotion_evidence_complete,
                 },
             },
+            "reconciliation": reconciliation_summary,
+            "ledger_artifact": ledger_artifact,
         }
         path = manifest_dir / "run_manifest.json"
         path.write_text(json.dumps(manifest), encoding="utf-8")
@@ -969,6 +1063,170 @@ class TestPromotionGateEnhanced:
         assert any("missing_order_risk_metadata" in r for r in result.reasons)
         assert any("missing_fill_order_linkage" in r for r in result.reasons)
         assert any("promotion_evidence_incomplete" in r for r in result.reasons)
+
+    def test_missing_ledger_reconciliation_artifact_is_blocked(self, tmp_path: Path) -> None:
+        """Promotion evidence must include the ledger reconciliation artifact itself."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_missing_ledger_artifact"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest.pop("ledger_artifact", None)
+        manifest.pop("ledger_artifact_hash", None)
+        manifest.pop("ledger_hash", None)
+        manifest.pop("fills_hash", None)
+        manifest["evidence"].pop("ledger_artifact", None)
+        manifest["evidence"].pop("ledger_artifact_hash", None)
+        manifest["evidence"].pop("ledger_hash", None)
+        manifest["evidence"].pop("fills_hash", None)
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        self._write_candidate(tmp_path, candidate_id, {
+            "monte_carlo_survival_rate": 0.90,
+            "alpha_decay_half_life_days": 15.0,
+            "param_stability_score": 0.8,
+            "correlation_redundancy": 0.30,
+            "stress_survival_rate": 0.85,
+            "sharpe": 1.5,
+            "walk_forward_pass_rate": 0.8,
+            "trade_count": 50,
+            "cost_sensitivity": 0.2,
+            "max_drawdown_pct": 0.15,
+        }, backtest_manifest_path=str(manifest_path))
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert result.evidence["ledger_artifact_present"] is False
+        assert any("missing_ledger_reconciliation_artifact" in r for r in result.reasons)
+
+    def test_tampered_ledger_artifact_hash_binding_is_blocked(self, tmp_path: Path) -> None:
+        """Hash bindings must match the artifact payload and manifest references."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_tampered_ledger_artifact_hash"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["ledger_artifact"]["hashes"]["fills_hash"] = "tampered_fills_hash"
+        manifest["evidence"]["ledger_artifact"]["hashes"]["fills_hash"] = "tampered_fills_hash"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        self._write_candidate(tmp_path, candidate_id, {
+            "monte_carlo_survival_rate": 0.90,
+            "alpha_decay_half_life_days": 15.0,
+            "param_stability_score": 0.8,
+            "correlation_redundancy": 0.30,
+            "stress_survival_rate": 0.85,
+            "sharpe": 1.5,
+            "walk_forward_pass_rate": 0.8,
+            "trade_count": 50,
+            "cost_sensitivity": 0.2,
+            "max_drawdown_pct": 0.15,
+        }, backtest_manifest_path=str(manifest_path))
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert any("ledger_reconciliation_artifact_hash_mismatch" in r for r in result.reasons)
+        assert any("ledger_reconciliation_artifact_binding_mismatch" in r for r in result.reasons)
+
+    def test_ledger_artifact_pnl_mismatch_is_blocked(self, tmp_path: Path) -> None:
+        """Artifact PnL must agree with the manifest's ledger-backed PnL summary."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_ledger_artifact_pnl_mismatch"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["ledger_artifact"]["pnl"]["final_equity"] = 99999.0
+        manifest["evidence"]["ledger_artifact"]["pnl"]["final_equity"] = 99999.0
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        self._write_candidate(tmp_path, candidate_id, {
+            "monte_carlo_survival_rate": 0.90,
+            "alpha_decay_half_life_days": 15.0,
+            "param_stability_score": 0.8,
+            "correlation_redundancy": 0.30,
+            "stress_survival_rate": 0.85,
+            "sharpe": 1.5,
+            "walk_forward_pass_rate": 0.8,
+            "trade_count": 50,
+            "cost_sensitivity": 0.2,
+            "max_drawdown_pct": 0.15,
+        }, backtest_manifest_path=str(manifest_path))
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert any("ledger_reconciliation_pnl_mismatch" in r for r in result.reasons)
+
+    def test_missing_manifest_pnl_binding_is_blocked(self, tmp_path: Path) -> None:
+        """Artifact PnL cannot pass without a manifest PnL binding."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_missing_manifest_pnl_binding"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["evidence"].pop("pnl", None)
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        self._write_candidate(tmp_path, candidate_id, {
+            "monte_carlo_survival_rate": 0.90,
+            "alpha_decay_half_life_days": 15.0,
+            "param_stability_score": 0.8,
+            "correlation_redundancy": 0.30,
+            "stress_survival_rate": 0.85,
+            "sharpe": 1.5,
+            "walk_forward_pass_rate": 0.8,
+            "trade_count": 50,
+            "cost_sensitivity": 0.2,
+            "max_drawdown_pct": 0.15,
+        }, backtest_manifest_path=str(manifest_path))
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert any("ledger_reconciliation_pnl_mismatch" in r for r in result.reasons)
+
+    def test_empty_reconciliation_summary_cannot_bypass_artifact_checks(self, tmp_path: Path) -> None:
+        """An empty reconciliation summary must fail closed even if scalar metrics are clean."""
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+
+        candidate_id = "cand_empty_reconciliation_summary"
+        manifest_path = self._make_backtest_manifest(tmp_path, candidate_id)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["reconciliation"] = {}
+        manifest["evidence"]["reconciliation"]["summary"] = {}
+        manifest["ledger_artifact"]["reconciliation"]["summary"] = {}
+        manifest["evidence"]["ledger_artifact"]["reconciliation"]["summary"] = {}
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        self._write_candidate(tmp_path, candidate_id, {
+            "monte_carlo_survival_rate": 0.90,
+            "alpha_decay_half_life_days": 15.0,
+            "param_stability_score": 0.8,
+            "correlation_redundancy": 0.30,
+            "stress_survival_rate": 0.85,
+            "sharpe": 1.5,
+            "walk_forward_pass_rate": 0.8,
+            "trade_count": 50,
+            "cost_sensitivity": 0.2,
+            "max_drawdown_pct": 0.15,
+        }, backtest_manifest_path=str(manifest_path))
+        self._make_experiment_manifest(tmp_path, "exp_test")
+        self._make_scorecard(tmp_path, candidate_id)
+
+        result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+        assert result.decision == "BLOCKED"
+        assert any("ledger_reconciliation_summary_missing" in r for r in result.reasons)
 
     def test_all_r6_r7_r8_checks_pass(self, tmp_path: Path) -> None:
         """All R6/R7/R8 checks passing should result in READY_FOR_PAPER_REVIEW."""

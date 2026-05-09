@@ -629,6 +629,93 @@ class CliManifestReportTests(unittest.TestCase):
             self.assertIn("evidence_state: PASS manifest_path", text)
             self.assertIn("scope:       report only, no execution", text)
 
+    def test_report_backtest_prints_ledger_evidence_fields(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "run_abc123.json").write_text(
+                """{
+                  "run_id": "abc123",
+                  "data_version": "data_v1",
+                  "strategy_version": "strat_v1",
+                  "commit_hash": "deadbee",
+                  "generated_at": "2026-05-01T00:02:00+00:00",
+                  "as_of_utc": "2026-05-01T00:02:00+00:00",
+                  "ledger_artifact_hash": "artifacthash",
+                  "ledger_hash": "ledgerhash",
+                  "fills_hash": "fillshash",
+                  "orders_hash": "ordershash",
+                  "portfolio_snapshots_hash": "snapshotshash",
+                  "start_time": "2026-05-01T00:00:00+00:00",
+                  "end_time": "2026-05-01T00:01:00+00:00",
+                  "config": {"initial_cash": 100000, "commission_rate": 0.0001, "slippage_bps": 1.0},
+                  "ledger_artifact": {
+                    "artifact_hash": "artifacthash",
+                    "as_of_utc": "2026-05-01T00:02:00+00:00",
+                    "hashes": {
+                      "ledger_hash": "ledgerhash",
+                      "fills_hash": "fillshash",
+                      "orders_hash": "ordershash",
+                      "portfolio_snapshots_hash": "snapshotshash"
+                    }
+                  },
+                  "evidence": {
+                    "completeness": {
+                      "ledger_evidence_complete": true,
+                      "data_manifest_bound": true,
+                      "promotion_evidence_complete": true
+                    }
+                  }
+                }""",
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "backtest", "--run-id", "abc123", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("generated_at: 2026-05-01T00:02:00+00:00", text)
+            self.assertIn("as_of_utc:    2026-05-01T00:02:00+00:00", text)
+            self.assertIn("ledger_artifact_hash: artifacthash", text)
+            self.assertIn("ledger_hash: ledgerhash", text)
+            self.assertIn("fills_hash: fillshash", text)
+            self.assertIn("orders_hash: ordershash", text)
+            self.assertIn("portfolio_snapshots_hash: snapshotshash", text)
+            self.assertIn("artifact_consistency_state: PASS", text)
+            self.assertIn("artifact_completeness_state: PASS", text)
+            self.assertIn("completeness_ledger_evidence_complete: True", text)
+
+    def test_report_backtest_prints_missing_ledger_evidence_fields(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "run_abc123.json").write_text(
+                """{
+                  "run_id": "abc123",
+                  "data_version": "data_v1",
+                  "strategy_version": "strat_v1",
+                  "commit_hash": "deadbee",
+                  "start_time": "2026-05-01T00:00:00+00:00",
+                  "end_time": "2026-05-01T00:01:00+00:00",
+                  "config": {"initial_cash": 100000, "commission_rate": 0.0001, "slippage_bps": 1.0}
+                }""",
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "backtest", "--run-id", "abc123", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("ledger_artifact_hash: (missing)", text)
+            self.assertIn("ledger_hash: (missing)", text)
+            self.assertIn("fills_hash: (missing)", text)
+            self.assertIn("orders_hash: (missing)", text)
+            self.assertIn("portfolio_snapshots_hash: (missing)", text)
+            self.assertIn("artifact_consistency_state: MISSING", text)
+            self.assertIn("artifact_completeness_state: MISSING", text)
+
     def test_report_backtest_prints_embedded_data_manifest_v2_fields(self) -> None:
         with TemporaryDirectory() as tmp:
             manifest_dir = Path(tmp) / "manifests"
@@ -747,6 +834,9 @@ class CliManifestReportTests(unittest.TestCase):
                         "startup_sync_status": {"status": "no_submit"},
                         "no_real_order_submission_proof": {"status": "PASS"},
                         "created_at": "2026-05-08T20:00:00+00:00",
+                        "history_artifact_path": str(
+                            Path(tmp) / "paper_ledger" / "audit" / "paper_session_manifests" / "sess_001.json"
+                        ),
                     }
                 ),
                 encoding="utf-8",
@@ -776,6 +866,8 @@ class CliManifestReportTests(unittest.TestCase):
             self.assertIn("readiness_state: MISSING validation_state", text)
             self.assertIn("evidence:     paper_session_manifest=", text)
             self.assertIn("paper_session_id: sess_001", text)
+            self.assertIn("paper_session_history_artifact_path:", text)
+            self.assertIn("paper_session_manifests/sess_001.json", text)
             self.assertIn("paper_session_no_submit_proof: PASS", text)
             self.assertIn("startup_sync_status: no_submit", text)
             self.assertIn("evidence:     ledger_reconciliation_artifact=", text)
@@ -851,3 +943,47 @@ class CliManifestReportTests(unittest.TestCase):
             self.assertIn("paper_review_status: PAPER_REVIEW_EVIDENCE_INVALID", text)
             self.assertIn("paper_review_entry_allowed: NO", text)
             self.assertIn("paper_review_note: Approved paper review evidence is incomplete", text)
+
+    def test_paper_report_prints_session_history_artifact_path(self) -> None:
+        with TemporaryDirectory() as tmp:
+            report_dir = Path(tmp) / "paper_ledger" / "daily_reports"
+            report_dir.mkdir(parents=True)
+            (report_dir / "daily_report_2026-05-08.json").write_text(
+                json.dumps(
+                    {
+                        "date": "2026-05-08",
+                        "ending_equity": 101000.0,
+                        "daily_pnl": 1000.0,
+                        "orders_submitted": 0,
+                        "orders_filled": 0,
+                        "reconciliation_status": "clean",
+                        "kill_switch_triggered": False,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            audit_dir = Path(tmp) / "paper_ledger" / "audit"
+            audit_dir.mkdir(parents=True)
+            history_path = audit_dir / "paper_session_manifests" / "sess_001.json"
+            (audit_dir / "paper_session_manifest.json").write_text(
+                json.dumps(
+                    {
+                        "session_id": "sess_001",
+                        "mode": "paper",
+                        "broker_backend": "simulated",
+                        "submit_orders": False,
+                        "history_artifact_path": str(history_path),
+                        "no_real_order_submission_proof": {"status": "PASS"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["paper", "report", "--latest", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_session_history_artifact_path:", text)
+            self.assertIn("paper_session_manifests/sess_001.json", text)
+            self.assertIn("scope:       report only, no execution", text)

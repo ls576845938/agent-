@@ -95,6 +95,9 @@ The report highlights:
 - `strategy_version`
 - `commit_hash`
 - commission and slippage configuration
+- ledger reconciliation binding: `ledger_artifact_hash`, `ledger_hash`, `fills_hash`, `orders_hash`, `portfolio_snapshots_hash`
+- evidence timestamps: `generated_at` and `as_of_utc`
+- artifact consistency and completeness states, with absent fields shown as `(missing)`
 - manifest path
 
 Corporate actions in the backtest ledger are handled with a split/reverse-split quantity and cost-basis adjustment only.
@@ -164,6 +167,7 @@ Important rules enforced in code:
 - paper/runtime readiness consumes evidence and renders a report only; it does not submit paper or live orders
 - readiness/report/paper runtime gate only consumes the saved Evidence Registry; it does not rebuild from `review.json` or any other legacy input
 - if registry state is `MISSING`, `STALE`, or `CONFLICT`, the gate fails closed
+- saved registry rebuild is an explicit atomic maintenance action protected by a lock
 - `paper_broker=alpaca` is fail-closed by default in the current runtime path
 - paper orders are not submitted by default; enabling paper submission requires an explicit paper path separate from readiness/report commands
 - the real Alpaca paper adapter is not in the automatic submit path in this baseline
@@ -225,6 +229,8 @@ python -m quant_us.cli report evidence-registry --data-root data
 The report includes the report path, ledger root, ending equity, daily PnL, order counts, reconciliation status,
 validation-state evidence pointers, evidence-registry status, paper session manifest, startup sync artifact,
 ledger reconciliation artifact hash/fill hash/duplicate and conflict fill counts/ledger PnL, and `report only, no execution`.
+If present, the CLI also prints the paper session manifest `history_artifact_path` for the immutable
+`paper_ledger/audit/paper_session_manifests/<session_id>.json` copy.
 This report is review-only and does not submit paper or live orders.
 Paper session manifests and startup sync files are persisted audit evidence only; they do not enable broker writes.
 Ledger-derived report artifacts must remain idempotent. Runtime/report writers should use a file lock for ledger writes
@@ -238,6 +244,7 @@ that has not been implemented.
 - PnL comes from fills and ledger.
 - Every backtest should have a manifest.
 - Ledger reconciliation artifacts are persisted evidence views, not execution flow.
+- Ledger-backed backtest manifests bind ledger, fills, orders, snapshot hashes, `generated_at`, and `as_of_utc`; missing bindings must be surfaced as missing evidence.
 - Promotion stops at `READY_FOR_PAPER_REVIEW`; paper/live are separate manual gates.
 - Paper startup sync artifacts are audit inputs only and stay fail-closed; they do not mean real trading has been enabled.
 - Evidence Registry subject indexes are lookup aids over saved evidence and do not replace gate decisions.

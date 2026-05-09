@@ -26,6 +26,7 @@ from quant_us.data.storage.data_manifest import (
     DataManifestStore,
     validate_manifest_for_promotion,
 )
+from quant_us.backtest.ledger_pnl import compute_ledger_reconciliation_artifact_hash
 
 
 ALLOWED_DATA_SOURCES = {"yfinance", "alpaca", "sqlite"}
@@ -529,6 +530,16 @@ class ResearchPromotionGate:
             value > 0
             for value in (fill_count, order_count, baseline_fill_count, baseline_order_count)
         )
+        ledger_artifact_ok = self._evaluate_ledger_reconciliation_artifact(
+            backtest_manifest=backtest_manifest,
+            manifest_evidence=manifest_evidence,
+            manifest_orders=manifest_orders,
+            manifest_fills=manifest_fills,
+            fill_count=fill_count,
+            order_count=order_count,
+            evidence=evidence,
+            reasons=reasons,
+        )
 
         evidence["engine"] = engine
         evidence["canonical_for_promotion"] = canonical_for_promotion
@@ -553,6 +564,8 @@ class ResearchPromotionGate:
             evidence["orders_have_risk_check_id"] = orders_have_risk
             evidence["fills_match_orders"] = fills_match_orders
             evidence["promotion_evidence_complete"] = promotion_evidence_complete
+            evidence["ledger_artifact_required"] = True
+            evidence["ledger_artifact_ok"] = ledger_artifact_ok
         else:
             orders_have_risk = None
             fills_match_orders = None
@@ -583,6 +596,195 @@ class ResearchPromotionGate:
             reasons.append(
                 "missing_fill_order_linkage: manifest must prove all fills map to orders"
             )
+        if isinstance(backtest_manifest, dict) and not ledger_artifact_ok:
+            reasons.append(
+                "ledger_reconciliation_artifact_invalid: promotion requires consistent ledger reconciliation artifact evidence"
+            )
+
+    def _evaluate_ledger_reconciliation_artifact(
+        self,
+        *,
+        backtest_manifest: dict[str, Any] | None,
+        manifest_evidence: dict[str, Any],
+        manifest_orders: dict[str, Any],
+        manifest_fills: dict[str, Any],
+        fill_count: int,
+        order_count: int,
+        evidence: dict[str, Any],
+        reasons: list[str],
+    ) -> bool:
+        if not isinstance(backtest_manifest, dict):
+            evidence["ledger_artifact_present"] = False
+            return False
+
+        raw_artifact = manifest_evidence.get("ledger_artifact")
+        if not isinstance(raw_artifact, dict):
+            raw_artifact = backtest_manifest.get("ledger_artifact")
+        artifact = raw_artifact if isinstance(raw_artifact, dict) else {}
+
+        artifact_hash = str(artifact.get("artifact_hash", "") or "")
+        generated_at = str(artifact.get("generated_at", "") or "")
+        as_of_utc = str(artifact.get("as_of_utc", "") or "")
+        hashes = artifact.get("hashes", {})
+        if not isinstance(hashes, dict):
+            hashes = {}
+        artifact_fills_hash = str(hashes.get("fills_hash", "") or "")
+        artifact_ledger_hash = str(hashes.get("ledger_hash", "") or "")
+        artifact_orders_hash = str(hashes.get("orders_hash", "") or "")
+        artifact_snapshots_hash = str(hashes.get("portfolio_snapshots_hash", "") or "")
+
+        evidence["ledger_artifact_present"] = bool(artifact)
+        evidence["ledger_artifact_hash"] = artifact_hash
+        evidence["ledger_artifact_generated_at"] = generated_at
+        evidence["ledger_artifact_as_of_utc"] = as_of_utc
+        evidence["ledger_hash"] = artifact_ledger_hash
+        evidence["fills_hash"] = artifact_fills_hash
+        evidence["orders_hash"] = artifact_orders_hash
+        evidence["portfolio_snapshots_hash"] = artifact_snapshots_hash
+
+        if not artifact:
+            reasons.append(
+                "missing_ledger_reconciliation_artifact: promotion requires ledger reconciliation artifact evidence"
+            )
+            return False
+
+        required_bindings = {
+            "artifact_hash": str(
+                backtest_manifest.get("ledger_artifact_hash")
+                or manifest_evidence.get("ledger_artifact_hash")
+                or ""
+            ),
+            "ledger_hash": str(
+                backtest_manifest.get("ledger_hash")
+                or manifest_evidence.get("ledger_hash")
+                or ""
+            ),
+            "fills_hash": str(
+                backtest_manifest.get("fills_hash")
+                or manifest_evidence.get("fills_hash")
+                or manifest_fills.get("fills_hash")
+                or ""
+            ),
+        }
+        manifest_reconciliation = manifest_evidence.get("reconciliation", {})
+        if not isinstance(manifest_reconciliation, dict):
+            manifest_reconciliation = {}
+        manifest_summary = manifest_reconciliation.get("summary", {})
+        if not isinstance(manifest_summary, dict) or not manifest_summary:
+            top_level_summary = backtest_manifest.get("reconciliation", {})
+            manifest_summary = dict(top_level_summary) if isinstance(top_level_summary, dict) else {}
+
+        artifact_reconciliation = artifact.get("reconciliation", {})
+        if not isinstance(artifact_reconciliation, dict):
+            artifact_reconciliation = {}
+        artifact_summary = artifact_reconciliation.get("summary", {})
+        if not isinstance(artifact_summary, dict):
+            artifact_summary = {}
+
+        artifact_orders = artifact.get("orders", {})
+        if not isinstance(artifact_orders, dict):
+            artifact_orders = {}
+        artifact_fills = artifact.get("fills", {})
+        if not isinstance(artifact_fills, dict):
+            artifact_fills = {}
+        artifact_pnl = artifact.get("pnl", {})
+        if not isinstance(artifact_pnl, dict):
+            artifact_pnl = {}
+        manifest_pnl = manifest_evidence.get("pnl", {})
+        if not isinstance(manifest_pnl, dict):
+            manifest_pnl = {}
+        artifact_integrity = artifact.get("integrity", {})
+        if not isinstance(artifact_integrity, dict):
+            artifact_integrity = {}
+
+        expected_hash = compute_ledger_reconciliation_artifact_hash(artifact)
+        bindings_present = all(required_bindings.values())
+        bindings_match = (
+            required_bindings["artifact_hash"] == artifact_hash
+            and required_bindings["ledger_hash"] == artifact_ledger_hash
+            and required_bindings["fills_hash"] == artifact_fills_hash
+        )
+        summary_present = bool(artifact_summary) and bool(manifest_summary)
+        summary_match = summary_present and artifact_summary == manifest_summary
+        count_match = (
+            int(artifact_orders.get("total_orders", -1) or -1) == order_count
+            and int(artifact_fills.get("effective_fill_count", -1) or -1) == fill_count
+        )
+        manifest_pnl_value = manifest_pnl.get(
+            "net_pnl",
+            manifest_pnl.get("final_pnl"),
+        )
+        pnl_match = (
+            bool(manifest_pnl)
+            and str(artifact_pnl.get("source", "")) == "ledger_fills"
+            and str(manifest_pnl.get("source", "")) == "ledger_fills"
+            and self._numbers_close(
+                artifact_pnl.get("final_equity"),
+                manifest_pnl.get("final_equity"),
+            )
+            and self._numbers_close(artifact_pnl.get("net_pnl"), manifest_pnl_value)
+        )
+        hashes_present = all(
+            [
+                artifact_hash,
+                generated_at,
+                as_of_utc,
+                artifact_fills_hash,
+                artifact_ledger_hash,
+                artifact_orders_hash,
+                artifact_snapshots_hash,
+            ]
+        )
+        integrity_passed = bool(artifact_integrity.get("passed", False))
+
+        if not hashes_present:
+            reasons.append(
+                "ledger_reconciliation_artifact_fields_missing: artifact must include artifact_hash, generated_at, as_of_utc, ledger_hash, fills_hash, orders_hash, portfolio_snapshots_hash"
+            )
+        if artifact_hash != expected_hash:
+            reasons.append(
+                "ledger_reconciliation_artifact_hash_mismatch: artifact_hash does not match artifact payload"
+            )
+        if not bindings_present:
+            reasons.append(
+                "ledger_reconciliation_artifact_binding_missing: manifest must bind ledger_artifact_hash, ledger_hash, and fills_hash"
+            )
+        elif not bindings_match:
+            reasons.append(
+                "ledger_reconciliation_artifact_binding_mismatch: manifest hash bindings do not match artifact hashes"
+            )
+        if not summary_present:
+            reasons.append(
+                "ledger_reconciliation_summary_missing: manifest and artifact must both include reconciliation summary"
+            )
+        elif not summary_match:
+            reasons.append(
+                "ledger_reconciliation_summary_mismatch: artifact reconciliation summary differs from manifest reconciliation summary"
+            )
+        if not count_match:
+            reasons.append(
+                "ledger_reconciliation_trade_count_mismatch: artifact counts differ from manifest order/fill counts"
+            )
+        if not pnl_match:
+            reasons.append(
+                "ledger_reconciliation_pnl_mismatch: artifact PnL must match manifest ledger-backed PnL"
+            )
+        if not integrity_passed:
+            reasons.append(
+                "ledger_reconciliation_integrity_failed: artifact integrity.passed must be true"
+            )
+
+        return (
+            hashes_present
+            and artifact_hash == expected_hash
+            and bindings_present
+            and bindings_match
+            and summary_present
+            and summary_match
+            and count_match
+            and pnl_match
+            and integrity_passed
+        )
 
     def _record_unified_backtest_report_evidence(
         self,
@@ -723,6 +925,15 @@ class ResearchPromotionGate:
         if isinstance(value, str):
             return value.strip().lower() in {"1", "true", "yes", "y", "passed", "pass"}
         return bool(value)
+
+    @staticmethod
+    def _numbers_close(left: Any, right: Any, *, tolerance: float = 1e-6) -> bool:
+        if left is None or right is None:
+            return False
+        try:
+            return abs(float(left) - float(right)) <= tolerance
+        except (TypeError, ValueError):
+            return False
 
     def _evaluate_data_manifest(
         self,

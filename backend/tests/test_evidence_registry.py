@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import json
+import threading
+import time
 from pathlib import Path
 
+import quant_us.research.evidence_registry as evidence_registry_module
 from quant_us.research.evidence_registry import (
     find_registry_subject_evidence,
     inspect_candidate_evidence,
@@ -34,6 +37,7 @@ def _write_candidate_chain_fixture(
     include_review: bool = True,
     duplicate_data_manifest: bool = False,
     daily_report_session_id: str | None = None,
+    ledger_artifact_hash: str = "",
 ) -> dict[str, str]:
     _write_json(
         root / "research" / "candidates" / candidate_id / "candidate.json",
@@ -117,6 +121,8 @@ def _write_candidate_chain_fixture(
     }
     if daily_report_session_id:
         daily_report_payload["session_id"] = daily_report_session_id
+    if ledger_artifact_hash:
+        daily_report_payload["ledger_artifact_hash"] = ledger_artifact_hash
     _write_json(
         root / "daily_reports" / "daily_report_2026-05-09.json",
         daily_report_payload,
@@ -151,6 +157,110 @@ def _write_candidate_chain_fixture(
         "review_id": review_id,
         "data_version": data_version,
     }
+
+
+def _write_runtime_evidence_fixture(
+    root: Path,
+    *,
+    review_id: str,
+    review_path: Path,
+    session_id: str,
+    artifact_hash: str,
+    report_date: str = "2026-05-09",
+) -> None:
+    ledger_root = root / "paper_runtime_ledger"
+    session_manifest = {
+        "artifact_type": "paper_session_manifest",
+        "artifact_version": "paper_session_manifest_v1",
+        "session_id": session_id,
+        "mode": "paper",
+        "runtime_mode": "paper",
+        "canonical_runtime": "PaperRuntime",
+        "symbols": ["AAPL"],
+        "strategy_id": "momentum",
+        "paper_broker": "alpaca",
+        "broker_backend": "alpaca_paper",
+        "submit_orders": False,
+        "allow_live_orders": False,
+        "registry_evidence_id": review_id,
+        "registry_evidence_path": str(review_path),
+        "registry_evidence": {
+            "allowed": True,
+            "reason": "ok",
+            "registry_status": "present",
+            "registry_integrity_status": "PASS/STABLE",
+        },
+        "startup_sync_status": {"status": "ok"},
+        "created_at": f"{report_date}T20:10:00+00:00",
+        "artifact_path": str(ledger_root / "audit" / "paper_session_manifest.json"),
+        "history_artifact_path": str(
+            ledger_root
+            / "audit"
+            / "paper_session_manifests"
+            / f"{session_id}.json"
+        ),
+        "no_real_order_submission_proof": {"status": "PASS"},
+        "reduce_only": False,
+        "halt_reconciliation": False,
+        "adapter_contract": {"effective_backend": "alpaca_paper"},
+    }
+    _write_json(
+        ledger_root / "audit" / "paper_session_manifest.json",
+        session_manifest,
+    )
+    _write_json(
+        ledger_root / "audit" / "paper_session_manifests" / f"{session_id}.json",
+        session_manifest,
+    )
+    _write_json(
+        ledger_root / "audit" / "paper_broker_adapter_startup_sync.json",
+        {
+            "artifact_type": "paper_broker_adapter_startup_sync",
+            "artifact_version": "paper_broker_adapter_startup_sync_v1",
+            "mode": "paper",
+            "runtime_mode": "paper",
+            "canonical_runtime": "PaperRuntime",
+            "paper_broker": "alpaca",
+            "backend": "alpaca_paper",
+            "broker_backend": "alpaca_paper",
+            "real_order_submission": False,
+            "paper_order_submission": False,
+            "contract_version": "paper_adapter_contract_v4",
+            "status": "ok",
+            "reduce_only": False,
+            "halt_reconciliation": False,
+            "no_submit_proof": {
+                "submit_order_invoked": False,
+                "submit_call_count_delta": 0,
+            },
+            "sync": {
+                "sync_account": {"account_id": "paper-account"},
+                "sync_positions": {"position_count": 1},
+            },
+            "timestamp_utc": f"{report_date}T20:05:00+00:00",
+        },
+    )
+    _write_json(
+        ledger_root
+        / "reconciliation"
+        / f"ledger_recon_artifact_{artifact_hash[:16]}.json",
+        {
+            "artifact_version": "ledger_reconciliation_v1",
+            "artifact_hash": artifact_hash,
+            "as_of_utc": f"{report_date}T20:00:00+00:00",
+            "fills": {
+                "duplicate_fill_count": 0,
+                "conflict_fill_count": 0,
+            },
+            "hashes": {
+                "ledger_hash": "ledgerhash",
+                "fills_hash": "fillshash",
+            },
+            "pnl": {"net_pnl": 123.45},
+            "integrity": {"passed": True},
+            "reconciliation": {"summary": {"passed": True}},
+        },
+    )
 
 
 def test_approved_paper_review_persists_provenance_and_registry_chain(tmp_path: Path) -> None:
@@ -530,3 +640,170 @@ def test_find_registry_subject_evidence_fails_closed_for_unready_registry(
     assert conflict["matched"] is False
     assert conflict["registry_status"] == "conflict"
     assert conflict["entries"] == []
+
+
+def test_rebuild_registry_keeps_existing_snapshot_when_atomic_replace_fails(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _write_candidate_chain_fixture(tmp_path)
+    rebuild_evidence_registry(tmp_path)
+
+    registry_path = tmp_path / "research" / "evidence_registry.json"
+    original_text = registry_path.read_text(encoding="utf-8")
+    original_replace = evidence_registry_module.os.replace
+
+    def fail_registry_replace(src: str | Path, dst: str | Path) -> None:
+        if Path(dst) == registry_path:
+            raise OSError("forced_replace_failure")
+        original_replace(src, dst)
+
+    monkeypatch.setattr(evidence_registry_module.os, "replace", fail_registry_replace)
+
+    try:
+        rebuild_evidence_registry(tmp_path)
+    except OSError as exc:
+        assert "forced_replace_failure" in str(exc)
+    else:
+        raise AssertionError("expected rebuild_evidence_registry to fail")
+
+    assert registry_path.read_text(encoding="utf-8") == original_text
+    assert json.loads(original_text)["schema_version"] == "evidence_registry_v1"
+    assert not list((tmp_path / "research").glob(".evidence_registry.json.*.tmp"))
+    assert not evidence_registry_module._registry_lock_path(tmp_path).exists()
+
+
+def test_rebuild_registry_serializes_concurrent_writers_with_lock(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _write_candidate_chain_fixture(tmp_path)
+    original_write_json_atomic = evidence_registry_module._write_json_atomic
+    registry_path = evidence_registry_module._registry_path(tmp_path)
+    first_writer_entered = threading.Event()
+    release_first_writer = threading.Event()
+    writer_call_count = 0
+    errors: list[BaseException] = []
+
+    def blocking_write_json_atomic(path: Path, payload: dict) -> None:
+        nonlocal writer_call_count
+        if path == registry_path:
+            writer_call_count += 1
+            if writer_call_count == 1:
+                first_writer_entered.set()
+                release_first_writer.wait(timeout=2.0)
+        original_write_json_atomic(path, payload)
+
+    monkeypatch.setattr(
+        evidence_registry_module,
+        "_write_json_atomic",
+        blocking_write_json_atomic,
+    )
+
+    def run_rebuild() -> None:
+        try:
+            rebuild_evidence_registry(tmp_path)
+        except BaseException as exc:  # pragma: no cover - asserted below
+            errors.append(exc)
+
+    first = threading.Thread(target=run_rebuild)
+    second = threading.Thread(target=run_rebuild)
+    first.start()
+    assert first_writer_entered.wait(timeout=2.0)
+
+    second.start()
+    time.sleep(0.2)
+    assert writer_call_count == 1
+
+    release_first_writer.set()
+    first.join(timeout=2.0)
+    second.join(timeout=2.0)
+
+    assert not errors
+    assert writer_call_count == 2
+    assert not first.is_alive()
+    assert not second.is_alive()
+    assert json.loads(registry_path.read_text(encoding="utf-8"))["schema_version"] == (
+        "evidence_registry_v1"
+    )
+    assert not evidence_registry_module._registry_lock_path(tmp_path).exists()
+
+
+def test_registry_subject_index_includes_runtime_and_ledger_evidence(
+    tmp_path: Path,
+) -> None:
+    artifact_hash = "artifacthash1234567890"
+    ids = _write_candidate_chain_fixture(
+        tmp_path,
+        daily_report_session_id="paper_session_open",
+        ledger_artifact_hash=artifact_hash,
+    )
+    manager = PaperReviewManager(data_root=str(tmp_path))
+    manager.approve(ids["review_id"], reviewer="risk_committee")
+    review_path = (
+        tmp_path / "research" / "paper_reviews" / ids["review_id"] / "review.json"
+    )
+    _write_runtime_evidence_fixture(
+        tmp_path,
+        review_id=ids["review_id"],
+        review_path=review_path,
+        session_id="paper_session_open",
+        artifact_hash=artifact_hash,
+    )
+
+    registry = rebuild_evidence_registry(tmp_path)
+    subject_index = registry["subject_index"]
+
+    assert registry["counts"]["paper_session_manifest_count"] == 2
+    assert registry["counts"]["paper_startup_sync_count"] == 1
+    assert registry["counts"]["ledger_reconciliation_artifact_count"] == 1
+
+    session_entries = subject_index["session_id"]["paper_session_open"]
+    assert {entry["entry_kind"] for entry in session_entries} >= {
+        "daily_report",
+        "paper_session_manifest",
+        "paper_broker_adapter_startup_sync",
+        "ledger_reconciliation_artifact",
+    }
+    session_manifest_entries = [
+        entry for entry in session_entries if entry["entry_kind"] == "paper_session_manifest"
+    ]
+    assert len(session_manifest_entries) == 2
+    assert {
+        entry["trace"][0]["evidence_id"] for entry in session_manifest_entries
+    } == {"paper_session_open:latest", "paper_session_open:history"}
+
+    review_entries = subject_index["paper_review_id"][ids["review_id"]]
+    assert any(
+        entry["entry_kind"] == "paper_session_manifest"
+        and entry["candidate_id"] == ids["candidate_id"]
+        for entry in review_entries
+    )
+    assert any(
+        entry["entry_kind"] == "paper_broker_adapter_startup_sync"
+        and entry["candidate_id"] == ids["candidate_id"]
+        for entry in review_entries
+    )
+
+    report_entries = subject_index["report_date"]["2026-05-09"]
+    assert any(
+        entry["entry_kind"] == "ledger_reconciliation_artifact"
+        and entry["paths"]["ledger_reconciliation_artifact"].endswith(
+            f"ledger_recon_artifact_{artifact_hash[:16]}.json"
+        )
+        for entry in report_entries
+    )
+
+    session_lookup = find_registry_subject_evidence(
+        tmp_path,
+        session_id="paper_session_open",
+    )
+    assert session_lookup["matched"] is True
+    assert {
+        entry["entry_kind"] for entry in session_lookup["entries"]
+    } >= {
+        "daily_report",
+        "paper_session_manifest",
+        "paper_broker_adapter_startup_sync",
+        "ledger_reconciliation_artifact",
+    }

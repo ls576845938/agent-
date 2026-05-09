@@ -173,6 +173,7 @@ class PaperRuntime:
         self.data_freshness: DataFreshnessGuard
         self.alerts: TelegramAlertService
         self._halt_reconciliation: bool = False
+        self._paper_entry_evidence_projection_cache: dict[str, Any] | None = None
 
     # ------------------------------------------------------------------
     # Bootstrap
@@ -958,6 +959,12 @@ class PaperRuntime:
                     "sync_positions",
                 ],
                 "submit_order_invoked": False,
+                "submit_order_wrapper_invoked": False,
+                "submit_order_wrapper_blocked": False,
+                "submit_order_wrapper_reason": "",
+                "submit_order_wrapper_order_ids": [],
+                "submit_order_guard_installed": False,
+                "submit_order_guard_restored": False,
                 "submit_call_count_available": self._broker_submit_call_count() is not None,
                 "submit_call_count_before": self._broker_submit_call_count(),
                 "submit_call_count_after": None,
@@ -988,51 +995,61 @@ class PaperRuntime:
             },
         }
 
+        original_submit_order: Any | None = None
         try:
-            artifact["readiness"] = self.broker.readiness_report()
+            original_submit_order = self._install_startup_sync_submit_guard(artifact)
+            try:
+                artifact["readiness"] = self.broker.readiness_report()
 
-            artifact["sync"]["poll_orders"]["call_count"] = 1
-            polled_orders = list(self.broker.poll_orders())
-            polled_order_ids = self._sorted_unique_strings(
-                getattr(order, "order_id", "") for order in polled_orders
-            )
-            artifact["sync"]["poll_orders"]["order_count"] = len(polled_orders)
-            artifact["sync"]["poll_orders"]["order_ids"] = polled_order_ids
+                artifact["sync"]["poll_orders"]["call_count"] = 1
+                polled_orders = list(self.broker.poll_orders())
+                polled_order_ids = self._sorted_unique_strings(
+                    getattr(order, "order_id", "") for order in polled_orders
+                )
+                artifact["sync"]["poll_orders"]["order_count"] = len(polled_orders)
+                artifact["sync"]["poll_orders"]["order_ids"] = polled_order_ids
 
-            synced_fills: list[Any] = []
-            requested_fill_order_ids: list[str] = []
-            if polled_orders:
-                artifact["sync"]["sync_fills"]["call_count"] = len(polled_orders)
-                for order in polled_orders:
-                    order_id = getattr(order, "order_id", None)
-                    if order_id:
-                        requested_fill_order_ids.append(str(order_id))
-                    synced_fills.extend(self.broker.sync_fills(order_id))
-            else:
-                artifact["sync"]["sync_fills"]["call_count"] = 1
-                synced_fills = list(self.broker.sync_fills(None))
+                synced_fills: list[Any] = []
+                requested_fill_order_ids: list[str] = []
+                if polled_orders:
+                    artifact["sync"]["sync_fills"]["call_count"] = len(polled_orders)
+                    for order in polled_orders:
+                        order_id = getattr(order, "order_id", None)
+                        if order_id:
+                            requested_fill_order_ids.append(str(order_id))
+                        synced_fills.extend(self.broker.sync_fills(order_id))
+                else:
+                    artifact["sync"]["sync_fills"]["call_count"] = 1
+                    synced_fills = list(self.broker.sync_fills(None))
 
-            artifact["sync"]["sync_fills"]["fill_count"] = len(synced_fills)
-            artifact["sync"]["sync_fills"]["fill_ids"] = self._sorted_unique_strings(
-                getattr(fill, "fill_id", "") for fill in synced_fills
-            )
-            artifact["sync"]["sync_fills"]["order_ids"] = self._sorted_unique_strings(
-                getattr(fill, "order_id", "") for fill in synced_fills
-            )
-            artifact["sync"]["sync_fills"]["requested_order_ids"] = self._sorted_unique_strings(
-                requested_fill_order_ids
-            )
+                artifact["sync"]["sync_fills"]["fill_count"] = len(synced_fills)
+                artifact["sync"]["sync_fills"]["fill_ids"] = self._sorted_unique_strings(
+                    getattr(fill, "fill_id", "") for fill in synced_fills
+                )
+                artifact["sync"]["sync_fills"]["order_ids"] = self._sorted_unique_strings(
+                    getattr(fill, "order_id", "") for fill in synced_fills
+                )
+                artifact["sync"]["sync_fills"]["requested_order_ids"] = self._sorted_unique_strings(
+                    requested_fill_order_ids
+                )
 
-            artifact["sync"]["sync_account"]["call_count"] = 1
-            account = self.broker.sync_account()
-            artifact["sync"]["sync_account"]["account_id"] = str(account.account_id)
+                artifact["sync"]["sync_account"]["call_count"] = 1
+                account = self.broker.sync_account()
+                artifact["sync"]["sync_account"]["account_id"] = str(account.account_id)
 
-            artifact["sync"]["sync_positions"]["call_count"] = 1
-            positions = self.broker.sync_positions()
-            artifact["sync"]["sync_positions"]["position_count"] = len(positions)
-            artifact["sync"]["sync_positions"]["symbols"] = self._sorted_unique_strings(
-                positions.keys()
-            )
+                artifact["sync"]["sync_positions"]["call_count"] = 1
+                positions = self.broker.sync_positions()
+                artifact["sync"]["sync_positions"]["position_count"] = len(positions)
+                artifact["sync"]["sync_positions"]["symbols"] = self._sorted_unique_strings(
+                    positions.keys()
+                )
+            finally:
+                if original_submit_order is not None:
+                    self._restore_startup_sync_submit_guard(
+                        artifact,
+                        original_submit_order,
+                    )
+                    original_submit_order = None
 
             self._finalize_startup_sync_no_submit_proof(artifact)
             if not artifact["no_submit_proof"].get("submit_call_count_available", False):
@@ -1144,12 +1161,18 @@ class PaperRuntime:
 
     def _has_paper_entry_evidence(self) -> tuple[bool, str]:
         if self.config.promotion_manifest_id:
+            self._paper_entry_evidence_projection_cache = None
             return False, "promotion_manifest_id_not_registry_source"
+        cached = self._paper_entry_evidence_projection_cache
+        if isinstance(cached, dict) and cached.get("allowed"):
+            return True, "ok"
 
         try:
             evidence = self._paper_entry_evidence_projection()
         except Exception as exc:
+            self._paper_entry_evidence_projection_cache = None
             return False, f"paper_review_registry_error:{exc}"
+        self._paper_entry_evidence_projection_cache = dict(evidence)
         if not evidence.get("allowed"):
             return False, str(evidence.get("reason", "paper_review_evidence_missing"))
         return True, "ok"
@@ -1245,6 +1268,15 @@ class PaperRuntime:
     def _paper_session_manifest_path(self) -> Path:
         return Path(self.config.ledger_root) / "audit" / "paper_session_manifest.json"
 
+    def _paper_session_manifest_history_path(self, session_id: str | None = None) -> Path:
+        session_name = session_id or self.session_id
+        return (
+            Path(self.config.ledger_root)
+            / "audit"
+            / "paper_session_manifests"
+            / f"{session_name}.json"
+        )
+
     def _write_startup_sync_artifact(self, artifact: dict[str, Any]) -> str:
         artifact_path = self._startup_sync_artifact_path()
         payload = dict(artifact)
@@ -1258,6 +1290,7 @@ class PaperRuntime:
 
     def _write_paper_session_manifest(self) -> str:
         manifest_path = self._paper_session_manifest_path()
+        history_path = self._paper_session_manifest_history_path()
         created_at = utc_now().isoformat()
         startup_sync = self._startup_sync_status()
         registry_evidence = self._registry_evidence_summary()
@@ -1288,6 +1321,8 @@ class PaperRuntime:
             "registry_evidence": registry_evidence,
             "startup_sync_status": startup_sync,
             "created_at": created_at,
+            "artifact_path": str(manifest_path),
+            "history_artifact_path": str(history_path),
             "no_real_order_submission_proof": no_real_order_submission_proof,
             "reduce_only": bool(getattr(self.oms, "reduce_only", False)),
             "halt_reconciliation": self._halt_reconciliation,
@@ -1295,8 +1330,14 @@ class PaperRuntime:
         }
         try:
             manifest_path.parent.mkdir(parents=True, exist_ok=True)
+            history_path.parent.mkdir(parents=True, exist_ok=True)
+            payload = json.dumps(manifest, sort_keys=True, indent=2, default=str)
+            history_path.write_text(
+                payload,
+                encoding="utf-8",
+            )
             manifest_path.write_text(
-                json.dumps(manifest, sort_keys=True, indent=2, default=str),
+                payload,
                 encoding="utf-8",
             )
         except OSError as exc:
@@ -1363,7 +1404,13 @@ class PaperRuntime:
                 "registry_integrity_status": "not_required",
             }
 
-        evidence = self._paper_entry_evidence_projection()
+        evidence = (
+            self._paper_entry_evidence_projection_cache
+            if isinstance(self._paper_entry_evidence_projection_cache, dict)
+            else None
+        )
+        if not evidence:
+            evidence = self._paper_entry_evidence_projection()
         review = dict(evidence.get("review", {}))
         return {
             "required": True,
@@ -1412,6 +1459,7 @@ class PaperRuntime:
 
     def _finalize_startup_sync_no_submit_proof(self, artifact: dict[str, Any]) -> None:
         proof = dict(artifact.get("no_submit_proof", {}))
+        wrapper_invoked = bool(proof.get("submit_order_wrapper_invoked", False))
         before = proof.get("submit_call_count_before")
         after = self._broker_submit_call_count()
         proof["submit_call_count_available"] = isinstance(before, int) and isinstance(after, int)
@@ -1419,10 +1467,48 @@ class PaperRuntime:
         if isinstance(before, int) and isinstance(after, int):
             delta = after - before
             proof["submit_call_count_delta"] = delta
-            proof["submit_order_invoked"] = delta != 0
+            proof["submit_order_invoked"] = wrapper_invoked or delta != 0
         else:
             proof["submit_call_count_delta"] = None
             proof["submit_order_invoked"] = True
+        artifact["no_submit_proof"] = proof
+
+    def _install_startup_sync_submit_guard(self, artifact: dict[str, Any]) -> Any:
+        submit_order = getattr(self.broker, "submit_order", None)
+        if not callable(submit_order):
+            raise RuntimeError("alpaca_paper_startup_sync_submit_surface_missing")
+
+        proof = dict(artifact.get("no_submit_proof", {}))
+        proof["submit_order_guard_installed"] = True
+        artifact["no_submit_proof"] = proof
+
+        def _guard(order: Any, *args: Any, **kwargs: Any) -> Any:
+            guard_proof = dict(artifact.get("no_submit_proof", {}))
+            guard_proof["submit_order_invoked"] = True
+            guard_proof["submit_order_wrapper_invoked"] = True
+            guard_proof["submit_order_wrapper_blocked"] = True
+            guard_proof["submit_order_wrapper_reason"] = (
+                "alpaca_paper_startup_sync_submit_order_blocked"
+            )
+            order_ids = list(guard_proof.get("submit_order_wrapper_order_ids", []))
+            order_id = getattr(order, "order_id", None)
+            if order_id:
+                order_ids.append(str(order_id))
+            guard_proof["submit_order_wrapper_order_ids"] = self._sorted_unique_strings(order_ids)
+            artifact["no_submit_proof"] = guard_proof
+            raise RuntimeError("alpaca_paper_startup_sync_submit_order_blocked")
+
+        self.broker.submit_order = _guard  # type: ignore[method-assign]
+        return submit_order
+
+    def _restore_startup_sync_submit_guard(
+        self,
+        artifact: dict[str, Any],
+        original_submit_order: Any,
+    ) -> None:
+        self.broker.submit_order = original_submit_order  # type: ignore[method-assign]
+        proof = dict(artifact.get("no_submit_proof", {}))
+        proof["submit_order_guard_restored"] = True
         artifact["no_submit_proof"] = proof
 
     def _audit_runtime_event(self, event: str, details: dict[str, Any]) -> None:

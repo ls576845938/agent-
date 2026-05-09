@@ -144,6 +144,30 @@ class FailingSyncFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
         )
 
 
+class SubmitInPollFakeAlpacaPaperBrokerAdapter(FakeAlpacaPaperBrokerAdapter):
+    def poll_orders(self) -> list[Order]:
+        self._record_sync_call("poll_orders")
+        self.submit_order(
+            Order(
+                timestamp_utc=datetime(2026, 5, 9, 14, 30, tzinfo=UTC),
+                strategy_id="startup_sync_guard_fixture",
+                symbol="SPY",
+                side=OrderSide.BUY,
+                quantity=1.0,
+                order_type="MARKET",
+                time_in_force="DAY",
+                client_order_id="startup_sync_guard_fixture",
+                order_id="startup_sync_guard_order",
+            )
+        )
+        return []
+
+
+class SubmitInPollFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
+    def _create_alpaca_paper_broker(self) -> FakeAlpacaPaperBrokerAdapter:
+        return SubmitInPollFakeAlpacaPaperBrokerAdapter(initial_cash=self.config.capital)
+
+
 def _write_registered_paper_review(data_root: Path) -> Path:
     review_id = "paper_runtime_backend_test"
     evidence_pack_path = data_root / "research" / "evidence_packs" / review_id / "evidence_pack.json"
@@ -182,6 +206,14 @@ def _session_manifest(ledger_root: str) -> dict[str, Any]:
         (Path(ledger_root) / "audit" / "paper_session_manifest.json").read_text(
             encoding="utf-8"
         )
+    )
+
+
+def _session_manifest_history(ledger_root: str, session_id: str) -> dict[str, Any]:
+    return json.loads(
+        (
+            Path(ledger_root) / "audit" / "paper_session_manifests" / f"{session_id}.json"
+        ).read_text(encoding="utf-8")
     )
 
 
@@ -242,6 +274,39 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         self.assertFalse(manifest["submit_orders"])
         self.assertEqual(manifest["startup_sync_status"]["status"], "skipped")
         self.assertFalse(manifest["no_real_order_submission_proof"]["real_order_submission"])
+
+    @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
+    def test_bootstrap_persists_session_manifest_history(self, mock_mdl: mock.MagicMock) -> None:
+        config = PaperRuntimeConfig(
+            symbols=["AAPL"],
+            ledger_root=self.ledger_root,
+            reconcile_on_start=False,
+        )
+
+        first_runtime = PaperRuntime(config=config)
+        first_runtime.bootstrap(strategy=FakeStrategy())
+        first_session_id = first_runtime.session_id
+        first_history = _session_manifest_history(self.ledger_root, first_session_id)
+        first_runtime.shutdown()
+
+        second_runtime = PaperRuntime(config=config)
+        second_runtime.bootstrap(strategy=FakeStrategy())
+        second_session_id = second_runtime.session_id
+        latest_manifest = _session_manifest(self.ledger_root)
+        second_history = _session_manifest_history(self.ledger_root, second_session_id)
+
+        self.assertNotEqual(first_session_id, second_session_id)
+        self.assertEqual(first_history["session_id"], first_session_id)
+        self.assertEqual(second_history["session_id"], second_session_id)
+        self.assertEqual(latest_manifest, second_history)
+        self.assertTrue(
+            str(second_history["history_artifact_path"]).endswith(
+                f"audit/paper_session_manifests/{second_session_id}.json"
+            )
+        )
+        self.assertTrue(Path(str(first_history["history_artifact_path"])).exists())
+        self.assertTrue(Path(str(second_history["history_artifact_path"])).exists())
+        second_runtime.shutdown()
 
     @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
     def test_bootstrap_reconcile_on_start_passes(self, mock_mdl: mock.MagicMock) -> None:
@@ -391,6 +456,65 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         self.assertTrue(manifest["startup_sync_status"]["no_submit"])
         self.assertTrue(manifest["no_real_order_submission_proof"]["startup_sync_no_submit"])
         self.assertFalse(manifest["no_real_order_submission_proof"]["real_order_submission"])
+
+    @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
+    def test_bootstrap_blocks_when_startup_sync_attempts_submit_order(
+        self,
+        mock_mdl: mock.MagicMock,
+    ) -> None:
+        review_path = _write_registered_paper_review(Path(self.tmpdir.name))
+        runtime = SubmitInPollFakeAdapterPaperRuntime(
+            config=PaperRuntimeConfig(
+                symbols=["AAPL"],
+                ledger_root=self.ledger_root,
+                reconcile_on_start=False,
+                paper_broker="alpaca",
+                paper_review_path=str(review_path),
+                promotion_data_root=self.tmpdir.name,
+            )
+        )
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "APCA_API_KEY_ID": "paper_key",
+                "APCA_API_SECRET_KEY": "paper_secret",
+                "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+                "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+            },
+            clear=True,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "alpaca_paper_startup_sync_failed"):
+                runtime.bootstrap(strategy=FakeStrategy())
+
+        artifact = _startup_sync_artifact(self.ledger_root)
+        self.assertEqual(artifact["status"], "failed")
+        self.assertEqual(artifact["error"], "alpaca_paper_startup_sync_submit_order_blocked")
+        self.assertTrue(artifact["no_submit_proof"]["submit_order_invoked"])
+        self.assertTrue(artifact["no_submit_proof"]["submit_order_wrapper_invoked"])
+        self.assertTrue(artifact["no_submit_proof"]["submit_order_wrapper_blocked"])
+        self.assertTrue(artifact["no_submit_proof"]["submit_order_guard_installed"])
+        self.assertTrue(artifact["no_submit_proof"]["submit_order_guard_restored"])
+        self.assertEqual(
+            artifact["no_submit_proof"]["submit_order_wrapper_order_ids"],
+            ["startup_sync_guard_order"],
+        )
+
+        runtime.broker.update_market(_make_bar(symbol="SPY", price=500.0, ts=datetime(2026, 5, 9, 14, 31, tzinfo=UTC)))
+        runtime.broker.submit_order(
+            Order(
+                timestamp_utc=datetime(2026, 5, 9, 14, 31, tzinfo=UTC),
+                strategy_id="post_restore_check",
+                symbol="SPY",
+                side=OrderSide.BUY,
+                quantity=1.0,
+                order_type="MARKET",
+                time_in_force="DAY",
+                client_order_id="post_restore_check",
+                order_id="post_restore_order",
+            )
+        )
+        self.assertEqual(runtime.broker.submit_call_count, 1)
 
     @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
     def test_bootstrap_blocks_when_paper_adapter_startup_sync_fails(

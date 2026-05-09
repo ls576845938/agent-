@@ -15,6 +15,7 @@ Any future executable live path must be introduced as a separate, explicit imple
 Readiness, report, and paper runtime gates in this baseline consume the saved Evidence Registry as source of truth. They do not implicitly rebuild it. Missing, `STALE`, or `CONFLICT` registry state must fail closed.
 CLI reports may display subject index bucket counts, paper session manifests, startup sync artifacts, and ledger reconciliation artifacts.
 Those files are persisted evidence and audit inputs only; displaying them does not grant execution authorization.
+Registry rebuild is an explicit maintenance operation and uses an atomic write protected by a lock; report and gate commands remain saved-only readers.
 
 ## Shadow Live vs Paper vs Live Boundaries
 
@@ -43,7 +44,7 @@ Current baseline expectations:
 - Fake Alpaca adapters are contract-test tools only and are not production paper execution.
 - Daily paper reports read persisted ledger evidence; they do not imply that paper orders were submitted.
 - Startup sync artifacts are audit inputs only and do not enable paper or live writes.
-- Paper session manifests record session intent, registry evidence, startup sync status, and no-submit proof; they are not an executable order path.
+- Paper session manifests record session intent, registry evidence, startup sync status, no-submit proof, and a history copy path under `audit/paper_session_manifests/<session_id>.json`; they are not an executable order path.
 - Ledger reconciliation artifacts summarize fills, hashes, duplicate/conflict fill counts, and ledger PnL for review only.
 - `paper_review_index` is a legacy view only; it is not the authority for runtime gating.
 - `review.json` alone cannot start paper runtime. The registry must be rebuilt explicitly, then the saved registry is consumed by readiness/report/runtime gates.
