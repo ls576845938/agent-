@@ -88,6 +88,8 @@ class LiveRuntime:
         checks: dict[str, bool] = {
             "mode_configured": True,
             "no_real_orders_by_default": not self.config.real_order_submission_enabled,
+            "paper_order_submission_default_closed": not self.config.paper_order_submission_enabled,
+            "live_runtime_is_safety_shell": True,
         }
         errors: list[str] = []
 
@@ -126,6 +128,21 @@ class LiveRuntime:
         self.state.cycles += 1
         self.events.append(RuntimeEvent("run_cycle", self.config.mode))
 
+    def readiness_artifact(self) -> dict[str, Any]:
+        """Return a structured readiness/audit snapshot without starting execution."""
+        health = self.state.health
+        artifact = self.config.runtime_audit_fields()
+        if self.config.mode == RuntimeMode.LIVE:
+            artifact["real_order_submission"] = False
+        artifact.update({
+            "status": health.status,
+            "checks": dict(health.checks),
+            "errors": list(health.errors),
+            "live_readiness_passed": self._last_live_readiness_passed,
+            "production_loop_started": False,
+        })
+        return artifact
+
     # ------------------------------------------------------------------
     # Order submission — central safety gate
     # ------------------------------------------------------------------
@@ -146,7 +163,7 @@ class LiveRuntime:
 
         Paper mode: full OMS submission to paper/simulated broker.
         Shadow mode: paper submission, explicitly marked, never touches real broker.
-        Live mode: default-blocked; requires all 5 conditions.
+        Live mode: safety shell only; order execution is always fail-closed.
         """
         results: dict[str, Any] = {
             "submitted": [],
@@ -158,23 +175,22 @@ class LiveRuntime:
         if not intents:
             return results
 
-        # --- Safety: live mode gate ---
+        # --- Safety: LiveRuntime is a safety shell only ---
         if self.config.mode == RuntimeMode.LIVE:
-            block_reasons = self._live_order_block_reasons()
-            if block_reasons:
-                for intent in intents:
-                    results["rejected"].append({
-                        "intent_id": intent.client_order_id,
-                        "reason": f"live_blocked: {', '.join(block_reasons)}",
-                    })
-                    results["audit_events"].append({
-                        "event": "live_order_rejected",
-                        "intent_id": intent.client_order_id,
-                        "reasons": block_reasons,
-                        "timestamp_utc": _utc_now().isoformat(),
-                    })
-                _logger.warning("Live order rejected: %s", block_reasons)
-                return results
+            reason = "live_runtime_safety_shell_no_order_execution"
+            for intent in intents:
+                results["rejected"].append({
+                    "intent_id": intent.client_order_id,
+                    "reason": reason,
+                })
+                results["audit_events"].append({
+                    "event": "live_order_rejected",
+                    "intent_id": intent.client_order_id,
+                    "reason": reason,
+                    "timestamp_utc": _utc_now().isoformat(),
+                })
+            _logger.warning("Live order rejected: %s", reason)
+            return results
 
         # --- Safety: no OMS configured ---
         if self.oms is None:
@@ -339,12 +355,7 @@ class LiveRuntime:
         return results
 
     def _init_live_oms(self) -> None:
-        """Initialize OMS with AlpacaBroker for live mode.
-
-        Requires an explicit approved LiveOrderSubmissionGate decision in
-        addition to the runtime live flags. If any prerequisite is missing,
-        the OMS stays None and ``submit_orders`` will reject fail-closed.
-        """
+        """Keep live OMS construction disabled in the runtime safety shell."""
         if not (self.config.allow_live_orders and self.config.confirm_live):
             _logger.warning(
                 "Live OMS not initialized: allow_live_orders=%s confirm_live=%s",
@@ -359,38 +370,9 @@ class LiveRuntime:
             _logger.warning("Live OMS not initialized: explicit live submission gate not completed")
             return
 
-        try:
-            from quant_us.execution.alpaca_broker import AlpacaBroker, AlpacaBrokerConfig
-            from quant_us.execution.oms import OrderManagementSystem
-            from quant_us.risk.pre_trade import PreTradeRiskConfig, PreTradeRiskEngine
-            from quant_us.core.calendar import USEquityCalendar
-
-            api_key = os.environ.get("APCA_API_KEY_ID", "")
-            api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
-            if not api_key or not api_secret:
-                _logger.error("Live OMS requires APCA_API_KEY_ID and APCA_API_SECRET_KEY")
-                return
-
-            broker_config = AlpacaBrokerConfig(
-                api_key=api_key,
-                api_secret=api_secret,
-                paper=False,
-            )
-            broker = AlpacaBroker(broker_config)
-            calendar = USEquityCalendar.with_holidays()
-            risk_engine = PreTradeRiskEngine(PreTradeRiskConfig(), calendar=calendar)
-
-            self.oms = OrderManagementSystem(
-                broker=broker,
-                risk_engine=risk_engine,
-                calendar=calendar,
-                idempotency_path=str(
-                    Path(self.config.state_path).parent / ".idempotency_live.json"
-                ),
-            )
-            _logger.info("Live OMS initialized with AlpacaBroker (real orders)")
-        except Exception:
-            _logger.exception("Failed to initialize live OMS")
+        _logger.warning(
+            "Live OMS construction disabled: LiveRuntime is safety shell/live gate only"
+        )
 
     def _live_order_block_reasons(self) -> list[str]:
         """Return reasons why live order submission is blocked."""

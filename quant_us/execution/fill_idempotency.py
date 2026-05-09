@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import logging
+from contextlib import nullcontext
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Protocol
+from typing import Any, ContextManager, Protocol
 
 
 class FillLedger(Protocol):
@@ -58,8 +59,8 @@ class FillIdempotencyIndex:
         index.load_ledger(ledger)
         return index
 
-    def load_ledger(self, ledger: FillLedger) -> None:
-        if self._loaded:
+    def load_ledger(self, ledger: FillLedger, *, reload: bool = False) -> None:
+        if self._loaded and not reload:
             return
         for record in ledger.read_records("fills.jsonl"):
             identity = fill_identity(record)
@@ -109,24 +110,25 @@ def append_fill_idempotent(
     are reported as conflicts and are not appended.
     """
 
-    active_index = index if index is not None else FillIdempotencyIndex.from_ledger(ledger)
-    if index is not None:
-        active_index.load_ledger(ledger)
+    with _idempotency_lock(ledger):
+        active_index = index if index is not None else FillIdempotencyIndex.from_ledger(ledger)
+        if index is not None:
+            active_index.load_ledger(ledger, reload=True)
 
-    checked = active_index.check(fill)
-    if checked is not None:
-        if checked.duplicate:
+        checked = active_index.check(fill)
+        if checked is not None:
+            if checked.duplicate:
+                if logger is not None:
+                    logger.info("Duplicate fill skipped: key=%s", checked.key)
+                return checked
             if logger is not None:
-                logger.info("Duplicate fill skipped: key=%s", checked.key)
+                logger.error("Conflicting fill skipped: key=%s", checked.key)
             return checked
-        if logger is not None:
-            logger.error("Conflicting fill skipped: key=%s", checked.key)
-        return checked
 
-    ledger.append_fill(fill)
-    active_index.remember(fill)
-    identity = fill_identity(fill)
-    return IdempotentFillAppendResult("appended", identity.key)
+        ledger.append_fill(fill)
+        active_index.remember(fill)
+        identity = fill_identity(fill)
+        return IdempotentFillAppendResult("appended", identity.key)
 
 
 def fill_identity(fill: Any) -> FillIdentity:
@@ -144,11 +146,9 @@ def fill_key(fill: Any) -> str:
 
     return (
         f"order:{order_id}"
+        f"|broker_order:{_text(_value(fill, 'broker_order_id'))}"
         f"|symbol:{_symbol(_value(fill, 'symbol'))}"
         f"|side:{_side(_value(fill, 'side'))}"
-        f"|qty:{_number(_value(fill, 'quantity'))}"
-        f"|price:{_number(_value(fill, 'price'))}"
-        f"|commission:{_number(_value(fill, 'commission'))}"
         f"|filled_at:{_datetime_text(_value(fill, 'filled_at'))}"
     )
 
@@ -171,6 +171,13 @@ def _value(source: Any, name: str) -> Any:
     if isinstance(source, dict):
         return source.get(name)
     return getattr(source, name, None)
+
+
+def _idempotency_lock(ledger: FillLedger) -> ContextManager[Any]:
+    lock_factory = getattr(ledger, "fill_idempotency_lock", None)
+    if callable(lock_factory):
+        return lock_factory()
+    return nullcontext()
 
 
 def _text(value: Any) -> str:

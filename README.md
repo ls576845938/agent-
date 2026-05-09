@@ -13,8 +13,9 @@
 | 回测引擎 | 事件驱动，全订单生命周期 |
 | 数据 | YFinance → Parquet → Manifest → 质量评分 |
 | 风控 | 投前 9 项检查 + 投后滑点 + 流动性 |
-| 纸交易 | simulated paper 可用；真实 Alpaca paper adapter 尚未接入，`paper_broker=alpaca` fail-closed；fake adapter 仅用于 contract tests |
-| 实盘 | 未启用（纸交易门禁阻塞中） |
+| 纸交易 | simulated paper 可用但默认不提交订单；真实 Alpaca paper adapter 未进入自动提交路径，`paper_broker=alpaca` 默认 fail-closed；fake adapter 仅用于 contract tests |
+| 实盘 / micro live | `LiveRuntime` 是 safety shell，live mode 不执行订单；真实 live 需独立 executor、人工审批、submission gate、readiness、endpoint guard |
+| Ledger | fill idempotent append 使用同 ledger root 的文件锁；直接 `append_fill()` 不提供幂等保护 |
 
 ## 快速开始
 
@@ -39,6 +40,8 @@ python -m quant_us.cli report backtest --run-id <run_id>
 python -m quant_us.cli report evidence-registry --data-root data
 python -m quant_us.cli report daily --latest
 python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json
+python -m quant_us.cli readiness --profile shadow_live --validation-state data/reports/paper_production/validation_state.json
+python -m quant_us.cli readiness --profile live --validation-state data/reports/paper_production/validation_state.json --check-credentials
 python -m quant_us.cli research promotion-gate --candidate-id <candidate_id>
 
 # 端到端研究闭环，止步于当前闭环边界，不会自动开始纸交易或实盘
@@ -48,8 +51,14 @@ python scripts/run_full_pipeline.py --symbol AAPL --mode full --start 2024-01-01
 说明：
 
 - 这里的快速开始只覆盖当前可用的研究、回测、报告和门禁检查入口。
-- CLI 报告/ready/evidence registry 输出统一使用 `PASS` / `STALE` / `MISSING` / `CONFLICT`，并标明 `report only, no execution`。
-- 真实 Alpaca paper 还未接入；`paper_broker=alpaca` 继续保持 fail-closed。
+- CLI report/readiness/evidence registry 输出统一使用 `PASS` / `STALE` / `MISSING` / `CONFLICT`，并标明 `report only, no execution`。
+- Canonical path 是 `manifest -> ledger-backed backtest -> promotion handoff -> paper/runtime readiness report`。
+- 真实 Alpaca paper 还未进入自动提交路径；`paper_broker=alpaca` 继续保持默认 fail-closed。
+- paper order 默认不提交，必须走显式 paper path 和显式配置才能开启。
+- readiness/evidence/report 都是 report/review only，不执行 paper/live order。
+- `LiveRuntime` 是 safety shell；即使 readiness evidence pass，live mode 也不会提交订单。
+- live production / micro live 仍需要独立 executor、人工审批、submission gate、readiness、endpoint guard，不属于本轮自动化。
+- ledger 幂等写入通过 `append_fill_idempotent()` 使用文件锁；直接 `append_fill()` 仅用于非幂等追加场景。
 - paper startup sync artifact 只用于审计和门禁判断，不代表真实交易已经开通。
 - 文档里出现的 paper/live 入口只代表边界和门禁，不代表自动提交订单。
 

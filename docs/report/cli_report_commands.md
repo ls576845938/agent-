@@ -2,6 +2,12 @@
 
 These commands are read-only report and evidence inspection helpers. They do not submit broker orders and do not approve paper trading.
 Operator-facing evidence states are normalized to `PASS`, `STALE`, `MISSING`, and `CONFLICT`; report surfaces also print `report only, no execution`.
+Passing evidence is not execution authorization. In the current baseline, `LiveRuntime` is a safety shell, `live start`
+is review-only/fail-closed, and live mode does not submit orders even if live-gate evidence passes.
+
+Canonical closed-loop path for the current baseline:
+
+`manifest -> ledger-backed backtest -> promotion handoff -> paper/runtime readiness report`
 
 ## Baseline Entry
 
@@ -80,6 +86,10 @@ and a read-only paper-review status block:
 
 This report does not approve paper trading and does not enable any order path.
 It prints `report_state`, `readiness_state`, `evidence_registry_state`, and `scope: report only, no execution`.
+It is evidence-only and cannot submit paper/live orders.
+Ledger-derived report artifacts must be idempotent across repeated report runs. If a future command writes ledger state,
+it should use a file lock or document why the artifact is single-writer/rebuild-only; the report commands listed here
+are read-only evidence views.
 
 ## Readiness
 
@@ -89,6 +99,8 @@ Run readiness with traceable evidence paths:
 python -m quant_us.cli readiness --profile simulated
 python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json
 python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json --check-credentials
+python -m quant_us.cli readiness --profile shadow_live --validation-state data/reports/paper_production/validation_state.json
+python -m quant_us.cli readiness --profile live --validation-state data/reports/paper_production/validation_state.json --check-credentials
 ```
 
 For small-live gate checks, validation state is required:
@@ -97,11 +109,13 @@ For small-live gate checks, validation state is required:
 python -m quant_us.cli readiness --small-live --validation-state data/reports/paper_production/validation_state.json
 ```
 
-The same readiness gate is used as an input to guarded live mode. Live remains default-blocked until
-`allow_live_orders`, `confirm_live`, `live_submission_enabled`, and readiness all pass.
+Readiness is used as review evidence for runtime decisions. It does not enable broker writes by itself.
+Current live mode remains a review-only `LiveRuntime` safety shell even when live-gate evidence passes.
+`live start` is fail-closed and must not be treated as an executable order path.
 
 Readiness output also prints validation-state, latest daily report, evidence registry, and paper-review status paths. This is evidence-only:
 it does not approve paper trading, and it does not enable paper/live order submission.
+`report` and `readiness` are review-only surfaces; they stop at evidence and do not trigger any broker action.
 
 The paper-review status reader now consumes the full Evidence Registry at
 `data/research/evidence_registry.json` and still writes the legacy mirror at
@@ -130,8 +144,9 @@ python -m quant_us.cli research promotion-gate --candidate-id cand_123
 ```
 
 This command only evaluates evidence. It does not start paper trading.
-The result is `READY_FOR_PAPER_REVIEW` at best; paper runtime still needs separate manual approval.
+The result is `READY_FOR_PAPER_REVIEW` at best; paper/runtime still needs separate manual approval and a separate readiness report.
 Inline backtest manifests remain diagnostic only. Promotion evidence must come from a persisted canonical `backtest_manifest_path`.
+The promotion handoff is report/review only, not execution.
 
 ## Legacy Candidate Migration
 
@@ -159,4 +174,6 @@ python scripts/run_full_pipeline.py --symbol AAPL --mode full --start 2024-01-01
 ```
 
 Paper trading still requires a separate operator action after human review approval.
-Until a real Alpaca paper broker adapter is implemented, `paper_broker=alpaca` is expected to fail closed; use the simulated paper backend for local validation.
+Until a later change wires a real Alpaca paper broker adapter into an approved submit path, `paper_broker=alpaca` is expected to fail closed; use the simulated paper backend for local validation.
+Paper orders are not submitted by default; an explicit paper submit path must be selected before any broker-write behavior can exist.
+The full pipeline handoff is not a paper/live execution command.

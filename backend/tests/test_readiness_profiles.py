@@ -158,8 +158,8 @@ class TestSimulatedProfile:
             main(["readiness", "--small-live", "--validation-state", "state.json"])
 
         text = stdout.getvalue()
-        assert "RESULT: READINESS EVIDENCE PASSED for small-live review only." in text
-        assert "scope:  readiness only, no execution" in text
+        assert "RESULT: READINESS EVIDENCE PASSED for small-live manual review only." in text
+        assert "scope:  report only, no execution" in text
         assert "GO for small-live trading" not in text
 
 

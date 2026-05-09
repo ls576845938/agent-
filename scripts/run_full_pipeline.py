@@ -8,7 +8,7 @@ Usage:
 Stages:
     1. Data ingestion + manifest generation
     2. Event-driven backtest
-    3. Promotion gate evaluation
+    3. Promotion gate evaluation (report/review only)
     4. Paper review handoff (if gate passes; no trading is started)
 """
 
@@ -57,7 +57,7 @@ def run_pipeline(
     ``gate``
         above plus promotion_decision, promotion_next_stage, gate_result
     ``full``
-        above plus paper_review_required/manual_review_required. It never starts paper trading.
+        above plus paper_review_required/manual_review_required. It never starts paper/live trading.
 
     Stages that are not reached (because of a shallower *mode*) are simply
     omitted from the returned dict.
@@ -68,6 +68,7 @@ def run_pipeline(
     if mode == "paper":
         print("NOTE: --mode paper is a legacy alias for --mode full.")
         print("      This script produces a handoff/readiness report only, no execution.")
+        print("      It does not authorize or start paper/live orders.")
         mode = "full"
 
     # ------------------------------------------------------------------
@@ -162,6 +163,7 @@ def run_pipeline(
     print(f"STAGE 3: Promotion gate handoff/readiness report -- {symbol}")
     print(f"{'='*60}")
     print("  Scope: report only, no execution. No paper/live session will be started.")
+    print("  Fail-closed: a pass here only creates review evidence, not order authorization.")
     from backend.app.services.research_gate import ResearchPromotionGateService
 
     gate_request: dict[str, Any] = {
@@ -217,6 +219,7 @@ def run_pipeline(
     print("  Scope: report only, no execution.")
     print("  No paper/live trading session was started by this script.")
     print("  Required next action: create/approve a paper review manually before any paper run.")
+    print("  Live order path remains blocked; this handoff is not live-trading approval.")
     print(f"  Evidence: data_manifest={results.get('data_manifest_path') or results.get('data_version')}")
     print(f"  Evidence: backtest_manifest={results.get('backtest_manifest_path')}")
     print(f"  Evidence: promotion_manifest={gate_result.get('manifest_id', 'N/A')}")
@@ -253,7 +256,7 @@ def main() -> None:
         "--mode",
         default="backtest",
         choices=["backtest", "gate", "paper", "full"],
-        help="Pipeline depth; paper is a legacy alias for full handoff/report only, no execution",
+        help="Pipeline depth; paper is a legacy alias for full handoff/report only, no execution or order authorization",
     )
     parser.add_argument("--register", action="store_true", help="Register as experiment")
     parser.add_argument("--data-db-path", default="", help="SQLite DB path")

@@ -269,8 +269,11 @@ class AlpacaPaperRunner:
                             filled += 1
                             fills = self.broker.get_fills(order_id=filled_order.order_id)
                             for fill in fills:
-                                self.ledger.append_fill(fill)
-                                self._pg_write_fills([fill])
+                                fill_append = self.ledger.append_fill_idempotent(fill)
+                                if fill_append.appended:
+                                    self._pg_write_fills([fill])
+                                elif fill_append.conflict:
+                                    errors.append(f"fill_conflict({fill_append.key})")
                             self._pending_order_ids.discard(filled_order.order_id)
 
         # 8. Daily reconciliation

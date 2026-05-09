@@ -110,6 +110,7 @@ class PaperAdapterContract:
     requested_backend: str
     effective_backend: str
     adapter_enabled: bool
+    adapter_code_enabled: bool
     adapter_factory_present: bool
     submit_capable: bool
     fail_closed: bool
@@ -154,6 +155,7 @@ def evaluate_paper_adapter_contract(
             requested_backend=requested,
             effective_backend="simulated",
             adapter_enabled=False,
+            adapter_code_enabled=adapter_enabled,
             adapter_factory_present=False,
             submit_capable=False,
             fail_closed=False,
@@ -173,6 +175,7 @@ def evaluate_paper_adapter_contract(
             requested_backend=requested,
             effective_backend="simulated",
             adapter_enabled=False,
+            adapter_code_enabled=adapter_enabled,
             adapter_factory_present=False,
             submit_capable=False,
             fail_closed=True,
@@ -188,11 +191,15 @@ def evaluate_paper_adapter_contract(
             allowed_base_urls=list(allowed_base_urls),
         )
 
-    enabled = adapter_enabled and adapter_factory_present
+    adapter_code_enabled = adapter_enabled
+    explicitly_enabled = adapter_code_enabled and env_requested
+    enabled = explicitly_enabled and adapter_factory_present
     missing_capabilities = [name for name, present in capabilities.items() if not present]
     readiness_reasons: list[str] = []
-    if not adapter_enabled or not adapter_factory_present:
+    if not adapter_code_enabled or not adapter_factory_present:
         readiness_reasons.append("alpaca_paper_broker_adapter_not_configured")
+    elif not env_requested:
+        readiness_reasons.append("alpaca_paper_adapter_not_explicitly_enabled")
     if missing_capabilities:
         readiness_reasons.append(
             "alpaca_paper_adapter_capabilities_incomplete: "
@@ -210,6 +217,7 @@ def evaluate_paper_adapter_contract(
             requested_backend="alpaca",
             effective_backend="alpaca_paper",
             adapter_enabled=True,
+            adapter_code_enabled=adapter_code_enabled,
             adapter_factory_present=True,
             submit_capable=True,
             fail_closed=False,
@@ -230,6 +238,7 @@ def evaluate_paper_adapter_contract(
             requested_backend="alpaca",
             effective_backend="simulated",
             adapter_enabled=True,
+            adapter_code_enabled=adapter_code_enabled,
             adapter_factory_present=True,
             submit_capable=False,
             fail_closed=True,
@@ -254,13 +263,16 @@ def evaluate_paper_adapter_contract(
         reason = "apca_base_url_not_allowed"
     elif enabled and not approved_evidence:
         reason = evidence_reason
+    elif adapter_code_enabled and adapter_factory_present and not env_requested:
+        reason = "alpaca_paper_adapter_not_explicitly_enabled"
     else:
         reason = "alpaca_paper_broker_adapter_not_configured"
 
     return PaperAdapterContract(
         requested_backend="alpaca",
         effective_backend="simulated",
-        adapter_enabled=False,
+        adapter_enabled=explicitly_enabled,
+        adapter_code_enabled=adapter_code_enabled,
         adapter_factory_present=adapter_factory_present,
         submit_capable=False,
         fail_closed=True,

@@ -302,6 +302,16 @@ class CliReadinessTests(unittest.TestCase):
 
         main(["readiness"])
 
+    def test_small_live_missing_validation_state_fails_closed(self) -> None:
+        out = io.StringIO()
+        with self.assertRaises(SystemExit) as ctx, redirect_stdout(out):
+            main(["readiness", "--small-live"])
+
+        self.assertEqual(ctx.exception.code, 1)
+        text = out.getvalue()
+        self.assertIn("RESULT: BLOCKED for small-live review", text)
+        self.assertIn("scope:  report only, no execution", text)
+
     def test_readiness_prints_paper_review_status(self) -> None:
         with TemporaryDirectory() as tmp:
             review_dir = Path(tmp) / "research" / "paper_reviews" / "prev_001"
@@ -328,6 +338,79 @@ class CliReadinessTests(unittest.TestCase):
             self.assertIn("paper_review_entry_allowed: YES", text)
             self.assertIn("manual_review_pending: YES", text)
             self.assertIn("evidence:     paper_review=", text)
+
+
+class CliLiveSafetyTests(unittest.TestCase):
+    """Live CLI must be explicit review-only / fail-closed."""
+
+    def test_live_start_help_is_review_only(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        live_parser = sub.choices["live"]
+        live_sub = live_parser._subparsers._group_actions[0]
+        start_parser = live_sub.choices["start"]
+        help_text = start_parser.format_help()
+        flat_help = " ".join(help_text.split())
+
+        self.assertIn("fail-closed, no execution", help_text)
+        self.assertIn("Review flag only; does not enable live execution", help_text)
+        self.assertIn("Ignored by live start; no paper/live orders are submitted", flat_help)
+        self.assertNotIn("paper production loop unless gates pass", help_text)
+        self.assertNotIn("Enable live order path", help_text)
+
+    @patch("quant_us.cli._start_paper_production_loop")
+    @patch("quant_us.live.runtime.LiveRuntime")
+    def test_live_start_gate_pass_does_not_fall_back_to_paper_loop(
+        self,
+        mock_runtime_cls: MagicMock,
+        mock_paper_loop: MagicMock,
+    ) -> None:
+        health = MagicMock()
+        health.ok = True
+        health.status = "ready"
+        health.checks = {}
+        health.errors = []
+        mock_runtime_cls.return_value.bootstrap.return_value = health
+
+        out = io.StringIO()
+        err = io.StringIO()
+        with self.assertRaises(SystemExit) as ctx, redirect_stdout(out), patch("sys.stderr", err):
+            main(["live", "start", "--symbols", "SPY"])
+
+        self.assertEqual(ctx.exception.code, 1)
+        mock_paper_loop.assert_not_called()
+        text = out.getvalue() + err.getvalue()
+        self.assertIn("real_order_submission: DISABLED (review-only CLI, no execution)", text)
+        self.assertIn("live start is fail-closed", text)
+
+    @patch("quant_us.cli._start_paper_production_loop")
+    def test_start_live_production_loop_is_blocked_and_never_delegates(
+        self,
+        mock_paper_loop: MagicMock,
+    ) -> None:
+        from quant_us.cli import _start_live_production_loop
+
+        args = argparse.Namespace(
+            strategy="etf_rotation",
+            initial_cash=100_000.0,
+            poll_interval=60.0,
+            bar_size="1m",
+            data_vendor="yfinance",
+            max_runtime_hours=1.0,
+        )
+
+        out = io.StringIO()
+        err = io.StringIO()
+        with self.assertRaises(SystemExit) as ctx, redirect_stdout(out), patch("sys.stderr", err):
+            _start_live_production_loop(["SPY"], args)
+
+        self.assertEqual(ctx.exception.code, 1)
+        mock_paper_loop.assert_not_called()
+        text = out.getvalue() + err.getvalue()
+        self.assertIn("RESULT: BLOCKED", text)
+        self.assertIn("scope:  review only, no execution", text)
+        self.assertIn("paper_loop_fallback:   DISABLED", text)
+        self.assertNotIn("REAL ORDERS ENABLED", text)
 
 
 class CliManifestReportTests(unittest.TestCase):

@@ -4,9 +4,13 @@ This page documents the smallest end-to-end loop that is actually present in the
 
 1. Generate and validate a data manifest.
 2. Run a ledger-backed, event-driven backtest.
-3. Evaluate research promotion for human paper-review only.
-4. Pass paper/runtime readiness gates.
+3. Produce a canonical promotion handoff from persisted evidence.
+4. Generate a paper/runtime readiness report.
 5. Inspect daily and backtest reports from persisted evidence.
+
+Canonical path for this baseline:
+
+`manifest -> ledger-backed backtest -> promotion handoff -> paper/runtime readiness report`
 
 It does not describe automatic paper trading or live trading. Promotion is not execution, and this page should not be read as an automation promise.
 
@@ -153,11 +157,14 @@ Important rules enforced in code:
 - paper runtime rejects `allow_live_orders=True`
 - Alpaca paper access requires `APCA_API_KEY_ID` and `APCA_API_SECRET_KEY`
 - if `APCA_API_BASE_URL` is set, it must be a paper URL
-- paper runtime accepts either an approved promotion manifest or an approved paper review as entry evidence
-- `paper_broker=alpaca` currently fails closed until a real Alpaca paper broker adapter is wired
+- paper/runtime readiness consumes evidence and renders a report only; it does not submit paper or live orders
+- `paper_broker=alpaca` is fail-closed by default in the current runtime path
+- paper orders are not submitted by default; enabling paper submission requires an explicit paper path separate from readiness/report commands
+- the real Alpaca paper adapter is not in the automatic submit path in this baseline
 - the fake Alpaca adapter is local-only and exists for contract tests; it does not connect to the network
-- the implemented runtime broker backend is explicit in audit records as `broker_backend=simulated`
-- live mode stays default-blocked unless `allow_live_orders`, `confirm_live`, `live_submission_enabled`, and readiness all pass
+- the implemented runtime broker backend is explicit in audit records as `broker_backend=simulated` unless a future adapter is separately wired and approved
+- `LiveRuntime` is a safety shell; live mode remains review-only and does not execute orders even if live-gate evidence passes
+- `live start` is review-only and fail-closed; it may inspect or print readiness/evidence state, but it is not an order submission path
 
 Readiness inspection commands:
 
@@ -165,19 +172,22 @@ Readiness inspection commands:
 python -m quant_us.cli readiness --profile simulated
 python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json
 python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json --check-credentials
-python -m quant_us.cli readiness --small-live --validation-state data/reports/paper_production/validation_state.json
+python -m quant_us.cli readiness --profile shadow_live --validation-state data/reports/paper_production/validation_state.json
+python -m quant_us.cli readiness --profile live --validation-state data/reports/paper_production/validation_state.json --check-credentials
 python -m quant_us.cli report evidence-registry --data-root data
 ```
 
 The readiness and evidence-registry outputs are read-only. They render evidence as `PASS`, `STALE`, `MISSING`, or `CONFLICT`, print `report only, no execution`, and do not submit paper or live orders.
+Passing live readiness evidence is still only review evidence in the current baseline. It does not unlock `LiveRuntime` order submission.
 
 ## 5) Paper Adapter Contract
 
 The paper adapter contract is fail-closed by default.
 
-- There is no real Alpaca paper adapter in the current runtime path.
+- There is no real Alpaca paper adapter in the current automatic submit path for this baseline.
 - The local fake adapter is only for contract tests and offline validation.
-- `paper_broker=alpaca` requires the approved adapter hook plus the required paper credentials and review evidence; otherwise the runtime remains blocked.
+- `paper_broker=alpaca` remains blocked unless a separate adapter implementation, credentials, and approved evidence are all present and explicitly wired in a later change.
+- Paper-review approval and paper readiness do not submit orders; an explicit paper execution path is required before any broker write can occur.
 
 ## 6) Paper Review Boundary
 
@@ -192,6 +202,7 @@ python -m quant_us.cli research paper-review-approve --paper-review-id <paper_re
 Approval is manual and does not start trading. The paper runtime gate only consumes approved evidence.
 The persisted paper review record now includes an approval object with reviewer, reason, timestamp,
 candidate provenance, and a promotion-gate snapshot so the approval can be audited after the fact.
+This handoff is evidence only; it is not a paper order submission path.
 
 ## 7) Daily Report
 
@@ -205,6 +216,10 @@ python -m quant_us.cli report evidence-registry --data-root data
 
 The report includes the report path, ledger root, ending equity, daily PnL, order counts, reconciliation status,
 validation-state evidence pointers, evidence-registry status, and `report only, no execution`.
+This report is review-only and does not submit paper or live orders.
+Ledger-derived report artifacts must remain idempotent. Runtime/report writers should use a file lock for ledger writes
+or explicitly document when a path is single-writer/rebuild-only; read-only report commands must not imply a write lock
+that has not been implemented.
 
 ## 8) Minimal Boundary Summary
 
@@ -215,7 +230,8 @@ validation-state evidence pointers, evidence-registry status, and `report only, 
 - Reconciliation detail is the next doc/report bridge to land in promotion and daily/backtest reports; until then, report pages remain evidence views, not execution flow.
 - Promotion stops at `READY_FOR_PAPER_REVIEW`; paper/live are separate manual gates.
 - Paper startup sync artifacts are audit inputs only and stay fail-closed; they do not mean real trading has been enabled.
-- Live stays disabled by default.
+- Live runtime stays disabled for execution; current live mode is review-only even when live-gate evidence passes.
+- Paper order submission is default-off and requires an explicit paper submit path.
 
 ## 9) Baseline Acceptance Boundary
 

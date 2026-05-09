@@ -260,7 +260,10 @@ class RuntimeControlsTests(unittest.TestCase):
         )
         result = runtime.submit_orders([intent], account=account, market_price=100.0)
         self.assertEqual(len(result["submitted"]), 0)
-        self.assertIn("live_blocked", result["rejected"][0]["reason"])
+        self.assertEqual(
+            "live_runtime_safety_shell_no_order_execution",
+            result["rejected"][0]["reason"],
+        )
 
     def test_live_runtime_shadow_mode_audit_marked(self) -> None:
         from quant_us.live.modes import RuntimeMode

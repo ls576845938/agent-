@@ -1006,7 +1006,12 @@ class ShadowLiveRunner:
                 self.ledger.append_order(result.order)
             if self.ledger is not None:
                 for fill in result.fills:
-                    self.ledger.append_fill(fill)
+                    fill_append = self.ledger.append_fill_idempotent(fill)
+                    if fill_append.conflict:
+                        self._logger.error(
+                            "Conflicting shadow-live fill skipped: key=%s",
+                            fill_append.key,
+                        )
 
     # ------------------------------------------------------------------
     # Safety

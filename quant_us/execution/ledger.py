@@ -5,16 +5,86 @@ from datetime import date, datetime
 from enum import Enum
 import json
 from pathlib import Path
+import threading
 from typing import Any
 
 from quant_us.core.enums import OrderSide
 from quant_us.core.types import Fill, Position
+
+try:
+    import fcntl as _fcntl
+except ImportError:  # pragma: no cover - exercised on non-POSIX platforms.
+    _fcntl = None
+
+
+class _RootLockState:
+    def __init__(self) -> None:
+        self.lock = threading.RLock()
+        self.file_lock_depth = 0
+        self.file_lock_handle: Any | None = None
+
+
+_LOCK_STATES_LOCK = threading.Lock()
+_LOCK_STATES_BY_ROOT: dict[Path, _RootLockState] = {}
+
+
+def _root_lock_state(root: Path) -> _RootLockState:
+    resolved_root = root.resolve()
+    with _LOCK_STATES_LOCK:
+        state = _LOCK_STATES_BY_ROOT.get(resolved_root)
+        if state is None:
+            state = _RootLockState()
+            _LOCK_STATES_BY_ROOT[resolved_root] = state
+        return state
+
+
+class _FillIdempotencyFileLock:
+    def __init__(self, state: _RootLockState, path: Path) -> None:
+        self._state = state
+        self._path = path
+
+    def __enter__(self) -> _FillIdempotencyFileLock:
+        self._state.lock.acquire()
+        try:
+            if self._state.file_lock_depth == 0 and _fcntl is not None:
+                handle = self._path.open("a+", encoding="utf-8")
+                try:
+                    _fcntl.flock(handle.fileno(), _fcntl.LOCK_EX)
+                except BaseException:
+                    handle.close()
+                    raise
+                self._state.file_lock_handle = handle
+            self._state.file_lock_depth += 1
+            return self
+        except BaseException:
+            self._state.lock.release()
+            raise
+
+    def __exit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
+        try:
+            self._state.file_lock_depth -= 1
+            if self._state.file_lock_depth == 0:
+                handle = self._state.file_lock_handle
+                self._state.file_lock_handle = None
+                if handle is not None:
+                    try:
+                        _fcntl.flock(handle.fileno(), _fcntl.LOCK_UN)
+                    finally:
+                        handle.close()
+        finally:
+            self._state.lock.release()
 
 
 class JsonlLedgerStore:
     def __init__(self, root: str | Path) -> None:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
+        self._lock_state = _root_lock_state(self.root)
+        self._lock = self._lock_state.lock
+        self._fill_idempotency_lock_path = self.root / ".fill_idempotency.lock"
+
+    def fill_idempotency_lock(self) -> Any:
+        return _FillIdempotencyFileLock(self._lock_state, self._fill_idempotency_lock_path)
 
     def append_order(self, order: Any) -> None:
         self._append("orders.jsonl", order)
@@ -46,9 +116,10 @@ class JsonlLedgerStore:
 
     def read_records(self, name: str) -> list[dict[str, Any]]:
         path = self.root / name
-        if not path.exists():
-            return []
-        return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        with self._lock:
+            if not path.exists():
+                return []
+            return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
     def latest_cash_from_fills(self, initial_cash: float = 0.0) -> float:
         """Derive current cash from all fill records starting from *initial_cash*."""
@@ -83,8 +154,9 @@ class JsonlLedgerStore:
 
     def _append(self, name: str, value: Any) -> None:
         path = self.root / name
-        with path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(_to_jsonable(value), sort_keys=True) + "\n")
+        with self._lock:
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(_to_jsonable(value), sort_keys=True) + "\n")
 
 
 def _to_jsonable(value: Any) -> Any:

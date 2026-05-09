@@ -97,7 +97,7 @@ class PaperRuntimeConfig:
     reconcile_on_close: bool = True
     kill_on_recon_fail: bool = True
     max_runtime_hours: float = 24.0
-    submit_orders: bool = True
+    submit_orders: bool = False
     allow_live_orders: bool = False
     data_vendor: str = "yfinance"
     paper_broker: str = "simulated"
@@ -810,8 +810,12 @@ class PaperRuntime:
         broker_backend = str(adapter_contract["effective_backend"])
         credential_audit = self._paper_credential_audit()
         checks = {
+            "mode": "paper",
+            "canonical_runtime": "PaperRuntime",
             "allow_live_orders_false": not self.config.allow_live_orders,
             "real_live_orders_disabled": True,
+            "real_order_submission": False,
+            "paper_order_submission": bool(self.config.submit_orders),
             "paper_broker": paper_broker,
             "broker_backend": broker_backend,
             "alpaca_paper_requested": self._alpaca_paper_requested(),
@@ -918,9 +922,15 @@ class PaperRuntime:
         artifact = {
             "artifact_type": "paper_broker_adapter_startup_sync",
             "artifact_version": _PAPER_STARTUP_SYNC_ARTIFACT_VERSION,
+            "mode": "paper",
             "runtime_mode": "paper",
+            "canonical_runtime": "PaperRuntime",
             "paper_broker": self.config.paper_broker,
             "backend": str(contract["effective_backend"]),
+            "broker_backend": str(contract["effective_backend"]),
+            "real_order_submission": False,
+            "paper_order_submission": bool(self.config.submit_orders),
+            "adapter_contract": contract,
             "contract_version": str(contract.get("contract_version", "")),
             "status": "in_progress",
             "reduce_only": False,
@@ -1223,12 +1233,19 @@ class PaperRuntime:
         return str(artifact_path)
 
     def _audit_runtime_event(self, event: str, details: dict[str, Any]) -> None:
+        adapter_contract = self._paper_adapter_contract()
+        broker_backend = self._paper_broker_backend()
         entry = {
             "timestamp_utc": utc_now().isoformat(),
             "event": event,
+            "mode": "paper",
             "runtime_mode": "paper",
+            "canonical_runtime": "PaperRuntime",
             "paper_broker": self.config.paper_broker,
-            "broker_backend": self._paper_broker_backend(),
+            "broker_backend": broker_backend,
+            "real_order_submission": False,
+            "paper_order_submission": bool(self.config.submit_orders),
+            "adapter_contract": adapter_contract,
             "strategy_id": self.config.strategy_id,
             "details": details,
         }

@@ -77,8 +77,23 @@ def test_live_readiness_passed_still_blocks_without_apca_credentials() -> None:
 
     assert result["submitted"] == []
     assert result["rejected"]
-    assert "broker_credentials_missing" in result["rejected"][0]["reason"]
+    assert result["rejected"][0]["reason"] == "live_runtime_safety_shell_no_order_execution"
     runtime.oms.handle_intent.assert_not_called()
+
+
+def test_live_runtime_default_readiness_artifact_is_fail_closed() -> None:
+    runtime = LiveRuntime()
+    health = runtime.bootstrap()
+    artifact = runtime.readiness_artifact()
+
+    assert health.ok is True
+    assert artifact["mode"] == "paper"
+    assert artifact["canonical_runtime"] == "PaperRuntime"
+    assert artifact["broker_backend"] == "simulated"
+    assert artifact["real_order_submission"] is False
+    assert artifact["paper_order_submission"] is False
+    assert artifact["adapter_contract"]["fail_closed"] is True
+    assert artifact["production_loop_started"] is False
 
 
 def test_live_readiness_failure_is_passed_to_order_block_reasons() -> None:
@@ -158,11 +173,57 @@ def test_live_orders_do_not_handle_intent_without_explicit_submission_gate() -> 
         result = runtime.submit_orders([_intent("live_safety_003")], account=_account(), market_price=500.0)
 
     assert result["submitted"] == []
-    assert "live_submission_gate_not_completed" in result["rejected"][0]["reason"]
+    assert result["rejected"][0]["reason"] == "live_runtime_safety_shell_no_order_execution"
     runtime.oms.handle_intent.assert_not_called()
 
 
-def test_live_orders_reach_only_mock_oms_when_all_runtime_gates_clear() -> None:
+def test_live_runtime_does_not_construct_real_oms_when_all_config_flags_pass() -> None:
+    config = LiveRuntimeConfig(
+        mode=RuntimeMode.LIVE,
+        allow_live_orders=True,
+        confirm_live=True,
+        live_submission_enabled=True,
+        require_readiness_gate=True,
+    )
+    runtime = LiveRuntime(config=config)
+
+    with (
+        patch.dict(
+            "os.environ",
+            {"APCA_API_KEY_ID": "test_key", "APCA_API_SECRET_KEY": "test_secret"},
+            clear=True,
+        ),
+        patch("quant_us.live.runtime.LiveReadinessGate") as gate_cls,
+        patch.object(
+            runtime._live_submission_gate,
+            "check",
+            return_value=SubmissionGateDecision(decision="APPROVED_FOR_SUBMIT"),
+        ),
+    ):
+        gate_cls.return_value.check_all.return_value = _GateReport(True)
+        decision = runtime.configure_live_submission_gate(
+            approval_id="approved_live_order",
+            envelope_id="approved_envelope",
+            dossier_decision="GO_FOR_SMALL_LIVE_REVIEW",
+            live_endpoint_ok=True,
+            reconciliation_clean=True,
+            emergency_stop_armed=True,
+            in_regular_session=True,
+            oms_idempotency_ok=True,
+        )
+        health = runtime.bootstrap()
+
+    artifact = runtime.readiness_artifact()
+    assert decision.approved is True
+    assert health.ok is True
+    assert runtime.oms is None
+    assert artifact["mode"] == "live"
+    assert artifact["canonical_runtime"] == "LiveRuntime"
+    assert artifact["real_order_submission"] is False
+    assert artifact["production_loop_started"] is False
+
+
+def test_live_orders_do_not_reach_injected_mock_oms_when_all_runtime_gates_clear() -> None:
     config = LiveRuntimeConfig(
         mode=RuntimeMode.LIVE,
         allow_live_orders=True,
@@ -199,6 +260,7 @@ def test_live_orders_reach_only_mock_oms_when_all_runtime_gates_clear() -> None:
         assert decision.approved is True
         result = runtime.submit_orders([_intent("live_safety_004")], account=_account(), market_price=500.0)
 
-    assert result["rejected"] == []
-    assert len(result["submitted"]) == 1
-    runtime.oms.handle_intent.assert_called_once()
+    assert result["submitted"] == []
+    assert len(result["rejected"]) == 1
+    assert result["rejected"][0]["reason"] == "live_runtime_safety_shell_no_order_execution"
+    runtime.oms.handle_intent.assert_not_called()

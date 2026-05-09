@@ -1991,7 +1991,7 @@ def _check_alpaca_credentials(profile: str) -> None:
 
 
 def cmd_readiness(args: argparse.Namespace) -> None:
-    """Check all pre-live readiness conditions."""
+    """Check readiness evidence without starting any order path."""
     from quant_us.reports.live_readiness import LiveReadinessGate
     import uuid
     from datetime import datetime, timezone
@@ -2044,7 +2044,8 @@ def cmd_readiness(args: argparse.Namespace) -> None:
     print("=" * 60)
     if report.is_ready():
         if profile == "live":
-            print("  RESULT: SYSTEM IS READY for live trading.")
+            print("  RESULT: LIVE READINESS EVIDENCE PASSED for manual review only.")
+            print("  scope:  report only, no execution")
         elif profile == "paper":
             print("  RESULT: READINESS CHECKS PASSED for paper-stage evaluation only.")
         elif profile == "shadow_live":
@@ -2063,13 +2064,15 @@ def cmd_readiness(args: argparse.Namespace) -> None:
 
 
 def _cmd_readiness_small_live(args: argparse.Namespace) -> None:
-    """Small-live readiness gate -- go/no-go with all 8 checks + paper 30-day."""
+    """Small-live readiness evidence gate; review-only and fail-closed."""
     from quant_us.reports.live_readiness import LiveReadinessGate
 
     if not args.validation_state:
         print("ERROR: --validation-state is required for --small-live mode.")
         print("Usage: quant-us readiness --small-live --validation-state <path>")
-        return
+        print("  RESULT: BLOCKED for small-live review.")
+        print("  scope:  report only, no execution")
+        raise SystemExit(1)
 
     gate = LiveReadinessGate()
     report = gate.check_all(validation_state_path=args.validation_state)
@@ -2095,23 +2098,24 @@ def _cmd_readiness_small_live(args: argparse.Namespace) -> None:
         if paper_check:
             print(f"  Paper 30-day clean: {paper_check.detail}")
         print()
-        print("  RESULT: READINESS EVIDENCE PASSED for small-live review only.")
-        print("  scope:  readiness only, no execution")
+        print("  RESULT: READINESS EVIDENCE PASSED for small-live manual review only.")
+        print("  scope:  report only, no execution")
         print()
-        print("=== SMALL-LIVE PARAMETERS ===")
+        print("=== SMALL-LIVE REVIEW PARAMETERS (NOT AUTHORIZATION) ===")
         print("  Max position size:      1% of account")
         print("  Max concurrent positions: 2")
         print("  Allowed symbols:        SPY, QQQ")
         print("  Session:                Regular only")
         print("  KillSwitch max daily loss: 1%")
         print("  Human confirmation:     Required daily")
+        print("  Live order path:        BLOCKED by CLI; separate approval required")
     else:
         print("  Some checks FAILED.")
         failed = [c.name for c in report.checks if not c.passed]
         print(f"  Failing checks: {', '.join(failed)}")
         print()
-        print("  RESULT: NO-GO for small-live trading.")
-        print("  scope:  readiness only, no execution")
+        print("  RESULT: BLOCKED for small-live review.")
+        print("  scope:  report only, no execution")
         print("  Fix failing checks above and re-run.")
 
 
@@ -2132,7 +2136,7 @@ def _add_readiness_parser(subparsers: Any) -> None:
     p.add_argument(
         "--small-live",
         action="store_true",
-        help="Run small-live go/no-go gate (requires --validation-state)",
+        help="Run small-live review-only evidence gate (requires --validation-state)",
     )
     p.add_argument(
         "--check-credentials",
@@ -2187,6 +2191,8 @@ def cmd_live_readiness(args: argparse.Namespace) -> None:
     )
     health = LiveRuntime(config).bootstrap()
     _print_runtime_health("Live Readiness", health)
+    print("  scope: report only, no execution")
+    print("  live_order_path: BLOCKED unless a separate approved runtime owns execution")
     if args.strict and not health.ok:
         raise SystemExit(1)
 
@@ -2269,7 +2275,7 @@ def cmd_live_shadow(args: argparse.Namespace) -> None:
 
 
 def cmd_live_start(args: argparse.Namespace) -> None:
-    """Guarded live start. Paper production loop by default; live mode when gates pass."""
+    """Guarded live start entry point; fail-closed in this CLI."""
     from quant_us.live.modes import RuntimeMode
     from quant_us.live.runtime import LiveRuntime
     from quant_us.live.runtime_config import LiveRuntimeConfig
@@ -2297,17 +2303,19 @@ def cmd_live_start(args: argparse.Namespace) -> None:
         if not health.ok:
             print("ERROR: Live readiness gate not passed. Fix above issues before starting.", file=sys.stderr)
             raise SystemExit(1)
-        print("  real_order_submission: ENABLED (all gates passed)")
+        print("  real_order_submission: BLOCKED (review-only CLI, no execution)")
         _start_live_production_loop(symbols, args)
     elif simulate_days > 0:
-        print(f"  real_order_submission: DISABLED (simulated paper mode, {simulate_days} days)")
-        _run_simulated_paper_loop(symbols, args, simulate_days)
+        print(f"  real_order_submission: DISABLED (live start is fail-closed; requested simulated paper mode, {simulate_days} days)")
+        print("ERROR: live start is review-only/fail-closed and will not run paper simulation. Use the paper command path explicitly.", file=sys.stderr)
+        raise SystemExit(1)
     else:
-        print("  real_order_submission: DISABLED (must pass all gates)")
+        print("  real_order_submission: DISABLED (review-only CLI, no execution)")
         if not health.ok:
             print("ERROR: Readiness checks failed. Fix above issues before starting.", file=sys.stderr)
             raise SystemExit(1)
-        _start_paper_production_loop(symbols, args)
+        print("ERROR: live start is fail-closed. No paper loop or live loop was started.", file=sys.stderr)
+        raise SystemExit(1)
 
 
 def _start_paper_production_loop(symbols: list[str], args: argparse.Namespace) -> None:
@@ -2656,31 +2664,20 @@ def _run_simulated_paper_loop(
 
 
 def _start_live_production_loop(symbols: list[str], args: argparse.Namespace) -> None:
-    """Live production loop — real broker, all gates passed."""
-    live_enabled = os.environ.get("QUANT_LIVE_SUBMISSION_ENABLED", "").lower() in ("1", "true", "yes")
-    if not live_enabled:
-        print("ERROR: Real order submission requires QUANT_LIVE_SUBMISSION_ENABLED=true in environment.", file=sys.stderr)
-        raise SystemExit(1)
-
-    api_key = os.environ.get("APCA_API_KEY_ID", "")
-    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
-    if not api_key or not api_secret:
-        print("ERROR: Live mode requires APCA_API_KEY_ID and APCA_API_SECRET_KEY.", file=sys.stderr)
-        raise SystemExit(1)
-
-    print(f"Live Production Loop: strategy={args.strategy}")
+    """Block live execution from the CLI until a real live runtime owns it."""
+    print(f"Live Production Loop Request: strategy={args.strategy}")
     print(f"  symbols:       {', '.join(symbols)}")
     print(f"  cash:          ${args.initial_cash:,.0f}")
     print(f"  poll-interval: {args.poll_interval}s")
     print(f"  bar-size:      {args.bar_size}")
     print(f"  data-vendor:   {args.data_vendor}")
     print(f"  max-runtime:   {args.max_runtime_hours}h")
-    print("  REAL ORDERS ENABLED — all safety gates passed")
-    print()
-
-    # Delegate to paper production loop structure with live config
-    # The OMS broker is AlpacaBroker (live) for real order submission.
-    _start_paper_production_loop(symbols, args)
+    print("  RESULT: BLOCKED")
+    print("  scope:  review only, no execution")
+    print("  real_order_submission: DISABLED")
+    print("  paper_loop_fallback:   DISABLED")
+    print("ERROR: live production execution is not enabled in this CLI.", file=sys.stderr)
+    raise SystemExit(1)
 
 
 def _add_live_parser(subparsers: Any) -> None:
@@ -2715,13 +2712,17 @@ def _add_live_parser(subparsers: Any) -> None:
     shadow.add_argument("--run", action="store_true", help="Run shadow-live after gate checks; still no real orders")
     shadow.set_defaults(func=cmd_live_shadow)
 
-    start = live_sub.add_parser("start", help="Guarded live start; paper production loop unless gates pass")
+    start = live_sub.add_parser(
+        "start",
+        help="Review-only live start gate; fail-closed, no execution",
+        description="Review-only live start gate; fail-closed, no execution.",
+    )
     start.add_argument("--symbols", default="SPY,QQQ", help="Comma-separated tickers (default: SPY,QQQ)")
     start.add_argument("--strategy", default="etf_rotation", help="Strategy ID from the registry")
     start.add_argument("--validation-state", default="", help="Paper validation state path")
-    start.add_argument("--allow-live-orders", action="store_true", help="Enable live order path (requires --confirm-live)")
-    start.add_argument("--confirm-live", action="store_true", help="Human confirmation flag for live orders")
-    start.add_argument("--submit-orders", action="store_true", default=False, help="Submit paper orders in production loop")
+    start.add_argument("--allow-live-orders", action="store_true", help="Review flag only; does not enable live execution")
+    start.add_argument("--confirm-live", action="store_true", help="Human confirmation evidence flag; does not submit orders")
+    start.add_argument("--submit-orders", action="store_true", default=False, help="Ignored by live start; no paper/live orders are submitted")
     start.add_argument("--data-vendor", default="yfinance", help="Market-data connector (default: yfinance)")
     start.add_argument("--bar-size", default="1m", help="Bar interval string e.g. 1m, 5m (default: 1m)")
     start.add_argument("--poll-interval", type=float, default=60.0, help="Poll interval in seconds (default: 60)")
@@ -2729,7 +2730,7 @@ def _add_live_parser(subparsers: Any) -> None:
     start.add_argument("--initial-cash", type=float, default=100_000.0, help="Initial capital (default: 100000)")
     start.add_argument("--commission-rate", type=float, default=0.0001, help="Commission rate (default: 0.0001)")
     start.add_argument("--slippage-bps", type=float, default=1.0, help="Slippage in bps (default: 1.0)")
-    start.add_argument("--simulate-days", type=int, default=0, help="Simulate N historical trading days for accelerated paper production (0=live session)")
+    start.add_argument("--simulate-days", type=int, default=0, help="Rejected by live start; use paper command path for paper simulation")
     start.set_defaults(func=cmd_live_start)
 
 

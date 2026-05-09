@@ -52,6 +52,39 @@ class LiveRuntimeConfig:
             and self.live_submission_enabled
         )
 
+    @property
+    def paper_order_submission_enabled(self) -> bool:
+        return (
+            self.mode in {RuntimeMode.PAPER, RuntimeMode.SHADOW_LIVE}
+            and self.submit_orders
+            and not self.allow_live_orders
+        )
+
+    def runtime_audit_fields(
+        self,
+        *,
+        broker_backend: str | None = None,
+        adapter_contract: dict[str, object] | None = None,
+    ) -> dict[str, object]:
+        effective_broker_backend = broker_backend or self.broker
+        return {
+            "mode": self.mode.value,
+            "runtime_mode": self.mode.value,
+            "canonical_runtime": "PaperRuntime" if self.mode == RuntimeMode.PAPER else "LiveRuntime",
+            "broker_backend": effective_broker_backend,
+            "real_order_submission": self.real_order_submission_enabled,
+            "paper_order_submission": self.paper_order_submission_enabled,
+            "adapter_contract": adapter_contract
+            if adapter_contract is not None
+            else {
+                "requested_backend": effective_broker_backend,
+                "effective_backend": effective_broker_backend,
+                "adapter_ready": False,
+                "fail_closed": True,
+                "reason": "adapter_contract_not_applicable_to_live_runtime_shell",
+            },
+        }
+
     def live_block_reasons(self, readiness_passed: bool = False) -> list[str]:
         reasons: list[str] = []
         if self.mode != RuntimeMode.LIVE:

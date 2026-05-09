@@ -4,9 +4,14 @@
 
 | Mode | Real Orders | Live Endpoint | ReadOnlyBroker | Paper Orders |
 |------|-------------|---------------|----------------|--------------|
-| PAPER | Blocked | Blocked | N/A | Optional |
-| SHADOW_LIVE | **Blocked** (hard) | Read-only only | Required | Optional |
-| LIVE | Gated (default blocked) | Allowed | N/A | N/A |
+| PAPER | Blocked | Blocked | N/A | Simulated only by default; explicit paper submit path required |
+| SHADOW_LIVE | **Blocked** (hard) | Read-only only | Required | Optional simulated/audit evidence only |
+| LIVE | **Blocked** in `LiveRuntime` safety shell | Review-only endpoint checks | N/A | N/A |
+
+`LiveRuntime` is currently a safety shell. Live-mode readiness evidence can pass, but that evidence is
+review material only and does not unlock order submission in this runtime boundary.
+The `live start` operator path is review-only and fail-closed: it may render gate/evidence state, but it must not submit orders.
+Any future executable live path must be introduced as a separate, explicit implementation with its own approved gate.
 
 ## Shadow Live vs Paper vs Live Boundaries
 
@@ -15,13 +20,26 @@
 |    PAPER     |    |   SHADOW_LIVE    |    |     LIVE     |
 |              |    |                  |    |              |
 | o Paper API  |    | o Live API (RO)  |    | o Live API   |
-| o Paper ord. |    | o Shadow orders  |    | o Real orders|
-| o Real ord.  |    | o Real orders    |    | o Full access|
-|   blocked    |    |   BLOCKED        |    | o Gated      |
+| o Paper ord. |    | o Shadow orders  |    | o Review only|
+| o Real ord.  |    | o Real orders    |    | o No submit  |
+|   blocked    |    |   BLOCKED        |    |   BLOCKED    |
 | o Simulated  |    | o Paper orders   |    | o No paper   |
-|   broker ok  |    |   optional       |    |   broker     |
+|   broker ok  |    |   evidence only  |    |   broker     |
 +--------------+    +------------------+    +--------------+
 ```
+
+## Paper Submission Boundary
+
+Paper order submission is off by default. Simulated paper artifacts and paper-review approvals are evidence for review;
+they are not broker-write authorization. A real paper path must be selected explicitly and must remain separate from
+research promotion, readiness, and report commands.
+
+Current baseline expectations:
+
+- `paper_broker=alpaca` remains fail-closed unless a separately approved adapter path is explicitly wired.
+- Fake Alpaca adapters are contract-test tools only and are not production paper execution.
+- Daily paper reports read persisted ledger evidence; they do not imply that paper orders were submitted.
+- Startup sync artifacts are audit inputs only and do not enable paper or live writes.
 
 ## QUANT_LIVE_SUBMISSION_ENABLED Safety
 
@@ -75,16 +93,26 @@ The audit trail proves no real orders were submitted:
 Paper endpoint:  https://paper-api.alpaca.markets
 Live endpoint:   https://api.alpaca.markets
 
-Paper profile  -> MUST use paper endpoint (validated in AlpacaBrokerConfig)
+Paper profile  -> MUST use paper endpoint when an actual, explicit paper submit adapter is wired
 Shadow profile -> CAN use live endpoint (read-only only, via ReadOnlyLiveBrokerProxy)
-Live profile   -> MUST use live endpoint (default blocked until gates pass)
+Live profile   -> MAY inspect live endpoint state, but current LiveRuntime remains review-only and fail-closed
 ```
 
 `AlpacaBrokerConfig.__post_init__` validates URL/paper alignment:
 - `paper=True` -> URL must contain `paper-api.alpaca.markets`
 - `paper=False` -> URL must contain `api.alpaca.markets`
 
+## Ledger Idempotency Boundary
+
+Ledger writes must be idempotent under repeated report/runtime invocations. If the runtime path writes ledger-derived
+artifacts, it must either use a file lock around the write or document why the artifact is single-writer and safe to
+rebuild. Reports that only read existing ledger files must preserve this distinction and should not claim locking for
+paths that are not implemented yet.
+
 ## G3 Live Pilot Safety (Added Phase G3)
+
+The live-pilot and micro-live sections below describe guard rails, not the baseline automation in this turn.
+They remain manual-approval flows and are not part of the current automated closed loop.
 
 ### Approval Gate
 

@@ -173,6 +173,35 @@ def test_alpaca_paper_runtime_blocks_without_apca_credentials(tmp_path: Path) ->
     assert entries[-1]["details"]["checks"]["paper_credential_audit"]["endpoint_kind"] == "unset"
 
 
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_runtime_default_order_submission_fail_closed_and_audited(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    runtime = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            reconcile_on_start=False,
+        )
+    )
+
+    runtime.bootstrap()
+
+    entry = runtime.audit_events[0]
+    assert runtime.config.submit_orders is False
+    assert entry["mode"] == "paper"
+    assert entry["runtime_mode"] == "paper"
+    assert entry["canonical_runtime"] == "PaperRuntime"
+    assert entry["broker_backend"] == "simulated"
+    assert entry["real_order_submission"] is False
+    assert entry["paper_order_submission"] is False
+    assert entry["adapter_contract"]["effective_backend"] == "simulated"
+    assert entry["details"]["checks"]["mode"] == "paper"
+    assert entry["details"]["checks"]["paper_order_submission"] is False
+    runtime.shutdown()
+
+
 def test_alpaca_paper_runtime_blocks_without_apca_base_url(tmp_path: Path) -> None:
     runtime = PaperRuntime(
         PaperRuntimeConfig(
@@ -319,6 +348,28 @@ def test_alpaca_paper_adapter_contract_requires_factory_even_when_env_requests()
     assert contract.endpoint_kind == "paper"
     assert contract.base_url_valid is True
     assert contract.allowed_base_urls == ["https://paper-api.alpaca.markets"]
+
+
+def test_alpaca_paper_adapter_contract_requires_explicit_env_enable() -> None:
+    capabilities = FakeAlpacaPaperBrokerAdapter.contract_capabilities()
+    contract = evaluate_paper_adapter_contract(
+        "alpaca",
+        adapter_enabled=True,
+        adapter_factory_present=True,
+        adapter_capabilities=capabilities,
+        env_requested=False,
+        endpoint_kind="paper",
+        base_url_valid=True,
+        credentials_present=True,
+        approved_evidence=True,
+    )
+
+    assert contract.fail_closed is True
+    assert contract.adapter_code_enabled is True
+    assert contract.adapter_enabled is False
+    assert contract.submit_capable is False
+    assert contract.reason == "alpaca_paper_adapter_not_explicitly_enabled"
+    assert "alpaca_paper_adapter_not_explicitly_enabled" in contract.readiness_reasons
 
 
 def test_alpaca_paper_adapter_contract_requires_full_sync_surface() -> None:
@@ -656,6 +707,41 @@ def test_fake_adapter_does_not_bypass_paper_credential_gate(
     assert checks["paper_credentials_present"] is False
 
 
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_fake_adapter_does_not_bypass_explicit_enable_gate(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = tmp_path / "review.json"
+    _write_review(review_path)
+    runtime = FakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match="alpaca_paper_adapter_not_explicitly_enabled"):
+            runtime.bootstrap()
+
+    checks = runtime.audit_events[-1]["details"]["checks"]
+    assert checks["paper_adapter_contract"]["adapter_code_enabled"] is True
+    assert checks["paper_adapter_contract"]["adapter_enabled"] is False
+    assert checks["paper_adapter_contract"]["env_requested"] is False
+
+
 def test_alpaca_paper_runtime_audits_non_paper_base_url(tmp_path: Path) -> None:
     audit_path = tmp_path / "audit" / "paper_runtime_audit.jsonl"
     runtime = PaperRuntime(
@@ -800,8 +886,15 @@ def test_fake_adapter_accepts_exact_paper_endpoint_with_trailing_slash(
     assert runtime.broker.submit_call_count == 0
     assert runtime.audit_events[-1]["event"] == "paper_broker_adapter_startup_sync_complete"
     artifact = _startup_sync_artifact(Path(runtime.config.ledger_root))
+    assert artifact["mode"] == "paper"
+    assert artifact["runtime_mode"] == "paper"
+    assert artifact["canonical_runtime"] == "PaperRuntime"
     assert artifact["status"] == "ok"
     assert artifact["backend"] == "alpaca_paper"
+    assert artifact["broker_backend"] == "alpaca_paper"
+    assert artifact["real_order_submission"] is False
+    assert artifact["paper_order_submission"] is False
+    assert artifact["adapter_contract"]["effective_backend"] == "alpaca_paper"
     assert artifact["contract_version"] == "paper_adapter_contract_v4"
     assert artifact["sync"]["poll_orders"]["call_count"] == 1
     assert artifact["sync"]["poll_orders"]["order_count"] == 0

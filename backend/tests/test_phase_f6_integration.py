@@ -146,9 +146,12 @@ class TestLiveRuntimeLiveOrders(unittest.TestCase):
         runtime.bootstrap()
         result = runtime.submit_orders([_make_intent()])
         self.assertGreater(len(result["rejected"]), 0)
-        self.assertIn("allow_live_orders", result["rejected"][0]["reason"])
+        self.assertEqual(
+            "live_runtime_safety_shell_no_order_execution",
+            result["rejected"][0]["reason"],
+        )
 
-    def test_live_orders_rejected_without_oms(self) -> None:
+    def test_live_orders_rejected_by_safety_shell_before_oms_check(self) -> None:
         with mock.patch.dict(
             os.environ,
             {"APCA_API_KEY_ID": "test_key", "APCA_API_SECRET_KEY": "test_secret"},
@@ -182,7 +185,10 @@ class TestLiveRuntimeLiveOrders(unittest.TestCase):
             runtime.oms = None
             result = runtime.submit_orders([_make_intent()])
         self.assertGreater(len(result["rejected"]), 0)
-        self.assertIn("oms", result["rejected"][0]["reason"].lower())
+        self.assertEqual(
+            "live_runtime_safety_shell_no_order_execution",
+            result["rejected"][0]["reason"],
+        )
 
     def test_live_orders_do_not_handle_intent_without_explicit_gate(self) -> None:
         with mock.patch.dict(
@@ -212,10 +218,13 @@ class TestLiveRuntimeLiveOrders(unittest.TestCase):
             result = runtime.submit_orders([intent], account=account, market_price=100.0)
 
         self.assertEqual(len(result["submitted"]), 0)
-        self.assertIn("live_submission_gate_not_completed", result["rejected"][0]["reason"])
+        self.assertEqual(
+            "live_runtime_safety_shell_no_order_execution",
+            result["rejected"][0]["reason"],
+        )
         runtime.oms.handle_intent.assert_not_called()
 
-    def test_live_orders_pass_through_to_oms_when_gates_clear(self) -> None:
+    def test_live_orders_do_not_reach_oms_when_gates_clear(self) -> None:
         with mock.patch.dict(
             os.environ,
             {"APCA_API_KEY_ID": "test_key", "APCA_API_SECRET_KEY": "test_secret"},
@@ -258,8 +267,13 @@ class TestLiveRuntimeLiveOrders(unittest.TestCase):
                 )
                 result = runtime.submit_orders([intent], account=account, market_price=100.0)
 
-        self.assertEqual(len(result["submitted"]), 1)
-        self.assertEqual(len(result["rejected"]), 0)
+        self.assertEqual(len(result["submitted"]), 0)
+        self.assertEqual(len(result["rejected"]), 1)
+        self.assertEqual(
+            "live_runtime_safety_shell_no_order_execution",
+            result["rejected"][0]["reason"],
+        )
+        runtime.oms.handle_intent.assert_not_called()
 
     def test_live_submission_disabled_blocks_orders(self) -> None:
         runtime = LiveRuntime(
@@ -273,7 +287,10 @@ class TestLiveRuntimeLiveOrders(unittest.TestCase):
         runtime.bootstrap()
         result = runtime.submit_orders([_make_intent()])
         self.assertGreater(len(result["rejected"]), 0)
-        self.assertIn("live_submission_disabled", result["rejected"][0]["reason"])
+        self.assertEqual(
+            "live_runtime_safety_shell_no_order_execution",
+            result["rejected"][0]["reason"],
+        )
 
     def test_paper_mode_unchanged(self) -> None:
         runtime = LiveRuntime(
