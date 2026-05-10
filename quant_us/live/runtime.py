@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,6 +20,7 @@ from quant_us.live.runtime_config import LiveRuntimeConfig
 from quant_us.live.runtime_events import RuntimeEvent
 from quant_us.live.runtime_state import LiveRuntimeState, RuntimeHealth, RuntimeLifecycleState
 from quant_us.reports.live_readiness import LiveReadinessGate
+from quant_us.research.evidence_registry import project_saved_paper_review_evidence
 
 _logger = logging.getLogger("live_runtime")
 
@@ -49,6 +51,9 @@ class LiveRuntime:
     _live_submission_gate_context: dict[str, Any] = field(default_factory=dict)
     _live_submission_gate_completed: bool = False
     _last_live_submission_gate_decision: SubmissionGateDecision | None = None
+    _paper_submission_gate_context: dict[str, Any] = field(default_factory=dict)
+    _paper_submission_gate_completed: bool = False
+    _last_paper_submission_gate_decision: dict[str, Any] | None = None
     _live_submission_gate: LiveOrderSubmissionGate = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -79,6 +84,13 @@ class LiveRuntime:
         self._live_submission_gate_context = dict(gate_context)
         decision = self._evaluate_live_submission_gate(context_override=gate_context)
         self._live_submission_gate_completed = decision.approved
+        return decision
+
+    def configure_paper_submission_gate(self, **gate_context: Any) -> dict[str, Any]:
+        """Record explicit Alpaca paper submit context and evaluate it fail-closed."""
+        self._paper_submission_gate_context = dict(gate_context)
+        decision = self._evaluate_paper_submission_gate(context_override=gate_context)
+        self._paper_submission_gate_completed = bool(decision["approved"])
         return decision
 
     def load_config(self) -> LiveRuntimeConfig:
@@ -238,32 +250,35 @@ class LiveRuntime:
             else None
         )
         for intent in intents:
-            if self.config.mode == RuntimeMode.LIVE:
-                gate_decision = self._evaluate_live_submission_gate(
+            if self._paper_submit_requires_gate():
+                paper_gate_decision = self._evaluate_paper_submission_gate(
                     intent=intent,
-                    market_price=market_price,
-                    reconciliation_clean=reconciliation_clean,
-                    kill_switch_active=kill_switch_triggered,
+                    account=account,
+                    reduce_only=reduce_only,
+                    context_override={
+                        "reconciliation_clean": reconciliation_clean,
+                        "kill_switch_active": kill_switch_triggered,
+                    },
                 )
-                if not gate_decision.approved:
+                if not paper_gate_decision["approved"]:
                     results["rejected"].append({
                         "intent_id": intent.client_order_id,
                         "reason": (
-                            "live_submission_gate_blocked: "
-                            + ", ".join(gate_decision.block_reasons or ["blocked"])
+                            "paper_submission_gate_blocked: "
+                            + ", ".join(paper_gate_decision["block_reasons"] or ["blocked"])
                         ),
                     })
                     results["audit_events"].append({
-                        "event": "live_order_rejected_submission_gate",
+                        "event": "paper_order_rejected_submission_gate",
                         "intent_id": intent.client_order_id,
-                        "reasons": gate_decision.block_reasons,
-                        "warnings": gate_decision.warnings,
+                        "reasons": paper_gate_decision["block_reasons"],
+                        "checks": paper_gate_decision["checks"],
                         "timestamp_utc": _utc_now().isoformat(),
                     })
                     _logger.warning(
-                        "Live order rejected by submission gate: intent=%s reasons=%s",
+                        "Alpaca paper order rejected by submission gate: intent=%s reasons=%s",
                         intent.client_order_id,
-                        gate_decision.block_reasons,
+                        paper_gate_decision["block_reasons"],
                     )
                     continue
 
@@ -443,6 +458,155 @@ class LiveRuntime:
         self._last_live_submission_gate_decision = decision
         self._live_submission_gate_completed = decision.approved
         return decision
+
+    def _paper_submit_requires_gate(self) -> bool:
+        broker = str(self.config.broker or "").strip().lower()
+        return self.config.mode == RuntimeMode.PAPER and broker in {"alpaca", "alpaca_paper"}
+
+    def _evaluate_paper_submission_gate(
+        self,
+        *,
+        intent: OrderIntent | None = None,
+        account: Any = None,
+        reduce_only: bool = False,
+        context_override: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        gate_kwargs = dict(self._paper_submission_gate_context)
+        if context_override:
+            gate_kwargs.update(context_override)
+
+        checks: dict[str, Any] = {
+            "mode_is_paper": self.config.mode == RuntimeMode.PAPER,
+            "broker_is_alpaca_paper": self._paper_submit_requires_gate(),
+            "submit_orders_enabled": bool(self.config.submit_orders),
+            "allow_live_orders_false": not self.config.allow_live_orders,
+            "real_order_submission_disabled": not self.config.real_order_submission_enabled,
+            "explicit_paper_submit_selected": bool(
+                gate_kwargs.get("paper_submit_selected")
+                or gate_kwargs.get("confirm_paper_submit")
+                or gate_kwargs.get("explicit_paper_submit")
+            ),
+        }
+        block_reasons: list[str] = []
+
+        def require(check_name: str, reason: str) -> None:
+            if not checks.get(check_name):
+                block_reasons.append(reason)
+
+        require("mode_is_paper", "runtime_mode_not_paper")
+        require("broker_is_alpaca_paper", "paper_broker_not_alpaca")
+        require("submit_orders_enabled", "paper_submit_orders_not_enabled")
+        require("allow_live_orders_false", "paper_runtime_cannot_allow_live_orders")
+        require("real_order_submission_disabled", "real_order_submission_enabled")
+        require("explicit_paper_submit_selected", "explicit_paper_submit_not_selected")
+
+        evidence = self._paper_submit_registry_evidence(gate_kwargs)
+        checks["saved_registry_evidence_allowed"] = bool(evidence.get("allowed"))
+        checks["saved_registry_status"] = evidence.get("registry_status", "")
+        checks["saved_registry_integrity_status"] = evidence.get("registry_integrity_status", "")
+        checks["paper_review_path"] = evidence.get("review_path", "")
+        if not checks["saved_registry_evidence_allowed"]:
+            block_reasons.append(str(evidence.get("reason", "paper_review_evidence_missing")))
+
+        startup_sync = self._paper_submit_startup_sync_status(gate_kwargs)
+        checks["startup_sync_passed"] = startup_sync["passed"]
+        checks["startup_sync_status"] = startup_sync["status"]
+        checks["startup_sync_no_submit"] = startup_sync["no_submit"]
+        checks["startup_sync_artifact_path"] = startup_sync["artifact_path"]
+        if not startup_sync["passed"]:
+            block_reasons.append(str(startup_sync["reason"]))
+
+        idempotency_ok = intent is None or intent.client_order_id not in self._submitted_order_ids
+        checks["oms_idempotency_ok"] = idempotency_ok
+        if not idempotency_ok:
+            block_reasons.append("duplicate_client_order_id")
+
+        reduce_only_ok = True
+        reduce_only_reason = "ok"
+        if reduce_only and intent is not None:
+            reduce_only_ok, reduce_only_reason = self._reduce_only_allows(intent, account)
+        checks["reduce_only_ok"] = reduce_only_ok
+        checks["reduce_only_reason"] = reduce_only_reason
+        if not reduce_only_ok:
+            block_reasons.append(reduce_only_reason)
+
+        decision = {
+            "approved": not block_reasons,
+            "block_reasons": block_reasons,
+            "checks": checks,
+            "evidence": evidence,
+            "startup_sync": startup_sync,
+        }
+        self._last_paper_submission_gate_decision = decision
+        self._paper_submission_gate_completed = bool(decision["approved"])
+        return decision
+
+    def _paper_submit_registry_evidence(self, gate_kwargs: dict[str, Any]) -> dict[str, Any]:
+        data_root = gate_kwargs.get("promotion_data_root") or gate_kwargs.get("data_root") or self.config.data_root
+        paper_review_id = str(gate_kwargs.get("paper_review_id", "") or "")
+        paper_review_path = str(gate_kwargs.get("paper_review_path", "") or "")
+        try:
+            return project_saved_paper_review_evidence(
+                data_root,
+                paper_review_id=paper_review_id,
+                paper_review_path=paper_review_path,
+            )
+        except Exception as exc:
+            return {
+                "allowed": False,
+                "reason": f"paper_review_registry_error:{exc}",
+                "registry_status": "error",
+                "registry_integrity_status": "error",
+                "review": {},
+                "review_path": paper_review_path,
+                "evidence_pack_path": "",
+            }
+
+    def _paper_submit_startup_sync_status(self, gate_kwargs: dict[str, Any]) -> dict[str, Any]:
+        artifact_path = Path(
+            str(
+                gate_kwargs.get("startup_sync_artifact_path")
+                or Path(self.config.ledger_root) / "audit" / "paper_broker_adapter_startup_sync.json"
+            )
+        )
+        status = {
+            "passed": False,
+            "artifact_path": str(artifact_path),
+            "status": "missing",
+            "reason": "startup_sync_artifact_missing",
+            "no_submit": False,
+        }
+        if not artifact_path.exists():
+            return status
+        try:
+            artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            status.update({
+                "status": "conflict",
+                "reason": f"startup_sync_artifact_unreadable:{exc}",
+            })
+            return status
+
+        proof = dict(artifact.get("no_submit_proof", {}))
+        no_submit = (
+            bool(proof.get("submit_call_count_available", False))
+            and not bool(proof.get("submit_order_invoked", True))
+            and not bool(proof.get("write_method_invoked", False))
+            and proof.get("submit_call_count_delta") == 0
+        )
+        artifact_status = str(artifact.get("status", "missing"))
+        backend = str(artifact.get("backend", artifact.get("broker_backend", "")))
+        passed = artifact_status == "ok" and backend == "alpaca_paper" and no_submit
+        reason = "ok" if passed else "startup_sync_not_passed"
+        status.update({
+            "passed": passed,
+            "status": artifact_status,
+            "backend": backend,
+            "reason": reason,
+            "no_submit": no_submit,
+            "submit_call_count_delta": proof.get("submit_call_count_delta"),
+        })
+        return status
 
     @staticmethod
     def _reduce_only_projected_positions(account: Any) -> dict[str, float] | None:

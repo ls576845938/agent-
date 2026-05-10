@@ -500,6 +500,70 @@ def _print_ledger_reconciliation_artifact(payload: dict[str, Any], ledger_root: 
         print(f"{indent}ledger_pnl: ${float(payload.get('ledger_pnl', 0.0) or 0.0):+,.2f}")
 
 
+def _print_paper_validation_evidence(
+    data_root: str | Path,
+    *,
+    ledger_root: str | Path | None = None,
+    validation_state: str | Path | None = None,
+    indent: str = "  ",
+) -> Any:
+    from quant_us.reports.paper_validation import inspect_paper_validation_evidence
+
+    evidence = inspect_paper_validation_evidence(
+        data_root,
+        ledger_root=ledger_root,
+        validation_state_path=validation_state,
+    )
+    print(f"{indent}paper_validation_state: {evidence.readiness_state}")
+    print(f"{indent}paper_submit_orders: {evidence.paper_submit_orders}")
+    print(
+        f"{indent}paper_validation_days: "
+        f"{evidence.days_completed}/{evidence.days_required} completed, "
+        f"{evidence.consecutive_clean_days}/{evidence.days_required} clean"
+    )
+    for pointer in evidence.evidence:
+        print(
+            f"{indent}evidence:     {pointer.name}="
+            f"{pointer.path if pointer.path and pointer.state == 'PASS' else '(not found)'}"
+        )
+    daily = evidence.daily_report_summary
+    print(
+        f"{indent}daily_report_summary: "
+        f"date={_display_value(daily.get('report_date'))}, "
+        f"orders={daily.get('orders_submitted', 0)}/{daily.get('orders_filled', 0)}, "
+        f"recon={daily.get('reconciliation_status', 'unknown')}, "
+        f"errors={daily.get('errors_count', 0)}"
+    )
+    recon = evidence.ledger_reconciliation_summary
+    print(
+        f"{indent}ledger_reconciliation_summary: "
+        f"status={recon.get('status', 'unknown')}, "
+        f"halt={bool(recon.get('halt_new_orders', False))}, "
+        f"artifact_hash={_display_value(recon.get('artifact_hash'))}"
+    )
+    diff = evidence.broker_local_diff_summary
+    print(
+        f"{indent}broker_local_diff_summary: "
+        f"cash={float(diff.get('cash_diff', 0.0) or 0.0):+.2f}, "
+        f"positions={diff.get('position_diff_count', 0)}, "
+        f"orders={diff.get('order_diff_count', 0)}, "
+        f"fills={diff.get('fill_diff_count', 0)}, "
+        f"total={diff.get('total_diff_count', 0)}"
+    )
+    recovery = evidence.recovery_summary
+    print(
+        f"{indent}recovery_summary: "
+        f"required={bool(recovery.get('recovery_required', False))}, "
+        f"last_step={_display_value(recovery.get('last_step'))}, "
+        f"latest_event={_display_value(recovery.get('latest_event'))}"
+    )
+    if evidence.gaps:
+        print(f"{indent}paper_readiness_gaps: {', '.join(evidence.gaps)}")
+    else:
+        print(f"{indent}paper_readiness_gaps: (none)")
+    return evidence
+
+
 def _backtest_evidence_payload(payload: dict[str, Any]) -> dict[str, Any]:
     evidence = payload.get("evidence", {})
     return evidence if isinstance(evidence, dict) else {}
@@ -738,6 +802,11 @@ def cmd_report_daily(args: argparse.Namespace) -> None:
     print(f"  evidence:     validation_state={validation_state if validation_state.exists() else '(not found)'}")
     _print_paper_session_artifacts(ledger_root)
     _print_ledger_reconciliation_artifact(payload, ledger_root)
+    _print_paper_validation_evidence(
+        args.data_root,
+        ledger_root=ledger_root,
+        validation_state=str(validation_state),
+    )
     _print_evidence_registry_status(args.data_root)
     _print_paper_review_status(args.data_root)
     _print_report_only_note()
@@ -781,6 +850,21 @@ def cmd_report_evidence_registry(args: argparse.Namespace) -> None:
     print("=" * 60)
 
 
+def cmd_report_paper_validation(args: argparse.Namespace) -> None:
+    """Print 30-day paper validation evidence without starting any order path."""
+    print("30-Day Paper Validation Evidence")
+    print("=" * 60)
+    _print_report_only_note()
+    evidence = _print_paper_validation_evidence(
+        args.data_root,
+        ledger_root=args.ledger_root or None,
+        validation_state=args.validation_state or None,
+    )
+    print(f"  readiness_result: {evidence.readiness_state}")
+    print("  note:         Review evidence only. This does not approve or start paper/live trading.")
+    print("=" * 60)
+
+
 def _add_report_parser(subparsers: Any) -> None:
     p = subparsers.add_parser("report", help="Render traceable runtime/backtest reports")
     report_sub = p.add_subparsers(dest="report_command", required=True)
@@ -801,6 +885,15 @@ def _add_report_parser(subparsers: Any) -> None:
     registry_p = report_sub.add_parser("evidence-registry", help="Inspect evidence registry status")
     registry_p.add_argument("--data-root", default="data", help="Data root directory")
     registry_p.set_defaults(func=cmd_report_evidence_registry)
+
+    paper_val_p = report_sub.add_parser(
+        "paper-validation",
+        help="Inspect 30-day paper validation evidence",
+    )
+    paper_val_p.add_argument("--data-root", default="data", help="Data root directory")
+    paper_val_p.add_argument("--ledger-root", default="", help="Override paper ledger root")
+    paper_val_p.add_argument("--validation-state", default="", help="Override validation_state.json path")
+    paper_val_p.set_defaults(func=cmd_report_paper_validation)
 
 
 # ---------------------------------------------------------------------------
@@ -2226,6 +2319,10 @@ def cmd_readiness(args: argparse.Namespace) -> None:
     print(f"  latest_daily_report_state: {_path_evidence_state(latest_daily)}")
     print(f"  evidence:     latest_daily_report={latest_daily or '(not found)'}")
     print(f"  evidence:     manifest_root={_manifest_root(data_root)}")
+    _print_paper_validation_evidence(
+        data_root,
+        validation_state=args.validation_state or None,
+    )
     _print_evidence_registry_status(data_root)
     _print_paper_review_status(data_root)
     if force_rerun:
@@ -2313,6 +2410,59 @@ def _cmd_readiness_small_live(args: argparse.Namespace) -> None:
         print("  RESULT: BLOCKED for small-live review.")
         print("  scope:  report only, no execution")
         print("  Fix failing checks above and re-run.")
+
+
+def cmd_micro_live_readiness(args: argparse.Namespace) -> None:
+    """Micro-live readiness review surface; never starts a trading session."""
+    from quant_us.reports.live_readiness import LiveReadinessGate
+
+    if not args.validation_state:
+        print("ERROR: --validation-state is required for micro-live readiness review.")
+        print("  RESULT: BLOCKED for micro-live review.")
+        print("  scope:  report only, no execution")
+        raise SystemExit(1)
+
+    gate = LiveReadinessGate()
+    report = gate.check_all(validation_state_path=args.validation_state, profile="live")
+
+    print("Micro-Live Readiness Review")
+    print("=" * 60)
+    _print_report_only_note()
+    print("  boundary:    independent review entry; no start/run/submit action")
+    print(f"  evidence:    validation_state={args.validation_state}")
+    _print_paper_validation_evidence(
+        args.data_root,
+        ledger_root=args.ledger_root or None,
+        validation_state=args.validation_state,
+    )
+    print("=" * 60)
+    for check in report.checks:
+        status = "PASS" if check.passed else ("WARN" if getattr(check, "warn", False) else "FAIL")
+        print(f"  [{status}] {check.name}")
+        if check.detail:
+            print(f"         {check.detail}")
+    print("=" * 60)
+    if report.is_ready():
+        print("  RESULT: READINESS EVIDENCE PASSED for micro-live manual review only.")
+    else:
+        failed = [c.name for c in report.checks if not c.passed and not getattr(c, "warn", False)]
+        print(f"  RESULT: BLOCKED for micro-live review. Failing checks: {', '.join(failed)}")
+    print("  NOTE: This command cannot start paper or live trading and cannot submit orders.")
+
+
+def _add_micro_live_readiness_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser(
+        "micro-live-readiness",
+        help="Review micro-live readiness evidence only; no trading start path",
+    )
+    p.add_argument(
+        "--validation-state",
+        required=True,
+        help="Path to 30-day paper validation_state.json",
+    )
+    p.add_argument("--data-root", default="data", help="Data root directory")
+    p.add_argument("--ledger-root", default="", help="Override paper ledger root")
+    p.set_defaults(func=cmd_micro_live_readiness)
 
 
 def _add_readiness_parser(subparsers: Any) -> None:
@@ -8122,6 +8272,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_shadow_live_parser(subparsers)
     _add_reconcile_parser(subparsers)
     _add_readiness_parser(subparsers)
+    _add_micro_live_readiness_parser(subparsers)
     _add_live_parser(subparsers)
     _add_live_pilot_parser(subparsers)
     _add_ops_parser(subparsers)

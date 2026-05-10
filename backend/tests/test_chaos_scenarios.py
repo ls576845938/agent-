@@ -340,8 +340,10 @@ class BrokerTimeoutActualSubmitTest(unittest.TestCase):
             oms.handle_intent(intent, _make_account(), 150.0)
         self.assertIn("timeout", str(ctx.exception).lower())
 
-        # client_order_id NOT registered (order never confirmed)
-        self.assertNotIn(intent.client_order_id, oms._client_order_ids)
+        # Outcome is unknown, so the id is reserved to avoid duplicate submit
+        # after restart. Operators must use a new id for an explicit retry.
+        self.assertIn(intent.client_order_id, oms._client_order_ids)
+        self.assertTrue(oms.reduce_only)
 
         # kill_switch should have recorded failure
         ks.record_order_failure.assert_called_once()

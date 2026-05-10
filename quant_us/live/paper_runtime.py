@@ -111,6 +111,7 @@ class PaperRuntimeConfig:
     promotion_data_root: str = "data"
     audit_log_path: str = ""
     reduce_only: bool = False
+    explicit_paper_submit: bool = False
 
 
 @dataclass
@@ -659,6 +660,28 @@ class PaperRuntime:
                     )
                     continue
 
+            allowed, reason, gate_checks = self._paper_submit_gate_allows(intent)
+            if not allowed:
+                metrics.intents_rejected += 1
+                self._audit_runtime_event(
+                    "paper_order_rejected_submit_gate",
+                    {
+                        "reason": reason,
+                        "checks": gate_checks,
+                        "client_order_id": intent.client_order_id,
+                        "symbol": intent.symbol,
+                        "side": intent.side.value,
+                        "quantity": intent.quantity,
+                    },
+                )
+                _logger.warning(
+                    "Paper submit gate rejected intent %s for %s: %s",
+                    intent.client_order_id,
+                    intent.symbol,
+                    reason,
+                )
+                continue
+
             result = self.oms.handle_intent(
                 intent,
                 account,
@@ -959,12 +982,16 @@ class PaperRuntime:
                     "sync_positions",
                 ],
                 "submit_order_invoked": False,
+                "write_method_invoked": False,
+                "write_method_names": [],
                 "submit_order_wrapper_invoked": False,
                 "submit_order_wrapper_blocked": False,
                 "submit_order_wrapper_reason": "",
                 "submit_order_wrapper_order_ids": [],
                 "submit_order_guard_installed": False,
                 "submit_order_guard_restored": False,
+                "write_guard_methods": [],
+                "write_guard_restored": False,
                 "submit_call_count_available": self._broker_submit_call_count() is not None,
                 "submit_call_count_before": self._broker_submit_call_count(),
                 "submit_call_count_after": None,
@@ -995,9 +1022,9 @@ class PaperRuntime:
             },
         }
 
-        original_submit_order: Any | None = None
+        original_write_methods: dict[str, Any] = {}
         try:
-            original_submit_order = self._install_startup_sync_submit_guard(artifact)
+            original_write_methods = self._install_startup_sync_write_guards(artifact)
             try:
                 artifact["readiness"] = self.broker.readiness_report()
 
@@ -1044,18 +1071,20 @@ class PaperRuntime:
                     positions.keys()
                 )
             finally:
-                if original_submit_order is not None:
-                    self._restore_startup_sync_submit_guard(
+                if original_write_methods:
+                    self._restore_startup_sync_write_guards(
                         artifact,
-                        original_submit_order,
+                        original_write_methods,
                     )
-                    original_submit_order = None
+                    original_write_methods = {}
 
             self._finalize_startup_sync_no_submit_proof(artifact)
             if not artifact["no_submit_proof"].get("submit_call_count_available", False):
                 raise RuntimeError("alpaca_paper_startup_sync_submit_counter_unavailable")
             if artifact["no_submit_proof"]["submit_order_invoked"]:
                 raise RuntimeError("alpaca_paper_startup_sync_submitted_order_fail_closed")
+            if artifact["no_submit_proof"].get("write_method_invoked", False):
+                raise RuntimeError("alpaca_paper_startup_sync_write_method_invoked")
         except Exception as exc:
             self._finalize_startup_sync_no_submit_proof(artifact)
             self._halt_reconciliation = True
@@ -1176,6 +1205,64 @@ class PaperRuntime:
         if not evidence.get("allowed"):
             return False, str(evidence.get("reason", "paper_review_evidence_missing"))
         return True, "ok"
+
+    def _paper_submit_gate_allows(self, intent: OrderIntent) -> tuple[bool, str, dict[str, Any]]:
+        """Final fail-closed gate before an Alpaca paper adapter submit call."""
+        if self._paper_broker_backend() != "alpaca_paper":
+            return True, "not_required_for_simulated_paper_backend", {
+                "required": False,
+                "broker_backend": self._paper_broker_backend(),
+            }
+
+        startup_sync = self._startup_sync_status()
+        registry_evidence = self._registry_evidence_summary()
+        no_submit_proof = self._no_real_order_submission_proof(startup_sync)
+        client_order_id = str(getattr(intent, "client_order_id", "") or "")
+        recovered_ids = getattr(self.oms, "_client_order_ids", set())
+        duplicate = client_order_id in recovered_ids
+        reduce_only_active = bool(self.config.reduce_only or getattr(self.oms, "reduce_only", False))
+        checks = {
+            "required": True,
+            "explicit_paper_submit": bool(self.config.explicit_paper_submit),
+            "submit_orders": bool(self.config.submit_orders),
+            "allow_live_orders_false": not self.config.allow_live_orders,
+            "real_order_submission": False,
+            "broker_backend": self._paper_broker_backend(),
+            "registry_evidence_allowed": bool(registry_evidence.get("allowed")),
+            "registry_evidence_reason": str(registry_evidence.get("reason", "")),
+            "registry_evidence_id": str(registry_evidence.get("evidence_id", "")),
+            "startup_sync_status": str(startup_sync.get("status", "")),
+            "startup_sync_no_submit": bool(startup_sync.get("no_submit", False)),
+            "startup_sync_submit_call_count_delta": startup_sync.get("submit_call_count_delta"),
+            "no_real_order_submission_proof": no_submit_proof.get("status"),
+            "oms_idempotency_ok": bool(client_order_id) and not duplicate,
+            "reduce_only_active": reduce_only_active,
+            "reduce_only_ok": True,
+            "reconciliation_clean": not self._halt_reconciliation,
+            "kill_switch_clear": not bool(getattr(self.kill_switch, "triggered", False)),
+        }
+        reasons: list[str] = []
+        if not checks["explicit_paper_submit"]:
+            reasons.append("explicit_paper_submit_not_selected")
+        if not checks["submit_orders"]:
+            reasons.append("submit_orders_false")
+        if not checks["allow_live_orders_false"]:
+            reasons.append("paper_runtime_cannot_allow_live_orders")
+        if not checks["registry_evidence_allowed"]:
+            reasons.append(str(registry_evidence.get("reason", "paper_review_evidence_missing")))
+        if startup_sync.get("status") != "ok" or not startup_sync.get("no_submit"):
+            reasons.append("startup_sync_not_passed")
+        if no_submit_proof.get("status") != "PASS":
+            reasons.append("no_real_order_submission_proof_failed")
+        if not checks["oms_idempotency_ok"]:
+            reasons.append("duplicate_client_order_id" if duplicate else "client_order_id_missing")
+        if not checks["reconciliation_clean"]:
+            reasons.append("reconciliation_not_clean")
+        if not checks["kill_switch_clear"]:
+            reasons.append("kill_switch_active")
+        if reasons:
+            return False, ";".join(reasons), checks
+        return True, "ok", checks
 
     def _paper_entry_evidence_projection(self) -> dict[str, Any]:
         review_path = self._paper_review_path()
@@ -1315,6 +1402,7 @@ class PaperRuntime:
             "paper_broker": self.config.paper_broker,
             "broker_backend": self._paper_broker_backend(),
             "submit_orders": bool(self.config.submit_orders),
+            "explicit_paper_submit": bool(self.config.explicit_paper_submit),
             "allow_live_orders": bool(self.config.allow_live_orders),
             "registry_evidence_id": registry_evidence["evidence_id"],
             "registry_evidence_path": registry_evidence["path"],
@@ -1384,6 +1472,7 @@ class PaperRuntime:
             "no_submit": (
                 bool(no_submit_proof.get("submit_call_count_available", False))
                 and not bool(no_submit_proof.get("submit_order_invoked", True))
+                and not bool(no_submit_proof.get("write_method_invoked", False))
             ),
             "submit_call_count_delta": no_submit_proof.get("submit_call_count_delta"),
             "submit_call_count_available": bool(no_submit_proof.get("submit_call_count_available", False)),
@@ -1471,44 +1560,80 @@ class PaperRuntime:
         else:
             proof["submit_call_count_delta"] = None
             proof["submit_order_invoked"] = True
+        proof["write_method_invoked"] = bool(proof.get("write_method_invoked", False))
         artifact["no_submit_proof"] = proof
 
-    def _install_startup_sync_submit_guard(self, artifact: dict[str, Any]) -> Any:
+    def _install_startup_sync_write_guards(self, artifact: dict[str, Any]) -> dict[str, Any]:
+        write_methods = (
+            "submit_order",
+            "cancel_order",
+            "replace_order",
+            "close_position",
+            "close_all_positions",
+        )
+        original_methods: dict[str, Any] = {}
         submit_order = getattr(self.broker, "submit_order", None)
         if not callable(submit_order):
             raise RuntimeError("alpaca_paper_startup_sync_submit_surface_missing")
 
         proof = dict(artifact.get("no_submit_proof", {}))
         proof["submit_order_guard_installed"] = True
+        guarded: list[str] = []
         artifact["no_submit_proof"] = proof
 
-        def _guard(order: Any, *args: Any, **kwargs: Any) -> Any:
-            guard_proof = dict(artifact.get("no_submit_proof", {}))
-            guard_proof["submit_order_invoked"] = True
-            guard_proof["submit_order_wrapper_invoked"] = True
-            guard_proof["submit_order_wrapper_blocked"] = True
-            guard_proof["submit_order_wrapper_reason"] = (
-                "alpaca_paper_startup_sync_submit_order_blocked"
-            )
-            order_ids = list(guard_proof.get("submit_order_wrapper_order_ids", []))
-            order_id = getattr(order, "order_id", None)
-            if order_id:
-                order_ids.append(str(order_id))
-            guard_proof["submit_order_wrapper_order_ids"] = self._sorted_unique_strings(order_ids)
-            artifact["no_submit_proof"] = guard_proof
-            raise RuntimeError("alpaca_paper_startup_sync_submit_order_blocked")
+        def make_guard(method_name: str):
+            def _guard(*args: Any, **kwargs: Any) -> Any:
+                guard_proof = dict(artifact.get("no_submit_proof", {}))
+                guard_proof["write_method_invoked"] = True
+                method_names = list(guard_proof.get("write_method_names", []))
+                method_names.append(method_name)
+                guard_proof["write_method_names"] = self._sorted_unique_strings(method_names)
+                guard_proof["submit_order_wrapper_blocked"] = True
+                guard_proof["submit_order_wrapper_reason"] = (
+                    "alpaca_paper_startup_sync_write_method_blocked"
+                )
+                if method_name == "submit_order":
+                    order = args[0] if args else None
+                    guard_proof["submit_order_invoked"] = True
+                    guard_proof["submit_order_wrapper_invoked"] = True
+                    order_ids = list(guard_proof.get("submit_order_wrapper_order_ids", []))
+                    order_id = getattr(order, "order_id", None)
+                    if order_id:
+                        order_ids.append(str(order_id))
+                    guard_proof["submit_order_wrapper_order_ids"] = self._sorted_unique_strings(order_ids)
+                    guard_proof["submit_order_wrapper_reason"] = (
+                        "alpaca_paper_startup_sync_submit_order_blocked"
+                    )
+                    artifact["no_submit_proof"] = guard_proof
+                    raise RuntimeError("alpaca_paper_startup_sync_submit_order_blocked")
+                artifact["no_submit_proof"] = guard_proof
+                raise RuntimeError("alpaca_paper_startup_sync_write_method_blocked")
 
-        self.broker.submit_order = _guard  # type: ignore[method-assign]
-        return submit_order
+            return _guard
 
-    def _restore_startup_sync_submit_guard(
+        for method_name in write_methods:
+            method = getattr(self.broker, method_name, None)
+            if not callable(method):
+                continue
+            original_methods[method_name] = method
+            setattr(self.broker, method_name, make_guard(method_name))  # type: ignore[method-assign]
+            guarded.append(method_name)
+
+        proof = dict(artifact.get("no_submit_proof", {}))
+        proof["write_guard_methods"] = guarded
+        artifact["no_submit_proof"] = proof
+        return original_methods
+
+    def _restore_startup_sync_write_guards(
         self,
         artifact: dict[str, Any],
-        original_submit_order: Any,
+        original_methods: dict[str, Any],
     ) -> None:
-        self.broker.submit_order = original_submit_order  # type: ignore[method-assign]
+        for method_name, original_method in original_methods.items():
+            setattr(self.broker, method_name, original_method)  # type: ignore[method-assign]
         proof = dict(artifact.get("no_submit_proof", {}))
         proof["submit_order_guard_restored"] = True
+        proof["write_guard_restored"] = True
         artifact["no_submit_proof"] = proof
 
     def _audit_runtime_event(self, event: str, details: dict[str, Any]) -> None:

@@ -234,8 +234,10 @@ class TestOrderManagementSystem(unittest.TestCase):
 
         # kill_switch should have recorded failure
         self.kill_switch.record_order_failure.assert_called_once()
-        # client_order_id should NOT have been registered (exception before the add)
-        self.assertNotIn(intent.client_order_id, self.oms._client_order_ids)
+        # Conservative safety: outcome is unknown, so the id is reserved to
+        # prevent a restart from resubmitting the same intent.
+        self.assertIn(intent.client_order_id, self.oms._client_order_ids)
+        self.assertTrue(self.oms.reduce_only)
 
     def test_handle_intent_broker_exception_without_kill_switch(self, _mock_utcnow: MagicMock) -> None:
         """Broker raises when kill_switch is None -> no AttributeError, exception still re-raised."""

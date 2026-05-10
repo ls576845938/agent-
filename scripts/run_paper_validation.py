@@ -19,9 +19,10 @@ Usage::
 State is saved to ``{ledger_root}/validation_state.json`` after every trading
 day so that a Ctrl+C does not lose progress.
 
-**Resume caveat:** the in-memory broker state (positions, cash) is *not*
-restored from the ledger on resume — the broker always starts fresh.  Use
-this script as a continuous process for the full validation window.
+Current boundary: this CLI resumes validation counters and evidence pointers,
+but it does not restore in-memory broker positions/cash from the ledger.  Treat
+resumed runs as operationally incomplete until a ledger-backed broker restore
+exists in the runtime path.
 """
 
 from __future__ import annotations
@@ -79,6 +80,104 @@ def save_state(state: dict[str, Any], path: Path) -> None:
         json.dump(state, f, indent=2, default=str)
 
 
+def enrich_validation_evidence(
+    state: dict[str, Any],
+    *,
+    ledger_root: Path,
+    state_path: Path,
+    report_path: Path,
+) -> None:
+    """Attach review evidence pointers and current operational boundaries."""
+    latest_daily = _latest_file(ledger_root / "daily_reports", "daily_report_*.json")
+    latest_recon = _latest_file(ledger_root / "reconciliation", "recon_*.json")
+    latest_ledger_artifact = _latest_file(
+        ledger_root / "reconciliation", "ledger_recon_artifact_*.json"
+    )
+    session_manifest = ledger_root / "audit" / "paper_session_manifest.json"
+    startup_sync = ledger_root / "audit" / "paper_broker_adapter_startup_sync.json"
+    run_journal = ledger_root / "run_journal.jsonl"
+
+    session_payload = load_state(session_manifest) if session_manifest.exists() else {}
+    startup_payload = load_state(startup_sync) if startup_sync.exists() else {}
+    recon_payload = load_state(latest_recon) if latest_recon else {}
+
+    state["evidence_schema_version"] = "paper_validation_evidence_v1"
+    state["evidence"] = {
+        "validation_state_path": str(state_path),
+        "validation_report_path": str(report_path),
+        "daily_report_path": str(latest_daily) if latest_daily else "",
+        "paper_session_manifest_path": str(session_manifest) if session_manifest.exists() else "",
+        "paper_session_history_artifact_path": str(session_payload.get("history_artifact_path", "")),
+        "startup_sync_path": str(startup_sync) if startup_sync.exists() else "",
+        "ledger_reconciliation_path": str(latest_recon) if latest_recon else "",
+        "ledger_reconciliation_artifact_path": str(latest_ledger_artifact) if latest_ledger_artifact else "",
+        "run_journal_path": str(run_journal) if run_journal.exists() else "",
+    }
+    state["paper_submit_evidence"] = {
+        "submit_orders": bool(session_payload.get("submit_orders", False)),
+        "paper_broker": str(session_payload.get("paper_broker", "")),
+        "broker_backend": str(session_payload.get("broker_backend", "")),
+        "no_real_order_submission_proof": session_payload.get("no_real_order_submission_proof", {}),
+    }
+    state["broker_local_diff_summary"] = _broker_local_diff_summary(recon_payload)
+    state["ledger_reconciliation_summary"] = {
+        "status": str(recon_payload.get("status", "unknown") if recon_payload else "unknown"),
+        "halt_new_orders": bool(recon_payload.get("halt_new_orders", False)) if recon_payload else False,
+    }
+    state["startup_sync_summary"] = {
+        "status": str(startup_payload.get("status", "")),
+        "halt_reconciliation": bool(startup_payload.get("halt_reconciliation", False)),
+    }
+    state["recovery_summary"] = {
+        "resume_restores_broker_state": False,
+        "resume_restores_validation_counters": True,
+        "boundary": (
+            "run_paper_validation resumes validation counters and evidence pointers only; "
+            "broker cash/positions are not restored from ledger in this script"
+        ),
+    }
+
+
+def _latest_file(directory: Path, pattern: str) -> Path | None:
+    if not directory.exists():
+        return None
+    files = list(directory.glob(pattern))
+    if not files:
+        return None
+    return max(files, key=lambda path: (path.stat().st_mtime_ns, path.name))
+
+
+def _broker_local_diff_summary(recon_payload: dict[str, Any]) -> dict[str, Any]:
+    if not recon_payload:
+        return {
+            "cash_diff": 0.0,
+            "position_diff_count": 0,
+            "order_diff_count": 0,
+            "fill_diff_count": 0,
+            "total_diff_count": 0,
+        }
+    position_diffs = recon_payload.get("position_diffs", {})
+    order_diffs = recon_payload.get("order_diffs", {})
+    fill_diffs = recon_payload.get("fill_diffs", {})
+    if not isinstance(position_diffs, dict):
+        position_diffs = {}
+    if not isinstance(order_diffs, dict):
+        order_diffs = {}
+    if not isinstance(fill_diffs, dict):
+        fill_diffs = {}
+    cash_diff = float(recon_payload.get("cash_diff", 0.0) or 0.0)
+    total = len(position_diffs) + len(order_diffs) + len(fill_diffs)
+    if abs(cash_diff) > 1e-6:
+        total += 1
+    return {
+        "cash_diff": cash_diff,
+        "position_diff_count": len(position_diffs),
+        "order_diff_count": len(order_diffs),
+        "fill_diff_count": len(fill_diffs),
+        "total_diff_count": total,
+    }
+
+
 def save_report(state: dict[str, Any], path: Path) -> None:
     passed = state.get("consecutive_clean_days", 0) >= state.get("days_required", 30)
     report = {
@@ -92,6 +191,13 @@ def save_report(state: dict[str, Any], path: Path) -> None:
         "last_date": state.get("last_date"),
         "passed": passed,
         "daily_results": state.get("daily_results", []),
+        "evidence_schema_version": state.get("evidence_schema_version", ""),
+        "evidence": state.get("evidence", {}),
+        "paper_submit_evidence": state.get("paper_submit_evidence", {}),
+        "broker_local_diff_summary": state.get("broker_local_diff_summary", {}),
+        "ledger_reconciliation_summary": state.get("ledger_reconciliation_summary", {}),
+        "startup_sync_summary": state.get("startup_sync_summary", {}),
+        "recovery_summary": state.get("recovery_summary", {}),
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
@@ -293,6 +399,12 @@ def main() -> None:
     if state.get("consecutive_clean_days", 0) >= state.get("days_required", 30):
         print(f"Validation already passed "
               f"({state['consecutive_clean_days']} >= {state['days_required']})")
+        enrich_validation_evidence(
+            state,
+            ledger_root=ledger_root,
+            state_path=state_path,
+            report_path=report_path,
+        )
         save_report(state, report_path)
         sys.exit(0)
 
@@ -319,6 +431,12 @@ def main() -> None:
     # ------------------------------------------------------------------
     def _handle_interrupt(signum: int, frame: object) -> None:  # noqa: ANN401
         print("\n\nInterrupted — saving state and report ...")
+        enrich_validation_evidence(
+            state,
+            ledger_root=ledger_root,
+            state_path=state_path,
+            report_path=report_path,
+        )
         save_state(state, state_path)
         save_report(state, report_path)
         print(f"State saved to {state_path}")
@@ -393,6 +511,12 @@ def main() -> None:
         )
 
         # Persist after every day
+        enrich_validation_evidence(
+            state,
+            ledger_root=ledger_root,
+            state_path=state_path,
+            report_path=report_path,
+        )
         save_state(state, state_path)
 
         # Check target
@@ -427,6 +551,12 @@ def main() -> None:
     print(f"  Final equity:          ${final_equity:,.2f}")
     print(f"  Result:                {'PASS' if passed else 'INCOMPLETE'}")
 
+    enrich_validation_evidence(
+        state,
+        ledger_root=ledger_root,
+        state_path=state_path,
+        report_path=report_path,
+    )
     save_state(state, state_path)
     save_report(state, report_path)
     print(f"\nState saved to {state_path}")

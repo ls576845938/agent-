@@ -57,6 +57,7 @@ class OrderPollResult:
     """Summary of a single poll cycle."""
 
     total_processed: int = 0
+    broker_unavailable: bool = False
     synced: int = 0
     filled: int = 0
     cancelled: int = 0
@@ -104,11 +105,18 @@ class OrderPollingLoop:
     def poll(self) -> OrderPollResult:
         """Single poll cycle. Returns summary of changes."""
         self._load_local_orders()
+        with self._lock:
+            self._processed_ids.clear()
 
-        broker_orders = self._safe_get_orders()
-        broker_index = _index_orders(broker_orders)
-
+        broker_orders, broker_available = self._safe_get_orders()
         result = OrderPollResult()
+        if not broker_available:
+            result.broker_unavailable = True
+            result.errors.append("broker_get_orders_failed")
+            self._oms.reduce_only = True
+            return result
+
+        broker_index = _index_orders(broker_orders)
 
         for coid, local in list(self._orders.items()):
             if local.status in _TERMINAL_STATUSES:
@@ -121,6 +129,9 @@ class OrderPollingLoop:
         for coid, broker in broker_index.items():
             self._log.warning("External order not in ledger: client_order_id=%s", coid)
             result.external.append(broker)
+            self._oms.reduce_only = True
+            if self._kill_switch is not None:
+                self._kill_switch.record_order_failure()
             if self._risk_event_log is not None:
                 self._risk_event_log.record(
                     "external_order_detected",
@@ -163,6 +174,12 @@ class OrderPollingLoop:
             return OrderSyncAction.NOOP
 
         if local.status == broker.status:
+            if broker.status == OrderStatus.FILLED:
+                self._sync_fills(broker)
+                return OrderSyncAction.FILL_SYNCED
+            if broker.status == OrderStatus.PARTIALLY_FILLED:
+                self._sync_fills(broker)
+                return OrderSyncAction.PARTIAL_FILL
             return OrderSyncAction.NOOP
 
         # LOCAL SUBMITTED/ACCEPTED, BROKER FILLED
@@ -233,10 +250,10 @@ class OrderPollingLoop:
                     "Failed to parse order record %s: %s", coid, exc,
                 )
 
-    def _safe_get_orders(self) -> list[Order]:
+    def _safe_get_orders(self) -> tuple[list[Order], bool]:
         """Fetch orders from broker with graceful degradation."""
         try:
-            return self._broker.get_orders()
+            return self._broker.get_orders(), True
         except Exception as exc:
             self._log.error("Failed to fetch broker orders: %s", exc)
             if self._kill_switch is not None:
@@ -246,7 +263,7 @@ class OrderPollingLoop:
                     "broker_poll_failure",
                     {"error": str(exc)},
                 )
-            return []
+            return [], False
 
     def _sync_fills(self, broker_order: Order) -> None:
         """Pull fills from broker and write missing ones to ledger."""

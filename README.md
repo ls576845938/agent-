@@ -39,9 +39,11 @@ python -m quant_us.cli manifest list --kind all --limit 20
 python -m quant_us.cli report backtest --run-id <run_id>
 python -m quant_us.cli report evidence-registry --data-root data
 python -m quant_us.cli report daily --latest
+python -m quant_us.cli report paper-validation --data-root data
 python -m quant_us.cli readiness --profile paper --validation-state data/reports/paper_production/validation_state.json
 python -m quant_us.cli readiness --profile shadow_live --validation-state data/reports/paper_production/validation_state.json
 python -m quant_us.cli readiness --profile live --validation-state data/reports/paper_production/validation_state.json --check-credentials
+python -m quant_us.cli micro-live-readiness --validation-state data/reports/paper_production/validation_state.json
 python -m quant_us.cli research promotion-gate --candidate-id <candidate_id>
 
 # 端到端研究闭环，止步于当前闭环边界，不会自动开始纸交易或实盘
@@ -55,6 +57,8 @@ python scripts/run_full_pipeline.py --symbol AAPL --mode full --start 2024-01-01
 - CLI 会展示 Data Manifest v2 lineage、Evidence Registry subject index、paper session manifest、startup sync artifact、ledger reconciliation artifact 等 persisted evidence；这些只是只读证据。
 - `report backtest` 会展示 ledger artifact path/hash、ledger/fills/orders/snapshot hash、`generated_at`、`as_of_utc`、artifact consistency/completeness 状态；缺字段显示 `(missing)`。
 - paper daily/report 输出会在存在时展示 `paper_session_history_artifact_path`，指向 `paper_ledger/audit/paper_session_manifests/<session_id>.json`。
+- `report paper-validation` 汇总 30 trading days validation 的 state/report、daily report、session manifest、startup sync、ledger reconciliation、broker/local diff、异常恢复摘要和 paper submit 状态。
+- `scripts/run_paper_validation.py` 只恢复 validation counters 和 evidence pointers；当前不从 ledger 恢复 broker cash/positions，resumed run 需要按 operational risk 处理。
 - Canonical path 是 `manifest -> ledger-backed backtest -> promotion handoff -> paper/runtime readiness report`。
 - readiness / report / paper runtime gate 默认只消费已保存的 Evidence Registry，不会隐式 rebuild；`MISSING`、`STALE`、`CONFLICT` 都是 fail-closed。
 - Evidence Registry 显式 rebuild 使用 atomic write 和 lock；report/readiness/paper runtime gate 只读 saved registry。
@@ -63,6 +67,7 @@ python scripts/run_full_pipeline.py --symbol AAPL --mode full --start 2024-01-01
 - 真实 Alpaca paper 还未进入自动提交路径；`paper_broker=alpaca` 继续保持默认 fail-closed。
 - paper order 默认不提交，必须走显式 paper path 和显式配置才能开启。
 - readiness/evidence/report 都是 report/review only，不执行 paper/live order。
+- `micro-live-readiness` 是独立 review-only 入口；不是 start/run/submit 入口。
 - `LiveRuntime` 是 safety shell；即使 readiness evidence pass，live mode 也不会提交订单。
 - live production / micro live 仍需要独立 executor、人工审批、submission gate、readiness、endpoint guard，不属于本轮自动化。
 - ledger 幂等写入通过 `append_fill_idempotent()` 使用文件锁；直接 `append_fill()` 仅用于非幂等追加场景。

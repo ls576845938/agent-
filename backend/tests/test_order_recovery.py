@@ -152,8 +152,10 @@ class TestOrderStateRecovery(unittest.TestCase):
             self.oms.handle_intent(intent, self.account, self.market_price)
 
         self.assertIn("broker timeout", str(ctx.exception))
-        # client_order_id should NOT be registered
-        self.assertNotIn(intent.client_order_id, self.oms._client_order_ids)
+        # Conservative safety: outcome is unknown, so the client_order_id is
+        # reserved to prevent a restart from submitting the same intent twice.
+        self.assertIn(intent.client_order_id, self.oms._client_order_ids)
+        self.assertTrue(self.oms.reduce_only)
 
     def test_recover_get_orders_also_fails(self, _mock_utcnow: MagicMock) -> None:
         """submit_order() raises, get_orders() also raises -> mark UNKNOWN, original exception re-raised."""
@@ -171,7 +173,8 @@ class TestOrderStateRecovery(unittest.TestCase):
             self.oms.handle_intent(intent, self.account, self.market_price)
 
         self.assertIn("submit timeout", str(ctx.exception))
-        self.assertNotIn(intent.client_order_id, self.oms._client_order_ids)
+        self.assertIn(intent.client_order_id, self.oms._client_order_ids)
+        self.assertTrue(self.oms.reduce_only)
 
     # ------------------------------------------------------------------
     # 3. Recovery when broker returns ACCEPTED (not yet filled)

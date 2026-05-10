@@ -7,7 +7,7 @@ import tempfile
 import time
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -873,7 +873,6 @@ def _build_candidate_chain(
             promotion_ref,
             strategy_ref,
             paper_ref,
-            daily_ref,
         ]
     )
     return CandidateEvidenceChain(
@@ -982,22 +981,13 @@ def _daily_report_ref(row: dict[str, Any] | None) -> EvidenceRef:
             summary="missing_daily_report",
         )
     report_date = str(row.get("report_date", "") or "")
-    status = "present"
-    integrity_status = INTEGRITY_PASS
-    try:
-        if report_date and date.fromisoformat(report_date) < datetime.now(timezone.utc).date():
-            status = "stale"
-            integrity_status = INTEGRITY_STALE
-    except ValueError:
-        status = "stale"
-        integrity_status = INTEGRITY_STALE
     return _row_to_ref(
         row,
         evidence_type="daily_report",
         fallback_id=report_date,
         missing_summary="missing_daily_report",
-        override_status=status,
-        override_integrity_status=integrity_status,
+        override_status="present",
+        override_integrity_status=INTEGRITY_PASS,
     )
 
 

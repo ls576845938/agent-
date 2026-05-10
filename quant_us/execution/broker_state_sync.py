@@ -18,6 +18,14 @@ if TYPE_CHECKING:
     from quant_us.execution.broker_base import BrokerBase
     from quant_us.execution.ledger import JsonlLedgerStore
     from quant_us.execution.oms import OrderManagementSystem
+    from quant_us.risk.risk_event_log import RiskEventLog
+
+_ACTIVE_STATUSES: frozenset[OrderStatus] = frozenset({
+    OrderStatus.SUBMITTED,
+    OrderStatus.ACCEPTED,
+    OrderStatus.PARTIALLY_FILLED,
+    OrderStatus.CANCEL_PENDING,
+})
 
 
 @dataclass
@@ -34,6 +42,7 @@ class BrokerSyncReport:
     positions_compared: int = 0
     positions_diverge: list[tuple[str, float, float]] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    reduce_only_engaged: bool = False
 
 
 @dataclass
@@ -61,10 +70,12 @@ class BrokerStateSync:
         broker: BrokerBase,
         ledger: JsonlLedgerStore,
         oms: OrderManagementSystem,
+        risk_event_log: RiskEventLog | None = None,
     ) -> None:
         self._broker = broker
         self._ledger = ledger
         self._oms = oms
+        self._risk_event_log = risk_event_log
         self._lock = threading.Lock()
         self._log = logging.getLogger(self.__class__.__name__)
 
@@ -86,6 +97,10 @@ class BrokerStateSync:
 
         # 1. Sync orders
         self._sync_orders(state, report)
+        if report.reduce_only_engaged and any(error.startswith("get_orders:") for error in report.errors):
+            report.orders_matched = state.orders_matched
+            report.orders_status_synced = state.orders_status_synced
+            return report
 
         # 2. Sync fills
         self._sync_fills(state, report)
@@ -126,6 +141,8 @@ class BrokerStateSync:
         # Load existing local order IDs and fill identities for dedup
         local_fill_index = FillIdempotencyIndex.from_ledger(self._ledger)
         local_order_ids = _load_order_client_ids(self._ledger)
+        for coid in local_order_ids:
+            self._register_client_order_id(coid)
 
         # Fetch all broker orders
         try:
@@ -133,12 +150,14 @@ class BrokerStateSync:
         except Exception as exc:
             self._log.error("Failed to fetch broker orders: %s", exc)
             report.errors.append(f"get_orders: {exc}")
+            self._enter_reduce_only(report, "broker_orders_unavailable", {"error": str(exc)})
             return report
 
         for broker_order in broker_orders or []:
             coid = broker_order.client_order_id
             if not coid:
                 continue
+            self._register_client_order_id(coid)
 
             if coid not in local_order_ids:
                 # Order exists on broker but not locally -- write it
@@ -226,6 +245,7 @@ class BrokerStateSync:
             coid = rec.get("client_order_id") or ""
             if coid:
                 local_by_coid[coid] = rec
+                self._register_client_order_id(coid)
 
         # Fetch broker orders
         try:
@@ -233,12 +253,14 @@ class BrokerStateSync:
         except Exception as exc:
             self._log.error("Failed to fetch broker orders: %s", exc)
             report.errors.append(f"get_orders: {exc}")
+            self._enter_reduce_only(report, "broker_orders_unavailable", {"error": str(exc)})
             return
 
         broker_by_coid: dict[str, Order] = {}
         for order in broker_orders or []:
             if order.client_order_id:
                 broker_by_coid[order.client_order_id] = order
+                self._register_client_order_id(order.client_order_id)
 
         # Match and compare
         all_coids = set(local_by_coid) | set(broker_by_coid)
@@ -281,6 +303,18 @@ class BrokerStateSync:
             elif local and not broker:
                 # Ledger has order, broker does not
                 order = _order_from_record(dict(local))
+                if order.status in _ACTIVE_STATUSES:
+                    order.status = OrderStatus.UNKNOWN
+                    order.updated_at = utc_now()
+                    try:
+                        self._ledger.append_order(order)
+                    except Exception as exc:
+                        report.errors.append(f"append_order({coid}): {exc}")
+                    self._enter_reduce_only(
+                        report,
+                        "active_local_order_missing_broker",
+                        {"client_order_id": coid, "symbol": order.symbol},
+                    )
                 report.orders_missing_broker.append(order)
                 self._log.warning(
                     "Order in ledger but missing from broker: %s", coid,
@@ -351,6 +385,28 @@ class BrokerStateSync:
                     local_qty,
                     broker_qty,
                 )
+
+    def _enter_reduce_only(
+        self,
+        report: BrokerSyncReport,
+        reason: str,
+        details: dict[str, Any],
+    ) -> None:
+        self._oms.reduce_only = True
+        report.reduce_only_engaged = True
+        event_details = {"reason": reason, **details}
+        if self._risk_event_log is not None:
+            self._risk_event_log.record("broker_state_sync_reduce_only", event_details)
+        self._log.warning("Broker state sync entered reduce-only: %s", reason)
+
+    def _register_client_order_id(self, client_order_id: str) -> None:
+        register = getattr(self._oms, "register_client_order_id", None)
+        if callable(register):
+            register(client_order_id)
+            return
+        ids = getattr(self._oms, "_client_order_ids", None)
+        if isinstance(ids, set) and client_order_id:
+            ids.add(client_order_id)
 
 
 # ------------------------------------------------------------------

@@ -68,6 +68,44 @@ def _approving_oms() -> MagicMock:
     return oms
 
 
+def _approving_paper_runtime_oms() -> MagicMock:
+    decision = MagicMock()
+    decision.approved = True
+    result = MagicMock()
+    result.risk_decision = decision
+    result.order = None
+    result.fills = []
+    oms = MagicMock()
+    oms._client_order_ids = set()
+    oms.reduce_only = False
+    oms.handle_intent.return_value = result
+    return oms
+
+
+def _runtime_bar() -> Bar:
+    return Bar(
+        timestamp_utc=datetime(2026, 5, 11, 14, 30, tzinfo=UTC),
+        symbol="SPY",
+        open=500.0,
+        high=501.0,
+        low=499.0,
+        close=500.0,
+        volume=10_000.0,
+        source="test",
+    )
+
+
+def _long_signal(strategy_id: str = "paper_submit_gate_fixture") -> Signal:
+    return Signal(
+        timestamp_utc=datetime(2026, 5, 11, 14, 30, tzinfo=UTC),
+        strategy_id=strategy_id,
+        symbol="SPY",
+        direction=SignalDirection.LONG,
+        strength=1.0,
+        horizon="1d",
+    )
+
+
 def _write_review(
     review_path: Path,
     *,
@@ -166,6 +204,34 @@ def _session_manifest_history(ledger_root: Path, session_id: str) -> dict[str, o
     )
 
 
+def _write_startup_sync_pass(ledger_root: Path) -> Path:
+    artifact_path = ledger_root / "audit" / "paper_broker_adapter_startup_sync.json"
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(
+        json.dumps(
+            {
+                "artifact_type": "paper_broker_adapter_startup_sync",
+                "status": "ok",
+                "backend": "alpaca_paper",
+                "broker_backend": "alpaca_paper",
+                "mode": "paper",
+                "runtime_mode": "paper",
+                "canonical_runtime": "PaperRuntime",
+                "real_order_submission": False,
+                "no_submit_proof": {
+                    "submit_call_count_available": True,
+                    "submit_order_invoked": False,
+                    "submit_call_count_before": 0,
+                    "submit_call_count_after": 0,
+                    "submit_call_count_delta": 0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    return artifact_path
+
+
 class RecordingSession:
     def __init__(self) -> None:
         self.requests: list[dict[str, object]] = []
@@ -262,6 +328,17 @@ class SubmitInPollFakeAlpacaPaperBrokerAdapter(FakeAlpacaPaperBrokerAdapter):
 class SubmitInPollFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
     def _create_alpaca_paper_broker(self) -> FakeAlpacaPaperBrokerAdapter:
         return SubmitInPollFakeAlpacaPaperBrokerAdapter(initial_cash=self.config.capital)
+
+
+class CancelInReadinessFakeAlpacaPaperBrokerAdapter(FakeAlpacaPaperBrokerAdapter):
+    def readiness_report(self) -> dict[str, object]:
+        self.cancel_order("startup_sync_guard_order")
+        return super().readiness_report()
+
+
+class CancelInReadinessFakeAdapterPaperRuntime(FakeAdapterPaperRuntime):
+    def _create_alpaca_paper_broker(self) -> FakeAlpacaPaperBrokerAdapter:
+        return CancelInReadinessFakeAlpacaPaperBrokerAdapter(initial_cash=self.config.capital)
 
 
 def test_alpaca_paper_runtime_blocks_without_apca_credentials(tmp_path: Path) -> None:
@@ -1577,6 +1654,45 @@ def test_alpaca_startup_sync_submit_guard_blocks_and_restores_submit_order(
 
 
 @patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_alpaca_startup_sync_write_guard_blocks_cancel_order(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = _write_registered_review(tmp_path)
+    runtime = CancelInReadinessFakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match="alpaca_paper_startup_sync_failed"):
+            runtime.bootstrap()
+
+    artifact = _startup_sync_artifact(Path(runtime.config.ledger_root))
+    assert artifact["status"] == "failed"
+    assert artifact["error"] == "alpaca_paper_startup_sync_write_method_blocked"
+    assert artifact["no_submit_proof"]["write_method_invoked"] is True
+    assert artifact["no_submit_proof"]["write_method_names"] == ["cancel_order"]
+    assert artifact["no_submit_proof"]["write_guard_restored"] is True
+    assert artifact["no_submit_proof"]["submit_order_invoked"] is False
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
 def test_paper_runtime_kill_switch_blocks_adapter_submit(
     _mock_loop: MagicMock,
     tmp_path: Path,
@@ -1698,6 +1814,207 @@ def test_paper_runtime_reduce_only_blocks_adapter_submit(
 
     submit_spy.assert_not_called()
     assert runtime.audit_events[-1]["event"] == "paper_order_rejected_reduce_only"
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_runtime_alpaca_submit_orders_true_still_needs_explicit_gate(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = _write_registered_review(tmp_path, review_id="paper_runtime_submit_gate")
+    runtime = FakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            strategy_id="paper_submit_gate_fixture",
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+            submit_orders=True,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        runtime.bootstrap()
+
+    runtime.oms = _approving_paper_runtime_oms()
+    submit_spy = MagicMock(wraps=runtime.broker.submit_order)
+    runtime.broker.submit_order = submit_spy  # type: ignore[method-assign]
+    metrics = PaperSessionMetrics()
+
+    runtime._handle_signal(
+        _long_signal(),
+        _account(),
+        {"SPY": 500.0},
+        _runtime_bar(),
+        metrics,
+    )
+
+    submit_spy.assert_not_called()
+    runtime.oms.handle_intent.assert_not_called()
+    assert metrics.intents_rejected == 1
+    assert runtime.audit_events[-1]["event"] == "paper_order_rejected_submit_gate"
+    assert "explicit_paper_submit_not_selected" in runtime.audit_events[-1]["details"]["reason"]
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_runtime_explicit_gate_allows_after_registry_and_startup_sync_pass(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = _write_registered_review(tmp_path, review_id="paper_runtime_submit_allowed")
+    runtime = FakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            strategy_id="paper_submit_gate_fixture",
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+            submit_orders=True,
+            explicit_paper_submit=True,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        runtime.bootstrap()
+
+    runtime.oms = _approving_paper_runtime_oms()
+    metrics = PaperSessionMetrics()
+
+    runtime._handle_signal(
+        _long_signal(),
+        _account(),
+        {"SPY": 500.0},
+        _runtime_bar(),
+        metrics,
+    )
+
+    runtime.oms.handle_intent.assert_called_once()
+    assert metrics.intents_submitted == 1
+    manifest = _session_manifest(Path(runtime.config.ledger_root))
+    assert manifest["submit_orders"] is True
+    assert manifest["explicit_paper_submit"] is True
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_runtime_explicit_gate_blocks_when_startup_no_submit_proof_fails(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = _write_registered_review(tmp_path, review_id="paper_runtime_bad_sync")
+    runtime = FakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            strategy_id="paper_submit_gate_fixture",
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+            submit_orders=True,
+            explicit_paper_submit=True,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        runtime.bootstrap()
+
+    artifact_path = Path(runtime.config.ledger_root) / "audit" / "paper_broker_adapter_startup_sync.json"
+    artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    artifact["no_submit_proof"]["submit_order_invoked"] = True
+    artifact["no_submit_proof"]["submit_call_count_delta"] = 1
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+    runtime.oms = _approving_paper_runtime_oms()
+    metrics = PaperSessionMetrics()
+
+    runtime._handle_signal(
+        _long_signal(),
+        _account(),
+        {"SPY": 500.0},
+        _runtime_bar(),
+        metrics,
+    )
+
+    runtime.oms.handle_intent.assert_not_called()
+    assert metrics.intents_rejected == 1
+    assert runtime.audit_events[-1]["event"] == "paper_order_rejected_submit_gate"
+    reason = runtime.audit_events[-1]["details"]["reason"]
+    assert "startup_sync_not_passed" in reason
+    assert "no_real_order_submission_proof_failed" in reason
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_runtime_explicit_gate_checks_idempotency_and_reconciliation(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    review_path = _write_registered_review(tmp_path, review_id="paper_runtime_idempotency")
+    runtime = FakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            strategy_id="paper_submit_gate_fixture",
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+            submit_orders=True,
+            explicit_paper_submit=True,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        runtime.bootstrap()
+
+    runtime.oms._client_order_ids.add("runtime_worker_001")
+    runtime._halt_reconciliation = True
+
+    allowed, reason, checks = runtime._paper_submit_gate_allows(_intent())
+
+    assert allowed is False
+    assert "duplicate_client_order_id" in reason
+    assert "reconciliation_not_clean" in reason
+    assert checks["oms_idempotency_ok"] is False
+    assert checks["reconciliation_clean"] is False
 
 
 @patch("quant_us.live.paper_runtime.MarketDataLoop")
@@ -1849,6 +2166,123 @@ def test_runtime_reduce_only_blocks_short_increase_and_short_reverse() -> None:
     assert "reduce_only_would_increase_or_reverse_short" in reverse_result["rejected"][0]["reason"]
     assert len(reduce_result["submitted"]) == 1
     assert runtime.oms.handle_intent.call_count == 1
+
+
+def test_alpaca_paper_submit_requires_explicit_gate_before_oms(tmp_path: Path) -> None:
+    runtime = LiveRuntime(
+        LiveRuntimeConfig(
+            mode=RuntimeMode.PAPER,
+            broker="alpaca",
+            ledger_root=str(tmp_path / "ledger"),
+            data_root=str(tmp_path),
+            submit_orders=True,
+        )
+    )
+    runtime.bootstrap()
+    runtime.oms = _approving_oms()
+
+    result = runtime.submit_orders([_intent()], account=_account(), market_price=500.0)
+
+    assert result["submitted"] == []
+    assert "paper_submission_gate_blocked" in result["rejected"][0]["reason"]
+    assert "explicit_paper_submit_not_selected" in result["rejected"][0]["reason"]
+    runtime.oms.handle_intent.assert_not_called()
+
+
+def test_alpaca_paper_submit_gate_ignores_readiness_without_saved_evidence(
+    tmp_path: Path,
+) -> None:
+    runtime = LiveRuntime(
+        LiveRuntimeConfig(
+            mode=RuntimeMode.PAPER,
+            broker="alpaca",
+            ledger_root=str(tmp_path / "ledger"),
+            data_root=str(tmp_path),
+            submit_orders=True,
+        )
+    )
+    runtime.bootstrap()
+    runtime.oms = _approving_oms()
+
+    decision = runtime.configure_paper_submission_gate(
+        paper_submit_selected=True,
+        readiness_passed=True,
+        report_status="ready",
+    )
+    result = runtime.submit_orders([_intent()], account=_account(), market_price=500.0)
+
+    assert decision["approved"] is False
+    assert "paper_review_registry_not_ready:missing:MISSING" in decision["block_reasons"]
+    assert "startup_sync_artifact_missing" in decision["block_reasons"]
+    assert result["submitted"] == []
+    assert "paper_review_registry_not_ready:missing:MISSING" in result["rejected"][0]["reason"]
+    runtime.oms.handle_intent.assert_not_called()
+
+
+def test_alpaca_paper_submit_gate_allows_only_after_registry_and_startup_sync_pass(
+    tmp_path: Path,
+) -> None:
+    data_root = tmp_path / "data"
+    ledger_root = tmp_path / "ledger"
+    review_path = _write_registered_review(data_root, review_id="paper_submit_gate")
+    startup_sync_path = _write_startup_sync_pass(ledger_root)
+    runtime = LiveRuntime(
+        LiveRuntimeConfig(
+            mode=RuntimeMode.PAPER,
+            broker="alpaca",
+            ledger_root=str(ledger_root),
+            data_root=str(data_root),
+            submit_orders=True,
+        )
+    )
+    runtime.bootstrap()
+    runtime.oms = _approving_oms()
+
+    decision = runtime.configure_paper_submission_gate(
+        paper_submit_selected=True,
+        promotion_data_root=str(data_root),
+        paper_review_path=str(review_path),
+        startup_sync_artifact_path=str(startup_sync_path),
+    )
+    result = runtime.submit_orders([_intent()], account=_account(), market_price=500.0)
+
+    assert decision["approved"] is True
+    assert decision["checks"]["saved_registry_evidence_allowed"] is True
+    assert decision["checks"]["startup_sync_passed"] is True
+    assert len(result["submitted"]) == 1
+    assert result["rejected"] == []
+    runtime.oms.handle_intent.assert_called_once()
+
+
+def test_alpaca_paper_submit_gate_blocks_duplicate_before_oms(tmp_path: Path) -> None:
+    data_root = tmp_path / "data"
+    ledger_root = tmp_path / "ledger"
+    review_path = _write_registered_review(data_root, review_id="paper_submit_duplicate")
+    startup_sync_path = _write_startup_sync_pass(ledger_root)
+    runtime = LiveRuntime(
+        LiveRuntimeConfig(
+            mode=RuntimeMode.PAPER,
+            broker="alpaca",
+            ledger_root=str(ledger_root),
+            data_root=str(data_root),
+            submit_orders=True,
+        )
+    )
+    runtime.bootstrap()
+    runtime.oms = _approving_oms()
+    runtime.configure_paper_submission_gate(
+        paper_submit_selected=True,
+        promotion_data_root=str(data_root),
+        paper_review_path=str(review_path),
+        startup_sync_artifact_path=str(startup_sync_path),
+    )
+    runtime._submitted_order_ids.add("runtime_worker_001")
+
+    result = runtime.submit_orders([_intent()], account=_account(), market_price=500.0)
+
+    assert result["submitted"] == []
+    assert "duplicate_client_order_id" in result["rejected"][0]["reason"]
+    runtime.oms.handle_intent.assert_not_called()
 
 
 def test_paper_runtime_reduce_only_blocks_second_same_bar_exit_signal() -> None:

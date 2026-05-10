@@ -162,6 +162,32 @@ class TestSimulatedProfile:
         assert "scope:  report only, no execution" in text
         assert "GO for small-live trading" not in text
 
+    def test_cli_micro_live_readiness_is_review_only_entry(self, tmp_path):
+        """Micro-live readiness has a separate review-only command boundary."""
+        from quant_us.cli import main
+        from quant_us.reports.live_readiness import LiveReadinessReport, ReadinessCheck
+
+        validation_state = tmp_path / "validation_state.json"
+        validation_state.write_text(
+            '{"days_required":30,"days_completed":30,"consecutive_clean_days":30,"daily_results":[]}',
+            encoding="utf-8",
+        )
+        report = LiveReadinessReport(
+            checks=[ReadinessCheck(name="paper_30_day_clean", passed=True, detail="30/30")]
+        )
+        with (
+            patch("quant_us.reports.live_readiness.LiveReadinessGate") as gate_cls,
+            patch("sys.stdout", new_callable=io.StringIO) as stdout,
+        ):
+            gate_cls.return_value.check_all.return_value = report
+            main(["micro-live-readiness", "--validation-state", str(validation_state), "--data-root", str(tmp_path)])
+
+        text = stdout.getvalue()
+        assert "Micro-Live Readiness Review" in text
+        assert "independent review entry; no start/run/submit action" in text
+        assert "manual review only" in text
+        assert "cannot start paper or live trading" in text
+
 
 class TestReadinessCheckWarn:
     """Verify warn field on ReadinessCheck."""

@@ -169,7 +169,7 @@ class TestOrderPollingLoop:
     def test_poll_broker_error_graceful(
         self, broker, ledger, oms, kill_switch,
     ):
-        """Broker failure during get_orders returns empty result."""
+        """Broker failure during get_orders fails closed without marking orders unknown."""
         local = make_order(status=OrderStatus.SUBMITTED)
         ledger.append_order(local)
         broker.raise_on_get_orders = RuntimeError("Broker down")
@@ -177,10 +177,11 @@ class TestOrderPollingLoop:
         loop = OrderPollingLoop(broker, ledger, oms, kill_switch)
         result = loop.poll()
 
-        # The local order has no broker counterpart, and no broker data
-        # Means it gets treated as NOT FOUND -> MARKED_UNKNOWN
-        assert result.total_processed == 1
-        assert len(result.unknown) == 1
+        assert result.broker_unavailable is True
+        assert result.total_processed == 0
+        assert result.unknown == []
+        assert "broker_get_orders_failed" in result.errors
+        assert oms.reduce_only is True
         assert kill_switch.failures >= 1
 
     def test_poll_order_status_noop_when_same(

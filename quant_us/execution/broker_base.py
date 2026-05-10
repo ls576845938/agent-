@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 from quant_us.core.types import AccountState, Fill, Order, Position
 
@@ -31,3 +32,17 @@ class BrokerBase(ABC):
     @abstractmethod
     def get_fills(self, order_id: str | None = None) -> list[Fill]:
         raise NotImplementedError
+
+    def health_check(self) -> dict[str, Any]:
+        try:
+            self.get_account()
+        except Exception as exc:
+            return {
+                "ok": False,
+                "broker": getattr(self, "broker_name", self.__class__.__name__),
+                "error": str(exc),
+            }
+        return {
+            "ok": True,
+            "broker": getattr(self, "broker_name", self.__class__.__name__),
+        }

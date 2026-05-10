@@ -91,12 +91,33 @@ class AlpacaBroker(PaperBroker):
         }
         if order.limit_price is not None:
             payload["limit_price"] = str(order.limit_price)
-        response = self._request("POST", "/v2/orders", json=payload)
+        try:
+            response = self._request("POST", "/v2/orders", json=payload)
+        except RuntimeError as exc:
+            if _is_duplicate_client_order_error(str(exc)):
+                existing = self._find_order_by_client_order_id(order.client_order_id)
+                if existing is not None:
+                    self._apply_mapped_order(order, existing)
+                    return order
+            raise
         mapped = self._order_from_payload(response, fallback=order)
+        self._apply_mapped_order(order, mapped)
+        return order
+
+    def _find_order_by_client_order_id(self, client_order_id: str) -> Order | None:
+        if not client_order_id:
+            return None
+        for existing in self.get_orders():
+            if existing.client_order_id == client_order_id:
+                return existing
+        return None
+
+    @staticmethod
+    def _apply_mapped_order(order: Order, mapped: Order) -> None:
         order.broker_order_id = mapped.broker_order_id
+        order.order_id = mapped.order_id
         order.status = mapped.status
         order.updated_at = mapped.updated_at
-        return order
 
     def cancel_order(self, order_id: str) -> Order:
         self._request("DELETE", f"/v2/orders/{order_id}")
@@ -141,6 +162,18 @@ class AlpacaBroker(PaperBroker):
         if response.status_code == 204:
             return {}
         return response.json()
+
+    def health_check(self) -> dict[str, Any]:
+        try:
+            payload = self._request("GET", "/v2/account")
+        except Exception as exc:
+            return {"ok": False, "broker": self.broker_name, "error": str(exc)}
+        return {
+            "ok": True,
+            "broker": self.broker_name,
+            "account_id": str(payload.get("id") or payload.get("account_number") or ""),
+            "paper": self.config.paper,
+        }
 
     @staticmethod
     def _order_from_payload(payload: dict[str, Any], fallback: Order | None = None) -> Order:
@@ -243,3 +276,9 @@ def _order_status(value: Any) -> OrderStatus:
         "suspended": OrderStatus.ERROR,
     }
     return lookup.get(str(value).lower(), OrderStatus.SUBMITTED)
+
+
+def _is_duplicate_client_order_error(message: str) -> bool:
+    text = message.lower()
+    duplicate_markers = ("duplicate", "already exists", "already been used")
+    return "client_order_id" in text and any(marker in text for marker in duplicate_markers)

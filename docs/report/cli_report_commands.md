@@ -107,6 +107,32 @@ Ledger-derived report artifacts must be idempotent across repeated report runs. 
 it should use a file lock or document why the artifact is single-writer/rebuild-only; the report commands listed here
 are read-only evidence views.
 
+## 30-Day Paper Validation Evidence
+
+Inspect the 30 trading day paper validation evidence bundle:
+
+```bash
+python -m quant_us.cli report paper-validation --data-root data
+python -m quant_us.cli report paper-validation --data-root data --validation-state data/reports/paper_production/validation_state.json
+```
+
+The report prints:
+
+- validation state and validation report paths
+- latest daily report path
+- paper session manifest and history manifest path
+- startup sync artifact path
+- latest ledger reconciliation and ledger reconciliation artifact path
+- explicit `paper_submit_orders` state
+- broker/local diff counts for cash, positions, orders, and fills
+- recovery summary and paper readiness gaps
+
+`scripts/run_paper_validation.py` now persists these evidence pointers into `validation_state.json`
+and `validation_report.json` when it writes state. Its current resume boundary is explicit:
+validation counters and evidence pointers are restored, but broker cash/positions are not restored
+from the ledger by this script. Treat resumed runs as operationally incomplete until the runtime path
+has a ledger-backed broker-state restore.
+
 ## Readiness
 
 Run readiness with traceable evidence paths:
@@ -124,6 +150,14 @@ For small-live gate checks, validation state is required:
 ```bash
 python -m quant_us.cli readiness --small-live --validation-state data/reports/paper_production/validation_state.json
 ```
+
+For micro-live review evidence, use the independent review-only entry:
+
+```bash
+python -m quant_us.cli micro-live-readiness --validation-state data/reports/paper_production/validation_state.json
+```
+
+This command is intentionally not a start/run/submit command. It cannot start trading and cannot submit orders.
 
 Readiness is used as review evidence for runtime decisions. It does not enable broker writes by itself.
 Current live mode remains a review-only `LiveRuntime` safety shell even when live-gate evidence passes.

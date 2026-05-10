@@ -62,6 +62,13 @@ class OrderManagementSystem:
         self._client_order_ids.update(ids)
         return len(ids)
 
+    def register_client_order_id(self, client_order_id: str) -> None:
+        """Remember a client order id so restarts cannot resubmit it."""
+        if not client_order_id:
+            return
+        self._client_order_ids.add(client_order_id)
+        self.persist_idempotency()
+
     def recover_from_ledger(self, ledger_path: str | Path) -> int:
         """Rebuild _client_order_ids from ledger orders.jsonl. Returns count."""
         ledger_dir = Path(ledger_path)
@@ -154,6 +161,22 @@ class OrderManagementSystem:
                 },
             )
 
+    def _record_risk_event(self, event_type: str, details: dict[str, object]) -> None:
+        if self.risk_event_log is not None:
+            self.risk_event_log.record(event_type, details)
+
+    def _enter_reduce_only(self, reason: str, order: Order) -> None:
+        self.reduce_only = True
+        self._record_risk_event(
+            "order_submit_unknown",
+            {
+                "reason": reason,
+                "client_order_id": order.client_order_id,
+                "symbol": order.symbol,
+                "order_id": order.order_id,
+            },
+        )
+
     # ------------------------------------------------------------------
     # Main entry point
     # ------------------------------------------------------------------
@@ -195,10 +218,9 @@ class OrderManagementSystem:
         order = Order.from_intent(intent, decision)
         order.status = OrderStatus.SUBMITTED
         order.updated_at = utc_now()
+        self.register_client_order_id(intent.client_order_id)
         try:
             submitted = self.broker.submit_order(order)
-            self._client_order_ids.add(intent.client_order_id)
-            self.persist_idempotency()
             if self.kill_switch is not None:
                 if submitted.status in {OrderStatus.REJECTED, OrderStatus.ERROR}:
                     self.kill_switch.record_order_failure()
@@ -207,23 +229,21 @@ class OrderManagementSystem:
         except Exception:
             if self.kill_switch is not None:
                 self.kill_switch.record_order_failure()
-            if self.risk_event_log is not None:
-                self.risk_event_log.record(
-                    "broker_timeout",
-                    {"client_order_id": order.client_order_id, "symbol": order.symbol},
-                )
+            self._record_risk_event(
+                "broker_timeout",
+                {"client_order_id": order.client_order_id, "symbol": order.symbol},
+            )
             # Attempt to recover by querying broker for the order
             recovered = self._recover_order_state(order)
             if recovered is not None:
                 # Broker accepted the order despite the timeout — treat as success
-                self._client_order_ids.add(intent.client_order_id)
-                self.persist_idempotency()
                 fills = self.broker.get_fills(order_id=recovered.order_id)
                 events.append(BrokerOrderEvent.from_order(recovered))
                 events.extend(FillEvent.from_fill(fill) for fill in fills)
                 return OMSResult(intent=intent, risk_decision=decision, order=recovered, fills=fills, events=events)
-            order.status = OrderStatus.ERROR
+            order.status = OrderStatus.UNKNOWN
             order.updated_at = utc_now()
+            self._enter_reduce_only("submit_outcome_unknown", order)
             raise
         fills = self.broker.get_fills(order_id=submitted.order_id)
         events.append(BrokerOrderEvent.from_order(submitted))

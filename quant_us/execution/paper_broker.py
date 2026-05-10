@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import threading
+from typing import Any
 
 from quant_us.core.clock import utc_now
 from quant_us.core.enums import OrderStatus
@@ -16,42 +18,57 @@ class PaperBroker(BrokerBase):
     positions: dict[str, Position] = field(default_factory=dict)
     orders: list[Order] = field(default_factory=list)
     fills: list[Fill] = field(default_factory=list)
+    _lock: threading.RLock = field(default_factory=threading.RLock, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.cash = self.initial_cash
 
     def get_account(self) -> AccountState:
-        equity = self.cash + sum(position.market_value for position in self.positions.values())
+        with self._lock:
+            cash = self.cash
+            equity = self.cash + sum(position.market_value for position in self.positions.values())
+            positions = dict(self.positions)
         return AccountState(
             timestamp_utc=utc_now(),
             account_id=self.broker_name,
-            cash=self.cash,
+            cash=cash,
             equity=equity,
-            buying_power=self.cash,
-            positions=dict(self.positions),
+            buying_power=cash,
+            positions=positions,
         )
 
     def get_positions(self) -> dict[str, Position]:
-        return dict(self.positions)
+        with self._lock:
+            return dict(self.positions)
 
     def get_orders(self) -> list[Order]:
-        return list(self.orders)
+        with self._lock:
+            return list(self.orders)
 
     def submit_order(self, order: Order) -> Order:
-        order.status = OrderStatus.ACCEPTED
-        order.updated_at = utc_now()
-        self.orders.append(order)
-        return order
+        with self._lock:
+            for existing in self.orders:
+                if existing.client_order_id and existing.client_order_id == order.client_order_id:
+                    return existing
+            order.status = OrderStatus.ACCEPTED
+            order.updated_at = utc_now()
+            self.orders.append(order)
+            return order
 
     def cancel_order(self, order_id: str) -> Order:
-        for order in self.orders:
-            if order.order_id == order_id:
-                order.status = OrderStatus.CANCELLED
-                order.updated_at = utc_now()
-                return order
+        with self._lock:
+            for order in self.orders:
+                if order.order_id == order_id:
+                    order.status = OrderStatus.CANCELLED
+                    order.updated_at = utc_now()
+                    return order
         raise KeyError(order_id)
 
     def get_fills(self, order_id: str | None = None) -> list[Fill]:
-        if order_id is None:
-            return list(self.fills)
-        return [fill for fill in self.fills if fill.order_id == order_id]
+        with self._lock:
+            if order_id is None:
+                return list(self.fills)
+            return [fill for fill in self.fills if fill.order_id == order_id]
+
+    def health_check(self) -> dict[str, Any]:
+        return {"ok": True, "broker": self.broker_name}

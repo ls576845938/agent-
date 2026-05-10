@@ -19,7 +19,12 @@ from quant_us.execution.paper_broker import PaperBroker
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _make_order(symbol: str = "AAPL", side: OrderSide = OrderSide.BUY, quantity: float = 100.0) -> Order:
+def _make_order(
+    symbol: str = "AAPL",
+    side: OrderSide = OrderSide.BUY,
+    quantity: float = 100.0,
+    client_order_id: str = "coid_test",
+) -> Order:
     return Order(
         timestamp_utc=utc_now(),
         strategy_id="test_strat",
@@ -28,7 +33,7 @@ def _make_order(symbol: str = "AAPL", side: OrderSide = OrderSide.BUY, quantity:
         quantity=quantity,
         order_type=OrderType.MARKET,
         time_in_force=TimeInForce.DAY,
-        client_order_id="coid_test",
+        client_order_id=client_order_id,
     )
 
 
@@ -166,8 +171,8 @@ class TestPaperBroker:
 
     def test_get_orders_returns_all_submitted_orders(self):
         broker = PaperBroker(initial_cash=100_000.0)
-        o1 = _make_order(symbol="AAPL")
-        o2 = _make_order(symbol="MSFT")
+        o1 = _make_order(symbol="AAPL", client_order_id="coid_aapl")
+        o2 = _make_order(symbol="MSFT", client_order_id="coid_msft")
         broker.submit_order(o1)
         broker.submit_order(o2)
 

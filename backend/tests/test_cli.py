@@ -111,6 +111,90 @@ def _write_empty_subject_registry(data_root: str | Path) -> None:
     )
 
 
+def _write_paper_validation_artifacts(data_root: str | Path) -> None:
+    root = Path(data_root)
+    report_dir = root / "paper_ledger" / "daily_reports"
+    report_dir.mkdir(parents=True)
+    (report_dir / "daily_report_2026-05-08.json").write_text(
+        json.dumps(
+            {
+                "report_date": "2026-05-08",
+                "generated_at": "2026-05-08T21:00:00+00:00",
+                "ending_equity": 101000.0,
+                "daily_pnl": 1000.0,
+                "orders_submitted": 2,
+                "orders_filled": 2,
+                "reconciliation_status": "clean",
+                "kill_switch_triggered": False,
+                "errors": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    state_dir = root / "reports" / "paper_production"
+    state_dir.mkdir(parents=True)
+    (state_dir / "validation_state.json").write_text(
+        json.dumps(
+            {
+                "days_required": 30,
+                "days_completed": 30,
+                "consecutive_clean_days": 30,
+                "daily_results": [
+                    {"date": f"2026-04-{day:02d}", "errors": [], "recon": "PASS"}
+                    for day in range(1, 31)
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_dir = root / "paper_ledger" / "audit"
+    audit_dir.mkdir(parents=True)
+    (audit_dir / "paper_session_manifest.json").write_text(
+        json.dumps(
+            {
+                "session_id": "sess_001",
+                "mode": "paper",
+                "paper_broker": "simulated",
+                "broker_backend": "simulated",
+                "submit_orders": False,
+                "history_artifact_path": str(audit_dir / "paper_session_manifests" / "sess_001.json"),
+                "no_real_order_submission_proof": {"status": "PASS"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (audit_dir / "paper_broker_adapter_startup_sync.json").write_text(
+        json.dumps({"status": "complete", "halt_reconciliation": False}),
+        encoding="utf-8",
+    )
+    recon_dir = root / "paper_ledger" / "reconciliation"
+    recon_dir.mkdir(parents=True)
+    (recon_dir / "recon_20260508_210000.json").write_text(
+        json.dumps(
+            {
+                "status": "clean",
+                "cash_diff": 0.0,
+                "position_diffs": {},
+                "order_diffs": {},
+                "fill_diffs": {},
+                "halt_new_orders": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (recon_dir / "ledger_recon_artifact_aaaaaaaaaaaaaaaa.json").write_text(
+        json.dumps(
+            {
+                "artifact_hash": "aaaaaaaaaaaaaaaa",
+                "fills": {"duplicate_fill_count": 0, "conflict_fill_count": 0},
+                "hashes": {"fills_hash": "bbbbbbbbbbbbbbbb"},
+                "pnl": {"net_pnl": 1000.0},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 class CliHelpTests(unittest.TestCase):
     """Each subcommand must display --help without error."""
 
@@ -122,6 +206,7 @@ class CliHelpTests(unittest.TestCase):
         self.assertIn("paper", help_text)
         self.assertIn("reconcile", help_text)
         self.assertIn("readiness", help_text)
+        self.assertIn("micro-live-readiness", help_text)
         self.assertIn("manifest", help_text)
         self.assertIn("report", help_text)
 
@@ -916,6 +1001,86 @@ class CliManifestReportTests(unittest.TestCase):
             self.assertIn("paper_review_status: APPROVED_FOR_PAPER_ONLY", text)
             self.assertIn("paper_review_entry_allowed: YES", text)
             self.assertIn("manual_review_pending: NO", text)
+
+    def test_report_paper_validation_prints_full_evidence_summary(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "paper-validation", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("30-Day Paper Validation Evidence", text)
+            self.assertIn("paper_validation_state: PASS", text)
+            self.assertIn("paper_submit_orders: DISABLED", text)
+            self.assertIn("paper_validation_days: 30/30 completed, 30/30 clean", text)
+            self.assertIn("broker_local_diff_summary: cash=+0.00, positions=0, orders=0, fills=0, total=0", text)
+            self.assertIn("recovery_summary: required=False", text)
+            self.assertIn("paper_readiness_gaps: (none)", text)
+            self.assertIn("scope:       report only, no execution", text)
+
+    def test_run_paper_validation_state_records_resume_boundary(self) -> None:
+        from scripts.run_paper_validation import enrich_validation_evidence, save_report
+
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            root = Path(tmp)
+            state_path = root / "paper_ledger" / "validation_state.json"
+            report_path = root / "paper_ledger" / "validation_report.json"
+            state = {
+                "days_required": 30,
+                "days_completed": 30,
+                "consecutive_clean_days": 30,
+                "daily_results": [],
+            }
+
+            enrich_validation_evidence(
+                state,
+                ledger_root=root / "paper_ledger",
+                state_path=state_path,
+                report_path=report_path,
+            )
+            save_report(state, report_path)
+
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            self.assertEqual(report["evidence_schema_version"], "paper_validation_evidence_v1")
+            self.assertFalse(report["paper_submit_evidence"]["submit_orders"])
+            self.assertEqual(report["broker_local_diff_summary"]["total_diff_count"], 0)
+            self.assertFalse(report["recovery_summary"]["resume_restores_broker_state"])
+            self.assertTrue(report["recovery_summary"]["resume_restores_validation_counters"])
+
+    def test_micro_live_readiness_is_independent_review_only(self) -> None:
+        from quant_us.reports.live_readiness import LiveReadinessReport, ReadinessCheck
+
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            validation_state = (
+                Path(tmp) / "reports" / "paper_production" / "validation_state.json"
+            )
+            report = LiveReadinessReport(
+                checks=[ReadinessCheck(name="paper_30_day_clean", passed=True, detail="30/30")]
+            )
+            with (
+                patch("quant_us.reports.live_readiness.LiveReadinessGate") as gate_cls,
+                redirect_stdout(io.StringIO()) as out,
+            ):
+                gate_cls.return_value.check_all.return_value = report
+                main(
+                    [
+                        "micro-live-readiness",
+                        "--validation-state",
+                        str(validation_state),
+                        "--data-root",
+                        tmp,
+                    ]
+                )
+
+            text = out.getvalue()
+            self.assertIn("Micro-Live Readiness Review", text)
+            self.assertIn("boundary:    independent review entry; no start/run/submit action", text)
+            self.assertIn("RESULT: READINESS EVIDENCE PASSED for micro-live manual review only.", text)
+            self.assertIn("cannot start paper or live trading", text)
 
     def test_report_daily_saved_registry_blocks_invalid_approved_review(self) -> None:
         with TemporaryDirectory() as tmp:
