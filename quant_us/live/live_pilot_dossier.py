@@ -1,8 +1,7 @@
-"""Live Pilot Readiness Dossier for G2 → G3 transition.
+"""Live Pilot Readiness Dossier for G2 -> G3 transition.
 
-Generates the comprehensive dossier required for GO/NO-GO decision
-on Small Live Pilot.  Even if GO, live orders remain blocked until
-the human review explicitly authorizes them.
+This dossier is review-only. It records whether the system is ready for a
+human micro-live review and explicitly does not open a start/run/submit path.
 """
 
 from __future__ import annotations
@@ -55,6 +54,12 @@ class LiveSafety:
     confirm_live: bool = False
     allow_live_orders: bool = False
     endpoint_guard_active: bool = True
+    manual_approval_required: bool = True
+    emergency_stop_required: bool = True
+    max_daily_order_count: int = 0
+    symbol_allowlist: list[str] = field(default_factory=list)
+    reduce_only_exit_plan: str = ""
+    read_only_surface_note: str = ""
     readonly_broker_proxy_proof: str = ""
     no_live_order_touched_proof: str = ""
 
@@ -103,6 +108,10 @@ class LivePilotReadinessDossier:
             self.go_decision = "BLOCKED"
             return self.go_decision
 
+        if self.live_safety.allow_live_orders:
+            self.go_decision = "BLOCKED"
+            return self.go_decision
+
         if self.paper.clean_days < 30:
             self.go_decision = "NOT_READY"
             return self.go_decision
@@ -116,6 +125,18 @@ class LivePilotReadinessDossier:
             return self.go_decision
 
         if self.paper.recon_fail > 0:
+            self.go_decision = "NOT_READY"
+            return self.go_decision
+
+        if not self.live_safety.endpoint_guard_active:
+            self.go_decision = "NOT_READY"
+            return self.go_decision
+
+        if not self.live_safety.manual_approval_required:
+            self.go_decision = "NOT_READY"
+            return self.go_decision
+
+        if not self.live_safety.emergency_stop_required:
             self.go_decision = "NOT_READY"
             return self.go_decision
 
@@ -160,10 +181,18 @@ class LivePilotReadinessDossier:
                 "confirm_live": self.live_safety.confirm_live,
                 "allow_live_orders": self.live_safety.allow_live_orders,
                 "endpoint_guard_active": self.live_safety.endpoint_guard_active,
+                "manual_approval_required": self.live_safety.manual_approval_required,
+                "emergency_stop_required": self.live_safety.emergency_stop_required,
+                "max_daily_order_count": self.live_safety.max_daily_order_count,
+                "symbol_allowlist": self.live_safety.symbol_allowlist,
+                "reduce_only_exit_plan": self.live_safety.reduce_only_exit_plan,
+                "read_only_surface_note": self.live_safety.read_only_surface_note,
                 "readonly_broker_proxy_proof": self.live_safety.readonly_broker_proxy_proof,
                 "no_live_order_touched_proof": self.live_safety.no_live_order_touched_proof,
             },
             "go_decision": self.go_decision,
+            "review_only": True,
+            "submission_ready": False,
         }
 
     def to_markdown(self) -> str:
@@ -230,6 +259,12 @@ class LivePilotReadinessDossier:
             f"| confirm_live | {d['live_safety']['confirm_live']} |",
             f"| allow_live_orders | {d['live_safety']['allow_live_orders']} |",
             f"| Endpoint Guard | {'ACTIVE' if d['live_safety']['endpoint_guard_active'] else 'BROKEN'} |",
+            f"| Manual Approval Required | {d['live_safety']['manual_approval_required']} |",
+            f"| Emergency Stop Required | {d['live_safety']['emergency_stop_required']} |",
+            f"| Symbol Allowlist | {', '.join(d['live_safety']['symbol_allowlist']) or 'none'} |",
+            f"| Max Daily Order Count | {d['live_safety']['max_daily_order_count']} |",
+            f"| Reduce-Only Exit Plan | {d['live_safety']['reduce_only_exit_plan']} |",
+            f"| Review Surface | {d['live_safety']['read_only_surface_note']} |",
             f"| ReadOnlyBrokerProxy | {d['live_safety']['readonly_broker_proxy_proof']} |",
             f"| No Live Order Proof | {d['live_safety']['no_live_order_touched_proof']} |",
             "",
@@ -237,15 +272,19 @@ class LivePilotReadinessDossier:
             "",
             f"## 6. Decision: **{d['go_decision']}**",
             "",
+            f"- Review Only: `{d['review_only']}`",
+            f"- Submission Ready: `{d['submission_ready']}`",
+            "",
         ]
 
         if d["go_decision"] == "GO_FOR_SMALL_LIVE_REVIEW":
-            lines.append("### Small Live Pilot Conditions")
+            lines.append("### Review-Only Conditions")
             lines.append("")
             lines.append("- Human review REQUIRED before enabling any live orders.")
-            lines.append("- live profile remains NOT READY until explicitly authorized.")
-            lines.append("- Shadow-live must keep running alongside small live pilot.")
-            lines.append("- Kill switch must remain armed at all times.")
+            lines.append("- This dossier is not a start, run, or submit surface.")
+            lines.append("- Live profile remains NOT READY until explicitly authorized outside this dossier.")
+            lines.append("- Shadow-live must keep running alongside micro-live review.")
+            lines.append("- Kill switch and emergency stop must remain armed at all times.")
         elif d["go_decision"] == "BLOCKED":
             lines.append("BLOCKED: Critical safety violation detected (real_submit_count != 0).")
         else:
@@ -320,13 +359,13 @@ class LivePilotDossierBuilder:
         }
 
     def _load_risk_limits(self, dossier: LivePilotReadinessDossier) -> None:
-        dossier.max_gross_exposure = 1.0
-        dossier.max_single_position_pct = 0.02
-        dossier.max_order_notional = 10_000.0
-        dossier.daily_loss_limit = 0.02
+        dossier.max_gross_exposure = 0.10
+        dossier.max_single_position_pct = 0.05
+        dossier.max_order_notional = 100.0
+        dossier.daily_loss_limit = 0.005
         dossier.kill_switch_thresholds = {
-            "max_daily_loss_pct": 0.02,
-            "max_drawdown_pct": 0.10,
+            "max_daily_loss_pct": 0.005,
+            "max_drawdown_pct": 0.02,
             "max_consecutive_order_failures": 3,
         }
 
@@ -339,6 +378,17 @@ class LivePilotDossierBuilder:
         dossier.live_safety.confirm_live = False
         dossier.live_safety.allow_live_orders = False
         dossier.live_safety.endpoint_guard_active = True
+        dossier.live_safety.manual_approval_required = True
+        dossier.live_safety.emergency_stop_required = True
+        dossier.live_safety.max_daily_order_count = 3
+        dossier.live_safety.symbol_allowlist = ["SPY", "QQQ"]
+        dossier.live_safety.reduce_only_exit_plan = (
+            "Emergency stop + rollback plan remain reduce-only for exits; "
+            "new entries stay blocked during incidents."
+        )
+        dossier.live_safety.read_only_surface_note = (
+            "Review-only dossier. No automatic start/run/submit action is exposed here."
+        )
         dossier.live_safety.readonly_broker_proxy_proof = (
             "ReadOnlyLiveBrokerProxy blocks submit_order/cancel_order/"
             "replace_order/close_position/close_all_positions with RuntimeError"

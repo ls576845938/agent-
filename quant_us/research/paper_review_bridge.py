@@ -550,5 +550,12 @@ class PaperReviewManager:
             "promotion_result_sha256": chain.promotion_result.sha256,
             "promotion_result_integrity_status": chain.promotion_result.integrity_status,
             "chain_status": chain.chain_status,
+            "review_queue_entry_allowed": str(candidate_gate.get("decision", "")) == "READY_FOR_PAPER_REVIEW",
+            "paper_execution_authorized": False,
+            "authorization_scope": "human_review_only",
+            "authorization_note": (
+                "READY_FOR_PAPER_REVIEW only allows entry into manual paper review. "
+                "It is not paper execution authorization."
+            ),
             "notes": list(chain.notes),
         }

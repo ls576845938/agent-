@@ -133,6 +133,7 @@ _EMPTY_BARS_CACHE = pd.DataFrame()
 _ALLOWED_ALPACA_PAPER_BASE_URLS = ALLOWED_ALPACA_PAPER_BASE_URLS
 _PAPER_STARTUP_SYNC_ARTIFACT_VERSION = "paper_broker_adapter_startup_sync_v1"
 _PAPER_SESSION_MANIFEST_ARTIFACT_VERSION = "paper_session_manifest_v1"
+_PAPER_BROKER_STATE_RECOVERY_ARTIFACT_VERSION = "paper_broker_state_recovery_v1"
 
 
 class PaperRuntime:
@@ -159,6 +160,7 @@ class PaperRuntime:
         self.audit_events: list[dict[str, Any]] = []
         self._fill_index = FillIdempotencyIndex()
         self.session_id: str = new_id("paper_session")
+        self._broker_state_recovery_cache: dict[str, Any] | None = None
 
         # Wired in bootstrap() — declared for type-checking
         self.calendar: USEquityCalendar
@@ -249,6 +251,7 @@ class PaperRuntime:
         self._fill_index = FillIdempotencyIndex.from_ledger(self.ledger)
         self._recover_oms_idempotency()
         self._run_paper_adapter_startup_sync()
+        self._recover_or_verify_broker_state()
 
         # Market data loop
         self.data_loop = MarketDataLoop(
@@ -839,6 +842,161 @@ class PaperRuntime:
             if not record.get("client_order_id"):
                 raise ValueError(f"orders.jsonl line {line_no} missing client_order_id")
 
+    def _recover_or_verify_broker_state(self) -> None:
+        service = ReconciliationService(self.config.ledger_root, self.broker)
+        ledger_state = service.ledger_state_snapshot(self.config.capital)
+        artifact: dict[str, Any] = {
+            "artifact_type": "paper_broker_state_recovery",
+            "artifact_version": _PAPER_BROKER_STATE_RECOVERY_ARTIFACT_VERSION,
+            "mode": "paper",
+            "runtime_mode": "paper",
+            "canonical_runtime": "PaperRuntime",
+            "session_id": self.session_id,
+            "paper_broker": self.config.paper_broker,
+            "broker_backend": self._paper_broker_backend(),
+            "resume_detected": bool(ledger_state["has_state"]),
+            "operationally_complete": False,
+            "broker_state_restored": False,
+            "broker_state_verified": False,
+            "ledger_state": self._ledger_state_summary(ledger_state),
+        }
+
+        if not ledger_state["has_state"]:
+            artifact["status"] = "clean_start"
+            artifact["operationally_complete"] = True
+            artifact["broker_state_verified"] = True
+            artifact["broker_state"] = self._account_positions_summary(
+                self.broker.get_account(),
+                self.broker.get_positions(),
+            )
+            artifact_path = self._write_broker_state_recovery_artifact(artifact)
+            self._broker_state_recovery_cache = {
+                "status": "clean_start",
+                "artifact_path": artifact_path,
+                "resume_detected": False,
+                "operationally_complete": True,
+                "broker_state_restored": False,
+                "broker_state_verified": True,
+            }
+            self._audit_runtime_event(
+                "paper_broker_state_recovery_complete",
+                {
+                    "artifact_path": artifact_path,
+                    "status": "clean_start",
+                    "resume_detected": False,
+                },
+            )
+            return
+
+        try:
+            if self._paper_broker_backend() == "simulated":
+                service.restore_simulated_broker_state(self.config.capital)
+                broker_account = self.broker.get_account()
+                broker_positions = self.broker.get_positions()
+                comparison = service.compare_cash_and_positions(
+                    expected_cash=float(ledger_state["cash"]),
+                    expected_positions=ledger_state["positions"],
+                    broker_account=broker_account,
+                    broker_positions=broker_positions,
+                )
+                if not comparison["matched"]:
+                    raise RuntimeError("simulated_broker_restore_mismatch")
+                artifact["status"] = "restored"
+                artifact["broker_state_restored"] = True
+                artifact["broker_state_verified"] = True
+                artifact["comparison"] = comparison
+                artifact["broker_state"] = self._account_positions_summary(
+                    broker_account,
+                    broker_positions,
+                )
+            else:
+                synced_account = self._broker_sync_account()
+                synced_positions = self._broker_sync_positions()
+                ledger_comparison = service.compare_cash_and_positions(
+                    expected_cash=float(ledger_state["cash"]),
+                    expected_positions=ledger_state["positions"],
+                    broker_account=synced_account,
+                    broker_positions=synced_positions,
+                )
+                if not ledger_comparison["matched"]:
+                    raise RuntimeError("broker_state_mismatch_vs_ledger")
+                local_account = self.broker.get_account()
+                local_positions = self.broker.get_positions()
+                local_visibility = service.compare_cash_and_positions(
+                    expected_cash=float(synced_account.cash),
+                    expected_positions=synced_positions,
+                    broker_account=local_account,
+                    broker_positions=local_positions,
+                )
+                if not local_visibility["matched"]:
+                    raise RuntimeError("broker_state_sync_not_visible_locally")
+                artifact["status"] = "verified"
+                artifact["broker_state_verified"] = True
+                artifact["comparison"] = ledger_comparison
+                artifact["local_visibility"] = local_visibility
+                artifact["broker_state"] = self._account_positions_summary(
+                    synced_account,
+                    synced_positions,
+                )
+                artifact["local_broker_state"] = self._account_positions_summary(
+                    local_account,
+                    local_positions,
+                )
+            artifact["operationally_complete"] = True
+        except Exception as exc:
+            self._halt_reconciliation = True
+            self.oms.reduce_only = True
+            self.kill_switch.trip("paper_broker_state_recovery_failed")
+            artifact["status"] = "failed"
+            artifact["error"] = str(exc)
+            artifact["error_type"] = type(exc).__name__
+            artifact["operationally_complete"] = False
+            artifact["reduce_only"] = True
+            artifact["halt_reconciliation"] = True
+            artifact["kill_switch_reason"] = "paper_broker_state_recovery_failed"
+            artifact_path = self._write_broker_state_recovery_artifact(artifact)
+            self._broker_state_recovery_cache = {
+                "status": "failed",
+                "artifact_path": artifact_path,
+                "resume_detected": True,
+                "operationally_complete": False,
+                "broker_state_restored": bool(artifact["broker_state_restored"]),
+                "broker_state_verified": bool(artifact["broker_state_verified"]),
+                "reason": str(exc),
+            }
+            self._audit_runtime_event(
+                "paper_broker_state_recovery_failed",
+                {
+                    "artifact_path": artifact_path,
+                    "error": str(exc),
+                    "reduce_only": True,
+                    "halt_reconciliation": True,
+                },
+            )
+            raise RuntimeError(f"paper_broker_state_recovery_failed: {exc}") from exc
+
+        artifact["reduce_only"] = bool(self.oms.reduce_only)
+        artifact["halt_reconciliation"] = self._halt_reconciliation
+        artifact_path = self._write_broker_state_recovery_artifact(artifact)
+        self._broker_state_recovery_cache = {
+            "status": str(artifact["status"]),
+            "artifact_path": artifact_path,
+            "resume_detected": True,
+            "operationally_complete": True,
+            "broker_state_restored": bool(artifact["broker_state_restored"]),
+            "broker_state_verified": bool(artifact["broker_state_verified"]),
+        }
+        self._audit_runtime_event(
+            "paper_broker_state_recovery_complete",
+            {
+                "artifact_path": artifact_path,
+                "status": artifact["status"],
+                "resume_detected": True,
+                "broker_state_restored": artifact["broker_state_restored"],
+                "broker_state_verified": artifact["broker_state_verified"],
+            },
+        )
+
     def _check_runtime_entry_gate(self) -> dict[str, Any]:
         """Block unsafe paper runtime configurations before any broker is created."""
         reasons: list[str] = []
@@ -1215,6 +1373,7 @@ class PaperRuntime:
             }
 
         startup_sync = self._startup_sync_status()
+        broker_state_recovery = self._broker_state_recovery_status()
         registry_evidence = self._registry_evidence_summary()
         no_submit_proof = self._no_real_order_submission_proof(startup_sync)
         client_order_id = str(getattr(intent, "client_order_id", "") or "")
@@ -1234,6 +1393,10 @@ class PaperRuntime:
             "startup_sync_status": str(startup_sync.get("status", "")),
             "startup_sync_no_submit": bool(startup_sync.get("no_submit", False)),
             "startup_sync_submit_call_count_delta": startup_sync.get("submit_call_count_delta"),
+            "broker_state_recovery_status": str(broker_state_recovery.get("status", "")),
+            "broker_state_recovery_ok": bool(
+                broker_state_recovery.get("operationally_complete", False)
+            ),
             "no_real_order_submission_proof": no_submit_proof.get("status"),
             "oms_idempotency_ok": bool(client_order_id) and not duplicate,
             "reduce_only_active": reduce_only_active,
@@ -1252,6 +1415,8 @@ class PaperRuntime:
             reasons.append(str(registry_evidence.get("reason", "paper_review_evidence_missing")))
         if startup_sync.get("status") != "ok" or not startup_sync.get("no_submit"):
             reasons.append("startup_sync_not_passed")
+        if not checks["broker_state_recovery_ok"]:
+            reasons.append("broker_state_recovery_not_ready")
         if no_submit_proof.get("status") != "PASS":
             reasons.append("no_real_order_submission_proof_failed")
         if not checks["oms_idempotency_ok"]:
@@ -1352,6 +1517,9 @@ class PaperRuntime:
     def _startup_sync_artifact_path(self) -> Path:
         return Path(self.config.ledger_root) / "audit" / "paper_broker_adapter_startup_sync.json"
 
+    def _broker_state_recovery_artifact_path(self) -> Path:
+        return Path(self.config.ledger_root) / "audit" / "paper_broker_state_recovery.json"
+
     def _paper_session_manifest_path(self) -> Path:
         return Path(self.config.ledger_root) / "audit" / "paper_session_manifest.json"
 
@@ -1375,11 +1543,71 @@ class PaperRuntime:
         )
         return str(artifact_path)
 
+    def _write_broker_state_recovery_artifact(self, artifact: dict[str, Any]) -> str:
+        artifact_path = self._broker_state_recovery_artifact_path()
+        payload = dict(artifact)
+        payload["timestamp_utc"] = utc_now().isoformat()
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        artifact_path.write_text(
+            json.dumps(payload, sort_keys=True, indent=2, default=str),
+            encoding="utf-8",
+        )
+        return str(artifact_path)
+
+    @staticmethod
+    def _positions_summary(positions: dict[str, Any]) -> dict[str, dict[str, float]]:
+        return {
+            symbol: {
+                "quantity": float(getattr(position, "quantity", 0.0)),
+                "avg_price": float(getattr(position, "avg_price", 0.0)),
+                "market_price": float(getattr(position, "market_price", 0.0)),
+                "market_value": float(getattr(position, "market_value", 0.0)),
+            }
+            for symbol, position in sorted(positions.items())
+        }
+
+    def _ledger_state_summary(self, ledger_state: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "has_state": bool(ledger_state.get("has_state", False)),
+            "cash": float(ledger_state.get("cash", 0.0) or 0.0),
+            "equity": float(ledger_state.get("equity", 0.0) or 0.0),
+            "position_count": len(ledger_state.get("positions", {})),
+            "positions": self._positions_summary(ledger_state.get("positions", {})),
+            "order_count": int(ledger_state.get("order_count", 0) or 0),
+            "fill_count": int(ledger_state.get("fill_count", 0) or 0),
+            "snapshot_count": int(ledger_state.get("snapshot_count", 0) or 0),
+        }
+
+    def _account_positions_summary(
+        self,
+        account: AccountState,
+        positions: dict[str, Any],
+    ) -> dict[str, Any]:
+        return {
+            "cash": float(account.cash),
+            "equity": float(account.equity),
+            "position_count": len(positions),
+            "positions": self._positions_summary(positions),
+        }
+
+    def _broker_sync_account(self) -> AccountState:
+        sync_account = getattr(self.broker, "sync_account", None)
+        if callable(sync_account):
+            return sync_account()
+        return self.broker.get_account()
+
+    def _broker_sync_positions(self) -> dict[str, Any]:
+        sync_positions = getattr(self.broker, "sync_positions", None)
+        if callable(sync_positions):
+            return sync_positions()
+        return self.broker.get_positions()
+
     def _write_paper_session_manifest(self) -> str:
         manifest_path = self._paper_session_manifest_path()
         history_path = self._paper_session_manifest_history_path()
         created_at = utc_now().isoformat()
         startup_sync = self._startup_sync_status()
+        broker_state_recovery = self._broker_state_recovery_status()
         registry_evidence = self._registry_evidence_summary()
         if self._alpaca_paper_requested() and not registry_evidence.get("allowed"):
             self._halt_reconciliation = True
@@ -1408,6 +1636,7 @@ class PaperRuntime:
             "registry_evidence_path": registry_evidence["path"],
             "registry_evidence": registry_evidence,
             "startup_sync_status": startup_sync,
+            "broker_state_recovery_status": broker_state_recovery,
             "created_at": created_at,
             "artifact_path": str(manifest_path),
             "history_artifact_path": str(history_path),
@@ -1477,6 +1706,47 @@ class PaperRuntime:
             "submit_call_count_delta": no_submit_proof.get("submit_call_count_delta"),
             "submit_call_count_available": bool(no_submit_proof.get("submit_call_count_available", False)),
         }
+
+    def _broker_state_recovery_status(self) -> dict[str, Any]:
+        if isinstance(self._broker_state_recovery_cache, dict):
+            return dict(self._broker_state_recovery_cache)
+
+        artifact_path = self._broker_state_recovery_artifact_path()
+        if not artifact_path.exists():
+            return {
+                "status": "missing",
+                "artifact_path": str(artifact_path),
+                "resume_detected": False,
+                "operationally_complete": False,
+                "broker_state_restored": False,
+                "broker_state_verified": False,
+                "reason": "broker_state_recovery_artifact_missing",
+            }
+
+        try:
+            artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            return {
+                "status": "conflict",
+                "artifact_path": str(artifact_path),
+                "resume_detected": True,
+                "operationally_complete": False,
+                "broker_state_restored": False,
+                "broker_state_verified": False,
+                "reason": f"broker_state_recovery_artifact_unreadable:{exc}",
+            }
+
+        status = {
+            "status": str(artifact.get("status", "missing")),
+            "artifact_path": str(artifact_path),
+            "resume_detected": bool(artifact.get("resume_detected", False)),
+            "operationally_complete": bool(artifact.get("operationally_complete", False)),
+            "broker_state_restored": bool(artifact.get("broker_state_restored", False)),
+            "broker_state_verified": bool(artifact.get("broker_state_verified", False)),
+        }
+        if artifact.get("error"):
+            status["reason"] = str(artifact.get("error"))
+        return status
 
     def _registry_evidence_summary(self) -> dict[str, Any]:
         registry_path = Path(self.config.promotion_data_root) / "research" / "evidence_registry.json"

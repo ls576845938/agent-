@@ -6,7 +6,7 @@
 |------|-------------|------------------|--------|--------------|
 | **PAPER** | Real (yfinance/Alpaca) | SimulatedBroker | In-memory | KillSwitch, Recon, OMS Risk |
 | **SHADOW_LIVE** | Real (Alpaca) | PaperBroker only | Real broker read-only | KillSwitch, Recon, OMS Risk, ReadOnlyBrokerProxy |
-| **LIVE** | Real (Alpaca) | AlpacaBroker (real) | Real broker | 4-layer gate (see below) |
+| **LIVE** | Real (Alpaca) | Disabled by default on this surface | Real broker | Review-only gate, runtime shell, explicit fail-closed flags |
 
 ## submit_orders() Safety Rules
 
@@ -21,12 +21,15 @@ All order submission passes through `LiveRuntime.submit_orders()` which enforces
 6. **OMS risk** — `PreTradeRiskEngine` validates each intent
 
 ### Live Mode Requirements
-All 5 conditions must be met for real order submission:
-1. `live_readiness_gate` PASS (11 checks)
+All conditions below are necessary but still not sufficient for any future real submission:
+1. `live_readiness_gate` PASS (18 review-only checks)
 2. `config.allow_live_orders == True`
 3. `config.confirm_live == True`
 4. `config.live_submission_enabled == True`
 5. `QUANT_LIVE_SUBMISSION_ENABLED=true` in environment
+6. `LiveOrderSubmissionGate.check()` still returns `REQUIRES_MANUAL_REVIEW` on this repo surface
+
+Current repository rule: micro-live readiness output is review-only and `submission_ready=false`.
 
 ## Simulated Paper Production Loop (Phase F.7)
 
@@ -92,7 +95,7 @@ If breaks are detected:
 
 ## Live Readiness Gate
 
-11 checks in `LiveReadinessGate.check_all()`:
+Review-only checks in `LiveReadinessGate.check_all()` include:
 
 1. `paper_30_day_clean` — 30 consecutive clean paper trading days
 2. `oms_idempotency` — OMS accepts idempotency_path
@@ -105,3 +108,10 @@ If breaks are detected:
 9. `broker_credentials` — Alpaca API keys reachable
 10. `data_vendor_health` — Data vendor returns bars
 11. `telegram_connectivity` — Telegram alerts configured
+12. `manual_approval_required` — approval defaults fail closed until explicitly approved
+13. `allowlist_surface` — allowlist evidence present in dossier / risk envelope
+14. `micro_live_limits` — max notional and order-count caps present
+15. `reduce_only_exit_plan` — rollback plan exists for reduce-only exits
+16. `emergency_stop_readiness` — emergency stop lifecycle present
+17. `endpoint_guard` — read-only live endpoint guard present
+18. `review_only_defaults` — `allow_live_orders=False`, `confirm_live=False`, review-only wording

@@ -13,8 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from quant_us.core.enums import OrderSide
-from quant_us.core.types import Fill, Position
+from quant_us.core.enums import OrderSide, OrderStatus, OrderType, TimeInForce
+from quant_us.core.types import AccountState, Fill, Order, Position
 from quant_us.execution.broker_base import BrokerBase
 from quant_us.execution.ledger import JsonlLedgerStore
 from quant_us.live.state_reconciler import StateReconciler
@@ -156,6 +156,97 @@ class ReconciliationService:
             report_path=str(report_path),
         )
 
+    def ledger_state_snapshot(self, initial_cash: float) -> dict[str, Any]:
+        """Build a ledger-derived broker-state view for resume/recovery."""
+        orders = self._read_orders()
+        fills = self.ledger.read_fills()
+        positions = self.ledger.latest_positions_from_fills()
+        snapshot_records = self.ledger.read_records("portfolio_snapshots.jsonl")
+        expected_cash = self._compute_local_cash(initial_cash)
+        expected_equity = expected_cash + sum(
+            position.market_value for position in positions.values()
+        )
+        historical_equities = [
+            float(row.get("equity", 0.0) or 0.0)
+            for row in snapshot_records
+            if isinstance(row, dict)
+        ]
+        historical_high_water = max(historical_equities, default=expected_equity)
+        return {
+            "has_state": bool(orders or fills or snapshot_records or positions),
+            "cash": expected_cash,
+            "equity": expected_equity,
+            "positions": {
+                symbol: Position(**position.__dict__)
+                for symbol, position in positions.items()
+            },
+            "orders": orders,
+            "fills": fills,
+            "order_count": len(orders),
+            "fill_count": len(fills),
+            "snapshot_count": len(snapshot_records),
+            "historical_high_water_equity": max(
+                historical_high_water,
+                expected_equity,
+                float(initial_cash),
+            ),
+            "last_snapshot_equity": historical_equities[-1] if historical_equities else expected_equity,
+        }
+
+    def restore_simulated_broker_state(self, initial_cash: float) -> dict[str, Any]:
+        """Restore a local simulated broker from ledger evidence only."""
+        snapshot = self.ledger_state_snapshot(initial_cash)
+        if not snapshot["has_state"]:
+            return snapshot
+
+        broker = self.broker
+        required_attrs = ("cash", "positions", "orders", "fills", "market_prices")
+        missing = [name for name in required_attrs if not hasattr(broker, name)]
+        if missing:
+            raise TypeError(
+                "broker_state_restore_surface_missing:" + ",".join(sorted(missing))
+            )
+
+        broker.cash = float(snapshot["cash"])
+        broker.positions = {
+            symbol: Position(**position.__dict__)
+            for symbol, position in snapshot["positions"].items()
+        }
+        broker.orders = [self._clone_order(order) for order in snapshot["orders"]]
+        broker.fills = [self._clone_fill(fill) for fill in snapshot["fills"]]
+        broker.market_prices = {
+            symbol: float(position.market_price)
+            for symbol, position in broker.positions.items()
+            if float(position.market_price) > 0.0
+        }
+        if hasattr(broker, "start_equity"):
+            broker.start_equity = float(snapshot["last_snapshot_equity"])
+        if hasattr(broker, "high_water_equity"):
+            broker.high_water_equity = float(snapshot["historical_high_water_equity"])
+        return snapshot
+
+    def compare_cash_and_positions(
+        self,
+        *,
+        expected_cash: float,
+        expected_positions: dict[str, Position],
+        broker_account: AccountState,
+        broker_positions: dict[str, Position],
+        tolerance: float = 1e-6,
+    ) -> dict[str, Any]:
+        """Compare broker cash and quantities to a ledger-derived expectation."""
+        cash_diff = float(broker_account.cash) - float(expected_cash)
+        position_diffs = self._compare_positions(
+            expected_positions,
+            broker_positions,
+            tolerance,
+        )
+        return {
+            "cash_diff": cash_diff,
+            "position_diffs": position_diffs,
+            "matched": abs(cash_diff) <= tolerance and not position_diffs,
+        }
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
@@ -173,6 +264,14 @@ class ReconciliationService:
             else:
                 cash += qty * price - commission
         return cash
+
+    def _read_orders(self) -> list[Order]:
+        orders: list[Order] = []
+        for index, row in enumerate(self.ledger.read_records("orders.jsonl"), start=1):
+            if not isinstance(row, dict):
+                raise ValueError(f"orders.jsonl line {index} is not an object")
+            orders.append(self._order_from_record(row, index=index))
+        return orders
 
     @staticmethod
     def _compare_positions(
@@ -198,6 +297,96 @@ class ReconciliationService:
                     "broker_market_value": broker_pos.market_value,
                 }
         return diffs
+
+    @staticmethod
+    def _clone_order(order: Order) -> Order:
+        return Order(
+            timestamp_utc=order.timestamp_utc,
+            strategy_id=order.strategy_id,
+            symbol=order.symbol,
+            side=order.side,
+            quantity=order.quantity,
+            order_type=order.order_type,
+            time_in_force=order.time_in_force,
+            client_order_id=order.client_order_id,
+            run_id=order.run_id,
+            signal_id=order.signal_id,
+            risk_check_id=order.risk_check_id,
+            broker_order_id=order.broker_order_id,
+            limit_price=order.limit_price,
+            status=order.status,
+            created_at=order.created_at,
+            updated_at=order.updated_at,
+            order_id=order.order_id,
+        )
+
+    @staticmethod
+    def _clone_fill(fill: Fill) -> Fill:
+        return Fill(
+            order_id=fill.order_id,
+            symbol=fill.symbol,
+            side=fill.side,
+            quantity=fill.quantity,
+            price=fill.price,
+            commission=fill.commission,
+            filled_at=fill.filled_at,
+            broker=fill.broker,
+            broker_order_id=fill.broker_order_id,
+            fill_id=fill.fill_id,
+        )
+
+    @staticmethod
+    def _enum_from_record(enum_cls: Any, value: Any, default: Any) -> Any:
+        text = str(value or default.value).strip()
+        for candidate in (text, text.lower()):
+            try:
+                return enum_cls(candidate)
+            except ValueError:
+                pass
+        name = text.upper()
+        if name in enum_cls.__members__:
+            return enum_cls[name]
+        return enum_cls(text)
+
+    @classmethod
+    def _order_from_record(cls, row: dict[str, Any], *, index: int) -> Order:
+        timestamp_raw = row.get("timestamp_utc") or row.get("created_at")
+        if not timestamp_raw:
+            raise ValueError(f"orders.jsonl line {index} missing timestamp_utc")
+        client_order_id = str(row.get("client_order_id", "") or "")
+        if not client_order_id:
+            raise ValueError(f"orders.jsonl line {index} missing client_order_id")
+        order_type = str(row.get("order_type", OrderType.MARKET.value) or OrderType.MARKET.value)
+        tif = str(row.get("time_in_force", TimeInForce.DAY.value) or TimeInForce.DAY.value)
+        status = str(row.get("status", OrderStatus.CREATED.value) or OrderStatus.CREATED.value)
+        created_at_raw = row.get("created_at") or timestamp_raw
+        updated_at_raw = row.get("updated_at") or created_at_raw
+        try:
+            return Order(
+                timestamp_utc=datetime.fromisoformat(str(timestamp_raw).replace("Z", "+00:00")),
+                strategy_id=str(row.get("strategy_id", "") or ""),
+                symbol=str(row.get("symbol", "") or ""),
+                side=cls._enum_from_record(OrderSide, row.get("side"), OrderSide.BUY),
+                quantity=float(row.get("quantity", 0.0)),
+                order_type=cls._enum_from_record(OrderType, order_type, OrderType.MARKET),
+                time_in_force=cls._enum_from_record(TimeInForce, tif, TimeInForce.DAY),
+                client_order_id=client_order_id,
+                run_id=str(row.get("run_id", "") or ""),
+                signal_id=str(row.get("signal_id", "") or ""),
+                risk_check_id=str(row.get("risk_check_id", "") or ""),
+                broker_order_id=str(row.get("broker_order_id", "") or ""),
+                limit_price=(
+                    None
+                    if row.get("limit_price") in (None, "")
+                    else float(row.get("limit_price"))
+                ),
+                status=cls._enum_from_record(OrderStatus, status, OrderStatus.CREATED),
+                created_at=datetime.fromisoformat(str(created_at_raw).replace("Z", "+00:00")),
+                updated_at=datetime.fromisoformat(str(updated_at_raw).replace("Z", "+00:00")),
+                order_id=str(row.get("order_id", "") or ""),
+            )
+        except Exception as exc:
+            raise ValueError(f"orders.jsonl line {index} is invalid: {exc}") from exc
 
     @staticmethod
     def _compare_orders(

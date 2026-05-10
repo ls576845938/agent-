@@ -41,6 +41,8 @@ from quant_us.risk.kill_switch import KillSwitch, KillSwitchConfig
 from quant_us.risk.pre_trade import PreTradeRiskConfig, PreTradeRiskEngine
 from quant_us.risk.risk_event_log import RiskEventLog
 
+_PAPER_BROKER_STATE_RECOVERY_ARTIFACT_VERSION = "paper_broker_state_recovery_v1"
+
 
 @dataclass
 class PaperTradingConfig:
@@ -133,6 +135,10 @@ class PaperTradingLoop:
 
         self.ledger = JsonlLedgerStore(self.config.ledger_root)
         self._fill_index = FillIdempotencyIndex.from_ledger(self.ledger)
+        self._halt_reconciliation: bool = False
+        self._broker_state_recovery: dict[str, Any] | None = None
+        self._seed_prices_after_restore: bool = False
+        self._recover_broker_state_from_ledger()
 
         # Optional PostgreSQL dual-write store
         self.pg_store: PostgresStateStore | None = None
@@ -157,7 +163,6 @@ class PaperTradingLoop:
         self.data_freshness = DataFreshnessGuard(
             DataFreshnessConfig(max_delay_seconds=self.config.max_data_delay_seconds)
         )
-        self._halt_reconciliation: bool = False
         self.daily_results: list[PaperTradingDayResult] = []
 
     def _apply_gap_protection(self, bar: Any, prev_close: float | None) -> None:
@@ -220,6 +225,7 @@ class PaperTradingLoop:
             )
 
         # Reset daily loss window at start of each trading day
+        self._seed_restored_market_prices_from_bars(bars)
         account = self.broker.get_account()
         self.kill_switch.reset_daily(account.equity)
         start_equity = account.equity
@@ -440,6 +446,145 @@ class PaperTradingLoop:
             },
             "differences": diffs_by_symbol,
             "difference_count": len(diffs_by_symbol),
+        }
+
+    def _recover_broker_state_from_ledger(self) -> None:
+        service = ReconciliationService(self.ledger.root, self.broker)
+        ledger_state = service.ledger_state_snapshot(self.config.initial_cash)
+        artifact: dict[str, Any] = {
+            "artifact_type": "paper_broker_state_recovery",
+            "artifact_version": _PAPER_BROKER_STATE_RECOVERY_ARTIFACT_VERSION,
+            "mode": "paper",
+            "runtime_mode": "paper_validation",
+            "canonical_runtime": "PaperTradingLoop",
+            "paper_broker": "simulated",
+            "broker_backend": "simulated",
+            "resume_detected": bool(ledger_state["has_state"]),
+            "operationally_complete": False,
+            "broker_state_restored": False,
+            "broker_state_verified": False,
+            "ledger_state": self._ledger_state_summary(ledger_state),
+        }
+
+        if not ledger_state["has_state"]:
+            artifact["status"] = "clean_start"
+            artifact["operationally_complete"] = True
+            artifact["broker_state_verified"] = True
+            artifact["broker_state"] = self._account_positions_summary()
+            artifact_path = self._write_broker_state_recovery_artifact(artifact)
+            self._broker_state_recovery = {
+                "status": "clean_start",
+                "artifact_path": artifact_path,
+                "resume_detected": False,
+                "operationally_complete": True,
+            }
+            return
+
+        try:
+            service.restore_simulated_broker_state(self.config.initial_cash)
+            comparison = service.compare_cash_and_positions(
+                expected_cash=float(ledger_state["cash"]),
+                expected_positions=ledger_state["positions"],
+                broker_account=self.broker.get_account(),
+                broker_positions=self.broker.get_positions(),
+            )
+            if not comparison["matched"]:
+                raise RuntimeError("simulated_broker_restore_mismatch")
+            artifact["status"] = "restored"
+            artifact["operationally_complete"] = True
+            artifact["broker_state_restored"] = True
+            artifact["broker_state_verified"] = True
+            artifact["comparison"] = comparison
+            artifact["broker_state"] = self._account_positions_summary()
+            self._seed_prices_after_restore = True
+        except Exception as exc:
+            self._halt_reconciliation = True
+            self.oms.reduce_only = True
+            self.kill_switch.trip("paper_broker_state_recovery_failed")
+            artifact["status"] = "failed"
+            artifact["error"] = str(exc)
+            artifact["error_type"] = type(exc).__name__
+            artifact["operationally_complete"] = False
+            artifact["reduce_only"] = True
+            artifact["halt_reconciliation"] = True
+            artifact_path = self._write_broker_state_recovery_artifact(artifact)
+            self._broker_state_recovery = {
+                "status": "failed",
+                "artifact_path": artifact_path,
+                "resume_detected": True,
+                "operationally_complete": False,
+                "reason": str(exc),
+            }
+            raise RuntimeError(f"paper_broker_state_recovery_failed: {exc}") from exc
+
+        artifact["reduce_only"] = bool(self.oms.reduce_only)
+        artifact["halt_reconciliation"] = self._halt_reconciliation
+        artifact_path = self._write_broker_state_recovery_artifact(artifact)
+        self._broker_state_recovery = {
+            "status": "restored",
+            "artifact_path": artifact_path,
+            "resume_detected": True,
+            "operationally_complete": True,
+        }
+
+    def _seed_restored_market_prices_from_bars(self, bars: list[Any]) -> None:
+        if not self._seed_prices_after_restore or not bars or not self.broker.positions:
+            return
+
+        first_prices: dict[str, float] = {}
+        for bar in bars:
+            if bar.symbol in self.broker.positions and bar.symbol not in first_prices:
+                first_prices[bar.symbol] = float(bar.open or bar.close)
+
+        for symbol, price in first_prices.items():
+            if price <= 0:
+                continue
+            self.broker.market_prices[symbol] = price
+            position = self.broker.positions.get(symbol)
+            if position is None:
+                continue
+            position.market_price = price
+            position.unrealized_pnl = (price - position.avg_price) * position.quantity
+
+        self._seed_prices_after_restore = False
+
+    def _write_broker_state_recovery_artifact(self, artifact: dict[str, Any]) -> str:
+        artifact_path = Path(self.config.ledger_root) / "audit" / "paper_broker_state_recovery.json"
+        payload = dict(artifact)
+        payload["timestamp_utc"] = utc_now().isoformat()
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        artifact_path.write_text(
+            json.dumps(payload, sort_keys=True, indent=2, default=str),
+            encoding="utf-8",
+        )
+        return str(artifact_path)
+
+    def _ledger_state_summary(self, ledger_state: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "has_state": bool(ledger_state.get("has_state", False)),
+            "cash": float(ledger_state.get("cash", 0.0) or 0.0),
+            "equity": float(ledger_state.get("equity", 0.0) or 0.0),
+            "position_count": len(ledger_state.get("positions", {})),
+            "order_count": int(ledger_state.get("order_count", 0) or 0),
+            "fill_count": int(ledger_state.get("fill_count", 0) or 0),
+            "snapshot_count": int(ledger_state.get("snapshot_count", 0) or 0),
+        }
+
+    def _account_positions_summary(self) -> dict[str, Any]:
+        account = self.broker.get_account()
+        return {
+            "cash": float(account.cash),
+            "equity": float(account.equity),
+            "position_count": len(account.positions),
+            "positions": {
+                symbol: {
+                    "quantity": float(position.quantity),
+                    "avg_price": float(position.avg_price),
+                    "market_price": float(position.market_price),
+                    "market_value": float(position.market_value),
+                }
+                for symbol, position in sorted(account.positions.items())
+            },
         }
 
     def _send_alerts(self, result: PaperTradingDayResult) -> None:

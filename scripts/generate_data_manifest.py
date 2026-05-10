@@ -72,21 +72,28 @@ def generate_one(
         survivorship_bias_risk=survivorship_bias_risk,
         adjustment_policy=adjustment_policy,
     )
-    store = store or DataManifestStore()
-    path = store.write(manifest)
-    print(f"  {manifest.data_version}")
-    print(f"    coverage: {manifest.coverage_pct:.2f}%  quality: {manifest.quality_score:.1f}  rows: {manifest.row_count}")
-    print(f"    checksum: {manifest.effective_checksum or '(missing)'}  timezone: {manifest.timezone}  adjustment: {manifest.adjustment}")
-    print(
-        "    "
-        f"adjustment_policy: {manifest.adjustment_policy or '(implicit)'}  "
-        f"universe_id: {manifest.universe_id or '(missing)'}  "
-        f"survivorship_bias_risk: {manifest.survivorship_bias_risk}"
-    )
-    print(f"    written to {path}")
     if validate:
-        validation = validate_manifest_for_promotion(manifest)
+        validation = validate_manifest_for_promotion(manifest, strict=True)
         status = "PASS" if validation.ok else "BLOCK"
+        print(f"  {manifest.data_version}")
+        print(f"    coverage: {manifest.coverage_pct:.2f}%  quality: {manifest.quality_score:.1f}  rows: {manifest.row_count}")
+        print(f"    checksum: {manifest.effective_checksum or '(missing)'}  timezone: {manifest.timezone}  adjustment: {manifest.adjustment}")
+        print(
+            "    "
+            f"adjustment_policy: {manifest.adjustment_policy or '(implicit)'}  "
+            f"universe_id: {manifest.universe_id or '(missing)'}  "
+            f"survivorship_bias_risk: {manifest.survivorship_bias_risk}"
+        )
+        if manifest.quality_summary:
+            print(
+                "    "
+                "quality_summary: "
+                f"missing_bars={manifest.quality_summary.get('missing_bars', 0)} "
+                f"duplicate_bars={manifest.quality_summary.get('duplicate_bars', 0)} "
+                f"zero_volume_bars={manifest.quality_summary.get('zero_volume_bars', 0)} "
+                f"invalid_ohlc_rows={manifest.quality_summary.get('invalid_ohlc_rows', 0)} "
+                f"total_issue_count={manifest.quality_summary.get('total_issue_count', 0)}"
+            )
         print(f"    promotion validation: {status}")
         if validation.reasons:
             print(f"      reasons: {', '.join(validation.reasons)}")
@@ -94,6 +101,29 @@ def generate_one(
             print(f"      warnings: {', '.join(validation.warnings)}")
         if not validation.ok:
             raise ValueError(f"data manifest validation failed for {manifest.data_version}: {validation.reasons}")
+    store = store or DataManifestStore()
+    path = store.write(manifest)
+    if not validate:
+        print(f"  {manifest.data_version}")
+        print(f"    coverage: {manifest.coverage_pct:.2f}%  quality: {manifest.quality_score:.1f}  rows: {manifest.row_count}")
+        print(f"    checksum: {manifest.effective_checksum or '(missing)'}  timezone: {manifest.timezone}  adjustment: {manifest.adjustment}")
+        print(
+            "    "
+            f"adjustment_policy: {manifest.adjustment_policy or '(implicit)'}  "
+            f"universe_id: {manifest.universe_id or '(missing)'}  "
+            f"survivorship_bias_risk: {manifest.survivorship_bias_risk}"
+        )
+        if manifest.quality_summary:
+            print(
+                "    "
+                "quality_summary: "
+                f"missing_bars={manifest.quality_summary.get('missing_bars', 0)} "
+                f"duplicate_bars={manifest.quality_summary.get('duplicate_bars', 0)} "
+                f"zero_volume_bars={manifest.quality_summary.get('zero_volume_bars', 0)} "
+                f"invalid_ohlc_rows={manifest.quality_summary.get('invalid_ohlc_rows', 0)} "
+                f"total_issue_count={manifest.quality_summary.get('total_issue_count', 0)}"
+            )
+    print(f"    written to {path}")
     return manifest.data_version
 
 

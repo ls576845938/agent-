@@ -801,16 +801,7 @@ def _build_candidate_chain(
     experiment_id = str(payload.get("experiment_id", "") or "")
     notes: list[str] = []
 
-    data_row = next(
-        (row for row in data_manifests if row.get("data_version") == data_version),
-        None,
-    )
-    data_ref = _row_to_ref(
-        data_row,
-        evidence_type="data_manifest",
-        fallback_id=data_version,
-        missing_summary=f"missing_data_manifest:{data_version or 'unknown'}",
-    )
+    data_ref = _resolve_data_manifest(root, data_version, data_manifests)
     notes.extend(_ref_notes(data_ref))
 
     backtest_ref = _resolve_backtest_manifest(root, candidate_id, payload)
@@ -900,7 +891,7 @@ def _resolve_backtest_manifest(
     manifest_path = _resolve_reference_path(root, raw_path)
     canonical_path = root / "research" / "backtests" / candidate_id / "run_manifest.json"
     fallback_id = candidate_id
-    if manifest_path is not None and manifest_path.exists():
+    if manifest_path is not None and _paths_equal(manifest_path, canonical_path) and manifest_path.exists():
         payload = _load_json(manifest_path)
         return EvidenceRef(
             evidence_type="backtest_manifest",
@@ -923,7 +914,57 @@ def _resolve_backtest_manifest(
                 "commit_hash": str(payload.get("commit_hash", "")),
             },
         )
+    if manifest_path is not None and manifest_path.exists():
+        payload = _load_json(manifest_path)
+        return EvidenceRef(
+            evidence_type="backtest_manifest",
+            evidence_id=str(payload.get("run_id") or candidate_id),
+            path=str(manifest_path),
+            status="conflict",
+            integrity_status=INTEGRITY_CONFLICT,
+            created_at=_payload_created_at(payload, manifest_path),
+            sha256=_file_sha256(manifest_path),
+            size=_file_size_bytes(manifest_path),
+            mtime=_file_mtime(manifest_path),
+            size_bytes=_file_size_bytes(manifest_path),
+            mtime_ns=_file_mtime_ns(manifest_path),
+            observed_at=_observed_at(),
+            content_type=_content_type(manifest_path),
+            summary="non_canonical_backtest_manifest_path",
+            details={
+                "canonical_for_promotion": bool(payload.get("canonical_for_promotion", False)),
+                "data_version": str(payload.get("data_version", "")),
+                "commit_hash": str(payload.get("commit_hash", "")),
+                "expected_path": str(canonical_path),
+                "candidate_backtest_manifest_path": raw_path,
+            },
+        )
     if raw_path and manifest_path is not None and not manifest_path.exists():
+        if canonical_path.exists():
+            payload = _load_json(canonical_path)
+            return EvidenceRef(
+                evidence_type="backtest_manifest",
+                evidence_id=str(payload.get("run_id") or candidate_id),
+                path=str(canonical_path),
+                status="stale",
+                integrity_status=INTEGRITY_STALE,
+                created_at=_payload_created_at(payload, canonical_path),
+                sha256=_file_sha256(canonical_path),
+                size=_file_size_bytes(canonical_path),
+                mtime=_file_mtime(canonical_path),
+                size_bytes=_file_size_bytes(canonical_path),
+                mtime_ns=_file_mtime_ns(canonical_path),
+                observed_at=_observed_at(),
+                content_type=_content_type(canonical_path),
+                summary="canonical_backtest_manifest_found_but_candidate_path_stale",
+                details={
+                    "canonical_for_promotion": bool(payload.get("canonical_for_promotion", False)),
+                    "data_version": str(payload.get("data_version", "")),
+                    "commit_hash": str(payload.get("commit_hash", "")),
+                    "expected_path": str(canonical_path),
+                    "candidate_backtest_manifest_path": raw_path,
+                },
+            )
         return EvidenceRef(
             evidence_type="backtest_manifest",
             evidence_id=fallback_id,
@@ -966,6 +1007,65 @@ def _resolve_backtest_manifest(
         observed_at=_observed_at(),
         content_type=_content_type(canonical_path if not raw_path else _resolve_reference_path(root, raw_path) or canonical_path),
         summary=f"missing_backtest_manifest:{candidate_id}",
+    )
+
+
+def _resolve_data_manifest(
+    root: Path,
+    data_version: str,
+    data_manifests: list[dict[str, Any]],
+) -> EvidenceRef:
+    fallback_id = data_version
+    if not data_version:
+        return EvidenceRef(
+            evidence_type="data_manifest",
+            evidence_id="",
+            path="",
+            status="missing",
+            integrity_status=INTEGRITY_MISSING,
+            observed_at=_observed_at(),
+            summary="missing_data_manifest:unknown",
+        )
+
+    canonical_path = root / "manifests" / f"{data_version}.json"
+    matching_rows = [
+        row for row in data_manifests if row.get("data_version") == data_version
+    ]
+    canonical_row = next(
+        (
+            row
+            for row in matching_rows
+            if _paths_equal(Path(str(row.get("path", ""))), canonical_path)
+        ),
+        None,
+    )
+    if canonical_row is not None:
+        return _row_to_ref(
+            canonical_row,
+            evidence_type="data_manifest",
+            fallback_id=fallback_id,
+            missing_summary=f"missing_data_manifest:{data_version}",
+        )
+    if matching_rows:
+        return EvidenceRef(
+            evidence_type="data_manifest",
+            evidence_id=fallback_id,
+            path=str(canonical_path),
+            status="stale",
+            integrity_status=INTEGRITY_STALE,
+            observed_at=_observed_at(),
+            content_type=_content_type(canonical_path),
+            summary="canonical_data_manifest_missing_but_alternate_found",
+            details={
+                "alternate_paths": [str(row.get("path", "")) for row in matching_rows],
+                "data_version": data_version,
+            },
+        )
+    return _row_to_ref(
+        None,
+        evidence_type="data_manifest",
+        fallback_id=fallback_id,
+        missing_summary=f"missing_data_manifest:{data_version}",
     )
 
 
@@ -2089,6 +2189,10 @@ def _resolve_reference_path(root: Path, raw_path: str) -> Path | None:
     if path.is_absolute():
         return path
     return root / path
+
+
+def _paths_equal(left: Path, right: Path) -> bool:
+    return left.resolve(strict=False) == right.resolve(strict=False)
 
 
 def _parse_dt(value: str) -> datetime | None:

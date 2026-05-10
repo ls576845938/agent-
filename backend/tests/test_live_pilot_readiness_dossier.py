@@ -91,6 +91,8 @@ class TestLivePilotReadinessDossier:
         assert d["paper"]["clean_days"] == 30
         assert d["shadow"]["days_completed"] == 5
         assert d["live_safety"]["endpoint_guard_active"] is True
+        assert d["review_only"] is True
+        assert d["submission_ready"] is False
 
     def test_to_markdown_has_expected_sections(self) -> None:
         dossier = LivePilotReadinessDossier()
@@ -117,8 +119,19 @@ class TestLivePilotReadinessDossier:
         dossier.shadow.real_submit_count = 0
         dossier.determine_go_decision()
         md = dossier.to_markdown()
-        assert "Small Live Pilot Conditions" in md
+        assert "Review-Only Conditions" in md
         assert "Human review REQUIRED" in md
+        assert "not a start, run, or submit surface" in md
+
+    def test_allow_live_orders_true_blocks_dossier(self) -> None:
+        dossier = LivePilotReadinessDossier()
+        dossier.paper.clean_days = 30
+        dossier.paper.recon_fail = 0
+        dossier.shadow.days_completed = 5
+        dossier.shadow.real_submit_count = 0
+        dossier.live_safety.allow_live_orders = True
+        result = dossier.determine_go_decision()
+        assert result == "BLOCKED"
 
 
 class TestLivePilotDossierBuilder:

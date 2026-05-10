@@ -95,11 +95,14 @@ def enrich_validation_evidence(
     )
     session_manifest = ledger_root / "audit" / "paper_session_manifest.json"
     startup_sync = ledger_root / "audit" / "paper_broker_adapter_startup_sync.json"
+    broker_state_recovery = ledger_root / "audit" / "paper_broker_state_recovery.json"
     run_journal = ledger_root / "run_journal.jsonl"
 
     session_payload = load_state(session_manifest) if session_manifest.exists() else {}
     startup_payload = load_state(startup_sync) if startup_sync.exists() else {}
+    recovery_payload = load_state(broker_state_recovery) if broker_state_recovery.exists() else {}
     recon_payload = load_state(latest_recon) if latest_recon else {}
+    resume_state_loaded = bool(state.get("resume_state_loaded", False))
 
     state["evidence_schema_version"] = "paper_validation_evidence_v1"
     state["evidence"] = {
@@ -109,6 +112,7 @@ def enrich_validation_evidence(
         "paper_session_manifest_path": str(session_manifest) if session_manifest.exists() else "",
         "paper_session_history_artifact_path": str(session_payload.get("history_artifact_path", "")),
         "startup_sync_path": str(startup_sync) if startup_sync.exists() else "",
+        "broker_state_recovery_path": str(broker_state_recovery) if broker_state_recovery.exists() else "",
         "ledger_reconciliation_path": str(latest_recon) if latest_recon else "",
         "ledger_reconciliation_artifact_path": str(latest_ledger_artifact) if latest_ledger_artifact else "",
         "run_journal_path": str(run_journal) if run_journal.exists() else "",
@@ -128,14 +132,39 @@ def enrich_validation_evidence(
         "status": str(startup_payload.get("status", "")),
         "halt_reconciliation": bool(startup_payload.get("halt_reconciliation", False)),
     }
+    recovery_required = bool(recovery_payload.get("resume_detected", False)) or resume_state_loaded
+    operationally_complete = bool(
+        recovery_payload.get(
+            "operationally_complete",
+            not recovery_required,
+        )
+    )
     state["recovery_summary"] = {
-        "resume_restores_broker_state": False,
+        "required": recovery_required,
+        "status": str(
+            recovery_payload.get(
+                "status",
+                "missing" if recovery_required else "not_required",
+            )
+        ),
+        "resume_restores_broker_state": bool(recovery_payload.get("broker_state_restored", False)),
         "resume_restores_validation_counters": True,
+        "broker_state_verified": bool(recovery_payload.get("broker_state_verified", False)),
+        "operationally_complete": operationally_complete,
+        "artifact_path": str(broker_state_recovery) if broker_state_recovery.exists() else "",
+        "reason": str(recovery_payload.get("error", "")),
         "boundary": (
-            "run_paper_validation resumes validation counters and evidence pointers only; "
-            "broker cash/positions are not restored from ledger in this script"
+            "run_paper_validation depends on ledger-backed broker-state recovery evidence; "
+            "resume is operationally incomplete until cash/positions restore or verify passes"
         ),
     }
+
+
+def _recovery_operationally_complete(state: dict[str, Any]) -> bool:
+    recovery = state.get("recovery_summary", {})
+    if not recovery:
+        return True
+    return bool(recovery.get("operationally_complete", True))
 
 
 def _latest_file(directory: Path, pattern: str) -> Path | None:
@@ -179,7 +208,10 @@ def _broker_local_diff_summary(recon_payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def save_report(state: dict[str, Any], path: Path) -> None:
-    passed = state.get("consecutive_clean_days", 0) >= state.get("days_required", 30)
+    passed = (
+        state.get("consecutive_clean_days", 0) >= state.get("days_required", 30)
+        and _recovery_operationally_complete(state)
+    )
     report = {
         "status": "PASS" if passed else "INCOMPLETE",
         "symbols": state.get("symbols", []),
@@ -330,14 +362,16 @@ def main() -> None:
     raw_state = load_state(state_path)
     if raw_state:
         state = raw_state
+        state["resume_state_loaded"] = True
         completed_dates = {r["date"] for r in state.get("daily_results", [])}
         print(f"Resuming from previous state ({state_path}) — "
               f"{state.get('days_completed', 0)} days completed, "
               f"{state.get('consecutive_clean_days', 0)} consecutive clean")
-        print("  NOTE: broker state is in-memory and is NOT restored on resume.")
+        print("  NOTE: readiness now depends on ledger-backed broker-state recovery evidence.")
         print()
     else:
         state = _make_initial_state(symbols, args.capital, args.days_required)
+        state["resume_state_loaded"] = False
         completed_dates = set()
         print("Starting fresh validation run.")
         print()
@@ -397,16 +431,19 @@ def main() -> None:
     # Early exit if already passed
     # ------------------------------------------------------------------
     if state.get("consecutive_clean_days", 0) >= state.get("days_required", 30):
-        print(f"Validation already passed "
-              f"({state['consecutive_clean_days']} >= {state['days_required']})")
         enrich_validation_evidence(
             state,
             ledger_root=ledger_root,
             state_path=state_path,
             report_path=report_path,
         )
+        if _recovery_operationally_complete(state):
+            print(f"Validation already passed "
+                  f"({state['consecutive_clean_days']} >= {state['days_required']})")
+        else:
+            print("Validation counters reached target, but recovery evidence is incomplete.")
         save_report(state, report_path)
-        sys.exit(0)
+        sys.exit(0 if _recovery_operationally_complete(state) else 1)
 
     # ------------------------------------------------------------------
     # Build trading infrastructure
@@ -417,7 +454,20 @@ def main() -> None:
         slippage_bps=args.slippage,
         ledger_root=str(ledger_root),
     )
-    loop = PaperTradingLoop(config=config)
+    try:
+        loop = PaperTradingLoop(config=config)
+    except RuntimeError as exc:
+        print(f"ERROR: {exc}")
+        state["runtime_error"] = str(exc)
+        enrich_validation_evidence(
+            state,
+            ledger_root=ledger_root,
+            state_path=state_path,
+            report_path=report_path,
+        )
+        save_state(state, state_path)
+        save_report(state, report_path)
+        sys.exit(1)
 
     strategy_params = json.loads(args.strategy_params_json) if args.strategy_params_json else {}
     try:
@@ -538,7 +588,13 @@ def main() -> None:
     # ------------------------------------------------------------------
     total_available = len(sorted_dates)
     final_equity = loop.broker.get_account().equity
-    passed = reached_target
+    enrich_validation_evidence(
+        state,
+        ledger_root=ledger_root,
+        state_path=state_path,
+        report_path=report_path,
+    )
+    passed = reached_target and _recovery_operationally_complete(state)
 
     print()
     print("=" * 56)
@@ -551,12 +607,6 @@ def main() -> None:
     print(f"  Final equity:          ${final_equity:,.2f}")
     print(f"  Result:                {'PASS' if passed else 'INCOMPLETE'}")
 
-    enrich_validation_evidence(
-        state,
-        ledger_root=ledger_root,
-        state_path=state_path,
-        report_path=report_path,
-    )
     save_state(state, state_path)
     save_report(state, report_path)
     print(f"\nState saved to {state_path}")

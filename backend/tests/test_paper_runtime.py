@@ -24,7 +24,7 @@ import pytest
 
 from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.clock import utc_now
-from quant_us.core.enums import OrderSide, OrderStatus, SignalDirection, SessionName
+from quant_us.core.enums import OrderSide, OrderStatus, OrderType, SignalDirection, SessionName, TimeInForce
 from quant_us.core.events import MarketEvent
 from quant_us.core.types import (
     AccountState,
@@ -32,11 +32,13 @@ from quant_us.core.types import (
     Fill,
     Order,
     OrderIntent,
+    PortfolioSnapshot,
     Position,
     RiskDecision,
     Signal,
     new_id,
 )
+from quant_us.execution.ledger import JsonlLedgerStore
 from quant_us.live.fake_alpaca_paper_adapter import FakeAlpacaPaperBrokerAdapter
 from quant_us.live.paper_adapter_contract import PAPER_ADAPTER_CONTRACT_VERSION
 from quant_us.live.paper_runtime import PaperRuntime, PaperRuntimeConfig, PaperSessionMetrics
@@ -217,6 +219,14 @@ def _session_manifest_history(ledger_root: str, session_id: str) -> dict[str, An
     )
 
 
+def _broker_state_recovery_artifact(ledger_root: str) -> dict[str, Any]:
+    return json.loads(
+        (Path(ledger_root) / "audit" / "paper_broker_state_recovery.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+
 # ======================================================================
 # PaperRuntime tests
 # ======================================================================
@@ -307,6 +317,73 @@ class TestPaperRuntimeBootstrap(unittest.TestCase):
         self.assertTrue(Path(str(first_history["history_artifact_path"])).exists())
         self.assertTrue(Path(str(second_history["history_artifact_path"])).exists())
         second_runtime.shutdown()
+
+    @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
+    def test_bootstrap_restores_simulated_broker_state_from_ledger(
+        self,
+        mock_mdl: mock.MagicMock,
+    ) -> None:
+        ledger = JsonlLedgerStore(self.ledger_root)
+        order = Order(
+            timestamp_utc=datetime(2026, 5, 4, 14, 30, tzinfo=UTC),
+            strategy_id="resume_fixture",
+            symbol="AAPL",
+            side=OrderSide.BUY,
+            quantity=10.0,
+            order_type=OrderType.MARKET,
+            time_in_force=TimeInForce.DAY,
+            client_order_id="resume_client_001",
+            order_id="resume_order_001",
+            status=OrderStatus.FILLED,
+        )
+        fill = Fill(
+            order_id="resume_order_001",
+            symbol="AAPL",
+            side=OrderSide.BUY,
+            quantity=10.0,
+            price=150.0,
+            commission=1.0,
+            filled_at=datetime(2026, 5, 4, 14, 31, tzinfo=UTC),
+            broker="paper_runtime",
+            fill_id="resume_fill_001",
+        )
+        ledger.append_order(order)
+        ledger.append_fill(fill)
+        ledger.append_snapshot(
+            PortfolioSnapshot(
+                timestamp_utc=datetime(2026, 5, 4, 20, 0, tzinfo=UTC),
+                equity=100_250.0,
+                cash=98_499.0,
+                gross_exposure=1_750.0,
+                net_exposure=1_750.0,
+                daily_pnl=250.0,
+                drawdown=0.0,
+            )
+        )
+
+        config = PaperRuntimeConfig(
+            symbols=["AAPL"],
+            ledger_root=self.ledger_root,
+            reconcile_on_start=False,
+        )
+        runtime = PaperRuntime(config=config)
+        runtime.bootstrap(strategy=FakeStrategy())
+
+        self.assertAlmostEqual(runtime.broker.cash, 98_499.0)
+        self.assertIn("AAPL", runtime.broker.positions)
+        self.assertAlmostEqual(runtime.broker.positions["AAPL"].quantity, 10.0)
+        self.assertEqual(len(runtime.broker.orders), 1)
+        self.assertEqual(len(runtime.broker.fills), 1)
+
+        recovery = _broker_state_recovery_artifact(self.ledger_root)
+        self.assertEqual(recovery["status"], "restored")
+        self.assertTrue(recovery["operationally_complete"])
+        self.assertTrue(recovery["broker_state_restored"])
+
+        manifest = _session_manifest(self.ledger_root)
+        self.assertEqual(manifest["broker_state_recovery_status"]["status"], "restored")
+        self.assertTrue(manifest["broker_state_recovery_status"]["operationally_complete"])
+        runtime.shutdown()
 
     @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
     def test_bootstrap_reconcile_on_start_passes(self, mock_mdl: mock.MagicMock) -> None:
@@ -1121,9 +1198,11 @@ class TestPaperSchedulerReconcileOnStart(unittest.TestCase):
         self.tmpdir.cleanup()
 
     @mock.patch("quant_us.live.paper_runtime.MarketDataLoop")
-    def test_reconcile_on_start_blocks_if_breaks_detected(self, mock_mdl_cls: mock.MagicMock) -> None:
-        """When reconcile_on_start=True and breaks exist, runtime should halt."""
-        # Write a fill to the ledger before bootstrap so broker and ledger mismatch
+    def test_reconcile_on_start_restores_simulated_state_before_recon(
+        self,
+        mock_mdl_cls: mock.MagicMock,
+    ) -> None:
+        """When a simulated paper ledger exists, startup should restore before recon."""
         fake_fill = Fill(
             order_id=new_id("ord"),
             symbol="AAPL",
@@ -1160,8 +1239,10 @@ class TestPaperSchedulerReconcileOnStart(unittest.TestCase):
         runtime = PaperRuntime(config=config)
         runtime.bootstrap(strategy=FakeStrategy())
 
-        # The reconciliation should have failed (ledger says we bought, broker disagrees)
-        self.assertTrue(runtime._halt_reconciliation)
+        self.assertFalse(runtime._halt_reconciliation)
+        self.assertAlmostEqual(runtime.broker.cash, 100_000.0 - 10.0 * 150.0 - 1.5)
+        self.assertIn("AAPL", runtime.broker.positions)
+        self.assertAlmostEqual(runtime.broker.positions["AAPL"].quantity, 10.0)
 
 
 if __name__ == "__main__":

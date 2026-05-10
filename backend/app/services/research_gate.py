@@ -634,14 +634,15 @@ class ResearchPromotionGateService:
             "paper_runtime_approved": False,
             "message": (
                 "research_gate 只输出服务层研究评估结果；"
-                "paper_candidate/next_stage 不等于 paper runtime approval。"
+                "paper_candidate/next_stage 不等于 paper review approval，"
+                "更不等于 paper execution authorization。"
             ),
         }
 
     def _recommendations(self, gates: list[dict[str, Any]], decision: str) -> list[str]:
         if decision == "pass":
             return [
-                "核心准入门通过；当前结果仅表示服务层 paper_candidate 候选，仍需 automation promotion gate 最终裁决后才能进入人工 paper review。"
+                "核心准入门通过；当前结果仅表示服务层 paper_candidate 候选，仍需 automation promotion gate 最终裁决后才能进入人工 paper review，且这一步仍不是 paper execution authorization。"
             ]
         failed = [gate for gate in gates if gate["status"] == "fail"]
         warned = [gate for gate in gates if gate["status"] == "warn"]

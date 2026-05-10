@@ -115,7 +115,23 @@ class TestReconciliationServiceReconcileAll(unittest.TestCase):
 class TestLiveReadinessGateExpanded(unittest.TestCase):
     def test_has_11_checks(self) -> None:
         report = LiveReadinessGate().check_all()
-        self.assertEqual(len(report.checks), 11)
+        names = {check.name for check in report.checks}
+        original_checks = {
+            "paper_30_day_clean",
+            "oms_idempotency",
+            "kill_switch_coverage",
+            "recon_hard_gate",
+            "fill_traceability",
+            "order_recovery",
+            "daily_report",
+            "monitoring",
+            "broker_credentials",
+            "data_vendor_health",
+            "telegram_connectivity",
+        }
+        self.assertGreaterEqual(len(report.checks), 11)
+        self.assertTrue(original_checks.issubset(names))
+        self.assertIn("review_only_defaults", names)
 
     def test_broker_credentials_fails_without_env(self) -> None:
         with mock.patch.dict(os.environ, {}, clear=True):

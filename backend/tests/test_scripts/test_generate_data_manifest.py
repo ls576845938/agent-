@@ -12,7 +12,7 @@ import unittest
 from io import StringIO
 from unittest.mock import MagicMock, patch
 
-from quant_us.data.storage.data_manifest import DataManifest
+from quant_us.data.storage.data_manifest import DataManifest, DataManifestValidation
 
 
 # ---------------------------------------------------------------------------
@@ -426,6 +426,155 @@ class TestGenerateDataManifestCLI(unittest.TestCase):
         self.assertEqual(build_kwargs["survivorship_bias_risk"], "clean")
         self.assertEqual(build_kwargs["adjustment_policy"], "split_adjusted")
         self.assertIn("adjustment_policy: split_adjusted", out)
+
+    @patch("scripts.generate_data_manifest.get_git_commit", return_value="abc123")
+    @patch(
+        "scripts.generate_data_manifest.validate_manifest_for_promotion",
+        return_value=DataManifestValidation(
+            ok=False,
+            reasons=["missing_bars:2", "zero_volume_bars:1"],
+            warnings=[],
+        ),
+    )
+    @patch("scripts.generate_data_manifest.build_manifest_from_quality")
+    @patch("scripts.generate_data_manifest.inspect_market_data_quality")
+    @patch("scripts.generate_data_manifest.DataManifestStore")
+    def test_validate_mode_blocks_write_for_bad_manifest(
+        self,
+        mock_store_cls: MagicMock,
+        mock_inspect: MagicMock,
+        mock_build: MagicMock,
+        mock_validate: MagicMock,
+        mock_git: MagicMock,
+    ) -> None:
+        mock_inspect.return_value = {
+            "data_version": "v3",
+            "row_count": 10,
+            "expected_rows": 12,
+            "coverage_pct": 83.3,
+            "quality_score": 81.0,
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 2,
+        }
+        mock_manifest = DataManifest(
+            data_version="v3",
+            source="sqlite",
+            symbol="AAPL",
+            interval="1d",
+            coverage_pct=83.3,
+            quality_score=81.0,
+            row_count=10,
+            quality_summary={
+                "missing_bars": 2,
+                "duplicate_bars": 0,
+                "price_jump_bars": 0,
+                "zero_volume_bars": 1,
+                "corporate_action_flags": 0,
+                "invalid_ohlc_rows": 0,
+                "non_positive_price_rows": 0,
+                "duplicate_timestamps_removed": 0,
+                "cleaning_loss_rows": 0,
+                "total_issue_count": 3,
+            },
+        )
+        mock_build.return_value = mock_manifest
+
+        mock_store = MagicMock()
+        mock_store.list_manifests.return_value = []
+        mock_store_cls.return_value = mock_store
+
+        out, err, exc = self._run_main(
+            [
+                "--source", "sqlite",
+                "--symbol", "AAPL",
+                "--interval", "1d",
+                "--validate",
+            ]
+        )
+
+        self.assertIsNotNone(exc)
+        self.assertIsInstance(exc, ValueError)
+        mock_validate.assert_called_once_with(mock_manifest, strict=True)
+        mock_store.write.assert_not_called()
+        self.assertIn("promotion validation: BLOCK", out)
+        self.assertIn("quality_summary:", out)
+        self.assertIn("missing_bars=2", out)
+
+    @patch("scripts.generate_data_manifest.get_git_commit", return_value="abc123")
+    @patch(
+        "scripts.generate_data_manifest.validate_manifest_for_promotion",
+        return_value=DataManifestValidation(ok=True, reasons=[], warnings=[]),
+    )
+    @patch("scripts.generate_data_manifest.build_manifest_from_quality")
+    @patch("scripts.generate_data_manifest.inspect_market_data_quality")
+    @patch("scripts.generate_data_manifest.DataManifestStore")
+    def test_validate_mode_writes_good_manifest_and_prints_quality_summary(
+        self,
+        mock_store_cls: MagicMock,
+        mock_inspect: MagicMock,
+        mock_build: MagicMock,
+        mock_validate: MagicMock,
+        mock_git: MagicMock,
+    ) -> None:
+        mock_inspect.return_value = {
+            "data_version": "v4",
+            "row_count": 10,
+            "expected_rows": 10,
+            "coverage_pct": 100.0,
+            "quality_score": 99.0,
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 0,
+        }
+        mock_manifest = DataManifest(
+            data_version="v4",
+            source="sqlite",
+            symbol="AAPL",
+            interval="1d",
+            coverage_pct=100.0,
+            quality_score=99.0,
+            row_count=10,
+            quality_summary={
+                "missing_bars": 0,
+                "duplicate_bars": 0,
+                "price_jump_bars": 0,
+                "zero_volume_bars": 0,
+                "corporate_action_flags": 0,
+                "invalid_ohlc_rows": 0,
+                "non_positive_price_rows": 0,
+                "duplicate_timestamps_removed": 0,
+                "cleaning_loss_rows": 0,
+                "total_issue_count": 0,
+            },
+        )
+        mock_build.return_value = mock_manifest
+
+        mock_store = MagicMock()
+        mock_store.list_manifests.return_value = []
+        mock_store_cls.return_value = mock_store
+
+        out, err, exc = self._run_main(
+            [
+                "--source", "sqlite",
+                "--symbol", "AAPL",
+                "--interval", "1d",
+                "--validate",
+            ]
+        )
+
+        self.assertIsNone(exc)
+        mock_validate.assert_called_once_with(mock_manifest, strict=True)
+        mock_store.write.assert_called_once_with(mock_manifest)
+        self.assertIn("promotion validation: PASS", out)
+        self.assertIn("quality_summary:", out)
+        self.assertIn("total_issue_count=0", out)
 
 
 if __name__ == "__main__":

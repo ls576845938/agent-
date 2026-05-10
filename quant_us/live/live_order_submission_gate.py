@@ -1,9 +1,8 @@
-"""Live Order Submission Gate for G4 Small Live Pilot Execution.
+"""Live Order Submission Gate for review-only micro-live readiness.
 
-The SINGLE non-bypassable gate that must return APPROVED_FOR_SUBMIT
-before any real live order reaches AlpacaBroker.submit_order().
-
-Every block reason produces an audit record. Nothing is silent.
+This module remains fail-closed. Even when every configured criterion passes,
+the result stays at REQUIRES_MANUAL_REVIEW so the readiness surface cannot be
+mistaken for a start/run/submit entrypoint.
 """
 
 from __future__ import annotations
@@ -84,6 +83,12 @@ BLOCK_REASONS = frozenset({
     "kill_switch_active",
     "execute_live_pilot_not_set",
     "dry_run_mode",
+    "approval_strategy_version_mismatch",
+    "symbol_not_allowed",
+    "daily_order_count_exceeded",
+    "reduce_only_exit_plan_missing",
+    "endpoint_guard_inactive",
+    "read_only_ack_missing",
 })
 
 
@@ -93,10 +98,10 @@ BLOCK_REASONS = frozenset({
 
 
 class LiveOrderSubmissionGate:
-    """Centralized, non-bypassable gate for live order submission.
+    """Centralized, non-bypassable gate for live-order review readiness.
 
-    Must return APPROVED_FOR_SUBMIT before AlpacaBroker.submit_order() is called.
-    Every check failure produces an audit record.
+    The gate is intentionally fail-closed for this repo surface. A clean result
+    means the request can proceed to manual review, not to automatic submission.
     """
 
     def __init__(self, audit_dir: str = "data/live_pilot/audit") -> None:
@@ -128,12 +133,21 @@ class LiveOrderSubmissionGate:
         kill_switch_active: bool = False,
         strategy_version: str = "",
         approved_version: str = "",
+        symbol: str = "",
+        allowed_symbols: list[str] | None = None,
+        current_daily_order_count: int = 0,
+        max_daily_order_count: int = 0,
+        reduce_only_exit_ready: bool = False,
+        endpoint_guard_active: bool = False,
+        read_only_acknowledged: bool = False,
     ) -> SubmissionGateDecision:
         reasons: list[str] = []
         warnings: list[str] = []
 
         if allowed_order_types is None:
             allowed_order_types = ["limit"]
+        if allowed_symbols is None:
+            allowed_symbols = []
 
         # --- Hard gates (order matters: cheapest first) ---
 
@@ -165,7 +179,7 @@ class LiveOrderSubmissionGate:
                         elif check_name == "not_expired":
                             reasons.append("approval_expired")
                         elif check_name == "strategy_version_match":
-                            warnings.append("strategy_version_mismatch")
+                            reasons.append("approval_strategy_version_mismatch")
                         else:
                             reasons.append(f"approval_{check_name}_failed")
 
@@ -185,6 +199,12 @@ class LiveOrderSubmissionGate:
                     reasons.append("notional_exceeded")
                 if (daily_notional_used + order_notional) > envelope.max_daily_notional:
                     reasons.append("notional_exceeded")
+                if symbol and envelope.symbols and symbol not in envelope.symbols:
+                    reasons.append("symbol_not_allowed")
+                if current_daily_order_count >= envelope.max_daily_order_count:
+                    reasons.append("daily_order_count_exceeded")
+                if not envelope.reduce_only_on_warning:
+                    reasons.append("reduce_only_exit_plan_missing")
 
         if dossier_decision not in ("GO_FOR_SMALL_LIVE_REVIEW", "READY_FOR_HUMAN_REVIEW"):
             reasons.append("dossier_not_ready")
@@ -200,6 +220,9 @@ class LiveOrderSubmissionGate:
 
         if not live_endpoint_ok:
             reasons.append("live_endpoint_mismatch")
+
+        if not endpoint_guard_active:
+            reasons.append("endpoint_guard_inactive")
 
         if not reconciliation_clean:
             reasons.append("reconciliation_not_clean")
@@ -219,11 +242,23 @@ class LiveOrderSubmissionGate:
         if order_notional > max_order_notional > 0:
             reasons.append("notional_exceeded")
 
+        if allowed_symbols and symbol and symbol not in allowed_symbols:
+            reasons.append("symbol_not_allowed")
+
+        if max_daily_order_count > 0 and current_daily_order_count >= max_daily_order_count:
+            reasons.append("daily_order_count_exceeded")
+
+        if not reduce_only_exit_ready:
+            reasons.append("reduce_only_exit_plan_missing")
+
         if not oms_idempotency_ok:
             reasons.append("oms_idempotency_failed")
 
         if kill_switch_active:
             reasons.append("kill_switch_active")
+
+        if not read_only_acknowledged:
+            reasons.append("read_only_ack_missing")
 
         # Decision
         if reasons:
@@ -234,15 +269,13 @@ class LiveOrderSubmissionGate:
                 warnings=warnings,
             )
 
-        if warnings:
-            self._audit("APPROVED_FOR_SUBMIT_WITH_WARNINGS", warnings)
-            return SubmissionGateDecision(
-                decision="APPROVED_FOR_SUBMIT",
-                warnings=warnings,
-            )
-
-        self._audit("APPROVED_FOR_SUBMIT", [])
-        return SubmissionGateDecision(decision="APPROVED_FOR_SUBMIT")
+        review_warnings = list(warnings)
+        review_warnings.append("review_only_surface_no_automatic_submission")
+        self._audit("REQUIRES_MANUAL_REVIEW", review_warnings)
+        return SubmissionGateDecision(
+            decision="REQUIRES_MANUAL_REVIEW",
+            warnings=review_warnings,
+        )
 
     # ------------------------------------------------------------------
     # Audit

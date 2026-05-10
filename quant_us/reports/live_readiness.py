@@ -1,6 +1,10 @@
-"""Live Readiness Gate — automated check of all pre-live conditions.
+"""Live readiness review gate.
 
-Before any live trading, ALL checks must pass:
+This report is for review-only readiness. It can certify that evidence is
+complete enough for human review, but it does not provide a start/run/submit
+entrypoint.
+
+Before any future live trading discussion, ALL checks below should pass:
 
   - paper_30_day_clean   30 consecutive clean paper trading days
   - oms_idempotency      OMS has idempotency_path configured
@@ -47,6 +51,14 @@ class LiveReadinessReport:
     def all_passed(self) -> bool:
         return all(c.passed for c in self.checks)
 
+    @property
+    def review_only(self) -> bool:
+        return True
+
+    @property
+    def submission_ready(self) -> bool:
+        return False
+
     def is_ready(self, profile: str = "live") -> bool:
         """True when ALL hard-FAIL checks pass (warnings don't block)."""
         failing = [c for c in self.checks if not c.passed and not c.warn]
@@ -55,6 +67,9 @@ class LiveReadinessReport:
     def to_dict(self) -> dict[str, Any]:
         return {
             "ready": self.all_passed,
+            "review_only": self.review_only,
+            "submission_ready": self.submission_ready,
+            "recommended_action": "REVIEW_ONLY" if self.is_ready() else "BLOCKED",
             "checks": [
                 {"name": c.name, "passed": c.passed, "warn": c.warn, "detail": c.detail}
                 for c in self.checks
@@ -110,6 +125,13 @@ class LiveReadinessGate:
         report.checks.append(self._check_broker_credentials(profile))
         report.checks.append(self._check_data_vendor_health())
         report.checks.append(self._check_telegram_connectivity(profile))
+        report.checks.append(self._check_manual_approval_required())
+        report.checks.append(self._check_allowlist_surface())
+        report.checks.append(self._check_micro_live_limits())
+        report.checks.append(self._check_reduce_only_exit_plan())
+        report.checks.append(self._check_emergency_stop_readiness())
+        report.checks.append(self._check_endpoint_guard())
+        report.checks.append(self._check_review_only_defaults())
 
         return report
 
@@ -199,7 +221,7 @@ class LiveReadinessGate:
             return ReadinessCheck(
                 name="paper_30_day_clean",
                 passed=False,
-                detail="No validation_state_path provided; run paper trading for 30 days first",
+                detail="No validation_state_path provided; review remains blocked until 30 paper days are recorded",
             )
         p = Path(validation_state_path)
         if not p.exists():
@@ -515,6 +537,169 @@ class LiveReadinessGate:
                 name="broker_credentials",
                 passed=False,
                 detail=f"Cannot connect to Alpaca: {exc}",
+            )
+
+    @staticmethod
+    def _check_manual_approval_required() -> ReadinessCheck:
+        try:
+            from quant_us.live.live_pilot_approval import LivePilotApprovalRequest
+
+            status_default = LivePilotApprovalRequest(approval_id="review_only_probe").status
+            if status_default != "DRAFT":
+                return ReadinessCheck(
+                    name="manual_approval_required",
+                    passed=False,
+                    detail=f"Approval request default status is {status_default}, expected DRAFT",
+                )
+            return ReadinessCheck(
+                name="manual_approval_required",
+                passed=True,
+                detail="Human approval artifacts default to DRAFT and require explicit approval",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="manual_approval_required",
+                passed=False,
+                detail=f"Cannot verify human approval requirement: {exc}",
+            )
+
+    @staticmethod
+    def _check_allowlist_surface() -> ReadinessCheck:
+        try:
+            from quant_us.live.live_pilot_dossier import LiveSafety, StrategyFreeze
+            from quant_us.live.live_pilot_risk_envelope import LivePilotRiskEnvelope
+
+            has_strategy_allowlist = "approved_symbols" in StrategyFreeze.__dataclass_fields__
+            has_safety_allowlist = "symbol_allowlist" in LiveSafety.__dataclass_fields__
+            has_envelope_symbols = "symbols" in LivePilotRiskEnvelope.__dataclass_fields__
+            passed = has_strategy_allowlist and has_safety_allowlist and has_envelope_symbols
+            detail = (
+                "Strategy freeze, dossier safety, and risk envelope expose allowlist fields"
+                if passed
+                else "Allowlist fields missing from strategy freeze, safety dossier, or risk envelope"
+            )
+            return ReadinessCheck(name="allowlist_surface", passed=passed, detail=detail)
+        except Exception as exc:
+            return ReadinessCheck(
+                name="allowlist_surface",
+                passed=False,
+                detail=f"Cannot verify allowlist surface: {exc}",
+            )
+
+    @staticmethod
+    def _check_micro_live_limits() -> ReadinessCheck:
+        try:
+            from quant_us.live.live_pilot_risk_envelope import LivePilotRiskEnvelope
+
+            envelope = LivePilotRiskEnvelope.default_conservative("review_only_probe")
+            passed = (
+                envelope.max_order_notional > 0
+                and envelope.max_daily_notional > 0
+                and envelope.max_daily_order_count > 0
+            )
+            detail = (
+                f"Conservative limits present: max_order_notional={envelope.max_order_notional}, "
+                f"max_daily_notional={envelope.max_daily_notional}, "
+                f"max_daily_order_count={envelope.max_daily_order_count}"
+            )
+            return ReadinessCheck(name="micro_live_limits", passed=passed, detail=detail)
+        except Exception as exc:
+            return ReadinessCheck(
+                name="micro_live_limits",
+                passed=False,
+                detail=f"Cannot verify micro-live limits: {exc}",
+            )
+
+    @staticmethod
+    def _check_reduce_only_exit_plan() -> ReadinessCheck:
+        try:
+            from quant_us.live.emergency_stop import RollbackPlanGenerator
+
+            has_manual_review = hasattr(RollbackPlanGenerator, "generate")
+            if not has_manual_review:
+                return ReadinessCheck(
+                    name="reduce_only_exit_plan",
+                    passed=False,
+                    detail="RollbackPlanGenerator.generate missing",
+                )
+            return ReadinessCheck(
+                name="reduce_only_exit_plan",
+                passed=True,
+                detail="Rollback plan generator exists for reduce-only incident exits and manual review",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="reduce_only_exit_plan",
+                passed=False,
+                detail=f"Cannot verify reduce-only exit plan: {exc}",
+            )
+
+    @staticmethod
+    def _check_emergency_stop_readiness() -> ReadinessCheck:
+        try:
+            from quant_us.live.emergency_stop import EmergencyStopController
+
+            required = {"trigger", "acknowledge", "resolve", "status"}
+            actual = set(dir(EmergencyStopController))
+            missing = sorted(required - actual)
+            return ReadinessCheck(
+                name="emergency_stop_readiness",
+                passed=not missing,
+                detail="Emergency stop controller surface present" if not missing else f"Missing emergency stop methods: {missing}",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="emergency_stop_readiness",
+                passed=False,
+                detail=f"Cannot verify emergency stop readiness: {exc}",
+            )
+
+    @staticmethod
+    def _check_endpoint_guard() -> ReadinessCheck:
+        try:
+            from quant_us.live.readonly_live_broker import ReadOnlyLiveBrokerProxy
+
+            required = {"submit_order", "cancel_order", "replace_order", "close_position", "close_all_positions"}
+            actual = set(dir(ReadOnlyLiveBrokerProxy))
+            missing = sorted(required - actual)
+            return ReadinessCheck(
+                name="endpoint_guard",
+                passed=not missing,
+                detail="ReadOnlyLiveBrokerProxy exists and exposes forbidden write methods for fail-closed guarding"
+                if not missing
+                else f"Missing endpoint guard methods: {missing}",
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="endpoint_guard",
+                passed=False,
+                detail=f"Cannot verify endpoint guard: {exc}",
+            )
+
+    @staticmethod
+    def _check_review_only_defaults() -> ReadinessCheck:
+        try:
+            from quant_us.live.live_pilot_dossier import LiveSafety
+
+            safety = LiveSafety()
+            passed = (
+                safety.allow_live_orders is False
+                and safety.confirm_live is False
+                and safety.manual_approval_required is True
+            )
+            return ReadinessCheck(
+                name="review_only_defaults",
+                passed=passed,
+                detail=(
+                    "Dossier defaults remain review-only with allow_live_orders=False, "
+                    "confirm_live=False, manual_approval_required=True"
+                ),
+            )
+        except Exception as exc:
+            return ReadinessCheck(
+                name="review_only_defaults",
+                passed=False,
+                detail=f"Cannot verify review-only defaults: {exc}",
             )
 
     @staticmethod

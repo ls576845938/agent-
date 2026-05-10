@@ -5,7 +5,7 @@ Covers:
   - paper_30_day_clean fails with <30 days
   - paper_30_day_clean fails with reconciliation errors
   - paper_30_day_clean fails with daily errors
-  - Small-live readiness requires all 8 gates + paper 30 day
+  - Small-live readiness requires all review-only gates + paper 30 day
   - Go/no-go output via CLI
 """
 
@@ -164,10 +164,10 @@ class Paper30DayCleanTests(unittest.TestCase):
 
 
 class SmallLiveReadinessGateTests(unittest.TestCase):
-    """Small-live readiness requires all 8 gates + paper 30-day."""
+    """Small-live readiness requires all review-only gates + paper 30-day."""
 
     def test_reject_when_any_check_fails(self) -> None:
-        """is_ready() must be False if any of the 8 checks fails."""
+        """is_ready() must be False if any review-only gate fails."""
         gate = LiveReadinessGate()
         with patch.object(gate, "_check_paper_30_day_clean") as mock_check:
             mock_check.return_value = ReadinessCheck(name="paper_30_day_clean", passed=False)
@@ -175,7 +175,7 @@ class SmallLiveReadinessGateTests(unittest.TestCase):
             self.assertFalse(report.is_ready())
 
     def test_gate_passes_with_all_mocks(self) -> None:
-        """When all 11 checks return passed, the gate says ready."""
+        """When all review-only checks return passed, the gate says ready for review only."""
         gate = LiveReadinessGate()
         passed = ReadinessCheck(name="mock", passed=True)
         attrs = [
@@ -190,6 +190,13 @@ class SmallLiveReadinessGateTests(unittest.TestCase):
             "_check_broker_credentials",
             "_check_data_vendor_health",
             "_check_telegram_connectivity",
+            "_check_manual_approval_required",
+            "_check_allowlist_surface",
+            "_check_micro_live_limits",
+            "_check_reduce_only_exit_plan",
+            "_check_emergency_stop_readiness",
+            "_check_endpoint_guard",
+            "_check_review_only_defaults",
         ]
         with (
             patch.object(gate, attrs[0], return_value=passed),
@@ -203,11 +210,20 @@ class SmallLiveReadinessGateTests(unittest.TestCase):
             patch.object(gate, attrs[8], return_value=passed),
             patch.object(gate, attrs[9], return_value=passed),
             patch.object(gate, attrs[10], return_value=passed),
+            patch.object(gate, attrs[11], return_value=passed),
+            patch.object(gate, attrs[12], return_value=passed),
+            patch.object(gate, attrs[13], return_value=passed),
+            patch.object(gate, attrs[14], return_value=passed),
+            patch.object(gate, attrs[15], return_value=passed),
+            patch.object(gate, attrs[16], return_value=passed),
+            patch.object(gate, attrs[17], return_value=passed),
         ):
             report = gate.check_all(
                 validation_state_path="/fake/path/validation_state.json"
             )
             self.assertTrue(report.is_ready())
+            self.assertTrue(report.to_dict()["review_only"])
+            self.assertFalse(report.to_dict()["submission_ready"])
 
     def test_gate_fails_without_validation_state(self) -> None:
         """Without validation-state path, paper_30_day_clean fails -> not ready."""
@@ -217,6 +233,15 @@ class SmallLiveReadinessGateTests(unittest.TestCase):
         self.assertIsNotNone(paper)
         self.assertFalse(paper.passed)
         self.assertFalse(report.is_ready())
+
+    def test_report_stays_review_only_even_when_ready(self) -> None:
+        report = LiveReadinessReport(
+            checks=[ReadinessCheck(name="paper_30_day_clean", passed=True)]
+        )
+        payload = report.to_dict()
+        self.assertTrue(payload["review_only"])
+        self.assertFalse(payload["submission_ready"])
+        self.assertEqual(payload["recommended_action"], "REVIEW_ONLY")
 
 
 # ---------------------------------------------------------------------------

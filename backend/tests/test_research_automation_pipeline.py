@@ -9,8 +9,10 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 from unittest.mock import patch
 
+from quant_us.research.automation.promotion_gate import ResearchPromotionGate
 from quant_us.research.automation.pipeline import ResearchAutomationPipeline
 from quant_us.research.automation.report_gen import generate_v2
 from quant_us.research.evidence_registry import (
@@ -255,6 +257,246 @@ class TestResearchAutomationPipeline(unittest.TestCase):
                     "created_at": "2026-05-09T12:20:00+00:00",
                 }
             ),
+            encoding="utf-8",
+        )
+
+    def _write_data_manifest(
+        self,
+        *,
+        data_version: str,
+        filename: str | None = None,
+        quality_score: float = 98.0,
+        coverage_pct: float = 99.0,
+        checksum: str = "manifestchecksum",
+        fingerprint: str = "manifestchecksum",
+    ) -> dict[str, object]:
+        manifest_payload: dict[str, object] = {
+            "data_version": data_version,
+            "source": "yfinance",
+            "symbol": "AAPL",
+            "interval": "1d",
+            "asset_class": "equity",
+            "timezone": "UTC",
+            "adjustment": "split_dividend_adjusted",
+            "adjustment_policy": "split_dividend_adjusted",
+            "corporate_action_adjustment": "split_dividend_adjusted",
+            "start": "2024-01-01T00:00:00+00:00",
+            "end": "2024-02-01T00:00:00+00:00",
+            "row_count": 100,
+            "expected_rows": 100,
+            "coverage_pct": coverage_pct,
+            "fingerprint": fingerprint,
+            "checksum": checksum,
+            "quality_score": quality_score,
+            "created_at": "2026-05-09T11:55:00+00:00",
+            "fields": ["timestamp", "open", "high", "low", "close", "volume"],
+            "issues": [],
+            "cleaning": {
+                "duplicate_timestamps_removed": 0,
+                "invalid_ohlc_removed": 0,
+                "non_positive_prices_removed": 0,
+                "missing_bars": 0,
+            },
+            "raw_path": "data/raw/aapl.csv",
+            "cleaned_path": "data/clean/aapl.parquet",
+            "git_commit": "abc1234",
+            "universe_id": "us_equity_core",
+            "universe_source": "governed",
+            "survivorship_bias_risk": "clean",
+        }
+        manifests_dir = Path(self.tmp.name) / "manifests"
+        manifests_dir.mkdir(parents=True, exist_ok=True)
+        target = manifests_dir / f"{filename or data_version}.json"
+        target.write_text(json.dumps(manifest_payload), encoding="utf-8")
+        return manifest_payload
+
+    def _write_ready_promotion_gate_fixture(
+        self,
+        *,
+        candidate_id: str,
+        experiment_id: str,
+        data_version: str = "qs-yfinance-AAPL-1d-gate",
+        candidate_backtest_manifest_path: str | None = None,
+        include_embedded_data_manifest: bool = True,
+        inline_backtest_manifest: dict | None = None,
+        data_manifest_overrides: dict[str, object] | None = None,
+    ) -> None:
+        from quant_us.backtest.ledger_pnl import (
+            compute_ledger_reconciliation_artifact_hash,
+        )
+
+        candidate_dir = Path(self.tmp.name) / "research" / "candidates" / candidate_id
+        candidate_dir.mkdir(parents=True, exist_ok=True)
+        experiment_dir = (
+            Path(self.tmp.name) / "research" / "experiments" / experiment_id
+        )
+        experiment_dir.mkdir(parents=True, exist_ok=True)
+        scorecard_dir = Path(self.tmp.name) / "research" / "scorecards"
+        scorecard_dir.mkdir(parents=True, exist_ok=True)
+        backtest_dir = Path(self.tmp.name) / "research" / "backtests" / candidate_id
+        backtest_dir.mkdir(parents=True, exist_ok=True)
+
+        manifest_payload = self._write_data_manifest(data_version=data_version)
+        if data_manifest_overrides:
+            manifest_payload.update(data_manifest_overrides)
+            (Path(self.tmp.name) / "manifests" / f"{data_version}.json").write_text(
+                json.dumps(manifest_payload),
+                encoding="utf-8",
+            )
+
+        reconciliation_summary = {
+            "snapshot_count": 1,
+            "tolerance_pct": 0.01,
+            "absolute_tolerance": 1e-6,
+            "max_abs_diff": 0.0,
+            "max_pct_diff": 0.0,
+            "passed": True,
+            "message": "clean",
+        }
+        ledger_artifact = {
+            "generated_at": "2026-05-09T12:05:30+00:00",
+            "as_of_utc": "2026-05-09T12:05:30+00:00",
+            "hashes": {
+                "ledger_hash": "ledgerhash",
+                "fills_hash": "fillshash",
+                "orders_hash": "ordershash",
+                "portfolio_snapshots_hash": "snapshash",
+            },
+            "orders": {"total_orders": 12},
+            "fills": {"effective_fill_count": 12},
+            "pnl": {
+                "source": "ledger_fills",
+                "final_equity": 100_500.0,
+                "net_pnl": 500.0,
+            },
+            "integrity": {"passed": True},
+            "reconciliation": {"summary": reconciliation_summary},
+        }
+        ledger_artifact["artifact_hash"] = compute_ledger_reconciliation_artifact_hash(
+            ledger_artifact
+        )
+        ledger_artifact_path = backtest_dir / "ledger_reconciliation_artifact.json"
+        ledger_artifact_path.write_text(json.dumps(ledger_artifact), encoding="utf-8")
+
+        candidate_payload = {
+            "candidate_id": candidate_id,
+            "experiment_id": experiment_id,
+            "strategy_id": "momentum",
+            "promotion_status": "RESEARCH_ONLY",
+            "data_version": data_version,
+            "symbols": ["AAPL"],
+            "backtest_manifest_path": (
+                candidate_backtest_manifest_path
+                if candidate_backtest_manifest_path is not None
+                else f"research/backtests/{candidate_id}/run_manifest.json"
+            ),
+            "metrics": {
+                "walk_forward_pass_rate": 0.9,
+                "trade_count": 12,
+                "cost_sensitivity": 0.1,
+                "max_drawdown_pct": 0.12,
+                "monte_carlo_survival_rate": 0.92,
+                "alpha_decay_half_life_days": 8.0,
+                "param_stability_score": 0.8,
+                "correlation_redundancy": 0.2,
+                "stress_survival_rate": 0.9,
+            },
+        }
+        if inline_backtest_manifest is not None:
+            candidate_payload["backtest_manifest"] = inline_backtest_manifest
+        (candidate_dir / "candidate.json").write_text(
+            json.dumps(candidate_payload),
+            encoding="utf-8",
+        )
+
+        (experiment_dir / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "experiment_id": experiment_id,
+                    "strategy_id": "momentum",
+                    "status": "COMPLETED",
+                    "created_at": "2026-05-09T12:00:00+00:00",
+                    "data_version": data_version,
+                    "symbols": ["AAPL"],
+                    "asset_class": "equity",
+                }
+            ),
+            encoding="utf-8",
+        )
+        (scorecard_dir / f"{candidate_id}.json").write_text(
+            json.dumps({"candidate_id": candidate_id, "status": "ok"}),
+            encoding="utf-8",
+        )
+
+        embedded_manifest = dict(manifest_payload) if include_embedded_data_manifest else None
+        backtest_manifest = {
+            "manifest_schema_version": "backtest_run_v2",
+            "engine": "event_driven",
+            "canonical_for_promotion": True,
+            "run_id": f"run_{candidate_id}",
+            "data_version": data_version,
+            "strategy_version": "momentum@1.0.0",
+            "commit_hash": "abc1234",
+            "ledger_artifact_hash": ledger_artifact["artifact_hash"],
+            "ledger_artifact_path": str(
+                ledger_artifact_path.relative_to(Path(self.tmp.name))
+            ),
+            "ledger_hash": "ledgerhash",
+            "fills_hash": "fillshash",
+            "reconciliation": reconciliation_summary,
+            "corporate_actions": {
+                "total_dividends": 0.0,
+                "total_borrow_fees": 0.0,
+                "total_corporate_adjustments": 0.0,
+                "adjustment_count": 0,
+                "split_event_count": 0,
+            },
+            "evidence": {
+                "equity": {"consistent": True},
+                "orders": {
+                    "count": 12,
+                    "all_orders_have_risk_check_id": True,
+                },
+                "fills": {
+                    "count": 12,
+                    "all_fills_match_orders": True,
+                },
+                "completeness": {
+                    "promotion_evidence_complete": True,
+                },
+                "pnl": {
+                    "source": "ledger_fills",
+                    "final_equity": 100_500.0,
+                    "net_pnl": 500.0,
+                },
+                "reconciliation": {
+                    "summary": reconciliation_summary,
+                    "snapshots": [
+                        {
+                            "timestamp_utc": "2026-05-09T12:05:00+00:00",
+                            "diff": {"cash": 0.0, "equity": 0.0},
+                            "max_abs_diff": 0.0,
+                            "max_pct_diff": 0.0,
+                            "passed": True,
+                        }
+                    ],
+                },
+                "corporate_actions": {
+                    "digest": {
+                        "total_dividends": 0.0,
+                        "total_borrow_fees": 0.0,
+                        "total_corporate_adjustments": 0.0,
+                        "adjustment_count": 0,
+                        "split_event_count": 0,
+                    }
+                },
+                "ledger_artifact": ledger_artifact,
+            },
+        }
+        if embedded_manifest is not None:
+            backtest_manifest["data_manifest"] = embedded_manifest
+        (backtest_dir / "run_manifest.json").write_text(
+            json.dumps(backtest_manifest),
             encoding="utf-8",
         )
 
@@ -757,6 +999,187 @@ class TestResearchAutomationPipeline(unittest.TestCase):
         self.assertEqual(result.evidence["reconciliation_failed_snapshot_count"], 1)
         self.assertIn(
             "reconciliation_failed: backtest reconciliation summary.passed is false",
+            result.reasons,
+        )
+
+    def test_promotion_gate_accepts_canonical_persisted_evidence(self) -> None:
+        candidate_id = "cand_gate_ready"
+        experiment_id = "exp_gate_ready"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "READY_FOR_PAPER_REVIEW")
+        self.assertEqual(result.reasons, [])
+        self.assertEqual(result.warnings, [])
+        self.assertEqual(result.evidence["backtest_manifest_source"], "path")
+        self.assertEqual(result.evidence["data_manifest_binding_state"], "bound")
+
+    def test_promotion_gate_rejects_inline_only_backtest_manifest(self) -> None:
+        candidate_id = "cand_inline_only"
+        experiment_id = "exp_inline_only"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+            candidate_backtest_manifest_path="",
+            inline_backtest_manifest={
+                "engine": "event_driven",
+                "canonical_for_promotion": True,
+            },
+        )
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertIn(
+            "missing_canonical_backtest_manifest_path: candidate must persist "
+            "backtest_manifest_path=research/backtests/cand_inline_only/run_manifest.json",
+            result.reasons,
+        )
+        self.assertIn(
+            "inline_backtest_manifest_not_allowed: promotion requires a persisted canonical backtest_manifest_path",
+            result.reasons,
+        )
+
+    def test_promotion_gate_rejects_missing_canonical_data_manifest(self) -> None:
+        candidate_id = "cand_missing_data_manifest"
+        experiment_id = "exp_missing_data_manifest"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+        (Path(self.tmp.name) / "manifests" / "qs-yfinance-AAPL-1d-gate.json").unlink()
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertTrue(
+            any(reason.startswith("missing_canonical_data_manifest:") for reason in result.reasons)
+        )
+
+    def test_promotion_gate_rejects_stale_data_manifest_binding(self) -> None:
+        candidate_id = "cand_stale_manifest_binding"
+        experiment_id = "exp_stale_manifest_binding"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+        manifest_path = (
+            Path(self.tmp.name)
+            / "research"
+            / "backtests"
+            / candidate_id
+            / "run_manifest.json"
+        )
+        backtest_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        backtest_manifest["data_manifest"]["checksum"] = "stale-checksum"
+        backtest_manifest["data_manifest"]["fingerprint"] = "stale-checksum"
+        manifest_path.write_text(json.dumps(backtest_manifest), encoding="utf-8")
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertIn(
+            "stale_data_manifest_binding: embedded backtest data manifest differs from the canonical persisted data manifest",
+            result.reasons,
+        )
+        self.assertEqual(result.evidence["data_manifest_binding_state"], "stale")
+
+    def test_promotion_gate_rejects_conflicting_data_manifests(self) -> None:
+        candidate_id = "cand_conflict_manifest"
+        experiment_id = "exp_conflict_manifest"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+        self._write_data_manifest(
+            data_version="qs-yfinance-AAPL-1d-gate",
+            filename="qs-yfinance-AAPL-1d-gate-duplicate",
+            checksum="otherchecksum",
+            fingerprint="otherchecksum",
+        )
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertIn(
+            "data_manifest_conflict: multiple persisted manifests found for data_version=qs-yfinance-AAPL-1d-gate",
+            result.reasons,
+        )
+        self.assertEqual(result.evidence["data_manifest_candidate_count"], 2)
+
+    def test_promotion_gate_rejects_low_quality_data_manifest(self) -> None:
+        candidate_id = "cand_low_quality_manifest"
+        experiment_id = "exp_low_quality_manifest"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+            data_manifest_overrides={
+                "quality_score": 70.0,
+                "coverage_pct": 85.0,
+            },
+        )
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertIn(
+            "data_manifest_invalid:coverage_below_threshold:85.00",
+            result.reasons,
+        )
+        self.assertIn(
+            "data_manifest_invalid:quality_below_threshold:70.00",
             result.reasons,
         )
 

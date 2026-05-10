@@ -189,8 +189,8 @@ class TestLiveOrderSubmissionGateCheck:
             )
             assert "emergency_stop_triggered" in d.block_reasons
 
-    def test_all_gates_pass_approved(self) -> None:
-        """When all gate conditions pass, decision is APPROVED_FOR_SUBMIT."""
+    def test_all_gates_pass_still_requires_manual_review(self) -> None:
+        """When all gate conditions pass, decision remains REQUIRES_MANUAL_REVIEW."""
         with tempfile.TemporaryDirectory() as td:
             with patch(
                 "quant_us.live.live_pilot_approval.HumanApprovalGate"
@@ -210,7 +210,10 @@ class TestLiveOrderSubmissionGateCheck:
                     mock_env = MagicMock()
                     mock_env.max_order_notional = 10000.0
                     mock_env.max_daily_notional = 50000.0
+                    mock_env.max_daily_order_count = 3
                     mock_env.allow_market_order = False
+                    mock_env.reduce_only_on_warning = True
+                    mock_env.symbols = ["SPY", "QQQ"]
                     mock_rem.load.return_value = mock_env
                     mock_rem_cls.return_value = mock_rem
 
@@ -237,9 +240,89 @@ class TestLiveOrderSubmissionGateCheck:
                         kill_switch_active=False,
                         strategy_version="1.0.0",
                         approved_version="1.0.0",
+                        symbol="SPY",
+                        allowed_symbols=["SPY", "QQQ"],
+                        current_daily_order_count=0,
+                        max_daily_order_count=3,
+                        reduce_only_exit_ready=True,
+                        endpoint_guard_active=True,
+                        read_only_acknowledged=True,
                     )
-                    assert d.decision == "APPROVED_FOR_SUBMIT"
-                    assert d.approved is True
+                    assert d.decision == "REQUIRES_MANUAL_REVIEW"
+                    assert d.approved is False
+                    assert "review_only_surface_no_automatic_submission" in d.warnings
+
+    def test_symbol_allowlist_violation_blocked(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            with patch(
+                "quant_us.live.live_pilot_approval.HumanApprovalGate"
+            ) as mock_hag_cls:
+                mock_hag = MagicMock()
+                mock_hag.check.return_value = MagicMock(
+                    passed=True,
+                    reason="ok",
+                    checks={"status_approved": True, "not_expired": True},
+                )
+                mock_hag_cls.return_value = mock_hag
+
+                with patch(
+                    "quant_us.live.live_pilot_risk_envelope.RiskEnvelopeManager"
+                ) as mock_rem_cls:
+                    mock_rem = MagicMock()
+                    mock_env = MagicMock()
+                    mock_env.max_order_notional = 10000.0
+                    mock_env.max_daily_notional = 50000.0
+                    mock_env.max_daily_order_count = 3
+                    mock_env.allow_market_order = False
+                    mock_env.reduce_only_on_warning = True
+                    mock_env.symbols = ["SPY"]
+                    mock_rem.load.return_value = mock_env
+                    mock_rem_cls.return_value = mock_rem
+
+                    g = self._gate(td)
+                    d = g.check(
+                        approval_id="test_approval",
+                        envelope_id="test_env",
+                        dossier_decision="READY_FOR_HUMAN_REVIEW",
+                        env_enabled=True,
+                        confirm_live=True,
+                        allow_live=True,
+                        execute_live_pilot=True,
+                        is_dry_run=False,
+                        live_endpoint_ok=True,
+                        reconciliation_clean=True,
+                        emergency_stop_armed=True,
+                        emergency_stop_triggered=False,
+                        in_regular_session=True,
+                        order_type="limit",
+                        allowed_order_types=["limit"],
+                        order_notional=50.0,
+                        max_order_notional=100.0,
+                        oms_idempotency_ok=True,
+                        kill_switch_active=False,
+                        symbol="QQQ",
+                        allowed_symbols=["SPY"],
+                        current_daily_order_count=0,
+                        max_daily_order_count=3,
+                        reduce_only_exit_ready=True,
+                        endpoint_guard_active=True,
+                        read_only_acknowledged=True,
+                    )
+                    assert d.blocked
+                    assert "symbol_not_allowed" in d.block_reasons
+
+    def test_missing_reduce_only_exit_plan_blocked(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            g = self._gate(td)
+            d = g.check(
+                is_dry_run=False,
+                execute_live_pilot=True,
+                approval_id="",
+                envelope_id="",
+                reduce_only_exit_ready=False,
+            )
+            assert d.blocked
+            assert "reduce_only_exit_plan_missing" in d.block_reasons
 
 
 # ---------------------------------------------------------------------------

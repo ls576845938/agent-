@@ -127,6 +127,7 @@ class ResearchPromotionGate:
             experiment_data = json.loads(experiment_path.read_text(encoding="utf-8"))
 
         backtest_manifest = self._load_backtest_manifest(
+            candidate_id=candidate_id,
             candidate_data=candidate_data,
             metrics=metrics,
             evidence=evidence,
@@ -291,29 +292,61 @@ class ResearchPromotionGate:
     def _load_backtest_manifest(
         self,
         *,
+        candidate_id: str,
         candidate_data: dict[str, Any],
         metrics: dict[str, Any],
         evidence: dict[str, Any],
         reasons: list[str],
     ) -> dict[str, Any] | None:
-        raw_path = (
-            candidate_data.get("backtest_manifest_path")
-            or metrics.get("backtest_manifest_path")
-            or ""
-        )
+        raw_path = candidate_data.get("backtest_manifest_path") or ""
+        metrics_path = metrics.get("backtest_manifest_path") or ""
         inline_manifest = (
             candidate_data.get("backtest_manifest")
             or metrics.get("backtest_manifest")
         )
+        canonical_path = self._canonical_backtest_manifest_path(candidate_id)
+        canonical_path_text = str(canonical_path.relative_to(self.data_root))
 
         evidence["backtest_manifest_path"] = str(raw_path or "")
+        evidence["backtest_manifest_metrics_path"] = str(metrics_path or "")
+        evidence["backtest_manifest_expected_path"] = canonical_path_text
         evidence["backtest_manifest_inline"] = isinstance(inline_manifest, dict)
         evidence["backtest_manifest_present"] = False
 
-        manifest_path = self._resolve_backtest_manifest_path(raw_path)
-        if manifest_path is None:
+        if metrics_path and str(metrics_path) != str(raw_path):
+            reasons.append(
+                "non_canonical_backtest_manifest_reference: promotion ignores "
+                "metrics-level backtest_manifest_path and only trusts the "
+                "candidate's persisted canonical backtest_manifest_path"
+            )
+
+        if not raw_path:
             evidence["backtest_manifest_source"] = (
                 "inline_untrusted" if isinstance(inline_manifest, dict) else "missing"
+            )
+            reasons.append(
+                "missing_canonical_backtest_manifest_path: candidate must persist "
+                f"backtest_manifest_path={canonical_path_text}"
+            )
+            if isinstance(inline_manifest, dict):
+                reasons.append(
+                    "inline_backtest_manifest_not_allowed: promotion requires a "
+                    "persisted canonical backtest_manifest_path"
+                )
+            reasons.append(
+                "missing_backtest_manifest_evidence: READY_FOR_PAPER_REVIEW requires canonical backtest manifest evidence"
+            )
+            return None
+
+        manifest_path = self._resolve_backtest_manifest_path(raw_path)
+        evidence["backtest_manifest_resolved_path"] = (
+            str(manifest_path) if manifest_path is not None else ""
+        )
+        if manifest_path is None or not self._same_path(manifest_path, canonical_path):
+            evidence["backtest_manifest_source"] = "non_canonical_path"
+            reasons.append(
+                "non_canonical_backtest_manifest_path: promotion only accepts "
+                f"{canonical_path_text}"
             )
             if isinstance(inline_manifest, dict):
                 reasons.append(
@@ -350,6 +383,15 @@ class ResearchPromotionGate:
         )
         return manifest
 
+    def _canonical_backtest_manifest_path(self, candidate_id: str) -> Path:
+        return (
+            self.data_root
+            / "research"
+            / "backtests"
+            / candidate_id
+            / "run_manifest.json"
+        )
+
     def _resolve_backtest_manifest_path(self, raw_path: Any) -> Path | None:
         if not raw_path:
             return None
@@ -360,6 +402,10 @@ class ResearchPromotionGate:
         if data_relative.exists():
             return data_relative
         return candidate
+
+    @staticmethod
+    def _same_path(left: Path, right: Path) -> bool:
+        return left.resolve(strict=False) == right.resolve(strict=False)
 
     def _evaluate_data_scope(
         self,
@@ -1034,14 +1080,43 @@ class ResearchPromotionGate:
         reasons: list[str],
         warnings: list[str],
     ) -> None:
-        store_manifest = DataManifestStore(self.data_root / "manifests").read(data_version)
+        canonical_path = self.data_root / "manifests" / f"{data_version}.json"
+        manifest_rows = self._find_matching_data_manifests(data_version)
+        canonical_rows = [
+            row for row in manifest_rows if self._same_path(row["path"], canonical_path)
+        ]
 
+        evidence["data_manifest_expected_path"] = str(canonical_path)
+        evidence["data_manifest_candidate_count"] = len(manifest_rows)
+        evidence["data_manifest_candidate_paths"] = [
+            str(row["path"]) for row in manifest_rows
+        ]
         evidence["data_manifest_embedded"] = embedded_manifest is not None
-        evidence["data_manifest_store_exists"] = store_manifest is not None
-        evidence["data_manifest_exists"] = store_manifest is not None
+        evidence["data_manifest_store_exists"] = canonical_path.exists()
+        evidence["data_manifest_exists"] = canonical_path.exists()
+        if not canonical_path.exists():
+            reasons.append(
+                "missing_canonical_data_manifest: governed data manifest not found "
+                f"at {canonical_path}"
+            )
+            return
+        if len(canonical_rows) != 1:
+            reasons.append(
+                "data_manifest_conflict: canonical data manifest path does not "
+                "resolve to exactly one persisted manifest row"
+            )
+            return
+        if len(manifest_rows) != 1:
+            reasons.append(
+                "data_manifest_conflict: multiple persisted manifests found for "
+                f"data_version={data_version}"
+            )
+
+        store_manifest = DataManifestStore(self.data_root / "manifests").read(data_version)
         if store_manifest is None:
             reasons.append(
-                "missing_data_manifest: governed data manifest not found for data_version"
+                "invalid_canonical_data_manifest: canonical data manifest file is "
+                "missing required fields or unreadable as DataManifest"
             )
             return
 
@@ -1051,6 +1126,7 @@ class ResearchPromotionGate:
         evidence["data_manifest_checksum"] = manifest.effective_checksum
         evidence["data_manifest_fingerprint"] = manifest.fingerprint
         evidence["data_manifest_source"] = "manifest_store"
+        evidence["data_manifest_binding_state"] = "missing"
         evidence["data_manifest_validation"] = {
             "ok": validation.ok,
             "reasons": validation.reasons,
@@ -1058,7 +1134,12 @@ class ResearchPromotionGate:
             "metrics": validation.metrics,
         }
 
-        if embedded_manifest is not None:
+        if embedded_manifest is None:
+            reasons.append(
+                "stale_data_manifest_binding_missing: backtest manifest must embed "
+                "the canonical persisted data manifest binding"
+            )
+        else:
             evidence["data_manifest_embedded_id"] = embedded_manifest.manifest_id
             evidence["data_manifest_embedded_checksum"] = (
                 embedded_manifest.effective_checksum
@@ -1066,11 +1147,19 @@ class ResearchPromotionGate:
             evidence["data_manifest_embedded_fingerprint"] = (
                 embedded_manifest.fingerprint
             )
-            self._compare_embedded_data_manifest(
+            binding_mismatches = self._compare_embedded_data_manifest(
                 embedded=embedded_manifest,
                 governed=manifest,
-                reasons=reasons,
             )
+            if binding_mismatches:
+                evidence["data_manifest_binding_state"] = "stale"
+                reasons.append(
+                    "stale_data_manifest_binding: embedded backtest data manifest "
+                    "differs from the canonical persisted data manifest"
+                )
+                reasons.extend(binding_mismatches)
+            else:
+                evidence["data_manifest_binding_state"] = "bound"
 
         manifest_symbol = manifest.symbol.upper()
         if symbols and manifest_symbol not in symbols:
@@ -1100,29 +1189,54 @@ class ResearchPromotionGate:
         *,
         embedded: DataManifest,
         governed: DataManifest,
-        reasons: list[str],
-    ) -> None:
+    ) -> list[str]:
+        mismatches: list[str] = []
         if embedded.data_version != governed.data_version:
-            reasons.append(
+            mismatches.append(
                 "data_manifest_version_mismatch: "
                 f"embedded={embedded.data_version} governed={governed.data_version}"
             )
         if embedded.manifest_id != governed.manifest_id:
-            reasons.append(
+            mismatches.append(
                 "data_manifest_id_mismatch: "
                 f"embedded={embedded.manifest_id} governed={governed.manifest_id}"
             )
         if embedded.effective_checksum != governed.effective_checksum:
-            reasons.append(
+            mismatches.append(
                 "data_manifest_checksum_mismatch: "
                 f"embedded={embedded.effective_checksum} "
                 f"governed={governed.effective_checksum}"
             )
         if embedded.fingerprint != governed.fingerprint:
-            reasons.append(
+            mismatches.append(
                 "data_manifest_fingerprint_mismatch: "
                 f"embedded={embedded.fingerprint} governed={governed.fingerprint}"
             )
+        return mismatches
+
+    def _find_matching_data_manifests(
+        self,
+        data_version: str,
+    ) -> list[dict[str, Any]]:
+        manifests_root = self.data_root / "manifests"
+        matches: list[dict[str, Any]] = []
+        if not manifests_root.exists():
+            return matches
+        for path in sorted(manifests_root.glob("*.json")):
+            if path.stem.startswith("run_"):
+                continue
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if not isinstance(payload, dict):
+                continue
+            if str(payload.get("data_version", "") or "") != data_version:
+                continue
+            if not all(payload.get(key) for key in ("data_version", "source", "symbol", "interval")):
+                continue
+            matches.append({"path": path, "payload": payload})
+        return matches
 
     def _embedded_data_manifest(
         self,

@@ -48,6 +48,7 @@ class DataManifest:
     fields: list[str] = field(default_factory=list)
     issues: list[dict[str, str]] = field(default_factory=list)
     cleaning: dict[str, int] = field(default_factory=dict)
+    quality_summary: dict[str, int] = field(default_factory=dict)
     raw_path: str = ""
     cleaned_path: str = ""
     git_commit: str = ""
@@ -146,11 +147,18 @@ def _manifest_to_dict(manifest: DataManifest) -> dict[str, Any]:
     )
     result["adjustment_policy"] = policy
     result["corporate_action_adjustment"] = policy
+    result["quality_summary"] = _normalize_quality_summary(
+        result.get("quality_summary"),
+        issues=manifest.issues,
+        cleaning=manifest.cleaning,
+    )
     return result
 
 
 def _dict_to_manifest(data: dict[str, Any]) -> DataManifest:
     adjustment = str(data.get("adjustment", "raw"))
+    issues = [dict(item) for item in data.get("issues", [])]
+    cleaning = {str(k): int(v) for k, v in data.get("cleaning", {}).items()}
     adjustment_policy = _resolve_adjustment_policy(
         data.get("adjustment_policy"),
         data.get("corporate_action_adjustment"),
@@ -176,8 +184,13 @@ def _dict_to_manifest(data: dict[str, Any]) -> DataManifest:
         quality_score=float(data.get("quality_score", 0.0)),
         created_at=str(data.get("created_at", "")),
         fields=[str(f) for f in data.get("fields", [])],
-        issues=[dict(item) for item in data.get("issues", [])],
-        cleaning={str(k): int(v) for k, v in data.get("cleaning", {}).items()},
+        issues=issues,
+        cleaning=cleaning,
+        quality_summary=_normalize_quality_summary(
+            data.get("quality_summary"),
+            issues=issues,
+            cleaning=cleaning,
+        ),
         raw_path=str(data.get("raw_path", "")),
         cleaned_path=str(data.get("cleaned_path", "")),
         git_commit=str(data.get("git_commit", "")),
@@ -223,6 +236,14 @@ def build_manifest_from_quality(
         quality.get("corporate_action_adjustment"),
         adjustment,
     )
+    issues = [dict(item) for item in _safe_get(quality, "issues", [])]
+    cleaning = {
+        "duplicate_timestamps_removed": int(_safe_get(quality, "duplicate_timestamps", 0)),
+        "invalid_ohlc_removed": int(_safe_get(quality, "invalid_ohlc", 0)),
+        "non_positive_prices_removed": int(_safe_get(quality, "non_positive_prices", 0)),
+        "cleaning_loss_rows": int(_safe_get(quality, "cleaning_loss_rows", 0)),
+        "missing_bars": int(_safe_get(quality, "missing_bars", 0)),
+    }
     return DataManifest(
         data_version=str(_safe_get(quality, "data_version", "")),
         source=str(_safe_get(quality, "actual_source", source)),
@@ -243,14 +264,13 @@ def build_manifest_from_quality(
         quality_score=float(_safe_get(quality, "quality_score", 0.0)),
         created_at=utc_now().isoformat(),
         fields=["timestamp_utc", "symbol", "open", "high", "low", "close", "volume"],
-        issues=[dict(item) for item in _safe_get(quality, "issues", [])],
-        cleaning={
-            "duplicate_timestamps_removed": int(_safe_get(quality, "duplicate_timestamps", 0)),
-            "invalid_ohlc_removed": int(_safe_get(quality, "invalid_ohlc", 0)),
-            "non_positive_prices_removed": int(_safe_get(quality, "non_positive_prices", 0)),
-            "cleaning_loss_rows": int(_safe_get(quality, "cleaning_loss_rows", 0)),
-            "missing_bars": int(_safe_get(quality, "missing_bars", 0)),
-        },
+        issues=issues,
+        cleaning=cleaning,
+        quality_summary=_normalize_quality_summary(
+            quality.get("quality_summary"),
+            issues=issues,
+            cleaning=cleaning,
+        ),
         raw_path=raw_path,
         cleaned_path=cleaned_path,
         git_commit=git_commit,
@@ -267,6 +287,7 @@ def validate_manifest_for_promotion(
     allow_sources: set[str] | None = None,
     min_coverage_pct: float = 90.0,
     min_quality_score: float = 80.0,
+    strict: bool = False,
 ) -> DataManifestValidation:
     reasons: list[str] = []
     warnings: list[str] = []
@@ -283,16 +304,31 @@ def validate_manifest_for_promotion(
         manifest.adjustment,
     )
     survivorship_bias_risk = _normalize_survivorship_bias_risk(manifest.survivorship_bias_risk)
+    quality_summary = _normalize_quality_summary(
+        manifest.quality_summary,
+        issues=manifest.issues,
+        cleaning=manifest.cleaning,
+    )
     if not manifest.data_version:
         reasons.append("missing_data_version")
+    if not manifest.source:
+        reasons.append("missing_data_source")
+    if not manifest.symbol:
+        reasons.append("missing_symbol")
+    if not manifest.interval:
+        reasons.append("missing_interval")
     if source == "fixture":
         reasons.append("fixture_data_not_allowed")
     if source not in sources:
         reasons.append(f"unsupported_data_source:{source or 'unknown'}")
     if asset_class != "equity":
         reasons.append(f"asset_class_not_allowed:{asset_class or 'unknown'}")
-    if not manifest.effective_checksum:
+    if not manifest.fingerprint:
+        reasons.append("missing_fingerprint")
+    if not manifest.checksum:
         reasons.append("missing_checksum")
+    if manifest.fingerprint and manifest.checksum and manifest.fingerprint != manifest.checksum:
+        reasons.append("checksum_mismatch")
     if manifest.row_count <= 0:
         reasons.append("empty_dataset")
     if manifest.coverage_pct < min_coverage_pct:
@@ -302,20 +338,45 @@ def validate_manifest_for_promotion(
     if manifest.timezone.upper() != "UTC":
         reasons.append(f"timezone_not_utc:{manifest.timezone}")
     if not manifest.universe_id:
-        warnings.append("universe_id_missing")
+        if strict:
+            reasons.append("universe_id_missing")
+        else:
+            warnings.append("universe_id_missing")
     if not manifest.universe_source:
-        warnings.append("universe_source_missing")
+        if strict:
+            reasons.append("universe_source_missing")
+        else:
+            warnings.append("universe_source_missing")
     if survivorship_bias_risk == "unknown":
-        warnings.append("survivorship_bias_risk_unmarked")
+        if strict:
+            reasons.append("survivorship_bias_risk_unmarked")
+        else:
+            warnings.append("survivorship_bias_risk_unmarked")
     elif survivorship_bias_risk in {"prone", "mixed"}:
         warnings.append(f"survivorship_bias_risk:{survivorship_bias_risk}")
     if adjustment_policy in {"unknown", "implicit"}:
-        warnings.append(f"adjustment_policy:{adjustment_policy}")
+        if strict:
+            reasons.append(f"adjustment_policy:{adjustment_policy}")
+        else:
+            warnings.append(f"adjustment_policy:{adjustment_policy}")
 
-    duplicate_count = int(manifest.cleaning.get("duplicate_timestamps_removed", 0))
-    invalid_ohlc = int(manifest.cleaning.get("invalid_ohlc_removed", 0))
-    non_positive = int(manifest.cleaning.get("non_positive_prices_removed", 0))
-    missing_bars = int(manifest.cleaning.get("missing_bars", 0))
+    duplicate_count = max(
+        int(manifest.cleaning.get("duplicate_timestamps_removed", 0)),
+        int(quality_summary.get("duplicate_bars", 0)),
+    )
+    invalid_ohlc = max(
+        int(manifest.cleaning.get("invalid_ohlc_removed", 0)),
+        int(quality_summary.get("invalid_ohlc_rows", 0)),
+    )
+    non_positive = max(
+        int(manifest.cleaning.get("non_positive_prices_removed", 0)),
+        int(quality_summary.get("non_positive_price_rows", 0)),
+    )
+    missing_bars = max(
+        int(manifest.cleaning.get("missing_bars", 0)),
+        int(quality_summary.get("missing_bars", 0)),
+    )
+    zero_volume = int(quality_summary.get("zero_volume_bars", 0))
     if duplicate_count > 0:
         reasons.append(f"duplicate_timestamps:{duplicate_count}")
     if invalid_ohlc > 0:
@@ -323,9 +384,26 @@ def validate_manifest_for_promotion(
     if non_positive > 0:
         reasons.append(f"non_positive_prices:{non_positive}")
     if missing_bars > 0:
-        warnings.append(f"missing_bars:{missing_bars}")
+        if strict:
+            reasons.append(f"missing_bars:{missing_bars}")
+        else:
+            warnings.append(f"missing_bars:{missing_bars}")
+    if zero_volume > 0:
+        if strict:
+            reasons.append(f"zero_volume_bars:{zero_volume}")
+        else:
+            warnings.append(f"zero_volume_bars:{zero_volume}")
 
+    parsed_start = _parse_manifest_datetime(manifest.start)
     parsed_end = _parse_manifest_datetime(manifest.end)
+    if not parsed_start:
+        reasons.append("invalid_start_timestamp")
+    if not parsed_end:
+        reasons.append("invalid_end_timestamp")
+    if parsed_start and parsed_end and parsed_start > parsed_end:
+        reasons.append("invalid_time_range")
+    if parsed_start and parsed_start > timestamp_now + timedelta(minutes=1):
+        reasons.append(f"future_timestamp:{parsed_start.isoformat()}")
     if parsed_end and parsed_end > timestamp_now + timedelta(minutes=1):
         reasons.append(f"future_timestamp:{parsed_end.isoformat()}")
 
@@ -348,6 +426,7 @@ def validate_manifest_for_promotion(
             "row_count": manifest.row_count,
             "expected_rows": manifest.expected_rows,
             "checksum": manifest.effective_checksum,
+            "quality_summary": quality_summary,
         },
     )
 
@@ -399,6 +478,67 @@ def _normalize_survivorship_bias_risk(value: Any) -> str:
     if text in ACCEPTED_SURVIVORSHIP_BIAS_RISKS:
         return text
     return "unknown"
+
+
+def _normalize_quality_summary(
+    value: Any,
+    *,
+    issues: list[dict[str, Any]] | None = None,
+    cleaning: dict[str, Any] | None = None,
+) -> dict[str, int]:
+    base = _build_quality_summary(issues=issues or [], cleaning=cleaning or {})
+    if not isinstance(value, dict):
+        return base
+    for key in base:
+        if key in value:
+            base[key] = _coerce_non_negative_int(value.get(key))
+    return base
+
+
+def _build_quality_summary(
+    *,
+    issues: list[dict[str, Any]],
+    cleaning: dict[str, Any],
+) -> dict[str, int]:
+    issue_counts = _issue_counts_by_type(issues)
+    duplicate_removed = _coerce_non_negative_int(cleaning.get("duplicate_timestamps_removed", 0))
+    invalid_ohlc_removed = _coerce_non_negative_int(cleaning.get("invalid_ohlc_removed", 0))
+    non_positive_removed = _coerce_non_negative_int(cleaning.get("non_positive_prices_removed", 0))
+    cleaning_loss_rows = _coerce_non_negative_int(cleaning.get("cleaning_loss_rows", 0))
+    missing_bars = max(
+        _coerce_non_negative_int(cleaning.get("missing_bars", 0)),
+        issue_counts.get("missing_bars", 0),
+    )
+    duplicate_bars = max(duplicate_removed, issue_counts.get("duplicate_bars", 0))
+    return {
+        "missing_bars": missing_bars,
+        "duplicate_bars": duplicate_bars,
+        "price_jump_bars": issue_counts.get("price_jump", 0),
+        "zero_volume_bars": issue_counts.get("zero_volume", 0),
+        "corporate_action_flags": issue_counts.get("corporate_action", 0),
+        "invalid_ohlc_rows": invalid_ohlc_removed,
+        "non_positive_price_rows": non_positive_removed,
+        "duplicate_timestamps_removed": duplicate_removed,
+        "cleaning_loss_rows": cleaning_loss_rows,
+        "total_issue_count": sum(issue_counts.values()),
+    }
+
+
+def _issue_counts_by_type(issues: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for item in issues:
+        report_type = str(item.get("report_type", "")).strip().lower()
+        if not report_type:
+            continue
+        counts[report_type] = counts.get(report_type, 0) + _coerce_non_negative_int(item.get("issues_found", 0))
+    return counts
+
+
+def _coerce_non_negative_int(value: Any) -> int:
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return 0
 
 
 validate_data_manifest_for_promotion = validate_manifest_for_promotion

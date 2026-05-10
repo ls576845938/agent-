@@ -36,6 +36,7 @@ def _write_candidate_chain_fixture(
     include_backtest: bool = True,
     include_review: bool = True,
     duplicate_data_manifest: bool = False,
+    backtest_manifest_path: str | None = None,
     daily_report_session_id: str | None = None,
     ledger_artifact_hash: str = "",
 ) -> dict[str, str]:
@@ -47,7 +48,11 @@ def _write_candidate_chain_fixture(
             "strategy_id": "momentum",
             "data_version": data_version,
             "promotion_status": "RESEARCH_ONLY",
-            "backtest_manifest_path": f"research/backtests/{candidate_id}/run_manifest.json",
+            "backtest_manifest_path": (
+                backtest_manifest_path
+                if backtest_manifest_path is not None
+                else f"research/backtests/{candidate_id}/run_manifest.json"
+            ),
             "created_at": "2026-05-09T12:00:00+00:00",
         },
     )
@@ -281,6 +286,9 @@ def test_approved_paper_review_persists_provenance_and_registry_chain(tmp_path: 
     assert approved.approval.commit_hash == "deadbee"
     assert approved.approval.source == "yfinance"
     assert approved.approval.gate_snapshot["decision"] == "READY_FOR_PAPER_REVIEW"
+    assert approved.approval.gate_snapshot["review_queue_entry_allowed"] is True
+    assert approved.approval.gate_snapshot["paper_execution_authorized"] is False
+    assert approved.approval.gate_snapshot["authorization_scope"] == "human_review_only"
     assert chain.chain_status == "PASS/STABLE"
     assert chain.paper_review.integrity_status == "PASS/STABLE"
     assert chain.paper_review.details["approval"]["reviewer"] == "risk_committee"
@@ -339,6 +347,46 @@ def test_registry_marks_conflicting_data_manifest_and_candidate_chain(tmp_path: 
     assert chain.data_manifest.integrity_status == "CONFLICT"
     assert chain.chain_status == "CONFLICT"
     assert any(note.startswith("data_manifest_conflict:") for note in chain.notes)
+
+
+def test_registry_marks_stale_when_canonical_data_manifest_missing_but_alternate_exists(
+    tmp_path: Path,
+) -> None:
+    ids = _write_candidate_chain_fixture(tmp_path)
+    canonical_path = tmp_path / "manifests" / f"{ids['data_version']}.json"
+    alternate_path = tmp_path / "manifests" / f"{ids['data_version']}_alternate.json"
+    canonical_payload = json.loads(canonical_path.read_text(encoding="utf-8"))
+    canonical_path.unlink()
+    alternate_path.write_text(json.dumps(canonical_payload, indent=2), encoding="utf-8")
+
+    chain = inspect_candidate_evidence(ids["candidate_id"], tmp_path, use_saved=False)
+
+    assert chain.data_manifest.status == "stale"
+    assert chain.data_manifest.integrity_status == "STALE/CHANGED"
+    assert chain.data_manifest.summary == "canonical_data_manifest_missing_but_alternate_found"
+    assert alternate_path.as_posix() in chain.data_manifest.details["alternate_paths"]
+
+
+def test_registry_marks_conflict_for_noncanonical_backtest_manifest_path(
+    tmp_path: Path,
+) -> None:
+    ids = _write_candidate_chain_fixture(
+        tmp_path,
+        backtest_manifest_path="research/backtests/cand_evidence/alt_run_manifest.json",
+    )
+    canonical_path = (
+        tmp_path / "research" / "backtests" / ids["candidate_id"] / "run_manifest.json"
+    )
+    alternate_path = canonical_path.with_name("alt_run_manifest.json")
+    alternate_path.write_text(canonical_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+    chain = inspect_candidate_evidence(ids["candidate_id"], tmp_path, use_saved=False)
+
+    assert chain.backtest_manifest.status == "conflict"
+    assert chain.backtest_manifest.integrity_status == "CONFLICT"
+    assert chain.backtest_manifest.summary == "non_canonical_backtest_manifest_path"
+    assert chain.backtest_manifest.details["expected_path"] == str(canonical_path)
+    assert any(note.startswith("backtest_manifest_conflict:") for note in chain.notes)
 
 
 def test_saved_registry_projection_blocks_missing_without_rebuild(tmp_path: Path) -> None:

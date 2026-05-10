@@ -8,7 +8,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from quant_us.core.enums import OrderSide, OrderStatus, OrderType, SignalDirection, TimeInForce
-from quant_us.core.types import AccountState, Bar, Order, OrderIntent, Position, Signal
+from quant_us.core.types import AccountState, Bar, Fill, Order, OrderIntent, PortfolioSnapshot, Position, Signal
+from quant_us.execution.ledger import JsonlLedgerStore
 from quant_us.live.alpaca_paper_adapter import AlpacaPaperBrokerAdapter
 from quant_us.live.fake_alpaca_paper_adapter import FakeAlpacaPaperBrokerAdapter
 from quant_us.live.modes import RuntimeMode
@@ -187,6 +188,12 @@ def _data_root_from_review_path(review_path: Path) -> Path | None:
 def _startup_sync_artifact(ledger_root: Path) -> dict[str, object]:
     return json.loads(
         (ledger_root / "audit" / "paper_broker_adapter_startup_sync.json").read_text(encoding="utf-8")
+    )
+
+
+def _broker_state_recovery_artifact(ledger_root: Path) -> dict[str, object]:
+    return json.loads(
+        (ledger_root / "audit" / "paper_broker_state_recovery.json").read_text(encoding="utf-8")
     )
 
 
@@ -2055,6 +2062,91 @@ def test_paper_runtime_bootstrap_loads_idempotency_before_orders(
     assert manifest["startup_sync_status"]["status"] == "skipped"
     assert manifest["no_real_order_submission_proof"]["real_order_submission"] is False
     runtime.shutdown()
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_runtime_resume_with_alpaca_mismatch_fails_closed(
+    _mock_loop: MagicMock,
+    tmp_path: Path,
+) -> None:
+    data_root = tmp_path / "data"
+    review_path = _write_registered_review(data_root, review_id="paper_runtime_resume_mismatch")
+    ledger_root = tmp_path / "ledger"
+    ledger = JsonlLedgerStore(ledger_root)
+    ledger.append_order(
+        Order(
+            timestamp_utc=datetime(2026, 5, 9, 14, 30, tzinfo=UTC),
+            strategy_id="resume_fixture",
+            symbol="SPY",
+            side=OrderSide.BUY,
+            quantity=1.0,
+            order_type=OrderType.MARKET,
+            time_in_force=TimeInForce.DAY,
+            client_order_id="resume_client_001",
+            order_id="resume_order_001",
+            status=OrderStatus.FILLED,
+        )
+    )
+    ledger.append_fill(
+        Fill(
+            order_id="resume_order_001",
+            symbol="SPY",
+            side=OrderSide.BUY,
+            quantity=1.0,
+            price=500.0,
+            commission=0.0,
+            filled_at=datetime(2026, 5, 9, 14, 31, tzinfo=UTC),
+            broker="alpaca_paper_fake",
+            fill_id="resume_fill_001",
+        )
+    )
+    ledger.append_snapshot(
+        PortfolioSnapshot(
+            timestamp_utc=datetime(2026, 5, 9, 20, 0, tzinfo=UTC),
+            equity=100_000.0,
+            cash=99_500.0,
+            gross_exposure=500.0,
+            net_exposure=500.0,
+            daily_pnl=0.0,
+            drawdown=0.0,
+        )
+    )
+
+    runtime = FakeAdapterPaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            strategy_id="resume_fixture",
+            ledger_root=str(ledger_root),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(data_root),
+            reconcile_on_start=False,
+            submit_orders=True,
+            explicit_paper_submit=True,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+            "QUANT_ENABLE_ALPACA_PAPER_ADAPTER": "true",
+        },
+        clear=True,
+    ):
+        with pytest.raises(RuntimeError, match="paper_broker_state_recovery_failed"):
+            runtime.bootstrap()
+
+    artifact = _broker_state_recovery_artifact(ledger_root)
+    assert artifact["status"] == "failed"
+    assert artifact["error"] == "broker_state_mismatch_vs_ledger"
+    assert artifact["resume_detected"] is True
+    assert artifact["operationally_complete"] is False
+    assert runtime.kill_switch.triggered is True
+    assert runtime.oms.reduce_only is True
+    assert runtime._halt_reconciliation is True
 
 
 @patch("quant_us.live.paper_runtime.MarketDataLoop")
