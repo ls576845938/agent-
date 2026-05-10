@@ -29,7 +29,7 @@ All conditions below are necessary but still not sufficient for any future real 
 5. `QUANT_LIVE_SUBMISSION_ENABLED=true` in environment
 6. `LiveOrderSubmissionGate.check()` still returns `REQUIRES_MANUAL_REVIEW` on this repo surface
 
-Current repository rule: micro-live readiness output is review-only and `submission_ready=false`.
+Current repository rule: micro-live readiness output is a design freeze for human review only, not execution approval, and `submission_ready=false`.
 
 ## Simulated Paper Production Loop (Phase F.7)
 
@@ -115,3 +115,13 @@ Review-only checks in `LiveReadinessGate.check_all()` include:
 16. `emergency_stop_readiness` — emergency stop lifecycle present
 17. `endpoint_guard` — read-only live endpoint guard present
 18. `review_only_defaults` — `allow_live_orders=False`, `confirm_live=False`, review-only wording
+
+Design freeze metadata emitted by readiness and dossier payloads:
+- `version=micro-live-review-only-v1`
+- `frozen=true`
+- `scope=review_only`
+- `no_continuous_loop=true`
+- `manual_approval_required=true`
+- `max_symbols=2`
+- `max_notional=100.0`
+- `max_orders=3`

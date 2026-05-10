@@ -79,6 +79,7 @@ def inspect_paper_validation_evidence(
     session = _read_json_object(session_path)
     startup_path = ledger / "audit" / "paper_broker_adapter_startup_sync.json"
     startup = _read_json_object(startup_path)
+    recovery_path = _resolve_broker_state_recovery_path(state, ledger)
     daily_path = _latest_file(ledger / "daily_reports", "daily_report_*.json")
     daily = _read_json_object(daily_path)
     recon_path = _latest_file(ledger / "reconciliation", "recon_*.json")
@@ -99,6 +100,7 @@ def inspect_paper_validation_evidence(
         _pointer("daily_report", daily_path),
         _pointer("paper_session_manifest", session_path),
         _pointer("startup_sync", startup_path),
+        _pointer("broker_state_recovery", recovery_path),
         _pointer("ledger_reconciliation", recon_path),
         _pointer("ledger_reconciliation_artifact", artifact_path),
         _pointer("run_journal", journal_path),
@@ -107,7 +109,12 @@ def inspect_paper_validation_evidence(
     submit_state, submit_gaps = _paper_submit_state(session)
     daily_summary, daily_gaps = _daily_report_summary(daily, daily_path)
     recon_summary, diff_summary, recon_gaps = _reconciliation_summaries(recon, artifact)
-    recovery_summary = _recovery_summary(journal_path, run_state)
+    recovery_summary = _recovery_summary(
+        state,
+        recovery_path,
+        journal_path,
+        run_state,
+    )
     session_summary, session_gaps = _session_summary(session, startup)
 
     gaps: list[str] = []
@@ -121,8 +128,12 @@ def inspect_paper_validation_evidence(
     gaps.extend(daily_gaps)
     gaps.extend(recon_gaps)
     gaps.extend(session_gaps)
-    if recovery_summary.get("recovery_required"):
-        gaps.append("recovery_required")
+    recovery_path_value = str(recovery_summary.get("artifact_path", "") or "")
+    if not recovery_path_value:
+        gaps.append("broker_state_recovery_missing")
+    elif not bool(recovery_summary.get("operationally_complete", False)):
+        status = str(recovery_summary.get("status", "missing") or "missing")
+        gaps.append(f"broker_state_recovery_incomplete:{status}")
 
     readiness = "PASS" if not gaps else "BLOCKED"
     return PaperValidationEvidence(
@@ -184,6 +195,13 @@ def _read_json_object(path: Path | None) -> dict[str, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
+def _first_present(*values: Any) -> Any:
+    for value in values:
+        if value is not None and value != "":
+            return value
+    return None
+
+
 def _pointer(name: str, path: Path | None) -> EvidencePointer:
     if path is None:
         return EvidencePointer(name=name, path="", state="MISSING")
@@ -192,6 +210,15 @@ def _pointer(name: str, path: Path | None) -> EvidencePointer:
         path=str(path),
         state="PASS" if path.exists() else "MISSING",
     )
+
+
+def _resolve_broker_state_recovery_path(state: dict[str, Any], ledger_root: Path) -> Path | None:
+    evidence = state.get("evidence", {})
+    if isinstance(evidence, dict):
+        raw_path = str(evidence.get("broker_state_recovery_path", "") or "")
+        if raw_path:
+            return Path(raw_path)
+    return ledger_root / "audit" / "paper_broker_state_recovery.json"
 
 
 def _paper_submit_state(session: dict[str, Any]) -> tuple[str, list[str]]:
@@ -267,7 +294,12 @@ def _reconciliation_summaries(
     )
 
 
-def _recovery_summary(journal_path: Path, run_state: dict[str, Any]) -> dict[str, Any]:
+def _recovery_summary(
+    state: dict[str, Any],
+    recovery_path: Path | None,
+    journal_path: Path,
+    run_state: dict[str, Any],
+) -> dict[str, Any]:
     event_counts: dict[str, int] = {}
     latest_event = ""
     if journal_path.exists():
@@ -284,8 +316,59 @@ def _recovery_summary(journal_path: Path, run_state: dict[str, Any]) -> dict[str
                     latest_event = event
         except (OSError, json.JSONDecodeError):
             event_counts["journal_unreadable"] = 1
+    state_recovery = state.get("recovery_summary", {})
+    if not isinstance(state_recovery, dict):
+        state_recovery = {}
+    artifact = _read_json_object(recovery_path)
+    artifact_path = str(recovery_path) if recovery_path and recovery_path.exists() else ""
+    resume_detected = _first_present(
+        artifact.get("resume_detected"),
+        state_recovery.get("required"),
+        run_state.get("recovery_required"),
+        False,
+    )
+    status = str(
+        _first_present(
+            artifact.get("status"),
+            state_recovery.get("status"),
+            "missing" if not artifact_path else "unknown",
+        )
+    )
+    operationally_complete = bool(
+        _first_present(
+            artifact.get("operationally_complete"),
+            state_recovery.get("operationally_complete"),
+            False,
+        )
+    )
     return {
-        "recovery_required": bool(run_state.get("recovery_required", False)),
+        "recovery_required": bool(resume_detected),
+        "artifact_path": artifact_path,
+        "artifact_state": "PASS" if artifact_path else "MISSING",
+        "status": status,
+        "operationally_complete": operationally_complete,
+        "resume_detected": bool(resume_detected),
+        "broker_state_restored": bool(
+            _first_present(
+                artifact.get("broker_state_restored"),
+                state_recovery.get("resume_restores_broker_state"),
+                False,
+            )
+        ),
+        "broker_state_verified": bool(
+            _first_present(
+                artifact.get("broker_state_verified"),
+                state_recovery.get("broker_state_verified"),
+                False,
+            )
+        ),
+        "reason": str(
+            _first_present(
+                artifact.get("error"),
+                state_recovery.get("reason"),
+                "",
+            )
+        ),
         "last_step": str(run_state.get("last_step", "")),
         "event_counts": event_counts,
         "latest_event": latest_event,

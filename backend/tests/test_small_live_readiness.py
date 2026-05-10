@@ -50,10 +50,26 @@ def _make_valid_state(
 
 def _dump_temp_state(state: dict) -> str:
     """Write *state* to a temp JSON file and return its path."""
-    f = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
-    json.dump(state, f)
-    f.close()
-    return f.name
+    root = Path(tempfile.mkdtemp())
+    state_dir = root / "reports" / "paper_production"
+    state_dir.mkdir(parents=True)
+    state_path = state_dir / "validation_state.json"
+    state_path.write_text(json.dumps(state), encoding="utf-8")
+    audit_dir = root / "paper_ledger" / "audit"
+    audit_dir.mkdir(parents=True)
+    (audit_dir / "paper_broker_state_recovery.json").write_text(
+        json.dumps(
+            {
+                "status": "restored",
+                "resume_detected": True,
+                "operationally_complete": True,
+                "broker_state_restored": True,
+                "broker_state_verified": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+    return str(state_path)
 
 
 # ---------------------------------------------------------------------------
@@ -242,6 +258,19 @@ class SmallLiveReadinessGateTests(unittest.TestCase):
         self.assertTrue(payload["review_only"])
         self.assertFalse(payload["submission_ready"])
         self.assertEqual(payload["recommended_action"], "REVIEW_ONLY")
+        self.assertEqual(
+            payload["design_freeze"],
+            {
+                "version": "micro-live-review-only-v1",
+                "frozen": True,
+                "scope": "review_only",
+                "no_continuous_loop": True,
+                "manual_approval_required": True,
+                "max_symbols": 2,
+                "max_notional": 100.0,
+                "max_orders": 3,
+            },
+        )
 
 
 # ---------------------------------------------------------------------------

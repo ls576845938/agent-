@@ -44,6 +44,32 @@ def test_paper_validation_report_stays_incomplete_when_recovery_is_not_operation
     assert report["passed"] is False
 
 
+def test_paper_validation_report_stays_incomplete_when_recovery_artifact_path_is_missing(
+    tmp_path: Path,
+) -> None:
+    report_path = tmp_path / "validation_report.json"
+    state = {
+        "days_required": 30,
+        "days_completed": 30,
+        "consecutive_clean_days": 30,
+        "daily_results": [],
+        "recovery_summary": {
+            "required": False,
+            "status": "restored",
+            "operationally_complete": True,
+            "resume_restores_broker_state": True,
+            "resume_restores_validation_counters": True,
+        },
+        "evidence": {},
+    }
+
+    save_report(state, report_path)
+
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["status"] == "INCOMPLETE"
+    assert report["passed"] is False
+
+
 def test_paper_trading_loop_restores_state_from_ledger_on_resume(tmp_path: Path) -> None:
     ledger_root = tmp_path / "ledger"
     ledger = JsonlLedgerStore(ledger_root)

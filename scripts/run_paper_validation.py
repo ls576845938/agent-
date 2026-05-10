@@ -162,9 +162,15 @@ def enrich_validation_evidence(
 
 def _recovery_operationally_complete(state: dict[str, Any]) -> bool:
     recovery = state.get("recovery_summary", {})
-    if not recovery:
-        return True
-    return bool(recovery.get("operationally_complete", True))
+    if not isinstance(recovery, dict) or not recovery:
+        return False
+    artifact_path = str(
+        recovery.get("artifact_path")
+        or state.get("evidence", {}).get("broker_state_recovery_path", "")
+    )
+    if not artifact_path:
+        return False
+    return bool(recovery.get("operationally_complete", False))
 
 
 def _latest_file(directory: Path, pattern: str) -> Path | None:

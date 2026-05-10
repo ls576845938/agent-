@@ -122,10 +122,17 @@ The report prints:
 - latest daily report path
 - paper session manifest and history manifest path
 - startup sync artifact path
+- broker-state recovery artifact path
 - latest ledger reconciliation and ledger reconciliation artifact path
 - explicit `paper_submit_orders` state
 - broker/local diff counts for cash, positions, orders, and fills
 - recovery summary and paper readiness gaps
+
+`broker_state_recovery` is now a first-class evidence pointer in the report and readiness surfaces.
+If the 30-day counters are complete but the recovery artifact is missing or
+`operationally_complete=false`, the report/readiness state fails closed as `BLOCKED`/`INCOMPLETE`.
+This is still review-only evidence. It does not start paper trading, does not authorize live trading,
+and does not enable submit.
 
 `scripts/run_paper_validation.py` now persists these evidence pointers into `validation_state.json`
 and `validation_report.json` when it writes state. Its current resume boundary is explicit:
@@ -208,6 +215,15 @@ python scripts/migrate_backtest_manifest_path.py --data-root data --apply
 ```
 
 Default mode is dry-run. Inline `backtest_manifest` payloads are never accepted as promotion evidence and are reported for follow-up instead of migrated.
+
+Run a read-only JSON audit across historical candidates, canonical backtests, and data manifests before any manual migration:
+
+```bash
+python scripts/audit_research_evidence.py --data-root data
+python scripts/audit_research_evidence.py --data-root data --strict
+```
+
+This audit is report-only. It does not rewrite `candidate.json` or manifest files. `--strict` only changes the process exit code when one or more `BLOCKER` findings are present.
 
 ## Full Pipeline Boundary
 

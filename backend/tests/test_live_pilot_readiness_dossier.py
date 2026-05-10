@@ -13,6 +13,7 @@ import pytest
 
 from quant_us.live.live_pilot_dossier import (
     LivePilotDossierBuilder,
+    DesignFreeze,
     LivePilotReadinessDossier,
     PaperSummary,
     ShadowSummary,
@@ -93,6 +94,16 @@ class TestLivePilotReadinessDossier:
         assert d["live_safety"]["endpoint_guard_active"] is True
         assert d["review_only"] is True
         assert d["submission_ready"] is False
+        assert d["design_freeze"] == {
+            "version": "micro-live-review-only-v1",
+            "frozen": True,
+            "scope": "review_only",
+            "no_continuous_loop": True,
+            "manual_approval_required": True,
+            "max_symbols": 2,
+            "max_notional": 100.0,
+            "max_orders": 3,
+        }
 
     def test_to_markdown_has_expected_sections(self) -> None:
         dossier = LivePilotReadinessDossier()
@@ -103,7 +114,8 @@ class TestLivePilotReadinessDossier:
         assert "## 3. Strategy Freeze" in md
         assert "## 4. Risk Limits" in md
         assert "## 5. Live Safety" in md
-        assert "## 6. Decision" in md
+        assert "## 6. Design Freeze" in md
+        assert "## 7. Decision" in md
 
     def test_markdown_shows_blocked(self) -> None:
         dossier = LivePilotReadinessDossier()
@@ -121,7 +133,25 @@ class TestLivePilotReadinessDossier:
         md = dossier.to_markdown()
         assert "Review-Only Conditions" in md
         assert "Human review REQUIRED" in md
+        assert "design freeze and human review artifact" in md
         assert "not a start, run, or submit surface" in md
+
+    def test_design_freeze_can_be_overridden_but_stays_submission_blocked(self) -> None:
+        dossier = LivePilotReadinessDossier(
+            design_freeze=DesignFreeze(
+                version="micro-live-review-only-v2",
+                frozen=True,
+                scope="review_only",
+                no_continuous_loop=True,
+                manual_approval_required=True,
+                max_symbols=1,
+                max_notional=50.0,
+                max_orders=1,
+            )
+        )
+        payload = dossier.to_dict()
+        assert payload["design_freeze"]["version"] == "micro-live-review-only-v2"
+        assert payload["submission_ready"] is False
 
     def test_allow_live_orders_true_blocks_dossier(self) -> None:
         dossier = LivePilotReadinessDossier()

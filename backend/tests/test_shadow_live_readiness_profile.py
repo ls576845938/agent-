@@ -67,9 +67,18 @@ class TestShadowLivePaper30DayValidation:
             "days_required": 30,
             "daily_results": [],
         }
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            json.dump(data, f)
-            path = f.name
+        root = Path(tempfile.mkdtemp())
+        state_dir = root / "reports" / "paper_production"
+        state_dir.mkdir(parents=True)
+        recovery_dir = root / "paper_ledger" / "audit"
+        recovery_dir.mkdir(parents=True)
+        (recovery_dir / "paper_broker_state_recovery.json").write_text(
+            json.dumps({"status": "restored", "operationally_complete": True}),
+            encoding="utf-8",
+        )
+        state_path = state_dir / "validation_state.json"
+        state_path.write_text(json.dumps(data), encoding="utf-8")
+        path = str(state_path)
         try:
             gate = LiveReadinessGate()
             check = gate._check_paper_30_day_clean(path, profile="live")

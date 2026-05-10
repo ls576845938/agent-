@@ -167,6 +167,18 @@ def _write_paper_validation_artifacts(data_root: str | Path) -> None:
         json.dumps({"status": "complete", "halt_reconciliation": False}),
         encoding="utf-8",
     )
+    (audit_dir / "paper_broker_state_recovery.json").write_text(
+        json.dumps(
+            {
+                "status": "verified",
+                "resume_detected": False,
+                "operationally_complete": True,
+                "broker_state_restored": False,
+                "broker_state_verified": True,
+            }
+        ),
+        encoding="utf-8",
+    )
     recon_dir = root / "paper_ledger" / "reconciliation"
     recon_dir.mkdir(parents=True)
     (recon_dir / "recon_20260508_210000.json").write_text(
@@ -1015,9 +1027,64 @@ class CliManifestReportTests(unittest.TestCase):
             self.assertIn("paper_validation_state: PASS", text)
             self.assertIn("paper_submit_orders: DISABLED", text)
             self.assertIn("paper_validation_days: 30/30 completed, 30/30 clean", text)
+            self.assertIn("evidence:     broker_state_recovery=", text)
+            self.assertIn("paper_broker_state_recovery.json", text)
             self.assertIn("broker_local_diff_summary: cash=+0.00, positions=0, orders=0, fills=0, total=0", text)
             self.assertIn("recovery_summary: required=False", text)
             self.assertIn("paper_readiness_gaps: (none)", text)
+            self.assertIn("scope:       report only, no execution", text)
+
+    def test_report_paper_validation_blocks_when_broker_state_recovery_missing(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            recovery_path = (
+                Path(tmp)
+                / "paper_ledger"
+                / "audit"
+                / "paper_broker_state_recovery.json"
+            )
+            recovery_path.unlink()
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "paper-validation", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_validation_state: BLOCKED", text)
+            self.assertIn("evidence:     broker_state_recovery=(not found)", text)
+            self.assertIn("paper_readiness_gaps: broker_state_recovery_missing", text)
+
+    def test_readiness_prints_broker_state_recovery_evidence_without_audit_lookup(self) -> None:
+        from quant_us.reports.live_readiness import LiveReadinessReport, ReadinessCheck
+
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            validation_state = (
+                Path(tmp) / "reports" / "paper_production" / "validation_state.json"
+            )
+            report = LiveReadinessReport(
+                checks=[ReadinessCheck(name="paper_30_day_clean", passed=True, detail="ok")]
+            )
+            with (
+                patch("quant_us.reports.live_readiness.LiveReadinessGate") as gate_cls,
+                redirect_stdout(io.StringIO()) as out,
+            ):
+                gate_cls.return_value.check_all.return_value = report
+                main(
+                    [
+                        "readiness",
+                        "--profile",
+                        "paper",
+                        "--validation-state",
+                        str(validation_state),
+                        "--data-root",
+                        tmp,
+                    ]
+                )
+
+            text = out.getvalue()
+            self.assertIn("evidence:     broker_state_recovery=", text)
+            self.assertIn("paper_broker_state_recovery.json", text)
             self.assertIn("scope:       report only, no execution", text)
 
     def test_run_paper_validation_state_records_resume_boundary(self) -> None:

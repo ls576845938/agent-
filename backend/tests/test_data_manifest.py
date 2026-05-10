@@ -567,9 +567,14 @@ class TestBuildManifestFromQuality(unittest.TestCase):
         self.assertEqual(manifest.raw_path, "/data/raw/test.parquet")
         self.assertEqual(manifest.cleaned_path, "/data/cleaned/test.parquet")
         self.assertEqual(manifest.git_commit, "abc123")
-        self.assertEqual(manifest.universe_id, "")
-        self.assertEqual(manifest.universe_source, "")
-        self.assertEqual(manifest.survivorship_bias_risk, "unknown")
+        lineage_payload = "test:AAPL:1d:2024-01-01:2024-12-31T23:59:59Z"
+        lineage_hash = hashlib.sha256(lineage_payload.encode()).hexdigest()[:12]
+        self.assertEqual(manifest.universe_id, f"single-symbol-AAPL-1d-{lineage_hash}")
+        self.assertEqual(
+            manifest.universe_source,
+            "auto_lineage:single_symbol_request:v1:test:AAPL:1d:2024-01-01:2024-12-31T23:59:59Z",
+        )
+        self.assertEqual(manifest.survivorship_bias_risk, "clean")
         self.assertIsInstance(manifest.created_at, str)
 
     def test_missing_keys_uses_defaults(self) -> None:
@@ -611,6 +616,8 @@ class TestBuildManifestFromQuality(unittest.TestCase):
         self.assertEqual(manifest.git_commit, "")
         self.assertEqual(manifest.adjustment_policy, "raw")
         self.assertEqual(manifest.corporate_action_adjustment, "raw")
+        self.assertEqual(manifest.universe_id, "")
+        self.assertEqual(manifest.universe_source, "")
         self.assertEqual(manifest.survivorship_bias_risk, "unknown")
 
     def test_partial_quality_dict(self) -> None:
@@ -690,6 +697,42 @@ class TestBuildManifestFromQuality(unittest.TestCase):
             quality=quality, source="src", symbol="aapl", interval="1d"
         )
         self.assertEqual(manifest.symbol, "AAPL")
+
+    def test_explicit_lineage_and_adjustment_policy_override_auto_inference(self) -> None:
+        quality = {
+            "data_version": "v1",
+            "first_timestamp": "2024-01-01T00:00:00+00:00",
+            "last_timestamp": "2024-01-31T00:00:00+00:00",
+            "row_count": 21,
+            "expected_rows": 21,
+            "coverage_pct": 100.0,
+            "fingerprint": "f" * 64,
+            "quality_score": 99.0,
+            "adjustment_policy": "raw",
+            "corporate_action_adjustment": "raw",
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 0,
+        }
+        manifest = build_manifest_from_quality(
+            quality=quality,
+            source="sqlite",
+            symbol="AAPL",
+            interval="1d",
+            adjustment_policy="split_adjusted",
+            universe_id="manual-universe",
+            universe_source="manual_source:v2",
+            survivorship_bias_risk="prone",
+        )
+
+        self.assertEqual(manifest.adjustment_policy, "split_adjusted")
+        self.assertEqual(manifest.corporate_action_adjustment, "split_adjusted")
+        self.assertEqual(manifest.universe_id, "manual-universe")
+        self.assertEqual(manifest.universe_source, "manual_source:v2")
+        self.assertEqual(manifest.survivorship_bias_risk, "prone")
 
 
 class TestBuildManifestFromQualityRoundTrip(unittest.TestCase):
@@ -827,6 +870,118 @@ class TestDataManifestPromotionValidation(unittest.TestCase):
         )
         self.assertTrue(result.ok)
         self.assertIn("adjustment_policy:unknown", result.warnings)
+
+    def test_strict_validation_accepts_auto_inferred_single_symbol_lineage(self) -> None:
+        quality = {
+            "data_version": "qs-sqlite-AAPL-1d-auto-lineage",
+            "actual_source": "sqlite",
+            "first_timestamp": "2024-01-02T00:00:00+00:00",
+            "last_timestamp": "2024-12-31T00:00:00+00:00",
+            "row_count": 252,
+            "expected_rows": 252,
+            "coverage_pct": 100.0,
+            "fingerprint": "b" * 64,
+            "quality_score": 99.0,
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 0,
+        }
+        manifest = build_manifest_from_quality(
+            quality=quality,
+            source="sqlite",
+            symbol="AAPL",
+            interval="1d",
+        )
+
+        result = validate_manifest_for_promotion(
+            manifest,
+            strict=True,
+            now=datetime(2026, 5, 9, tzinfo=timezone.utc),
+        )
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.reasons, [])
+        self.assertEqual(result.metrics["survivorship_bias_risk"], "clean")
+        self.assertTrue(result.metrics["universe_id"].startswith("single-symbol-AAPL-1d-"))
+        self.assertTrue(
+            result.metrics["universe_source"].startswith(
+                "auto_lineage:single_symbol_request:v1:sqlite:AAPL:1d:"
+            )
+        )
+
+    def test_strict_validation_blocks_when_lineage_cannot_be_inferred(self) -> None:
+        quality = {
+            "data_version": "qs-sqlite-AAPL-1d-missing-range",
+            "actual_source": "sqlite",
+            "row_count": 252,
+            "expected_rows": 252,
+            "coverage_pct": 100.0,
+            "fingerprint": "c" * 64,
+            "quality_score": 99.0,
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 0,
+        }
+        manifest = build_manifest_from_quality(
+            quality=quality,
+            source="sqlite",
+            symbol="AAPL",
+            interval="1d",
+        )
+
+        result = validate_manifest_for_promotion(
+            manifest,
+            strict=True,
+            now=datetime(2026, 5, 9, tzinfo=timezone.utc),
+        )
+
+        self.assertFalse(result.ok)
+        self.assertIn("universe_id_missing", result.reasons)
+        self.assertIn("universe_source_missing", result.reasons)
+        self.assertIn("survivorship_bias_risk_unmarked", result.reasons)
+        self.assertIn("invalid_start_timestamp", result.reasons)
+        self.assertIn("invalid_end_timestamp", result.reasons)
+
+    def test_strict_validation_blocks_when_adjustment_policy_cannot_be_inferred(self) -> None:
+        quality = {
+            "data_version": "qs-sqlite-AAPL-1d-unknown-adjustment",
+            "actual_source": "sqlite",
+            "first_timestamp": "2024-01-02T00:00:00+00:00",
+            "last_timestamp": "2024-12-31T00:00:00+00:00",
+            "row_count": 252,
+            "expected_rows": 252,
+            "coverage_pct": 100.0,
+            "fingerprint": "d" * 64,
+            "quality_score": 99.0,
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 0,
+        }
+        manifest = build_manifest_from_quality(
+            quality=quality,
+            source="sqlite",
+            symbol="AAPL",
+            interval="1d",
+            adjustment="mystery_adjustment",
+        )
+
+        result = validate_manifest_for_promotion(
+            manifest,
+            strict=True,
+            now=datetime(2026, 5, 9, tzinfo=timezone.utc),
+        )
+
+        self.assertFalse(result.ok)
+        self.assertIn("adjustment_policy:unknown", result.reasons)
 
     def test_fixture_manifest_is_blocked(self) -> None:
         result = validate_manifest_for_promotion(self._valid_manifest(source="fixture"))

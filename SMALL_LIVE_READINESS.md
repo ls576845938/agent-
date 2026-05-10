@@ -1,7 +1,7 @@
-# Small-Live Review-Only Readiness Gate
+# Small-Live Review-Only Design Freeze
 
 Go/no-go criteria for micro-live human review after paper trading validation.
-This document is not a start/run/submit procedure.
+This document is a design freeze and human review artifact. It is not execution approval and not a start/run/submit procedure.
 
 ---
 
@@ -25,7 +25,7 @@ ALL of the following must be true before any micro-live review can be considered
 14. **Endpoint guard**: live endpoint access remains behind `ReadOnlyLiveBrokerProxy`.
 15. **Review-only defaults**: `allow_live_orders=False`, `confirm_live=False`, read-only wording explicit.
 
-All checks must pass for readiness review. Passing does not authorize automatic submission.
+All checks must pass for readiness review. Passing does not authorize automatic submission or any automatic live execution loop.
 
 ---
 
@@ -43,6 +43,19 @@ Micro-live review MUST remain blocked if any of the following is true:
 ## Micro-Live Review Parameters
 
 Trading constraints documented for review-only assessment:
+
+Design freeze metadata for this review-only scope:
+
+| Field | Value |
+|-------|-------|
+| version | `micro-live-review-only-v1` |
+| frozen | `true` |
+| scope | `review_only` |
+| no_continuous_loop | `true` |
+| manual_approval_required | `true` |
+| max_symbols | `2` |
+| max_notional | `100.0` |
+| max_orders | `3` |
 
 | Parameter | Value |
 |-----------|-------|
@@ -87,7 +100,7 @@ Before any human review decision, verify each item:
 - [ ] Symbol allowlist is documented and matches the risk envelope.
 - [ ] Max order notional and max daily order count are explicitly capped.
 - [ ] Emergency stop is armed and rollback instructions are reduce-only.
-- [ ] Review output clearly states read-only / no automatic submission.
+- [ ] Review output clearly states design freeze / human review only / no execution approval.
 
 ---
 

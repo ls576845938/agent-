@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -226,15 +227,33 @@ def build_manifest_from_quality(
     raw_path: str = "",
     cleaned_path: str = "",
     git_commit: str = "",
+    requested_start: str = "",
+    requested_end: str = "",
     universe_id: str = "",
     universe_source: str = "",
     survivorship_bias_risk: str = "unknown",
 ) -> DataManifest:
     fingerprint = str(_safe_get(quality, "fingerprint", ""))
+    resolved_source = str(_safe_get(quality, "actual_source", source))
+    resolved_symbol = symbol.upper()
+    resolved_start = str(_safe_get(quality, "first_timestamp", requested_start))
+    resolved_end = str(_safe_get(quality, "last_timestamp", requested_end))
     normalized_adjustment_policy = _resolve_adjustment_policy(
         adjustment_policy,
+        quality.get("adjustment_policy"),
         quality.get("corporate_action_adjustment"),
         adjustment,
+        _default_adjustment_policy_for_source(resolved_source),
+    )
+    resolved_universe_id, resolved_universe_source, resolved_survivorship_bias_risk = _resolve_lineage_metadata(
+        source=resolved_source,
+        symbol=resolved_symbol,
+        interval=interval,
+        start=resolved_start,
+        end=resolved_end,
+        universe_id=universe_id,
+        universe_source=universe_source,
+        survivorship_bias_risk=survivorship_bias_risk,
     )
     issues = [dict(item) for item in _safe_get(quality, "issues", [])]
     cleaning = {
@@ -246,16 +265,16 @@ def build_manifest_from_quality(
     }
     return DataManifest(
         data_version=str(_safe_get(quality, "data_version", "")),
-        source=str(_safe_get(quality, "actual_source", source)),
-        symbol=symbol.upper(),
+        source=resolved_source,
+        symbol=resolved_symbol,
         interval=interval,
         asset_class=asset_class,
         timezone=timezone_name,
         adjustment=adjustment,
         adjustment_policy=normalized_adjustment_policy,
         corporate_action_adjustment=normalized_adjustment_policy,
-        start=str(_safe_get(quality, "first_timestamp", "")),
-        end=str(_safe_get(quality, "last_timestamp", "")),
+        start=resolved_start,
+        end=resolved_end,
         row_count=int(_safe_get(quality, "row_count", 0)),
         expected_rows=int(_safe_get(quality, "expected_rows", 0)),
         coverage_pct=float(_safe_get(quality, "coverage_pct", 0.0)),
@@ -274,9 +293,9 @@ def build_manifest_from_quality(
         raw_path=raw_path,
         cleaned_path=cleaned_path,
         git_commit=git_commit,
-        universe_id=universe_id,
-        universe_source=universe_source,
-        survivorship_bias_risk=_normalize_survivorship_bias_risk(survivorship_bias_risk),
+        universe_id=resolved_universe_id,
+        universe_source=resolved_universe_source,
+        survivorship_bias_risk=resolved_survivorship_bias_risk,
     )
 
 
@@ -451,6 +470,16 @@ def _resolve_adjustment_policy(*values: Any) -> str:
     return "implicit"
 
 
+def _default_adjustment_policy_for_source(source: str) -> str:
+    defaults = {
+        "alpaca": "raw",
+        "fixture": "raw",
+        "sqlite": "raw",
+        "yfinance": "raw",
+    }
+    return defaults.get(str(source or "").strip().lower(), "")
+
+
 def _normalize_adjustment_policy(value: Any) -> str:
     if value is None:
         return "implicit"
@@ -478,6 +507,95 @@ def _normalize_survivorship_bias_risk(value: Any) -> str:
     if text in ACCEPTED_SURVIVORSHIP_BIAS_RISKS:
         return text
     return "unknown"
+
+
+def _resolve_lineage_metadata(
+    *,
+    source: str,
+    symbol: str,
+    interval: str,
+    start: str,
+    end: str,
+    universe_id: str,
+    universe_source: str,
+    survivorship_bias_risk: str,
+) -> tuple[str, str, str]:
+    resolved_universe_id = str(universe_id or "").strip()
+    resolved_universe_source = str(universe_source or "").strip()
+    resolved_survivorship_bias_risk = _normalize_survivorship_bias_risk(survivorship_bias_risk)
+    auto_universe_id, auto_universe_source, auto_survivorship_bias_risk = _infer_single_symbol_lineage(
+        source=source,
+        symbol=symbol,
+        interval=interval,
+        start=start,
+        end=end,
+    )
+    if not resolved_universe_id:
+        resolved_universe_id = auto_universe_id
+    if not resolved_universe_source:
+        resolved_universe_source = auto_universe_source
+    if resolved_survivorship_bias_risk == "unknown":
+        resolved_survivorship_bias_risk = auto_survivorship_bias_risk
+    return resolved_universe_id, resolved_universe_source, resolved_survivorship_bias_risk
+
+
+def _infer_single_symbol_lineage(
+    *,
+    source: str,
+    symbol: str,
+    interval: str,
+    start: str,
+    end: str,
+) -> tuple[str, str, str]:
+    normalized_source = str(source or "").strip().lower()
+    normalized_symbol = str(symbol or "").strip().upper()
+    normalized_interval = str(interval or "").strip().lower()
+    normalized_start = _normalize_lineage_timestamp(start)
+    normalized_end = _normalize_lineage_timestamp(end)
+    if not (
+        normalized_source
+        and _is_explicit_single_symbol(normalized_symbol)
+        and normalized_interval
+        and normalized_start
+        and normalized_end
+    ):
+        return "", "", "unknown"
+    payload = ":".join(
+        [
+            normalized_source,
+            normalized_symbol,
+            normalized_interval,
+            normalized_start,
+            normalized_end,
+        ]
+    )
+    lineage_hash = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]
+    return (
+        f"single-symbol-{normalized_symbol}-{normalized_interval}-{lineage_hash}",
+        (
+            "auto_lineage:single_symbol_request:v1:"
+            f"{normalized_source}:{normalized_symbol}:{normalized_interval}:{normalized_start}:{normalized_end}"
+        ),
+        "clean",
+    )
+
+
+def _is_explicit_single_symbol(symbol: str) -> bool:
+    if not symbol or symbol in {"*", "ALL"}:
+        return False
+    return re.fullmatch(r"[A-Z0-9._-]+", symbol) is not None
+
+
+def _normalize_lineage_timestamp(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    parsed = _parse_manifest_datetime(text)
+    if parsed is not None:
+        if parsed.time() == datetime.min.time():
+            return parsed.date().isoformat()
+        return parsed.isoformat().replace("+00:00", "Z")
+    return ""
 
 
 def _normalize_quality_summary(

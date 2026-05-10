@@ -25,6 +25,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from quant_us.live.micro_live_design_freeze import design_freeze_metadata
+
 
 # ---------------------------------------------------------------------------
 # Data types
@@ -69,6 +71,7 @@ class LiveReadinessReport:
             "ready": self.all_passed,
             "review_only": self.review_only,
             "submission_ready": self.submission_ready,
+            "design_freeze": design_freeze_metadata(),
             "recommended_action": "REVIEW_ONLY" if self.is_ready() else "BLOCKED",
             "checks": [
                 {"name": c.name, "passed": c.passed, "warn": c.warn, "detail": c.detail}
@@ -272,6 +275,39 @@ class LiveReadinessGate:
         if error_days:
             failures.append(f"Problem days: {', '.join(error_days)}")
 
+        recovery_detail = ""
+        try:
+            from quant_us.reports.paper_validation import inspect_paper_validation_evidence
+
+            context = LiveReadinessGate._paper_validation_context(validation_state_path)
+            evidence = inspect_paper_validation_evidence(
+                context["data_root"],
+                ledger_root=context["ledger_root"],
+                validation_state_path=p,
+            )
+            recovery = evidence.recovery_summary
+            recovery_path = str(recovery.get("artifact_path", "") or "")
+            recovery_status = str(recovery.get("status", "missing") or "missing")
+            recovery_complete = bool(recovery.get("operationally_complete", False))
+            if not recovery_path:
+                failures.append("Broker state recovery artifact missing")
+                recovery_detail = "broker_state_recovery=missing"
+            elif not recovery_complete:
+                failures.append(
+                    f"Broker state recovery incomplete ({recovery_status})"
+                )
+                recovery_detail = (
+                    f"broker_state_recovery={recovery_status} "
+                    f"({recovery_path})"
+                )
+            else:
+                recovery_detail = (
+                    f"broker_state_recovery={recovery_status} "
+                    f"({recovery_path})"
+                )
+        except Exception as exc:
+            failures.append(f"Broker state recovery evidence unreadable: {exc}")
+
         if not failures:
             return ReadinessCheck(
                 name="paper_30_day_clean",
@@ -279,7 +315,8 @@ class LiveReadinessGate:
                 detail=(
                     f"{consecutive_clean}/{required} consecutive clean days, "
                     f"{days_completed}/{required} days completed, "
-                    f"no errors in daily results"
+                    f"no errors in daily results, "
+                    f"{recovery_detail}"
                 ),
             )
 
@@ -288,6 +325,30 @@ class LiveReadinessGate:
             passed=False,
             detail="; ".join(failures),
         )
+
+    @staticmethod
+    def _paper_validation_context(
+        validation_state_path: str | Path,
+    ) -> dict[str, Path]:
+        path = Path(validation_state_path)
+        if (
+            path.parent.name == "paper_production"
+            and path.parent.parent.name == "reports"
+        ):
+            data_root = path.parent.parent.parent
+            return {
+                "data_root": data_root,
+                "ledger_root": data_root / "paper_ledger",
+            }
+        if path.parent.name == "paper_ledger":
+            return {
+                "data_root": path.parent.parent,
+                "ledger_root": path.parent,
+            }
+        return {
+            "data_root": path.parent.parent,
+            "ledger_root": path.parent.parent / "paper_ledger",
+        }
 
     @staticmethod
     def _check_oms_idempotency() -> ReadinessCheck:

@@ -67,6 +67,8 @@ def generate_one(
         interval=interval,
         asset_class="equity" if not symbol.upper().endswith(("USDT", "BTC", "ETH")) else "crypto",
         git_commit=get_git_commit(),
+        requested_start=start,
+        requested_end=end,
         universe_id=universe_id,
         universe_source=universe_source,
         survivorship_bias_risk=survivorship_bias_risk,

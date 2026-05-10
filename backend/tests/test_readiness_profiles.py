@@ -2,6 +2,8 @@
 
 import os
 import io
+import json
+from pathlib import Path
 import pytest
 from unittest.mock import patch
 
@@ -95,6 +97,65 @@ class TestSimulatedProfile:
 
         check = LiveReadinessGate._check_paper_30_day_clean(None, profile="live")
         assert check.passed is False, "live should FAIL for missing validation_state"
+
+    def test_paper_30_day_fail_when_broker_state_recovery_missing(self, tmp_path: Path):
+        """Completed validation still blocks when broker-state recovery evidence is absent."""
+        from quant_us.reports.live_readiness import LiveReadinessGate
+
+        state_dir = tmp_path / "reports" / "paper_production"
+        state_dir.mkdir(parents=True)
+        validation_state = state_dir / "validation_state.json"
+        validation_state.write_text(
+            json.dumps(
+                {
+                    "days_required": 30,
+                    "days_completed": 30,
+                    "consecutive_clean_days": 30,
+                    "daily_results": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        check = LiveReadinessGate._check_paper_30_day_clean(validation_state, profile="paper")
+        assert check.passed is False
+        assert "Broker state recovery artifact missing" in check.detail
+
+    def test_paper_30_day_fail_when_broker_state_recovery_incomplete(self, tmp_path: Path):
+        """Completed validation still blocks when broker-state recovery is not operationally complete."""
+        from quant_us.reports.live_readiness import LiveReadinessGate
+
+        state_dir = tmp_path / "reports" / "paper_production"
+        state_dir.mkdir(parents=True)
+        validation_state = state_dir / "validation_state.json"
+        validation_state.write_text(
+            json.dumps(
+                {
+                    "days_required": 30,
+                    "days_completed": 30,
+                    "consecutive_clean_days": 30,
+                    "daily_results": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        audit_dir = tmp_path / "paper_ledger" / "audit"
+        audit_dir.mkdir(parents=True)
+        (audit_dir / "paper_broker_state_recovery.json").write_text(
+            json.dumps(
+                {
+                    "status": "failed",
+                    "resume_detected": True,
+                    "operationally_complete": False,
+                    "broker_state_restored": False,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        check = LiveReadinessGate._check_paper_30_day_clean(validation_state, profile="paper")
+        assert check.passed is False
+        assert "Broker state recovery incomplete (failed)" in check.detail
 
     def test_cli_simulated_ready_does_not_claim_live_ready(self):
         """Simulated readiness output must be explicit and not say live trading is ready."""

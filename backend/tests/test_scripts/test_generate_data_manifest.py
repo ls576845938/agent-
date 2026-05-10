@@ -428,6 +428,98 @@ class TestGenerateDataManifestCLI(unittest.TestCase):
         self.assertIn("adjustment_policy: split_adjusted", out)
 
     @patch("scripts.generate_data_manifest.get_git_commit", return_value="abc123")
+    @patch("scripts.generate_data_manifest.inspect_market_data_quality")
+    @patch("scripts.generate_data_manifest.DataManifestStore")
+    def test_validate_mode_passes_with_auto_inferred_lineage(
+        self,
+        mock_store_cls: MagicMock,
+        mock_inspect: MagicMock,
+        mock_git: MagicMock,
+    ) -> None:
+        mock_inspect.return_value = {
+            "data_version": "qs-sqlite-AAPL-1d-auto",
+            "actual_source": "sqlite",
+            "first_timestamp": "2024-01-02T00:00:00+00:00",
+            "last_timestamp": "2024-12-31T00:00:00+00:00",
+            "row_count": 252,
+            "expected_rows": 252,
+            "coverage_pct": 100.0,
+            "fingerprint": "a" * 64,
+            "quality_score": 99.0,
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 0,
+        }
+        mock_store = MagicMock()
+        mock_store.list_manifests.return_value = []
+        mock_store_cls.return_value = mock_store
+
+        out, err, exc = self._run_main(
+            [
+                "--source", "sqlite",
+                "--symbol", "AAPL",
+                "--interval", "1d",
+                "--start", "2024-01-02",
+                "--end", "2024-12-31",
+                "--validate",
+            ]
+        )
+
+        self.assertIsNone(exc)
+        mock_store.write.assert_called_once()
+        written_manifest = mock_store.write.call_args.args[0]
+        self.assertEqual(written_manifest.survivorship_bias_risk, "clean")
+        self.assertTrue(written_manifest.universe_id.startswith("single-symbol-AAPL-1d-"))
+        self.assertIn("promotion validation: PASS", out)
+
+    @patch("scripts.generate_data_manifest.get_git_commit", return_value="abc123")
+    @patch("scripts.generate_data_manifest.inspect_market_data_quality")
+    @patch("scripts.generate_data_manifest.DataManifestStore")
+    def test_validate_mode_blocks_when_auto_lineage_cannot_be_inferred(
+        self,
+        mock_store_cls: MagicMock,
+        mock_inspect: MagicMock,
+        mock_git: MagicMock,
+    ) -> None:
+        mock_inspect.return_value = {
+            "data_version": "qs-sqlite-AAPL,MSFT-1d-multi-symbol",
+            "actual_source": "sqlite",
+            "first_timestamp": "2024-01-02T00:00:00+00:00",
+            "last_timestamp": "2024-12-31T00:00:00+00:00",
+            "row_count": 252,
+            "expected_rows": 252,
+            "coverage_pct": 100.0,
+            "fingerprint": "b" * 64,
+            "quality_score": 99.0,
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 0,
+        }
+        mock_store = MagicMock()
+        mock_store.list_manifests.return_value = []
+        mock_store_cls.return_value = mock_store
+
+        out, err, exc = self._run_main(
+            [
+                "--source", "sqlite",
+                "--symbol", "AAPL,MSFT",
+                "--interval", "1d",
+                "--validate",
+            ]
+        )
+
+        self.assertIsInstance(exc, ValueError)
+        mock_store.write.assert_not_called()
+        self.assertIn("promotion validation: BLOCK", out)
+        self.assertIn("universe_id_missing", out)
+
+    @patch("scripts.generate_data_manifest.get_git_commit", return_value="abc123")
     @patch(
         "scripts.generate_data_manifest.validate_manifest_for_promotion",
         return_value=DataManifestValidation(

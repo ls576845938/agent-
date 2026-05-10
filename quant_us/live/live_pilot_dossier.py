@@ -1,7 +1,8 @@
 """Live Pilot Readiness Dossier for G2 -> G3 transition.
 
-This dossier is review-only. It records whether the system is ready for a
-human micro-live review and explicitly does not open a start/run/submit path.
+This dossier is a review-only design freeze. It records whether the system is
+ready for human micro-live review, is not execution approval, and explicitly
+does not open a start/run/submit path.
 """
 
 from __future__ import annotations
@@ -12,6 +13,14 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from quant_us.live.micro_live_design_freeze import (
+    DESIGN_FREEZE_MAX_NOTIONAL,
+    DESIGN_FREEZE_MAX_ORDERS,
+    DESIGN_FREEZE_MAX_SYMBOLS,
+    DESIGN_FREEZE_SCOPE,
+    DESIGN_FREEZE_VERSION,
+)
 
 _logger = logging.getLogger("live_pilot_dossier")
 
@@ -65,6 +74,18 @@ class LiveSafety:
 
 
 @dataclass
+class DesignFreeze:
+    version: str = DESIGN_FREEZE_VERSION
+    frozen: bool = True
+    scope: str = DESIGN_FREEZE_SCOPE
+    no_continuous_loop: bool = True
+    manual_approval_required: bool = True
+    max_symbols: int = DESIGN_FREEZE_MAX_SYMBOLS
+    max_notional: float = DESIGN_FREEZE_MAX_NOTIONAL
+    max_orders: int = DESIGN_FREEZE_MAX_ORDERS
+
+
+@dataclass
 class LivePilotReadinessDossier:
     """Comprehensive dossier for G3 Small Live Pilot review.
 
@@ -74,7 +95,8 @@ class LivePilotReadinessDossier:
     3. Strategy Freeze
     4. Risk Limits
     5. Live Safety
-    6. Go / No-Go decision
+    6. Design Freeze
+    7. Go / No-Go decision
     """
 
     generated_at: datetime = field(default_factory=_utc_now)
@@ -91,6 +113,7 @@ class LivePilotReadinessDossier:
     kill_switch_thresholds: dict[str, Any] = field(default_factory=dict)
 
     live_safety: LiveSafety = field(default_factory=LiveSafety)
+    design_freeze: DesignFreeze = field(default_factory=DesignFreeze)
 
     go_decision: str = "NOT_READY"
 
@@ -190,6 +213,16 @@ class LivePilotReadinessDossier:
                 "readonly_broker_proxy_proof": self.live_safety.readonly_broker_proxy_proof,
                 "no_live_order_touched_proof": self.live_safety.no_live_order_touched_proof,
             },
+            "design_freeze": {
+                "version": self.design_freeze.version,
+                "frozen": self.design_freeze.frozen,
+                "scope": self.design_freeze.scope,
+                "no_continuous_loop": self.design_freeze.no_continuous_loop,
+                "manual_approval_required": self.design_freeze.manual_approval_required,
+                "max_symbols": self.design_freeze.max_symbols,
+                "max_notional": self.design_freeze.max_notional,
+                "max_orders": self.design_freeze.max_orders,
+            },
             "go_decision": self.go_decision,
             "review_only": True,
             "submission_ready": False,
@@ -270,7 +303,22 @@ class LivePilotReadinessDossier:
             "",
             "---",
             "",
-            f"## 6. Decision: **{d['go_decision']}**",
+            "## 6. Design Freeze",
+            "",
+            f"| Freeze Field | Value |",
+            f"|--------------|-------|",
+            f"| version | {d['design_freeze']['version']} |",
+            f"| frozen | {d['design_freeze']['frozen']} |",
+            f"| scope | {d['design_freeze']['scope']} |",
+            f"| no_continuous_loop | {d['design_freeze']['no_continuous_loop']} |",
+            f"| manual_approval_required | {d['design_freeze']['manual_approval_required']} |",
+            f"| max_symbols | {d['design_freeze']['max_symbols']} |",
+            f"| max_notional | {d['design_freeze']['max_notional']} |",
+            f"| max_orders | {d['design_freeze']['max_orders']} |",
+            "",
+            "---",
+            "",
+            f"## 7. Decision: **{d['go_decision']}**",
             "",
             f"- Review Only: `{d['review_only']}`",
             f"- Submission Ready: `{d['submission_ready']}`",
@@ -281,8 +329,10 @@ class LivePilotReadinessDossier:
             lines.append("### Review-Only Conditions")
             lines.append("")
             lines.append("- Human review REQUIRED before enabling any live orders.")
+            lines.append("- This dossier is a design freeze and human review artifact, not execution approval.")
             lines.append("- This dossier is not a start, run, or submit surface.")
             lines.append("- Live profile remains NOT READY until explicitly authorized outside this dossier.")
+            lines.append("- No continuous automated live loop is approved by this dossier.")
             lines.append("- Shadow-live must keep running alongside micro-live review.")
             lines.append("- Kill switch and emergency stop must remain armed at all times.")
         elif d["go_decision"] == "BLOCKED":
@@ -398,6 +448,12 @@ class LivePilotDossierBuilder:
             "All orders were shadow orders (real_submit=False). "
             "Audit journal confirms real_submit_count=0."
         )
+        dossier.design_freeze.manual_approval_required = (
+            dossier.live_safety.manual_approval_required
+        )
+        dossier.design_freeze.max_symbols = len(dossier.live_safety.symbol_allowlist)
+        dossier.design_freeze.max_orders = dossier.live_safety.max_daily_order_count
+        dossier.design_freeze.max_notional = dossier.max_order_notional
 
     def save_dossier(
         self, dossier: LivePilotReadinessDossier, output_path: str
