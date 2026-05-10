@@ -49,6 +49,7 @@ Design freeze metadata for this review-only scope:
 | Field | Value |
 |-------|-------|
 | version | `micro-live-review-only-v1` |
+| hash | `sha256(canonical design freeze payload)` |
 | frozen | `true` |
 | scope | `review_only` |
 | no_continuous_loop | `true` |
@@ -56,6 +57,8 @@ Design freeze metadata for this review-only scope:
 | max_symbols | `2` |
 | max_notional | `100.0` |
 | max_orders | `3` |
+
+Any manual approval record must bind this `version` / `hash` / `scope`, must remain `review_only=true`, and must explicitly keep `execution_authorized=false`.
 
 | Parameter | Value |
 |-----------|-------|

@@ -118,11 +118,13 @@ python -m quant_us.cli report paper-validation --data-root data --validation-sta
 
 The report prints:
 
+- fixed operator fields: `audit_blocker_status`, `data_strict_status`, and `recovery_status`
 - validation state and validation report paths
 - latest daily report path
 - paper session manifest and history manifest path
 - startup sync artifact path
 - broker-state recovery artifact path
+- fixed broker recovery line: `broker_state_recovery: path=... status=... operationally_complete=...`
 - latest ledger reconciliation and ledger reconciliation artifact path
 - explicit `paper_submit_orders` state
 - broker/local diff counts for cash, positions, orders, and fills
@@ -134,11 +136,21 @@ If the 30-day counters are complete but the recovery artifact is missing or
 This is still review-only evidence. It does not start paper trading, does not authorize live trading,
 and does not enable submit.
 
+When `scripts/audit_research_evidence.py` is present, the CLI also prints a read-only recommendation command:
+
+```bash
+python scripts/audit_research_evidence.py --data-root data --strict
+```
+
+This is a blocker audit only. It does not run `scripts/migrate_backtest_manifest_path.py` and it does not perform destructive migration.
+
 `scripts/run_paper_validation.py` now persists these evidence pointers into `validation_state.json`
-and `validation_report.json` when it writes state. Its current resume boundary is explicit:
-validation counters and evidence pointers are restored, but broker cash/positions are not restored
-from the ledger by this script. Treat resumed runs as operationally incomplete until the runtime path
-has a ledger-backed broker-state restore.
+and `validation_report.json` when it writes state. Resume is fail-closed:
+the validation only counts as promotable when startup sync, broker-state recovery,
+ledger reconciliation, and no-submit evidence all remain present and clean.
+
+For the operator runbook, daily artifact contract, resume checklist, and
+fail-closed pass criteria, see [docs/report/paper_validation_runbook.md](./paper_validation_runbook.md).
 
 ## Readiness
 
@@ -172,6 +184,9 @@ Current live mode remains a review-only `LiveRuntime` safety shell even when liv
 
 Readiness output also prints validation-state, latest daily report, evidence registry, and paper-review status paths. This is evidence-only:
 it does not approve paper trading, and it does not enable paper/live order submission.
+For operator readability, readiness now also prints a fixed `scope: review-only, no execution` line plus fixed
+`readiness_audit_blocker_status`, `readiness_data_strict_status`, and `readiness_recovery_status` fields derived from the
+same paper-validation evidence bundle.
 `report` and `readiness` are review-only surfaces; they stop at evidence and do not trigger any broker action.
 
 The paper-review status reader consumes the saved Evidence Registry at
@@ -223,7 +238,20 @@ python scripts/audit_research_evidence.py --data-root data
 python scripts/audit_research_evidence.py --data-root data --strict
 ```
 
-This audit is report-only. It does not rewrite `candidate.json` or manifest files. `--strict` only changes the process exit code when one or more `BLOCKER` findings are present.
+This audit is report-only. It does not rewrite `candidate.json` or manifest files. The JSON now includes a read-only `migration_plan`
+grouped by blocker code, with `candidate_id`, evidence paths, recommended action, and whether the existing
+`scripts/migrate_backtest_manifest_path.py` flow can handle the case. `--strict` only changes the process exit code when one or more `BLOCKER` findings are present.
+
+Generate a dedicated read-only migration preparation plan:
+
+```bash
+python scripts/plan_research_evidence_migration.py --data-root data
+python scripts/plan_research_evidence_migration.py --data-root data --strict
+```
+
+This planner is also JSON-first, dry-run by default, and never mutates historical `candidate.json`, backtest manifests, or data manifests.
+Use it to separate cases that can be handled by the existing backtest-path migration script from cases that still require manual manifest recovery,
+binding repair, or data-manifest cleanup.
 
 ## Full Pipeline Boundary
 

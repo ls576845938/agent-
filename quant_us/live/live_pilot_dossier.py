@@ -20,6 +20,7 @@ from quant_us.live.micro_live_design_freeze import (
     DESIGN_FREEZE_MAX_SYMBOLS,
     DESIGN_FREEZE_SCOPE,
     DESIGN_FREEZE_VERSION,
+    design_freeze_hash,
 )
 
 _logger = logging.getLogger("live_pilot_dossier")
@@ -76,6 +77,7 @@ class LiveSafety:
 @dataclass
 class DesignFreeze:
     version: str = DESIGN_FREEZE_VERSION
+    hash: str = field(default_factory=design_freeze_hash)
     frozen: bool = True
     scope: str = DESIGN_FREEZE_SCOPE
     no_continuous_loop: bool = True
@@ -215,6 +217,7 @@ class LivePilotReadinessDossier:
             },
             "design_freeze": {
                 "version": self.design_freeze.version,
+                "hash": self.design_freeze.hash,
                 "frozen": self.design_freeze.frozen,
                 "scope": self.design_freeze.scope,
                 "no_continuous_loop": self.design_freeze.no_continuous_loop,
@@ -225,6 +228,7 @@ class LivePilotReadinessDossier:
             },
             "go_decision": self.go_decision,
             "review_only": True,
+            "execution_authorized": False,
             "submission_ready": False,
         }
 
@@ -308,6 +312,7 @@ class LivePilotReadinessDossier:
             f"| Freeze Field | Value |",
             f"|--------------|-------|",
             f"| version | {d['design_freeze']['version']} |",
+            f"| hash | {d['design_freeze']['hash']} |",
             f"| frozen | {d['design_freeze']['frozen']} |",
             f"| scope | {d['design_freeze']['scope']} |",
             f"| no_continuous_loop | {d['design_freeze']['no_continuous_loop']} |",
@@ -321,6 +326,7 @@ class LivePilotReadinessDossier:
             f"## 7. Decision: **{d['go_decision']}**",
             "",
             f"- Review Only: `{d['review_only']}`",
+            f"- Execution Authorized: `{d['execution_authorized']}`",
             f"- Submission Ready: `{d['submission_ready']}`",
             "",
         ]

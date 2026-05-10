@@ -113,6 +113,16 @@ def _write_empty_subject_registry(data_root: str | Path) -> None:
 
 def _write_paper_validation_artifacts(data_root: str | Path) -> None:
     root = Path(data_root)
+    market_data_dir = (
+        root
+        / "raw"
+        / "vendor=yfinance"
+        / "asset_class=equity"
+        / "bar_size=1d"
+        / "symbol=AAPL"
+    )
+    market_data_dir.mkdir(parents=True, exist_ok=True)
+    (market_data_dir / "date=2026-05-08.parquet").write_bytes(b"fixture")
     report_dir = root / "paper_ledger" / "daily_reports"
     report_dir.mkdir(parents=True)
     (report_dir / "daily_report_2026-05-08.json").write_text(
@@ -136,6 +146,10 @@ def _write_paper_validation_artifacts(data_root: str | Path) -> None:
     (state_dir / "validation_state.json").write_text(
         json.dumps(
             {
+                "symbols": ["AAPL"],
+                "data_root": str(root),
+                "source": "yfinance",
+                "bar_size": "1d",
                 "days_required": 30,
                 "days_completed": 30,
                 "consecutive_clean_days": 30,
@@ -164,7 +178,18 @@ def _write_paper_validation_artifacts(data_root: str | Path) -> None:
         encoding="utf-8",
     )
     (audit_dir / "paper_broker_adapter_startup_sync.json").write_text(
-        json.dumps({"status": "complete", "halt_reconciliation": False}),
+        json.dumps(
+            {
+                "status": "ok",
+                "halt_reconciliation": False,
+                "no_submit_proof": {
+                    "submit_call_count_available": True,
+                    "submit_order_invoked": False,
+                    "write_method_invoked": False,
+                    "submit_call_count_delta": 0,
+                },
+            }
+        ),
         encoding="utf-8",
     )
     (audit_dir / "paper_broker_state_recovery.json").write_text(
@@ -1025,13 +1050,19 @@ class CliManifestReportTests(unittest.TestCase):
             text = out.getvalue()
             self.assertIn("30-Day Paper Validation Evidence", text)
             self.assertIn("paper_validation_state: PASS", text)
+            self.assertIn("audit_blocker_status: PASS", text)
+            self.assertIn("data_strict_status: PASS", text)
+            self.assertIn("recovery_status: PASS", text)
             self.assertIn("paper_submit_orders: DISABLED", text)
             self.assertIn("paper_validation_days: 30/30 completed, 30/30 clean", text)
             self.assertIn("evidence:     broker_state_recovery=", text)
             self.assertIn("paper_broker_state_recovery.json", text)
+            self.assertIn("broker_state_recovery: path=", text)
+            self.assertIn("status=verified, operationally_complete=True", text)
             self.assertIn("broker_local_diff_summary: cash=+0.00, positions=0, orders=0, fills=0, total=0", text)
             self.assertIn("recovery_summary: required=False", text)
             self.assertIn("paper_readiness_gaps: (none)", text)
+            self.assertIn("audit_recommendation: python scripts/audit_research_evidence.py --data-root", text)
             self.assertIn("scope:       report only, no execution", text)
 
     def test_report_paper_validation_blocks_when_broker_state_recovery_missing(self) -> None:
@@ -1051,8 +1082,52 @@ class CliManifestReportTests(unittest.TestCase):
 
             text = out.getvalue()
             self.assertIn("paper_validation_state: BLOCKED", text)
+            self.assertIn("audit_blocker_status: BLOCKED", text)
+            self.assertIn("recovery_status: BLOCKED", text)
             self.assertIn("evidence:     broker_state_recovery=(not found)", text)
+            self.assertIn("broker_state_recovery: path=(missing), status=missing, operationally_complete=False", text)
             self.assertIn("paper_readiness_gaps: broker_state_recovery_missing", text)
+
+    def test_report_paper_validation_blocks_when_startup_sync_missing(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            startup_path = (
+                Path(tmp)
+                / "paper_ledger"
+                / "audit"
+                / "paper_broker_adapter_startup_sync.json"
+            )
+            startup_path.unlink()
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "paper-validation", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_validation_state: BLOCKED", text)
+            self.assertIn("audit_blocker_status: BLOCKED", text)
+            self.assertIn("evidence:     startup_sync=(not found)", text)
+            self.assertIn("paper_readiness_gaps: startup_sync_missing", text)
+
+    def test_report_paper_validation_blocks_when_ledger_recon_artifact_missing(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            artifact_path = (
+                Path(tmp)
+                / "paper_ledger"
+                / "reconciliation"
+                / "ledger_recon_artifact_aaaaaaaaaaaaaaaa.json"
+            )
+            artifact_path.unlink()
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "paper-validation", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_validation_state: BLOCKED", text)
+            self.assertIn("audit_blocker_status: BLOCKED", text)
+            self.assertIn("paper_readiness_gaps: ledger_reconciliation_artifact_missing", text)
 
     def test_readiness_prints_broker_state_recovery_evidence_without_audit_lookup(self) -> None:
         from quant_us.reports.live_readiness import LiveReadinessReport, ReadinessCheck
@@ -1083,6 +1158,10 @@ class CliManifestReportTests(unittest.TestCase):
                 )
 
             text = out.getvalue()
+            self.assertIn("scope:       review-only, no execution", text)
+            self.assertIn("readiness_recovery_status: PASS", text)
+            self.assertIn("readiness_audit_blocker_status: PASS", text)
+            self.assertIn("readiness_data_strict_status: PASS", text)
             self.assertIn("evidence:     broker_state_recovery=", text)
             self.assertIn("paper_broker_state_recovery.json", text)
             self.assertIn("scope:       report only, no execution", text)

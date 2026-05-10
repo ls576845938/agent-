@@ -259,7 +259,19 @@ class SmallLiveReadinessGateTests(unittest.TestCase):
         self.assertFalse(payload["submission_ready"])
         self.assertEqual(payload["recommended_action"], "REVIEW_ONLY")
         self.assertEqual(
-            payload["design_freeze"],
+            {
+                key: payload["design_freeze"][key]
+                for key in (
+                    "version",
+                    "frozen",
+                    "scope",
+                    "no_continuous_loop",
+                    "manual_approval_required",
+                    "max_symbols",
+                    "max_notional",
+                    "max_orders",
+                )
+            },
             {
                 "version": "micro-live-review-only-v1",
                 "frozen": True,
@@ -271,6 +283,7 @@ class SmallLiveReadinessGateTests(unittest.TestCase):
                 "max_orders": 3,
             },
         )
+        self.assertTrue(payload["design_freeze"]["hash"])
 
 
 # ---------------------------------------------------------------------------

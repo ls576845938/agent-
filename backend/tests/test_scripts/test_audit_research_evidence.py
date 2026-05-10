@@ -21,6 +21,13 @@ _SPEC = importlib.util.spec_from_file_location(
 _MODULE = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = _MODULE
 _SPEC.loader.exec_module(_MODULE)
+_PLAN_SPEC = importlib.util.spec_from_file_location(
+    "plan_research_evidence_migration_test",
+    str(_SCRIPTS_DIR / "plan_research_evidence_migration.py"),
+)
+_PLAN_MODULE = importlib.util.module_from_spec(_PLAN_SPEC)
+sys.modules[_PLAN_SPEC.name] = _PLAN_MODULE
+_PLAN_SPEC.loader.exec_module(_PLAN_MODULE)
 
 
 class TestAuditResearchEvidenceScript(unittest.TestCase):
@@ -169,6 +176,8 @@ class TestAuditResearchEvidenceScript(unittest.TestCase):
             self.assertEqual(report["counts"]["blocker_count"], 0)
             self.assertEqual(report["candidates"][0]["blocker_codes"], [])
             self.assertEqual(report["data_manifests"][0]["blocker_codes"], [])
+            self.assertEqual(report["migration_plan"]["counts"]["item_count"], 0)
+            self.assertEqual(report["migration_plan"]["blocker_categories"], [])
 
     def test_audit_reports_expected_blockers_without_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -269,6 +278,44 @@ class TestAuditResearchEvidenceScript(unittest.TestCase):
             self.assertIn("inline_only_backtest_manifest", blocker_codes)
             self.assertIn("low_quality_data_manifest", blocker_codes)
 
+            migration_categories = {
+                item["blocker_code"]: item for item in report["migration_plan"]["blocker_categories"]
+            }
+            missing_path_items = migration_categories["missing_backtest_manifest_path"]["items"]
+            missing_path_by_candidate = {
+                item["candidate_id"]: item for item in missing_path_items
+            }
+            self.assertEqual(
+                set(missing_path_by_candidate),
+                {"cand_missing_path", "cand_inline_only"},
+            )
+            self.assertTrue(
+                missing_path_by_candidate["cand_missing_path"][
+                    "existing_migration_script_compatible"
+                ]
+            )
+            self.assertFalse(
+                missing_path_by_candidate["cand_inline_only"][
+                    "existing_migration_script_compatible"
+                ]
+            )
+            self.assertIn(
+                "migrate_backtest_manifest_path.py",
+                missing_path_by_candidate["cand_missing_path"]["recommended_action"],
+            )
+
+            duplicate_items = migration_categories["duplicate_data_version_manifests"]["items"]
+            duplicate_candidate_ids = {item["candidate_id"] for item in duplicate_items}
+            self.assertEqual(duplicate_candidate_ids, {"cand_noncanonical"})
+            self.assertFalse(duplicate_items[0]["existing_migration_script_compatible"])
+
+            stale_manifest_items = migration_categories["stale_data_manifest"]["items"]
+            self.assertEqual(stale_manifest_items[0]["candidate_id"], "cand_stale_binding")
+            self.assertIn(
+                "Restore the canonical manifest",
+                stale_manifest_items[0]["recommended_action"],
+            )
+
     def test_main_strict_exits_non_zero_when_blockers_exist(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -291,6 +338,48 @@ class TestAuditResearchEvidenceScript(unittest.TestCase):
             self.assertEqual(ctx.exception.code, 1)
             self.assertTrue(report["strict"])
             self.assertGreater(report["counts"]["blocker_count"], 0)
+
+    def test_plan_script_outputs_read_only_json_and_strict_exit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            data_version = "qs-yfinance-AAPL-1d-plan"
+            manifest_payload = self._write_data_manifest(root, data_version)
+            candidate_path = self._write_candidate(
+                root,
+                "cand_plan",
+                data_version=data_version,
+                backtest_manifest_path=None,
+            )
+            self._write_backtest_manifest(
+                root,
+                "cand_plan",
+                data_version=data_version,
+                embedded_data_manifest=manifest_payload,
+            )
+            before = json.loads(candidate_path.read_text(encoding="utf-8"))
+
+            stdout = io.StringIO()
+            with (
+                patch("sys.argv", ["prog", "--data-root", str(root), "--strict"]),
+                patch("sys.stdout", stdout),
+            ):
+                with self.assertRaises(SystemExit) as ctx:
+                    raise SystemExit(_PLAN_MODULE.main())
+
+            plan = json.loads(stdout.getvalue())
+            after = json.loads(candidate_path.read_text(encoding="utf-8"))
+
+            self.assertEqual(ctx.exception.code, 1)
+            self.assertEqual(plan["scope"], "report_only")
+            self.assertTrue(plan["dry_run"])
+            self.assertTrue(plan["strict"])
+            self.assertEqual(before, after)
+            self.assertEqual(plan["counts"]["existing_migration_script_compatible_count"], 1)
+            category = {
+                item["blocker_code"]: item for item in plan["blocker_categories"]
+            }["missing_backtest_manifest_path"]
+            self.assertEqual(category["items"][0]["candidate_id"], "cand_plan")
+            self.assertTrue(category["items"][0]["existing_migration_script_compatible"])
 
 
 if __name__ == "__main__":

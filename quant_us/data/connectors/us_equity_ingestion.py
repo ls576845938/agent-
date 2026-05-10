@@ -91,6 +91,17 @@ class USEquityIngestionPipeline:
         cleaned["data_version"] = data_version
 
         parquet_path = self._write_parquet(cleaned, symbol, interval)
+        quality.update(
+            self._connector.quality_metadata(
+                symbol=symbol,
+                start=quality.get("first_timestamp", start),
+                end=quality.get("last_timestamp", end),
+                bar_size=interval,
+                frame=cleaned,
+                data_root=Path(self.config.data_root) / "raw",
+            )
+        )
+        quality["cleaned_path"] = str(parquet_path)
 
         manifest = build_manifest_from_quality(
             quality=quality,

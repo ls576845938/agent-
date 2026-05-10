@@ -118,6 +118,7 @@ Review-only checks in `LiveReadinessGate.check_all()` include:
 
 Design freeze metadata emitted by readiness and dossier payloads:
 - `version=micro-live-review-only-v1`
+- `hash=<sha256 of canonical freeze payload>`
 - `frozen=true`
 - `scope=review_only`
 - `no_continuous_loop=true`
@@ -125,3 +126,5 @@ Design freeze metadata emitted by readiness and dossier payloads:
 - `max_symbols=2`
 - `max_notional=100.0`
 - `max_orders=3`
+
+Manual approval artifacts must bind the dossier/design-freeze `version` / `hash` / `scope`, and remain `review_only=true` with `execution_authorized=false`. A binding mismatch invalidates the approval artifact rather than authorizing execution.

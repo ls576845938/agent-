@@ -134,6 +134,22 @@ def _print_report_only_note(indent: str = "  ") -> None:
     print(f"{indent}scope:       report only, no execution")
 
 
+def _print_review_only_scope(indent: str = "  ") -> None:
+    print(f"{indent}scope:       review-only, no execution")
+
+
+def _audit_research_evidence_command(data_root: str | Path) -> str:
+    return f"python scripts/audit_research_evidence.py --data-root {data_root} --strict"
+
+
+def _print_audit_recommendation(data_root: str | Path, indent: str = "  ") -> None:
+    script_path = Path("scripts") / "audit_research_evidence.py"
+    if not script_path.exists():
+        return
+    print(f"{indent}audit_recommendation: {_audit_research_evidence_command(data_root)}")
+    print(f"{indent}audit_note:   review-only JSON audit; does not run candidate/manifest migrations")
+
+
 def _saved_evidence_registry_path(data_root: str | Path) -> Path:
     return Path(data_root) / "research" / "evidence_registry.json"
 
@@ -515,6 +531,9 @@ def _print_paper_validation_evidence(
         validation_state_path=validation_state,
     )
     print(f"{indent}paper_validation_state: {evidence.readiness_state}")
+    print(f"{indent}audit_blocker_status: {evidence.audit_blocker_status}")
+    print(f"{indent}data_strict_status: {evidence.data_strict_status}")
+    print(f"{indent}recovery_status: {evidence.recovery_status}")
     print(f"{indent}paper_submit_orders: {evidence.paper_submit_orders}")
     print(
         f"{indent}paper_validation_days: "
@@ -551,6 +570,12 @@ def _print_paper_validation_evidence(
         f"total={diff.get('total_diff_count', 0)}"
     )
     recovery = evidence.recovery_summary
+    print(
+        f"{indent}broker_state_recovery: "
+        f"path={_display_value(recovery.get('artifact_path'))}, "
+        f"status={_display_value(recovery.get('status'))}, "
+        f"operationally_complete={bool(recovery.get('operationally_complete', False))}"
+    )
     print(
         f"{indent}recovery_summary: "
         f"required={bool(recovery.get('recovery_required', False))}, "
@@ -860,6 +885,7 @@ def cmd_report_paper_validation(args: argparse.Namespace) -> None:
         ledger_root=args.ledger_root or None,
         validation_state=args.validation_state or None,
     )
+    _print_audit_recommendation(args.data_root)
     print(f"  readiness_result: {evidence.readiness_state}")
     print("  note:         Review evidence only. This does not approve or start paper/live trading.")
     print("=" * 60)
@@ -2308,6 +2334,7 @@ def cmd_readiness(args: argparse.Namespace) -> None:
 
     print("Live Readiness Report")
     _print_report_only_note()
+    _print_review_only_scope()
     print(f"  run_id:       {run_id}")
     print(f"  generated_at: {generated_at}")
     print(f"  gate_version: 1.2.0")
@@ -2319,12 +2346,16 @@ def cmd_readiness(args: argparse.Namespace) -> None:
     print(f"  latest_daily_report_state: {_path_evidence_state(latest_daily)}")
     print(f"  evidence:     latest_daily_report={latest_daily or '(not found)'}")
     print(f"  evidence:     manifest_root={_manifest_root(data_root)}")
-    _print_paper_validation_evidence(
+    paper_evidence = _print_paper_validation_evidence(
         data_root,
         validation_state=args.validation_state or None,
     )
+    print(f"  readiness_recovery_status: {paper_evidence.recovery_status}")
+    print(f"  readiness_audit_blocker_status: {paper_evidence.audit_blocker_status}")
+    print(f"  readiness_data_strict_status: {paper_evidence.data_strict_status}")
     _print_evidence_registry_status(data_root)
     _print_paper_review_status(data_root)
+    _print_audit_recommendation(data_root)
     if force_rerun:
         print("  force_rerun:  True (ignoring any stale results)")
     if no_cache:

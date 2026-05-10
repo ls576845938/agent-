@@ -189,6 +189,7 @@ class TestSimulatedProfile:
 
         text = stdout.getvalue()
         assert "profile:      paper" in text
+        assert "scope:       review-only, no execution" in text
         assert "RESULT: READINESS CHECKS PASSED for paper-stage evaluation only." in text
         assert "READY for live trading" not in text
 

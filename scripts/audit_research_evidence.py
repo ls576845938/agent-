@@ -10,6 +10,10 @@ from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 from typing import Any
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from quant_us.data.storage.data_manifest import (
     DataManifest,
     DataManifestStore,
@@ -17,8 +21,10 @@ from quant_us.data.storage.data_manifest import (
 )
 
 
-SCHEMA_VERSION = "research_evidence_audit_v1"
+SCHEMA_VERSION = "research_evidence_audit_v2"
+MIGRATION_PLAN_SCHEMA_VERSION = "research_evidence_migration_plan_v1"
 SEVERITY_BLOCKER = "BLOCKER"
+BACKTEST_PATH_MIGRATION_SCRIPT = "scripts/migrate_backtest_manifest_path.py"
 
 
 @dataclass(frozen=True)
@@ -67,6 +73,23 @@ class DataManifestRecord:
     quality_score: float = 0.0
     coverage_pct: float = 0.0
     blocker_codes: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class MigrationPlanItem:
+    blocker_code: str
+    severity: str
+    scope: str
+    subject_id: str
+    candidate_id: str
+    data_version: str
+    path: str
+    message: str
+    recommended_action: str
+    existing_migration_script_compatible: bool
+    existing_migration_script: str = ""
+    related_paths: list[str] = field(default_factory=list)
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -201,6 +224,259 @@ def _append_finding(
             details=dict(details or {}),
         )
     )
+
+
+def _unique_paths(*values: str) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for value in values:
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        ordered.append(value)
+    return ordered
+
+
+def _migration_action_for_finding(
+    finding: dict[str, Any],
+    *,
+    candidate_record: dict[str, Any],
+    data_manifest_record: dict[str, Any],
+) -> tuple[str, bool]:
+    code = str(finding.get("code", "") or "")
+    candidate_id = str(finding.get("candidate_id", "") or "")
+    data_version = str(finding.get("data_version", "") or "")
+    details = finding.get("details") or {}
+    canonical_backtest_path = str(candidate_record.get("canonical_backtest_manifest_path", "") or "")
+    canonical_manifest_path = str(data_manifest_record.get("canonical_path", "") or "")
+
+    if code == "missing_backtest_manifest_path":
+        if bool(candidate_record.get("canonical_backtest_manifest_exists")):
+            return (
+                "Run "
+                f"{BACKTEST_PATH_MIGRATION_SCRIPT} --data-root <data_root> --apply "
+                "after review to write the canonical backtest_manifest_path into candidate.json.",
+                True,
+            )
+        if bool(details.get("inline_backtest_manifest")):
+            return (
+                "Persist a canonical run_manifest.json under "
+                f"{canonical_backtest_path} from historical backtest evidence, then rerun the audit.",
+                False,
+            )
+        return (
+            "Recover or rebuild the canonical run_manifest.json under "
+            f"{canonical_backtest_path} before writing backtest_manifest_path.",
+            False,
+        )
+
+    if code == "non_canonical_backtest_manifest_path":
+        return (
+            "Review the referenced manifest, persist promotion evidence at the canonical path "
+            f"{canonical_backtest_path}, and then update candidate.json manually. "
+            f"{BACKTEST_PATH_MIGRATION_SCRIPT} does not overwrite an existing backtest_manifest_path.",
+            False,
+        )
+
+    if code == "stale_backtest_manifest_path":
+        return (
+            "Restore the referenced manifest or rebuild the canonical run_manifest.json at "
+            f"{canonical_backtest_path}, then update candidate.json to the canonical relative path.",
+            False,
+        )
+
+    if code == "inline_only_backtest_manifest":
+        return (
+            "Persist a canonical run_manifest.json under "
+            f"{canonical_backtest_path}; inline backtest payloads remain diagnostic only.",
+            False,
+        )
+
+    if code == "missing_backtest_manifest_file":
+        return (
+            "Recover or regenerate the canonical run_manifest.json under "
+            f"{canonical_backtest_path} before any candidate.json migration.",
+            False,
+        )
+
+    if code == "invalid_candidate_json":
+        return (
+            "Repair candidate.json so it is valid JSON and candidate_id matches the directory name before re-auditing.",
+            False,
+        )
+
+    if code == "invalid_backtest_manifest_json":
+        return (
+            "Repair or re-export the persisted run_manifest.json as valid JSON without changing ledger-derived evidence semantics.",
+            False,
+        )
+
+    if code == "missing_embedded_data_manifest_binding":
+        return (
+            "Rebuild the backtest run_manifest.json so it embeds the canonical data manifest for "
+            f"data_version={data_version}.",
+            False,
+        )
+
+    if code == "stale_data_manifest_binding":
+        return (
+            "Rebuild the backtest run_manifest.json so the embedded data manifest matches the canonical "
+            f"checksum and fingerprint for data_version={data_version}.",
+            False,
+        )
+
+    if code == "duplicate_data_version_manifests":
+        return (
+            "Select one canonical manifest at "
+            f"{canonical_manifest_path} and retire alternate persisted manifests before re-auditing impacted candidates.",
+            False,
+        )
+
+    if code == "stale_data_manifest":
+        return (
+            "Restore the canonical manifest at "
+            f"{canonical_manifest_path} or move an alternate manifest into that path, then rerun the audit.",
+            False,
+        )
+
+    if code == "conflict_data_manifest":
+        return (
+            "Resolve the canonical manifest conflict so exactly one persisted record maps to "
+            f"{canonical_manifest_path}.",
+            False,
+        )
+
+    if code == "invalid_canonical_data_manifest":
+        return (
+            "Repair the canonical manifest at "
+            f"{canonical_manifest_path} so it can be parsed as DataManifest.",
+            False,
+        )
+
+    if code == "low_quality_data_manifest":
+        return (
+            "Regenerate the governed data manifest for "
+            f"data_version={data_version} until promotion quality thresholds pass; hold evidence migration until then.",
+            False,
+        )
+
+    return ("Manual investigation required before any evidence migration.", False)
+
+
+def _plan_items_for_finding(
+    finding: dict[str, Any],
+    *,
+    candidates_by_id: dict[str, dict[str, Any]],
+    data_manifests_by_version: dict[str, dict[str, Any]],
+) -> list[MigrationPlanItem]:
+    data_version = str(finding.get("data_version", "") or "")
+    manifest_record = data_manifests_by_version.get(data_version, {})
+    impacted_candidates = list(manifest_record.get("impacted_candidates") or [])
+
+    candidate_ids: list[str]
+    if str(finding.get("scope", "") or "") == "data_manifest":
+        candidate_ids = impacted_candidates or [""]
+    else:
+        candidate_id = str(finding.get("candidate_id", "") or "")
+        candidate_ids = [candidate_id]
+
+    items: list[MigrationPlanItem] = []
+    for candidate_id in candidate_ids:
+        candidate_record = candidates_by_id.get(candidate_id, {})
+        recommended_action, script_compatible = _migration_action_for_finding(
+            finding,
+            candidate_record=candidate_record,
+            data_manifest_record=manifest_record,
+        )
+        primary_path = str(
+            candidate_record.get("candidate_path")
+            or finding.get("path")
+            or manifest_record.get("canonical_path")
+            or ""
+        )
+        related_paths = _unique_paths(
+            str(finding.get("path", "") or ""),
+            str(candidate_record.get("candidate_path", "") or ""),
+            str(candidate_record.get("canonical_backtest_manifest_path", "") or ""),
+            str(candidate_record.get("resolved_backtest_manifest_path", "") or ""),
+            str(manifest_record.get("canonical_path", "") or ""),
+            *[str(path) for path in manifest_record.get("paths", [])],
+        )
+        items.append(
+            MigrationPlanItem(
+                blocker_code=str(finding.get("code", "") or ""),
+                severity=str(finding.get("severity", "") or ""),
+                scope=str(finding.get("scope", "") or ""),
+                subject_id=str(finding.get("subject_id", "") or ""),
+                candidate_id=candidate_id,
+                data_version=data_version,
+                path=primary_path,
+                message=str(finding.get("message", "") or ""),
+                recommended_action=recommended_action,
+                existing_migration_script_compatible=script_compatible,
+                existing_migration_script=(
+                    BACKTEST_PATH_MIGRATION_SCRIPT if script_compatible else ""
+                ),
+                related_paths=related_paths,
+                details=dict(finding.get("details") or {}),
+            )
+        )
+    return items
+
+
+def build_research_evidence_migration_plan(report: dict[str, Any]) -> dict[str, Any]:
+    candidates_by_id = {item["candidate_id"]: item for item in report.get("candidates", [])}
+    data_manifests_by_version = {
+        item["data_version"]: item for item in report.get("data_manifests", [])
+    }
+
+    categories: dict[str, list[MigrationPlanItem]] = {}
+    for finding in report.get("blockers", []):
+        for item in _plan_items_for_finding(
+            finding,
+            candidates_by_id=candidates_by_id,
+            data_manifests_by_version=data_manifests_by_version,
+        ):
+            categories.setdefault(item.blocker_code, []).append(item)
+
+    blocker_categories: list[dict[str, Any]] = []
+    item_count = 0
+    compatible_count = 0
+    for blocker_code in sorted(categories):
+        items = sorted(
+            categories[blocker_code],
+            key=lambda item: (item.candidate_id, item.data_version, item.path, item.subject_id),
+        )
+        item_count += len(items)
+        compatible_count += sum(
+            1 for item in items if item.existing_migration_script_compatible
+        )
+        blocker_categories.append(
+            {
+                "blocker_code": blocker_code,
+                "blocker_count": len(
+                    [finding for finding in report.get("blockers", []) if finding["code"] == blocker_code]
+                ),
+                "item_count": len(items),
+                "items": [asdict(item) for item in items],
+            }
+        )
+
+    return {
+        "schema_version": MIGRATION_PLAN_SCHEMA_VERSION,
+        "scope": "report_only",
+        "dry_run": True,
+        "strict": bool(report.get("strict", False)),
+        "data_root": report.get("data_root", "data"),
+        "counts": {
+            "blocker_count": int(report.get("counts", {}).get("blocker_count", 0)),
+            "blocker_category_count": len(blocker_categories),
+            "item_count": item_count,
+            "existing_migration_script_compatible_count": compatible_count,
+            "manual_action_count": item_count - compatible_count,
+        },
+        "blocker_categories": blocker_categories,
+    }
 
 
 def audit_research_evidence(data_root: str = "data") -> dict[str, Any]:
@@ -579,6 +855,7 @@ def audit_research_evidence(data_root: str = "data") -> dict[str, Any]:
         "backtest_manifests": [asdict(record) for _, record in sorted(backtest_records.items())],
         "data_manifests": [asdict(record) for record in data_manifest_records],
     }
+    report["migration_plan"] = build_research_evidence_migration_plan(report)
     return report
 
 
@@ -600,6 +877,7 @@ def main() -> int:
 
     report = audit_research_evidence(data_root=args.data_root)
     report["strict"] = bool(args.strict)
+    report["migration_plan"]["strict"] = bool(args.strict)
     print(json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False))
     return 1 if args.strict and report["counts"]["blocker_count"] > 0 else 0
 

@@ -734,6 +734,83 @@ class TestBuildManifestFromQuality(unittest.TestCase):
         self.assertEqual(manifest.universe_source, "manual_source:v2")
         self.assertEqual(manifest.survivorship_bias_risk, "prone")
 
+    def test_upstream_quality_lineage_and_paths_are_preferred_over_auto_inference(self) -> None:
+        quality = {
+            "data_version": "v1",
+            "actual_source": "yfinance",
+            "timezone": "UTC",
+            "first_timestamp": "2024-01-02T20:59:00+00:00",
+            "last_timestamp": "2024-12-31T20:59:00+00:00",
+            "row_count": 252,
+            "expected_rows": 252,
+            "coverage_pct": 100.0,
+            "fingerprint": "e" * 64,
+            "quality_score": 99.0,
+            "adjustment_policy": "split_dividend_adjusted",
+            "corporate_action_adjustment": "split_dividend_adjusted",
+            "raw_path": "/tmp/upstream.raw",
+            "cleaned_path": "/tmp/upstream.cleaned",
+            "universe_id": "vendor-snapshot-v1",
+            "universe_source": "yfinance_snapshot:2024-12-31",
+            "survivorship_bias_risk": "prone",
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 0,
+        }
+        manifest = build_manifest_from_quality(
+            quality=quality,
+            source="sqlite",
+            symbol="AAPL",
+            interval="1d",
+        )
+
+        self.assertEqual(manifest.source, "yfinance")
+        self.assertEqual(manifest.timezone, "UTC")
+        self.assertEqual(manifest.adjustment_policy, "split_dividend_adjusted")
+        self.assertEqual(manifest.corporate_action_adjustment, "split_dividend_adjusted")
+        self.assertEqual(manifest.raw_path, "/tmp/upstream.raw")
+        self.assertEqual(manifest.cleaned_path, "/tmp/upstream.cleaned")
+        self.assertEqual(manifest.universe_id, "vendor-snapshot-v1")
+        self.assertEqual(manifest.universe_source, "yfinance_snapshot:2024-12-31")
+        self.assertEqual(manifest.survivorship_bias_risk, "prone")
+
+    def test_unknown_source_respects_unknown_upstream_adjustment_and_missing_lineage(self) -> None:
+        quality = {
+            "data_version": "v1",
+            "actual_source": "mystery_vendor",
+            "first_timestamp": "2024-01-02T00:00:00+00:00",
+            "last_timestamp": "2024-12-31T00:00:00+00:00",
+            "row_count": 252,
+            "expected_rows": 252,
+            "coverage_pct": 100.0,
+            "fingerprint": "f" * 64,
+            "quality_score": 99.0,
+            "adjustment_policy": "unknown",
+            "survivorship_bias_risk": "unknown",
+            "issues": [],
+            "duplicate_timestamps": 0,
+            "invalid_ohlc": 0,
+            "non_positive_prices": 0,
+            "cleaning_loss_rows": 0,
+            "missing_bars": 0,
+        }
+        manifest = build_manifest_from_quality(
+            quality=quality,
+            source="mystery_vendor",
+            symbol="AAPL,MSFT",
+            interval="1d",
+        )
+
+        self.assertEqual(manifest.source, "mystery_vendor")
+        self.assertEqual(manifest.adjustment_policy, "unknown")
+        self.assertEqual(manifest.corporate_action_adjustment, "unknown")
+        self.assertEqual(manifest.universe_id, "")
+        self.assertEqual(manifest.universe_source, "")
+        self.assertEqual(manifest.survivorship_bias_risk, "unknown")
+
 
 class TestBuildManifestFromQualityRoundTrip(unittest.TestCase):
     """Full pipeline: build_manifest_from_quality -> write -> read -> verify."""

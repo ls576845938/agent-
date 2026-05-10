@@ -238,6 +238,9 @@ def build_manifest_from_quality(
     resolved_symbol = symbol.upper()
     resolved_start = str(_safe_get(quality, "first_timestamp", requested_start))
     resolved_end = str(_safe_get(quality, "last_timestamp", requested_end))
+    resolved_timezone = _resolve_text_field(timezone_name, quality.get("timezone"), default="UTC")
+    resolved_raw_path = _resolve_text_field(raw_path, quality.get("raw_path"))
+    resolved_cleaned_path = _resolve_text_field(cleaned_path, quality.get("cleaned_path"))
     normalized_adjustment_policy = _resolve_adjustment_policy(
         adjustment_policy,
         quality.get("adjustment_policy"),
@@ -254,6 +257,9 @@ def build_manifest_from_quality(
         universe_id=universe_id,
         universe_source=universe_source,
         survivorship_bias_risk=survivorship_bias_risk,
+        quality_universe_id=quality.get("universe_id"),
+        quality_universe_source=quality.get("universe_source"),
+        quality_survivorship_bias_risk=quality.get("survivorship_bias_risk"),
     )
     issues = [dict(item) for item in _safe_get(quality, "issues", [])]
     cleaning = {
@@ -269,7 +275,7 @@ def build_manifest_from_quality(
         symbol=resolved_symbol,
         interval=interval,
         asset_class=asset_class,
-        timezone=timezone_name,
+        timezone=resolved_timezone,
         adjustment=adjustment,
         adjustment_policy=normalized_adjustment_policy,
         corporate_action_adjustment=normalized_adjustment_policy,
@@ -290,8 +296,8 @@ def build_manifest_from_quality(
             issues=issues,
             cleaning=cleaning,
         ),
-        raw_path=raw_path,
-        cleaned_path=cleaned_path,
+        raw_path=resolved_raw_path,
+        cleaned_path=resolved_cleaned_path,
         git_commit=git_commit,
         universe_id=resolved_universe_id,
         universe_source=resolved_universe_source,
@@ -519,10 +525,15 @@ def _resolve_lineage_metadata(
     universe_id: str,
     universe_source: str,
     survivorship_bias_risk: str,
+    quality_universe_id: Any = "",
+    quality_universe_source: Any = "",
+    quality_survivorship_bias_risk: Any = "unknown",
 ) -> tuple[str, str, str]:
-    resolved_universe_id = str(universe_id or "").strip()
-    resolved_universe_source = str(universe_source or "").strip()
+    resolved_universe_id = str(universe_id or quality_universe_id or "").strip()
+    resolved_universe_source = str(universe_source or quality_universe_source or "").strip()
     resolved_survivorship_bias_risk = _normalize_survivorship_bias_risk(survivorship_bias_risk)
+    if resolved_survivorship_bias_risk == "unknown":
+        resolved_survivorship_bias_risk = _normalize_survivorship_bias_risk(quality_survivorship_bias_risk)
     auto_universe_id, auto_universe_source, auto_survivorship_bias_risk = _infer_single_symbol_lineage(
         source=source,
         symbol=symbol,
@@ -596,6 +607,18 @@ def _normalize_lineage_timestamp(value: str) -> str:
             return parsed.date().isoformat()
         return parsed.isoformat().replace("+00:00", "Z")
     return ""
+
+
+def _resolve_text_field(primary: Any, secondary: Any, *, default: str = "") -> str:
+    primary_text = str(primary or "").strip()
+    if primary_text and primary_text != default:
+        return primary_text
+    secondary_text = str(secondary or "").strip()
+    if secondary_text:
+        return secondary_text
+    if primary_text:
+        return primary_text
+    return default
 
 
 def _normalize_quality_summary(

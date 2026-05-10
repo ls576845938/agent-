@@ -19,10 +19,10 @@ Usage::
 State is saved to ``{ledger_root}/validation_state.json`` after every trading
 day so that a Ctrl+C does not lose progress.
 
-Current boundary: this CLI resumes validation counters and evidence pointers,
-but it does not restore in-memory broker positions/cash from the ledger.  Treat
-resumed runs as operationally incomplete until a ledger-backed broker restore
-exists in the runtime path.
+Resume safety is fail-closed. Validation counters are only considered promotable
+when the persisted broker-state recovery artifact remains operationally
+complete; missing startup-sync, recovery, reconciliation, or no-submit evidence
+keeps the report BLOCKED.
 """
 
 from __future__ import annotations
@@ -43,6 +43,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from quant_us.backtest.data_bridge import bars_from_dataframe
 from quant_us.live.paper_trading_loop import PaperTradingConfig, PaperTradingLoop
+from quant_us.reports.paper_validation import check_paper_validation_preflight
 from quant_us.strategies.factory import build_strategy
 
 DEFAULT_STATE_FILE = "validation_state.json"
@@ -158,6 +159,15 @@ def enrich_validation_evidence(
             "resume is operationally incomplete until cash/positions restore or verify passes"
         ),
     }
+    preflight = check_paper_validation_preflight(
+        state.get("data_root", "data"),
+        ledger_root=ledger_root,
+        validation_state_path=state_path,
+        symbols=state.get("symbols", []),
+        source=str(state.get("source", "yfinance") or "yfinance"),
+        bar_size=str(state.get("bar_size", "1d") or "1d"),
+    )
+    state["paper_validation_preflight"] = preflight.to_dict()
 
 
 def _recovery_operationally_complete(state: dict[str, Any]) -> bool:
@@ -214,12 +224,19 @@ def _broker_local_diff_summary(recon_payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def save_report(state: dict[str, Any], path: Path) -> None:
-    passed = (
-        state.get("consecutive_clean_days", 0) >= state.get("days_required", 30)
-        and _recovery_operationally_complete(state)
-    )
+    days_target_met = state.get("consecutive_clean_days", 0) >= state.get("days_required", 30)
+    preflight = state.get("paper_validation_preflight", {})
+    preflight_blocked = isinstance(preflight, dict) and preflight.get("status") == "BLOCKED"
+    critical_evidence_blocked = preflight_blocked or not _recovery_operationally_complete(state)
+    passed = days_target_met and not critical_evidence_blocked
+    if passed:
+        report_status = "PASS"
+    elif critical_evidence_blocked:
+        report_status = "BLOCKED"
+    else:
+        report_status = "INCOMPLETE"
     report = {
-        "status": "PASS" if passed else "INCOMPLETE",
+        "status": report_status,
         "symbols": state.get("symbols", []),
         "capital": state.get("capital", 100_000.0),
         "days_required": state.get("days_required", 30),
@@ -236,10 +253,31 @@ def save_report(state: dict[str, Any], path: Path) -> None:
         "ledger_reconciliation_summary": state.get("ledger_reconciliation_summary", {}),
         "startup_sync_summary": state.get("startup_sync_summary", {}),
         "recovery_summary": state.get("recovery_summary", {}),
+        "paper_validation_preflight": preflight if isinstance(preflight, dict) else {},
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
         json.dump(report, f, indent=2, default=str)
+
+
+def _persist_state_and_report(
+    state: dict[str, Any],
+    *,
+    ledger_root: Path,
+    state_path: Path,
+    report_path: Path,
+    write_report: bool = False,
+) -> None:
+    save_state(state, state_path)
+    enrich_validation_evidence(
+        state,
+        ledger_root=ledger_root,
+        state_path=state_path,
+        report_path=report_path,
+    )
+    save_state(state, state_path)
+    if write_report:
+        save_report(state, report_path)
 
 
 # ------------------------------------------------------------------
@@ -427,29 +465,36 @@ def main() -> None:
         state["symbols"] = symbols
         state["capital"] = args.capital
         state["days_required"] = args.days_required
+        state["data_root"] = args.data_root
+        state["source"] = args.source
+        state["bar_size"] = args.bar_size
         state["start_date"] = sorted_dates[0].isoformat()
     else:
         state["symbols"] = symbols
         state["capital"] = args.capital
         state["days_required"] = args.days_required
+        state["data_root"] = args.data_root
+        state["source"] = args.source
+        state["bar_size"] = args.bar_size
 
     # ------------------------------------------------------------------
     # Early exit if already passed
     # ------------------------------------------------------------------
     if state.get("consecutive_clean_days", 0) >= state.get("days_required", 30):
-        enrich_validation_evidence(
+        _persist_state_and_report(
             state,
             ledger_root=ledger_root,
             state_path=state_path,
             report_path=report_path,
+            write_report=True,
         )
-        if _recovery_operationally_complete(state):
+        preflight_status = str(state.get("paper_validation_preflight", {}).get("status", "BLOCKED"))
+        if _recovery_operationally_complete(state) and preflight_status == "PASS":
             print(f"Validation already passed "
                   f"({state['consecutive_clean_days']} >= {state['days_required']})")
         else:
-            print("Validation counters reached target, but recovery evidence is incomplete.")
-        save_report(state, report_path)
-        sys.exit(0 if _recovery_operationally_complete(state) else 1)
+            print("Validation counters reached target, but paper-validation evidence remains BLOCKED.")
+        sys.exit(0 if _recovery_operationally_complete(state) and preflight_status == "PASS" else 1)
 
     # ------------------------------------------------------------------
     # Build trading infrastructure
@@ -465,14 +510,13 @@ def main() -> None:
     except RuntimeError as exc:
         print(f"ERROR: {exc}")
         state["runtime_error"] = str(exc)
-        enrich_validation_evidence(
+        _persist_state_and_report(
             state,
             ledger_root=ledger_root,
             state_path=state_path,
             report_path=report_path,
+            write_report=True,
         )
-        save_state(state, state_path)
-        save_report(state, report_path)
         sys.exit(1)
 
     strategy_params = json.loads(args.strategy_params_json) if args.strategy_params_json else {}
@@ -487,14 +531,13 @@ def main() -> None:
     # ------------------------------------------------------------------
     def _handle_interrupt(signum: int, frame: object) -> None:  # noqa: ANN401
         print("\n\nInterrupted — saving state and report ...")
-        enrich_validation_evidence(
+        _persist_state_and_report(
             state,
             ledger_root=ledger_root,
             state_path=state_path,
             report_path=report_path,
+            write_report=True,
         )
-        save_state(state, state_path)
-        save_report(state, report_path)
         print(f"State saved to {state_path}")
         print(f"Report saved to {report_path}")
         sys.exit(130)
@@ -567,13 +610,12 @@ def main() -> None:
         )
 
         # Persist after every day
-        enrich_validation_evidence(
+        _persist_state_and_report(
             state,
             ledger_root=ledger_root,
             state_path=state_path,
             report_path=report_path,
         )
-        save_state(state, state_path)
 
         # Check target
         if consecutive >= args.days_required:
@@ -594,13 +636,14 @@ def main() -> None:
     # ------------------------------------------------------------------
     total_available = len(sorted_dates)
     final_equity = loop.broker.get_account().equity
-    enrich_validation_evidence(
+    _persist_state_and_report(
         state,
         ledger_root=ledger_root,
         state_path=state_path,
         report_path=report_path,
     )
-    passed = reached_target and _recovery_operationally_complete(state)
+    preflight_status = str(state.get("paper_validation_preflight", {}).get("status", "BLOCKED"))
+    passed = reached_target and _recovery_operationally_complete(state) and preflight_status == "PASS"
 
     print()
     print("=" * 56)
@@ -611,9 +654,9 @@ def main() -> None:
     print(f"  Data days available:   {total_available}")
     print(f"  Last date:             {state.get('last_date')}")
     print(f"  Final equity:          ${final_equity:,.2f}")
-    print(f"  Result:                {'PASS' if passed else 'INCOMPLETE'}")
+    print(f"  Preflight:             {preflight_status}")
+    print(f"  Result:                {'PASS' if passed else 'BLOCKED' if preflight_status == 'BLOCKED' else 'INCOMPLETE'}")
 
-    save_state(state, state_path)
     save_report(state, report_path)
     print(f"\nState saved to {state_path}")
     print(f"Report saved to {report_path}")

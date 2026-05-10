@@ -12,6 +12,9 @@ import pandas as pd
 from backend.app.core.config import logger, settings
 from backend.app.core.exceptions import DataNotAvailableError
 from backend.app.services.data_management import DEFAULT_EXCHANGE, interval_to_milliseconds, resolve_data_db_path, to_milliseconds
+from quant_us.data.connectors.alpaca_data import AlpacaDataConnector
+from quant_us.data.connectors.base import infer_single_symbol_lineage
+from quant_us.data.connectors.yfinance_data import YFinanceDataConnector
 
 
 def interval_to_frequency(interval: str) -> str:
@@ -294,6 +297,71 @@ def _quality_issue(severity: str, code: str, message: str) -> dict[str, str]:
     return {"severity": severity, "code": code, "message": message}
 
 
+def _quality_source_metadata(
+    *,
+    actual_source: str,
+    symbol: str,
+    interval: str,
+    start: Any,
+    end: Any,
+    raw: pd.DataFrame | None = None,
+    db_path: str = "",
+) -> dict[str, Any]:
+    metadata = {
+        "timezone": "UTC",
+        "adjustment_policy": "",
+        "corporate_action_adjustment": "",
+        "universe_id": "",
+        "universe_source": "",
+        "survivorship_bias_risk": "unknown",
+        "raw_path": "",
+        "cleaned_path": "",
+        "source_lineage": "",
+    }
+    if actual_source == "yfinance":
+        metadata.update(
+            YFinanceDataConnector.quality_metadata(
+                symbol=symbol,
+                start=start,
+                end=end,
+                bar_size=interval,
+                frame=raw,
+            )
+        )
+        return metadata
+    if actual_source == "alpaca":
+        metadata.update(
+            AlpacaDataConnector.quality_metadata(
+                symbol=symbol,
+                start=start,
+                end=end,
+                bar_size=interval,
+                frame=raw,
+            )
+        )
+        return metadata
+
+    metadata.update(
+        infer_single_symbol_lineage(
+            source=actual_source,
+            symbol=symbol,
+            bar_size=interval,
+            start=start,
+            end=end,
+        )
+    )
+    if actual_source == "sqlite":
+        metadata["adjustment_policy"] = "raw"
+        metadata["corporate_action_adjustment"] = "raw"
+        metadata["raw_path"] = str(resolve_data_db_path(db_path))
+        metadata["source_lineage"] = "sqlite:market_klines"
+    elif actual_source == "fixture":
+        metadata["adjustment_policy"] = "raw"
+        metadata["corporate_action_adjustment"] = "raw"
+        metadata["source_lineage"] = "fixture:synthetic"
+    return metadata
+
+
 def inspect_market_data_quality(
     *,
     source: str,
@@ -347,10 +415,19 @@ def inspect_market_data_quality(
         except DataNotAvailableError:
             raise
 
+    raw_metadata = _quality_source_metadata(
+        actual_source=actual_source,
+        symbol=symbol.upper(),
+        interval=interval,
+        start=start,
+        end=end,
+        raw=raw if not raw.empty else None,
+        db_path=db_path,
+    )
     raw_rows = int(len(raw))
     issues: list[dict[str, str]] = []
     if raw.empty:
-        return {
+        result = {
             "status": "failed",
             "selected_priority": "数据质量与特征版本治理",
             "framework": _quality_framework(),
@@ -377,6 +454,8 @@ def inspect_market_data_quality(
             "data_version": "qs-empty",
             "issues": [_quality_issue("high", "empty_dataset", "请求区间没有可用行情数据。")],
         }
+        result.update(raw_metadata)
+        return result
 
     raw = raw.copy()
     raw["timestamp"] = pd.to_datetime(raw["timestamp"], utc=True)
@@ -458,8 +537,17 @@ def inspect_market_data_quality(
     quality_score = round(max(0.0, quality_score), 4)
     fingerprint = _dataset_fingerprint(cleaned)
     blocking = invalid_ohlc > 0 or non_positive_prices > 0 or coverage_pct < 90 or cleaned.empty
+    quality_metadata = _quality_source_metadata(
+        actual_source=actual_source,
+        symbol=symbol.upper(),
+        interval=interval,
+        start=cleaned.index[0] if not cleaned.empty else start,
+        end=cleaned.index[-1] if not cleaned.empty else end,
+        raw=raw,
+        db_path=db_path,
+    )
 
-    return {
+    result = {
         "status": "completed",
         "selected_priority": "数据质量与特征版本治理",
         "framework": _quality_framework(),
@@ -489,3 +577,5 @@ def inspect_market_data_quality(
         "data_version": f"qs-{actual_source}-{symbol.upper()}-{interval}-{fingerprint[:12]}",
         "issues": issues,
     }
+    result.update(quality_metadata)
+    return result

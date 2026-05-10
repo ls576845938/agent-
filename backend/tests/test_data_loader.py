@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import unittest
 from datetime import datetime
+from pathlib import Path
 from types import SimpleNamespace
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
+
+import pandas as pd
 
 from backend.app.core.exceptions import DataNotAvailableError
 from backend.app.services.data_management import KlineRecord, MarketDataRepository
@@ -104,6 +107,11 @@ class DataLoaderTests(unittest.TestCase):
         self.assertEqual(result["missing_bars"], 0)
         self.assertIn("qs-fixture-BTCUSDT-1h", result["data_version"])
         self.assertEqual(len(result["fingerprint"]), 64)
+        self.assertEqual(result["timezone"], "UTC")
+        self.assertEqual(result["adjustment_policy"], "raw")
+        self.assertEqual(result["source_lineage"], "fixture:synthetic")
+        self.assertTrue(result["universe_id"].startswith("single-symbol-BTCUSDT-1h-"))
+        self.assertEqual(result["survivorship_bias_risk"], "clean")
 
     def test_auto_loader_does_not_silently_fallback_to_fixture_when_disabled(self) -> None:
         fake_settings = SimpleNamespace(
@@ -214,6 +222,80 @@ class DataLoaderTests(unittest.TestCase):
         self.assertEqual(result["missing_bars"], 1)
         self.assertFalse(result["is_usable"])
         self.assertTrue(any(issue["code"] == "missing_bars" for issue in result["issues"]))
+        self.assertEqual(result["timezone"], "UTC")
+        self.assertEqual(result["adjustment_policy"], "raw")
+        self.assertEqual(result["raw_path"], str(Path(db_path).resolve()))
+        self.assertEqual(result["source_lineage"], "sqlite:market_klines")
+        self.assertTrue(result["universe_id"].startswith("single-symbol-BTCUSDT-1m-"))
+        self.assertEqual(result["survivorship_bias_risk"], "clean")
+
+    def test_yfinance_quality_report_emits_upstream_lineage_and_adjustment(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "timestamp_utc": pd.to_datetime(["2024-01-02T20:59:00Z", "2024-01-03T20:59:00Z"], utc=True),
+                "open": [100.0, 101.0],
+                "high": [101.0, 102.0],
+                "low": [99.0, 100.0],
+                "close": [100.5, 101.5],
+                "volume": [1_000, 1_200],
+                "adjusted_flag": [True, True],
+                "adjusted_close": [100.5, 101.5],
+            }
+        )
+        with patch("quant_us.data.storage.parquet_store.ParquetBarStore.read_bars", return_value=frame):
+            result = inspect_market_data_quality(
+                source="yfinance",
+                symbol="AAPL",
+                interval="1d",
+                start=datetime(2024, 1, 2),
+                end=datetime(2024, 1, 3),
+            )
+
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["timezone"], "UTC")
+        self.assertEqual(result["adjustment_policy"], "split_dividend_adjusted")
+        self.assertEqual(
+            result["cleaned_path"],
+            "data/cleaned/vendor=yfinance/asset_class=equity/bar_size=1d/symbol=AAPL",
+        )
+        self.assertEqual(result["source_lineage"], "connector:yfinance:download")
+        self.assertTrue(result["universe_id"].startswith("single-symbol-AAPL-1d-"))
+        self.assertTrue(
+            result["universe_source"].startswith("auto_lineage:single_symbol_request:v1:yfinance:AAPL:1d:")
+        )
+        self.assertEqual(result["survivorship_bias_risk"], "clean")
+
+    def test_alpaca_quality_report_emits_upstream_lineage_and_raw_adjustment(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "timestamp_utc": pd.to_datetime(["2024-01-02T14:30:00Z", "2024-01-02T14:31:00Z"], utc=True),
+                "open": [100.0, 100.1],
+                "high": [100.2, 100.3],
+                "low": [99.9, 100.0],
+                "close": [100.1, 100.2],
+                "volume": [500, 600],
+                "adjusted_flag": [False, False],
+            }
+        )
+        with patch("quant_us.data.storage.parquet_store.ParquetBarStore.read_bars", return_value=frame):
+            result = inspect_market_data_quality(
+                source="alpaca",
+                symbol="MSFT",
+                interval="1m",
+                start=datetime(2024, 1, 2, 14, 30),
+                end=datetime(2024, 1, 2, 14, 31),
+            )
+
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["timezone"], "UTC")
+        self.assertEqual(result["adjustment_policy"], "raw")
+        self.assertEqual(
+            result["cleaned_path"],
+            "data/cleaned/vendor=alpaca/asset_class=equity/bar_size=1m/symbol=MSFT",
+        )
+        self.assertEqual(result["source_lineage"], "connector:alpaca:get_bars_iter")
+        self.assertTrue(result["universe_id"].startswith("single-symbol-MSFT-1m-"))
+        self.assertEqual(result["survivorship_bias_risk"], "clean")
 
 
 if __name__ == "__main__":

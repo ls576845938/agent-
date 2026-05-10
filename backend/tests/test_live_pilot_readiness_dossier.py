@@ -93,9 +93,11 @@ class TestLivePilotReadinessDossier:
         assert d["shadow"]["days_completed"] == 5
         assert d["live_safety"]["endpoint_guard_active"] is True
         assert d["review_only"] is True
+        assert d["execution_authorized"] is False
         assert d["submission_ready"] is False
         assert d["design_freeze"] == {
             "version": "micro-live-review-only-v1",
+            "hash": d["design_freeze"]["hash"],
             "frozen": True,
             "scope": "review_only",
             "no_continuous_loop": True,
@@ -104,6 +106,7 @@ class TestLivePilotReadinessDossier:
             "max_notional": 100.0,
             "max_orders": 3,
         }
+        assert len(d["design_freeze"]["hash"]) == 64
 
     def test_to_markdown_has_expected_sections(self) -> None:
         dossier = LivePilotReadinessDossier()
@@ -140,6 +143,7 @@ class TestLivePilotReadinessDossier:
         dossier = LivePilotReadinessDossier(
             design_freeze=DesignFreeze(
                 version="micro-live-review-only-v2",
+                hash="custom-freeze-hash",
                 frozen=True,
                 scope="review_only",
                 no_continuous_loop=True,
@@ -151,6 +155,8 @@ class TestLivePilotReadinessDossier:
         )
         payload = dossier.to_dict()
         assert payload["design_freeze"]["version"] == "micro-live-review-only-v2"
+        assert payload["design_freeze"]["hash"] == "custom-freeze-hash"
+        assert payload["execution_authorized"] is False
         assert payload["submission_ready"] is False
 
     def test_allow_live_orders_true_blocks_dossier(self) -> None:

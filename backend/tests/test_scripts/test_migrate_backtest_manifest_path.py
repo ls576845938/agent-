@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,12 +11,20 @@ from unittest.mock import patch
 
 
 _SCRIPTS_DIR = Path(__file__).resolve().parent.parent.parent.parent / "scripts"
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
 _SPEC = importlib.util.spec_from_file_location(
     "migrate_backtest_manifest_path_test",
     str(_SCRIPTS_DIR / "migrate_backtest_manifest_path.py"),
 )
 _MODULE = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(_MODULE)
+_PLAN_SPEC = importlib.util.spec_from_file_location(
+    "plan_research_evidence_migration_compat_test",
+    str(_SCRIPTS_DIR / "plan_research_evidence_migration.py"),
+)
+_PLAN_MODULE = importlib.util.module_from_spec(_PLAN_SPEC)
+_PLAN_SPEC.loader.exec_module(_PLAN_MODULE)
 
 
 class TestMigrateBacktestManifestPathScript(unittest.TestCase):
@@ -142,6 +151,29 @@ class TestMigrateBacktestManifestPathScript(unittest.TestCase):
             report = _MODULE.audit_candidates(data_root=str(root), apply=True)
 
             self.assertEqual(report["counts"]["candidate_id_mismatch"], 1)
+
+    def test_can_migrate_status_matches_read_only_planner_compatibility(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_candidate(root, "cand_plan_match")
+            self._write_manifest(root, "cand_plan_match")
+
+            migration_audit = _MODULE.audit_candidates(data_root=str(root), apply=False)
+            plan_stdout = io.StringIO()
+            with (
+                patch("sys.argv", ["prog", "--data-root", str(root)]),
+                patch("sys.stdout", plan_stdout),
+            ):
+                _PLAN_MODULE.main()
+
+            plan = json.loads(plan_stdout.getvalue())
+            plan_items = {
+                item["blocker_code"]: item for item in plan["blocker_categories"]
+            }["missing_backtest_manifest_path"]["items"]
+
+            self.assertEqual(migration_audit["results"][0].status, "can_migrate")
+            self.assertEqual(plan_items[0]["candidate_id"], "cand_plan_match")
+            self.assertTrue(plan_items[0]["existing_migration_script_compatible"])
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -115,6 +116,37 @@ class AlpacaDataConnector(MarketDataConnector):
 
         except Exception:
             return pd.DataFrame()
+
+    @classmethod
+    def quality_metadata(
+        cls,
+        *,
+        symbol: str,
+        start: Any,
+        end: Any,
+        bar_size: str,
+        frame: pd.DataFrame | None = None,
+        data_root: str | Path = "data/cleaned",
+    ) -> dict[str, Any]:
+        metadata = super().quality_metadata(
+            symbol=symbol,
+            start=start,
+            end=end,
+            bar_size=bar_size,
+            frame=frame,
+            data_root=data_root,
+        )
+        metadata["cleaned_path"] = str(
+            Path(data_root)
+            / f"vendor={cls.vendor}"
+            / "asset_class=equity"
+            / f"bar_size={bar_size}"
+            / f"symbol={symbol.upper()}"
+        )
+        metadata["source_lineage"] = "connector:alpaca:get_bars_iter"
+        metadata["adjustment_policy"] = "raw"
+        metadata["corporate_action_adjustment"] = "raw"
+        return metadata
 
     def fetch_account(self) -> dict[str, Any]:
         """Fetch Alpaca account information.

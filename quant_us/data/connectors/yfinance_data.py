@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, time
+from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -66,6 +68,39 @@ class YFinanceDataConnector(MarketDataConnector):
             normalized["adjusted_close"] = frame["Adj Close"].to_numpy()
         return normalized.dropna(subset=["open", "high", "low", "close"])
 
+    @classmethod
+    def quality_metadata(
+        cls,
+        *,
+        symbol: str,
+        start: Any,
+        end: Any,
+        bar_size: str,
+        frame: pd.DataFrame | None = None,
+        data_root: str | Path = "data/cleaned",
+    ) -> dict[str, Any]:
+        metadata = super().quality_metadata(
+            symbol=symbol,
+            start=start,
+            end=end,
+            bar_size=bar_size,
+            frame=frame,
+            data_root=data_root,
+        )
+        metadata["cleaned_path"] = str(
+            Path(data_root)
+            / f"vendor={cls.vendor}"
+            / "asset_class=equity"
+            / f"bar_size={bar_size}"
+            / f"symbol={symbol.upper()}"
+        )
+        metadata["source_lineage"] = "connector:yfinance:download"
+        adjustment_policy = cls._infer_adjustment_policy(frame)
+        if adjustment_policy:
+            metadata["adjustment_policy"] = adjustment_policy
+            metadata["corporate_action_adjustment"] = adjustment_policy
+        return metadata
+
     @staticmethod
     def _to_yfinance_interval(bar_size: str) -> str:
         lookup = {
@@ -103,3 +138,20 @@ class YFinanceDataConnector(MarketDataConnector):
         if timestamps.tz is None:
             timestamps = timestamps.tz_localize(ET)
         return timestamps.tz_convert("UTC")
+
+    @staticmethod
+    def _infer_adjustment_policy(frame: pd.DataFrame | None) -> str:
+        if frame is None or frame.empty:
+            return ""
+        if "adjusted_flag" in frame.columns:
+            flags = frame["adjusted_flag"].dropna()
+            if not flags.empty:
+                normalized = flags.map(lambda value: str(value).strip().lower() in {"1", "true", "t", "yes"})
+                if bool(normalized.all()):
+                    return "split_dividend_adjusted"
+                if not bool(normalized.any()):
+                    return "raw"
+                return "unknown"
+        if "adjusted_close" in frame.columns:
+            return "raw"
+        return ""
