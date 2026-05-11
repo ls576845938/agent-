@@ -20,6 +20,10 @@ from quant_us.core.clock import utc_now
 from quant_us.core.types import new_id
 from quant_us.factors.definition import FactorLibrary
 from quant_us.factors.formula import GeneratedFactorLibrary
+from quant_us.research.automation.factor_evidence import (
+    build_factor_correlation_matrix,
+    estimate_candidate_style_exposure,
+)
 
 
 @dataclass(frozen=True)
@@ -34,9 +38,18 @@ class FactorMiningScore:
     hit_rate: float
     turnover: float
     n_observations: int
+    candidate_rank: int = 0
+    stability_score: float = 0.0
+    stability_components: dict[str, float] = field(default_factory=dict)
+    score_components: dict[str, float] = field(default_factory=dict)
+    style_exposure: dict[str, Any] = field(default_factory=dict)
+    generation_family: str = ""
+    complexity_score: int = 0
+    formula_signature: str = ""
     selected: bool = False
     reject_reason: str = ""
     max_abs_correlation_to_selected: float = 0.0
+    redundant_with_factor_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -50,8 +63,12 @@ class FactorMiningResult:
     factor_scores: list[FactorMiningScore] = field(default_factory=list)
     selected_factors: list[FactorMiningScore] = field(default_factory=list)
     strategy_configs: list[dict[str, Any]] = field(default_factory=list)
+    candidate_ranking: list[dict[str, Any]] = field(default_factory=list)
     generated_factor_ids: list[str] = field(default_factory=list)
     strategy_logic_paths: list[str] = field(default_factory=list)
+    correlation_report: dict[str, Any] = field(default_factory=dict)
+    correlation_report_path: str = ""
+    manifest_evidence: dict[str, Any] = field(default_factory=dict)
     output_path: str = ""
 
     def to_dict(self) -> dict[str, Any]:
@@ -85,6 +102,7 @@ class FactorMiningEngine:
         """Run factor mining and persist the result."""
         from quant_us.factors.evaluation import FactorEvaluator
 
+        run_id = new_id("fmine")
         normalized_symbols = [symbol.upper() for symbol in symbols if str(symbol).strip()]
         normalized_bar_sizes = _normalize_bar_sizes(bar_sizes or ["1d"])
         library = FactorLibrary()
@@ -99,10 +117,21 @@ class FactorMiningEngine:
             generated_factor_ids = [spec.factor_id for spec in generated_specs]
             ids = _dedupe(ids + generated_factor_ids)
 
+        generated_library = GeneratedFactorLibrary(self.data_root)
+        generated_metadata = {
+            spec.factor_id: {
+                "generation_family": spec.generation_family,
+                "complexity_score": int(spec.complexity_score),
+                "formula_signature": spec.signature,
+            }
+            for spec in generated_library.list_specs()
+        }
+
         raw_scores: list[FactorMiningScore] = []
         evaluator = FactorEvaluator(data_root=str(self.data_root))
         for bar_size in normalized_bar_sizes:
             for factor_id in ids:
+                metadata = generated_metadata.get(str(factor_id), {})
                 try:
                     result = evaluator.evaluate(
                         factor_id=factor_id,
@@ -126,11 +155,20 @@ class FactorMiningEngine:
                             hit_rate=0.0,
                             turnover=0.0,
                             n_observations=0,
+                            generation_family=str(metadata.get("generation_family", "")),
+                            complexity_score=int(metadata.get("complexity_score", 0) or 0),
+                            formula_signature=str(metadata.get("formula_signature", "")),
                             reject_reason=f"evaluation_error:{type(exc).__name__}",
                         )
                     )
                     continue
-                score = _score_factor_result(result)
+                stability_components = _stability_components(result)
+                stability_score = _stability_score(stability_components)
+                score_components = _score_components(
+                    result,
+                    stability_score=stability_score,
+                    complexity_score=int(metadata.get("complexity_score", 0) or 0),
+                )
                 reject_reason = ""
                 if int(result.n_observations or 0) < min_observations:
                     reject_reason = "insufficient_observations"
@@ -140,7 +178,7 @@ class FactorMiningEngine:
                     FactorMiningScore(
                         factor_id=factor_id,
                         bar_size=bar_size,
-                        score=score,
+                        score=round(sum(score_components.values()), 6),
                         rank_ic_mean=float(result.rank_ic_mean or 0.0),
                         ic_mean=float(result.ic_mean or 0.0),
                         icir=float(result.icir or 0.0),
@@ -148,19 +186,50 @@ class FactorMiningEngine:
                         hit_rate=float(result.hit_rate or 0.0),
                         turnover=float(result.turnover or 0.0),
                         n_observations=int(result.n_observations or 0),
+                        stability_score=stability_score,
+                        stability_components=stability_components,
+                        score_components=score_components,
+                        generation_family=str(metadata.get("generation_family", "")),
+                        complexity_score=int(metadata.get("complexity_score", 0) or 0),
+                        formula_signature=str(metadata.get("formula_signature", "")),
                         reject_reason=reject_reason,
                     )
                 )
 
-        selected = self._select_low_redundancy(
+        ranked_scores, frames_by_bar_size, bars_by_bar_size = self._rank_scores(
             scores=raw_scores,
+            symbols=normalized_symbols,
+            start=start,
+            end=end,
+        )
+        selected, redundant_rejections = self._select_low_redundancy(
+            scores=ranked_scores,
             symbols=normalized_symbols,
             start=start,
             end=end,
             max_abs_correlation=max_abs_correlation,
             max_selected=max_selected,
+            correlation_matrices={
+                bar_size: build_factor_correlation_matrix(
+                    frame,
+                    [
+                        score.factor_id
+                        for score in ranked_scores
+                        if score.bar_size == bar_size and not score.reject_reason
+                    ],
+                )
+                for bar_size, frame in frames_by_bar_size.items()
+            },
         )
-        run_id = new_id("fmine")
+        correlation_report = self._build_correlation_report(
+            run_id=run_id,
+            scores=ranked_scores,
+            selected=selected,
+            redundant_rejections=redundant_rejections,
+            frames_by_bar_size=frames_by_bar_size,
+            max_abs_correlation=max_abs_correlation,
+        )
+        correlation_report_path = self._persist_correlation_report(run_id, correlation_report)
         strategy_configs = self._dedupe_strategy_configs(
             self._build_strategy_configs(run_id, selected, normalized_symbols)
         )
@@ -171,10 +240,37 @@ class FactorMiningEngine:
         ]
 
         selected_by_key = {(score.factor_id, score.bar_size): score for score in selected}
+        redundant_by_key = {
+            key: value for key, value in redundant_rejections.items()
+        }
         final_scores = [
-            score if (score.factor_id, score.bar_size) not in selected_by_key else selected_by_key[(score.factor_id, score.bar_size)]
-            for score in raw_scores
+            self._finalize_score(
+                score=score,
+                selected_by_key=selected_by_key,
+                redundant_by_key=redundant_by_key,
+            )
+            for score in ranked_scores
         ]
+        candidate_ranking = [
+            {
+                "candidate_rank": score.candidate_rank,
+                "factor_id": score.factor_id,
+                "bar_size": score.bar_size,
+                "score": round(score.score, 6),
+                "stability_score": round(score.stability_score, 6),
+                "selected": score.selected,
+                "reject_reason": score.reject_reason,
+                "generation_family": score.generation_family,
+                "complexity_score": score.complexity_score,
+            }
+            for score in sorted(final_scores, key=lambda item: item.candidate_rank or 10**9)
+        ]
+        manifest_evidence = self._build_manifest_evidence(
+            final_scores=final_scores,
+            selected=selected,
+            correlation_report_path=correlation_report_path,
+            bars_by_bar_size=bars_by_bar_size,
+        )
         result = FactorMiningResult(
             run_id=run_id,
             generated_at=utc_now().isoformat(),
@@ -185,8 +281,12 @@ class FactorMiningEngine:
             factor_scores=sorted(final_scores, key=lambda item: item.score, reverse=True),
             selected_factors=selected,
             strategy_configs=strategy_configs,
+            candidate_ranking=candidate_ranking,
             generated_factor_ids=generated_factor_ids,
             strategy_logic_paths=strategy_logic_paths,
+            correlation_report=correlation_report,
+            correlation_report_path=str(correlation_report_path),
+            manifest_evidence=manifest_evidence,
         )
         output_path = self._persist(result)
         return replace(result, output_path=str(output_path))
@@ -200,10 +300,12 @@ class FactorMiningEngine:
         end: str,
         max_abs_correlation: float,
         max_selected: int,
-    ) -> list[FactorMiningScore]:
+        correlation_matrices: dict[str, pd.DataFrame] | None = None,
+    ) -> tuple[list[FactorMiningScore], dict[tuple[str, str], dict[str, Any]]]:
         from quant_us.factors.pipeline import FactorPipeline
 
         selected: list[FactorMiningScore] = []
+        redundant_rejections: dict[tuple[str, str], dict[str, Any]] = {}
         eligible = [
             score for score in sorted(scores, key=lambda item: item.score, reverse=True)
             if not score.reject_reason
@@ -216,29 +318,139 @@ class FactorMiningEngine:
                 break
             same_timeframe = [item for item in selected if item.bar_size == score.bar_size]
             max_corr = 0.0
+            redundant_with_factor_id = ""
             if same_timeframe:
-                frame = by_bar_size.get(score.bar_size)
-                factor_ids = sorted(
-                    {item.factor_id for item in same_timeframe} | {score.factor_id}
-                )
-                if frame is None or any(factor_id not in frame.columns for factor_id in factor_ids):
-                    try:
-                        frame = pipeline.compute(
-                            factor_ids=factor_ids,
-                            symbols=symbols,
-                            start=start,
-                            end=end,
-                            bar_size=score.bar_size,
-                            timeframe=score.bar_size,
+                matrix = (correlation_matrices or {}).get(score.bar_size)
+                if matrix is not None and not matrix.empty and score.factor_id in matrix.index:
+                    correlation_row = matrix.loc[score.factor_id]
+                    comparisons = [
+                        (
+                            item.factor_id,
+                            float(correlation_row.get(item.factor_id, 0.0) or 0.0),
                         )
-                    except Exception:
-                        frame = pd.DataFrame()
-                    by_bar_size[score.bar_size] = frame
-                max_corr = _max_abs_correlation(frame, score.factor_id, [item.factor_id for item in same_timeframe])
+                        for item in same_timeframe
+                    ]
+                    if comparisons:
+                        redundant_with_factor_id, max_corr = max(
+                            comparisons,
+                            key=lambda item: item[1],
+                        )
+                else:
+                    frame = by_bar_size.get(score.bar_size)
+                    factor_ids = sorted(
+                        {item.factor_id for item in same_timeframe} | {score.factor_id}
+                    )
+                    if frame is None or any(factor_id not in frame.columns for factor_id in factor_ids):
+                        try:
+                            frame = pipeline.compute(
+                                factor_ids=factor_ids,
+                                symbols=symbols,
+                                start=start,
+                                end=end,
+                                bar_size=score.bar_size,
+                                timeframe=score.bar_size,
+                            )
+                        except Exception:
+                            frame = pd.DataFrame()
+                        by_bar_size[score.bar_size] = frame
+                    max_corr, redundant_with_factor_id = _max_abs_correlation(
+                        frame,
+                        score.factor_id,
+                        [item.factor_id for item in same_timeframe],
+                    )
             if max_corr > max_abs_correlation:
+                redundant_rejections[(score.factor_id, score.bar_size)] = {
+                    "reject_reason": "high_correlation_to_selected",
+                    "max_abs_correlation_to_selected": round(max_corr, 6),
+                    "redundant_with_factor_id": redundant_with_factor_id,
+                }
                 continue
-            selected.append(_replace_score(score, selected=True, max_abs_correlation_to_selected=max_corr))
-        return selected
+            selected.append(
+                _replace_score(
+                    score,
+                    selected=True,
+                    max_abs_correlation_to_selected=max_corr,
+                )
+            )
+        return selected, redundant_rejections
+
+    def _rank_scores(
+        self,
+        *,
+        scores: list[FactorMiningScore],
+        symbols: list[str],
+        start: str,
+        end: str,
+    ) -> tuple[list[FactorMiningScore], dict[str, pd.DataFrame], dict[str, pd.DataFrame]]:
+        from quant_us.factors.pipeline import FactorPipeline, _load_bars
+
+        by_key = {(score.factor_id, score.bar_size): score for score in scores}
+        frames_by_bar_size: dict[str, pd.DataFrame] = {}
+        bars_by_bar_size: dict[str, pd.DataFrame] = {}
+        pipeline = FactorPipeline(data_root=str(self.data_root))
+
+        for bar_size in sorted({score.bar_size for score in scores}):
+            factor_ids = sorted(
+                {
+                    score.factor_id
+                    for score in scores
+                    if score.bar_size == bar_size and not str(score.reject_reason).startswith("evaluation_error:")
+                }
+            )
+            if not factor_ids:
+                continue
+            try:
+                frames_by_bar_size[bar_size] = pipeline.compute(
+                    factor_ids=factor_ids,
+                    symbols=symbols,
+                    start=start,
+                    end=end,
+                    bar_size=bar_size,
+                    timeframe=bar_size,
+                )
+            except Exception:
+                frames_by_bar_size[bar_size] = pd.DataFrame()
+            try:
+                bars_by_bar_size[bar_size] = _load_bars(
+                    str(self.data_root),
+                    symbols,
+                    start,
+                    end,
+                    bar_size=bar_size,
+                    vendor=pipeline.data_vendor,
+                    asset_class=pipeline.asset_class,
+                )
+            except Exception:
+                bars_by_bar_size[bar_size] = pd.DataFrame()
+
+        enriched: list[FactorMiningScore] = []
+        for score in scores:
+            style_exposure = {"missing_reason": "style_exposure_inputs_unavailable"}
+            frame = frames_by_bar_size.get(score.bar_size)
+            bars = bars_by_bar_size.get(score.bar_size)
+            if frame is not None and bars is not None and not frame.empty and not bars.empty:
+                style_exposure = estimate_candidate_style_exposure(
+                    frame,
+                    bars,
+                    score.factor_id,
+                )
+            enriched.append(_replace_score(score, style_exposure=style_exposure))
+
+        ranked = sorted(
+            enriched,
+            key=lambda item: (
+                bool(item.reject_reason),
+                -item.score,
+                -item.stability_score,
+                item.complexity_score,
+                item.factor_id,
+            ),
+        )
+        ranked_with_order = [
+            _replace_score(score, candidate_rank=rank)
+            for rank, score in enumerate(ranked, start=1)
+        ]
+        return ranked_with_order, frames_by_bar_size, bars_by_bar_size
 
     def _build_strategy_configs(
         self,
@@ -307,8 +519,11 @@ class FactorMiningEngine:
                 "requires_paper_review": True,
             },
             "research_score": round(score.score, 6),
+            "candidate_rank": score.candidate_rank,
+            "stability_score": round(score.stability_score, 6),
             "rank_ic_mean": score.rank_ic_mean,
             "long_short_spread": score.long_short_spread,
+            "candidate_evidence": _single_candidate_evidence(score),
             "lookahead_guard": "never uses same-bar future return; strategy config must enter backtest through research gate",
             "created_at": utc_now().isoformat(),
         }
@@ -330,8 +545,11 @@ class FactorMiningEngine:
                 "min_symbols": top_n,
             },
             "research_score": round(score.score, 6),
+            "candidate_rank": score.candidate_rank,
+            "stability_score": round(score.stability_score, 6),
             "rank_ic_mean": score.rank_ic_mean,
             "long_short_spread": score.long_short_spread,
+            "candidate_evidence": _single_candidate_evidence(score),
             "logic": logic,
             "logic_path": str(logic_path),
         }
@@ -372,8 +590,11 @@ class FactorMiningEngine:
                 "max_strategy_turnover": round(max(score.turnover for score in scores), 6),
             },
             "research_score": round(sum(score.score for score in scores) / len(scores), 6),
+            "candidate_rank": min(score.candidate_rank for score in scores),
+            "stability_score": round(sum(score.stability_score for score in scores) / len(scores), 6),
             "rank_ic_mean": round(sum(score.rank_ic_mean for score in scores) / len(scores), 6),
             "long_short_spread": round(sum(score.long_short_spread for score in scores) / len(scores), 6),
+            "candidate_evidence": _aggregate_candidate_evidence(scores, basket),
             "lookahead_guard": "constituent factors are computed at bar close and blended cross-sectionally for next-bar execution only",
             "created_at": utc_now().isoformat(),
         }
@@ -395,8 +616,11 @@ class FactorMiningEngine:
                 "min_symbols": top_n,
             },
             "research_score": logic["research_score"],
+            "candidate_rank": logic["candidate_rank"],
+            "stability_score": logic["stability_score"],
             "rank_ic_mean": logic["rank_ic_mean"],
             "long_short_spread": logic["long_short_spread"],
+            "candidate_evidence": logic["candidate_evidence"],
             "logic": logic,
             "logic_path": str(logic_path),
         }
@@ -439,8 +663,11 @@ class FactorMiningEngine:
                 "consensus_required": min_agreement,
             },
             "research_score": round(max(score.score for score in scores), 6),
+            "candidate_rank": min(score.candidate_rank for score in scores),
+            "stability_score": round(sum(score.stability_score for score in scores) / len(scores), 6),
             "rank_ic_mean": round(sum(score.rank_ic_mean for score in scores) / len(scores), 6),
             "long_short_spread": round(max(score.long_short_spread for score in scores), 6),
+            "candidate_evidence": _aggregate_candidate_evidence(scores, basket),
             "lookahead_guard": "consensus is formed from same-timestamp factor ranks and only forwarded as next-bar research intent",
             "created_at": utc_now().isoformat(),
         }
@@ -463,8 +690,11 @@ class FactorMiningEngine:
                 "min_agreement": min_agreement,
             },
             "research_score": logic["research_score"],
+            "candidate_rank": logic["candidate_rank"],
+            "stability_score": logic["stability_score"],
             "rank_ic_mean": logic["rank_ic_mean"],
             "long_short_spread": logic["long_short_spread"],
+            "candidate_evidence": logic["candidate_evidence"],
             "logic": logic,
             "logic_path": str(logic_path),
         }
@@ -511,6 +741,15 @@ class FactorMiningEngine:
         )
         return path
 
+    def _persist_correlation_report(self, run_id: str, report: dict[str, Any]) -> Path:
+        path = self.data_root / "research" / "factor_mining" / f"{run_id}_correlation.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(report, indent=2, default=str, sort_keys=True),
+            encoding="utf-8",
+        )
+        return path
+
     @staticmethod
     def _dedupe_strategy_configs(
         configs: list[dict[str, Any]],
@@ -529,21 +768,201 @@ class FactorMiningEngine:
             deduped.append(config)
         return deduped
 
+    @staticmethod
+    def _finalize_score(
+        *,
+        score: FactorMiningScore,
+        selected_by_key: dict[tuple[str, str], FactorMiningScore],
+        redundant_by_key: dict[tuple[str, str], dict[str, Any]],
+    ) -> FactorMiningScore:
+        key = (score.factor_id, score.bar_size)
+        if key in selected_by_key:
+            return selected_by_key[key]
+        payload = redundant_by_key.get(key, {})
+        if not payload:
+            return score
+        return _replace_score(
+            score,
+            reject_reason=str(payload.get("reject_reason", score.reject_reason)),
+            max_abs_correlation_to_selected=float(
+                payload.get(
+                    "max_abs_correlation_to_selected",
+                    score.max_abs_correlation_to_selected,
+                )
+                or 0.0
+            ),
+            redundant_with_factor_id=str(
+                payload.get("redundant_with_factor_id", score.redundant_with_factor_id)
+            ),
+        )
 
-def _score_factor_result(result: Any) -> float:
-    rank_ic = abs(float(getattr(result, "rank_ic_mean", 0.0) or getattr(result, "ic_mean", 0.0) or 0.0))
+    @staticmethod
+    def _build_manifest_evidence(
+        *,
+        final_scores: list[FactorMiningScore],
+        selected: list[FactorMiningScore],
+        correlation_report_path: Path,
+        bars_by_bar_size: dict[str, pd.DataFrame],
+    ) -> dict[str, Any]:
+        covered = [
+            score for score in final_scores if score.style_exposure and not score.style_exposure.get("missing_reason")
+        ]
+        return {
+            "schema_version": "factor_mining_manifest_evidence_v1",
+            "candidate_count": len(final_scores),
+            "selected_count": len(selected),
+            "selected_factor_ids": [score.factor_id for score in selected],
+            "style_exposure_coverage": {
+                "covered_candidates": len(covered),
+                "missing_candidates": len(final_scores) - len(covered),
+            },
+            "bar_samples_available": {
+                bar_size: not frame.empty for bar_size, frame in bars_by_bar_size.items()
+            },
+            "correlation_report_path": str(correlation_report_path),
+            "lookahead_guard": "ranking, de-correlation, and style exposure use factor[t] with next-bar returns only",
+        }
+
+    @staticmethod
+    def _build_correlation_report(
+        *,
+        run_id: str,
+        scores: list[FactorMiningScore],
+        selected: list[FactorMiningScore],
+        redundant_rejections: dict[tuple[str, str], dict[str, Any]],
+        frames_by_bar_size: dict[str, pd.DataFrame],
+        max_abs_correlation: float,
+    ) -> dict[str, Any]:
+        report_rows: list[dict[str, Any]] = []
+        selected_by_bar_size: dict[str, list[str]] = {}
+        for score in selected:
+            selected_by_bar_size.setdefault(score.bar_size, []).append(score.factor_id)
+
+        for bar_size, frame in sorted(frames_by_bar_size.items()):
+            factor_ids = [
+                score.factor_id
+                for score in scores
+                if score.bar_size == bar_size and score.factor_id in frame.columns and not score.reject_reason.startswith("evaluation_error:")
+            ]
+            matrix = build_factor_correlation_matrix(frame, factor_ids)
+            high_pairs: list[dict[str, Any]] = []
+            for left_idx, left in enumerate(factor_ids):
+                for right in factor_ids[left_idx + 1 :]:
+                    corr = float(matrix.loc[left, right] or 0.0) if not matrix.empty else 0.0
+                    if corr >= max_abs_correlation:
+                        high_pairs.append(
+                            {
+                                "left_factor_id": left,
+                                "right_factor_id": right,
+                                "abs_correlation": round(corr, 6),
+                            }
+                        )
+            redundant = [
+                {
+                    "factor_id": factor_id,
+                    **payload,
+                }
+                for (factor_id, reject_bar_size), payload in redundant_rejections.items()
+                if reject_bar_size == bar_size
+            ]
+            report_rows.append(
+                {
+                    "bar_size": bar_size,
+                    "factor_ids": factor_ids,
+                    "selected_factor_ids": sorted(selected_by_bar_size.get(bar_size, [])),
+                    "redundant_candidates": sorted(
+                        redundant,
+                        key=lambda item: (
+                            -float(item.get("max_abs_correlation_to_selected", 0.0)),
+                            str(item.get("factor_id", "")),
+                        ),
+                    ),
+                    "high_correlation_pairs": sorted(
+                        high_pairs,
+                        key=lambda item: (-float(item["abs_correlation"]), item["left_factor_id"], item["right_factor_id"]),
+                    ),
+                    "matrix": {
+                        factor_id: {
+                            other_id: round(float(matrix.loc[factor_id, other_id] or 0.0), 6)
+                            for other_id in factor_ids
+                        }
+                        for factor_id in factor_ids
+                    }
+                    if not matrix.empty
+                    else {},
+                }
+            )
+        return {
+            "schema_version": "factor_mining_correlation_report_v1",
+            "run_id": run_id,
+            "generated_at": utc_now().isoformat(),
+            "max_abs_correlation_threshold": max_abs_correlation,
+            "bar_sizes": report_rows,
+        }
+def _stability_components(result: Any) -> dict[str, float]:
+    rank_icir = abs(
+        float(getattr(result, "rank_icir", 0.0) or getattr(result, "icir", 0.0) or 0.0)
+    )
+    rank_ic_std = abs(float(getattr(result, "rank_ic_std", 0.0) or 0.0))
+    hit_rate = max(0.0, float(getattr(result, "hit_rate", 0.0) or 0.0))
+    monotonicity = abs(float(getattr(result, "monotonicity", 0.0) or 0.0))
+    n_dates = int(getattr(result, "n_dates", 0) or 0)
+    if n_dates <= 0:
+        n_dates = max(int(getattr(result, "n_observations", 0) or 0) // 20, 0)
+    return {
+        "ic_consistency": round(min(rank_icir / 2.0, 1.0), 6),
+        "ic_dispersion": round(max(1.0 - min(rank_ic_std / 0.25, 1.0), 0.0), 6),
+        "breadth": round(min(n_dates / 60.0, 1.0), 6),
+        "hit_rate_edge": round(min(abs(hit_rate - 0.5) * 2.0, 1.0), 6),
+        "monotonicity": round(min(monotonicity, 1.0), 6),
+    }
+
+
+def _stability_score(components: dict[str, float]) -> float:
+    return round(
+        0.30 * float(components.get("ic_consistency", 0.0))
+        + 0.20 * float(components.get("ic_dispersion", 0.0))
+        + 0.20 * float(components.get("breadth", 0.0))
+        + 0.15 * float(components.get("hit_rate_edge", 0.0))
+        + 0.15 * float(components.get("monotonicity", 0.0)),
+        6,
+    )
+
+
+def _score_components(
+    result: Any,
+    *,
+    stability_score: float,
+    complexity_score: int,
+) -> dict[str, float]:
+    rank_ic = abs(
+        float(getattr(result, "rank_ic_mean", 0.0) or getattr(result, "ic_mean", 0.0) or 0.0)
+    )
     spread = abs(float(getattr(result, "long_short_spread", 0.0) or 0.0))
     icir = abs(float(getattr(result, "icir", 0.0) or 0.0))
     hit_rate = max(0.0, float(getattr(result, "hit_rate", 0.0) or 0.0))
     turnover = max(0.0, float(getattr(result, "turnover", 0.0) or 0.0))
-    return round(rank_ic * 100.0 + spread * 50.0 + min(icir, 5.0) * 2.0 + hit_rate * 5.0 - turnover, 6)
+    return {
+        "rank_ic_score": round(rank_ic * 100.0, 6),
+        "spread_score": round(spread * 50.0, 6),
+        "icir_score": round(min(icir, 5.0) * 2.0, 6),
+        "hit_rate_score": round(hit_rate * 5.0, 6),
+        "stability_bonus": round(stability_score * 15.0, 6),
+        "turnover_penalty": round(-turnover, 6),
+        "complexity_penalty": round(-min(max(int(complexity_score), 0), 10) * 0.75, 6),
+    }
 
 
-def _max_abs_correlation(frame: pd.DataFrame, factor_id: str, selected_factor_ids: list[str]) -> float:
+def _max_abs_correlation(
+    frame: pd.DataFrame,
+    factor_id: str,
+    selected_factor_ids: list[str],
+) -> tuple[float, str]:
     if frame.empty or factor_id not in frame.columns:
-        return 0.0
+        return 0.0, ""
     values = pd.to_numeric(frame[factor_id], errors="coerce")
     max_corr = 0.0
+    redundant_with_factor_id = ""
     for selected_id in selected_factor_ids:
         if selected_id not in frame.columns:
             continue
@@ -552,8 +971,10 @@ def _max_abs_correlation(frame: pd.DataFrame, factor_id: str, selected_factor_id
         if len(pair) < 3:
             continue
         corr = abs(float(pair.iloc[:, 0].corr(pair.iloc[:, 1]) or 0.0))
-        max_corr = max(max_corr, corr)
-    return max_corr
+        if corr > max_corr:
+            max_corr = corr
+            redundant_with_factor_id = selected_id
+    return max_corr, redundant_with_factor_id
 
 
 def _normalize_bar_sizes(bar_sizes: list[str]) -> list[str]:
@@ -586,12 +1007,145 @@ def _safe_name(value: str) -> str:
 def _replace_score(
     score: FactorMiningScore,
     *,
+    candidate_rank: int | None = None,
+    stability_score: float | None = None,
+    stability_components: dict[str, float] | None = None,
+    score_components: dict[str, float] | None = None,
+    style_exposure: dict[str, Any] | None = None,
     selected: bool | None = None,
+    reject_reason: str | None = None,
     max_abs_correlation_to_selected: float | None = None,
+    redundant_with_factor_id: str | None = None,
 ) -> FactorMiningScore:
     payload = asdict(score)
+    if candidate_rank is not None:
+        payload["candidate_rank"] = candidate_rank
+    if stability_score is not None:
+        payload["stability_score"] = stability_score
+    if stability_components is not None:
+        payload["stability_components"] = dict(stability_components)
+    if score_components is not None:
+        payload["score_components"] = dict(score_components)
+    if style_exposure is not None:
+        payload["style_exposure"] = dict(style_exposure)
     if selected is not None:
         payload["selected"] = selected
+    if reject_reason is not None:
+        payload["reject_reason"] = reject_reason
     if max_abs_correlation_to_selected is not None:
         payload["max_abs_correlation_to_selected"] = max_abs_correlation_to_selected
+    if redundant_with_factor_id is not None:
+        payload["redundant_with_factor_id"] = redundant_with_factor_id
     return FactorMiningScore(**payload)
+
+
+def _single_candidate_evidence(score: FactorMiningScore) -> dict[str, Any]:
+    return {
+        "schema_version": "factor_mining_candidate_evidence_v1",
+        "factor_id": score.factor_id,
+        "bar_size": score.bar_size,
+        "candidate_rank": score.candidate_rank,
+        "stability_score": round(score.stability_score, 6),
+        "stability_components": dict(score.stability_components),
+        "score_components": dict(score.score_components),
+        "style_exposure": dict(score.style_exposure),
+        "generation_family": score.generation_family,
+        "complexity_score": score.complexity_score,
+        "max_abs_correlation_to_selected": round(score.max_abs_correlation_to_selected, 6),
+        "redundant_with_factor_id": score.redundant_with_factor_id,
+    }
+
+
+def _aggregate_candidate_evidence(
+    scores: list[FactorMiningScore],
+    basket: list[dict[str, Any]],
+) -> dict[str, Any]:
+    weights = {
+        str(item.get("factor_id", "")): float(item.get("weight", 0.0) or 0.0)
+        for item in basket
+    }
+    style_exposure = _aggregate_style_exposure(scores, weights)
+    return {
+        "schema_version": "factor_mining_candidate_evidence_v1",
+        "factor_ids": [score.factor_id for score in scores],
+        "candidate_rank": min(score.candidate_rank for score in scores),
+        "stability_score": round(
+            sum(score.stability_score for score in scores) / len(scores),
+            6,
+        ),
+        "stability_components": {
+            name: round(
+                sum(component.get(name, 0.0) for component in [score.stability_components for score in scores])
+                / len(scores),
+                6,
+            )
+            for name in ("ic_consistency", "ic_dispersion", "breadth", "hit_rate_edge", "monotonicity")
+        },
+        "component_weights": weights,
+        "style_exposure": style_exposure,
+    }
+
+
+def _aggregate_style_exposure(
+    scores: list[FactorMiningScore],
+    weights: dict[str, float],
+) -> dict[str, Any]:
+    usable = [
+        score
+        for score in scores
+        if score.style_exposure and not score.style_exposure.get("missing_reason")
+    ]
+    if not usable:
+        return {
+            "missing_reason": "style_exposure_inputs_unavailable",
+            "source_factor_ids": [score.factor_id for score in scores],
+        }
+
+    total_weight = sum(abs(weights.get(score.factor_id, 0.0)) for score in usable) or float(len(usable))
+    benchmark_columns: set[str] = set()
+    beta_names: set[str] = set()
+    observations = 0.0
+    r_squared = 0.0
+    alpha_period = 0.0
+    residual_vol = 0.0
+    betas: dict[str, float] = {}
+    warnings: list[str] = []
+
+    for score in usable:
+        weight = abs(weights.get(score.factor_id, 0.0)) or (1.0 / float(len(usable)))
+        normalized_weight = weight / total_weight
+        payload = score.style_exposure
+        benchmark_columns.update(str(item) for item in payload.get("benchmark_columns", []))
+        beta_names.update(str(item) for item in dict(payload.get("betas", {})).keys())
+        observations += normalized_weight * float(payload.get("observations", 0) or 0.0)
+        r_squared += normalized_weight * float(payload.get("r_squared", 0.0) or 0.0)
+        alpha_period += normalized_weight * float(payload.get("alpha_period", 0.0) or 0.0)
+        residual_vol += normalized_weight * float(
+            payload.get("residual_volatility_annualized", 0.0) or 0.0
+        )
+        warnings.extend(str(item) for item in payload.get("warnings", []) or [])
+
+    for beta_name in sorted(beta_names):
+        betas[beta_name] = round(
+            sum(
+                (
+                    abs(weights.get(score.factor_id, 0.0)) or (1.0 / float(len(usable)))
+                )
+                / total_weight
+                * float(dict(score.style_exposure.get("betas", {})).get(beta_name, 0.0) or 0.0)
+                for score in usable
+            ),
+            6,
+        )
+
+    return {
+        "observations": int(round(observations)),
+        "alpha_period": round(alpha_period, 6),
+        "betas": betas,
+        "r_squared": round(r_squared, 6),
+        "residual_volatility_annualized": round(residual_vol, 6),
+        "benchmark_columns": sorted(benchmark_columns),
+        "warnings": sorted(set(warnings)),
+        "source_factor_ids": [score.factor_id for score in usable],
+        "lookahead_guard": "factor[t] is paired with next_return[t->t+1] only",
+    }

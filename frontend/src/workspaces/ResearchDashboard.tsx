@@ -1,7 +1,9 @@
 import {useEffect, useMemo, useState} from 'react';
 
 import {LoadingSpinner} from '../components/LoadingSpinner';
+import {apiGet} from '../lib/api';
 import {researchApi} from '../lib/research-api';
+import type {SystemOverviewResponse} from '../lib/shared-types';
 import ExperimentList from './research/ExperimentList';
 import CandidateTable from './research/CandidateTable';
 import ExperimentReport from './research/ExperimentReport';
@@ -43,6 +45,7 @@ interface Candidate {
 }
 
 const tabs = [
+  {key: 'workflow', label: '晋级流程'},
   {key: 'cycle', label: '研究闭环'},
   {key: 'factors', label: '因子特征'},
   {key: 'evidence', label: '候选证据'},
@@ -125,6 +128,18 @@ function pct(value: unknown): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) return '-';
   const normalized = Math.abs(value) <= 1 ? value * 100 : value;
   return `${normalized.toFixed(1)}%`;
+}
+
+function asRecord(value: unknown): LooseRecord | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as LooseRecord : null;
+}
+
+function asArray(value: unknown): LooseRecord[] {
+  return Array.isArray(value) ? value.map(item => asRecord(item)).filter((item): item is LooseRecord => !!item) : [];
+}
+
+function readString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' && value.trim() ? value : fallback;
 }
 
 function tone(status?: string): string {
@@ -228,13 +243,15 @@ export default function ResearchDashboard() {
   const [portfolioIntegrationRuns, setPortfolioIntegrationRuns] = useState<LooseRecord[]>([]);
   const [portfolioIntegrationDetail, setPortfolioIntegrationDetail] = useState<LooseRecord | null>(null);
   const [registry, setRegistry] = useState<LooseRecord | null>(null);
+  const [systemOverview, setSystemOverview] = useState<SystemOverviewResponse | null>(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState('');
-  const [tab, setTab] = useState('cycle');
+  const [tab, setTab] = useState('workflow');
   const [selectedExp, setSelectedExp] = useState<Experiment | null>(null);
   const [selectedReportExp, setSelectedReportExp] = useState('');
+  const [selectedManifestIds, setSelectedManifestIds] = useState<string[]>([]);
 
   const [autoForm, setAutoForm] = useState({
     strategyId: 'momentum',
@@ -299,19 +316,21 @@ export default function ResearchDashboard() {
   const [portfolioResult, setPortfolioResult] = useState<LooseRecord | null>(null);
   const [qlibActionResult, setQlibActionResult] = useState<LooseRecord | null>(null);
   const [pypfoptActionResult, setPypfoptActionResult] = useState<LooseRecord | null>(null);
+  const [executionPipelineResult, setExecutionPipelineResult] = useState<LooseRecord | null>(null);
 
   const refresh = async (root = dataRoot) => {
     setError('');
-    const [exps, cands, snaps, factorDefs, manifestRows, reviews, registryPayload, qlibPayload, portfolioPayload] = await Promise.all([
+    const [exps, cands, snaps, factorDefs, manifestRows, reviews, registryPayload, qlibPayload, portfolioPayload, overviewPayload] = await Promise.all([
       researchApi.listExperiments(root).catch(() => []),
       researchApi.listCandidates(root).catch(() => []),
       researchApi.listFeatures().catch(() => []),
       researchApi.listFactors(root).catch(() => []),
       researchApi.listStrategyManifests(root).catch(() => []),
-      researchApi.listPendingReviews().catch(() => []),
+      researchApi.listPendingReviews(root).catch(() => []),
       researchApi.getEvidenceRegistry(root).catch(() => null),
       researchApi.listQlibRuns(qlibForm.artifactsRoot).catch(() => null),
       researchApi.listPortfolioIntegrationRuns(pypfoptForm.artifactsRoot).catch(() => null),
+      apiGet<SystemOverviewResponse>(`/api/system/overview?data_root=${encodeURIComponent(root)}`).catch(() => null),
     ]);
     setExperiments(exps || []);
     setCandidates(cands || []);
@@ -324,6 +343,11 @@ export default function ResearchDashboard() {
     setQlibRuns(Array.isArray(qlibPayload?.runs) ? qlibPayload.runs : []);
     setPortfolioIntegrationStatus(portfolioPayload);
     setPortfolioIntegrationRuns(Array.isArray(portfolioPayload?.runs) ? portfolioPayload.runs : []);
+    setSystemOverview(overviewPayload);
+    setSelectedManifestIds(current => {
+      const available = (manifestRows || []).map((row: LooseRecord) => String(row.strategy_candidate_id || '')).filter(Boolean);
+      return current.filter(id => available.includes(id));
+    });
     if ((factorDefs || []).length && !factorDefs.find((f: LooseRecord) => f.factor_id === factorForm.factorId)) {
       setFactorForm(current => ({...current, factorId: String(factorDefs[0].factor_id)}));
       setFeatureForm(current => ({...current, featureId: String(factorDefs[0].factor_id)}));
@@ -361,6 +385,46 @@ export default function ResearchDashboard() {
 
   const selectedQlibRunId = qlibForm.runId.trim() || String(qlibRuns[0]?.run_id || '');
   const selectedPortfolioRunId = pypfoptForm.portfolioRunId.trim() || String(portfolioIntegrationRuns[0]?.portfolio_run_id || '');
+  const minuteRemediationActions = asArray(systemOverview?.minute_data_quality?.remediation_summary?.actions);
+  const selectedManifestRows = manifests.filter(row => selectedManifestIds.includes(String(row.strategy_candidate_id || '')));
+  const latestPortfolioRun = asRecord(portfolioIntegrationRuns[0]);
+  const targetWeightReady = !!latestPortfolioRun?.has_target_positions;
+  const targetWeightStatus = targetWeightReady
+    ? 'READY_FOR_BACKTEST_ENTRY'
+    : readString(latestPortfolioRun?.status, 'MISSING_TARGET_POSITIONS');
+  const targetWeightDetail = targetWeightReady
+    ? `target positions 已生成，最新权重和 ${pct(latestPortfolioRun?.latest_weight_sum)}`
+    : '尚未生成 target_positions，当前只停留在 target_weights 或更早阶段。';
+  const workflowManifestRows = useMemo(() => manifests.slice(0, 10).map(row => {
+    const evidencePairs = [
+      ['data_manifest', row.data_manifest_path],
+      ['backtest_manifest', row.backtest_manifest_path],
+      ['scorecard', row.scorecard_path],
+      ['walk_forward', row.walk_forward_result_path],
+      ['cost_stress', row.cost_stress_result_path],
+      ['promotion', row.promotion_result_path],
+      ['paper_review_pack', row.paper_review_evidence_pack_path],
+    ].filter(([, value]) => !!value);
+    const missingEvidence = ['data_manifest_path', 'backtest_manifest_path', 'scorecard_path', 'walk_forward_result_path', 'cost_stress_result_path']
+      .filter(key => !row[key])
+      .map(key => key.replace(/_path$/, ''));
+    const blockingReasons = [
+      ...(Array.isArray(row.paper_review_blocking_reasons) ? row.paper_review_blocking_reasons.map(item => String(item)) : []),
+      ...(String(row.promotion_status || '') && !['READY_FOR_PORTFOLIO_SIM', 'PAPER_REVIEW_CANDIDATE'].includes(String(row.promotion_status))
+        ? [`promotion_status=${row.promotion_status}`]
+        : []),
+      ...missingEvidence.map(item => `missing_${item}`),
+    ];
+    return {
+      id: String(row.strategy_candidate_id || ''),
+      sourceCandidateId: String(row.source_candidate_id || ''),
+      status: String(row.promotion_status || 'UNKNOWN'),
+      symbols: Array.isArray(row.symbols) ? row.symbols.join(', ') : '-',
+      evidencePairs,
+      blockingReasons,
+      reviewStatus: String(row.paper_review_candidate_status || row.paper_review_gate_status || 'not_created'),
+    };
+  }), [manifests]);
 
   const runTask = async (label: string, task: () => Promise<void>) => {
     setBusy(label);
@@ -373,6 +437,10 @@ export default function ResearchDashboard() {
     } finally {
       setBusy('');
     }
+  };
+
+  const toggleManifestSelection = (manifestId: string) => {
+    setSelectedManifestIds(current => current.includes(manifestId) ? current.filter(id => id !== manifestId) : [...current, manifestId]);
   };
 
   const handleAutoCycle = () => runTask('auto-cycle', async () => {
@@ -482,6 +550,7 @@ export default function ResearchDashboard() {
     const result = await researchApi.rebuildEvidenceRegistry(dataRoot);
     setRegistry(result);
     setMessage('证据 registry 已重建');
+    await refresh(dataRoot);
   });
 
   const handleCandidateAction = (candidateId: string, action: string) => runTask(`${candidateId}-${action}`, async () => {
@@ -497,7 +566,7 @@ export default function ResearchDashboard() {
   const handlePortfolioSim = () => runTask('portfolio-sim', async () => {
     const manifestIds = portfolioForm.manifestIds
       ? portfolioForm.manifestIds.split(/[,\n]/).map(id => id.trim()).filter(Boolean)
-      : manifests.map(row => String(row.strategy_candidate_id)).filter(Boolean);
+      : (selectedManifestIds.length ? selectedManifestIds : manifests.map(row => String(row.strategy_candidate_id)).filter(Boolean));
     const result = await researchApi.runPortfolioSim(manifestIds, {
       initial_cash: Number(portfolioForm.initialCash || 50000),
     });
@@ -507,8 +576,15 @@ export default function ResearchDashboard() {
   const handleCreateReview = () => runTask('paper-review-create', async () => {
     const simId = String(portfolioResult?.portfolio_sim_id || '');
     if (!simId) throw new Error('先运行 portfolio simulation');
-    const result = await researchApi.createPaperReview(simId);
+    const result = await researchApi.createPaperReview(simId, dataRoot);
     setPortfolioResult({...(portfolioResult || {}), paper_review: result});
+    await refresh(dataRoot);
+  });
+
+  const handleCreateReviewFromManifest = (manifestId: string) => runTask(`manifest-review-${manifestId}`, async () => {
+    const result = await researchApi.createPaperReviewFromManifest(manifestId, dataRoot);
+    setPortfolioResult({strategy_manifest_id: manifestId, paper_review: result});
+    setMessage(`已把 ${manifestId} 放入 paper review queue。`);
     await refresh(dataRoot);
   });
 
@@ -612,6 +688,31 @@ export default function ResearchDashboard() {
     setPypfoptForm(current => ({...current, portfolioRunId}));
   });
 
+  const handleResearchExecutionPipeline = () => runTask('research-execution-pipeline', async () => {
+    const qlibRunId = selectedQlibRunId || pypfoptForm.scoreRunId.trim();
+    const portfolioRunId = selectedPortfolioRunId || pypfoptForm.portfolioRunId.trim();
+    if (!qlibRunId) throw new Error('先选择 Qlib score run');
+    if (!portfolioRunId) throw new Error('先生成或选择 portfolio run');
+    const result = await researchApi.runResearchExecutionPipeline({
+      qlib_run_id: qlibRunId,
+      qlib_config: qlibForm.qlibConfig,
+      portfolio_config: pypfoptForm.config,
+      portfolio_run_id: portfolioRunId,
+      strategy_id: pypfoptForm.strategyId,
+      qlib_runs_root: qlibForm.artifactsRoot,
+      portfolio_runs_root: pypfoptForm.artifactsRoot,
+      pipeline_runs_root: 'artifacts/research_execution_runs',
+      initial_cash: Number(portfolioForm.initialCash || 50000),
+      risk_max_order_notional_pct: 0.25,
+      walk_forward_train_bars: 252,
+      walk_forward_test_bars: 63,
+      walk_forward_step_bars: 63,
+    });
+    setExecutionPipelineResult(result);
+    setMessage(`研究执行流水线完成: ${result.status || 'unknown'}`);
+    await refresh(dataRoot);
+  });
+
   if (loading) return <LoadingSpinner text="加载研究数据..." />;
 
   return (
@@ -680,6 +781,165 @@ export default function ResearchDashboard() {
           );
         })}
       </div>
+
+      {tab === 'workflow' && (
+        <div style={{display: 'grid', gap: 16}}>
+          <section style={{display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10}}>
+            {[
+              ['minute quality', systemOverview?.minute_data_quality?.status || 'MISSING'],
+              ['manifests', manifests.length],
+              ['paper review queue', pendingReviews.length],
+              ['target weights', targetWeightStatus],
+            ].map(([label, value]) => (
+              <div key={String(label)} style={sectionStyle}>
+                <div style={{fontSize: '0.75rem', color: '#94a3b8'}}>{label}</div>
+                <div style={{fontSize: '1.1rem', fontWeight: 750, marginTop: 4}}>{String(value)}</div>
+              </div>
+            ))}
+          </section>
+
+          <div style={{display: 'grid', gridTemplateColumns: 'minmax(420px, 0.9fr) minmax(560px, 1.1fr)', gap: 16}}>
+            <section style={sectionStyle}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10}}>
+                <h3 style={{margin: 0}}>Minute remediation</h3>
+                <StatusPill value={systemOverview?.minute_data_quality?.status || 'MISSING'} />
+              </div>
+              <div style={{display: 'grid', gap: 8}}>
+                {minuteRemediationActions.slice(0, 8).map((action, index) => (
+                  <div key={`${action.category || 'action'}-${index}`} style={{borderTop: '1px solid rgba(148,163,184,0.12)', paddingTop: 8}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center'}}>
+                      <strong>{readString(action.summary, readString(action.category, 'remediation'))}</strong>
+                      <StatusPill value={readString(action.severity, 'info')} />
+                    </div>
+                    <div style={{color: '#94a3b8', fontSize: '0.78rem', marginTop: 4}}>
+                      {readString(action.command, readString(action.dataset_root, readString(action.bar_size, 'inspect dataset')))}
+                    </div>
+                  </div>
+                ))}
+                {!minuteRemediationActions.length ? <span style={{color: '#94a3b8'}}>暂无修复建议，minute quality 已通过或尚未生成细项。</span> : null}
+              </div>
+              <div style={{display: 'flex', gap: 10, marginTop: 14}}>
+                <button style={ghostButtonStyle} disabled={!!busy} onClick={() => runTask('refresh', async () => refresh(dataRoot))}>刷新状态</button>
+                <button style={ghostButtonStyle} disabled={!!busy} onClick={handleRegistryRebuild}>重建 registry</button>
+              </div>
+            </section>
+
+            <section style={sectionStyle}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10}}>
+                <h3 style={{margin: 0}}>Promotion blockers</h3>
+                <StatusPill value={systemOverview?.paper_review?.status || 'UNKNOWN'} />
+              </div>
+              <div style={{display: 'grid', gap: 8}}>
+                {(systemOverview?.next_actions || []).slice(0, 6).map(action => (
+                  <div key={action} style={{borderTop: '1px solid rgba(148,163,184,0.12)', paddingTop: 8, color: '#cbd5e1'}}>
+                    {action}
+                  </div>
+                ))}
+                {!(systemOverview?.next_actions || []).length ? <span style={{color: '#94a3b8'}}>暂无全局 blocker。</span> : null}
+              </div>
+              <div style={{marginTop: 14, fontSize: '0.8rem', color: '#94a3b8', display: 'grid', gap: 6}}>
+                <span>review summary: {systemOverview?.paper_review?.summary || '-'}</span>
+                <span>registry: {systemOverview?.registry?.integrity || registry?.registry_integrity_status || '-'}</span>
+                <span>manifest: {systemOverview?.paper_review?.manifest_path || '-'}</span>
+              </div>
+            </section>
+          </div>
+
+          <section style={sectionStyle}>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10}}>
+              <h3 style={{margin: 0}}>Strategy manifest evidence</h3>
+              <div style={{display: 'flex', gap: 8}}>
+                <button style={buttonStyle} disabled={!!busy || !selectedManifestIds.length} onClick={handlePortfolioSim}>运行选中 manifest 组合回测入口</button>
+              </div>
+            </div>
+            <div style={{display: 'grid', gap: 10}}>
+              {workflowManifestRows.map(row => {
+                const checked = selectedManifestIds.includes(row.id);
+                return (
+                  <div key={row.id} style={{border: '1px solid rgba(148,163,184,0.12)', borderRadius: 6, padding: 12}}>
+                    <div style={{display: 'grid', gridTemplateColumns: 'auto 1fr auto auto', gap: 10, alignItems: 'center'}}>
+                      <input type="checkbox" checked={checked} onChange={() => toggleManifestSelection(row.id)} />
+                      <div>
+                        <strong>{row.id}</strong>
+                        <div style={{color: '#94a3b8', fontSize: '0.78rem', marginTop: 3}}>
+                          {row.sourceCandidateId || '-'} · {row.symbols} · review {row.reviewStatus}
+                        </div>
+                      </div>
+                      <StatusPill value={row.status} />
+                      <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handleCreateReviewFromManifest(row.id)}>送入 review queue</button>
+                    </div>
+                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10, fontSize: '0.78rem'}}>
+                      <div>
+                        <div style={{color: '#94a3b8', marginBottom: 4}}>evidence</div>
+                        <div style={{display: 'grid', gap: 4}}>
+                          {row.evidencePairs.map(([label, value]) => <span key={String(label)}>{String(label)}: {String(value)}</span>)}
+                          {!row.evidencePairs.length ? <span style={{color: '#94a3b8'}}>暂无已绑定 evidence</span> : null}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{color: '#94a3b8', marginBottom: 4}}>blockers</div>
+                        <div style={{display: 'grid', gap: 4}}>
+                          {row.blockingReasons.length ? row.blockingReasons.slice(0, 6).map(reason => <span key={reason} style={{color: '#fca5a5'}}>{reason}</span>) : <span style={{color: '#86efac'}}>无显式 blocker</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {!workflowManifestRows.length ? <span style={{color: '#94a3b8'}}>暂无 strategy manifest；先物化候选证据。</span> : null}
+            </div>
+          </section>
+
+          <div style={{display: 'grid', gridTemplateColumns: 'minmax(360px, 0.8fr) minmax(620px, 1.2fr)', gap: 16}}>
+            <section style={sectionStyle}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10}}>
+                <h3 style={{margin: 0}}>Paper review queue</h3>
+                <StatusPill value={systemOverview?.paper_review?.status || 'EMPTY'} />
+              </div>
+              <div style={{display: 'grid', gap: 8}}>
+                {pendingReviews.map(review => (
+                  <div key={String(review.paper_review_id)} style={{borderTop: '1px solid rgba(148,163,184,0.12)', paddingTop: 8, display: 'grid', gap: 6}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center'}}>
+                      <strong>{String(review.paper_review_id)}</strong>
+                      <StatusPill value={String(review.status || 'UNKNOWN')} />
+                    </div>
+                    <div style={{color: '#94a3b8', fontSize: '0.78rem'}}>
+                      {String(review.strategy_manifest_id || review.portfolio_sim_id || '-')}
+                    </div>
+                    <button style={dangerButtonStyle} disabled={!!busy} onClick={() => handleApproveReview(String(review.paper_review_id))}>人工批准</button>
+                  </div>
+                ))}
+                {!pendingReviews.length ? <span style={{color: '#94a3b8'}}>当前没有待处理 queue。</span> : null}
+              </div>
+            </section>
+
+            <section style={sectionStyle}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10}}>
+                <h3 style={{margin: 0}}>Target weights / backtest entry</h3>
+                <StatusPill value={targetWeightStatus} />
+              </div>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, marginBottom: 12}}>
+                <div><span style={{color: '#94a3b8'}}>portfolio_run</span><br />{readString(latestPortfolioRun?.portfolio_run_id, '-')}</div>
+                <div><span style={{color: '#94a3b8'}}>optimizer</span><br />{readString(latestPortfolioRun?.optimizer, '-')}</div>
+                <div><span style={{color: '#94a3b8'}}>weight sum</span><br />{pct(latestPortfolioRun?.latest_weight_sum)}</div>
+              </div>
+              <p style={{marginTop: 0, color: '#cbd5e1', fontSize: '0.82rem'}}>{targetWeightDetail}</p>
+              <div style={{display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12}}>
+                <button style={buttonStyle} disabled={!!busy} onClick={() => handlePypfoptAction('optimize')}>优化 target weights</button>
+                <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handlePypfoptAction('import')}>生成 target positions</button>
+                <button style={ghostButtonStyle} disabled={!!busy || !targetWeightReady} onClick={handleResearchExecutionPipeline}>运行风险回测流水线</button>
+                <button style={ghostButtonStyle} disabled={!!busy || !selectedManifestRows.length} onClick={handlePortfolioSim}>进入组合回测</button>
+              </div>
+              <ResultBlock title="research execution pipeline" value={executionPipelineResult} />
+              <PreviewTable
+                title="latest target_positions"
+                rows={portfolioIntegrationDetail?.target_positions_preview || pypfoptActionResult?.preview}
+                columns={['timestamp_utc', 'strategy_id', 'symbol', 'target_weight', 'target_quantity']}
+              />
+            </section>
+          </div>
+        </div>
+      )}
 
       {tab === 'cycle' && (
         <div style={{display: 'grid', gridTemplateColumns: 'minmax(340px, 0.9fr) minmax(420px, 1.1fr)', gap: 16}}>
@@ -946,6 +1206,7 @@ export default function ResearchDashboard() {
                 <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handlePypfoptAction('covariance')}>生成 covariance</button>
                 <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handlePypfoptAction('optimize')}>优化 target weights</button>
                 <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handlePypfoptAction('import')}>导入 target positions</button>
+                <button style={ghostButtonStyle} disabled={!!busy || !selectedPortfolioRunId} onClick={handleResearchExecutionPipeline}>运行风险回测流水线</button>
               </div>
               <p style={{color: '#94a3b8', fontSize: '0.78rem', lineHeight: 1.5}}>
                 这里只产 target weights / TargetPosition-compatible artifact，不生成 OrderIntent，不提交 broker。

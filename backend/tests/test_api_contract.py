@@ -575,6 +575,30 @@ class ApiContractTests(unittest.TestCase):
             portfolio_evidence_pack_id="pending_review_sman_001",
         )
 
+    def test_paper_review_pending_uses_requested_data_root(self) -> None:
+        class FakeReview:
+            paper_review_id = "prev_pending_001"
+            strategy_manifest_id = "sman_001"
+            portfolio_sim_id = "psim_001"
+            status = "PENDING_HUMAN_REVIEW"
+            proposed_symbols = ["SPY"]
+            proposed_capital = 100000.0
+            created_at = "2026-05-11T00:00:00+00:00"
+
+        with patch("quant_us.research.paper_review_bridge.PaperReviewManager") as manager_cls:
+            manager = manager_cls.return_value
+            manager.list_pending.return_value = [FakeReview()]
+            response = self.client.get(
+                "/api/research/paper-review/pending",
+                params={"data_root": "/tmp/quant-data"},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload[0]["paper_review_id"], "prev_pending_001")
+        manager_cls.assert_called_once_with(data_root="/tmp/quant-data")
+        manager.list_pending.assert_called_once_with()
+
     def test_factor_mine_and_run_endpoint_is_research_only(self) -> None:
         class FakeMiningResult:
             strategy_configs = [

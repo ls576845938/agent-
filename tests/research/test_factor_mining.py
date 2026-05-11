@@ -123,10 +123,44 @@ def test_factor_mining_selects_low_redundancy_strategy_configs(
     assert any(config["strategy_id"] == "factor_basket" for config in result.strategy_configs)
     assert any(config["strategy_id"] == "factor_consensus" for config in result.strategy_configs)
     assert all(config["timeframe"] == "1d" for config in result.strategy_configs)
+    assert any(config["candidate_rank"] == 1 for config in result.strategy_configs)
+    assert all("candidate_evidence" in config for config in result.strategy_configs)
 
     persisted = json.loads(Path(result.output_path).read_text(encoding="utf-8"))
     assert persisted["run_id"] == result.run_id
     assert len(persisted["selected_factors"]) == 2
+    assert persisted["manifest_evidence"]["selected_count"] == 2
+
+    ranks = {
+        (row["factor_id"], row["bar_size"]): row["candidate_rank"]
+        for row in result.candidate_ranking
+    }
+    assert ranks[("momentum_20d", "1d")] < ranks[("momentum_60d", "1d")]
+
+    score_by_key = {
+        (score.factor_id, score.bar_size): score
+        for score in result.factor_scores
+    }
+    assert score_by_key[("momentum_20d", "1d")].stability_score > 0.0
+    assert (
+        score_by_key[("momentum_60d", "1d")].reject_reason
+        == "high_correlation_to_selected"
+    )
+    assert (
+        score_by_key[("momentum_60d", "1d")].redundant_with_factor_id
+        == "momentum_20d"
+    )
+
+    correlation_report = json.loads(
+        Path(result.correlation_report_path).read_text(encoding="utf-8")
+    )
+    bar_report = correlation_report["bar_sizes"][0]
+    assert bar_report["selected_factor_ids"] == ["momentum_20d", "volatility_20d"]
+    assert any(
+        row["factor_id"] == "momentum_60d"
+        and row["redundant_with_factor_id"] == "momentum_20d"
+        for row in bar_report["redundant_candidates"]
+    )
 
 
 def test_factor_mining_rejects_weak_and_underpopulated_factors(

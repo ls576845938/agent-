@@ -41,9 +41,11 @@ export const researchApi = {
     apiGet<any[]>(`/api/research/strategy-manifests${query({data_root: dataRoot, status})}`),
   runPortfolioSim: (manifestIds: string[], config: any = {}) =>
     apiPost<any>('/api/research/portfolio-sims/run', {manifest_ids: manifestIds, config}),
-  listPendingReviews: () => apiGet<any[]>('/api/research/paper-review/pending'),
-  createPaperReview: (portfolioSimId: string) =>
-    apiPost<any>('/api/research/paper-review/create', {portfolio_sim_id: portfolioSimId}),
+  listPendingReviews: (dataRoot = 'data') => apiGet<any[]>(`/api/research/paper-review/pending${query({data_root: dataRoot})}`),
+  createPaperReview: (portfolioSimId: string, dataRoot = 'data') =>
+    apiPost<any>('/api/research/paper-review/create', {portfolio_sim_id: portfolioSimId, data_root: dataRoot}),
+  createPaperReviewFromManifest: (strategyManifestId: string, dataRoot = 'data') =>
+    apiPost<any>('/api/research/paper-review/create', {strategy_manifest_id: strategyManifestId, data_root: dataRoot}),
   approvePaperReview: (reviewId: string, reviewer: string, reason: string) =>
     apiPost<any>(`/api/research/paper-review/${reviewId}/approve`, {manual: true, reviewer, reason}),
   runRobustness: (candidateId: string, dataRoot = 'data', nSimulations = 500) =>
@@ -69,4 +71,5 @@ export const researchApi = {
   buildPortfolioCovariance: (payload: any) => apiPost<any>('/api/integrations/portfolio/build-covariance', payload),
   optimizePortfolioWeights: (payload: any) => apiPost<any>('/api/integrations/portfolio/optimize-weights', payload),
   importPortfolioTargetWeights: (payload: any) => apiPost<any>('/api/integrations/portfolio/import-target-weights', payload),
+  runResearchExecutionPipeline: (payload: any) => apiPost<any>('/api/research/execution-pipeline/run', payload),
 };

@@ -34,6 +34,21 @@ Current templates:
 
 These artifacts are research configs only. They are not executable broker instructions.
 
+Factor-mining outputs now also persist research evidence that is used to keep
+the candidate set small and interpretable:
+
+- `candidate_rank`
+- `stability_score` and `stability_components`
+- `score_components`
+- `candidate_evidence.style_exposure`
+- `correlation_report_path`
+- top-level `manifest_evidence`
+
+`candidate_evidence.style_exposure` is derived from factor values at timestamp
+`t` versus next-bar returns from `t -> t+1` only. Correlation de-duplication is
+persisted under `data/research/factor_mining/<run_id>_correlation.json` so
+rejected near-duplicate factors leave an auditable trail.
+
 ## Promotion Gate Validation Contract
 
 `quant_us.research.validation.summarize_candidate_validation()` now emits `promotion_gate_contract` and `multiple_testing` sections. The promotion gate treats the contract as a hard artifact for research promotion.

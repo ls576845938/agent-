@@ -100,3 +100,35 @@ def test_external_target_weights_execute_next_bar_only_after_risk_approval() -> 
     assert result.fills[0].filled_at == bars[1].timestamp_utc
     assert result.fills[0].price == 99.0
     assert result.summary["trade_count"] == 1
+
+
+def test_external_target_weights_rejected_by_risk_gate_never_create_orders_or_fills() -> None:
+    start = datetime(2026, 5, 11, 14, 30, tzinfo=UTC)
+    bars = [
+        _bar(start, open_=100.0, close=100.0),
+        _bar(start + timedelta(minutes=1), open_=99.0, close=101.0),
+    ]
+    engine = EventDrivenBacktestEngine(
+        strategies=[],
+        config=BacktestConfig(
+            commission_rate=0.0,
+            slippage_bps=0.0,
+            risk=PreTradeRiskConfig(max_order_notional_pct=0.05),
+            target_positions=(_pypfopt_target(start, weight=0.55),),
+        ),
+    )
+
+    result = engine.run(bars)
+
+    risk_events = [event for event in result.events if isinstance(event, RiskEvent)]
+    intent_events = [event for event in result.events if isinstance(event, OrderIntentEvent)]
+    assert len(intent_events) == 1
+    assert len(risk_events) == 1
+    assert risk_events[0].decision.approved is False
+    assert risk_events[0].decision.reason == "order_notional_limit"
+    assert result.oms_results[0].risk_decision.reason == "order_notional_limit"
+    assert result.orders == []
+    assert result.fills == []
+    assert result.metadata["external_target_position_semantics"] == (
+        "target_weights_imported_as_target_positions_rebalanced_before_risk_gate"
+    )

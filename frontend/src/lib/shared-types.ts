@@ -39,6 +39,12 @@ export type SystemOverviewResponse = {
     symbols?: Array<Record<string, unknown>>;
     lookback_trading_days?: number;
     datasets?: Array<Record<string, unknown>>;
+    evidence_summary?: Record<string, unknown>;
+    remediation_summary?: {
+      action_count?: number;
+      download_performed?: boolean;
+      actions?: Array<Record<string, unknown>>;
+    };
     dataset_statuses?: Record<string, {
       status?: string;
       dataset_root?: string;

@@ -559,7 +559,9 @@ def _run_directory_summaries(artifacts_root: str, kind: str) -> list[dict[str, A
             manifest = _json_file(run_root / "run_manifest.json")
             has_weights = (run_root / "target_weights.parquet").exists()
             has_positions = (run_root / "target_positions.parquet").exists()
-            run_status = "completed" if has_weights else str(manifest.get("status", "missing") or "missing")
+            run_status = _portfolio_research_only_status(
+                "completed" if has_weights else str(manifest.get("status", "missing") or "missing")
+            )
             summaries.append(
                 {
                     "portfolio_run_id": run_root.name,
@@ -573,6 +575,28 @@ def _run_directory_summaries(artifacts_root: str, kind: str) -> list[dict[str, A
                 }
             )
     return summaries
+
+
+def _portfolio_research_only_status(raw_status: str) -> str:
+    """Portfolio integration artifacts are target-weight research handoffs only."""
+    raw = str(raw_status or "").strip()
+    normalized = raw.lower()
+    forbidden_ready_states = {
+        "paper_ready",
+        "live_ready",
+        "ready_for_paper",
+        "ready_for_live",
+        "paper_eligible",
+        "live_eligible",
+        "paper_review_candidate",
+        "ready_for_portfolio_sim",
+        "orders_ready",
+        "order_ready",
+        "submit_ready",
+    }
+    if normalized in forbidden_ready_states:
+        return "completed"
+    return raw or "missing"
 
 
 def _qlib_research_only_promotion_status(strategy_manifest: dict[str, Any]) -> str:
@@ -1566,7 +1590,9 @@ def create_app():
         manifest = _artifact_json(run_root / "run_manifest.json")
         weights_path = run_root / "target_weights.parquet"
         positions_path = run_root / "target_positions.parquet"
-        run_status = "completed" if weights_path.exists() else str(manifest.get("status", "missing") or "missing")
+        run_status = _portfolio_research_only_status(
+            "completed" if weights_path.exists() else str(manifest.get("status", "missing") or "missing")
+        )
         weight_rows = 0
         latest_weight_sum = None
         if weights_path.exists():
@@ -1877,6 +1903,62 @@ def create_app():
         except Exception as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+    @router.post("/research/execution-pipeline/run", dependencies=[Depends(verify_api_key)])
+    async def run_research_execution_pipeline_endpoint(request: dict):
+        """Run research-only Qlib -> portfolio -> risk-gated backtest evidence pipeline."""
+        try:
+            from quant_us.research.orchestration.research_execution_pipeline import (
+                ResearchExecutionPipelineConfig,
+                run_research_execution_pipeline,
+            )
+            from quant_us.core.types import new_id
+
+            qlib_run_id = str(request.get("qlib_run_id") or request.get("score_run_id") or "")
+            if not qlib_run_id:
+                raise ValueError("qlib_run_id is required")
+            result = run_research_execution_pipeline(
+                ResearchExecutionPipelineConfig(
+                    qlib_run_id=qlib_run_id,
+                    qlib_config_path=request.get("qlib_config") or request.get("qlib_config_path") or "configs/qlib/us_lgbm_alpha158_daily.yaml",
+                    portfolio_config_path=request.get("portfolio_config") or request.get("portfolio_config_path") or request.get("config") or "configs/portfolio/pypfopt_long_only_max_sharpe.yaml",
+                    pipeline_run_id=str(request.get("pipeline_run_id") or "") or new_id("rpipe"),
+                    portfolio_run_id=str(request.get("portfolio_run_id") or "") or "",
+                    strategy_id=str(request.get("strategy_id") or "") or "",
+                    qlib_runs_root=Path(str(request.get("qlib_runs_root") or request.get("artifacts_root") or "artifacts/qlib_runs")),
+                    portfolio_runs_root=Path(str(request.get("portfolio_runs_root") or "artifacts/portfolio_runs")),
+                    pipeline_runs_root=Path(str(request.get("pipeline_runs_root") or "artifacts/research_execution_runs")),
+                    initial_cash=float(request.get("initial_cash") or 100000.0),
+                    commission_rate=float(request.get("commission_rate") or 0.0001),
+                    slippage_bps=float(request.get("slippage_bps") or 1.0),
+                    fill_ratio=float(request.get("fill_ratio") or 1.0),
+                    volume_participation_cap_pct=float(request.get("volume_participation_cap_pct") or 5.0),
+                    max_daily_turnover_pct=float(request.get("max_daily_turnover_pct") or 200.0),
+                    risk_max_symbol_weight=(
+                        float(request["risk_max_symbol_weight"])
+                        if request.get("risk_max_symbol_weight") is not None
+                        else None
+                    ),
+                    risk_max_gross_exposure=float(request.get("risk_max_gross_exposure") or 1.0),
+                    risk_max_order_notional_pct=float(request.get("risk_max_order_notional_pct") or 0.10),
+                    risk_min_cash_buffer_pct=(
+                        float(request["risk_min_cash_buffer_pct"])
+                        if request.get("risk_min_cash_buffer_pct") is not None
+                        else None
+                    ),
+                    walk_forward_train_bars=int(request.get("walk_forward_train_bars") or request.get("wf_train_bars") or 252),
+                    walk_forward_test_bars=int(request.get("walk_forward_test_bars") or request.get("wf_test_bars") or 63),
+                    walk_forward_step_bars=int(request.get("walk_forward_step_bars") or request.get("wf_step_bars") or 63),
+                )
+            )
+            return {
+                **asdict(result),
+                "research_only": True,
+                "live_enabled": False,
+                "order_generation": "disabled_until_risk_gated_backtest",
+            }
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     # ------------------------------------------------------------------
     # R3: Feature Store endpoints
     # ------------------------------------------------------------------
@@ -2012,11 +2094,11 @@ def create_app():
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @router.get("/research/paper-review/pending")
-    async def list_pending_reviews():
+    async def list_pending_reviews(data_root: str = "data"):
         """List pending paper reviews."""
         from quant_us.research.paper_review_bridge import PaperReviewManager
 
-        mgr = PaperReviewManager()
+        mgr = PaperReviewManager(data_root=data_root)
         reviews = mgr.list_pending()
         return [
             {

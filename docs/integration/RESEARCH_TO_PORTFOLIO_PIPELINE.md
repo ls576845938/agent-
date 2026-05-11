@@ -27,6 +27,29 @@ The pipeline is intentionally narrow:
 9. Persist portfolio run artifacts.
 10. Feed the result back into the normal research, backtest, and promotion-gate path.
 
+## Orchestration Entry Point
+
+The repo now provides a single orchestration module for the research-to-execution consistency check:
+
+`python -m quant_us.research.orchestration.research_execution_pipeline`
+
+The orchestration layer reuses the existing adapter outputs instead of rebuilding them from scratch:
+
+1. import Qlib `pred_score` into `research_model_scores.parquet`
+2. compile the Qlib lineage manifest
+3. build expected returns and covariance
+4. optimize portfolio target weights
+5. import target weights into internal `TargetPosition` artifacts
+6. run the canonical event-driven backtest through the risk gate
+7. run cost-stress scenarios on the same target-position path
+8. run walk-forward slices on the same target-position path
+9. emit a pipeline result manifest and evidence pack
+
+Outputs are written under:
+
+- `artifacts/research_execution_runs/<pipeline_run_id>/pipeline_result_manifest.json`
+- `artifacts/research_execution_runs/<pipeline_run_id>/evidence_pack.json`
+
 ## Required Evidence
 
 Every run must preserve the following lineage:
@@ -73,6 +96,14 @@ Qlib output is research evidence.
 PyPortfolioOpt output is a target-weight proposal.
 
 Neither output may skip the internal event-driven backtest, cost stress, walk-forward checks, or promotion gate. Any later paper review must still be handled by the existing platform boundary.
+
+The orchestration layer fails closed when it cannot prove the target-weight path reached the internal risk gate correctly. Examples:
+
+- no target positions were generated
+- no risk checks were observed
+- any risk rejection occurred
+- any pending order intents remained at the end of the run
+- imported score data versions do not match the cleaned-bar manifests used for replay
 
 ## Phase Limit
 
