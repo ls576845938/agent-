@@ -333,9 +333,9 @@ class TestLiveEndpointGuard:
             LiveEndpointGuard.guard_submit_order("shadow_live", allow_live=False)
 
     def test_guard_submit_order_blocked_no_allow(self) -> None:
-        with pytest.raises(RuntimeError, match="allow_live_orders=False"):
+        with pytest.raises(RuntimeError, match="live mode"):
             LiveEndpointGuard.guard_submit_order("live", allow_live=False)
 
-    def test_guard_submit_order_passes_live_with_allow(self) -> None:
-        # Does not raise when mode=live and allow_live=True
-        LiveEndpointGuard.guard_submit_order("live", allow_live=True)
+    def test_guard_submit_order_blocks_live_even_with_allow(self) -> None:
+        with pytest.raises(RuntimeError, match="live mode"):
+            LiveEndpointGuard.guard_submit_order("live", allow_live=True)

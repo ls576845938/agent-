@@ -1,7 +1,7 @@
-"""One-Shot Live Pilot Executor & Submit-Once Lock for G5.
+"""One-Shot Live Pilot review executor and submit-once lock for G5.
 
-The ONE and ONLY entry point for the first real live order.
-After submission, the system freezes and prevents any second order.
+The current VNEXT live runtime is frozen. This module can evaluate and persist
+review state, but it must not construct a live broker or submit an order.
 """
 
 from __future__ import annotations
@@ -14,13 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from quant_us.core.enums import OrderSide, OrderType
-from quant_us.core.types import Order, new_id
-from quant_us.execution.alpaca_broker import (
-    AlpacaBroker,
-    AlpacaBrokerConfig,
-    LIVE_BASE_URL,
-)
+from quant_us.core.types import new_id
 from quant_us.live.live_order_audit import LiveOrderAuditTrail
 
 _logger = logging.getLogger("one_shot_executor")
@@ -235,7 +229,7 @@ class OneShotLivePilotExecutor:
             lock_path=f"{config.data_root}/live_pilot/submit_once_lock.json"
         )
         self.run_id: str = new_id("one_shot_run")
-        self._broker: AlpacaBroker | None = None
+        self._broker: Any | None = None
         self._ticket: dict[str, Any] = {}
 
     # ------------------------------------------------------------------
@@ -445,62 +439,11 @@ class OneShotLivePilotExecutor:
         return decision.to_dict()
 
     def _submit_once(self) -> dict[str, Any]:
-        if not self.config.execute_one_shot:
-            return {"submitted": False, "reason": "not_execute_one_shot"}
-
-        if not self.config.api_key or not self.config.api_secret:
-            return {"submitted": False, "reason": "no_live_credentials"}
-
-        if self.lock_manager.is_locked():
-            return {"submitted": False, "reason": "submit_once_lock_active"}
-
-        try:
-            broker_cfg = AlpacaBrokerConfig(
-                api_key=self.config.api_key,
-                api_secret=self.config.api_secret,
-                paper=False,
-                base_url=LIVE_BASE_URL,
-            )
-            self._broker = AlpacaBroker(broker_cfg)
-
-            symbol = self._ticket.get("symbol", self.config.symbols[0] if self.config.symbols else "SPY")
-            side = OrderSide(self._ticket.get("side", "buy"))
-            qty = float(self._ticket.get("quantity", 1.0))
-            limit_price = float(self._ticket.get("limit_price", 500.0))
-
-            order = Order(
-                timestamp_utc=_utc_now(),
-                strategy_id=self.config.strategy_id,
-                symbol=symbol,
-                side=side,
-                quantity=qty,
-                order_type=OrderType.LIMIT,
-                time_in_force="day",
-                client_order_id=new_id("coid"),
-                limit_price=limit_price,
-                run_id=self.run_id,
-            )
-
-            submitted = self._broker.submit_order(order)
-
-            self.audit_trail.record_submitted(
-                new_id("audit"), run_id=self.run_id,
-                approval_id=self.config.approve_live_id or self.config.ticket_id,
-                envelope_id=self.config.envelope_id,
-                client_order_id=order.client_order_id,
-                broker_order_id=submitted.broker_order_id,
-                symbol=symbol, side=self._ticket.get("side", "buy"),
-                qty=qty, notional=self._ticket.get("estimated_notional", 0),
-            )
-
-            return {
-                "submitted": True,
-                "client_order_id": order.client_order_id,
-                "broker_order_id": submitted.broker_order_id,
-            }
-        except Exception as exc:
-            self.audit_trail.record_blocked(new_id("audit"), [f"submit_failed: {exc}"])
-            return {"submitted": False, "reason": str(exc)}
+        return {
+            "submitted": False,
+            "reason": "live_runtime_frozen_no_order_submission",
+            "real_order_submission": False,
+        }
 
     def _apply_freeze(self) -> dict[str, Any]:
         freeze_path = Path(self.config.data_root) / "live_pilot" / "freeze_state.json"

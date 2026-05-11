@@ -114,9 +114,8 @@ class TestSessionGate:
             manual_confirm=True,
             dry_run=False,
         )
-        # After freeze, status is FROZEN which is not ARMED or ACTIVE_MANUAL_SUPERVISION
         assert decision.decision == "BLOCKED"
-        assert "session_not_armed" in decision.block_reasons
+        assert "session_frozen" in decision.block_reasons
 
     def test_gate_blocks_daily_order_exceeded(self, tmp_path: Path) -> None:
         """Daily order limit exceeded -> BLOCKED."""

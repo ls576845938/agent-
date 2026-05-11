@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
+import os
 from dataclasses import asdict
+from pathlib import Path
 from typing import Any
 
 from backend.app import __version__
@@ -40,6 +43,7 @@ from backend.app.api.schemas import (
     StrategyOptimizationRequest,
     StrategyOptimizationResponse,
     StrategyInfo,
+    SystemOverviewResponse,
     USDataSyncRequest,
     USDataSyncResponse,
     USEventBacktestRequest,
@@ -99,6 +103,309 @@ def _serialize_data_sync_result(result: Any):
     )
 
 
+def _system_overview_payload(data_root: str = "data") -> dict[str, Any]:
+    root = Path(data_root or "data")
+
+    from quant_us.live.paper_adapter_contract import audit_apca_paper_credentials
+    from quant_us.reports.minute_quality import inspect_minute_quality_report
+    from quant_us.reports.paper_validation import inspect_paper_validation_evidence
+    from quant_us.reports.portfolio_observability import inspect_portfolio_observability
+
+    registry = _fast_saved_evidence_registry(root)
+    minute_quality = inspect_minute_quality_report(root).to_dict()
+    paper_evidence = inspect_paper_validation_evidence(root)
+    portfolio_observability = inspect_portfolio_observability(root).to_dict()
+    paper_review = _fast_paper_review_status(root, registry)
+    credentials = audit_apca_paper_credentials()
+
+    registry_state = str(registry.get("registry_status", "missing"))
+    registry_integrity = str(registry.get("registry_integrity_status", "MISSING"))
+    paper_state = str(paper_evidence.readiness_state)
+    paper_review_status = str(paper_review.get("status", "UNKNOWN"))
+
+    next_actions: list[str] = []
+    if registry_state != "present" or registry_integrity != "PASS/STABLE":
+        next_actions.append("Run: quant-us research evidence-registry-rebuild --data-root <data_root>")
+    if str(minute_quality.get("status", "MISSING")) != "PASS":
+        next_actions.append("Load and validate 1m/5m/15m minute data before paper review.")
+    if paper_state != "PASS":
+        next_actions.append("Complete paper validation evidence before any paper submission gate.")
+    if not credentials.get("credentials_present"):
+        next_actions.append("Set APCA_API_KEY_ID and APCA_API_SECRET_KEY for Alpaca paper.")
+    if not credentials.get("base_url_valid"):
+        next_actions.append("Set APCA_API_BASE_URL=https://paper-api.alpaca.markets for paper only.")
+    if not bool(paper_review.get("entry_allowed", False)):
+        next_actions.append("Create or approve paper-review evidence from a canonical promotion result.")
+    if not next_actions:
+        next_actions.append("Paper-stage evidence is reviewable; keep live frozen and enable paper only through explicit gate.")
+
+    if registry_state != "present" or registry_integrity != "PASS/STABLE":
+        stage = "registry_blocked"
+        status = "blocked"
+    elif str(minute_quality.get("status", "MISSING")) != "PASS":
+        stage = "minute_data_quality_blocked"
+        status = "blocked"
+    elif paper_state != "PASS":
+        stage = "paper_validation_blocked"
+        status = "blocked"
+    elif not credentials.get("credentials_present") or not credentials.get("base_url_valid"):
+        stage = "paper_credentials_blocked"
+        status = "blocked"
+    elif not bool(paper_review.get("entry_allowed", False)):
+        stage = "paper_review_blocked"
+        status = "blocked"
+    else:
+        stage = "paper_ready_for_manual_gate"
+        status = "reviewable"
+
+    return {
+        "status": status,
+        "stage": stage,
+        "mode": "pre_live",
+        "data_root": str(root),
+        "health": {
+            "service": "quantstation-vnext",
+            "data_source_default": settings.default_data_source,
+            "fastapi_available": True,
+        },
+        "registry": {
+            "state": registry_state,
+            "integrity": registry_integrity,
+            "path": str(registry.get("registry_path", root / "research" / "evidence_registry.json")),
+            "counts": dict(registry.get("counts", {})),
+            "notes": list(registry.get("registry_notes", [])),
+            "rebuild_available": bool(registry.get("rebuild_available", True)),
+        },
+        "paper_validation": {
+            "state": paper_state,
+            "days_completed": paper_evidence.days_completed,
+            "days_required": paper_evidence.days_required,
+            "consecutive_clean_days": paper_evidence.consecutive_clean_days,
+            "submit_orders": paper_evidence.paper_submit_orders,
+            "audit_blocker_status": paper_evidence.audit_blocker_status,
+            "data_strict_status": paper_evidence.data_strict_status,
+            "recovery_status": paper_evidence.recovery_status,
+            "gaps": list(paper_evidence.gaps),
+            "evidence": [pointer.__dict__ for pointer in paper_evidence.evidence],
+        },
+        "minute_data_quality": minute_quality,
+        "paper_review": {
+            "status": paper_review_status,
+            "entry_allowed": bool(paper_review.get("entry_allowed", False)),
+            "manual_review_pending": bool(paper_review.get("manual_review_pending", False)),
+            "summary": str(paper_review.get("summary", "")),
+            "evidence_path": str(paper_review.get("evidence_path", "")),
+            "review_path": str(paper_review.get("review_path", "")),
+            "manifest_path": str(paper_review.get("manifest_path", "")),
+            "evidence_pack_path": str(paper_review.get("evidence_pack_path", "")),
+        },
+        "portfolio_observability": portfolio_observability,
+        "broker_credentials": {
+            "credentials_present": bool(credentials.get("credentials_present")),
+            "api_key_present": bool(credentials.get("api_key_present")),
+            "api_secret_present": bool(credentials.get("api_secret_present")),
+            "endpoint_kind": str(credentials.get("endpoint_kind", "unset")),
+            "base_url_valid": bool(credentials.get("base_url_valid")),
+            "allowed_base_url": str(credentials.get("allowed_base_url", "")),
+        },
+        "execution": {
+            "strategy_direct_broker_allowed": False,
+            "paper_submit_default": "disabled",
+            "paper_network_submit_confirmation": os.environ.get(
+                "QUANT_ALPACA_PAPER_NETWORK_SUBMIT",
+                "",
+            ).strip().lower() in {"1", "true", "yes"},
+            "paper_submit_requires": [
+                "paper mode",
+                "explicit submit_orders=True",
+                "QUANT_ALPACA_PAPER_NETWORK_SUBMIT=true",
+                "Alpaca paper credentials",
+                "paper base URL allowlist",
+                "approved paper-review evidence",
+                "startup sync artifact",
+                "broker recovery artifact",
+                "risk/OMS gate",
+            ],
+            "live_submit_allowed": False,
+            "live_state": "frozen",
+            "live_block_reason": "live_runtime_frozen",
+        },
+        "small_account": {
+            "profile": "personal_multi_strategy_portfolio",
+            "splitting_required": False,
+            "default_capital": settings.default_capital,
+            "suggested_max_order_notional": 100.0,
+            "suggested_max_daily_notional": 300.0,
+            "suggested_max_daily_order_count": 3,
+        },
+        "next_actions": next_actions,
+    }
+
+
+def _fast_saved_evidence_registry(root: Path) -> dict[str, Any]:
+    """Read the saved registry snapshot without rescanning all evidence files."""
+    registry_path = root / "research" / "evidence_registry.json"
+    if not registry_path.exists():
+        return {
+            "schema_version": "evidence_registry_v1",
+            "generated_at": "",
+            "registry_path": str(registry_path),
+            "registry_status": "missing",
+            "registry_integrity_status": "MISSING",
+            "registry_notes": ["missing_registry_snapshot"],
+            "rebuild_available": True,
+            "counts": {},
+            "evidence": {},
+            "chains": {},
+        }
+    try:
+        payload = json.loads(registry_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return {
+            "schema_version": "evidence_registry_v1",
+            "generated_at": "",
+            "registry_path": str(registry_path),
+            "registry_status": "conflict",
+            "registry_integrity_status": "CONFLICT",
+            "registry_notes": [f"registry_snapshot_unreadable:{exc}"],
+            "rebuild_available": True,
+            "counts": {},
+            "evidence": {},
+            "chains": {},
+        }
+    if not isinstance(payload, dict) or payload.get("schema_version") != "evidence_registry_v1":
+        return {
+            "schema_version": "evidence_registry_v1",
+            "generated_at": "",
+            "registry_path": str(registry_path),
+            "registry_status": "conflict",
+            "registry_integrity_status": "CONFLICT",
+            "registry_notes": ["registry_snapshot_schema_mismatch"],
+            "rebuild_available": True,
+            "counts": {},
+            "evidence": {},
+            "chains": {},
+        }
+    result = dict(payload)
+    result["registry_path"] = str(registry_path)
+    result["registry_status"] = "present"
+    result["registry_integrity_status"] = "PASS/STABLE"
+    result.setdefault("registry_notes", [])
+    result["rebuild_available"] = True
+    return result
+
+
+def _fast_paper_review_status(root: Path, registry: dict[str, Any]) -> dict[str, Any]:
+    registry_status = str(registry.get("registry_status", "missing"))
+    registry_integrity = str(registry.get("registry_integrity_status", "MISSING"))
+    registry_path = str(registry.get("registry_path", root / "research" / "evidence_registry.json"))
+    if registry_status != "present" or registry_integrity != "PASS/STABLE":
+        return {
+            "status": f"REGISTRY_{registry_status.upper()}",
+            "entry_allowed": False,
+            "manual_review_pending": False,
+            "summary": (
+                "Saved evidence registry is not ready; paper-review status is "
+                f"blocked until registry is explicitly rebuilt. Integrity={registry_integrity}."
+            ),
+            "evidence_path": registry_path,
+        }
+
+    evidence = registry.get("evidence", {})
+    if not isinstance(evidence, dict):
+        evidence = {}
+    if any(
+        isinstance(row, dict) and row.get("integrity_status") == "CONFLICT"
+        for section in evidence.values()
+        if isinstance(section, list)
+        for row in section
+    ):
+        return {
+            "status": "CONFLICT",
+            "entry_allowed": False,
+            "manual_review_pending": False,
+            "summary": "Saved evidence registry contains conflicting evidence; paper-review entry is blocked.",
+            "evidence_path": registry_path,
+        }
+
+    reviews = [row for row in evidence.get("paper_reviews", []) if isinstance(row, dict)]
+    manifests = [row for row in evidence.get("strategy_manifests", []) if isinstance(row, dict)]
+    latest_review = reviews[0] if reviews else None
+    latest_manifest = manifests[0] if manifests else None
+
+    if latest_review is not None:
+        details = latest_review.get("details", {})
+        if not isinstance(details, dict):
+            details = {}
+        status = str(details.get("status", latest_review.get("summary", "UNKNOWN")))
+        review_path = str(latest_review.get("path", ""))
+        evidence_pack_path = str(details.get("evidence_pack_path", "") or "")
+        if status == "PENDING_HUMAN_REVIEW":
+            return {
+                "status": status,
+                "entry_allowed": True,
+                "manual_review_pending": True,
+                "summary": "Paper review is in the human queue; manual review is still pending.",
+                "evidence_path": review_path,
+                "review_path": review_path,
+                "evidence_pack_path": evidence_pack_path,
+            }
+        if status == "APPROVED_FOR_PAPER_ONLY":
+            return {
+                "status": status,
+                "entry_allowed": True,
+                "manual_review_pending": False,
+                "summary": "Human paper review is approved for paper-only consideration; runtime gates still validate evidence before submit.",
+                "evidence_path": review_path,
+                "review_path": review_path,
+                "evidence_pack_path": evidence_pack_path,
+            }
+        return {
+            "status": status,
+            "entry_allowed": False,
+            "manual_review_pending": False,
+            "summary": f"Latest paper review is {status}; paper-review entry is not currently allowed from this evidence.",
+            "evidence_path": review_path,
+            "review_path": review_path,
+            "evidence_pack_path": evidence_pack_path,
+        }
+
+    if latest_manifest is not None:
+        details = latest_manifest.get("details", {})
+        if not isinstance(details, dict):
+            details = {}
+        status = str(details.get("promotion_status", latest_manifest.get("summary", "UNKNOWN")))
+        manifest_path = str(latest_manifest.get("path", ""))
+        if status in {"READY_FOR_PORTFOLIO_SIM", "PAPER_REVIEW_CANDIDATE"}:
+            return {
+                "status": "ELIGIBLE_FOR_PAPER_REVIEW",
+                "entry_allowed": True,
+                "manual_review_pending": False,
+                "summary": "Research evidence allows entry into PAPER_REVIEW, but no human review record exists yet.",
+                "evidence_path": manifest_path,
+                "manifest_path": manifest_path,
+            }
+        return {
+            "status": status,
+            "entry_allowed": False,
+            "manual_review_pending": False,
+            "summary": f"Latest strategy manifest status is {status}; no paper-review approval evidence is present.",
+            "evidence_path": manifest_path,
+            "manifest_path": manifest_path,
+        }
+
+    return {
+        "status": "NO_PAPER_REVIEW_EVIDENCE",
+        "entry_allowed": False,
+        "manual_review_pending": False,
+        "summary": "No paper-review or manifest evidence was found under the research data root.",
+        "evidence_path": registry_path,
+        "review_path": "",
+        "manifest_path": "",
+        "evidence_pack_path": "",
+    }
+
+
 def create_app():
     try:
         from fastapi import APIRouter, Depends, FastAPI, HTTPException, Response, Security
@@ -152,6 +459,10 @@ def create_app():
             data_source_default=settings.default_data_source,
             fastapi_available=True,
         )
+
+    @router.get("/system/overview", response_model=SystemOverviewResponse, dependencies=[Depends(verify_api_key)])
+    async def system_overview(data_root: str = "data") -> SystemOverviewResponse:
+        return SystemOverviewResponse.model_validate(_system_overview_payload(data_root))
 
     @router.get("/data/database", response_model=DatabaseStatusResponse, dependencies=[Depends(verify_api_key)])
     async def database_status(db_path: str = "") -> DatabaseStatusResponse:
@@ -489,21 +800,21 @@ def create_app():
     # ------------------------------------------------------------------
 
     @router.get("/research/experiments")
-    async def list_research_experiments():
+    async def list_research_experiments(data_root: str = "data"):
         """List research experiments from the lab."""
         try:
             from quant_us.research.lab.manifest import ExperimentManager
-            mgr = ExperimentManager()
+            mgr = ExperimentManager(data_root=data_root)
             return mgr.list_experiments()
         except Exception:
             return []
 
     @router.get("/research/candidates")
-    async def list_research_candidates():
+    async def list_research_candidates(data_root: str = "data"):
         """List strategy candidates from the lab."""
         try:
             from quant_us.research.lab.manifest import ExperimentManager
-            mgr = ExperimentManager()
+            mgr = ExperimentManager(data_root=data_root)
             return mgr.list_candidates()
         except Exception:
             return []
@@ -528,19 +839,310 @@ def create_app():
         )
 
     @router.get("/research/candidates/{candidate_id}/lineage")
-    async def candidate_lineage(candidate_id: str):
+    async def candidate_lineage(candidate_id: str, data_root: str = "data"):
         """Get candidate lineage chain."""
         from quant_us.research.lab.manifest import ExperimentManager
-        mgr = ExperimentManager()
+        mgr = ExperimentManager(data_root=data_root)
         return mgr.get_lineage(candidate_id)
 
     @router.post("/research/candidates/{candidate_id}/promotion-gate")
-    async def check_promotion_gate(candidate_id: str):
+    async def check_promotion_gate(candidate_id: str, request: dict | None = None):
         """Evaluate candidate through research promotion gate."""
         from quant_us.research.automation.promotion_gate import ResearchPromotionGate
-        gate = ResearchPromotionGate()
+        payload = request or {}
+        gate = ResearchPromotionGate(data_root=str(payload.get("data_root") or "data"))
         result = gate.evaluate(candidate_id)
         return result.__dict__
+
+    @router.post("/research/auto-cycle")
+    async def run_research_auto_cycle(request: dict):
+        """Run the research-only closed loop from HTTP.
+
+        This mirrors the CLI auto-cycle: experiment/candidate generation,
+        evidence materialization, promotion-gate evaluation, and evidence
+        registry rebuild. It never starts paper/live trading.
+        """
+        from fastapi import HTTPException
+        from quant_us.research.automation.pipeline import ResearchAutomationPipeline
+        from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+        from quant_us.research.evidence_pack import EvidencePackGenerator
+        from quant_us.research.evidence_registry import rebuild_evidence_registry
+
+        data_root = str(request.get("data_root") or "data")
+        config = request.get("config")
+        if not isinstance(config, dict):
+            config = {
+                "experiment_name": request.get("experiment_name") or request.get("family") or "",
+                "strategy_id": request.get("strategy_id") or "",
+                "symbols": request.get("symbols") or [],
+                "params": request.get("params") or {},
+                "param_grid": request.get("param_grid") or {},
+                "start_date": request.get("start_date") or request.get("start") or "",
+                "end_date": request.get("end_date") or request.get("end") or "",
+                "data_version": request.get("data_version") or "",
+                "feature_version": request.get("feature_version") or "",
+                "timeframe": request.get("timeframe") or request.get("bar_size") or "1d",
+            }
+        if not config.get("strategy_id"):
+            raise HTTPException(status_code=400, detail="strategy_id is required")
+        if not config.get("symbols"):
+            raise HTTPException(status_code=400, detail="symbols are required")
+
+        result = ResearchAutomationPipeline(data_root=data_root).run(config)
+        candidate_ids = [str(value) for value in result.get("candidate_ids", [])]
+
+        evidence_pack_paths: dict[str, str] = {}
+        if not request.get("skip_evidence_pack", False):
+            generator = EvidencePackGenerator(data_root=data_root)
+            for candidate_id in candidate_ids:
+                try:
+                    evidence_pack_paths[candidate_id] = str(generator.save(candidate_id))
+                except Exception as exc:
+                    evidence_pack_paths[candidate_id] = f"error: {exc}"
+
+        gate_results: dict[str, Any] = {}
+        gate = ResearchPromotionGate(data_root=data_root)
+        for candidate_id in candidate_ids:
+            try:
+                gate_result = gate.evaluate(candidate_id)
+                gate_results[candidate_id] = gate_result.__dict__
+            except Exception as exc:
+                gate_results[candidate_id] = {
+                    "decision": "BLOCKED",
+                    "reasons": [str(exc)],
+                    "warnings": [],
+                    "evidence": {},
+                }
+
+        registry: dict[str, Any] = {}
+        if not request.get("skip_registry_rebuild", False):
+            registry = rebuild_evidence_registry(data_root, write=True)
+
+        return {
+            "status": result.get("status", "unknown"),
+            "pipeline_result": result,
+            "candidate_ids": candidate_ids,
+            "evidence_pack_paths": evidence_pack_paths,
+            "promotion_gate_results": gate_results,
+            "registry": registry,
+            "note": "research-only; no PAPER_ELIGIBLE promotion and no paper/live order path",
+        }
+
+    @router.post("/research/candidates/{candidate_id}/evidence/materialize")
+    async def materialize_candidate_evidence(candidate_id: str, request: dict | None = None):
+        """Materialize canonical candidate evidence for promotion review."""
+        from quant_us.research.automation.evidence_materializer import ResearchEvidenceMaterializer
+
+        payload = request or {}
+        result = ResearchEvidenceMaterializer(
+            data_root=str(payload.get("data_root") or "data")
+        ).materialize_candidate(
+            candidate_id,
+            create_strategy_manifest=bool(payload.get("create_strategy_manifest", True)),
+            run_promotion_gate=bool(payload.get("run_promotion_gate", True)),
+        )
+        return asdict(result)
+
+    @router.post("/research/candidates/{candidate_id}/evidence-pack")
+    async def save_candidate_evidence_pack(candidate_id: str, request: dict | None = None):
+        """Generate and persist a candidate evidence pack."""
+        from quant_us.research.evidence_pack import EvidencePackGenerator
+
+        payload = request or {}
+        generator = EvidencePackGenerator(data_root=str(payload.get("data_root") or "data"))
+        path = generator.save(candidate_id)
+        return {
+            "candidate_id": candidate_id,
+            "evidence_pack_path": str(path),
+            "status": "saved",
+        }
+
+    @router.get("/research/strategy-manifests")
+    async def list_strategy_manifests(status: str = "", data_root: str = "data"):
+        """List frozen strategy manifests produced from research candidates."""
+        from quant_us.research.strategy_manifest import StrategyManifestManager
+
+        manager = StrategyManifestManager(data_root=data_root)
+        return [asdict(manifest) for manifest in manager.list_manifests(status=status)]
+
+    @router.get("/research/evidence-registry")
+    async def get_research_evidence_registry(data_root: str = "data", rebuild: bool = False):
+        """Inspect the research evidence registry."""
+        from quant_us.research.evidence_registry import inspect_evidence_registry
+
+        return inspect_evidence_registry(
+            data_root,
+            use_saved=not rebuild,
+            rebuild_if_missing=True,
+        )
+
+    @router.post("/research/evidence-registry/rebuild")
+    async def rebuild_research_evidence_registry(request: dict | None = None):
+        """Rebuild and save the research evidence registry."""
+        from quant_us.research.evidence_registry import rebuild_evidence_registry
+
+        payload = request or {}
+        return rebuild_evidence_registry(str(payload.get("data_root") or "data"), write=True)
+
+    @router.get("/research/factors")
+    async def list_research_factors():
+        """List registered research factors."""
+        from quant_us.factors.definition import FactorLibrary
+
+        return [asdict(factor) for factor in FactorLibrary().list_all()]
+
+    @router.post("/research/factors/evaluate")
+    async def evaluate_research_factor(request: dict):
+        """Evaluate a factor with optional intraday bar_size/timeframe."""
+        from quant_us.factors.evaluation import FactorEvaluator
+
+        factor_id = str(request.get("factor_id") or request.get("factor") or "")
+        if not factor_id:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail="factor_id is required")
+        symbols = request.get("symbols") or []
+        if isinstance(symbols, str):
+            symbols = [s.strip().upper() for s in symbols.split(",") if s.strip()]
+        result = FactorEvaluator(data_root=str(request.get("data_root") or "data")).evaluate(
+            factor_id=factor_id,
+            symbols=list(symbols),
+            start=str(request.get("start") or "2020-01-01"),
+            end=str(request.get("end") or ""),
+            forward_period=int(request.get("forward_period") or 5),
+            bar_size=str(request.get("bar_size") or "1d"),
+            timeframe=str(request.get("timeframe") or request.get("bar_size") or "1d"),
+        )
+        return asdict(result)
+
+    @router.post("/research/factors/mine")
+    async def mine_research_factors(request: dict):
+        """Batch-mine factors, de-correlate them, and emit strategy configs."""
+        from quant_us.research.automation.factor_mining import FactorMiningEngine
+
+        symbols = request.get("symbols") or []
+        if isinstance(symbols, str):
+            symbols = [s.strip().upper() for s in symbols.split(",") if s.strip()]
+        bar_sizes = request.get("bar_sizes") or request.get("bar_size") or ["1d"]
+        if isinstance(bar_sizes, str):
+            bar_sizes = [s.strip().lower() for s in bar_sizes.split(",") if s.strip()]
+        factor_ids = request.get("factor_ids") or []
+        if isinstance(factor_ids, str):
+            factor_ids = [s.strip() for s in factor_ids.split(",") if s.strip()]
+        result = FactorMiningEngine(data_root=str(request.get("data_root") or "data")).mine(
+            symbols=list(symbols),
+            start=str(request.get("start") or "2020-01-01"),
+            end=str(request.get("end") or ""),
+            bar_sizes=list(bar_sizes),
+            factor_ids=list(factor_ids) or None,
+            forward_period=int(request.get("forward_period") or 5),
+            min_abs_rank_ic=float(request.get("min_abs_rank_ic") or 0.01),
+            min_observations=int(request.get("min_observations") or 20),
+            max_abs_correlation=float(request.get("max_abs_correlation") or 0.90),
+            max_selected=int(request.get("max_selected") or 8),
+        )
+        return result.to_dict()
+
+    @router.post("/research/factors/mine-and-run")
+    async def mine_and_run_research_factors(request: dict):
+        """Mine factors, then run research-only backtest gates for selected configs."""
+        from quant_us.research.automation.factor_mining import FactorMiningEngine
+        from quant_us.research.automation.pipeline import ResearchAutomationPipeline
+        from quant_us.research.evidence_registry import rebuild_evidence_registry
+
+        data_root = str(request.get("data_root") or "data")
+        symbols = request.get("symbols") or []
+        if isinstance(symbols, str):
+            symbols = [s.strip().upper() for s in symbols.split(",") if s.strip()]
+        bar_sizes = request.get("bar_sizes") or request.get("bar_size") or ["1d"]
+        if isinstance(bar_sizes, str):
+            bar_sizes = [s.strip().lower() for s in bar_sizes.split(",") if s.strip()]
+        factor_ids = request.get("factor_ids") or []
+        if isinstance(factor_ids, str):
+            factor_ids = [s.strip() for s in factor_ids.split(",") if s.strip()]
+
+        start = str(request.get("start") or "2020-01-01")
+        end = str(request.get("end") or "")
+        mining = FactorMiningEngine(data_root=data_root).mine(
+            symbols=list(symbols),
+            start=start,
+            end=end,
+            bar_sizes=list(bar_sizes),
+            factor_ids=list(factor_ids) or None,
+            forward_period=int(request.get("forward_period") or 5),
+            min_abs_rank_ic=float(request.get("min_abs_rank_ic") or 0.01),
+            min_observations=int(request.get("min_observations") or 20),
+            max_abs_correlation=float(request.get("max_abs_correlation") or 0.90),
+            max_selected=int(request.get("max_selected") or 8),
+        )
+
+        max_runs = max(0, int(request.get("max_runs") or len(mining.strategy_configs)))
+        pipeline_results: list[dict[str, Any]] = []
+        candidate_ids: list[str] = []
+        pipeline = ResearchAutomationPipeline(data_root=data_root)
+        for strategy_config in mining.strategy_configs[:max_runs]:
+            params = dict(strategy_config.get("params", {}))
+            factor_name = str(params.get("factor_name") or "factor")
+            timeframe = str(strategy_config.get("timeframe") or strategy_config.get("bar_size") or "1d")
+            result = pipeline.run(
+                {
+                    "experiment_name": f"factor_mining_{factor_name}_{timeframe}",
+                    "strategy_id": "factor_rank",
+                    "symbols": list(symbols),
+                    "params": params,
+                    "start_date": start,
+                    "end_date": end,
+                    "data_version": str(request.get("data_version") or ""),
+                    "feature_version": str(request.get("feature_version") or ""),
+                    "timeframe": timeframe,
+                }
+            )
+            pipeline_results.append(result)
+            candidate_ids.extend(str(value) for value in result.get("candidate_ids", []))
+
+        registry: dict[str, Any] = {}
+        if not request.get("skip_registry_rebuild", False):
+            registry = rebuild_evidence_registry(data_root, write=True)
+
+        return {
+            "status": "completed",
+            "factor_mining": mining.to_dict(),
+            "pipeline_results": pipeline_results,
+            "candidate_ids": candidate_ids,
+            "registry": registry,
+            "note": "research-only factor mining cycle; no paper/live order path",
+        }
+
+    @router.post("/research/factors/compute")
+    async def compute_research_factor(request: dict):
+        """Compute factor values and return a bounded preview."""
+        from quant_us.factors.pipeline import FactorPipeline
+
+        factor_ids = request.get("factor_ids") or request.get("factors") or []
+        if isinstance(factor_ids, str):
+            factor_ids = [s.strip() for s in factor_ids.split(",") if s.strip()]
+        if not factor_ids:
+            factor_id = str(request.get("factor_id") or request.get("factor") or "")
+            factor_ids = [factor_id] if factor_id else []
+        symbols = request.get("symbols") or []
+        if isinstance(symbols, str):
+            symbols = [s.strip().upper() for s in symbols.split(",") if s.strip()]
+        frame = FactorPipeline(data_root=str(request.get("data_root") or "data")).compute(
+            factor_ids=list(factor_ids),
+            symbols=list(symbols),
+            start=str(request.get("start") or "2020-01-01"),
+            end=str(request.get("end") or ""),
+            bar_size=str(request.get("bar_size") or "1d"),
+            timeframe=str(request.get("timeframe") or request.get("bar_size") or "1d"),
+        )
+        limit = max(1, min(int(request.get("limit") or 50), 500))
+        return {
+            "factor_ids": list(factor_ids),
+            "symbols": list(symbols),
+            "bar_size": str(request.get("bar_size") or "1d"),
+            "timeframe": str(request.get("timeframe") or request.get("bar_size") or "1d"),
+            "row_count": int(len(frame)),
+            "preview": frame.head(limit).to_dict(orient="records") if not frame.empty else [],
+        }
 
     # ------------------------------------------------------------------
     # R4: Research orchestration endpoints
@@ -620,6 +1222,8 @@ def create_app():
             symbols=request.symbols,
             start=request.start,
             end=request.end,
+            bar_size=request.bar_size,
+            timeframe=request.timeframe or request.bar_size,
         )
         return FeatureSnapshotResponse(**snapshot.__dict__)
 

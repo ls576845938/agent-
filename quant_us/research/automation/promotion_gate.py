@@ -16,6 +16,7 @@ Decision outcomes:
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass, field, fields
 from pathlib import Path
@@ -150,8 +151,32 @@ class ResearchPromotionGate:
         )
         scorecard_exists = scorecard_path.exists()
         evidence["scorecard_exists"] = scorecard_exists
+        evidence["scorecard_path"] = str(scorecard_path)
         if not scorecard_exists:
             reasons.append("missing_scorecard: robust scorecard not found")
+
+        self._evaluate_strategy_manifest(
+            candidate_id=candidate_id,
+            evidence=evidence,
+            reasons=reasons,
+        )
+
+        walk_forward_artifact = self._load_canonical_research_artifact(
+            candidate_id=candidate_id,
+            artifact_name="walk_forward",
+            candidate_data=candidate_data,
+            metrics=metrics,
+            evidence=evidence,
+            reasons=reasons,
+        )
+        cost_stress_artifact = self._load_canonical_research_artifact(
+            candidate_id=candidate_id,
+            artifact_name="cost_stress",
+            candidate_data=candidate_data,
+            metrics=metrics,
+            evidence=evidence,
+            reasons=reasons,
+        )
 
         from quant_us.research.automation.overfit import OverfitDetector
 
@@ -181,11 +206,19 @@ class ResearchPromotionGate:
             reasons=reasons,
         )
 
-        wf_pass_rate = float(metrics.get("walk_forward_pass_rate", -1.0))
+        wf_pass_rate = self._artifact_metric(
+            walk_forward_artifact,
+            metric_names=("walk_forward_pass_rate", "pass_rate"),
+            nested=("stability", "pass_rate_pct"),
+            default=metrics.get("walk_forward_pass_rate", -1.0),
+        )
         wf_run = wf_pass_rate >= 0.0
         evidence["walk_forward_run"] = wf_run
+        evidence["walk_forward_pass_rate"] = wf_pass_rate
         if not wf_run:
-            warnings.append("needs_walk_forward: walk-forward analysis not run")
+            reasons.append(
+                "missing_walk_forward_result: persisted canonical walk-forward artifact must include a pass rate"
+            )
 
         trade_count = int(metrics.get("trade_count", 0))
         evidence["trade_count"] = trade_count
@@ -195,7 +228,12 @@ class ResearchPromotionGate:
                 f"(need > 10 for statistical significance)"
             )
 
-        cost_sensitivity = float(metrics.get("cost_sensitivity", 0.0))
+        cost_sensitivity = self._artifact_metric(
+            cost_stress_artifact,
+            metric_names=("cost_sensitivity",),
+            nested=(),
+            default=metrics.get("cost_sensitivity", 0.0),
+        )
         evidence["cost_sensitivity"] = cost_sensitivity
         if cost_sensitivity > 0.5:
             reasons.append(
@@ -243,7 +281,14 @@ class ResearchPromotionGate:
                 "(>= 0.70 threshold)"
             )
 
-        stress_survival_rate = float(metrics.get("stress_survival_rate", 0.0))
+        stress_survival_rate = self._artifact_metric(
+            cost_stress_artifact,
+            metric_names=("stress_survival_rate", "survival_rate"),
+            nested=("stability", "survival_rate_pct"),
+            default=metrics.get("stress_survival_rate", 0.0),
+        )
+        if stress_survival_rate > 1.0:
+            stress_survival_rate = stress_survival_rate / 100.0
         evidence["stress_survival_rate"] = stress_survival_rate
         if stress_survival_rate <= 0.70:
             reasons.append(
@@ -268,6 +313,28 @@ class ResearchPromotionGate:
         else:
             decision = "READY_FOR_PAPER_REVIEW"
 
+        if decision == "READY_FOR_PAPER_REVIEW":
+            persisted_path = self._persist_promotion_result(
+                candidate_id=candidate_id,
+                decision=decision,
+                reasons=reasons,
+                warnings=warnings,
+                needs_more_research=needs_more_research,
+                evidence=evidence,
+            )
+            if persisted_path:
+                evidence["promotion_result_exists"] = True
+                evidence["promotion_result_path"] = str(persisted_path)
+                evidence["promotion_result_sha256"] = self._file_sha256(persisted_path)
+            else:
+                evidence["promotion_result_exists"] = False
+                reasons.append(
+                    "missing_persisted_promotion_result: READY_FOR_PAPER_REVIEW requires persisted gate evidence"
+                )
+                decision = "BLOCKED"
+        else:
+            evidence["promotion_result_exists"] = False
+
         return PromotionGateResult(
             candidate_id=candidate_id,
             decision=decision,
@@ -288,6 +355,212 @@ class ResearchPromotionGate:
         if not path.exists():
             return None
         return json.loads(path.read_text(encoding="utf-8"))
+
+    def _evaluate_strategy_manifest(
+        self,
+        *,
+        candidate_id: str,
+        evidence: dict[str, Any],
+        reasons: list[str],
+    ) -> None:
+        manifests_dir = self.data_root / "research" / "manifests"
+        matches: list[tuple[Path, dict[str, Any]]] = []
+        if manifests_dir.exists():
+            for manifest_path in sorted(manifests_dir.glob("*/manifest.json")):
+                try:
+                    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                if payload.get("source_candidate_id") == candidate_id:
+                    matches.append((manifest_path, payload))
+
+        evidence["strategy_manifest_exists"] = bool(matches)
+        evidence["strategy_manifest_count"] = len(matches)
+        evidence["strategy_manifest_paths"] = [str(path) for path, _ in matches]
+        if not matches:
+            reasons.append(
+                "missing_strategy_manifest: canonical strategy manifest not found for candidate"
+            )
+            return
+        if len(matches) > 1:
+            reasons.append(
+                "strategy_manifest_conflict: multiple strategy manifests reference candidate"
+            )
+            return
+
+        manifest_path, payload = matches[0]
+        evidence["strategy_manifest_path"] = str(manifest_path)
+        evidence["strategy_manifest_id"] = str(
+            payload.get("strategy_candidate_id", manifest_path.parent.name)
+        )
+        evidence["strategy_manifest_status"] = str(payload.get("promotion_status", ""))
+
+    def _load_canonical_research_artifact(
+        self,
+        *,
+        candidate_id: str,
+        artifact_name: str,
+        candidate_data: dict[str, Any],
+        metrics: dict[str, Any],
+        evidence: dict[str, Any],
+        reasons: list[str],
+    ) -> dict[str, Any] | None:
+        canonical_path = self._canonical_research_artifact_path(
+            candidate_id, artifact_name
+        )
+        canonical_path_text = str(canonical_path.relative_to(self.data_root))
+        path_key = f"{artifact_name}_result_path"
+        raw_path = candidate_data.get(path_key) or metrics.get(path_key) or ""
+        inline_artifact = (
+            candidate_data.get(artifact_name)
+            or candidate_data.get(f"{artifact_name}_result")
+            or metrics.get(artifact_name)
+            or metrics.get(f"{artifact_name}_result")
+        )
+
+        evidence[f"{artifact_name}_artifact_expected_path"] = canonical_path_text
+        evidence[f"{artifact_name}_artifact_path"] = str(raw_path or "")
+        evidence[f"{artifact_name}_artifact_inline"] = isinstance(inline_artifact, dict)
+        evidence[f"{artifact_name}_artifact_exists"] = False
+
+        if not raw_path:
+            if isinstance(inline_artifact, dict):
+                reasons.append(
+                    f"inline_{artifact_name}_artifact_not_allowed: promotion requires persisted canonical {artifact_name} evidence"
+                )
+            reasons.append(
+                f"missing_{artifact_name}_artifact: READY_FOR_PAPER_REVIEW requires persisted canonical {artifact_name} evidence at {canonical_path_text}"
+            )
+            return None
+
+        artifact_path = self._resolve_research_artifact_path(raw_path)
+        evidence[f"{artifact_name}_artifact_resolved_path"] = str(artifact_path)
+        if not self._same_path(artifact_path, canonical_path):
+            reasons.append(
+                f"non_canonical_{artifact_name}_artifact_path: promotion only accepts {canonical_path_text}"
+            )
+            return None
+        if not artifact_path.exists():
+            reasons.append(
+                f"{artifact_name}_artifact_path_missing: artifact not found at {artifact_path}"
+            )
+            return None
+
+        try:
+            artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            reasons.append(f"{artifact_name}_artifact_unreadable: {artifact_path}: {exc}")
+            return None
+        if not isinstance(artifact, dict):
+            reasons.append(f"{artifact_name}_artifact_invalid: expected JSON object")
+            return None
+
+        evidence[f"{artifact_name}_artifact_exists"] = True
+        evidence[f"{artifact_name}_artifact_sha256"] = self._file_sha256(artifact_path)
+        status = str(artifact.get("status", "completed") or "completed").lower()
+        evidence[f"{artifact_name}_artifact_status"] = status
+        if status not in {"completed", "pass", "passed", "ok"}:
+            reasons.append(
+                f"{artifact_name}_artifact_not_completed: status={status or 'unknown'}"
+            )
+        return artifact
+
+    def _canonical_research_artifact_path(
+        self,
+        candidate_id: str,
+        artifact_name: str,
+    ) -> Path:
+        return (
+            self.data_root
+            / "research"
+            / artifact_name
+            / candidate_id
+            / "result.json"
+        )
+
+    def _resolve_research_artifact_path(self, raw_path: Any) -> Path:
+        candidate = Path(str(raw_path))
+        if candidate.exists() or candidate.is_absolute():
+            return candidate
+        return self.data_root / candidate
+
+    def _persist_promotion_result(
+        self,
+        *,
+        candidate_id: str,
+        decision: str,
+        reasons: list[str],
+        warnings: list[str],
+        needs_more_research: list[str],
+        evidence: dict[str, Any],
+    ) -> Path | None:
+        path = (
+            self.data_root
+            / "research"
+            / "pipeline_results"
+            / f"promotion_gate_{candidate_id}.json"
+        )
+        payload = {
+            "pipeline_id": f"promotion_gate_{candidate_id}",
+            "created_at": self._now_iso(),
+            "status": "completed",
+            "paper_review_ready": [candidate_id],
+            "promotion_gate_results": {
+                candidate_id: {
+                    "decision": decision,
+                    "reasons": list(reasons),
+                    "warnings": list(warnings),
+                    "needs_more_research": list(needs_more_research),
+                    "evidence": dict(evidence),
+                }
+            },
+        }
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(
+                json.dumps(payload, indent=2, default=str, sort_keys=True),
+                encoding="utf-8",
+            )
+        except OSError:
+            return None
+        return path
+
+    @staticmethod
+    def _artifact_metric(
+        artifact: dict[str, Any] | None,
+        *,
+        metric_names: tuple[str, ...],
+        nested: tuple[str, ...],
+        default: Any,
+    ) -> float:
+        value = default
+        if isinstance(artifact, dict):
+            metrics = artifact.get("metrics", {})
+            if not isinstance(metrics, dict):
+                metrics = {}
+            for name in metric_names:
+                if name in artifact:
+                    value = artifact[name]
+                    break
+                if name in metrics:
+                    value = metrics[name]
+                    break
+            else:
+                if nested:
+                    container = artifact.get(nested[0], {})
+                    if isinstance(container, dict) and nested[1] in container:
+                        value = container[nested[1]]
+        return float(value)
+
+    @staticmethod
+    def _file_sha256(path: Path) -> str:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+
+    @staticmethod
+    def _now_iso() -> str:
+        from quant_us.core.clock import utc_now
+
+        return utc_now().isoformat()
 
     def _load_backtest_manifest(
         self,

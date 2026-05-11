@@ -247,6 +247,23 @@ class HealthResponse(BaseModel):
     fastapi_available: bool
 
 
+class SystemOverviewResponse(BaseModel):
+    status: str
+    stage: str
+    mode: str = "pre_live"
+    data_root: str
+    health: Dict[str, Any] = Field(default_factory=dict)
+    registry: Dict[str, Any] = Field(default_factory=dict)
+    paper_validation: Dict[str, Any] = Field(default_factory=dict)
+    minute_data_quality: Dict[str, Any] = Field(default_factory=dict)
+    paper_review: Dict[str, Any] = Field(default_factory=dict)
+    portfolio_observability: Dict[str, Any] = Field(default_factory=dict)
+    broker_credentials: Dict[str, Any] = Field(default_factory=dict)
+    execution: Dict[str, Any] = Field(default_factory=dict)
+    small_account: Dict[str, Any] = Field(default_factory=dict)
+    next_actions: List[str] = Field(default_factory=list)
+
+
 class DataSyncRequest(BaseModel):
     exchange: str = "binance_spot"
     symbol: str = "BTCUSDT"
@@ -535,6 +552,8 @@ class FeatureSnapshotResponse(BaseModel):
     data_version: str
     config_hash: str
     created_at: str
+    bar_size: str = "1d"
+    timeframe: str = "1d"
     row_count: int = 0
     checksum: str = ""
     path: str = ""
@@ -546,6 +565,8 @@ class FeatureBuildRequest(BaseModel):
     symbols: List[str]
     start: str
     end: str
+    bar_size: str = "1d"
+    timeframe: str = ""
     data_root: str = "data"
 
 

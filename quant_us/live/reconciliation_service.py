@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from quant_us.backtest.ledger_pnl import build_ledger_reconciliation_artifact
 from quant_us.core.enums import OrderSide, OrderStatus, OrderType, TimeInForce
 from quant_us.core.types import AccountState, Fill, Order, Position
 from quant_us.execution.broker_base import BrokerBase
@@ -126,6 +127,12 @@ class ReconciliationService:
         report_filename = f"recon_{now.strftime('%Y%m%d_%H%M%S')}.json"
         report_path = report_dir / report_filename
 
+        artifact = build_ledger_reconciliation_artifact(
+            self.ledger,
+            initial_cash=initial_cash,
+        )
+        artifact_path = self.ledger.write_reconciliation_artifact(artifact)
+
         report_data: dict[str, Any] = {
             "timestamp": now.isoformat(),
             "status": status,
@@ -135,6 +142,8 @@ class ReconciliationService:
             "fill_diffs": fill_diffs,
             "halt_new_orders": halt_new_orders,
             "alert_sent": alert_sent,
+            "ledger_artifact_path": str(artifact_path),
+            "ledger_artifact_hash": artifact.artifact_hash,
         }
         report_path.write_text(json.dumps(report_data, indent=2, default=str))
 

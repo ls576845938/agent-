@@ -32,8 +32,11 @@ class FeaturePipeline:
     def build_bar_factors(
         self,
         bars: pd.DataFrame,
+        *,
         universe: str = "default",
         version: str = "v1",
+        bar_size: str = "1d",
+        timeframe: str | None = None,
     ) -> FeatureBuildResult:
         created_at = utc_now()
         try:
@@ -42,6 +45,7 @@ class FeaturePipeline:
                 return FeatureBuildResult(new_id("feat"), "completed", 0, [], version, created_at)
             working = bars.copy()
             working["timestamp_utc"] = pd.to_datetime(working["timestamp_utc"], utc=True)
+            effective_timeframe = timeframe or bar_size
             for symbol, group in working.sort_values("timestamp_utc").groupby("symbol"):
                 close = group["close"].astype(float)
                 volume = group["volume"].astype(float)
@@ -51,18 +55,22 @@ class FeaturePipeline:
                     "average_dollar_volume_20": average_dollar_volume(close, volume, window=20),
                 }
                 dates = group["timestamp_utc"].dt.date
+                timestamps = group["timestamp_utc"]
                 for factor_name, series in factors.items():
-                    for date_value, value in zip(dates, series):
+                    for timestamp_value, date_value, value in zip(timestamps, dates, series):
                         if pd.isna(value):
                             continue
                         values.append(
                             {
                                 "date": date_value,
+                                "timestamp_utc": timestamp_value,
                                 "symbol": symbol,
                                 "factor_name": factor_name,
                                 "factor_value": float(value),
                                 "universe": universe,
                                 "version": version,
+                                "bar_size": bar_size,
+                                "timeframe": effective_timeframe,
                                 "created_at": created_at,
                             }
                         )

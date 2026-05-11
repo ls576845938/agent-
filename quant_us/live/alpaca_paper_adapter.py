@@ -28,6 +28,7 @@ class AlpacaPaperAdapterConfig:
     base_url: str = ALLOWED_ALPACA_PAPER_BASE_URLS[0]
     timeout_seconds: float = 20.0
     network_submit_enabled: bool = False
+    network_submit_requested: bool = False
 
 
 class AlpacaPaperBrokerAdapter:
@@ -35,8 +36,8 @@ class AlpacaPaperBrokerAdapter:
 
     The adapter is intentionally not auto-wired into PaperRuntime. Construction
     requires explicit credentials and the exact paper endpoint allowlist. Network
-    order submission is disabled by default and needs an explicit constructor
-    flag plus the ``QUANT_ALPACA_PAPER_NETWORK_SUBMIT`` confirmation flag.
+    writes require both a runtime request and a separate environment
+    confirmation so paper submission cannot be enabled by a stale flag alone.
     """
 
     broker_name = "alpaca_paper"
@@ -85,21 +86,28 @@ class AlpacaPaperBrokerAdapter:
         if session is None and importlib.util.find_spec("requests") is None:
             raise RuntimeError("alpaca_paper_client_dependency_missing")
 
-        submit_enabled = (
-            bool(network_submit_requested)
-            and _env_true(env, ALPACA_PAPER_NETWORK_SUBMIT_ENV)
-        )
+        submit_runtime_requested = bool(network_submit_requested)
+        submit_env_confirmed = _env_true(env, ALPACA_PAPER_NETWORK_SUBMIT_ENV)
+        submit_requested = submit_runtime_requested or submit_env_confirmed
+        submit_enabled = submit_runtime_requested and submit_env_confirmed
         return cls(
             AlpacaPaperAdapterConfig(
                 api_key=env["APCA_API_KEY_ID"],
                 api_secret=env["APCA_API_SECRET_KEY"],
                 base_url=str(audit["normalized_base_url"]),
                 network_submit_enabled=submit_enabled,
+                network_submit_requested=submit_requested,
             ),
             session=session,
         )
 
     def readiness_report(self) -> dict[str, object]:
+        if self.config.network_submit_enabled:
+            submit_blocked_reason = ""
+        elif self.config.network_submit_requested:
+            submit_blocked_reason = "alpaca_paper_network_submit_confirmation_missing"
+        else:
+            submit_blocked_reason = "alpaca_paper_network_submit_disabled_fail_closed"
         return {
             "adapter": self.broker_name,
             "paper_only": True,
@@ -110,6 +118,11 @@ class AlpacaPaperBrokerAdapter:
             "client_dependency_present": self._session is not None
             or importlib.util.find_spec("requests") is not None,
             "network_submit_enabled": self.config.network_submit_enabled,
+            "network_submit_requested_but_ignored": (
+                self.config.network_submit_requested
+                and not self.config.network_submit_enabled
+            ),
+            "submit_blocked_reason": submit_blocked_reason,
             "fail_closed_without_submit_confirmation": not self.config.network_submit_enabled,
         }
 
@@ -139,12 +152,18 @@ class AlpacaPaperBrokerAdapter:
 
     def submit_order(self, order: Order) -> Order:
         if not self.config.network_submit_enabled:
-            raise RuntimeError("alpaca_paper_network_submit_disabled_fail_closed")
+            raise RuntimeError(
+                "alpaca_paper_network_submit_disabled_fail_closed:"
+                "alpaca_paper_network_submit_confirmation_missing"
+            )
         return self._broker().submit_order(order)
 
     def cancel_order(self, order_id: str) -> Order:
         if not self.config.network_submit_enabled:
-            raise RuntimeError("alpaca_paper_network_write_disabled_fail_closed")
+            raise RuntimeError(
+                "alpaca_paper_network_write_disabled_fail_closed:"
+                "alpaca_paper_network_submit_confirmation_missing"
+            )
         return self._broker().cancel_order(order_id)
 
     def _broker(self) -> Any:

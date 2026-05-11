@@ -68,21 +68,34 @@ class EvidencePackGenerator:
         # Section 7: Walk-forward
         evidence["sections"]["walk_forward"] = self._get_walk_forward(candidate_id)
 
-        # Section 8: Anti-overfit
+        # Section 8: Cost-stress
+        evidence["sections"]["cost_stress"] = self._get_cost_stress(candidate_id)
+
+        # Section 9: Anti-overfit
         evidence["sections"]["anti_overfit"] = self._get_anti_overfit(candidate_id)
 
-        # Section 9: Promotion gate result
+        # Section 10: Promotion gate result
         evidence["sections"]["promotion_gate"] = self._get_promotion_gate(
             candidate_id
         )
 
-        # Section 10: Portfolio sim report (if available)
+        # Section 11: Portfolio sim report (if available)
         evidence["sections"]["portfolio_sim"] = self._get_portfolio_sim(candidate_id)
 
-        # Section 11: Risk notes
+        # Section 12: Paper validation evidence
+        paper_review_candidate = self._get_paper_review_candidate(candidate_id)
+        evidence["sections"]["portfolio_observability"] = paper_review_candidate.get(
+            "portfolio_observability", {}
+        )
+        evidence["sections"]["paper_validation"] = paper_review_candidate.get(
+            "paper_validation", {}
+        )
+        evidence["sections"]["paper_review_candidate"] = paper_review_candidate
+
+        # Section 13: Risk notes
         evidence["sections"]["risk_notes"] = self._get_risk_notes(candidate_id)
 
-        # Section 12: Final decision
+        # Section 14: Final decision
         evidence["sections"]["final_decision"] = self._get_final_decision(
             candidate_id
         )
@@ -106,6 +119,124 @@ class EvidencePackGenerator:
             Path(output_dir)
             if output_dir
             else self.data_root / "research" / "evidence_packs" / candidate_id
+        )
+        output_path.mkdir(parents=True, exist_ok=True)
+        file_path = output_path / "evidence_pack.json"
+        file_path.write_text(
+            json.dumps(evidence, indent=2, default=str), encoding="utf-8"
+        )
+        return str(file_path)
+
+    def save_portfolio_review_pack(
+        self,
+        portfolio_evidence_pack_id: str,
+        *,
+        portfolio_sim_id: str,
+        strategy_manifest_ids: list[str],
+        proposed_symbols: list[str],
+        proposed_capital: float,
+        proposed_risk_envelope: dict[str, Any],
+        portfolio_decision: str,
+    ) -> str:
+        """Generate and save a portfolio-level paper-review evidence pack."""
+        manifests = self._load_strategy_manifests(strategy_manifest_ids)
+        candidate_ids = [
+            str(manifest.get("source_candidate_id", "") or "").strip()
+            for manifest in manifests
+            if str(manifest.get("source_candidate_id", "") or "").strip()
+        ]
+        if not candidate_ids:
+            raise ValueError(
+                "Portfolio paper review requires source_candidate_id on all strategy manifests."
+            )
+
+        candidate_sections: list[dict[str, Any]] = []
+        candidate_gate_blockers: list[str] = []
+        promotion_blockers: list[str] = []
+        primary_candidate_data: dict[str, Any] = {}
+        primary_promotion_gate: dict[str, Any] = {}
+        for manifest_id, candidate_id in zip(strategy_manifest_ids, candidate_ids, strict=False):
+            candidate_path = self.save(candidate_id)
+            candidate_pack = self.generate(candidate_id)
+            sections = dict(candidate_pack.get("sections", {}))
+            review_candidate = dict(sections.get("paper_review_candidate", {}))
+            promotion_gate = dict(sections.get("promotion_gate", {}))
+            candidate_entry = {
+                "candidate_id": candidate_id,
+                "strategy_manifest_id": manifest_id,
+                "evidence_pack_path": candidate_path,
+                "promotion_gate_decision": str(promotion_gate.get("decision", "UNKNOWN")),
+                "review_candidate_status": str(
+                    review_candidate.get("review_candidate_status", "BLOCKED")
+                ),
+                "blocking_reasons": list(review_candidate.get("blocking_reasons", [])),
+            }
+            candidate_sections.append(candidate_entry)
+            if not primary_candidate_data:
+                primary_candidate_data = dict(sections.get("candidate_data", {}))
+                primary_promotion_gate = promotion_gate
+            if candidate_entry["review_candidate_status"] != "READY_FOR_REVIEW":
+                candidate_gate_blockers.extend(
+                    str(item) for item in candidate_entry["blocking_reasons"]
+                )
+            if candidate_entry["promotion_gate_decision"] != "READY_FOR_PAPER_REVIEW":
+                promotion_blockers.append(
+                    f"{candidate_id}:promotion_gate={candidate_entry['promotion_gate_decision']}"
+                )
+
+        candidate_gate_blockers = list(dict.fromkeys(candidate_gate_blockers))
+        promotion_blockers = list(dict.fromkeys(promotion_blockers))
+        portfolio_review_candidate = {
+            "schema_version": "paper_review_candidate_evidence_v1",
+            "scope": "portfolio",
+            "portfolio_sim_id": portfolio_sim_id,
+            "candidate_ids": candidate_ids,
+            "review_candidate_status": (
+                "READY_FOR_REVIEW" if not candidate_gate_blockers else "BLOCKED"
+            ),
+            "overall_status": "PASS" if not candidate_gate_blockers else "BLOCKED",
+            "blocking_reasons": candidate_gate_blockers,
+            "sections": {
+                "top_candidates": candidate_sections,
+            },
+        }
+        promotion_gate_section = dict(primary_promotion_gate)
+        promotion_gate_section["decision"] = (
+            "READY_FOR_PAPER_REVIEW" if not promotion_blockers else "BLOCKED"
+        )
+        if promotion_blockers:
+            promotion_gate_section["reasons"] = promotion_blockers
+        evidence = {
+            "generated_at": utc_now().isoformat(),
+            "candidate_id": candidate_ids[0],
+            "paper_review_scope": "portfolio_sim",
+            "portfolio_sim_id": portfolio_sim_id,
+            "candidate_ids": candidate_ids,
+            "strategy_manifest_ids": strategy_manifest_ids,
+            "proposed_symbols": list(dict.fromkeys(proposed_symbols)),
+            "proposed_capital": float(proposed_capital),
+            "proposed_risk_envelope": dict(proposed_risk_envelope),
+            "sections": {
+                "candidate_data": primary_candidate_data,
+                "portfolio_candidates": candidate_sections,
+                "portfolio_sim": {
+                    "status": "manifest_created",
+                    "portfolio_sim_id": portfolio_sim_id,
+                    "strategy_manifest_ids": strategy_manifest_ids,
+                    "candidate_ids": candidate_ids,
+                    "proposed_symbols": list(dict.fromkeys(proposed_symbols)),
+                    "final_equity": float(proposed_capital),
+                    "decision": portfolio_decision,
+                },
+                "promotion_gate": promotion_gate_section,
+                "paper_review_candidate": portfolio_review_candidate,
+            },
+        }
+        output_path = (
+            self.data_root
+            / "research"
+            / "evidence_packs"
+            / portfolio_evidence_pack_id
         )
         output_path.mkdir(parents=True, exist_ok=True)
         file_path = output_path / "evidence_pack.json"
@@ -258,6 +389,10 @@ class EvidencePackGenerator:
 
     def _get_walk_forward(self, candidate_id: str) -> dict:
         """Get walk-forward results for a candidate."""
+        artifact = self._get_canonical_artifact("walk_forward", candidate_id)
+        if artifact is not None:
+            return artifact
+
         candidate = self._raw_candidate(candidate_id)
         if not candidate:
             return {"error": "candidate not found"}
@@ -268,11 +403,42 @@ class EvidencePackGenerator:
             return {"status": "not_run", "note": "Walk-forward not run for this candidate"}
 
         return {
-            "status": "completed",
+            "status": "metrics_only_untrusted",
+            "blocking_note": "canonical persisted walk-forward artifact not found",
             "pass_rate": wf_pass_rate,
             "fold_sharpes": metrics.get("wf_fold_sharpes", []),
             "fold_drawdowns": metrics.get("wf_fold_drawdowns", []),
         }
+
+    def _get_cost_stress(self, candidate_id: str) -> dict:
+        """Get canonical cost-stress evidence for a candidate."""
+        artifact = self._get_canonical_artifact("cost_stress", candidate_id)
+        if artifact is not None:
+            return artifact
+        return {
+            "status": "missing",
+            "error": "canonical cost-stress artifact not found",
+        }
+
+    def _get_canonical_artifact(
+        self,
+        artifact_name: str,
+        candidate_id: str,
+    ) -> dict | None:
+        path = (
+            self.data_root
+            / "research"
+            / artifact_name
+            / candidate_id
+            / "result.json"
+        )
+        if not path.exists():
+            return None
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            payload.setdefault("artifact_path", str(path))
+            return payload
+        return None
 
     def _get_anti_overfit(self, candidate_id: str) -> dict:
         """Get anti-overfit check results."""
@@ -353,6 +519,17 @@ class EvidencePackGenerator:
 
         return risk_notes
 
+    def _get_paper_review_candidate(self, candidate_id: str) -> dict:
+        """Get read-only paper-review candidate evidence summary."""
+        from quant_us.research.paper_review_candidate import (
+            inspect_paper_review_candidate_evidence,
+        )
+
+        return inspect_paper_review_candidate_evidence(
+            candidate_id,
+            self.data_root,
+        ).to_dict()
+
     def _get_final_decision(self, candidate_id: str) -> dict:
         """Get the final decision summary."""
         promotion_gate = self._get_promotion_gate(candidate_id)
@@ -380,3 +557,24 @@ class EvidencePackGenerator:
         if not path.exists():
             return None
         return json.loads(path.read_text(encoding="utf-8"))
+
+    def _load_strategy_manifests(
+        self,
+        strategy_manifest_ids: list[str],
+    ) -> list[dict[str, Any]]:
+        manifests: list[dict[str, Any]] = []
+        for manifest_id in strategy_manifest_ids:
+            path = (
+                self.data_root
+                / "research"
+                / "manifests"
+                / manifest_id
+                / "manifest.json"
+            )
+            if not path.exists():
+                raise ValueError(f"Strategy manifest {manifest_id} not found")
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(payload, dict):
+                raise ValueError(f"Strategy manifest {manifest_id} is not a JSON object")
+            manifests.append(payload)
+        return manifests

@@ -144,6 +144,10 @@ def _load_bars(
     symbols: list[str],
     start: str,
     end: str,
+    *,
+    bar_size: str = "1d",
+    vendor: str = "alpaca",
+    asset_class: str = "equity",
 ) -> pd.DataFrame:
     """Load OHLCV bar data for all *symbols* in [start, end].
 
@@ -159,27 +163,49 @@ def _load_bars(
     end_dt = datetime.fromisoformat(end).replace(tzinfo=timezone.utc)
 
     dl = DataLakeService(DataLakeConfig(data_root=Path(data_root)))
+    vendors = _candidate_vendors(Path(data_root), vendor)
 
     frames: list[pd.DataFrame] = []
     for sym in symbols:
-        try:
-            df = dl.read_cleaned_bars(
-                symbol=sym,
-                start=start_dt,
-                end=end_dt,
-                bar_size="1d",
-                vendor="alpaca",
-                asset_class="equity",
-            )
-            if df is not None and not df.empty:
-                frames.append(df)
-        except Exception:
-            pass
+        loaded = False
+        for candidate_vendor in vendors:
+            try:
+                df = dl.read_cleaned_bars(
+                    symbol=sym,
+                    start=start_dt,
+                    end=end_dt,
+                    bar_size=bar_size,
+                    vendor=candidate_vendor,
+                    asset_class=asset_class,
+                )
+                if df is not None and not df.empty:
+                    df = df.copy()
+                    if "symbol" not in df.columns:
+                        df["symbol"] = sym
+                    if "bar_size" not in df.columns:
+                        df["bar_size"] = bar_size
+                    if "vendor" not in df.columns:
+                        df["vendor"] = candidate_vendor
+                    frames.append(df)
+                    loaded = True
+                    break
+            except Exception:
+                continue
+        if loaded:
+            continue
 
     if not frames:
         # Fallback: raw parquet scan
-        raw_root = Path(data_root) / "raw" / "vendor=alpaca" / "asset_class=equity" / "bar_size=1d"
-        if raw_root.exists():
+        for candidate_vendor in vendors:
+            raw_root = (
+                Path(data_root)
+                / "raw"
+                / f"vendor={candidate_vendor}"
+                / f"asset_class={asset_class}"
+                / f"bar_size={bar_size}"
+            )
+            if not raw_root.exists():
+                continue
             for sym in symbols:
                 sym_dir = raw_root / f"symbol={sym}"
                 if sym_dir.exists():
@@ -188,11 +214,17 @@ def _load_bars(
                         df = pd.concat([pd.read_parquet(p) for p in parts], ignore_index=True)
                         df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"], utc=True)
                         df = df[(df["timestamp_utc"] >= start_dt) & (df["timestamp_utc"] <= end_dt)]
+                        if "symbol" not in df.columns:
+                            df["symbol"] = sym
+                        if "bar_size" not in df.columns:
+                            df["bar_size"] = bar_size
+                        if "vendor" not in df.columns:
+                            df["vendor"] = candidate_vendor
                         frames.append(df)
 
     if not frames:
         raise FileNotFoundError(
-            f"No data found for symbols {symbols} in [{start}, {end}]. "
+            f"No data found for symbols {symbols} at bar_size={bar_size} in [{start}, {end}]. "
             f"Run `quant-us ingest` first."
         )
 
@@ -231,10 +263,14 @@ class FactorPipeline:
         self,
         data_root: str = "data",
         factor_library: FactorLibrary | None = None,
+        data_vendor: str = "alpaca",
+        asset_class: str = "equity",
     ) -> None:
         self.data_root = data_root
         self.lib = factor_library or FactorLibrary()
         self._store = ParquetFeatureStore(f"{data_root}/features")
+        self.data_vendor = data_vendor
+        self.asset_class = asset_class
 
     # ------------------------------------------------------------------
     # Main compute entry-point
@@ -246,6 +282,9 @@ class FactorPipeline:
         symbols: list[str],
         start: str,
         end: str,
+        *,
+        bar_size: str = "1d",
+        timeframe: str | None = None,
     ) -> pd.DataFrame:
         """Compute one or more factors across *symbols* for the date range.
 
@@ -262,10 +301,19 @@ class FactorPipeline:
         # 2. Load raw bars (extend lookback to accommodate rolling windows)
         max_lookback = max(self.lib.get(fid).lookback for fid in factor_ids)
         padded_start = self._padded_start(start, max_lookback)
-        bars = _load_bars(self.data_root, symbols, padded_start, end)
+        effective_bar_size = timeframe or bar_size
+        bars = _load_bars(
+            self.data_root,
+            symbols,
+            padded_start,
+            end,
+            bar_size=effective_bar_size,
+            vendor=self.data_vendor,
+            asset_class=self.asset_class,
+        )
 
         if bars.empty:
-            return pd.DataFrame(columns=["date", "symbol"] + factor_ids)
+            return pd.DataFrame(columns=["timestamp_utc", "date", "symbol"] + factor_ids)
 
         # 3. Per-symbol factor computation
         records: list[dict[str, Any]] = []
@@ -274,40 +322,42 @@ class FactorPipeline:
             close: pd.Series | None = group["close"].astype(float) if "close" in group.columns else None
             volume: pd.Series | None = group["volume"].astype(float) if "volume" in group.columns else None
             dates = group["timestamp_utc"].dt.date
+            timestamps = group["timestamp_utc"]
 
             for fid in factor_ids:
                 raw = _compute_factor_series(fid, close, volume)
-                for dt, val in zip(dates, raw):
+                for ts, dt, val in zip(timestamps, dates, raw):
                     if pd.isna(val):
                         continue
                     # Only keep values on or after the user-supplied start
                     if str(dt) < start:
                         continue
                     records.append({
+                        "timestamp_utc": ts,
                         "date": str(dt),
                         "symbol": sym,
                         fid: float(val),
                     })
 
         if not records:
-            return pd.DataFrame(columns=["date", "symbol"] + factor_ids)
+            return pd.DataFrame(columns=["timestamp_utc", "date", "symbol"] + factor_ids)
 
         # 4. Widen: group records into date × symbol grid
         df = pd.DataFrame(records)
         # Pivot only if we have more than one factor
         if len(factor_ids) == 1:
             # Single factor: records already have the factor column
-            result = df[["date", "symbol"] + factor_ids].drop_duplicates(["date", "symbol"])
+            result = df[["timestamp_utc", "date", "symbol"] + factor_ids].drop_duplicates(["timestamp_utc", "symbol"])
         else:
             # Melted records: each record has date, symbol, ONE factor_id column
             melted = df.melt(
-                id_vars=["date", "symbol"],
-                value_vars=[c for c in df.columns if c not in ("date", "symbol")],
+                id_vars=["timestamp_utc", "date", "symbol"],
+                value_vars=[c for c in df.columns if c not in ("timestamp_utc", "date", "symbol")],
                 var_name="factor_id",
                 value_name="value",
             )
             result = melted.pivot_table(
-                index=["date", "symbol"],
+                index=["timestamp_utc", "date", "symbol"],
                 columns="factor_id",
                 values="value",
                 aggfunc="first",
@@ -318,23 +368,26 @@ class FactorPipeline:
                 if fid not in result.columns:
                     result[fid] = pd.NA
 
-        result = result.sort_values(["date", "symbol"]).reset_index(drop=True)
+        result = result.sort_values(["timestamp_utc", "symbol"]).reset_index(drop=True)
 
         # 5. Cross-sectional post-processing per factor
+        cross_section_key = "timestamp_utc" if "timestamp_utc" in result.columns else "date"
         for fid in factor_ids:
             definition = self.lib.get(fid)
-            col = result[fid]
+            series = result[fid]
             if definition.winsorize_pct > 0:
-                col = _winsorize(col, definition.winsorize_pct)
+                series = result.groupby(cross_section_key, group_keys=False)[fid].transform(
+                    lambda group: _winsorize(group, definition.winsorize_pct)
+                )
             if definition.zscore:
-                col = _zscore(col)
+                series = series.groupby(result[cross_section_key]).transform(_zscore)
             if definition.rank_method == "percentile":
-                col = _rank_to_percentile(col)
-            result[fid] = col
+                series = series.groupby(result[cross_section_key]).transform(_rank_to_percentile)
+            result[fid] = series
 
         # 6. Save snapshots
         for fid in factor_ids:
-            self.save_snapshot(result, fid, start)
+            self.save_snapshot(result, fid, start, bar_size=effective_bar_size, timeframe=effective_bar_size)
 
         return result
 
@@ -347,6 +400,9 @@ class FactorPipeline:
         factor_id: str,
         date: str,
         universe: list[str],
+        *,
+        bar_size: str = "1d",
+        timeframe: str | None = None,
     ) -> dict[str, float]:
         """Compute factor value for every symbol in *universe* on a single date.
 
@@ -355,7 +411,16 @@ class FactorPipeline:
         """
         definition = self.lib.get(factor_id)
         padded_start = self._padded_start(date, definition.lookback)
-        bars = _load_bars(self.data_root, universe, padded_start, date)
+        effective_bar_size = timeframe or bar_size
+        bars = _load_bars(
+            self.data_root,
+            universe,
+            padded_start,
+            date,
+            bar_size=effective_bar_size,
+            vendor=self.data_vendor,
+            asset_class=self.asset_class,
+        )
 
         result: dict[str, float] = {}
         for sym, group in bars.groupby("symbol", sort=False):
@@ -444,18 +509,31 @@ class FactorPipeline:
             neutralized[sym] = val - group_mean.get(g, 0.0)
         return neutralized
 
-    def save_snapshot(self, df: pd.DataFrame, factor_id: str, date: str) -> str:
+    def save_snapshot(
+        self,
+        df: pd.DataFrame,
+        factor_id: str,
+        date: str,
+        *,
+        bar_size: str = "1d",
+        timeframe: str | None = None,
+    ) -> str:
         """Save factor values for *factor_id* to parquet.
 
         Returns the file path written.
         """
         if df.empty:
             return ""
-        snapshot = df[["date", "symbol", factor_id]].dropna().copy()
+        columns = ["date", "symbol", factor_id]
+        if "timestamp_utc" in df.columns:
+            columns.insert(0, "timestamp_utc")
+        snapshot = df[columns].dropna(subset=[factor_id]).copy()
         snapshot = snapshot.rename(columns={factor_id: "factor_value"})
         snapshot["factor_name"] = factor_id
         snapshot["universe"] = "default"
         snapshot["version"] = "v1"
+        snapshot["bar_size"] = bar_size
+        snapshot["timeframe"] = timeframe or bar_size
         from datetime import datetime, timezone
 
         snapshot["created_at"] = datetime.now(timezone.utc)
@@ -466,11 +544,30 @@ class FactorPipeline:
 
     @staticmethod
     def _padded_start(start: str, lookback: int) -> str:
-        """Extend *start* backward by *lookback* trading days (~1.4x calendar
-        days for padding)."""
+        """Extend *start* backward by *lookback* trading days (~1.4x calendar days)."""
         from datetime import datetime, timedelta
 
         dt = datetime.strptime(start, "%Y-%m-%d")
-        padding = int(lookback * 1.4) + 5  # extra buffer
+        padding = int(lookback * 1.4) + 5
         padded = dt - timedelta(days=padding)
         return padded.strftime("%Y-%m-%d")
+
+
+def _candidate_vendors(data_root: Path, preferred_vendor: str) -> list[str]:
+    candidates: list[str] = []
+    seen: set[str] = set()
+
+    def _add(value: str) -> None:
+        vendor = str(value or "").strip()
+        if vendor and vendor not in seen:
+            seen.add(vendor)
+            candidates.append(vendor)
+
+    _add(preferred_vendor)
+    for root_subdir in ("cleaned", "raw"):
+        base = data_root / root_subdir
+        if not base.exists():
+            continue
+        for path in sorted(base.glob("vendor=*")):
+            _add(path.name.split("=", 1)[-1])
+    return candidates or [preferred_vendor]

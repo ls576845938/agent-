@@ -45,12 +45,9 @@ class LiveRuntimeConfig:
 
     @property
     def real_order_submission_enabled(self) -> bool:
-        return (
-            self.mode == RuntimeMode.LIVE
-            and self.allow_live_orders
-            and self.confirm_live
-            and self.live_submission_enabled
-        )
+        # VNEXT live execution remains frozen. These flags are retained as
+        # review evidence only and must not become a submit capability.
+        return False
 
     @property
     def paper_order_submission_enabled(self) -> bool:
@@ -89,6 +86,7 @@ class LiveRuntimeConfig:
         reasons: list[str] = []
         if self.mode != RuntimeMode.LIVE:
             return reasons
+        reasons.append("live_runtime_frozen")
         if not self.allow_live_orders:
             reasons.append("allow_live_orders_false")
         if not self.confirm_live:

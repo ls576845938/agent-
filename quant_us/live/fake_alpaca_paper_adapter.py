@@ -61,4 +61,6 @@ class FakeAlpacaPaperBrokerAdapter(SimulatedBroker):
             "paper_only": True,
             "submit_surface": True,
             "fake_adapter": True,
+            "contract_test_only": True,
+            "network_access": False,
         }

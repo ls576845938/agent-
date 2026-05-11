@@ -40,12 +40,14 @@ class Bar:
     vwap: float | None = None
     trade_count: int | None = None
     source: str = ""
+    bar_size: str = ""
     session: str = ""
     adjusted: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "timestamp_utc", ensure_utc(self.timestamp_utc))
         object.__setattr__(self, "symbol", self.symbol.upper())
+        object.__setattr__(self, "bar_size", str(self.bar_size).lower())
 
 
 @dataclass(frozen=True)
@@ -137,6 +139,7 @@ class Order:
     risk_check_id: str = ""
     broker_order_id: str = ""
     limit_price: float | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
     status: OrderStatus = OrderStatus.CREATED
     created_at: datetime = field(default_factory=utc_now)
     updated_at: datetime = field(default_factory=utc_now)
@@ -158,6 +161,7 @@ class Order:
             signal_id=intent.signal_id,
             risk_check_id=risk_decision.risk_check_id,
             limit_price=intent.limit_price,
+            metadata=dict(intent.metadata),
             status=OrderStatus.RISK_CHECKED,
         )
 

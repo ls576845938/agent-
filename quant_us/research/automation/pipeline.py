@@ -28,6 +28,7 @@ from typing import Any
 from quant_us.core.clock import utc_now
 from quant_us.core.types import new_id
 from quant_us.research.automation.dossier import ResearchDossierBuilder
+from quant_us.research.automation.evidence_materializer import ResearchEvidenceMaterializer
 from quant_us.research.automation.overfit import OverfitDetector
 from quant_us.research.automation.ranking import CandidateRankingEngine
 from quant_us.research.lab.manifest import ExperimentManager, StrategyCandidate
@@ -41,6 +42,7 @@ class PipelineResult:
     candidate_ids: list[str]
     ranked_candidates: list[tuple[str, float, dict]]
     overfit_reports: dict[str, Any]
+    evidence_materialization_results: dict[str, Any]
     promotion_gate_results: dict[str, Any]
     required_stages: dict[str, Any]
     paper_review_ready: list[str]
@@ -78,6 +80,7 @@ class ResearchAutomationPipeline:
         self._ranker = CandidateRankingEngine(data_root=str(self.data_root))
         self._overfit = OverfitDetector(data_root=str(self.data_root))
         self._dossier = ResearchDossierBuilder(data_root=str(self.data_root))
+        self._evidence = ResearchEvidenceMaterializer(data_root=str(self.data_root))
 
     def run(self, config: dict) -> dict:
         """Run the full research automation pipeline.
@@ -125,14 +128,38 @@ class ResearchAutomationPipeline:
                     "regime_split": regime_ids,
                 }
             )
+            robustness_metrics = self._stage_robustness_metrics(
+                walk_forward_ids=wf_ids,
+                cost_stress_ids=cost_ids,
+                regime_ids=regime_ids,
+            )
 
             # Step 7: Compute scorecards and promote completed experiments
             candidate_ids: list[str] = []
+            evidence_materialization_results: dict[str, Any] = {}
             for eid in experiment_ids:
                 manifest = self._exp_mgr.load(eid)
                 if manifest and manifest.status == "COMPLETED":
+                    if not self._is_stage_experiment(manifest.strategy_family):
+                        manifest.metrics = {
+                            **dict(manifest.metrics),
+                            **robustness_metrics,
+                        }
+                        self._exp_mgr._save_manifest(manifest)
                     candidate = self._exp_mgr.promote_to_candidate(eid)
                     candidate_ids.append(candidate.candidate_id)
+                    materialized = self._evidence.materialize_candidate(
+                        candidate.candidate_id
+                    )
+                    evidence_materialization_results[candidate.candidate_id] = asdict(
+                        materialized
+                    )
+
+            required_stages["evidence_materialization"] = (
+                self._evidence_materialization_status(
+                    evidence_materialization_results
+                )
+            )
 
             # Step 8: Rank candidates
             ranked = self._ranker.rank(candidate_ids)
@@ -182,6 +209,7 @@ class ResearchAutomationPipeline:
                 candidate_ids=candidate_ids,
                 ranked_candidates=ranked,
                 overfit_reports=overfit_reports,
+                evidence_materialization_results=evidence_materialization_results,
                 promotion_gate_results=promotion_gate_results,
                 required_stages=required_stages,
                 paper_review_ready=paper_review_ready,
@@ -201,6 +229,7 @@ class ResearchAutomationPipeline:
                 candidate_ids=[],
                 ranked_candidates=[],
                 overfit_reports={},
+                evidence_materialization_results={},
                 promotion_gate_results={},
                 required_stages={},
                 paper_review_ready=[],
@@ -319,6 +348,7 @@ class ResearchAutomationPipeline:
         strategy_id = config.get("strategy_id", "unknown")
         symbols = config.get("symbols", [])
         param_grid = config.get("param_grid", {})
+        timeframe = _config_timeframe(config)
 
         # Expand parameter grid
         if param_grid:
@@ -338,6 +368,7 @@ class ResearchAutomationPipeline:
                     end_date=config.get("end_date", ""),
                     data_version=config.get("data_version", ""),
                     feature_version=config.get("feature_version", ""),
+                    timeframe=timeframe,
                     param_grid=param_grid,
                     strategy_family=config.get("experiment_name", ""),
                 )
@@ -351,6 +382,7 @@ class ResearchAutomationPipeline:
                 end_date=config.get("end_date", ""),
                 data_version=config.get("data_version", ""),
                 feature_version=config.get("feature_version", ""),
+                timeframe=timeframe,
                 strategy_family=config.get("experiment_name", ""),
             )
             experiment_ids.append(manifest.experiment_id)
@@ -362,6 +394,7 @@ class ResearchAutomationPipeline:
         ids: list[str] = []
         start = config.get("start_date", "2020-01-01")
         end = config.get("end_date", "2024-12-31")
+        timeframe = _config_timeframe(config)
 
         # Split into two periods for walk-forward
         mid = _mid_date(start, end)
@@ -376,6 +409,7 @@ class ResearchAutomationPipeline:
                 end_date=period_end,
                 data_version=config.get("data_version", ""),
                 feature_version=config.get("feature_version", ""),
+                timeframe=timeframe,
                 strategy_family=f"walk_forward_{config.get('experiment_name', '')}",
                 walk_forward_config={"fold": period_start, "period": f"{period_start}_{period_end}"},
             )
@@ -395,16 +429,20 @@ class ResearchAutomationPipeline:
             {"cost_model": "low", "slippage_model": "low"},
         ]
         ids: list[str] = []
+        timeframe = _config_timeframe(config)
         for stress in stress_configs:
             manifest = self._exp_mgr.create(
                 strategy_id=config.get("strategy_id", "unknown"),
                 symbols=config.get("symbols", []),
-                params={**config.get("params", {}), **stress},
+                params=config.get("params", {}),
                 start_date=config.get("start_date", ""),
                 end_date=config.get("end_date", ""),
                 data_version=config.get("data_version", ""),
                 feature_version=config.get("feature_version", ""),
+                timeframe=timeframe,
                 strategy_family=f"cost_stress_{config.get('experiment_name', '')}",
+                cost_model=stress["cost_model"],
+                slippage_model=stress["slippage_model"],
             )
             try:
                 self._exp_mgr.run(manifest.experiment_id)
@@ -417,6 +455,7 @@ class ResearchAutomationPipeline:
         """Run regime-split analysis."""
         ids: list[str] = []
         regimes = ["bull", "bear", "sideways"]
+        timeframe = _config_timeframe(config)
         for regime in regimes:
             manifest = self._exp_mgr.create(
                 strategy_id=config.get("strategy_id", "unknown"),
@@ -426,6 +465,7 @@ class ResearchAutomationPipeline:
                 end_date=config.get("end_date", ""),
                 data_version=config.get("data_version", ""),
                 feature_version=config.get("feature_version", ""),
+                timeframe=timeframe,
                 strategy_family=f"regime_split_{regime}_{config.get('experiment_name', '')}",
             )
             try:
@@ -506,6 +546,135 @@ class ResearchAutomationPipeline:
             }
         return status
 
+    def _stage_robustness_metrics(
+        self,
+        *,
+        walk_forward_ids: list[str],
+        cost_stress_ids: list[str],
+        regime_ids: list[str],
+    ) -> dict[str, Any]:
+        """Summarize sidecar robustness experiments into candidate metrics.
+
+        These values are derived only from completed sidecar experiment runs.
+        They are used to materialize canonical walk-forward/cost-stress
+        artifacts for the base research candidate.
+        """
+        metrics: dict[str, Any] = {}
+
+        wf_folds: list[dict[str, Any]] = []
+        for experiment_id in walk_forward_ids:
+            manifest = self._exp_mgr.load(experiment_id)
+            if not manifest or manifest.status != "COMPLETED":
+                continue
+            fold_metrics = dict(manifest.metrics or {})
+            fold_metrics["experiment_id"] = experiment_id
+            fold_metrics["period"] = dict(manifest.walk_forward_config)
+            wf_folds.append(fold_metrics)
+
+        if wf_folds:
+            sharpes = [float(fold.get("sharpe_ratio", 0.0) or 0.0) for fold in wf_folds]
+            returns = [float(fold.get("total_return_pct", 0.0) or 0.0) for fold in wf_folds]
+            drawdowns = [abs(float(fold.get("max_drawdown_pct", 0.0) or 0.0)) for fold in wf_folds]
+            trade_counts = [int(fold.get("trade_count", fold.get("total_fill_count", 0)) or 0) for fold in wf_folds]
+            passed = [
+                sharpe > 0.5 and drawdown < 0.35 and trade_count >= 5
+                for sharpe, drawdown, trade_count in zip(sharpes, drawdowns, trade_counts)
+            ]
+            avg_sharpe = sum(sharpes) / len(sharpes)
+            best_sharpe = max(sharpes) if sharpes else 0.0
+            degradation = 0.0
+            if best_sharpe > 0:
+                degradation = max(0.0, (best_sharpe - avg_sharpe) / best_sharpe)
+            metrics.update(
+                {
+                    "walk_forward_pass_rate": sum(1 for item in passed if item) / len(passed),
+                    "wf_fold_sharpes": sharpes,
+                    "wf_fold_returns": returns,
+                    "wf_fold_drawdowns": drawdowns,
+                    "wf_fold_trade_counts": trade_counts,
+                    "wf_fold_results": wf_folds,
+                    "oos_degradation": degradation,
+                    "out_of_sample_sharpe": avg_sharpe,
+                }
+            )
+
+        stress_runs: list[dict[str, Any]] = []
+        for experiment_id in cost_stress_ids:
+            manifest = self._exp_mgr.load(experiment_id)
+            if not manifest or manifest.status != "COMPLETED":
+                continue
+            run_metrics = dict(manifest.metrics or {})
+            run_metrics["experiment_id"] = experiment_id
+            run_metrics["cost_model"] = manifest.cost_model
+            run_metrics["slippage_model"] = manifest.slippage_model
+            stress_runs.append(run_metrics)
+
+        if stress_runs:
+            returns = [float(run.get("total_return_pct", 0.0) or 0.0) for run in stress_runs]
+            sharpes = [float(run.get("sharpe_ratio", 0.0) or 0.0) for run in stress_runs]
+            drawdowns = [abs(float(run.get("max_drawdown_pct", 0.0) or 0.0)) for run in stress_runs]
+            survival = [
+                total_return > 0.0 and sharpe >= 0.0 and drawdown < 0.50
+                for total_return, sharpe, drawdown in zip(returns, sharpes, drawdowns)
+            ]
+            best_return = max(returns) if returns else 0.0
+            worst_return = min(returns) if returns else 0.0
+            denominator = abs(best_return) if abs(best_return) > 1e-9 else 1.0
+            metrics.update(
+                {
+                    "stress_survival_rate": sum(1 for item in survival if item) / len(survival),
+                    "cost_sensitivity": max(0.0, (best_return - worst_return) / denominator),
+                    "cost_stress_levels": stress_runs,
+                }
+            )
+
+        regime_sharpes: dict[str, float] = {}
+        for experiment_id in regime_ids:
+            manifest = self._exp_mgr.load(experiment_id)
+            if not manifest or manifest.status != "COMPLETED":
+                continue
+            regime = str(manifest.params.get("regime_filter", experiment_id))
+            regime_sharpes[regime] = float((manifest.metrics or {}).get("sharpe_ratio", 0.0) or 0.0)
+        if regime_sharpes:
+            metrics["regime_sharpes"] = regime_sharpes
+
+        return metrics
+
+    @staticmethod
+    def _is_stage_experiment(strategy_family: str) -> bool:
+        family = str(strategy_family or "")
+        return family.startswith(("walk_forward_", "cost_stress_", "regime_split_"))
+
+    def _evidence_materialization_status(
+        self,
+        materialization_results: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Summarize canonical evidence materialization for the pipeline gate."""
+        missing: dict[str, list[str]] = {}
+        for candidate_id, result in materialization_results.items():
+            absent = [
+                key
+                for key in (
+                    "backtest_manifest_path",
+                    "scorecard_path",
+                    "walk_forward_result_path",
+                    "cost_stress_result_path",
+                )
+                if not result.get(key)
+            ]
+            if absent:
+                missing[candidate_id] = absent
+
+        return {
+            "passed": bool(materialization_results) and not missing,
+            "candidate_count": len(materialization_results),
+            "missing": missing,
+            "gate_decisions": {
+                candidate_id: result.get("promotion_gate_decision", "NOT_RUN")
+                for candidate_id, result in materialization_results.items()
+            },
+        }
+
     def _evaluate_promotion_gate(self, candidate_id: str) -> dict[str, Any]:
         """Run the canonical promotion gate for one candidate."""
         from quant_us.research.automation.promotion_gate import ResearchPromotionGate
@@ -566,3 +735,9 @@ def _mid_date(start: str, end: str) -> str:
         return mid.strftime("%Y-%m-%d")
     except (ValueError, TypeError):
         return "2022-06-30"
+
+
+def _config_timeframe(config: dict) -> str:
+    """Return the canonical experiment timeframe from pipeline config."""
+    timeframe = str(config.get("timeframe") or config.get("bar_size") or "1d").strip()
+    return timeframe or "1d"

@@ -59,8 +59,8 @@ function AppShell() {
       <header className="hero">
         <div>
           <p className="eyebrow">QuantStation vNext</p>
-          <h1>量化投研与实盘监控控制台</h1>
-          <p className="hero-copy">策略回测 · 数据管道 · 模拟交易 · 实盘监控 · 风险管控 — 一体工作台</p>
+          <h1>单策略小资金操作台</h1>
+          <p className="hero-copy">数据质量、账本一致性、paper readiness 与晋升门集中可视化；live 仍保持冻结。</p>
         </div>
         <div className="hero-actions">
           <nav className="system-switch">
@@ -89,7 +89,7 @@ function AppShell() {
       ) : null}
 
       <Routes>
-        <Route path="/" element={<ErrorBoundary><USEquityWorkspace strategies={strategies} /></ErrorBoundary>} />
+        <Route path="/" element={<ErrorBoundary><USEquityWorkspace strategies={strategies} health={health} /></ErrorBoundary>} />
         <Route path="/crypto" element={<ErrorBoundary><CryptoWorkspace health={health} strategies={strategies} /></ErrorBoundary>} />
         <Route path="/live" element={<ErrorBoundary><LiveTradingDashboard /></ErrorBoundary>} />
         <Route path="/strategies" element={<ErrorBoundary><StrategyExplorer strategies={strategies} /></ErrorBoundary>} />

@@ -528,7 +528,7 @@ class UnifiedRunnerLedgerBackedScenarioTests(unittest.TestCase):
     """Deterministic ledger-backed scenarios for costs, partial fills, and cash adjustments."""
 
     def test_runner_honors_volume_cap_for_partial_sell_sequence(self):
-        bars = _scenario_bars([100.0, 101.0, 102.0, 103.0], volume=100.0)
+        bars = _scenario_bars([100.0, 100.0, 100.0, 100.0, 100.0], volume=100.0)
         runner = UnifiedBacktestRunner(
             UnifiedBacktestConfig(
                 initial_cash=100_000.0,
@@ -627,7 +627,8 @@ class UnifiedRunnerLedgerBackedScenarioTests(unittest.TestCase):
             90_010.0,
             places=6,
         )
-        self.assertAlmostEqual(result.snapshots[1].cash, 100_010.0, places=6)
+        self.assertAlmostEqual(result.snapshots[1].cash, 90_010.0, places=6)
+        self.assertAlmostEqual(result.snapshots[1].equity, 100_010.0, places=6)
         self.assertTrue(result.equity_consistent, result.equity_consistency_msg)
 
     def test_multi_symbol_cash_adjustment_keeps_final_snapshot_consistent(self):
@@ -667,8 +668,8 @@ class UnifiedRunnerLedgerBackedScenarioTests(unittest.TestCase):
         self.assertTrue(result.equity_consistent, result.equity_consistency_msg)
 
     def test_split_adjustment_updates_quantity_and_avg_price_before_next_signal(self):
-        bars = _scenario_bars([100.0, 50.0, 50.0], volume=100_000.0)
-        adjustment_ts = bars[1].timestamp_utc
+        bars = _scenario_bars([100.0, 100.0, 50.0], volume=100_000.0)
+        adjustment_ts = bars[2].timestamp_utc
         strategy = PositionProbeStrategy()
         runner = UnifiedBacktestRunner(
             UnifiedBacktestConfig(
@@ -694,8 +695,8 @@ class UnifiedRunnerLedgerBackedScenarioTests(unittest.TestCase):
         result = runner.run(strategies=[strategy], bars_override=bars)
 
         self.assertEqual(strategy.positions_by_timestamp[adjustment_ts]["AAPL"], (200.0, 50.0))
-        self.assertAlmostEqual(result.snapshots[1].cash, 90_000.0, places=6)
-        self.assertAlmostEqual(result.snapshots[1].equity, 100_000.0, places=6)
+        self.assertAlmostEqual(result.snapshots[2].cash, 90_000.0, places=6)
+        self.assertAlmostEqual(result.snapshots[2].equity, 100_000.0, places=6)
         self.assertEqual(result.evidence["positions"]["final_positions"], {"AAPL": 200.0})
         self.assertAlmostEqual(result.evidence["cash"]["ledger_cash_at_final_snapshot"], 90_000.0, places=6)
         self.assertAlmostEqual(result.evidence["pnl"]["final_equity"], 100_000.0, places=6)

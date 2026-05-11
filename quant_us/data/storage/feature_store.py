@@ -33,7 +33,13 @@ class ParquetFeatureStore:
             if path.exists():
                 existing = pd.read_parquet(path)
                 output = pd.concat([existing, output], ignore_index=True)
-            output = output.drop_duplicates(subset=["symbol", "factor_name", "universe"], keep="last")
+            dedupe_cols = ["symbol", "factor_name", "universe"]
+            if "timestamp_utc" in output.columns:
+                dedupe_cols.append("timestamp_utc")
+            for column in ("bar_size", "timeframe"):
+                if column in output.columns:
+                    dedupe_cols.append(column)
+            output = output.drop_duplicates(subset=dedupe_cols, keep="last")
             output.to_parquet(path, index=False)
             files_written.append(path)
             # Write checksum alongside partition
@@ -47,7 +53,8 @@ class ParquetFeatureStore:
         h = hashlib.sha256()
         for col in sorted(df.columns):
             h.update(col.encode())
-            for v in sorted(df[col].astype(str)):
+            values = sorted(str(v) for v in df[col].tolist())
+            for v in values:
                 h.update(v.encode())
         return h.hexdigest()[:16]
 

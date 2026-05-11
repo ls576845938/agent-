@@ -12,6 +12,55 @@ This runbook describes the day-to-day research workflow: from creating experimen
 
 ## Step-by-Step Workflow
 
+### One-Command Research Closed Loop
+
+For the normal DX path, start with the CLI auto-cycle. It explicitly runs the
+research loop and stops at evidence/review artifacts:
+
+```bash
+python -m quant_us.cli research auto-cycle \
+  --strategy-id etf_rotation \
+  --symbols SPY,QQQ \
+  --params '{"lookback": 20}' \
+  --param-grid '{"lookback": [20, 60]}' \
+  --start 2020-01-01 \
+  --end 2024-12-31 \
+  --data-root data
+```
+
+The command performs:
+
+- candidate/experiment generation through `ResearchAutomationPipeline`
+- experiment execution
+- candidate evidence-pack materialization
+- promotion-gate evaluation
+- saved evidence-registry rebuild
+
+It is research-only. It does not mark a candidate `PAPER_ELIGIBLE`, does not
+create a paper session, and does not submit orders. A failed pipeline or empty
+candidate set returns a non-zero exit code unless `--allow-empty` is supplied.
+
+You can also use a JSON config:
+
+```bash
+python -m quant_us.cli research auto-cycle --config configs/research_auto_cycle.json --data-root data
+```
+
+Minimal config shape:
+
+```json
+{
+  "experiment_name": "etf_rotation_sweep",
+  "strategy_id": "etf_rotation",
+  "symbols": ["SPY", "QQQ"],
+  "params": {"lookback": 20},
+  "param_grid": {"lookback": [20, 60]},
+  "start_date": "2020-01-01",
+  "end_date": "2024-12-31",
+  "data_version": "data_v1"
+}
+```
+
 ### 1. Create a New Experiment
 
 Create an experiment by defining strategy parameters and search space:

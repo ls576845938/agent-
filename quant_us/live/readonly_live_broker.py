@@ -315,6 +315,11 @@ class LiveEndpointGuard:
                 "SAFETY: submit_order() blocked in shadow_live mode. "
                 "Use ShadowOrder (would_submit=True, real_submit=False) instead."
             )
+        if mode == "live":
+            raise RuntimeError(
+                "SAFETY: submit_order() blocked in live mode. "
+                "Live runtime is frozen; readiness evidence is review-only."
+            )
         if not allow_live:
             raise RuntimeError(
                 "SAFETY: submit_order() blocked. "

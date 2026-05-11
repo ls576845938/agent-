@@ -342,9 +342,19 @@ def test_realized_commission_and_slippage_are_ledger_exact(tmp_path):
     runner = UnifiedBacktestRunner(config=config)
     runner.manifest_store = DataManifestStore(tmp_path)
 
+    first_bar = _bars()[0]
+    execution_bar = Bar(
+        timestamp_utc=first_bar.timestamp_utc + timedelta(minutes=1),
+        symbol=first_bar.symbol,
+        open=first_bar.close,
+        high=first_bar.close + 0.5,
+        low=first_bar.close - 0.5,
+        close=first_bar.close,
+        volume=first_bar.volume,
+    )
     result = runner.run(
         strategies=[AlwaysLongStrategy(strength=1.0)],
-        bars_override=_bars()[:1],
+        bars_override=[first_bar, execution_bar],
         data_version="qs-yfinance-AAPL-1d-cost-fixture",
         strategy_version="always_long_v1",
     )

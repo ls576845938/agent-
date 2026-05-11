@@ -9,7 +9,7 @@ Research code MUST NOT import from quant_us.live or quant_us.execution.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, fields, field
 from datetime import datetime
 import hashlib
 import json
@@ -18,6 +18,24 @@ from typing import Any
 
 from quant_us.core.clock import utc_now
 from quant_us.core.types import new_id
+
+
+def _commission_rate_for_cost_model(cost_model: str) -> float:
+    model = str(cost_model or "default").strip().lower()
+    if model == "high":
+        return 0.0005
+    if model == "low":
+        return 0.0
+    return 0.0001
+
+
+def _slippage_bps_for_model(slippage_model: str) -> float:
+    model = str(slippage_model or "default").strip().lower()
+    if model == "high":
+        return 5.0
+    if model == "low":
+        return 0.0
+    return 1.0
 
 
 @dataclass
@@ -47,6 +65,10 @@ class ResearchExperimentManifest:
 
     # Runtime fields populated after run()
     run_result_path: str = ""
+    backtest_manifest_path: str = ""
+    ledger_artifact_path: str = ""
+    ledger_artifact_hash: str = ""
+    data_manifest_path: str = ""
     metrics: dict = field(default_factory=dict)
 
 
@@ -57,10 +79,20 @@ class StrategyCandidate:
     candidate_id: str
     experiment_id: str
     strategy_id: str
+    symbols: list[str] = field(default_factory=list)
+    timeframe: str = "1d"
+    data_source: str = "yfinance"
+    asset_class: str = "equity"
     params_hash: str = ""
     data_version: str = ""
     backtest_result_path: str = ""
+    backtest_manifest_path: str = ""
+    ledger_artifact_path: str = ""
+    ledger_artifact_hash: str = ""
+    data_manifest_path: str = ""
+    scorecard_path: str = ""
     walk_forward_result_path: str = ""
+    cost_stress_result_path: str = ""
     robustness_score: float = 0.0
     overfit_score: float = 0.0
     alpha_score: float = 0.0
@@ -149,9 +181,9 @@ class ExperimentManager:
         try:
             import pandas as pd
 
-            from quant_us.backtest.data_bridge import bars_from_dataframe
             from quant_us.backtest.unified_runner import UnifiedBacktestConfig, UnifiedBacktestRunner
-            from quant_us.data.lake.data_lake import DataLakeConfig, DataLakeService
+            from quant_us.data.pipeline import DataLakeConfig, DataLakeService
+            from quant_us.data.storage.data_manifest import DataManifestStore
             from quant_us.strategies.factory import build_strategy
 
             # Parse dates
@@ -186,15 +218,77 @@ class ExperimentManager:
             strategy = build_strategy(manifest.strategy_id, manifest.params)
 
             # Run canonical backtest
-            runner = UnifiedBacktestRunner()
+            features_frame: pd.DataFrame | None = None
+            if manifest.strategy_id == "factor_rank":
+                factor_name = str(
+                    manifest.params.get("factor_name")
+                    or manifest.params.get("factor_id")
+                    or ""
+                ).strip()
+                if not factor_name:
+                    raise ValueError(
+                        "factor_rank experiment requires params.factor_name"
+                    )
+                from quant_us.factors.pipeline import FactorPipeline
+
+                features_frame = FactorPipeline(
+                    data_root=str(self.data_root)
+                ).compute(
+                    factor_ids=[factor_name],
+                    symbols=manifest.symbols,
+                    start=start.isoformat(),
+                    end=end.isoformat(),
+                    bar_size=manifest.timeframe,
+                    timeframe=manifest.timeframe,
+                )
+
+            runner = UnifiedBacktestRunner(
+                UnifiedBacktestConfig(
+                    commission_rate=_commission_rate_for_cost_model(manifest.cost_model),
+                    slippage_bps=_slippage_bps_for_model(manifest.slippage_model),
+                )
+            )
+            runner.manifest_store = DataManifestStore(self.data_root / "manifests")
             result = runner.run(
                 strategies=[strategy],
                 frame=frame,
+                features_frame=features_frame,
                 data_version=manifest.data_version,
                 strategy_version=manifest.strategy_version,
             )
 
-            summary = result.summary
+            summary = dict(result.summary)
+            evidence = dict(result.evidence)
+            data_manifest = evidence.get("data_manifest", {})
+            if not isinstance(data_manifest, dict):
+                data_manifest = {}
+            ledger_artifact_path = str(evidence.get("ledger_artifact_path", ""))
+            ledger_artifact_hash = str(evidence.get("ledger_artifact_hash", ""))
+            data_manifest_path = str(data_manifest.get("path", ""))
+            summary.update(
+                {
+                    "engine": "event_driven",
+                    "canonical_for_promotion": True,
+                    "backtest_manifest_path": result.manifest_path,
+                    "backtest_manifest_id": result.manifest_id,
+                    "ledger_artifact_path": ledger_artifact_path,
+                    "ledger_artifact_hash": ledger_artifact_hash,
+                    "ledger_hash": str(evidence.get("ledger_hash", "")),
+                    "fills_hash": str(evidence.get("fills_hash", "")),
+                    "orders_hash": str(evidence.get("orders_hash", "")),
+                    "data_manifest_path": data_manifest_path,
+                    "data_manifest_exists": bool(evidence.get("data_manifest_exists", False)),
+                    "missing_data_manifest": bool(evidence.get("missing_data_manifest", True)),
+                    "data_version": manifest.data_version,
+                    "cost_model": manifest.cost_model,
+                    "slippage_model": manifest.slippage_model,
+                    "ledger_consistency_pct": 100.0 if result.equity_consistent else 0.0,
+                    "total_order_count": len(result.orders),
+                    "total_fill_count": len(result.fills),
+                    "baseline_order_count": len(result.orders),
+                    "baseline_fill_count": len(result.fills),
+                }
+            )
 
             # Persist run result
             result_path = self.experiments_dir / experiment_id / "run_result.json"
@@ -206,6 +300,10 @@ class ExperimentManager:
             # Update manifest
             manifest.status = "COMPLETED"
             manifest.run_result_path = str(result_path)
+            manifest.backtest_manifest_path = result.manifest_path
+            manifest.ledger_artifact_path = ledger_artifact_path
+            manifest.ledger_artifact_hash = ledger_artifact_hash
+            manifest.data_manifest_path = data_manifest_path
             manifest.metrics = summary
             self._save_manifest(manifest)
 
@@ -245,14 +343,61 @@ class ExperimentManager:
             candidate_id=candidate_id,
             experiment_id=experiment_id,
             strategy_id=manifest.strategy_id,
+            symbols=list(manifest.symbols),
+            timeframe=manifest.timeframe,
+            data_source="yfinance",
+            asset_class="equity",
             candidate_hash=self.compute_candidate_hash(
                 manifest.strategy_id, manifest.params
             ),
             data_version=manifest.data_version,
             backtest_result_path=manifest.run_result_path,
+            backtest_manifest_path="",
+            ledger_artifact_path=manifest.ledger_artifact_path,
+            ledger_artifact_hash=manifest.ledger_artifact_hash,
+            data_manifest_path=manifest.data_manifest_path,
+            scorecard_path=str(
+                self.data_root
+                / "research"
+                / "scorecards"
+                / f"{candidate_id}.json"
+            ),
+            walk_forward_result_path=str(
+                self.data_root
+                / "research"
+                / "walk_forward"
+                / candidate_id
+                / "result.json"
+            ),
+            cost_stress_result_path=str(
+                self.data_root
+                / "research"
+                / "cost_stress"
+                / candidate_id
+                / "result.json"
+            ),
             metrics=manifest.metrics,
             created_at=utc_now().isoformat(),
         )
+        if manifest.backtest_manifest_path:
+            candidate.backtest_manifest_path = self._materialize_candidate_backtest_manifest(
+                candidate=candidate,
+                manifest=manifest,
+            )
+        candidate.metrics = {
+            **dict(candidate.metrics),
+            "backtest_manifest_path": candidate.backtest_manifest_path,
+            "ledger_artifact_path": candidate.ledger_artifact_path,
+            "ledger_artifact_hash": candidate.ledger_artifact_hash,
+            "data_manifest_path": candidate.data_manifest_path,
+            "scorecard_path": candidate.scorecard_path,
+            "walk_forward_result_path": candidate.walk_forward_result_path,
+            "cost_stress_result_path": candidate.cost_stress_result_path,
+            "symbols": candidate.symbols,
+            "timeframe": candidate.timeframe,
+            "data_source": candidate.data_source,
+            "asset_class": candidate.asset_class,
+        }
 
         self._save_candidate(candidate)
 
@@ -550,7 +695,9 @@ class ExperimentManager:
             if not cand_path.exists():
                 continue
             results.append(
-                StrategyCandidate(**json.loads(cand_path.read_text(encoding="utf-8")))
+                self._candidate_from_payload(
+                    json.loads(cand_path.read_text(encoding="utf-8"))
+                )
             )
 
         results.sort(key=lambda c: c.created_at, reverse=True)
@@ -574,13 +721,58 @@ class ExperimentManager:
             json.dumps(asdict(candidate), indent=2, default=str), encoding="utf-8"
         )
 
+    def _materialize_candidate_backtest_manifest(
+        self,
+        *,
+        candidate: StrategyCandidate,
+        manifest: ResearchExperimentManifest,
+    ) -> str:
+        """Copy the run manifest to the promotion-gate canonical candidate path."""
+        if not manifest.backtest_manifest_path:
+            raise ValueError(
+                "Cannot promote experiment without backtest_manifest_path evidence"
+            )
+
+        source_path = Path(manifest.backtest_manifest_path)
+        if not source_path.exists():
+            raise ValueError(
+                f"Cannot promote experiment because backtest manifest is missing: {source_path}"
+            )
+
+        payload = json.loads(source_path.read_text(encoding="utf-8"))
+        payload.update(
+            {
+                "candidate_id": candidate.candidate_id,
+                "experiment_id": manifest.experiment_id,
+                "strategy_id": manifest.strategy_id,
+                "source_run_manifest_path": str(source_path),
+                "canonical_backtest_manifest_path": str(
+                    self._candidate_backtest_manifest_path(candidate.candidate_id)
+                ),
+                "cost_model_name": manifest.cost_model,
+                "slippage_model_name": manifest.slippage_model,
+            }
+        )
+        payload.setdefault("canonical_for_promotion", True)
+
+        target_path = self._candidate_backtest_manifest_path(candidate.candidate_id)
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        target_path.write_text(
+            json.dumps(payload, indent=2, sort_keys=True, default=str),
+            encoding="utf-8",
+        )
+        return str(target_path)
+
+    def _candidate_backtest_manifest_path(self, candidate_id: str) -> Path:
+        return self.data_root / "research" / "backtests" / candidate_id / "run_manifest.json"
+
     def _load_candidate(self, candidate_id: str) -> StrategyCandidate | None:
         """Load a candidate from disk by ID."""
         path = self.candidates_dir / candidate_id / "candidate.json"
         if not path.exists():
             return None
         data = json.loads(path.read_text(encoding="utf-8"))
-        return StrategyCandidate(**data)
+        return self._candidate_from_payload(data)
 
     def _find_children(self, candidate_id: str) -> list[str]:
         """Find all candidates that have the given candidate_id as parent."""
@@ -589,6 +781,14 @@ class ExperimentManager:
             if c.parent_candidate_id == candidate_id:
                 children.append(c.candidate_id)
         return children
+
+    @staticmethod
+    def _candidate_from_payload(data: dict[str, Any]) -> StrategyCandidate:
+        """Load current and legacy candidate JSON without failing on extra keys."""
+        allowed = {f.name for f in fields(StrategyCandidate)}
+        return StrategyCandidate(
+            **{key: value for key, value in data.items() if key in allowed}
+        )
 
     @staticmethod
     def _detect_git_commit() -> str:

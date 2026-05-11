@@ -104,6 +104,8 @@ class MarketDataLoop:
             try:
                 frame = self._connector.fetch_bars(symbol, start, end, self.bar_size)
                 if not frame.empty:
+                    frame = frame.copy()
+                    frame["bar_size"] = self.bar_size
                     parts.append(frame)
             except Exception:
                 self._logger.exception("Failed to fetch bars for %s", symbol)
@@ -135,18 +137,20 @@ class MarketDataLoop:
 
         now = utc_now()
         symbols_updated = sorted(bars["symbol"].unique().tolist())
+        missing_symbols = sorted(set(self.symbols) - set(symbols_updated))
         latest_ts = pd.to_datetime(bars["timestamp_utc"].max()).to_pydatetime()
         latest_ts = ensure_utc(latest_ts)
 
         delay = max(0.0, (now - latest_ts).total_seconds())
         max_acceptable = self._compute_max_delay()
-        fresh = delay <= max_acceptable
+        fresh = delay <= max_acceptable and not missing_symbols
 
         return MarketDataStatus(
             fresh=fresh,
-            stale_seconds=delay if not fresh else 0.0,
+            stale_seconds=float("inf") if missing_symbols else delay if not fresh else 0.0,
             latest_timestamp=latest_ts,
             symbols_updated=symbols_updated,
+            error="missing_symbols=" + ",".join(missing_symbols) if missing_symbols else None,
         )
 
     def write_to_cache(self, bars: pd.DataFrame) -> None:

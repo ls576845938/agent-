@@ -3,10 +3,12 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from quant_us.core.enums import OrderSide, OrderStatus, OrderType, TimeInForce
 from quant_us.core.types import Fill, Order, PortfolioSnapshot
 from quant_us.execution.ledger import JsonlLedgerStore
+from quant_us.live.paper_runtime import PaperRuntime, PaperRuntimeConfig
 from quant_us.live.paper_trading_loop import PaperTradingConfig, PaperTradingLoop
 from quant_us.reports.paper_validation import check_paper_validation_preflight
 from scripts.run_paper_validation import save_report
@@ -259,6 +261,126 @@ def test_paper_validation_preflight_blocks_when_ledger_recon_artifact_is_missing
 
     assert preflight.status == "BLOCKED"
     assert "ledger_reconciliation_artifact_missing" in preflight.blocking_reasons
+
+
+def _write_runtime_validation_state(data_root: Path) -> Path:
+    market_data_dir = (
+        data_root
+        / "raw"
+        / "vendor=yfinance"
+        / "asset_class=equity"
+        / "bar_size=1m"
+        / "symbol=SPY"
+    )
+    market_data_dir.mkdir(parents=True, exist_ok=True)
+    (market_data_dir / "date=2026-05-08.parquet").write_bytes(b"fixture")
+
+    state_path = data_root / "reports" / "paper_production" / "validation_state.json"
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text(
+        json.dumps(
+            {
+                "symbols": ["SPY"],
+                "data_root": str(data_root),
+                "source": "yfinance",
+                "bar_size": "1m",
+                "days_required": 30,
+                "days_completed": 30,
+                "consecutive_clean_days": 30,
+                "daily_results": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return state_path
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_validation_preflight_passes_with_runtime_generated_evidence(
+    _mock_loop: object,
+    tmp_path: Path,
+) -> None:
+    data_root = tmp_path / "data"
+    ledger_root = data_root / "paper_ledger"
+    state_path = _write_runtime_validation_state(data_root)
+    runtime = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            data_root=str(data_root),
+            ledger_root=str(ledger_root),
+            bar_size="1m",
+            reconcile_on_start=True,
+            reconcile_on_close=True,
+            submit_orders=False,
+        )
+    )
+
+    runtime.bootstrap()
+    runtime.on_session_close()
+
+    preflight = check_paper_validation_preflight(
+        data_root,
+        ledger_root=ledger_root,
+        validation_state_path=state_path,
+        source="yfinance",
+        bar_size="1m",
+    )
+    startup = json.loads(
+        (ledger_root / "audit" / "paper_broker_adapter_startup_sync.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    manifest = json.loads(
+        (ledger_root / "audit" / "paper_session_manifest.json").read_text(encoding="utf-8")
+    )
+    recon_artifacts = list((ledger_root / "reconciliation").glob("ledger_recon_artifact_*.json"))
+
+    assert preflight.status == "PASS"
+    assert preflight.blocking_reasons == []
+    assert startup["status"] == "ok"
+    assert startup["required"] is False
+    assert startup["no_submit_proof"]["submit_order_invoked"] is False
+    assert manifest["submit_orders"] is False
+    assert manifest["no_real_order_submission_proof"]["status"] == "PASS"
+    assert manifest["market_data_symbols_evidence"]["symbols"] == ["SPY"]
+    assert recon_artifacts
+    assert json.loads(recon_artifacts[-1].read_text(encoding="utf-8"))["artifact_hash"]
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_paper_validation_preflight_blocks_when_runtime_startup_evidence_is_missing(
+    _mock_loop: object,
+    tmp_path: Path,
+) -> None:
+    data_root = tmp_path / "data"
+    ledger_root = data_root / "paper_ledger"
+    state_path = _write_runtime_validation_state(data_root)
+    runtime = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            data_root=str(data_root),
+            ledger_root=str(ledger_root),
+            bar_size="1m",
+            reconcile_on_start=True,
+            reconcile_on_close=True,
+            submit_orders=False,
+        )
+    )
+
+    runtime.bootstrap()
+    runtime.on_session_close()
+    (ledger_root / "audit" / "paper_broker_adapter_startup_sync.json").unlink()
+
+    preflight = check_paper_validation_preflight(
+        data_root,
+        ledger_root=ledger_root,
+        validation_state_path=state_path,
+        source="yfinance",
+        bar_size="1m",
+    )
+
+    assert preflight.status == "BLOCKED"
+    assert "startup_sync_missing" in preflight.blocking_reasons
 
 
 def test_paper_trading_loop_restores_state_from_ledger_on_resume(tmp_path: Path) -> None:

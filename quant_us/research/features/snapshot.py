@@ -48,6 +48,8 @@ class FeatureSnapshot:
     data_version: str
     config_hash: str
     created_at: str
+    bar_size: str = "1d"
+    timeframe: str = "1d"
     row_count: int = 0
     checksum: str = ""
     path: str = ""
@@ -75,6 +77,9 @@ class FeatureSnapshotManager:
         symbols: list[str],
         start: str,
         end: str,
+        *,
+        bar_size: str = "1d",
+        timeframe: str | None = None,
     ) -> FeatureSnapshot:
         """Compute factor values and freeze them into a snapshot.
 
@@ -83,7 +88,8 @@ class FeatureSnapshotManager:
         lib = FactorLibrary()
         factor = lib.get(feature_id)
         config_hash = self._compute_config_hash(factor)
-        snapshot_id = f"{feature_id}_{version}_{config_hash[:8]}"
+        effective_timeframe = timeframe or bar_size
+        snapshot_id = f"{feature_id}_{version}_{effective_timeframe}_{config_hash[:8]}"
         snapshot_dir = self._snapshots_dir / snapshot_id
         snapshot_dir.mkdir(parents=True, exist_ok=True)
 
@@ -93,6 +99,8 @@ class FeatureSnapshotManager:
             symbols=symbols,
             start=start,
             end=end,
+            bar_size=bar_size,
+            timeframe=effective_timeframe,
         )
 
         if df.empty:
@@ -101,6 +109,8 @@ class FeatureSnapshotManager:
                 snapshot_id=snapshot_id,
                 feature_id=feature_id,
                 feature_version=version,
+                bar_size=bar_size,
+                timeframe=effective_timeframe,
                 symbols=symbols,
                 start=start,
                 end=end,
@@ -122,6 +132,8 @@ class FeatureSnapshotManager:
             snapshot_id=snapshot_id,
             feature_id=feature_id,
             feature_version=version,
+            bar_size=bar_size,
+            timeframe=effective_timeframe,
             symbols=symbols,
             start=start,
             end=end,
@@ -251,6 +263,8 @@ class FeatureSnapshotManager:
             )
 
         common = ["symbol", "date"]
+        if "timestamp_utc" in df1.columns and "timestamp_utc" in df2.columns:
+            common = ["symbol", "timestamp_utc"]
         value_cols_1 = [c for c in df1.columns if c not in common]
         value_cols_2 = [c for c in df2.columns if c not in common]
         shared_value_cols = set(value_cols_1).intersection(value_cols_2)
@@ -259,7 +273,7 @@ class FeatureSnapshotManager:
         if shared_value_cols and intersection and report.get("date_overlap_days", 0) > 0:
             merged = df1.merge(
                 df2,
-                on=["symbol", "date"],
+                on=common,
                 how="inner",
                 suffixes=("_1", "_2"),
             )
@@ -309,6 +323,8 @@ class FeatureSnapshotManager:
             "snapshot_id": snapshot.snapshot_id,
             "feature_id": snapshot.feature_id,
             "feature_version": snapshot.feature_version,
+            "bar_size": snapshot.bar_size,
+            "timeframe": snapshot.timeframe,
             "symbols": snapshot.symbols,
             "start": snapshot.start,
             "end": snapshot.end,

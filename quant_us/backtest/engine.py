@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random as _random
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from itertools import groupby
 from types import SimpleNamespace
@@ -17,7 +17,7 @@ from quant_us.backtest.performance import compute_performance
 from quant_us.backtest.slippage import BpsSlippage
 from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.events import Event, MarketEvent, OrderIntentEvent, SignalEvent, TargetPositionEvent
-from quant_us.core.types import AccountState, Bar, Fill, Order, PortfolioSnapshot, new_id
+from quant_us.core.types import AccountState, Bar, Fill, Order, OrderIntent, PortfolioSnapshot, new_id
 from quant_us.execution.oms import OMSResult, OrderManagementSystem
 from quant_us.portfolio.allocation import AllocationCombiner, AllocationConfig
 from quant_us.portfolio.position_sizer import PercentOfEquitySizer, PositionSizerConfig
@@ -93,6 +93,7 @@ class _BacktestRunState:
     events: list[Event] = field(default_factory=list)
     oms_results: list[OMSResult] = field(default_factory=list)
     snapshots: list[PortfolioSnapshot] = field(default_factory=list)
+    pending_intents: list[OrderIntent] = field(default_factory=list)
 
 
 class EventDrivenBacktestEngine:
@@ -149,6 +150,11 @@ class EventDrivenBacktestEngine:
         if self._gap_rejected_orders:
             metadata["gap_rejected_orders"] = list(self._gap_rejected_orders)
             metadata["gap_rejected_count"] = len(self._gap_rejected_orders)
+        if state.pending_intents:
+            metadata["pending_intent_count"] = len(state.pending_intents)
+            metadata["pending_intent_ids"] = [
+                intent.order_intent_id for intent in state.pending_intents
+            ]
         return BacktestResult(
             run_id=self.config.run_id,
             snapshots=state.snapshots,
@@ -191,11 +197,21 @@ class EventDrivenBacktestEngine:
         bar_by_symbol: dict[str, Bar] = {}
         for bar in slice_bars:
             bar_by_symbol[bar.symbol] = bar
-            self.broker.update_market(bar)
 
         apply_adjustments = getattr(self.broker, "apply_adjustments", None)
         if callable(apply_adjustments):
             apply_adjustments(timestamp_utc)
+
+        if state.pending_intents:
+            state.pending_intents = self._execute_pending_intents(
+                state.pending_intents,
+                bar_by_symbol,
+                timestamp_utc,
+                state,
+            )
+
+        for bar in slice_bars:
+            self.broker.update_market(bar)
 
         account = self.broker.get_account()
         prices = {symbol: float(price) for symbol, price in self.broker.market_prices.items()}
@@ -222,39 +238,7 @@ class EventDrivenBacktestEngine:
         intents = self.rebalance.plan(targets, account, prices, self.config.run_id)
         state.events.extend(OrderIntentEvent.from_intent(intent) for intent in intents)
 
-        # Apply gap overrides before processing orders
-        if self.gap_config is not None and intents:
-            gap_overrides: dict[str, float | None] = {}
-            for intent in intents:
-                bar = bar_by_symbol.get(intent.symbol)
-                if bar is None:
-                    continue
-                prev_close = self._prev_close.get(intent.symbol)
-                if prev_close is None or prev_close <= 0:
-                    # No previous close — cannot detect gap, skip override
-                    continue
-                order_proxy = SimpleNamespace(side=intent.side)
-                adj = gap_adjusted_fill_price(order_proxy, bar, prev_close, self.gap_config)
-                if adj is None:
-                    gap_overrides[intent.symbol] = None
-                    self._gap_rejected_orders.append({
-                        "timestamp": timestamp_utc,
-                        "symbol": intent.symbol,
-                        "side": intent.side.value,
-                        "quantity": intent.quantity,
-                        "reason": "extreme_gap",
-                    })
-                else:
-                    gap_overrides[intent.symbol] = adj
-            self._set_gap_overrides(gap_overrides)
-
-        for intent in intents:
-            account = self.broker.get_account()
-            result = self.oms.handle_intent(intent, account, market_price=prices.get(intent.symbol, 0.0), timestamp=timestamp_utc)
-            state.oms_results.append(result)
-            state.events.extend(result.events)
-
-        self._clear_gap_overrides()
+        state.pending_intents.extend(intents)
 
         # Track previous closes for gap detection on next timestamp
         for bar in slice_bars:
@@ -272,3 +256,79 @@ class EventDrivenBacktestEngine:
         clearer = getattr(self.broker, "clear_gap_overrides", None)
         if callable(clearer):
             clearer()
+
+    def _execute_pending_intents(
+        self,
+        pending_intents: list[OrderIntent],
+        bar_by_symbol: dict[str, Bar],
+        timestamp_utc,
+        state: _BacktestRunState,
+    ) -> list[OrderIntent]:
+        remaining: list[OrderIntent] = []
+        executable: list[tuple[OrderIntent, Bar, float]] = []
+        gap_overrides: dict[str, float | None] = {}
+
+        for intent in pending_intents:
+            bar = bar_by_symbol.get(intent.symbol)
+            if bar is None:
+                remaining.append(intent)
+                continue
+
+            execution_price = float(bar.open if bar.open > 0 else bar.close)
+            if self.gap_config is not None:
+                prev_close = self._prev_close.get(intent.symbol)
+                if prev_close is not None and prev_close > 0:
+                    order_proxy = SimpleNamespace(side=intent.side)
+                    adjusted = gap_adjusted_fill_price(order_proxy, bar, prev_close, self.gap_config)
+                    gap_overrides[intent.symbol] = adjusted
+                    if adjusted is None:
+                        self._gap_rejected_orders.append({
+                            "timestamp": timestamp_utc,
+                            "symbol": intent.symbol,
+                            "side": intent.side.value,
+                            "quantity": intent.quantity,
+                            "reason": "extreme_gap",
+                        })
+                    else:
+                        execution_price = float(adjusted)
+
+            executable.append((intent, bar, execution_price))
+
+        self._set_gap_overrides(gap_overrides)
+        try:
+            for intent, bar, execution_price in executable:
+                self._set_execution_market(bar, execution_price)
+                execution_intent = self._with_execution_timestamp(intent, timestamp_utc)
+                account = self.broker.get_account()
+                result = self.oms.handle_intent(
+                    execution_intent,
+                    account,
+                    market_price=execution_price,
+                    timestamp=timestamp_utc,
+                )
+                state.oms_results.append(result)
+                state.events.extend(result.events)
+        finally:
+            self._clear_gap_overrides()
+
+        return remaining
+
+    def _set_execution_market(self, bar: Bar, execution_price: float) -> None:
+        self.broker.market_prices[bar.symbol] = execution_price
+
+        bar_volumes = getattr(self.broker, "bar_volumes", None)
+        if isinstance(bar_volumes, dict):
+            bar_volumes[bar.symbol] = float(bar.volume) if bar.volume else 0.0
+
+        positions = getattr(self.broker, "positions", None)
+        if isinstance(positions, dict) and bar.symbol in positions:
+            position = positions[bar.symbol]
+            position.market_price = execution_price
+            position.unrealized_pnl = (position.market_price - position.avg_price) * position.quantity
+
+    @staticmethod
+    def _with_execution_timestamp(intent: OrderIntent, timestamp_utc) -> OrderIntent:
+        metadata = dict(intent.metadata)
+        metadata.setdefault("signal_timestamp_utc", intent.timestamp_utc.isoformat())
+        metadata["execution_timestamp_utc"] = timestamp_utc.isoformat()
+        return replace(intent, timestamp_utc=timestamp_utc, metadata=metadata)

@@ -22,7 +22,8 @@ class RuntimeMode(str, Enum):
 
     @property
     def can_submit_real_orders(self) -> bool:
-        return self == RuntimeMode.LIVE
+        # Live execution is intentionally frozen in the current runtime shell.
+        return False
 
     @property
     def is_shadow(self) -> bool:

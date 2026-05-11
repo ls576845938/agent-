@@ -11,6 +11,51 @@ Canonical closed-loop path for the current baseline:
 
 `manifest -> ledger-backed backtest -> promotion handoff -> paper/runtime readiness report`
 
+## Pre-Live Overview
+
+Use the next-step command when you need a single operator action:
+
+```bash
+python -m quant_us.cli pre-live next-step --data-root data --strategy etf_rotation
+```
+
+Before a small paper submit attempt, use the fail-closed preflight:
+
+```bash
+python -m quant_us.cli pre-live paper-submit-preflight \
+  --data-root data \
+  --strategy etf_rotation \
+  --validation-state data/reports/paper_production/validation_state.json
+```
+
+Both commands are review-only. `paper-submit-preflight` does not create a broker client or runtime submit path and exits non-zero when blocked. It prints the external blockers separately: market hours, paper credentials, and paper-review evidence.
+
+Use the overview command when you need one operator-facing answer for a small-funds single-strategy workflow:
+
+```bash
+python -m quant_us.cli overview --data-root data --strategy etf_rotation --initial-cash 10000
+python -m quant_us.cli overview --data-root data --validation-state data/reports/paper_production/validation_state.json
+```
+
+The command is read-only. It does not start paper/live trading, does not connect to a broker, and does not submit orders.
+It summarizes three phases:
+
+- `simulated`: local readiness evidence, rendered as `READY` or `BLOCKED`
+- `paper`: explicit blocker state such as `BLOCKED_CREDENTIALS`, `BLOCKED_REVIEW`, `BLOCKED_VALIDATION`, or `READY_FOR_PAPER_ONLY_REVIEW`
+- `live`: always `FROZEN` in this baseline
+
+`overview` also prints one `next_action` command. Typical examples are rebuilding the evidence registry, running paper readiness with credential checks,
+running the paper-validation report, or returning to the research promotion gate. Passing overview output is not execution authorization.
+
+The overview also includes portfolio observability status for persisted multi-strategy evidence:
+
+- `multi_strategy`: configured strategy count and status
+- `multi_timeframe`: configured timeframe count and status
+- `pnl_attribution`: persisted ledger/report attribution rows
+- `live_state`: always `FROZEN` in this baseline
+- `paper_submit_gates`: `BLOCKED_BY_DEFAULT` until the explicit paper submit gate is selected and all evidence passes
+- `next_paper_command`: a simulated paper command for the portfolio path; it does not include `--submit-orders`
+
 ## Baseline Entry
 
 The current P0 baseline report lives at [docs/report/baseline/2026-05-09-vnext-minimal-closed-loop/](./baseline/2026-05-09-vnext-minimal-closed-loop/).
@@ -99,6 +144,8 @@ and a read-only paper-review status block:
 
 This report does not approve paper trading and does not enable any order path.
 It prints `report_state`, `readiness_state`, `evidence_registry_state`, and `scope: report only, no execution`.
+It also prints the same portfolio observability block as overview: `multi_strategy`, `multi_timeframe`, `pnl_attribution`,
+`live_state`, `paper_submit_gates`, and `next_paper_command`.
 It is evidence-only and cannot submit paper/live orders. Paper session manifests and no-submit proofs are audit evidence,
 not broker-write authorization.
 When the latest paper session manifest records a history copy, the CLI prints `paper_session_history_artifact_path`
@@ -135,6 +182,8 @@ If the 30-day counters are complete but the recovery artifact is missing or
 `operationally_complete=false`, the report/readiness state fails closed as `BLOCKED`/`INCOMPLETE`.
 This is still review-only evidence. It does not start paper trading, does not authorize live trading,
 and does not enable submit.
+The report includes the portfolio observability block so operators can see whether multi-strategy, multi-timeframe,
+and PnL-attribution evidence is present before attempting the next simulated paper command.
 
 When `scripts/audit_research_evidence.py` is present, the CLI also prints a read-only recommendation command:
 
@@ -262,6 +311,6 @@ python scripts/run_full_pipeline.py --symbol AAPL --mode full --start 2024-01-01
 ```
 
 Paper trading still requires a separate operator action after human review approval.
-Until a later change wires a real Alpaca paper broker adapter into an approved submit path, `paper_broker=alpaca` is expected to fail closed; use the simulated paper backend for local validation.
-Paper orders are not submitted by default; an explicit paper submit path must be selected before any broker-write behavior can exist.
+Paper orders are not submitted by default. Alpaca paper submission requires `paper_broker=alpaca`, `submit_orders=true`, an explicit paper-submit selection, valid APCA paper credentials, `APCA_API_BASE_URL=https://paper-api.alpaca.markets`, `QUANT_ENABLE_ALPACA_PAPER_ADAPTER=true`, and `QUANT_ALPACA_PAPER_NETWORK_SUBMIT=true`.
+That submit path is paper-only; live remains frozen.
 The full pipeline handoff is not a paper/live execution command.

@@ -10,6 +10,38 @@ from quant_us.risk.exposure import gross_exposure
 
 
 @dataclass(frozen=True)
+class PortfolioRiskPolicy:
+    cash_reserve_weight: float = 0.05
+    max_symbol_weight: float = 0.10
+    max_gross_exposure: float = 0.95
+    max_daily_turnover: float = 1.0
+
+    def gross_cap(self) -> float:
+        cash_limited_cap = max(0.0, 1.0 - self.cash_reserve_weight)
+        return max(0.0, min(self.max_gross_exposure, cash_limited_cap))
+
+    def clamp_symbol_weight(self, weight: float) -> float:
+        return max(-self.max_symbol_weight, min(self.max_symbol_weight, weight))
+
+    def scale_target_weights_for_turnover(
+        self,
+        current_weights: dict[str, float],
+        target_weights: dict[str, float],
+    ) -> tuple[dict[str, float], float]:
+        symbols = set(current_weights) | set(target_weights)
+        turnover = sum(abs(target_weights.get(symbol, 0.0) - current_weights.get(symbol, 0.0)) for symbol in symbols)
+        if turnover <= self.max_daily_turnover or turnover <= 0:
+            return dict(target_weights), 1.0
+
+        scale = self.max_daily_turnover / turnover
+        scaled = {
+            symbol: current_weights.get(symbol, 0.0) + (target_weights.get(symbol, 0.0) - current_weights.get(symbol, 0.0)) * scale
+            for symbol in symbols
+        }
+        return scaled, scale
+
+
+@dataclass(frozen=True)
 class PreTradeRiskConfig:
     max_symbol_weight: float = 0.10
     max_gross_exposure: float = 1.0

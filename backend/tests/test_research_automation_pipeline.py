@@ -61,6 +61,73 @@ def _fake_manager_run(self, experiment_id: str) -> dict:
     return fake_metrics
 
 
+def _fake_stage_metrics_manager_run(self, experiment_id: str) -> dict:
+    """Mock run() with sidecar-specific metrics for robustness aggregation tests."""
+    import json
+
+    manifest = self.load(experiment_id)
+    if manifest is None:
+        raise ValueError(f"Experiment {experiment_id} not found")
+
+    family = str(manifest.strategy_family or "")
+    fake_metrics = {
+        "sharpe_ratio": 1.2,
+        "total_return_pct": 0.12,
+        "max_drawdown_pct": 0.12,
+        "trade_count": 25,
+        "turnover": 0.2,
+        "param_count": 4,
+    }
+    if family.startswith("walk_forward_"):
+        fake_metrics.update(
+            {
+                "sharpe_ratio": 1.0,
+                "total_return_pct": 0.08,
+                "max_drawdown_pct": 0.10,
+                "trade_count": 18,
+            }
+        )
+    elif family.startswith("cost_stress_"):
+        if manifest.cost_model == "high":
+            fake_metrics.update(
+                {
+                    "sharpe_ratio": 0.7,
+                    "total_return_pct": 0.04,
+                    "max_drawdown_pct": 0.18,
+                    "trade_count": 18,
+                }
+            )
+        else:
+            fake_metrics.update(
+                {
+                    "sharpe_ratio": 1.3,
+                    "total_return_pct": 0.11,
+                    "max_drawdown_pct": 0.09,
+                    "trade_count": 18,
+                }
+            )
+    elif family.startswith("regime_split_"):
+        fake_metrics.update(
+            {
+                "sharpe_ratio": 0.9,
+                "total_return_pct": 0.06,
+                "max_drawdown_pct": 0.16,
+                "trade_count": 12,
+            }
+        )
+
+    exp_dir = Path(self.data_root) / "research" / "experiments" / experiment_id
+    exp_dir.mkdir(parents=True, exist_ok=True)
+    result_path = exp_dir / "run_result.json"
+    result_path.write_text(json.dumps(fake_metrics, default=str), encoding="utf-8")
+
+    manifest.status = "COMPLETED"
+    manifest.run_result_path = str(result_path)
+    manifest.metrics = fake_metrics
+    self._save_manifest(manifest)
+    return fake_metrics
+
+
 class TestResearchAutomationPipeline(unittest.TestCase):
     """Pipeline orchestration tests."""
 
@@ -335,6 +402,18 @@ class TestResearchAutomationPipeline(unittest.TestCase):
         scorecard_dir.mkdir(parents=True, exist_ok=True)
         backtest_dir = Path(self.tmp.name) / "research" / "backtests" / candidate_id
         backtest_dir.mkdir(parents=True, exist_ok=True)
+        strategy_manifest_dir = (
+            Path(self.tmp.name) / "research" / "manifests" / f"sman_{candidate_id}"
+        )
+        strategy_manifest_dir.mkdir(parents=True, exist_ok=True)
+        walk_forward_dir = (
+            Path(self.tmp.name) / "research" / "walk_forward" / candidate_id
+        )
+        walk_forward_dir.mkdir(parents=True, exist_ok=True)
+        cost_stress_dir = (
+            Path(self.tmp.name) / "research" / "cost_stress" / candidate_id
+        )
+        cost_stress_dir.mkdir(parents=True, exist_ok=True)
 
         manifest_payload = self._write_data_manifest(data_version=data_version)
         if data_manifest_overrides:
@@ -390,6 +469,8 @@ class TestResearchAutomationPipeline(unittest.TestCase):
                 if candidate_backtest_manifest_path is not None
                 else f"research/backtests/{candidate_id}/run_manifest.json"
             ),
+            "walk_forward_result_path": f"research/walk_forward/{candidate_id}/result.json",
+            "cost_stress_result_path": f"research/cost_stress/{candidate_id}/result.json",
             "metrics": {
                 "walk_forward_pass_rate": 0.9,
                 "trade_count": 12,
@@ -425,6 +506,42 @@ class TestResearchAutomationPipeline(unittest.TestCase):
         )
         (scorecard_dir / f"{candidate_id}.json").write_text(
             json.dumps({"candidate_id": candidate_id, "status": "ok"}),
+            encoding="utf-8",
+        )
+        (strategy_manifest_dir / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "strategy_candidate_id": f"sman_{candidate_id}",
+                    "source_candidate_id": candidate_id,
+                    "source_experiment_id": experiment_id,
+                    "promotion_status": "DRAFT",
+                    "params_frozen": True,
+                    "created_at": "2026-05-09T12:01:00+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
+        (walk_forward_dir / "result.json").write_text(
+            json.dumps(
+                {
+                    "candidate_id": candidate_id,
+                    "status": "completed",
+                    "walk_forward_pass_rate": 0.9,
+                    "folds": [{"fold": 1, "passed": True}],
+                }
+            ),
+            encoding="utf-8",
+        )
+        (cost_stress_dir / "result.json").write_text(
+            json.dumps(
+                {
+                    "candidate_id": candidate_id,
+                    "status": "completed",
+                    "cost_sensitivity": 0.1,
+                    "stress_survival_rate": 0.9,
+                    "scenarios": [{"name": "high_cost", "passed": True}],
+                }
+            ),
             encoding="utf-8",
         )
 
@@ -553,6 +670,83 @@ class TestResearchAutomationPipeline(unittest.TestCase):
             self.fail(f"Pipeline failed with error: {result.get('error')}")
         # At least the base experiment + walk-forward + cost stress + regime split
         self.assertGreater(len(result["experiment_ids"]), 5)
+
+    def test_pipeline_preserves_timeframe_across_required_stages(self) -> None:
+        config = {
+            "experiment_name": "timeframe_test",
+            "strategy_id": "momentum",
+            "symbols": ["AAPL"],
+            "params": {"lookback": 20},
+            "start_date": "2024-01-01",
+            "end_date": "2024-01-10",
+            "timeframe": "5m",
+        }
+        with patch.object(ExperimentManager, "run", _fake_manager_run):
+            result = self.pipeline.run(config)
+
+        mgr = ExperimentManager(data_root=self.tmp.name)
+        for eid in result["experiment_ids"]:
+            manifest = mgr.load(eid)
+            self.assertIsNotNone(manifest)
+            self.assertEqual(manifest.timeframe, "5m")
+
+        for cid in result["candidate_ids"]:
+            candidate_path = (
+                Path(self.tmp.name)
+                / "research"
+                / "candidates"
+                / cid
+                / "candidate.json"
+            )
+            candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+            self.assertEqual(candidate["timeframe"], "5m")
+
+    def test_pipeline_merges_required_stage_metrics_into_base_candidates(self) -> None:
+        config = {
+            "experiment_name": "robustness_merge_test",
+            "strategy_id": "momentum",
+            "symbols": ["AAPL"],
+            "params": {"lookback": 20},
+            "start_date": "2024-01-01",
+            "end_date": "2024-01-31",
+            "bar_size": "15m",
+        }
+        with patch.object(ExperimentManager, "run", _fake_stage_metrics_manager_run):
+            result = self.pipeline.run(config)
+
+        self.assertEqual(result["status"], "completed")
+        base_candidate_metrics: dict[str, object] | None = None
+        for cid in result["candidate_ids"]:
+            candidate_path = (
+                Path(self.tmp.name)
+                / "research"
+                / "candidates"
+                / cid
+                / "candidate.json"
+            )
+            candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+            experiment = ExperimentManager(data_root=self.tmp.name).load(
+                candidate["experiment_id"]
+            )
+            self.assertIsNotNone(experiment)
+            if not ResearchAutomationPipeline._is_stage_experiment(
+                experiment.strategy_family
+            ):
+                base_candidate_metrics = candidate["metrics"]
+                break
+
+        self.assertIsNotNone(base_candidate_metrics)
+        assert base_candidate_metrics is not None
+        self.assertIn("walk_forward_pass_rate", base_candidate_metrics)
+        self.assertIn("wf_fold_results", base_candidate_metrics)
+        self.assertIn("stress_survival_rate", base_candidate_metrics)
+        self.assertIn("cost_stress_levels", base_candidate_metrics)
+        self.assertIn("regime_sharpes", base_candidate_metrics)
+        self.assertGreaterEqual(base_candidate_metrics["walk_forward_pass_rate"], 0.5)
+        self.assertEqual(
+            result["required_stages"]["walk_forward"]["passed"],
+            True,
+        )
 
     def test_step_evaluate_unknown_raises(self) -> None:
         with self.assertRaises(ValueError):
@@ -1025,6 +1219,38 @@ class TestResearchAutomationPipeline(unittest.TestCase):
         self.assertEqual(result.warnings, [])
         self.assertEqual(result.evidence["backtest_manifest_source"], "path")
         self.assertEqual(result.evidence["data_manifest_binding_state"], "bound")
+        self.assertTrue(result.evidence["strategy_manifest_exists"])
+        self.assertTrue(result.evidence["walk_forward_artifact_exists"])
+        self.assertTrue(result.evidence["cost_stress_artifact_exists"])
+        self.assertTrue(result.evidence["promotion_result_exists"])
+        self.assertTrue(Path(result.evidence["promotion_result_path"]).exists())
+
+    def test_strategy_manifest_manager_finalizes_only_after_canonical_gate(self) -> None:
+        candidate_id = "cand_strategy_manifest_ready"
+        experiment_id = "exp_strategy_manifest_ready"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+
+        from quant_us.research.strategy_manifest import StrategyManifestManager
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            manifest = StrategyManifestManager(
+                data_root=self.tmp.name
+            ).create_from_candidate(candidate_id)
+
+        self.assertEqual(manifest.promotion_status, "READY_FOR_PORTFOLIO_SIM")
+        self.assertEqual(manifest.source_candidate_id, candidate_id)
+        self.assertTrue(manifest.params_frozen)
+        self.assertTrue(Path(manifest.promotion_result_path).exists())
 
     def test_promotion_gate_rejects_inline_only_backtest_manifest(self) -> None:
         candidate_id = "cand_inline_only"
@@ -1057,6 +1283,230 @@ class TestResearchAutomationPipeline(unittest.TestCase):
         )
         self.assertIn(
             "inline_backtest_manifest_not_allowed: promotion requires a persisted canonical backtest_manifest_path",
+            result.reasons,
+        )
+
+    def test_promotion_gate_rejects_missing_canonical_backtest_manifest(self) -> None:
+        candidate_id = "cand_missing_backtest"
+        experiment_id = "exp_missing_backtest"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+        candidate_path = (
+            Path(self.tmp.name)
+            / "research"
+            / "candidates"
+            / candidate_id
+            / "candidate.json"
+        )
+        candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+        candidate["backtest_manifest_path"] = ""
+        candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertIn(
+            "missing_canonical_backtest_manifest_path: candidate must persist "
+            "backtest_manifest_path=research/backtests/cand_missing_backtest/run_manifest.json",
+            result.reasons,
+        )
+        self.assertIn(
+            "missing_backtest_manifest_evidence: READY_FOR_PAPER_REVIEW requires canonical backtest manifest evidence",
+            result.reasons,
+        )
+
+    def test_promotion_gate_rejects_missing_strategy_manifest(self) -> None:
+        candidate_id = "cand_missing_strategy_manifest"
+        experiment_id = "exp_missing_strategy_manifest"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+        manifest_dir = (
+            Path(self.tmp.name)
+            / "research"
+            / "manifests"
+            / f"sman_{candidate_id}"
+        )
+        (manifest_dir / "manifest.json").unlink()
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertIn(
+            "missing_strategy_manifest: canonical strategy manifest not found for candidate",
+            result.reasons,
+        )
+
+    def test_promotion_gate_rejects_missing_scorecard(self) -> None:
+        candidate_id = "cand_missing_scorecard"
+        experiment_id = "exp_missing_scorecard"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+        (
+            Path(self.tmp.name)
+            / "research"
+            / "scorecards"
+            / f"{candidate_id}.json"
+        ).unlink()
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertIn("missing_scorecard: robust scorecard not found", result.reasons)
+
+    def test_promotion_gate_rejects_missing_walk_forward_artifact(self) -> None:
+        candidate_id = "cand_missing_walk_forward"
+        experiment_id = "exp_missing_walk_forward"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+        (
+            Path(self.tmp.name)
+            / "research"
+            / "walk_forward"
+            / candidate_id
+            / "result.json"
+        ).unlink()
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertTrue(
+            any(reason.startswith("walk_forward_artifact_path_missing:") for reason in result.reasons)
+        )
+        self.assertNotIn("READY_FOR_PAPER_REVIEW", result.decision)
+
+    def test_promotion_gate_rejects_missing_cost_stress_artifact(self) -> None:
+        candidate_id = "cand_missing_cost_stress"
+        experiment_id = "exp_missing_cost_stress"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+        (
+            Path(self.tmp.name)
+            / "research"
+            / "cost_stress"
+            / candidate_id
+            / "result.json"
+        ).unlink()
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertTrue(
+            any(reason.startswith("cost_stress_artifact_path_missing:") for reason in result.reasons)
+        )
+
+    def test_promotion_gate_rejects_inline_walk_forward_metrics_only(self) -> None:
+        candidate_id = "cand_inline_wf"
+        experiment_id = "exp_inline_wf"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+        candidate_path = (
+            Path(self.tmp.name)
+            / "research"
+            / "candidates"
+            / candidate_id
+            / "candidate.json"
+        )
+        candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+        candidate["walk_forward_result_path"] = ""
+        candidate["walk_forward_result"] = {"walk_forward_pass_rate": 1.0}
+        candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+
+        with patch(
+            "quant_us.research.automation.overfit.OverfitDetector.check",
+            return_value=SimpleNamespace(
+                is_overfit=False,
+                degradation_pct=0.0,
+                reasons=[],
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertIn(
+            "inline_walk_forward_artifact_not_allowed: promotion requires persisted canonical walk_forward evidence",
+            result.reasons,
+        )
+
+    def test_promotion_gate_rejects_when_promotion_result_cannot_persist(self) -> None:
+        candidate_id = "cand_persist_fail"
+        experiment_id = "exp_persist_fail"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+
+        with (
+            patch(
+                "quant_us.research.automation.overfit.OverfitDetector.check",
+                return_value=SimpleNamespace(
+                    is_overfit=False,
+                    degradation_pct=0.0,
+                    reasons=[],
+                ),
+            ),
+            patch.object(
+                ResearchPromotionGate,
+                "_persist_promotion_result",
+                return_value=None,
+            ),
+        ):
+            result = ResearchPromotionGate(data_root=self.tmp.name).evaluate(candidate_id)
+
+        self.assertEqual(result.decision, "BLOCKED")
+        self.assertIn(
+            "missing_persisted_promotion_result: READY_FOR_PAPER_REVIEW requires persisted gate evidence",
             result.reasons,
         )
 

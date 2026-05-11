@@ -157,6 +157,16 @@ class MarketDataLoopTests(unittest.TestCase):
         self.assertEqual(status.stale_seconds, float("inf"))
         self.assertEqual(status.error, "no_data")
 
+    def test_validate_freshness_blocks_when_a_symbol_is_missing(self) -> None:
+        """One fresh symbol must not mask another missing symbol."""
+        df = _make_bars_df(["AAPL"], n_bars=1, base_time=utc_now() - timedelta(seconds=10))
+        loop = MarketDataLoop(self.symbols, "test_vendor", "1m", data_root=str(self.tmpdir))
+        status = loop.validate_freshness(df)
+
+        self.assertFalse(status.fresh)
+        self.assertEqual(status.stale_seconds, float("inf"))
+        self.assertEqual(status.error, "missing_symbols=MSFT")
+
     # -- write_to_cache ---------------------------------------------------
 
     def test_write_to_cache_creates_parquet_files(self) -> None:

@@ -68,3 +68,11 @@ class TestOneShotConfig:
         config = OneShotExecutorConfig()
         assert config.is_dry_run is True
         assert config.execute_one_shot is False
+
+    def test_one_shot_executor_has_no_live_broker_submit_surface(self) -> None:
+        import quant_us.live.one_shot_executor as one_shot_mod
+
+        source = Path(one_shot_mod.__file__ or "").read_text()
+        assert "AlpacaBroker" not in source
+        assert ".submit_order(" not in source
+        assert "live_runtime_frozen_no_order_submission" in source

@@ -5,6 +5,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -16,6 +17,19 @@ from quant_us.core.types import Fill
 
 
 TESTCLIENT_AVAILABLE = bool(importlib.util.find_spec("fastapi")) and bool(importlib.util.find_spec("httpx"))
+
+
+def _write_portfolio_observability(data_root: Path) -> None:
+    report_dir = data_root / "reports"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    (report_dir / "portfolio_observability.json").write_text(
+        """{
+  "multi_strategy": {"status": "PASS", "strategies": ["trend_macd", "reversion_rsi"]},
+  "multi_timeframe": {"status": "PASS", "timeframes": ["1d", "1h"]},
+  "pnl_attribution": {"status": "PASS", "rows": [{"strategy_id": "trend_macd", "pnl": 1.0}]}
+}""",
+        encoding="utf-8",
+    )
 
 
 class ApiSchemaDefaultTests(unittest.TestCase):
@@ -36,6 +50,31 @@ class ApiSchemaDefaultTests(unittest.TestCase):
         self.assertEqual(quality.symbol, "SPY")
         self.assertEqual(quality.interval, "1d")
 
+    def test_system_overview_payload_is_read_only_pre_live(self) -> None:
+        from backend.app.api.app_factory import _system_overview_payload
+
+        with TemporaryDirectory() as directory:
+            _write_portfolio_observability(Path(directory))
+            payload = _system_overview_payload(directory)
+            self.assertFalse((Path(directory) / "research" / "evidence_registry.json").exists())
+
+        self.assertEqual(payload["mode"], "pre_live")
+        self.assertEqual(payload["execution"]["live_state"], "frozen")
+        self.assertFalse(payload["execution"]["live_submit_allowed"])
+        self.assertEqual(payload["execution"]["paper_submit_default"], "disabled")
+        self.assertEqual(payload["portfolio_observability"]["live_state"], "FROZEN")
+        self.assertEqual(payload["portfolio_observability"]["multi_strategy"]["status"], "PASS")
+        self.assertEqual(payload["portfolio_observability"]["multi_timeframe"]["status"], "PASS")
+        self.assertEqual(payload["portfolio_observability"]["pnl_attribution"]["status"], "PASS")
+        self.assertEqual(payload["minute_data_quality"]["status"], "MISSING")
+        self.assertEqual(
+            payload["portfolio_observability"]["paper_submit_gates"]["state"],
+            "BLOCKED_BY_DEFAULT",
+        )
+        self.assertFalse(payload["execution"]["paper_network_submit_confirmation"])
+        self.assertEqual(payload["registry"]["state"], "missing")
+        self.assertTrue(payload["next_actions"])
+
 
 @unittest.skipUnless(TESTCLIENT_AVAILABLE, "FastAPI TestClient dependencies are not installed in the current environment")
 class ApiContractTests(unittest.TestCase):
@@ -51,6 +90,28 @@ class ApiContractTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertEqual(payload["status"], "ok")
+
+    def test_system_overview_is_pre_live_and_read_only(self) -> None:
+        with TemporaryDirectory() as directory:
+            _write_portfolio_observability(Path(directory))
+            response = self.client.get(
+                "/api/system/overview",
+                params={"data_root": directory},
+            )
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["mode"], "pre_live")
+        self.assertEqual(payload["execution"]["live_state"], "frozen")
+        self.assertFalse(payload["execution"]["live_submit_allowed"])
+        self.assertEqual(payload["execution"]["paper_submit_default"], "disabled")
+        self.assertEqual(payload["portfolio_observability"]["live_state"], "FROZEN")
+        self.assertEqual(payload["portfolio_observability"]["multi_strategy"]["strategy_count"], 2)
+        self.assertEqual(payload["portfolio_observability"]["multi_timeframe"]["timeframe_count"], 2)
+        self.assertEqual(payload["portfolio_observability"]["pnl_attribution"]["row_count"], 1)
+        self.assertIn("paper --data-root", payload["portfolio_observability"]["next_paper_command"])
+        self.assertEqual(payload["minute_data_quality"]["status"], "MISSING")
+        self.assertEqual(payload["registry"]["state"], "missing")
+        self.assertIn("next_actions", payload)
 
     def test_metrics_endpoint(self) -> None:
         response = self.client.get("/metrics")
@@ -216,6 +277,59 @@ class ApiContractTests(unittest.TestCase):
         self.assertEqual(payload["selected_priority"], "数据质量与特征版本治理")
         self.assertTrue(payload["is_usable"])
         self.assertIn("data_version", payload)
+
+    def test_factor_mine_and_run_endpoint_is_research_only(self) -> None:
+        class FakeMiningResult:
+            strategy_configs = [
+                {
+                    "strategy_id": "factor_rank",
+                    "timeframe": "1d",
+                    "bar_size": "1d",
+                    "params": {"factor_name": "momentum_20d", "top_n": 1},
+                }
+            ]
+
+            def to_dict(self) -> dict:
+                return {
+                    "run_id": "fmine_test",
+                    "selected_factors": [{"factor_id": "momentum_20d"}],
+                    "strategy_configs": list(self.strategy_configs),
+                }
+
+        with (
+            patch(
+                "quant_us.research.automation.factor_mining.FactorMiningEngine.mine",
+                return_value=FakeMiningResult(),
+            ) as mine,
+            patch(
+                "quant_us.research.automation.pipeline.ResearchAutomationPipeline.run",
+                return_value={"status": "completed", "candidate_ids": ["cand_factor"]},
+            ) as run_pipeline,
+            patch(
+                "quant_us.research.evidence_registry.rebuild_evidence_registry",
+                return_value={"counts": {"candidate_count": 1}},
+            ),
+        ):
+            response = self.client.post(
+                "/api/research/factors/mine-and-run",
+                json={
+                    "symbols": ["AAPL", "MSFT"],
+                    "start": "2024-01-01",
+                    "end": "2024-02-01",
+                    "bar_sizes": ["1d"],
+                    "factor_ids": ["momentum_20d"],
+                    "max_runs": 1,
+                    "skip_registry_rebuild": False,
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "completed")
+        self.assertEqual(payload["candidate_ids"], ["cand_factor"])
+        self.assertIn("no paper/live order path", payload["note"])
+        mine.assert_called_once()
+        run_pipeline.assert_called_once()
 
     def test_us_event_backtest_endpoint_uses_local_data_lake(self) -> None:
         with TemporaryDirectory() as directory:

@@ -379,6 +379,8 @@ class TestPromotionGateEnhanced:
         asset_class: str = "equity",
         backtest_manifest_path: str | None = None,
         backtest_manifest: dict | None = None,
+        write_canonical_artifacts: bool = True,
+        write_strategy_manifest: bool = True,
     ) -> Path:
         """Helper to write a candidate JSON file with given metrics."""
         cand_dir = root / "research" / "candidates" / candidate_id
@@ -408,9 +410,102 @@ class TestPromotionGateEnhanced:
             data["backtest_manifest_path"] = backtest_manifest_path
         if backtest_manifest is not None:
             data["backtest_manifest"] = backtest_manifest
+        if write_canonical_artifacts:
+            data["walk_forward_result_path"] = (
+                f"research/walk_forward/{candidate_id}/result.json"
+            )
+            data["cost_stress_result_path"] = (
+                f"research/cost_stress/{candidate_id}/result.json"
+            )
+            self._make_canonical_research_artifacts(
+                root=root,
+                candidate_id=candidate_id,
+                metrics=merged_metrics,
+            )
+        if write_strategy_manifest:
+            self._make_strategy_manifest(
+                root=root,
+                candidate_id=candidate_id,
+                experiment_id=str(data["experiment_id"]),
+                symbols=list(data["symbols"]),
+            )
         path = cand_dir / "candidate.json"
         path.write_text(json.dumps(data))
         return path
+
+    def _make_strategy_manifest(
+        self,
+        *,
+        root: Path,
+        candidate_id: str,
+        experiment_id: str = "exp_test",
+        symbols: list[str] | None = None,
+    ) -> Path:
+        """Helper to create frozen canonical strategy manifest evidence."""
+        manifest_id = f"sman_{candidate_id}"
+        manifest_dir = root / "research" / "manifests" / manifest_id
+        manifest_dir.mkdir(parents=True, exist_ok=True)
+        path = manifest_dir / "manifest.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "strategy_candidate_id": manifest_id,
+                    "source_candidate_id": candidate_id,
+                    "source_experiment_id": experiment_id,
+                    "symbols": symbols or ["AAPL"],
+                    "promotion_status": "DRAFT",
+                    "params_frozen": True,
+                    "created_at": "2026-05-04T15:25:00+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
+        return path
+
+    def _make_canonical_research_artifacts(
+        self,
+        *,
+        root: Path,
+        candidate_id: str,
+        metrics: dict,
+    ) -> tuple[Path, Path]:
+        """Helper to create persisted walk-forward and cost-stress evidence."""
+        walk_forward_dir = root / "research" / "walk_forward" / candidate_id
+        cost_stress_dir = root / "research" / "cost_stress" / candidate_id
+        walk_forward_dir.mkdir(parents=True, exist_ok=True)
+        cost_stress_dir.mkdir(parents=True, exist_ok=True)
+
+        walk_forward_path = walk_forward_dir / "result.json"
+        walk_forward_path.write_text(
+            json.dumps(
+                {
+                    "candidate_id": candidate_id,
+                    "status": "completed",
+                    "walk_forward_pass_rate": float(
+                        metrics.get("walk_forward_pass_rate", 0.8)
+                    ),
+                    "folds": [{"fold": 1, "passed": True}],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        cost_stress_path = cost_stress_dir / "result.json"
+        cost_stress_path.write_text(
+            json.dumps(
+                {
+                    "candidate_id": candidate_id,
+                    "status": "completed",
+                    "cost_sensitivity": float(metrics.get("cost_sensitivity", 0.2)),
+                    "stress_survival_rate": float(
+                        metrics.get("stress_survival_rate", 0.85)
+                    ),
+                    "scenarios": [{"name": "high_cost", "passed": True}],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return walk_forward_path, cost_stress_path
 
     def _make_experiment_manifest(
         self,
@@ -1580,6 +1675,10 @@ class TestPromotionGateEnhanced:
                 },
                 "promotion_gate": {
                     "decision": "READY_FOR_PAPER_REVIEW",
+                },
+                "paper_review_candidate": {
+                    "review_candidate_status": "READY_FOR_REVIEW",
+                    "blocking_reasons": [],
                 },
             },
         }

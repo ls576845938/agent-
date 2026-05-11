@@ -1,11 +1,4 @@
-"""Test that LivePilotExecutor calls submit_order when ALL gates pass.
-
-This is the ONLY test file in Phase G4 that allows submit_order to be called.
-It uses MagicMock for AlpacaBroker to verify broker interaction without any
-real API connections. All supporting components are mocked via context managers.
-The _run_submission_gate is patched to simulate APPROVED_FOR_SUBMIT so that
-the submission flow is exercised.
-"""
+"""Test that LivePilotExecutor stays frozen when ALL gates pass."""
 
 from __future__ import annotations
 
@@ -39,8 +32,8 @@ _APPROVED_DECISION = SubmissionGateDecision(
 
 
 class TestLivePilotSubmitWithFakeBroker:
-    def test_submit_order_called_when_all_gates_pass(self, monkeypatch) -> None:
-        """When ALL gates pass, submit_order is called and real_submit_occurred is True."""
+    def test_submit_order_blocked_when_all_gates_pass(self, monkeypatch) -> None:
+        """When ALL gates pass, live pilot still cannot call submit_order."""
         monkeypatch.setenv("QUANT_LIVE_SUBMISSION_ENABLED", "true")
 
         mock_broker = MagicMock()
@@ -102,8 +95,14 @@ class TestLivePilotSubmitWithFakeBroker:
                 executor = LivePilotExecutor(config)
                 result = executor.execute()
 
-                assert result["real_submit_occurred"] is True
-                assert mock_broker.submit_order.called
+                assert result["real_submit_occurred"] is False
+                mock_broker.submit_order.assert_not_called()
+                for preview in result.get("previews", []):
+                    assert preview["submit_result"]["submitted"] is False
+                    assert (
+                        preview["submit_result"]["reason"]
+                        == "live_runtime_frozen_no_order_submission"
+                    )
 
     def test_order_intent_id_traceable(self, monkeypatch) -> None:
         """The order_intent_id from the intent appears in the preview and audit."""
@@ -166,20 +165,19 @@ class TestLivePilotSubmitWithFakeBroker:
                 executor = LivePilotExecutor(config)
                 result = executor.execute()
 
-                # Audit trail has real_submit entries
+                # Audit trail has no real_submit entries.
                 audit_entries = executor.audit_trail.read_all()
                 submitted = [e for e in audit_entries if e.get("real_submit") is True]
-                assert len(submitted) >= 1
+                assert submitted == []
+                mock_broker.submit_order.assert_not_called()
 
-                # Submitted previews include broker details
                 for preview in result.get("previews", []):
                     sr = preview.get("submit_result", {})
-                    if sr.get("submitted"):
-                        assert "client_order_id" in sr
-                        assert "broker_order_id" in sr
+                    assert sr.get("submitted") is False
+                    assert sr.get("reason") == "live_runtime_frozen_no_order_submission"
 
-    def test_audit_records_real_submit_for_submitted_order(self, monkeypatch) -> None:
-        """Submitted orders are audited with real_submit=True in the audit trail."""
+    def test_audit_records_no_real_submit_for_frozen_order(self, monkeypatch) -> None:
+        """Frozen live pilot does not create real_submit audit entries."""
         monkeypatch.setenv("QUANT_LIVE_SUBMISSION_ENABLED", "true")
 
         mock_broker = MagicMock()
@@ -239,10 +237,8 @@ class TestLivePilotSubmitWithFakeBroker:
                 executor = LivePilotExecutor(config)
                 executor.execute()
 
-                assert executor.audit_trail.real_submit_count() >= 1
+                assert executor.audit_trail.real_submit_count() == 0
+                mock_broker.submit_order.assert_not_called()
                 entries = executor.audit_trail.read_all()
                 real_entries = [e for e in entries if e.get("real_submit") is True]
-                assert len(real_entries) >= 1
-                submitted_entry = real_entries[0]
-                assert submitted_entry["status"] == "SUBMITTED"
-                assert submitted_entry["gate_decision"] == "APPROVED_FOR_SUBMIT"
+                assert real_entries == []

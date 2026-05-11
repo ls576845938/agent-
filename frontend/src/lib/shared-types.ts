@@ -2,6 +2,88 @@ import type {Summary} from './view-model';
 
 export type ValueEvent = {target: {value: string}};
 
+export type SystemOverviewResponse = {
+  status: string;
+  stage: string;
+  mode: string;
+  data_root: string;
+  health: {
+    service?: string;
+    data_source_default?: string;
+    fastapi_available?: boolean;
+  };
+  registry: {
+    state?: string;
+    integrity?: string;
+    path?: string;
+    counts?: Record<string, number>;
+    notes?: string[];
+    rebuild_available?: boolean;
+  };
+  paper_validation: {
+    state?: string;
+    days_completed?: number;
+    days_required?: number;
+    consecutive_clean_days?: number;
+    submit_orders?: string;
+    audit_blocker_status?: string;
+    data_strict_status?: string;
+    recovery_status?: string;
+    gaps?: string[];
+    evidence?: Array<Record<string, unknown>>;
+  };
+  minute_data_quality?: {
+    status?: string;
+    evaluated_symbols?: string[];
+    bar_sizes?: string[];
+    symbols?: Array<Record<string, unknown>>;
+    lookback_trading_days?: number;
+  };
+  paper_review: {
+    status?: string;
+    entry_allowed?: boolean;
+    manual_review_pending?: boolean;
+    summary?: string;
+    evidence_path?: string;
+    review_path?: string;
+    manifest_path?: string;
+    evidence_pack_path?: string;
+  };
+  broker_credentials: {
+    credentials_present?: boolean;
+    api_key_present?: boolean;
+    api_secret_present?: boolean;
+    endpoint_kind?: string;
+    base_url_valid?: boolean;
+    allowed_base_url?: string;
+  };
+  execution: {
+    strategy_direct_broker_allowed?: boolean;
+    paper_submit_default?: string;
+    paper_network_submit_confirmation?: boolean;
+    paper_submit_requires?: string[];
+    live_submit_allowed?: boolean;
+    live_state?: string;
+    live_block_reason?: string;
+  };
+  small_account: {
+    profile?: string;
+    splitting_required?: boolean;
+    default_capital?: number;
+    suggested_max_order_notional?: number;
+    suggested_max_daily_notional?: number;
+    suggested_max_daily_order_count?: number;
+  };
+  portfolio?: Record<string, unknown>;
+  multi_strategy?: Record<string, unknown>;
+  multi_strategy_portfolio?: Record<string, unknown>;
+  strategy_weights?: Array<Record<string, unknown>>;
+  risk_budget?: Record<string, unknown>;
+  pnl_attribution?: Array<Record<string, unknown>>;
+  gates?: Record<string, unknown>;
+  next_actions: string[];
+};
+
 export type FormState = {
   source: 'fixture' | 'sqlite' | 'auto';
   symbol: string;

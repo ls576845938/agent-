@@ -197,7 +197,8 @@ class TestLiveRuntimeLiveOrders(unittest.TestCase):
                     in_regular_session=True,
                     oms_idempotency_ok=True,
                 )
-                self.assertTrue(decision.approved)
+                self.assertFalse(decision.approved)
+                self.assertEqual("REQUIRES_MANUAL_REVIEW", decision.decision)
             runtime.oms = None
             result = runtime.submit_orders([_make_intent()])
         self.assertGreater(len(result["rejected"]), 0)
@@ -271,7 +272,8 @@ class TestLiveRuntimeLiveOrders(unittest.TestCase):
                     in_regular_session=True,
                     oms_idempotency_ok=True,
                 )
-                self.assertTrue(decision.approved)
+                self.assertFalse(decision.approved)
+                self.assertEqual("REQUIRES_MANUAL_REVIEW", decision.decision)
 
                 intent = _make_intent()
                 account = AccountState(
@@ -359,7 +361,8 @@ class TestLiveRuntimeConfigSafety(unittest.TestCase):
             confirm_live=True,
             live_submission_enabled=True,
         )
-        self.assertTrue(config2.real_order_submission_enabled)
+        self.assertFalse(config2.real_order_submission_enabled)
+        self.assertIn("live_runtime_frozen", config2.live_block_reasons(readiness_passed=True))
 
 
 class TestTurnoverReduction(unittest.TestCase):

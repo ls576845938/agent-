@@ -4,6 +4,7 @@ from dataclasses import fields, is_dataclass
 from typing import Any
 
 from quant_us.strategies.base import Strategy
+from quant_us.strategies.composite import CompositeStrategy, StrategySpec
 from quant_us.strategies.donchian_breakout_strategy import DonchianBreakoutStrategy
 from quant_us.strategies.earnings_drift_strategy import EarningsDriftStrategy
 from quant_us.strategies.etf_rotation_strategy import EtfMomentumRotationStrategy
@@ -31,8 +32,23 @@ STRATEGY_REGISTRY: dict[str, type[Strategy]] = {
     "time_window": TimeWindowStrategy,
 }
 
+PORTFOLIO_STRATEGY_IDS = {"portfolio", "multi_strategy"}
+
+DEFAULT_PORTFOLIO_SPECS: tuple[StrategySpec, ...] = (
+    StrategySpec("trend_momentum", weight=0.35, timeframe="1m"),
+    StrategySpec("trend_macd", weight=0.25, timeframe="5m"),
+    StrategySpec("short_reversion", weight=0.20, timeframe="1m"),
+    StrategySpec("volatility_squeeze", weight=0.20, timeframe="15m"),
+)
+
 
 def build_strategy(strategy_id: str, parameters: dict[str, Any] | None = None) -> Strategy:
+    if strategy_id in PORTFOLIO_STRATEGY_IDS:
+        params = parameters or {}
+        if params:
+            raise ValueError(f"Unknown parameters for {strategy_id}: {sorted(params)}")
+        return build_composite_strategy(default_portfolio_specs())
+
     strategy_cls = STRATEGY_REGISTRY.get(strategy_id)
     if strategy_cls is None:
         raise ValueError(f"Unknown quant_us strategy_id: {strategy_id}")
@@ -44,7 +60,31 @@ def build_strategy(strategy_id: str, parameters: dict[str, Any] | None = None) -
     return strategy_cls(**params)
 
 
+def build_strategies(specs: list[StrategySpec]) -> list[Strategy]:
+    return [build_strategy(spec.strategy_id, spec.parameters) for spec in specs]
+
+
+def build_composite_strategy(specs: list[StrategySpec]) -> CompositeStrategy:
+    if not specs:
+        raise ValueError("At least one strategy spec is required")
+    return CompositeStrategy(strategies=build_strategies(specs), specs=list(specs))
+
+
+def default_portfolio_specs() -> list[StrategySpec]:
+    return [
+        StrategySpec(
+            strategy_id=spec.strategy_id,
+            parameters=dict(spec.parameters),
+            weight=spec.weight,
+            timeframe=spec.timeframe,
+        )
+        for spec in DEFAULT_PORTFOLIO_SPECS
+    ]
+
+
 def strategy_parameter_names(strategy_id: str) -> set[str]:
+    if strategy_id in PORTFOLIO_STRATEGY_IDS:
+        return set()
     strategy_cls = STRATEGY_REGISTRY.get(strategy_id)
     if strategy_cls is None:
         raise ValueError(f"Unknown quant_us strategy_id: {strategy_id}")

@@ -249,6 +249,39 @@ class TestFactorPipeline:
         assert abs(result["AAPL"] - (0.8 - 0.75)) < 1e-10
         assert abs(result["XOM"] - (0.3 - 0.25)) < 1e-10
 
+    def test_compute_preserves_timestamp_and_timeframe_snapshot_metadata(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        sample_bars: pd.DataFrame,
+        tmp_path,
+    ) -> None:
+        captured: dict[str, str] = {}
+
+        def mock_load_bars(*args, **kwargs):
+            captured["bar_size"] = kwargs["bar_size"]
+            return sample_bars.assign(
+                timestamp_utc=lambda frame: pd.to_datetime(frame["timestamp_utc"], utc=True)
+                + pd.to_timedelta(np.where(frame["symbol"] == "SPY", 0, np.where(frame["symbol"] == "QQQ", 5, 10)), unit="m")
+            )
+
+        monkeypatch.setattr("quant_us.factors.pipeline._load_bars", mock_load_bars)
+
+        pipe = FactorPipeline(data_root=str(tmp_path))
+        df = pipe.compute(
+            factor_ids=["momentum_20d"],
+            symbols=["SPY", "QQQ", "AAPL"],
+            start="2024-01-10",
+            end="2024-01-31",
+            bar_size="5m",
+        )
+
+        assert captured["bar_size"] == "5m"
+        assert "timestamp_utc" in df.columns
+        stored = pipe._store.read_factor_values("momentum_20d", "v1")
+        assert "timestamp_utc" in stored.columns
+        assert set(stored["bar_size"]) == {"5m"}
+        assert set(stored["timeframe"]) == {"5m"}
+
 
 # ===========================================================================
 # evaluation.py
@@ -299,6 +332,38 @@ class TestFactorEvaluator:
         # Should not crash; should return something
         assert isinstance(flagged, bool)
         assert isinstance(msg, str)
+
+    def test_evaluate_passes_intraday_bar_size(self, monkeypatch: pytest.MonkeyPatch, sample_bars: pd.DataFrame) -> None:
+        evaluator = FactorEvaluator(data_root="/tmp/test_factor_eval_intraday")
+        captured: dict[str, str] = {}
+
+        def mock_compute(*args, **kwargs):
+            captured["compute_bar_size"] = kwargs["bar_size"]
+            captured["compute_timeframe"] = kwargs["timeframe"]
+            base = sample_bars.copy()
+            base["timestamp_utc"] = pd.to_datetime(base["timestamp_utc"], utc=True)
+            base["date"] = base["timestamp_utc"].dt.date.astype(str)
+            return base[["timestamp_utc", "date", "symbol"]].assign(momentum_20d=np.linspace(0.0, 1.0, len(base)))
+
+        def mock_load_bars(*args, **kwargs):
+            captured["load_bar_size"] = kwargs["bar_size"]
+            return sample_bars
+
+        monkeypatch.setattr(evaluator._pipeline, "compute", mock_compute)
+        monkeypatch.setattr("quant_us.factors.evaluation._load_bars", mock_load_bars)
+
+        evaluator.evaluate(
+            factor_id="momentum_20d",
+            symbols=["SPY", "QQQ", "AAPL"],
+            start="2024-01-10",
+            end="2024-01-31",
+            forward_period=2,
+            bar_size="15m",
+        )
+
+        assert captured["compute_bar_size"] == "15m"
+        assert captured["compute_timeframe"] is None
+        assert captured["load_bar_size"] == "15m"
 
     def test_evaluate_result_dataclass(self) -> None:
         result = FactorEvaluationResult(

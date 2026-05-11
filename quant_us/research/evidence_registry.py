@@ -1312,6 +1312,19 @@ def _scan_strategy_manifests(root: Path) -> list[dict[str, Any]]:
                 "details": {
                     "promotion_status": str(payload.get("promotion_status", "")),
                     "source_experiment_id": str(payload.get("source_experiment_id", "")),
+                    "paper_review_id": str(payload.get("paper_review_id", "")),
+                    "paper_review_evidence_pack_path": str(
+                        payload.get("paper_review_evidence_pack_path", "")
+                    ),
+                    "paper_review_candidate_path": str(
+                        payload.get("paper_review_candidate_path", "")
+                    ),
+                    "paper_review_candidate_status": str(
+                        payload.get("paper_review_candidate_status", "")
+                    ),
+                    "paper_review_blocking_reasons": list(
+                        payload.get("paper_review_blocking_reasons", [])
+                    ),
                 },
             }
         )
@@ -1324,6 +1337,12 @@ def _scan_paper_reviews(root: Path) -> list[dict[str, Any]]:
         approval = payload.get("approval", {})
         if not isinstance(approval, dict):
             approval = {}
+        source_candidate_ids = payload.get("source_candidate_ids", [])
+        if not isinstance(source_candidate_ids, list):
+            source_candidate_ids = []
+        candidate_id = str(approval.get("candidate_id", "") or "").strip()
+        if not candidate_id and source_candidate_ids:
+            candidate_id = str(source_candidate_ids[0] or "").strip()
         rows.append(
             {
                 "id": str(payload.get("paper_review_id") or path.parent.name),
@@ -1339,8 +1358,17 @@ def _scan_paper_reviews(root: Path) -> list[dict[str, Any]]:
                 "summary": str(payload.get("status", "")),
                 "details": {
                     "status": str(payload.get("status", "")),
+                    "strategy_manifest_id": str(payload.get("strategy_manifest_id", "")),
                     "evidence_pack_path": str(payload.get("evidence_pack_path", "")),
-                    "candidate_id": str(approval.get("candidate_id", "")),
+                    "candidate_id": candidate_id,
+                    "source_candidate_ids": source_candidate_ids,
+                    "evidence_gate_status": str(payload.get("evidence_gate_status", "")),
+                    "evidence_gate_blocking_reasons": list(
+                        payload.get("evidence_gate_blocking_reasons", [])
+                    ),
+                    "proposed_symbols": list(payload.get("proposed_symbols", [])),
+                    "proposed_capital": float(payload.get("proposed_capital", 0.0) or 0.0),
+                    "proposed_risk_envelope": dict(payload.get("proposed_risk_envelope", {})),
                     "reviewer": str(payload.get("reviewer", "")),
                     "reviewed_at": str(payload.get("reviewed_at", "")),
                     "reason": str(payload.get("review_notes", "")),
@@ -1859,6 +1887,10 @@ def _load_saved_registry(root: Path) -> dict[str, Any] | None:
 
 def _registry_storage_status(saved: dict[str, Any], current: dict[str, Any]) -> tuple[str, list[str]]:
     notes: list[str] = []
+    subject_index_notes = _registry_subject_index_notes(saved)
+    if subject_index_notes:
+        return "stale", subject_index_notes
+
     saved_paths = _registry_evidence_paths(saved)
     missing_paths = [path for path in sorted(saved_paths) if not Path(path).exists()]
     if missing_paths:
@@ -1883,7 +1915,6 @@ def _registry_storage_status(saved: dict[str, Any], current: dict[str, Any]) -> 
     for key, current_count in current_counts.items():
         if int(saved_counts.get(key, 0)) != current_count:
             notes.append(f"stale_snapshot:count_mismatch:{key}")
-            return "stale", notes
 
     current_paths = _scanned_evidence_paths(current)
     if saved_paths != current_paths:
@@ -1935,6 +1966,33 @@ def _registry_storage_status(saved: dict[str, Any], current: dict[str, Any]) -> 
         notes.append("stale_snapshot:source_newer_than_registry")
         return "stale", notes
     return "present", notes
+
+
+def _registry_subject_index_notes(registry: dict[str, Any]) -> list[str]:
+    if str(registry.get("subject_index_schema_version", "")) != SUBJECT_INDEX_SCHEMA_VERSION:
+        return ["stale_snapshot:subject_index_schema_missing_or_mismatch"]
+    subject_index = registry.get("subject_index", {})
+    if not isinstance(subject_index, dict):
+        return ["stale_snapshot:subject_index_unavailable"]
+    missing_buckets = [
+        bucket
+        for bucket in (
+            "candidate_id",
+            "strategy_manifest_id",
+            "paper_review_id",
+            "backtest_run_id",
+            "data_version",
+            "report_date",
+            "session_id",
+        )
+        if not isinstance(subject_index.get(bucket), dict)
+    ]
+    if missing_buckets:
+        return [
+            "stale_snapshot:subject_index_bucket_missing:"
+            + ",".join(missing_buckets)
+        ]
+    return []
 
 
 def _registry_evidence_paths(registry: dict[str, Any]) -> set[str]:

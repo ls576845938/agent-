@@ -61,6 +61,9 @@ class PaperReviewCandidate:
     strategy_manifest_id: str
     portfolio_sim_id: str = ""
     evidence_pack_path: str = ""
+    source_candidate_ids: list[str] = field(default_factory=list)
+    evidence_gate_status: str = ""
+    evidence_gate_blocking_reasons: list[str] = field(default_factory=list)
     proposed_symbols: list[str] = field(default_factory=list)
     proposed_capital: float = 0.0
     proposed_risk_envelope: dict = field(default_factory=dict)
@@ -86,6 +89,11 @@ class PaperReviewCandidate:
             strategy_manifest_id=str(data.get("strategy_manifest_id", "")),
             portfolio_sim_id=str(data.get("portfolio_sim_id", "")),
             evidence_pack_path=str(data.get("evidence_pack_path", "")),
+            source_candidate_ids=list(data.get("source_candidate_ids", [])),
+            evidence_gate_status=str(data.get("evidence_gate_status", "")),
+            evidence_gate_blocking_reasons=list(
+                data.get("evidence_gate_blocking_reasons", [])
+            ),
             proposed_symbols=list(data.get("proposed_symbols", [])),
             proposed_capital=float(data.get("proposed_capital", 0.0) or 0.0),
             proposed_risk_envelope=dict(data.get("proposed_risk_envelope", {})),
@@ -167,13 +175,12 @@ class PaperReviewManager:
         all_symbols = list(dict.fromkeys(all_symbols))
         final_equity = result.equity_curve[-1] if result.equity_curve else request.capital
 
-        review_id = new_id("prev")
-        review = PaperReviewCandidate(
-            paper_review_id=review_id,
-            strategy_manifest_id=request.strategy_manifest_ids[0]
-            if request.strategy_manifest_ids
-            else "",
+        from quant_us.research.evidence_pack import EvidencePackGenerator
+
+        evidence_path = EvidencePackGenerator(data_root=str(self.data_root)).save_portfolio_review_pack(
+            sim_id,
             portfolio_sim_id=sim_id,
+            strategy_manifest_ids=request.strategy_manifest_ids,
             proposed_symbols=all_symbols,
             proposed_capital=final_equity,
             proposed_risk_envelope={
@@ -181,11 +188,12 @@ class PaperReviewManager:
                 "max_correlation": request.max_correlation,
                 "risk_budget": request.risk_budget,
             },
-            status="PENDING_HUMAN_REVIEW",
-            created_at=utc_now().isoformat(),
+            portfolio_decision=result.decision,
         )
-
-        self._save_review(review)
+        review = self.create_from_portfolio_evidence(sim_id)
+        if str(review.evidence_pack_path or "") != evidence_path:
+            review.evidence_pack_path = evidence_path
+            self._save_review(review)
         return review
 
     def approve(
@@ -362,9 +370,21 @@ class PaperReviewManager:
         # Extract candidate data for proposed symbols and risk envelope
         candidate_data = sections.get("candidate_data", {})
         metrics = candidate_data.get("metrics", {})
+        portfolio_candidates = sections.get("portfolio_candidates", [])
+        if not isinstance(portfolio_candidates, list):
+            portfolio_candidates = []
+        source_candidate_ids = [
+            str(row.get("candidate_id", "")).strip()
+            for row in portfolio_candidates
+            if isinstance(row, dict) and str(row.get("candidate_id", "")).strip()
+        ]
 
         proposed_symbols = list(
-            dict.fromkeys(candidate_data.get("symbols", []))
+            dict.fromkeys(
+                evidence.get("proposed_symbols", [])
+                or sections.get("portfolio_sim", {}).get("proposed_symbols", [])
+                or candidate_data.get("symbols", [])
+            )
         )
 
         # Extract promotion gate decision for readiness assessment.
@@ -385,25 +405,56 @@ class PaperReviewManager:
                 f"{gate_decision}. Paper review requires READY_FOR_PAPER_REVIEW."
             )
 
+        review_candidate = sections.get("paper_review_candidate", {})
+        review_candidate_status = str(
+            review_candidate.get("review_candidate_status", "BLOCKED")
+        )
+        review_blockers = list(review_candidate.get("blocking_reasons", []))
+        if review_candidate_status != "READY_FOR_REVIEW":
+            blocker_text = ", ".join(str(item) for item in review_blockers) or (
+                "missing_paper_review_candidate_evidence"
+            )
+            raise ValueError(
+                f"Evidence pack {portfolio_evidence_pack_id} is not paper-review ready: "
+                f"{review_candidate_status} ({blocker_text})"
+            )
+
         review_id = new_id("prev")
         review = PaperReviewCandidate(
             paper_review_id=review_id,
-            strategy_manifest_id=candidate_data.get("candidate_id", ""),
+            strategy_manifest_id=(
+                str(portfolio_candidates[0].get("strategy_manifest_id", ""))
+                if portfolio_candidates and isinstance(portfolio_candidates[0], dict)
+                else candidate_data.get("candidate_id", "")
+            ),
             portfolio_sim_id=portfolio_sim.get("portfolio_sim_id", ""),
             evidence_pack_path=str(ev_path),
+            source_candidate_ids=source_candidate_ids,
+            evidence_gate_status=review_candidate_status,
+            evidence_gate_blocking_reasons=review_blockers,
             proposed_symbols=proposed_symbols,
-            proposed_capital=float(portfolio_sim.get("final_equity", 100000.0)),
-            proposed_risk_envelope={
-                "max_drawdown_pct": abs(
-                    float(metrics.get("max_drawdown_pct", 0.3))
-                ),
-                "portfolio_decision": portfolio_sim.get("decision", "WATCHLIST"),
-            },
+            proposed_capital=float(
+                evidence.get("proposed_capital", portfolio_sim.get("final_equity", 100000.0))
+            ),
+            proposed_risk_envelope=dict(
+                evidence.get("proposed_risk_envelope", {})
+                or {
+                    "max_drawdown_pct": abs(
+                        float(metrics.get("max_drawdown_pct", 0.3))
+                    ),
+                    "portfolio_decision": portfolio_sim.get("decision", "WATCHLIST"),
+                }
+            ),
             status="PENDING_HUMAN_REVIEW",
             created_at=utc_now().isoformat(),
         )
 
         self._save_review(review)
+        self._bind_manifest_review_state(
+            review,
+            portfolio_candidates=portfolio_candidates,
+            review_candidate=review_candidate,
+        )
         return review
 
     # ------------------------------------------------------------------
@@ -498,6 +549,43 @@ class PaperReviewManager:
             source_sha256=source_sha256,
             gate_snapshot=gate_snapshot,
         )
+
+    def _bind_manifest_review_state(
+        self,
+        review: PaperReviewCandidate,
+        *,
+        portfolio_candidates: list[dict[str, Any]],
+        review_candidate: dict[str, Any],
+    ) -> None:
+        from quant_us.research.strategy_manifest import StrategyManifestManager
+
+        manifest_ids = [
+            str(row.get("strategy_manifest_id", "")).strip()
+            for row in portfolio_candidates
+            if isinstance(row, dict) and str(row.get("strategy_manifest_id", "")).strip()
+        ]
+        if not manifest_ids and review.strategy_manifest_id:
+            manifest_ids = [review.strategy_manifest_id]
+        if not manifest_ids:
+            return
+        pack_path = str(review.evidence_pack_path or "")
+        candidate_path = ""
+        if pack_path:
+            candidate_path = f"{pack_path}#sections.paper_review_candidate"
+        manager = StrategyManifestManager(data_root=str(self.data_root))
+        blocking_reasons = list(review_candidate.get("blocking_reasons", []))
+        review_status = str(review_candidate.get("review_candidate_status", ""))
+        for manifest_id in manifest_ids:
+            if manager.load(manifest_id) is None:
+                continue
+            manager.bind_paper_review_evidence(
+                manifest_id,
+                paper_review_id=review.paper_review_id,
+                evidence_pack_path=pack_path,
+                review_candidate_path=candidate_path,
+                review_candidate_status=review_status,
+                blocking_reasons=blocking_reasons,
+            )
 
     def _resolve_candidate_id(self, review: PaperReviewCandidate) -> str:
         manifest_path = (

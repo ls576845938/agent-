@@ -143,10 +143,29 @@ def test_live_orders_need_all_explicit_flags_even_when_readiness_passes() -> Non
         runtime.bootstrap()
 
     reasons = runtime._live_order_block_reasons()
+    assert "live_runtime_frozen" in runtime.config.live_block_reasons(readiness_passed=True)
     assert "allow_live_orders_false" in reasons
     assert "confirm_live_missing" in reasons
     assert "live_submission_disabled_by_config" in reasons
     assert "live_readiness_gate_not_passed" not in reasons
+
+
+def test_live_config_flags_never_enable_real_order_submission() -> None:
+    config = LiveRuntimeConfig(
+        mode=RuntimeMode.LIVE,
+        allow_live_orders=True,
+        confirm_live=True,
+        live_submission_enabled=True,
+        require_readiness_gate=False,
+    )
+
+    assert config.real_order_submission_enabled is False
+    assert "live_runtime_frozen" in config.live_block_reasons(readiness_passed=True)
+
+
+def test_live_mode_runtime_capability_is_frozen() -> None:
+    assert RuntimeMode.LIVE.can_submit_real_orders is False
+    assert RuntimeMode.SHADOW_LIVE.can_submit_real_orders is False
 
 
 def test_live_orders_do_not_handle_intent_without_explicit_submission_gate() -> None:
@@ -214,8 +233,11 @@ def test_live_runtime_does_not_construct_real_oms_when_all_config_flags_pass() -
         health = runtime.bootstrap()
 
     artifact = runtime.readiness_artifact()
-    assert decision.approved is True
-    assert health.ok is True
+    assert decision.approved is False
+    assert decision.decision == "REQUIRES_MANUAL_REVIEW"
+    assert "live_runtime_frozen_no_automatic_submission" in decision.warnings
+    assert health.ok is False
+    assert "live_runtime_frozen" in health.errors
     assert runtime.oms is None
     assert artifact["mode"] == "live"
     assert artifact["canonical_runtime"] == "LiveRuntime"
@@ -257,10 +279,67 @@ def test_live_orders_do_not_reach_injected_mock_oms_when_all_runtime_gates_clear
             in_regular_session=True,
             oms_idempotency_ok=True,
         )
-        assert decision.approved is True
+        assert decision.approved is False
+        assert decision.decision == "REQUIRES_MANUAL_REVIEW"
+        assert "live_runtime_frozen_no_automatic_submission" in decision.warnings
         result = runtime.submit_orders([_intent("live_safety_004")], account=_account(), market_price=500.0)
 
     assert result["submitted"] == []
     assert len(result["rejected"]) == 1
     assert result["rejected"][0]["reason"] == "live_runtime_safety_shell_no_order_execution"
+    runtime.oms.handle_intent.assert_not_called()
+
+
+def test_live_submit_rejects_every_intent_after_readiness_and_gate_pass() -> None:
+    config = LiveRuntimeConfig(
+        mode=RuntimeMode.LIVE,
+        allow_live_orders=True,
+        confirm_live=True,
+        live_submission_enabled=True,
+        require_readiness_gate=True,
+    )
+    runtime = LiveRuntime(config=config)
+    runtime.oms = _approving_oms()
+
+    with (
+        patch.dict(
+            "os.environ",
+            {"APCA_API_KEY_ID": "test_key", "APCA_API_SECRET_KEY": "test_secret"},
+            clear=True,
+        ),
+        patch("quant_us.live.runtime.LiveReadinessGate") as gate_cls,
+        patch.object(
+            runtime._live_submission_gate,
+            "check",
+            return_value=SubmissionGateDecision(decision="APPROVED_FOR_SUBMIT"),
+        ),
+    ):
+        gate_cls.return_value.check_all.return_value = _GateReport(True)
+        health = runtime.bootstrap()
+        gate_decision = runtime.configure_live_submission_gate(
+            approval_id="approved_live_order",
+            envelope_id="approved_envelope",
+            dossier_decision="GO_FOR_SMALL_LIVE_REVIEW",
+            live_endpoint_ok=True,
+            reconciliation_clean=True,
+            emergency_stop_armed=True,
+            in_regular_session=True,
+            oms_idempotency_ok=True,
+        )
+        result = runtime.submit_orders(
+            [_intent("live_safety_batch_001"), _intent("live_safety_batch_002")],
+            account=_account(),
+            market_price=500.0,
+            kill_switch_triggered=False,
+            reconciliation_clean=True,
+        )
+
+    assert health.ok is False
+    assert "live_runtime_frozen" in health.errors
+    assert gate_decision.approved is False
+    assert result["submitted"] == []
+    assert [r["reason"] for r in result["rejected"]] == [
+        "live_runtime_safety_shell_no_order_execution",
+        "live_runtime_safety_shell_no_order_execution",
+    ]
     runtime.oms.handle_intent.assert_not_called()

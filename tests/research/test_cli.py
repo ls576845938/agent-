@@ -63,6 +63,39 @@ class TestCliPortfolioResearchCommands:
         assert args.research_command == "portfolio-stress"
         assert args.portfolio_id == "portfolio_1"
 
+    def test_evidence_registry_rebuild_command_parses(self) -> None:
+        parser = self._make_parser()
+        args = parser.parse_args([
+            "research", "evidence-registry-rebuild",
+            "--data-root", "tmp-data",
+        ])
+        assert args.research_command == "evidence-registry-rebuild"
+        assert args.data_root == "tmp-data"
+        assert args.func is not None
+
+    def test_research_feature_build_accepts_timeframe_args(self) -> None:
+        parser = self._make_parser()
+        args = parser.parse_args([
+            "research", "feature", "build",
+            "--feature-id", "momentum_20d",
+            "--symbols", "AAPL,MSFT",
+            "--bar-size", "15m",
+            "--timeframe", "15m",
+        ])
+        assert args.feature_command == "build"
+        assert args.bar_size == "15m"
+        assert args.timeframe == "15m"
+
+    def test_paper_review_create_accepts_evidence_pack_id(self) -> None:
+        parser = self._make_parser()
+        args = parser.parse_args([
+            "research", "paper-review-create",
+            "--evidence-pack-id", "cand_001",
+        ])
+        assert args.research_command == "paper-review-create"
+        assert args.evidence_pack_id == "cand_001"
+        assert args.portfolio_sim_id is None
+
     def test_portfolio_build_requires_manifests(self) -> None:
         parser = self._make_parser()
         with pytest.raises(SystemExit):
@@ -77,3 +110,19 @@ class TestCliPortfolioResearchCommands:
         parser = self._make_parser()
         with pytest.raises(SystemExit):
             parser.parse_args(["research", "portfolio-stress"])
+
+    def test_factor_compute_accepts_timeframe_args(self) -> None:
+        from quant_us.cli import build_parser
+
+        parser = build_parser()
+        args = parser.parse_args([
+            "factor",
+            "--symbols", "AAPL,MSFT",
+            "compute",
+            "--factor", "momentum_20d",
+            "--bar-size", "5m",
+            "--timeframe", "5m",
+        ])
+        assert args.factor_command == "compute"
+        assert args.bar_size == "5m"
+        assert args.timeframe == "5m"

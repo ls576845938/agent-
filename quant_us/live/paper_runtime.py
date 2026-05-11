@@ -13,10 +13,10 @@ import json
 import logging
 import os
 import time as _time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, is_dataclass, replace
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 import pandas as pd
 
@@ -27,7 +27,7 @@ from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.clock import ensure_utc, utc_now
 from quant_us.core.enums import OrderSide, OrderStatus, SessionName, TradingMode
 from quant_us.core.events import MarketEvent
-from quant_us.core.types import AccountState, Bar, Signal, TargetPosition, new_id
+from quant_us.core.types import AccountState, Bar, OrderIntent, Signal, TargetPosition, new_id
 from quant_us.execution.fill_idempotency import (
     FillIdempotencyIndex,
     append_fill_idempotent,
@@ -38,16 +38,21 @@ from quant_us.live.paper_adapter_contract import (
     audit_apca_paper_credentials,
     evaluate_paper_adapter_contract,
     normalize_alpaca_base_url,
-    paper_adapter_capability_defaults,
+)
+from quant_us.live.alpaca_paper_adapter import (
+    ALPACA_PAPER_NETWORK_SUBMIT_ENV,
+    AlpacaPaperBrokerAdapter,
 )
 from quant_us.execution.oms import OrderManagementSystem
 from quant_us.live.market_data_loop import MarketDataLoop
+from quant_us.live.multi_timeframe_scheduler import MultiTimeframeDataStatus, MultiTimeframeMarketDataScheduler
 from quant_us.live.reconciliation_service import ReconciliationService
 from quant_us.live.session_clock import SessionClock
 from quant_us.monitoring.daily_report import generate_daily_report, save_report
 from quant_us.monitoring.telegram_alerts import AlertPriority, TelegramAlertService, load_telegram_config_from_env
+from quant_us.portfolio.allocation import AllocationConfig, PortfolioAllocator
 from quant_us.portfolio.position_sizer import PercentOfEquitySizer, PositionSizerConfig
-from quant_us.portfolio.rebalance import RebalanceConfig, RebalancePlanner
+from quant_us.portfolio.rebalance import RebalanceConfig
 from quant_us.research.evidence_registry import project_saved_paper_review_evidence
 from quant_us.risk.data_freshness import DataFreshnessConfig, DataFreshnessGuard
 from quant_us.risk.kill_switch import KillSwitch, KillSwitchConfig
@@ -103,6 +108,8 @@ class PaperRuntimeConfig:
     data_vendor: str = "yfinance"
     paper_broker: str = "simulated"
     bar_size: str = "1m"
+    bar_sizes: list[str] = field(default_factory=list)
+    multi_timeframe_require_all_fresh: bool = False
     risk_event_log_path: str = ""
     max_data_delay_seconds: float = 300.0
     promotion_manifest_id: str = ""
@@ -112,6 +119,12 @@ class PaperRuntimeConfig:
     audit_log_path: str = ""
     reduce_only: bool = False
     explicit_paper_submit: bool = False
+    portfolio_id: str = "portfolio"
+    strategy_weights: dict[str, float] = field(default_factory=dict)
+    portfolio_cash_reserve_weight: float = 0.05
+    portfolio_max_symbol_weight: float = 0.10
+    portfolio_max_gross_exposure: float = 0.95
+    portfolio_max_daily_turnover: float = 1.0
 
 
 @dataclass
@@ -136,6 +149,17 @@ _PAPER_SESSION_MANIFEST_ARTIFACT_VERSION = "paper_session_manifest_v1"
 _PAPER_BROKER_STATE_RECOVERY_ARTIFACT_VERSION = "paper_broker_state_recovery_v1"
 
 
+def _normalized_unique_strings(values: Iterable[Any]) -> list[str]:
+    seen: set[str] = set()
+    normalized: list[str] = []
+    for value in values:
+        text = str(value or "").strip().upper()
+        if text and text not in seen:
+            seen.add(text)
+            normalized.append(text)
+    return sorted(normalized)
+
+
 class PaperRuntime:
     """Orchestrates a paper trading session from bootstrap to shutdown.
 
@@ -154,7 +178,7 @@ class PaperRuntime:
         self._session_start: datetime | None = None
         self._poll_index: int = 0
         self._bars_cache: pd.DataFrame = _EMPTY_BARS_CACHE
-        self._last_bar_timestamps: dict[str, datetime] = {}
+        self._last_bar_timestamps: dict[tuple[str, str], datetime] = {}
         self.session_metrics: list[PaperSessionMetrics] = []
         self.metrics_log: list[PaperSessionMetrics] = []
         self.audit_events: list[dict[str, Any]] = []
@@ -171,8 +195,9 @@ class PaperRuntime:
         self.risk_engine: PreTradeRiskEngine
         self.oms: OrderManagementSystem
         self.ledger: JsonlLedgerStore
-        self.data_loop: MarketDataLoop
+        self.data_loop: MarketDataLoop | MultiTimeframeMarketDataScheduler
         self.strategy: Strategy | None = None
+        self.strategies: list[Strategy] = []
         self.data_freshness: DataFreshnessGuard
         self.alerts: TelegramAlertService
         self._halt_reconciliation: bool = False
@@ -184,13 +209,13 @@ class PaperRuntime:
 
     def bootstrap(
         self,
-        strategy: Strategy | None = None,
+        strategy: Strategy | Iterable[Strategy] | None = None,
     ) -> None:
         """Initialize every component needed for a paper trading session.
 
         Args:
-            strategy: A ``Strategy`` instance.  May be ``None``, in which
-                      case the runtime will skip signal generation (data-
+            strategy: A ``Strategy`` instance, an iterable of strategies, or
+                      ``None``.  ``None`` skips signal generation (data-
                       collection-only mode).
         """
         if self._bootstrapped:
@@ -252,18 +277,29 @@ class PaperRuntime:
         self._recover_oms_idempotency()
         self._run_paper_adapter_startup_sync()
         self._recover_or_verify_broker_state()
-
-        # Market data loop
-        self.data_loop = MarketDataLoop(
-            symbols=self.config.symbols,
-            vendor=self.config.data_vendor,
-            bar_size=self.config.bar_size,
-            poll_interval_seconds=self.config.poll_interval_seconds,
-            data_root=self.config.data_root,
-        )
+        self._last_bar_timestamps = self._load_bar_watermarks()
 
         # Strategy
-        self.strategy = strategy
+        self.strategy, self.strategies = self._normalize_strategies(strategy)
+
+        # Market data loop
+        bar_sizes = self._configured_bar_sizes()
+        if len(bar_sizes) > 1:
+            self.data_loop = MultiTimeframeMarketDataScheduler(
+                symbols=self.config.symbols,
+                vendor=self.config.data_vendor,
+                bar_sizes=bar_sizes,
+                poll_interval_seconds=self.config.poll_interval_seconds,
+                data_root=self.config.data_root,
+            )
+        else:
+            self.data_loop = MarketDataLoop(
+                symbols=self.config.symbols,
+                vendor=self.config.data_vendor,
+                bar_size=bar_sizes[0],
+                poll_interval_seconds=self.config.poll_interval_seconds,
+                data_root=self.config.data_root,
+            )
 
         # Alerts
         env_config = load_telegram_config_from_env()
@@ -322,10 +358,12 @@ class PaperRuntime:
             try:
                 # 1. Fetch latest bars
                 data_status = self.data_loop.run_once()
-                metrics.bars_fetched = len(data_status.symbols_updated) if data_status.fresh else 0
+                data_allows_processing = self._data_status_allows_processing(data_status)
+                metrics.bars_fetched = len(data_status.symbols_updated) if data_allows_processing else 0
+                metrics.bars_stale += self._stale_timeframe_count(data_status)
 
                 # 2. Validate freshness
-                if not data_status.fresh:
+                if not data_allows_processing:
                     metrics.bars_stale = metrics.bars_fetched
                     metrics.fresh_bars = False
                     self.kill_switch.check_data_staleness(data_status.stale_seconds)
@@ -343,9 +381,9 @@ class PaperRuntime:
                     self._sleep()
                     continue
 
-                # 4. Process each new bar
-                for bar in new_bars:
-                    self._process_bar(bar, metrics)
+                # 4. Process new bars as one portfolio batch so strategy
+                # ordering cannot change the account state before allocation.
+                self._process_bars(new_bars, metrics)
 
                 # 5. Snapshot
                 account = self.broker.get_account()
@@ -393,7 +431,13 @@ class PaperRuntime:
         try:
             report = generate_daily_report(today, self.ledger, self.broker, self.kill_switch)
             report.reconciliation_status = "clean" if not self._halt_reconciliation else "breaks_detected"
-            save_report(report, Path(self.config.ledger_root) / "daily_reports")
+            report_path = save_report(report, Path(self.config.ledger_root) / "daily_reports")
+            attribution_path, attribution = self._write_strategy_attribution_report(today)
+            self._augment_daily_report_with_attribution(
+                report_path,
+                attribution_path=attribution_path,
+                attribution=attribution,
+            )
         except Exception:
             _logger.exception("Failed to generate daily report on session close")
 
@@ -470,6 +514,67 @@ class PaperRuntime:
     def _time_sleep(seconds: float) -> None:
         _time.sleep(seconds)
 
+    def _configured_bar_sizes(self) -> list[str]:
+        configured = list(self.config.bar_sizes) if self.config.bar_sizes else [self.config.bar_size]
+        timeframes = self._configured_strategy_timeframes()
+        configured.extend(timeframes.values())
+        seen: set[str] = set()
+        normalized: list[str] = []
+        for raw in configured:
+            bar_size = str(raw or "").strip().lower()
+            if not bar_size or bar_size in seen:
+                continue
+            seen.add(bar_size)
+            normalized.append(bar_size)
+        return normalized or ["1m"]
+
+    def _configured_strategy_timeframes(self) -> dict[str, str]:
+        timeframes: dict[str, str] = {}
+        for strategy in getattr(self, "strategies", []):
+            raw = getattr(strategy, "timeframes", None)
+            if isinstance(raw, dict):
+                for strategy_id, timeframe in raw.items():
+                    value = str(timeframe or "").strip().lower()
+                    if strategy_id and value:
+                        timeframes[str(strategy_id)] = value
+        return timeframes
+
+    @staticmethod
+    def _bar_size_rank(bar_size: str) -> int:
+        raw = str(bar_size or "").lower()
+        if raw.endswith("m"):
+            try:
+                return int(raw[:-1])
+            except ValueError:
+                return 10_000
+        if raw.endswith("h"):
+            try:
+                return int(raw[:-1]) * 60
+            except ValueError:
+                return 10_000
+        if raw.endswith("d"):
+            return 1440
+        return 10_000
+
+    @staticmethod
+    def _stale_timeframe_count(data_status: Any) -> int:
+        if not isinstance(data_status, MultiTimeframeDataStatus):
+            return 0
+        return len(data_status.stale_timeframes)
+
+    def _data_status_allows_processing(self, data_status: Any) -> bool:
+        if not isinstance(data_status, MultiTimeframeDataStatus):
+            return bool(data_status.fresh)
+        if self.config.multi_timeframe_require_all_fresh:
+            return data_status.all_fresh
+        return bool(data_status.fresh_timeframes)
+
+    def _fresh_timeframes_from_last_status(self) -> set[str] | None:
+        status = getattr(self.data_loop, "last_status", None)
+        if not isinstance(status, MultiTimeframeDataStatus):
+            return None
+        return set(status.fresh_timeframes)
+
     def _trading_date(self) -> date:
         """Return the current trading date in ET."""
         return self._now().astimezone(PaperRuntime._et()).date()
@@ -510,13 +615,18 @@ class PaperRuntime:
             return []
 
         new: list[Bar] = []
+        fresh_timeframes = self._fresh_timeframes_from_last_status()
         for _, row in latest_bars.iterrows():
             symbol = str(row.get("symbol", "")).upper()
             ts_raw = row.get("timestamp_utc")
             if not symbol or ts_raw is None:
                 continue
             ts = ensure_utc(pd.Timestamp(ts_raw).to_pydatetime())
-            last_ts = self._last_bar_timestamps.get(symbol)
+            bar_size = str(row.get("bar_size") or self.config.bar_size or "1m").lower()
+            if fresh_timeframes is not None and bar_size not in fresh_timeframes:
+                continue
+            key = (bar_size, symbol)
+            last_ts = self._last_bar_timestamps.get(key)
             if last_ts is not None and ts <= last_ts:
                 continue
             new.append(
@@ -529,57 +639,197 @@ class PaperRuntime:
                     close=float(row.get("close", 0.0)),
                     volume=float(row.get("volume", 0.0)),
                     source=self.config.data_vendor,
+                    bar_size=bar_size,
                 )
             )
-            self._last_bar_timestamps[symbol] = ts
 
-        return new
+        return sorted(new, key=lambda bar: (bar.timestamp_utc, self._bar_size_rank(bar.bar_size), bar.symbol))
+
+    def _group_bars_by_timestamp(self, bars: list[Bar]) -> list[tuple[datetime, list[Bar]]]:
+        grouped: dict[datetime, list[Bar]] = {}
+        for bar in sorted(bars, key=lambda item: (item.timestamp_utc, self._bar_size_rank(item.bar_size), item.symbol)):
+            grouped.setdefault(bar.timestamp_utc, []).append(bar)
+        return [(timestamp, grouped[timestamp]) for timestamp in sorted(grouped)]
+
+    def _mark_bars_processed(self, bars: list[Bar]) -> None:
+        changed = False
+        for bar in bars:
+            key = self._bar_watermark_key(bar.bar_size, bar.symbol)
+            current = self._last_bar_timestamps.get(key)
+            if current is None or bar.timestamp_utc > current:
+                self._last_bar_timestamps[key] = bar.timestamp_utc
+                changed = True
+        if changed:
+            self._save_bar_watermarks()
+
+    @staticmethod
+    def _bar_watermark_key(bar_size: str, symbol: str) -> tuple[str, str]:
+        return (str(bar_size or "").lower(), str(symbol or "").upper())
+
+    def _bar_watermark_path(self) -> Path:
+        return Path(self.config.ledger_root) / "audit" / "paper_bar_watermarks.json"
+
+    def _load_bar_watermarks(self) -> dict[tuple[str, str], datetime]:
+        path = self._bar_watermark_path()
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            return {}
+        if not isinstance(payload, dict):
+            return {}
+        raw_watermarks = payload.get("watermarks", {})
+        if not isinstance(raw_watermarks, dict):
+            return {}
+        loaded: dict[tuple[str, str], datetime] = {}
+        for raw_key, raw_timestamp in raw_watermarks.items():
+            parts = str(raw_key).split("|", 1)
+            if len(parts) != 2:
+                continue
+            try:
+                loaded[(parts[0].lower(), parts[1].upper())] = ensure_utc(
+                    pd.Timestamp(raw_timestamp).to_pydatetime()
+                )
+            except (TypeError, ValueError):
+                continue
+        return loaded
+
+    def _save_bar_watermarks(self) -> None:
+        path = self._bar_watermark_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "artifact_type": "paper_bar_watermarks",
+            "artifact_version": "paper_bar_watermarks_v1",
+            "session_id": self.session_id,
+            "watermarks": {
+                f"{bar_size}|{symbol}": timestamp.isoformat()
+                for (bar_size, symbol), timestamp in sorted(self._last_bar_timestamps.items())
+            },
+        }
+        path.write_text(json.dumps(payload, sort_keys=True, indent=2), encoding="utf-8")
 
     def _process_bar(self, bar: Bar, metrics: PaperSessionMetrics) -> None:
-        """Process a single bar: update market, generate signals, create intents."""
-        # Data freshness check
-        freshness = self.data_freshness.evaluate_bar(bar)
-        if not freshness.fresh:
-            metrics.bars_stale += 1
-            self.kill_switch.check_data_staleness(freshness.delay_seconds)
-            return
+        """Process one bar through the same batch path used by live cycles."""
+        self._process_bars([bar], metrics)
 
-        # Update broker market state
-        self.broker.update_market(bar)
+    def _process_bars(self, bars: list[Bar], metrics: PaperSessionMetrics) -> None:
+        """Process bars in as-of order without exposing future prices."""
+        for timestamp, group in self._group_bars_by_timestamp(bars):
+            fresh_bars: list[Bar] = []
+            for bar in group:
+                freshness = self.data_freshness.evaluate_bar(bar)
+                if not freshness.fresh:
+                    metrics.bars_stale += 1
+                    self.kill_switch.check_data_staleness(freshness.delay_seconds)
+                    continue
+                self.broker.update_market(bar)
+                fresh_bars.append(bar)
 
-        # Skip signal generation when no strategy is loaded
-        if self.strategy is None:
-            return
+            if not fresh_bars:
+                continue
 
-        try:
-            prices: dict[str, float] = self.broker.market_prices.copy()
-            account = self.broker.get_account()
+            if not self.strategies:
+                self._mark_bars_processed(fresh_bars)
+                continue
 
-            context = StrategyContext(
-                run_id=f"paper_{_time.strftime('%Y%m%d')}",
-                account=account,
-                market_prices=prices,
-                universe=list(prices),
-            )
+            try:
+                prices: dict[str, float] = self.broker.market_prices.copy()
+                account = self.broker.get_account()
+                signals: list[Signal] = []
+                for active_strategy in self.strategies:
+                    strategy_id = self._strategy_identifier(active_strategy)
+                    context = StrategyContext(
+                        run_id=self._paper_run_id(strategy_id),
+                        account=account,
+                        market_prices=prices,
+                        universe=list(prices),
+                        parameters={
+                            "paper_session_id": self.session_id,
+                            "strategy_id": strategy_id,
+                            "strategy_timeframes": self._configured_strategy_timeframes(),
+                            "bar_sizes": self._configured_bar_sizes(),
+                            "runtime_mode": "paper",
+                        },
+                    )
+                    for bar in fresh_bars:
+                        event = MarketEvent.from_bar(bar)
+                        for raw_signal in active_strategy.on_bar(event, context):
+                            signal = self._normalize_strategy_signal(raw_signal, strategy_id, active_strategy)
+                            signals.append(signal)
+                            metrics.signals_generated += 1
 
-            reduce_only_projection = None
-            if self.config.reduce_only or getattr(self.oms, "reduce_only", False):
-                reduce_only_projection = self._reduce_only_projected_positions(account)
+                reduce_only_projection = None
+                if self.config.reduce_only or getattr(self.oms, "reduce_only", False):
+                    reduce_only_projection = self._reduce_only_projected_positions(account)
 
-            for signal in self.strategy.on_bar(MarketEvent.from_bar(bar), context):
-                metrics.signals_generated += 1
-                self._handle_signal(
-                    signal,
+                self._handle_signals(
+                    signals,
                     account,
                     prices,
-                    bar,
+                    fresh_bars[-1],
                     metrics,
                     reduce_only_projection=reduce_only_projection,
                 )
+                self._mark_bars_processed(fresh_bars)
+            except Exception:
+                symbols = ",".join(bar.symbol for bar in fresh_bars)
+                _logger.exception("Error processing portfolio bar batch %s at %s", symbols, timestamp.isoformat())
+                self.kill_switch.record_order_failure()
 
-        except Exception:
-            _logger.exception("Error processing bar %s @ %s", bar.symbol, bar.timestamp_utc.isoformat())
-            self.kill_switch.record_order_failure()
+    def _handle_signals(
+        self,
+        signals: list[Signal],
+        account: AccountState,
+        prices: dict[str, float],
+        bar: Bar,
+        metrics: PaperSessionMetrics,
+        reduce_only_projection: dict[str, float] | None = None,
+    ) -> None:
+        if not signals:
+            return
+
+        sizer = PercentOfEquitySizer(
+            PositionSizerConfig(
+                strategy_allocations=dict(self.config.strategy_weights),
+                default_strategy_weight=0.1,
+            )
+        )
+        sized: list[TargetPosition] = []
+        for signal in signals:
+            sized.extend(sizer.size([signal]))
+        if not sized:
+            return
+
+        allocation = self._portfolio_allocator().allocate_targets(
+            sized,
+            account=account,
+            prices=prices,
+            run_id=self._paper_run_id(self.config.portfolio_id),
+        )
+        for decision in allocation.target_decisions:
+            if decision.reasons:
+                self._audit_runtime_event(
+                    "paper_portfolio_allocation_adjusted",
+                    {
+                        "symbol": decision.symbol,
+                        "raw_weight": decision.raw_weight,
+                        "final_weight": decision.final_weight,
+                        "strategies": list(decision.strategies),
+                        "reasons": [reason.__dict__ for reason in decision.reasons],
+                    },
+                )
+
+        signal_by_id = {signal.signal_id: signal for signal in signals}
+        for intent in allocation.intents:
+            source_signal = signal_by_id.get(intent.signal_id)
+            self._handle_intent(
+                intent,
+                source_signal,
+                account,
+                prices,
+                bar,
+                metrics,
+                reduce_only_projection=reduce_only_projection,
+            )
 
     def _handle_signal(
         self,
@@ -590,87 +840,92 @@ class PaperRuntime:
         metrics: PaperSessionMetrics,
         reduce_only_projection: dict[str, float] | None = None,
     ) -> None:
-        """Convert a signal into order intents, run risk checks, and submit."""
-        sizer = PercentOfEquitySizer(PositionSizerConfig())
-        sized = list(sizer.size([signal]))
-
-        planner = RebalancePlanner(RebalanceConfig())
-        intents = planner.plan(
-            sized,
+        """Compatibility wrapper for tests and narrow single-signal callers."""
+        self._handle_signals(
+            [signal],
             account,
             prices,
-            run_id=f"paper_runtime_{self.config.strategy_id}",
+            bar,
+            metrics,
+            reduce_only_projection=reduce_only_projection,
         )
 
-        for intent in intents:
-            metrics.intents_created += 1
+    def _handle_intent(
+        self,
+        raw_intent: OrderIntent,
+        signal: Signal | None,
+        account: AccountState,
+        prices: dict[str, float],
+        bar: Bar,
+        metrics: PaperSessionMetrics,
+        reduce_only_projection: dict[str, float] | None = None,
+    ) -> None:
+        intent = self._with_paper_attribution(raw_intent, signal)
+        metrics.intents_created += 1
 
-            kill_switch = getattr(self, "kill_switch", None)
-            if kill_switch is not None and kill_switch.triggered:
-                metrics.intents_rejected += 1
-                self._audit_runtime_event(
-                    "paper_order_rejected_kill_switch",
-                    {
-                        "reason": kill_switch.reason or "kill_switch_active",
-                        "client_order_id": intent.client_order_id,
-                        "symbol": intent.symbol,
-                        "side": intent.side.value,
-                        "quantity": intent.quantity,
-                    },
-                )
-                _logger.warning(
-                    "Kill switch rejected intent %s for %s",
-                    intent.client_order_id,
-                    intent.symbol,
-                )
-                continue
+        kill_switch = getattr(self, "kill_switch", None)
+        if kill_switch is not None and kill_switch.triggered:
+            metrics.intents_rejected += 1
+            self._audit_runtime_event(
+                "paper_order_rejected_kill_switch",
+                {
+                    "reason": kill_switch.reason or "kill_switch_active",
+                    "client_order_id": intent.client_order_id,
+                    "symbol": intent.symbol,
+                    "side": intent.side.value,
+                    "quantity": intent.quantity,
+                },
+            )
+            _logger.warning(
+                "Kill switch rejected intent %s for %s",
+                intent.client_order_id,
+                intent.symbol,
+            )
+            return
 
-            if not self.config.submit_orders:
-                # Intent generated but not submitted — useful for dry-run
-                _logger.debug(
-                    "submit_orders=False; skipping submission of intent %s for %s",
-                    intent.order_intent_id,
-                    intent.symbol,
-                )
-                continue
+        if self._halt_reconciliation:
+            metrics.intents_rejected += 1
+            self._audit_runtime_event(
+                "paper_order_rejected_reconciliation_halt",
+                {
+                    "reason": "reconciliation_not_clean",
+                    "client_order_id": intent.client_order_id,
+                    "symbol": intent.symbol,
+                    "side": intent.side.value,
+                    "quantity": intent.quantity,
+                    "halt_reconciliation": True,
+                },
+            )
+            _logger.warning(
+                "Reconciliation halt rejected intent %s for %s",
+                intent.client_order_id,
+                intent.symbol,
+            )
+            return
 
-            reduce_only_active = self.config.reduce_only or getattr(self.oms, "reduce_only", False)
-            if reduce_only_active:
-                if reduce_only_projection is None:
-                    reduce_only_projection = self._reduce_only_projected_positions(account)
-                allowed, reason = self._reduce_only_allows(
-                    intent,
-                    account,
-                    projected_positions=reduce_only_projection,
-                )
-                if not allowed:
-                    metrics.intents_rejected += 1
-                    self._audit_runtime_event(
-                        "paper_order_rejected_reduce_only",
-                        {
-                            "reason": reason,
-                            "client_order_id": intent.client_order_id,
-                            "symbol": intent.symbol,
-                            "side": intent.side.value,
-                            "quantity": intent.quantity,
-                        },
-                    )
-                    _logger.warning(
-                        "Reduce-only rejected intent %s for %s: %s",
-                        intent.client_order_id,
-                        intent.symbol,
-                        reason,
-                    )
-                    continue
+        if not self.config.submit_orders:
+            _logger.debug(
+                "submit_orders=False; skipping submission of intent %s for %s",
+                intent.order_intent_id,
+                intent.symbol,
+            )
+            return
 
-            allowed, reason, gate_checks = self._paper_submit_gate_allows(intent)
+        reduce_only_active = self.config.reduce_only or getattr(self.oms, "reduce_only", False)
+        if reduce_only_active:
+            if reduce_only_projection is None:
+                reduce_only_projection = self._reduce_only_projected_positions(account)
+            allowed, reason = self._reduce_only_allows(
+                intent,
+                account,
+                projected_positions=reduce_only_projection,
+            )
             if not allowed:
                 metrics.intents_rejected += 1
                 self._audit_runtime_event(
-                    "paper_order_rejected_submit_gate",
+                    "paper_order_rejected_reduce_only",
                     {
                         "reason": reason,
-                        "checks": gate_checks,
                         "client_order_id": intent.client_order_id,
                         "symbol": intent.symbol,
                         "side": intent.side.value,
@@ -678,45 +933,431 @@ class PaperRuntime:
                     },
                 )
                 _logger.warning(
-                    "Paper submit gate rejected intent %s for %s: %s",
+                    "Reduce-only rejected intent %s for %s: %s",
                     intent.client_order_id,
                     intent.symbol,
                     reason,
                 )
-                continue
+                return
 
-            result = self.oms.handle_intent(
-                intent,
-                account,
-                market_price=prices.get(intent.symbol, 0.0),
-                timestamp=bar.timestamp_utc,
+        allowed, reason, gate_checks = self._paper_submit_gate_allows(intent)
+        if not allowed:
+            metrics.intents_rejected += 1
+            self._audit_runtime_event(
+                "paper_order_rejected_submit_gate",
+                {
+                    "reason": reason,
+                    "checks": gate_checks,
+                    "client_order_id": intent.client_order_id,
+                    "symbol": intent.symbol,
+                    "side": intent.side.value,
+                    "quantity": intent.quantity,
+                },
             )
+            _logger.warning(
+                "Paper submit gate rejected intent %s for %s: %s",
+                intent.client_order_id,
+                intent.symbol,
+                reason,
+            )
+            return
 
-            if result.risk_decision.approved:
-                self._apply_reduce_only_projection(intent, reduce_only_projection)
-                metrics.intents_submitted += 1
-            else:
-                metrics.intents_rejected += 1
+        result = self.oms.handle_intent(
+            intent,
+            account,
+            market_price=prices.get(intent.symbol, 0.0),
+            timestamp=bar.timestamp_utc,
+        )
 
-            # Record to ledger
-            if result.order:
-                self.ledger.append_order(result.order)
-            for fill in result.fills:
-                fill_append = append_fill_idempotent(
-                    self.ledger,
-                    fill,
-                    index=self._fill_index,
-                    logger=_logger,
+        if result.risk_decision.approved:
+            self._apply_reduce_only_projection(intent, reduce_only_projection)
+            metrics.intents_submitted += 1
+        else:
+            metrics.intents_rejected += 1
+
+        if result.order:
+            self.ledger.append_order(result.order)
+        for fill in result.fills:
+            attributed_fill = self._fill_with_attribution(
+                fill,
+                order=result.order,
+                intent=intent,
+            )
+            fill_append = append_fill_idempotent(
+                self.ledger,
+                attributed_fill,
+                index=self._fill_index,
+                logger=_logger,
+            )
+            if fill_append.conflict:
+                self._audit_runtime_event(
+                    "paper_fill_conflict_skipped",
+                    {
+                        "key": fill_append.key,
+                        "client_order_id": intent.client_order_id,
+                        "symbol": intent.symbol,
+                    },
                 )
-                if fill_append.conflict:
-                    self._audit_runtime_event(
-                        "paper_fill_conflict_skipped",
+
+    def _normalize_strategies(
+        self,
+        strategy: Strategy | Iterable[Strategy] | None,
+    ) -> tuple[Strategy | None, list[Strategy]]:
+        if strategy is None:
+            return None, []
+        if isinstance(strategy, Strategy) or hasattr(strategy, "on_bar"):
+            return strategy, [strategy]
+        strategies = list(strategy)
+        if not strategies:
+            return None, []
+        for item in strategies:
+            if not hasattr(item, "on_bar"):
+                raise TypeError(f"PaperRuntime strategy must expose on_bar(): {type(item).__name__}")
+        return strategies[0], strategies
+
+    def _configured_strategy_ids(self) -> list[str]:
+        ids: list[str] = []
+        if self.config.strategy_id:
+            ids.append(self.config.strategy_id)
+        for strategy_id in self.config.strategy_weights:
+            if strategy_id and strategy_id not in ids:
+                ids.append(strategy_id)
+        for strategy in getattr(self, "strategies", []):
+            strategy_id = self._strategy_identifier(strategy)
+            if strategy_id and strategy_id not in ids:
+                ids.append(strategy_id)
+        return ids
+
+    def _strategy_manifest_entries(self) -> list[dict[str, Any]]:
+        entries: list[dict[str, Any]] = []
+        for strategy in getattr(self, "strategies", []):
+            specs = getattr(strategy, "specs", None)
+            if specs:
+                for spec in specs:
+                    entries.append(
                         {
-                            "key": fill_append.key,
-                            "client_order_id": intent.client_order_id,
-                            "symbol": intent.symbol,
-                        },
+                            "strategy_id": str(getattr(spec, "strategy_id", "")),
+                            "version": "",
+                            "class": type(strategy).__name__,
+                            "weight": float(getattr(spec, "weight", 1.0)),
+                            "timeframe": str(getattr(spec, "timeframe", "")),
+                        }
                     )
+                continue
+            entries.append(
+                {
+                    "strategy_id": self._strategy_identifier(strategy),
+                    "version": str(getattr(strategy, "version", "")),
+                    "class": type(strategy).__name__,
+                }
+            )
+        return entries
+
+    def _strategy_identifier(self, strategy: Strategy | None) -> str:
+        if strategy is None:
+            return self.config.strategy_id
+        return str(getattr(strategy, "strategy_id", "") or self.config.strategy_id)
+
+    def _paper_run_id(self, strategy_id: str) -> str:
+        suffix = strategy_id or "unattributed"
+        return f"paper_runtime_{self.session_id}_{suffix}"
+
+    def _normalize_strategy_signal(
+        self,
+        signal: Signal,
+        strategy_id: str,
+        strategy: Strategy | None = None,
+    ) -> Signal:
+        if not isinstance(signal, Signal):
+            raise TypeError(f"Strategy emitted non-Signal object: {type(signal).__name__}")
+        if not signal.strategy_id:
+            return replace(signal, strategy_id=strategy_id)
+        child_ids = self._strategy_child_ids(strategy)
+        if strategy_id and signal.strategy_id != strategy_id and signal.strategy_id not in child_ids:
+            self._audit_runtime_event(
+                "paper_strategy_signal_attribution_mismatch",
+                {
+                    "strategy_id": strategy_id,
+                    "signal_strategy_id": signal.strategy_id,
+                    "signal_id": signal.signal_id,
+                    "symbol": signal.symbol,
+                },
+            )
+        return signal
+
+    @staticmethod
+    def _strategy_child_ids(strategy: Strategy | None) -> set[str]:
+        specs = getattr(strategy, "specs", None)
+        if not specs:
+            return set()
+        return {
+            str(getattr(spec, "strategy_id", ""))
+            for spec in specs
+            if getattr(spec, "strategy_id", "")
+        }
+
+    def _portfolio_allocator(self) -> PortfolioAllocator:
+        return PortfolioAllocator(
+            AllocationConfig(
+                max_symbol_weight=self.config.portfolio_max_symbol_weight,
+                cash_reserve_weight=self.config.portfolio_cash_reserve_weight,
+                max_gross_exposure=self.config.portfolio_max_gross_exposure,
+                max_daily_turnover=self.config.portfolio_max_daily_turnover,
+                strategy_weights=dict(self.config.strategy_weights),
+            )
+        )
+
+    def _with_paper_attribution(self, intent: Any, signal: Signal | None) -> Any:
+        metadata = dict(getattr(intent, "metadata", {}) or {})
+        signal_metadata = dict(getattr(signal, "metadata", {}) or {}) if signal is not None else {}
+        for key in ("bar_size", "strategy_timeframe"):
+            if key in signal_metadata:
+                metadata.setdefault(key, signal_metadata[key])
+        metadata.update(
+            {
+                "paper_session_id": self.session_id,
+                "runtime_mode": "paper",
+                "strategy_id": intent.strategy_id,
+                "signal_id": signal.signal_id if signal is not None else intent.signal_id,
+            }
+        )
+        return replace(intent, metadata=metadata)
+
+    def _fill_with_attribution(
+        self,
+        fill: Any,
+        *,
+        order: Any | None,
+        intent: Any,
+    ) -> dict[str, Any]:
+        if isinstance(fill, dict):
+            record = dict(fill)
+        elif is_dataclass(fill):
+            record = asdict(fill)
+        else:
+            record = {
+                name: getattr(fill, name)
+                for name in (
+                    "order_id",
+                    "symbol",
+                    "side",
+                    "quantity",
+                    "price",
+                    "commission",
+                    "filled_at",
+                    "broker",
+                    "broker_order_id",
+                    "fill_id",
+                )
+                if hasattr(fill, name)
+            }
+
+        record.setdefault("order_id", getattr(order, "order_id", getattr(intent, "order_id", "")))
+        record["strategy_id"] = str(
+            record.get("strategy_id")
+            or getattr(order, "strategy_id", "")
+            or getattr(intent, "strategy_id", "")
+        )
+        record["run_id"] = str(record.get("run_id") or getattr(order, "run_id", "") or getattr(intent, "run_id", ""))
+        record["signal_id"] = str(
+            record.get("signal_id")
+            or getattr(order, "signal_id", "")
+            or getattr(intent, "signal_id", "")
+        )
+        record["client_order_id"] = str(
+            record.get("client_order_id")
+            or getattr(order, "client_order_id", "")
+            or getattr(intent, "client_order_id", "")
+        )
+        record["order_intent_id"] = str(record.get("order_intent_id") or getattr(intent, "order_intent_id", ""))
+        record["target_position_id"] = str(
+            record.get("target_position_id")
+            or getattr(intent, "target_position_id", "")
+        )
+        metadata: dict[str, Any] = {}
+        raw_metadata = record.get("metadata")
+        if isinstance(raw_metadata, dict):
+            metadata.update(raw_metadata)
+        order_metadata = getattr(order, "metadata", {}) if order is not None else {}
+        if isinstance(order_metadata, dict):
+            metadata.update(order_metadata)
+        intent_metadata = getattr(intent, "metadata", {})
+        if isinstance(intent_metadata, dict):
+            metadata.update(intent_metadata)
+        record["metadata"] = metadata
+        record["paper_session_id"] = self.session_id
+        record["runtime_mode"] = "paper"
+        return record
+
+    def _write_strategy_attribution_report(
+        self,
+        report_date: date,
+    ) -> tuple[str, dict[str, Any]]:
+        attribution = self._strategy_attribution_summary(report_date)
+        report_dir = Path(self.config.ledger_root) / "daily_reports"
+        report_dir.mkdir(parents=True, exist_ok=True)
+        path = report_dir / f"strategy_attribution_{report_date.isoformat()}.json"
+        path.write_text(
+            json.dumps(attribution, sort_keys=True, indent=2, default=str),
+            encoding="utf-8",
+        )
+        return str(path), attribution
+
+    def _augment_daily_report_with_attribution(
+        self,
+        report_path: Path,
+        *,
+        attribution_path: str,
+        attribution: dict[str, Any],
+    ) -> None:
+        data = json.loads(report_path.read_text(encoding="utf-8"))
+        data["strategy_attribution_path"] = attribution_path
+        data["strategy_attribution"] = attribution
+        report_path.write_text(
+            json.dumps(data, sort_keys=True, indent=2, default=str),
+            encoding="utf-8",
+        )
+
+    def _strategy_attribution_summary(self, report_date: date) -> dict[str, Any]:
+        orders = [
+            order
+            for order in self.ledger.read_records("orders.jsonl")
+            if self._record_belongs_to_current_session(order)
+        ]
+        order_attribution = {
+            str(order.get("order_id", "")): {
+                "strategy_id": str(order.get("strategy_id", "")),
+                "run_id": str(order.get("run_id", "")),
+                "signal_id": str(order.get("signal_id", "")),
+                "client_order_id": str(order.get("client_order_id", "")),
+                "metadata": order.get("metadata", {}),
+            }
+            for order in orders
+            if order.get("order_id")
+        }
+        fills = [
+            fill
+            for fill in self.ledger.read_records("fills.jsonl")
+            if self._record_belongs_to_current_session(fill)
+            or str(fill.get("order_id", "")) in order_attribution
+        ]
+        by_strategy: dict[str, dict[str, Any]] = {}
+
+        def bucket(strategy_id: str) -> dict[str, Any]:
+            key = strategy_id or "unattributed"
+            if key not in by_strategy:
+                by_strategy[key] = {
+                    "orders": 0.0,
+                    "fills": 0.0,
+                    "symbols": [],
+                    "filled_quantity": 0.0,
+                    "filled_notional": 0.0,
+                    "commission": 0.0,
+                    "client_order_ids": [],
+                    "signal_ids": [],
+                }
+            return by_strategy[key]
+
+        for order in orders:
+            strategy_id = str(order.get("strategy_id", ""))
+            metadata = order.get("metadata", {})
+            shares = self._strategy_attribution_shares(metadata, strategy_id)
+            for child_strategy_id, share in shares:
+                summary = bucket(child_strategy_id)
+                summary["orders"] += share
+                symbol = str(order.get("symbol", ""))
+                if symbol and symbol not in summary["symbols"]:
+                    summary["symbols"].append(symbol)
+                client_order_id = str(order.get("client_order_id", ""))
+                if client_order_id and client_order_id not in summary["client_order_ids"]:
+                    summary["client_order_ids"].append(client_order_id)
+                signal_id = str(order.get("signal_id", ""))
+                if signal_id and signal_id not in summary["signal_ids"]:
+                    summary["signal_ids"].append(signal_id)
+
+        for fill in fills:
+            fallback = order_attribution.get(str(fill.get("order_id", "")), {})
+            strategy_id = str(fill.get("strategy_id") or fallback.get("strategy_id", ""))
+            metadata = fill.get("metadata") or fallback.get("metadata", {})
+            shares = self._strategy_attribution_shares(metadata, strategy_id)
+            symbol = str(fill.get("symbol", ""))
+            quantity = float(fill.get("quantity", 0.0) or 0.0)
+            price = float(fill.get("price", 0.0) or 0.0)
+            commission = float(fill.get("commission", 0.0) or 0.0)
+            client_order_id = str(fill.get("client_order_id") or fallback.get("client_order_id", ""))
+            signal_id = str(fill.get("signal_id") or fallback.get("signal_id", ""))
+            for child_strategy_id, share in shares:
+                summary = bucket(child_strategy_id)
+                summary["fills"] += share
+                if symbol and symbol not in summary["symbols"]:
+                    summary["symbols"].append(symbol)
+                summary["filled_quantity"] += quantity * share
+                summary["filled_notional"] += abs(quantity * price) * share
+                summary["commission"] += commission * share
+                if client_order_id and client_order_id not in summary["client_order_ids"]:
+                    summary["client_order_ids"].append(client_order_id)
+                if signal_id and signal_id not in summary["signal_ids"]:
+                    summary["signal_ids"].append(signal_id)
+
+        for summary in by_strategy.values():
+            summary["symbols"] = sorted(summary["symbols"])
+            summary["client_order_ids"] = sorted(summary["client_order_ids"])
+            summary["signal_ids"] = sorted(summary["signal_ids"])
+            summary["orders"] = round(float(summary["orders"]), 8)
+            summary["fills"] = round(float(summary["fills"]), 8)
+            summary["filled_quantity"] = round(float(summary["filled_quantity"]), 8)
+            summary["filled_notional"] = round(float(summary["filled_notional"]), 8)
+            summary["commission"] = round(float(summary["commission"]), 8)
+
+        return {
+            "artifact_type": "paper_strategy_attribution_report",
+            "mode": "paper",
+            "runtime_mode": "paper",
+            "session_id": self.session_id,
+            "report_date": report_date.isoformat(),
+            "strategy_ids": self._configured_strategy_ids(),
+            "by_strategy": dict(sorted(by_strategy.items())),
+            "totals": {
+                "orders": len(orders),
+                "fills": len(fills),
+                "strategies": len(by_strategy),
+            },
+        }
+
+    def _record_belongs_to_current_session(self, record: dict[str, Any]) -> bool:
+        if str(record.get("paper_session_id", "")) == self.session_id:
+            return True
+        metadata = record.get("metadata", {})
+        return isinstance(metadata, dict) and str(metadata.get("paper_session_id", "")) == self.session_id
+
+    @staticmethod
+    def _strategy_attribution_shares(
+        metadata: Any,
+        fallback_strategy_id: str,
+    ) -> list[tuple[str, float]]:
+        if not isinstance(metadata, dict):
+            return [(fallback_strategy_id or "unattributed", 1.0)]
+        contributions = metadata.get("strategy_contributions")
+        if not isinstance(contributions, list) or not contributions:
+            return [(fallback_strategy_id or "unattributed", 1.0)]
+
+        weighted: list[tuple[str, float]] = []
+        for row in contributions:
+            if not isinstance(row, dict):
+                continue
+            strategy_id = str(row.get("strategy_id", "") or "")
+            if not strategy_id:
+                continue
+            weight = abs(float(row.get("weighted_weight", row.get("raw_weight", 0.0)) or 0.0))
+            weighted.append((strategy_id, weight))
+        if not weighted:
+            return [(fallback_strategy_id or "unattributed", 1.0)]
+
+        total = sum(weight for _, weight in weighted)
+        if total <= 0:
+            equal = 1.0 / len(weighted)
+            return [(strategy_id, equal) for strategy_id, _ in weighted]
+        return [(strategy_id, weight / total) for strategy_id, weight in weighted]
 
     # ------------------------------------------------------------------
     # Reconciliation
@@ -862,7 +1503,8 @@ class PaperRuntime:
         }
 
         if not ledger_state["has_state"]:
-            artifact["status"] = "clean_start"
+            artifact["status"] = "verified"
+            artifact["reason"] = "clean_start"
             artifact["operationally_complete"] = True
             artifact["broker_state_verified"] = True
             artifact["broker_state"] = self._account_positions_summary(
@@ -871,19 +1513,21 @@ class PaperRuntime:
             )
             artifact_path = self._write_broker_state_recovery_artifact(artifact)
             self._broker_state_recovery_cache = {
-                "status": "clean_start",
+                "status": "verified",
                 "artifact_path": artifact_path,
                 "resume_detected": False,
                 "operationally_complete": True,
                 "broker_state_restored": False,
                 "broker_state_verified": True,
+                "reason": "clean_start",
             }
             self._audit_runtime_event(
                 "paper_broker_state_recovery_complete",
                 {
                     "artifact_path": artifact_path,
-                    "status": "clean_start",
+                    "status": "verified",
                     "resume_detected": False,
+                    "reason": "clean_start",
                 },
             )
             return
@@ -1052,18 +1696,23 @@ class PaperRuntime:
 
     @staticmethod
     def _alpaca_paper_adapter_enabled() -> bool:
-        return False
+        return True
 
     @staticmethod
     def _alpaca_paper_adapter_factory_present() -> bool:
-        return False
+        return True
 
     @staticmethod
     def _alpaca_paper_adapter_capabilities() -> dict[str, bool]:
-        return paper_adapter_capability_defaults()
+        return AlpacaPaperBrokerAdapter.contract_capabilities()
 
     def _create_alpaca_paper_broker(self) -> SimulatedBroker:
-        raise RuntimeError("alpaca_paper_adapter_factory_missing")
+        return AlpacaPaperBrokerAdapter.from_env(
+            os.environ,
+            network_submit_requested=bool(
+                self.config.submit_orders and self.config.explicit_paper_submit
+            ),
+        )
 
     def _build_paper_broker(self) -> SimulatedBroker:
         contract = self._paper_adapter_contract()
@@ -1111,6 +1760,7 @@ class PaperRuntime:
 
     def _run_paper_adapter_startup_sync(self) -> None:
         if self._paper_broker_backend() != "alpaca_paper":
+            self._write_simulated_startup_sync_artifact()
             return
 
         contract = self._paper_adapter_contract()
@@ -1285,6 +1935,73 @@ class PaperRuntime:
             },
         )
 
+    def _write_simulated_startup_sync_artifact(self) -> None:
+        artifact = {
+            "artifact_type": "paper_broker_adapter_startup_sync",
+            "artifact_version": _PAPER_STARTUP_SYNC_ARTIFACT_VERSION,
+            "mode": "paper",
+            "runtime_mode": "paper",
+            "canonical_runtime": "PaperRuntime",
+            "paper_broker": self.config.paper_broker,
+            "backend": "simulated",
+            "broker_backend": "simulated",
+            "real_order_submission": False,
+            "paper_order_submission": bool(self.config.submit_orders),
+            "status": "ok",
+            "reason": "not_required_for_simulated_paper_backend",
+            "required": False,
+            "reduce_only": bool(getattr(self.oms, "reduce_only", False)),
+            "halt_reconciliation": False,
+            "no_submit": True,
+            "no_submit_proof": {
+                "required": False,
+                "reason": "not_required_for_simulated_paper_backend",
+                "submit_call_count_available": True,
+                "submit_call_count_before": 0,
+                "submit_call_count_after": 0,
+                "submit_call_count_delta": 0,
+                "submit_order_invoked": False,
+                "write_method_invoked": False,
+                "write_method_names": [],
+            },
+            "sync": {
+                "poll_orders": {
+                    "required": False,
+                    "call_count": 0,
+                    "order_count": 0,
+                    "order_ids": [],
+                },
+                "sync_fills": {
+                    "required": False,
+                    "call_count": 0,
+                    "fill_count": 0,
+                    "fill_ids": [],
+                    "order_ids": [],
+                    "requested_order_ids": [],
+                },
+                "sync_account": {
+                    "required": False,
+                    "call_count": 0,
+                    "account_id": "",
+                },
+                "sync_positions": {
+                    "required": False,
+                    "call_count": 0,
+                    "position_count": 0,
+                    "symbols": [],
+                },
+            },
+        }
+        artifact_path = self._write_startup_sync_artifact(artifact)
+        self._audit_runtime_event(
+            "paper_broker_adapter_startup_sync_not_required",
+            {
+                "artifact_path": artifact_path,
+                "broker_backend": "simulated",
+                "no_submit": True,
+            },
+        )
+
     def _paper_adapter_contract(self) -> dict[str, object]:
         env_requested = (
             os.environ.get("QUANT_ENABLE_ALPACA_PAPER_ADAPTER", "").lower()
@@ -1376,6 +2093,13 @@ class PaperRuntime:
         broker_state_recovery = self._broker_state_recovery_status()
         registry_evidence = self._registry_evidence_summary()
         no_submit_proof = self._no_real_order_submission_proof(startup_sync)
+        credentials_ok, credential_reason = self._has_apca_paper_credentials()
+        credential_audit = self._paper_credential_audit()
+        readiness = self.broker.readiness_report() if hasattr(self.broker, "readiness_report") else {}
+        network_submit_confirmed = self._alpaca_paper_network_submit_confirmed()
+        network_submit_enabled = bool(
+            readiness.get("network_submit_enabled", network_submit_confirmed)
+        )
         client_order_id = str(getattr(intent, "client_order_id", "") or "")
         recovered_ids = getattr(self.oms, "_client_order_ids", set())
         duplicate = client_order_id in recovered_ids
@@ -1387,6 +2111,16 @@ class PaperRuntime:
             "allow_live_orders_false": not self.config.allow_live_orders,
             "real_order_submission": False,
             "broker_backend": self._paper_broker_backend(),
+            "paper_credentials_present": credentials_ok,
+            "paper_credentials_reason": credential_reason,
+            "paper_base_url_valid": bool(credential_audit.get("base_url_valid", False)),
+            "paper_endpoint_kind": str(credential_audit.get("endpoint_kind", "unset")),
+            "paper_allowed_base_urls": list(credential_audit.get("allowed_base_urls", [])),
+            "paper_network_submit_confirmation": network_submit_confirmed,
+            "paper_adapter_network_submit_enabled": network_submit_enabled,
+            "paper_adapter_submit_blocked_reason": str(
+                readiness.get("submit_blocked_reason", "")
+            ),
             "registry_evidence_allowed": bool(registry_evidence.get("allowed")),
             "registry_evidence_reason": str(registry_evidence.get("reason", "")),
             "registry_evidence_id": str(registry_evidence.get("evidence_id", "")),
@@ -1411,6 +2145,19 @@ class PaperRuntime:
             reasons.append("submit_orders_false")
         if not checks["allow_live_orders_false"]:
             reasons.append("paper_runtime_cannot_allow_live_orders")
+        if not credentials_ok:
+            reasons.append(credential_reason)
+        if not checks["paper_network_submit_confirmation"]:
+            reasons.append("alpaca_paper_network_submit_confirmation_missing")
+        if not checks["paper_adapter_network_submit_enabled"]:
+            reasons.append(
+                str(
+                    readiness.get(
+                        "submit_blocked_reason",
+                        "alpaca_paper_network_submit_disabled_fail_closed",
+                    )
+                )
+            )
         if not checks["registry_evidence_allowed"]:
             reasons.append(str(registry_evidence.get("reason", "paper_review_evidence_missing")))
         if startup_sync.get("status") != "ok" or not startup_sync.get("no_submit"):
@@ -1429,13 +2176,65 @@ class PaperRuntime:
             return False, ";".join(reasons), checks
         return True, "ok", checks
 
+    @staticmethod
+    def _alpaca_paper_network_submit_confirmed() -> bool:
+        return os.environ.get(ALPACA_PAPER_NETWORK_SUBMIT_ENV, "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+        }
+
     def _paper_entry_evidence_projection(self) -> dict[str, Any]:
         review_path = self._paper_review_path()
-        return project_saved_paper_review_evidence(
+        projection = project_saved_paper_review_evidence(
             self.config.promotion_data_root,
             paper_review_id=self.config.paper_review_id,
             paper_review_path=str(review_path or ""),
         )
+        if projection.get("allowed"):
+            mismatch = self._paper_entry_evidence_config_mismatch(projection)
+            if mismatch:
+                projection = dict(projection)
+                projection["allowed"] = False
+                projection["reason"] = mismatch
+        return projection
+
+    def _paper_entry_evidence_config_mismatch(self, projection: dict[str, Any]) -> str:
+        review = dict(projection.get("review", {}))
+        details = dict(review.get("details", {}))
+        proposed_symbols = _normalized_unique_strings(details.get("proposed_symbols", []))
+        runtime_symbols = _normalized_unique_strings(self.config.symbols)
+        if proposed_symbols and runtime_symbols and proposed_symbols != runtime_symbols:
+            return (
+                "paper_review_symbols_mismatch:"
+                f"approved={','.join(proposed_symbols)}:"
+                f"runtime={','.join(runtime_symbols)}"
+            )
+
+        proposed_capital = float(details.get("proposed_capital", 0.0) or 0.0)
+        if proposed_capital > 0 and float(self.config.capital) > proposed_capital + 1e-9:
+            return (
+                "paper_review_capital_exceeds_approved:"
+                f"approved={proposed_capital:.2f}:"
+                f"runtime={float(self.config.capital):.2f}"
+            )
+
+        risk_envelope = details.get("proposed_risk_envelope", {})
+        if not isinstance(risk_envelope, dict):
+            risk_envelope = {}
+        approved_bar_sizes = _normalized_unique_strings(
+            risk_envelope.get("bar_sizes", risk_envelope.get("timeframes", []))
+        )
+        runtime_bar_sizes = _normalized_unique_strings(
+            self.config.bar_sizes or [self.config.bar_size]
+        )
+        if approved_bar_sizes and runtime_bar_sizes and approved_bar_sizes != runtime_bar_sizes:
+            return (
+                "paper_review_timeframes_mismatch:"
+                f"approved={','.join(approved_bar_sizes)}:"
+                f"runtime={','.join(runtime_bar_sizes)}"
+            )
+        return ""
 
     def _paper_review_path(self) -> Path | None:
         if self.config.paper_review_path:
@@ -1627,6 +2426,18 @@ class PaperRuntime:
             "canonical_runtime": "PaperRuntime",
             "symbols": list(self.config.symbols),
             "strategy_id": self.config.strategy_id,
+            "strategy_ids": self._configured_strategy_ids(),
+            "strategies": self._strategy_manifest_entries(),
+            "bar_sizes": self._configured_bar_sizes(),
+            "strategy_timeframes": self._configured_strategy_timeframes(),
+            "portfolio": {
+                "portfolio_id": self.config.portfolio_id,
+                "strategy_weights": dict(self.config.strategy_weights),
+                "cash_reserve_weight": self.config.portfolio_cash_reserve_weight,
+                "max_symbol_weight": self.config.portfolio_max_symbol_weight,
+                "max_gross_exposure": self.config.portfolio_max_gross_exposure,
+                "max_daily_turnover": self.config.portfolio_max_daily_turnover,
+            },
             "paper_broker": self.config.paper_broker,
             "broker_backend": self._paper_broker_backend(),
             "submit_orders": bool(self.config.submit_orders),
@@ -1637,6 +2448,19 @@ class PaperRuntime:
             "registry_evidence": registry_evidence,
             "startup_sync_status": startup_sync,
             "broker_state_recovery_status": broker_state_recovery,
+            "market_data_symbols_evidence": {
+                "symbols": list(self.config.symbols),
+                "source": self.config.data_vendor,
+                "bar_size": self.config.bar_size,
+                "bar_sizes": self._configured_bar_sizes(),
+                "timeframes": self._configured_bar_sizes(),
+                "strategy_timeframes": self._configured_strategy_timeframes(),
+                "data_root": self.config.data_root,
+                "cache_pattern": (
+                    "raw/vendor={source}/asset_class=equity/"
+                    "bar_size={bar_size}/symbol={symbol}/date=*.parquet"
+                ),
+            },
             "created_at": created_at,
             "artifact_path": str(manifest_path),
             "history_artifact_path": str(history_path),

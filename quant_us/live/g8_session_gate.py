@@ -189,6 +189,14 @@ class SessionGate:
             self._audit(decision, session_id, ticket_id)
             return decision
 
+        if state.status == SessionStatus.FROZEN:
+            decision = SessionGateDecision(
+                decision="BLOCKED",
+                block_reasons=["session_frozen"],
+            )
+            self._audit(decision, session_id, ticket_id)
+            return decision
+
         if state.status not in (SessionStatus.ARMED, SessionStatus.ACTIVE_MANUAL_SUPERVISION):
             decision = SessionGateDecision(
                 decision="BLOCKED",
@@ -196,17 +204,6 @@ class SessionGate:
             )
             self._audit(decision, session_id, ticket_id)
             return decision
-
-        # Check 5: frozen
-        if state.status == SessionStatus.FROZEN:
-            # This shouldn't happen given Check 4 guards, but double-check
-            if state.current_freeze_reason:
-                decision = SessionGateDecision(
-                    decision="BLOCKED",
-                    block_reasons=["session_frozen"],
-                )
-                self._audit(decision, session_id, ticket_id)
-                return decision
 
         # Check 6: daily cap
         from datetime import date

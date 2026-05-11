@@ -53,7 +53,11 @@ class RebalancePlanner:
                     run_id=run_id,
                     signal_id=target.signal_id,
                     target_position_id=target.target_position_id,
-                    metadata={"target_weight": target.target_weight, "target_quantity": target_quantity},
+                    metadata={
+                        **dict(target.metadata),
+                        "target_weight": target.target_weight,
+                        "target_quantity": target_quantity,
+                    },
                 )
             )
         return intents

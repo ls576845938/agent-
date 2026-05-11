@@ -39,7 +39,10 @@ class PercentOfEquitySizer:
                     symbol=signal.symbol,
                     target_weight=target_weight,
                     signal_id=signal.signal_id,
-                    metadata={"signal_reason": signal.reason},
+                    metadata={
+                        **dict(signal.metadata),
+                        "signal_reason": signal.reason,
+                    },
                 )
             )
         return targets

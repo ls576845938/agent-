@@ -1,8 +1,7 @@
-"""Live Pilot Executor for G4 Small Live Pilot Controlled Execution.
+"""Live Pilot Executor for G4 Small Live Pilot review.
 
-The SINGLE entry point for live pilot order execution.
-Default: dry-run (never submits real orders).
-Only with --execute-live-pilot + all gates pass: submit a real live order.
+The current VNEXT runtime is frozen: this executor can build previews and
+audit evidence, but it must not submit real orders.
 """
 
 from __future__ import annotations
@@ -417,66 +416,12 @@ class LivePilotExecutor:
         )
 
     def _submit_live_order(self, preview: dict[str, Any]) -> dict[str, Any]:
-        """Submit a real live order. Blocked unless execute_live_pilot=True."""
-        if not self.config.execute_live_pilot:
-            return {"submitted": False, "reason": "execute_live_pilot_not_set"}
-
-        if not self.config.confirm_live:
-            return {"submitted": False, "reason": "confirm_live_not_set"}
-
-        if self._broker is None and self.config.api_key and self.config.api_secret:
-            try:
-                broker_cfg = AlpacaBrokerConfig(
-                    api_key=self.config.api_key,
-                    api_secret=self.config.api_secret,
-                    paper=False,
-                    base_url=LIVE_BASE_URL,
-                )
-                self._broker = AlpacaBroker(broker_cfg)
-            except Exception as exc:
-                return {"submitted": False, "reason": f"broker_init_failed: {exc}"}
-
-        if self._broker is None:
-            return {"submitted": False, "reason": "no_live_broker_configured"}
-
-        try:
-            order = Order(
-                timestamp_utc=_utc_now(),
-                strategy_id=self.config.strategy_id,
-                symbol=preview["symbol"],
-                side=OrderSide(preview["side"]),
-                quantity=preview["qty"],
-                order_type=OrderType.LIMIT,
-                time_in_force="day",
-                client_order_id=new_id("coid"),
-                run_id=self.run_id,
-                signal_id=preview.get("signal_id", ""),
-            )
-
-            submitted = self._broker.submit_order(order)
-            self._submitted_orders.append(submitted)
-
-            self.audit_trail.record_submitted(
-                audit_id=new_id("audit"),
-                run_id=self.run_id,
-                approval_id=self.config.approval_id,
-                envelope_id=self.config.envelope_id,
-                order_intent_id=preview.get("order_intent_id", ""),
-                client_order_id=order.client_order_id,
-                broker_order_id=submitted.broker_order_id,
-                symbol=preview["symbol"],
-                side=preview["side"],
-                qty=preview["qty"],
-                notional=preview["notional"],
-            )
-
-            return {
-                "submitted": True,
-                "client_order_id": order.client_order_id,
-                "broker_order_id": submitted.broker_order_id,
-            }
-        except Exception as exc:
-            return {"submitted": False, "reason": str(exc)}
+        """Live pilot execution is frozen; readiness gates are review-only."""
+        return {
+            "submitted": False,
+            "reason": "live_runtime_frozen_no_order_submission",
+            "real_order_submission": False,
+        }
 
     def _poll_status(self) -> dict[str, Any]:
         return {"orders_polled": len(self._submitted_orders)}

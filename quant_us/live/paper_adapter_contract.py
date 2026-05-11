@@ -22,6 +22,17 @@ REQUIRED_PAPER_ADAPTER_CAPABILITIES: tuple[str, ...] = (
     "sync_positions",
     "readiness_report",
 )
+READ_ONLY_PAPER_ADAPTER_CAPABILITIES: tuple[str, ...] = (
+    "poll_orders",
+    "sync_fills",
+    "sync_account",
+    "sync_positions",
+    "readiness_report",
+)
+WRITE_PAPER_ADAPTER_CAPABILITIES: tuple[str, ...] = (
+    "submit_order",
+    "cancel_order",
+)
 
 
 def paper_adapter_capability_defaults() -> dict[str, bool]:
@@ -122,6 +133,10 @@ class PaperAdapterContract:
     credentials_present: bool = False
     approved_evidence: bool = False
     adapter_ready: bool = False
+    read_only_sync_capable: bool = False
+    dry_run_no_submit_proof_required: bool = False
+    explicit_paper_submit_gate_required: bool = False
+    submit_blocked_reason: str = ""
     readiness_reasons: list[str] = field(default_factory=list)
     allowed_base_urls: list[str] = field(
         default_factory=lambda: list(ALLOWED_ALPACA_PAPER_BASE_URLS)
@@ -195,16 +210,31 @@ def evaluate_paper_adapter_contract(
     explicitly_enabled = adapter_code_enabled and env_requested
     enabled = explicitly_enabled and adapter_factory_present
     missing_capabilities = [name for name, present in capabilities.items() if not present]
+    missing_read_only_capabilities = [
+        name for name in READ_ONLY_PAPER_ADAPTER_CAPABILITIES
+        if not capabilities.get(name, False)
+    ]
+    missing_write_capabilities = [
+        name for name in WRITE_PAPER_ADAPTER_CAPABILITIES
+        if not capabilities.get(name, False)
+    ]
+    read_only_sync_capable = not missing_read_only_capabilities
+    submit_blocked_reason = ""
+    if read_only_sync_capable and missing_write_capabilities:
+        submit_blocked_reason = "alpaca_paper_adapter_submit_not_implemented_fail_closed"
     readiness_reasons: list[str] = []
     if not adapter_code_enabled or not adapter_factory_present:
         readiness_reasons.append("alpaca_paper_broker_adapter_not_configured")
     elif not env_requested:
         readiness_reasons.append("alpaca_paper_adapter_not_explicitly_enabled")
     if missing_capabilities:
-        readiness_reasons.append(
-            "alpaca_paper_adapter_capabilities_incomplete: "
-            + ",".join(sorted(missing_capabilities))
-        )
+        if submit_blocked_reason and not missing_read_only_capabilities:
+            readiness_reasons.append(submit_blocked_reason)
+        else:
+            readiness_reasons.append(
+                "alpaca_paper_adapter_capabilities_incomplete: "
+                + ",".join(sorted(missing_capabilities))
+            )
     if not credentials_present:
         readiness_reasons.append(credential_reason)
     if not base_url_valid:
@@ -229,11 +259,23 @@ def evaluate_paper_adapter_contract(
             credentials_present=True,
             approved_evidence=True,
             adapter_ready=True,
+            read_only_sync_capable=read_only_sync_capable,
+            dry_run_no_submit_proof_required=True,
+            explicit_paper_submit_gate_required=True,
+            submit_blocked_reason="",
             readiness_reasons=[],
             allowed_base_urls=list(allowed_base_urls),
         )
 
     if enabled and missing_capabilities:
+        reason = (
+            submit_blocked_reason
+            if submit_blocked_reason and not missing_read_only_capabilities
+            else (
+                "alpaca_paper_adapter_capabilities_incomplete: "
+                + ",".join(sorted(missing_capabilities))
+            )
+        )
         return PaperAdapterContract(
             requested_backend="alpaca",
             effective_backend="simulated",
@@ -242,10 +284,7 @@ def evaluate_paper_adapter_contract(
             adapter_factory_present=True,
             submit_capable=False,
             fail_closed=True,
-            reason=(
-                "alpaca_paper_adapter_capabilities_incomplete: "
-                + ",".join(sorted(missing_capabilities))
-            ),
+            reason=reason,
             capabilities=capabilities,
             env_requested=env_requested,
             endpoint_kind=endpoint_kind,
@@ -253,6 +292,10 @@ def evaluate_paper_adapter_contract(
             credentials_present=credentials_present,
             approved_evidence=approved_evidence,
             adapter_ready=False,
+            read_only_sync_capable=read_only_sync_capable,
+            dry_run_no_submit_proof_required=True,
+            explicit_paper_submit_gate_required=True,
+            submit_blocked_reason=submit_blocked_reason,
             readiness_reasons=readiness_reasons,
             allowed_base_urls=list(allowed_base_urls),
         )
@@ -284,6 +327,10 @@ def evaluate_paper_adapter_contract(
         credentials_present=credentials_present,
         approved_evidence=approved_evidence,
         adapter_ready=False,
+        read_only_sync_capable=read_only_sync_capable,
+        dry_run_no_submit_proof_required=True,
+        explicit_paper_submit_gate_required=True,
+        submit_blocked_reason=submit_blocked_reason,
         readiness_reasons=readiness_reasons,
         allowed_base_urls=list(allowed_base_urls),
     )

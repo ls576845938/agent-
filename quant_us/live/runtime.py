@@ -16,6 +16,8 @@ from quant_us.live.live_order_submission_gate import (
     SubmissionGateDecision,
 )
 from quant_us.live.modes import RuntimeMode
+from quant_us.live.alpaca_paper_adapter import ALPACA_PAPER_NETWORK_SUBMIT_ENV
+from quant_us.live.paper_adapter_contract import audit_apca_paper_credentials
 from quant_us.live.runtime_config import LiveRuntimeConfig
 from quant_us.live.runtime_events import RuntimeEvent
 from quant_us.live.runtime_state import LiveRuntimeState, RuntimeHealth, RuntimeLifecycleState
@@ -455,6 +457,17 @@ class LiveRuntime:
             gate_kwargs["allowed_order_types"] = [order_type]
 
         decision = self._live_submission_gate.check(**gate_kwargs)
+        if decision.approved:
+            decision = SubmissionGateDecision(
+                decision="REQUIRES_MANUAL_REVIEW",
+                block_reasons=list(decision.block_reasons),
+                warnings=[
+                    *decision.warnings,
+                    "live_runtime_frozen_no_automatic_submission",
+                ],
+                checked_at=decision.checked_at,
+                gate_version=decision.gate_version,
+            )
         self._last_live_submission_gate_decision = decision
         self._live_submission_gate_completed = decision.approved
         return decision
@@ -481,6 +494,7 @@ class LiveRuntime:
             "submit_orders_enabled": bool(self.config.submit_orders),
             "allow_live_orders_false": not self.config.allow_live_orders,
             "real_order_submission_disabled": not self.config.real_order_submission_enabled,
+            "paper_network_submit_confirmation": self._alpaca_paper_network_submit_confirmed(),
             "explicit_paper_submit_selected": bool(
                 gate_kwargs.get("paper_submit_selected")
                 or gate_kwargs.get("confirm_paper_submit")
@@ -498,7 +512,27 @@ class LiveRuntime:
         require("submit_orders_enabled", "paper_submit_orders_not_enabled")
         require("allow_live_orders_false", "paper_runtime_cannot_allow_live_orders")
         require("real_order_submission_disabled", "real_order_submission_enabled")
+        require(
+            "paper_network_submit_confirmation",
+            "alpaca_paper_network_submit_confirmation_missing",
+        )
         require("explicit_paper_submit_selected", "explicit_paper_submit_not_selected")
+
+        credential_audit = audit_apca_paper_credentials()
+        credentials_present = bool(credential_audit.get("credentials_present", False))
+        base_url_present = bool(credential_audit.get("base_url", ""))
+        base_url_valid = bool(credential_audit.get("base_url_valid", False))
+        checks["paper_credentials_present"] = credentials_present
+        checks["paper_base_url_present"] = base_url_present
+        checks["paper_base_url_valid"] = base_url_valid
+        checks["paper_endpoint_kind"] = str(credential_audit.get("endpoint_kind", "unset"))
+        checks["paper_allowed_base_urls"] = list(credential_audit.get("allowed_base_urls", []))
+        if not credentials_present:
+            block_reasons.append("apca_paper_credentials_missing")
+        elif not base_url_present:
+            block_reasons.append("apca_base_url_missing")
+        elif not base_url_valid:
+            block_reasons.append("apca_base_url_not_allowed")
 
         evidence = self._paper_submit_registry_evidence(gate_kwargs)
         checks["saved_registry_evidence_allowed"] = bool(evidence.get("allowed"))
@@ -515,6 +549,16 @@ class LiveRuntime:
         checks["startup_sync_artifact_path"] = startup_sync["artifact_path"]
         if not startup_sync["passed"]:
             block_reasons.append(str(startup_sync["reason"]))
+
+        broker_recovery = self._paper_submit_broker_recovery_status(gate_kwargs)
+        checks["broker_recovery_passed"] = broker_recovery["passed"]
+        checks["broker_recovery_status"] = broker_recovery["status"]
+        checks["broker_recovery_artifact_path"] = broker_recovery["artifact_path"]
+        checks["broker_recovery_operationally_complete"] = broker_recovery[
+            "operationally_complete"
+        ]
+        if not broker_recovery["passed"]:
+            block_reasons.append(str(broker_recovery["reason"]))
 
         idempotency_ok = intent is None or intent.client_order_id not in self._submitted_order_ids
         checks["oms_idempotency_ok"] = idempotency_ok
@@ -536,10 +580,19 @@ class LiveRuntime:
             "checks": checks,
             "evidence": evidence,
             "startup_sync": startup_sync,
+            "broker_recovery": broker_recovery,
         }
         self._last_paper_submission_gate_decision = decision
         self._paper_submission_gate_completed = bool(decision["approved"])
         return decision
+
+    @staticmethod
+    def _alpaca_paper_network_submit_confirmed() -> bool:
+        return os.environ.get(ALPACA_PAPER_NETWORK_SUBMIT_ENV, "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+        }
 
     def _paper_submit_registry_evidence(self, gate_kwargs: dict[str, Any]) -> dict[str, Any]:
         data_root = gate_kwargs.get("promotion_data_root") or gate_kwargs.get("data_root") or self.config.data_root
@@ -605,6 +658,53 @@ class LiveRuntime:
             "reason": reason,
             "no_submit": no_submit,
             "submit_call_count_delta": proof.get("submit_call_count_delta"),
+        })
+        return status
+
+    def _paper_submit_broker_recovery_status(self, gate_kwargs: dict[str, Any]) -> dict[str, Any]:
+        artifact_path = Path(
+            str(
+                gate_kwargs.get("broker_recovery_artifact_path")
+                or gate_kwargs.get("broker_state_recovery_artifact_path")
+                or Path(self.config.ledger_root) / "audit" / "paper_broker_state_recovery.json"
+            )
+        )
+        status = {
+            "passed": False,
+            "artifact_path": str(artifact_path),
+            "status": "missing",
+            "reason": "broker_state_recovery_missing",
+            "operationally_complete": False,
+            "broker_state_verified": False,
+        }
+        if not artifact_path.exists():
+            return status
+        try:
+            artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            status.update({
+                "status": "conflict",
+                "reason": f"broker_state_recovery_unreadable:{exc}",
+            })
+            return status
+
+        artifact_status = str(artifact.get("status", "missing"))
+        backend = str(artifact.get("broker_backend", artifact.get("backend", "")))
+        operationally_complete = bool(artifact.get("operationally_complete", False))
+        broker_state_verified = bool(artifact.get("broker_state_verified", False))
+        passed = (
+            artifact_status in {"clean_start", "restored", "verified"}
+            and backend == "alpaca_paper"
+            and operationally_complete
+            and broker_state_verified
+        )
+        status.update({
+            "passed": passed,
+            "status": artifact_status,
+            "backend": backend,
+            "reason": "ok" if passed else "broker_state_recovery_not_passed",
+            "operationally_complete": operationally_complete,
+            "broker_state_verified": broker_state_verified,
         })
         return status
 

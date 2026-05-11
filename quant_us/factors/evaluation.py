@@ -65,6 +65,9 @@ class FactorEvaluator:
         start: str,
         end: str,
         forward_period: int = 5,
+        *,
+        bar_size: str = "1d",
+        timeframe: str | None = None,
     ) -> FactorEvaluationResult:
         """Full factor evaluation.
 
@@ -82,20 +85,30 @@ class FactorEvaluator:
             symbols=symbols,
             start=start,
             end=end,
+            bar_size=bar_size,
+            timeframe=timeframe,
         )
         if df.empty or factor_id not in df.columns:
             return FactorEvaluationResult(factor_id=factor_id)
 
         # 2. Build forward returns
-        bars = _load_bars(self.data_root, symbols, start, end)
+        bars = _load_bars(
+            self.data_root,
+            symbols,
+            start,
+            end,
+            bar_size=timeframe or bar_size,
+            vendor=self._pipeline.data_vendor,
+            asset_class=self._pipeline.asset_class,
+        )
         if bars.empty:
             return FactorEvaluationResult(factor_id=factor_id)
         forward_df = self._build_forward_returns(bars, period=forward_period)
 
         # Merge factor values with forward returns
         merged = df.merge(
-            forward_df[["date", "symbol", "fwd_return"]],
-            on=["date", "symbol"],
+            forward_df[["timestamp_utc", "date", "symbol", "fwd_return"]],
+            on=["timestamp_utc", "date", "symbol"],
             how="inner",
         )
         if merged.empty:
@@ -279,14 +292,14 @@ class FactorEvaluator:
 
     @staticmethod
     def _build_forward_returns(bars: pd.DataFrame, period: int) -> pd.DataFrame:
-        """Compute forward *period*-day returns for each symbol.
+        """Compute forward *period*-bar returns for each symbol.
 
-        Returns a DataFrame with columns ``date``, ``symbol``, ``fwd_return``.
+        Returns a DataFrame with columns ``timestamp_utc``, ``date``, ``symbol``, ``fwd_return``.
         """
         bars = bars.copy()
         bars["timestamp_utc"] = pd.to_datetime(bars["timestamp_utc"], utc=True)
         bars["date"] = bars["timestamp_utc"].dt.date.astype(str)
-        bars = bars.sort_values(["symbol", "date"])
+        bars = bars.sort_values(["symbol", "timestamp_utc"])
 
         # Forward close price
         bars["close_fwd"] = bars.groupby("symbol")["close"].transform(
@@ -294,7 +307,7 @@ class FactorEvaluator:
         )
         bars["fwd_return"] = bars["close_fwd"] / bars["close"] - 1.0
         # Remove rows where forward return is NaN (last *period* rows per symbol)
-        result = bars.dropna(subset=["fwd_return"])[["date", "symbol", "fwd_return"]]
+        result = bars.dropna(subset=["fwd_return"])[["timestamp_utc", "date", "symbol", "fwd_return"]]
         return result
 
     @staticmethod

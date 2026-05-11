@@ -4,16 +4,19 @@
 
 | Mode | Real Orders | Live Endpoint | ReadOnlyBroker | Paper Orders |
 |------|-------------|---------------|----------------|--------------|
-| PAPER | Blocked | Blocked | N/A | Simulated only by default; explicit paper submit path required |
+| PAPER | Blocked | Blocked | N/A | Simulated by default; Alpaca paper requires explicit adapter and network-submit confirmation |
 | SHADOW_LIVE | **Blocked** (hard) | Read-only only | Required | Optional simulated/audit evidence only |
 | LIVE | **Blocked** in `LiveRuntime` safety shell | Review-only endpoint checks | N/A | N/A |
 
 `LiveRuntime` is currently a safety shell. Live-mode readiness evidence can pass, but that evidence is
 review material only and does not unlock order submission in this runtime boundary.
+`LiveRuntimeConfig.real_order_submission_enabled` and `RuntimeMode.LIVE.can_submit_real_orders` are hard-false while
+the runtime remains frozen; live flags are audit inputs, not capability switches.
 The `live start` operator path is review-only and fail-closed: it may render gate/evidence state, but it must not submit orders.
 Any future executable live path must be introduced as a separate, explicit implementation with its own approved gate.
 Readiness, report, and paper runtime gates in this baseline consume the saved Evidence Registry as source of truth. They do not implicitly rebuild it. Missing, `STALE`, or `CONFLICT` registry state must fail closed.
 CLI reports may display subject index bucket counts, paper session manifests, startup sync artifacts, and ledger reconciliation artifacts.
+They may also display portfolio observability artifacts for `multi_strategy`, `multi_timeframe`, and `pnl_attribution`.
 Those files are persisted evidence and audit inputs only; displaying them does not grant execution authorization.
 Registry rebuild is an explicit maintenance operation and uses an atomic write protected by a lock; report and gate commands remain saved-only readers.
 
@@ -46,6 +49,8 @@ Current baseline expectations:
 - Startup sync artifacts are audit inputs only and do not enable paper or live writes.
 - Paper session manifests record session intent, registry evidence, startup sync status, no-submit proof, and a history copy path under `audit/paper_session_manifests/<session_id>.json`; they are not an executable order path.
 - Ledger reconciliation artifacts summarize fills, hashes, duplicate/conflict fill counts, and ledger PnL for review only.
+- Portfolio observability artifacts summarize multi-strategy/multi-timeframe configuration and ledger/report PnL attribution for review only.
+- The printed portfolio paper next-step command uses the simulated broker by default and omits `--submit-orders`.
 - `paper_review_index` is a legacy view only; it is not the authority for runtime gating.
 - `review.json` alone cannot start paper runtime. The registry must be rebuilt explicitly, then the saved registry is consumed by readiness/report/runtime gates.
 
@@ -62,10 +67,9 @@ Even when `QUANT_LIVE_SUBMISSION_ENABLED=true`:
 ### Safety Proof Chain
 ```
 QUANT_LIVE_SUBMISSION_ENABLED=true
-  -> LiveRuntimeConfig.real_order_submission_enabled checks mode=LIVE
-    -> Shadow_live mode does NOT equal LIVE mode
-      -> real_order_submission_enabled returns False
-        -> No live order path reachable from shadow_live
+  -> LiveRuntimeConfig.real_order_submission_enabled is hard-false
+    -> RuntimeMode.SHADOW_LIVE.can_submit_real_orders is hard-false
+      -> No live order path reachable from shadow_live
 ```
 
 ## ReadOnlyBrokerProxy Forbidden Methods
@@ -101,9 +105,10 @@ The audit trail proves no real orders were submitted:
 Paper endpoint:  https://paper-api.alpaca.markets
 Live endpoint:   https://api.alpaca.markets
 
-Paper profile  -> MUST use paper endpoint when an actual, explicit paper submit adapter is wired
+Paper profile  -> MUST use paper endpoint plus explicit adapter and network-submit confirmation
 Shadow profile -> CAN use live endpoint (read-only only, via ReadOnlyLiveBrokerProxy)
 Live profile   -> MAY inspect live endpoint state, but current LiveRuntime remains review-only and fail-closed
+submit_order   -> BLOCKED by endpoint guard for both shadow_live and live while live runtime is frozen
 ```
 
 `AlpacaBrokerConfig.__post_init__` validates URL/paper alignment:

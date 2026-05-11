@@ -1,12 +1,25 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
 import LineChart from '../components/LineChart';
 import StatusBadge from '../components/StatusBadge';
 import {LoadingSpinner} from '../components/LoadingSpinner';
 import {apiGet, apiPost} from '../lib/api';
+import type {
+  EventDrivenCostStressResponse,
+  MvpStep,
+  PromotionGateResponse,
+  SystemOverviewResponse,
+  ValueEvent,
+} from '../lib/shared-types';
 import type {StrategyInfo} from '../lib/view-model';
 import {buildDateBoundary, formatPrice, mvpStepClass} from '../lib/utils';
-import type {EventDrivenCostStressResponse, MvpStep, ValueEvent} from '../lib/shared-types';
+
+type HealthState = {
+  status: string;
+  service: string;
+  data_source_default: string;
+  fastapi_available: boolean;
+};
 
 type USEquityFormState = {
   symbol: string;
@@ -18,28 +31,263 @@ type USEquityFormState = {
   ledgerDir: string;
 };
 
+type USEquitySyncResponse = {
+  run_id: string;
+  status: string;
+  symbol: string;
+  bar_size: string;
+  rows_received: number;
+  rows_cleaned: number;
+};
+
+type USFeatureBuildResponse = {
+  run_id: string;
+  status: string;
+  rows_written: number;
+  version: string;
+};
+
+type USEventBacktestResponse = {
+  run_id: string;
+  status: string;
+  summary: Record<string, number>;
+  order_count: number;
+  fill_count: number;
+  snapshot_count: number;
+  event_count: number;
+};
+
+type USReconciliationResponse = {
+  status: string;
+  break_count: number;
+  breaks: Array<{symbol: string; local_quantity: number; broker_quantity: number}>;
+  halt_new_orders?: boolean;
+  alert_sent?: boolean;
+  cash_diff?: number;
+  position_diffs?: Record<string, unknown>;
+  order_diffs?: Record<string, unknown>;
+  fill_diffs?: Record<string, unknown>;
+  report_path?: string;
+};
+
+type USQualityReportResponse = {
+  symbol: string;
+  data_version: string;
+  total_issues: number;
+  has_issues: boolean;
+  reports: Array<{
+    report_type: string;
+    issues_found: number;
+    details: Array<Record<string, unknown>>;
+  }>;
+};
+
+type USUnifiedBacktestResponse = {
+  run_id: string;
+  status: string;
+  summary: Record<string, number>;
+  equity_consistent: boolean;
+  equity_consistency_msg: string;
+  order_count: number;
+  fill_count: number;
+  snapshot_count: number;
+  event_count: number;
+  ledger_final_equity: number;
+  ledger_total_fees: number;
+  equity_curve: Array<{time: number; value: number}>;
+  drawdown_curve: Array<{time: number; value: number}>;
+};
+
+type USPaperStatusResponse = {
+  equity: number;
+  cash: number;
+  buying_power: number;
+  positions: number;
+  kill_switch_triggered: boolean;
+  kill_switch_reason: string | null;
+  days_traded: number;
+  healthy: boolean;
+  last_reconciliation_passed: boolean | null;
+};
+
+type USPaperDayResultResponse = {
+  date: string;
+  starting_equity: number;
+  ending_equity: number;
+  daily_pnl: number;
+  daily_return_pct: number;
+  orders_submitted: number;
+  orders_filled: number;
+  orders_rejected: number;
+  orders_cancelled: number;
+  kill_switch_triggered: boolean;
+  reconciliation_passed: boolean;
+  reconciliation_diff: Record<string, unknown>;
+  errors: string[];
+};
+
+type PaperBacktestResponse = {
+  status: string;
+  days_processed: number;
+  total_pnl: number;
+  final_equity: number;
+  healthy: boolean;
+  kill_switch_triggered: boolean;
+  daily_results: USPaperDayResultResponse[];
+};
+
+type GateTone = 'neutral' | 'good' | 'bad';
+
+type GateCard = {
+  id: string;
+  title: string;
+  status: string;
+  detail: string;
+  tone: GateTone;
+};
+
+type EvidenceEntry = {
+  label: string;
+  value: string;
+  muted?: boolean;
+};
+
+type LooseRecord = Record<string, unknown>;
+
+type PortfolioSectionRow = {
+  key: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: GateTone;
+};
+
+type PortfolioBudgetItem = {
+  key: string;
+  label: string;
+  value: string;
+  detail: string;
+};
+
+type PortfolioGateSummary = {
+  key: string;
+  label: string;
+  status: string;
+  detail: string;
+  tone: GateTone;
+};
+
 const defaultUSForm: USEquityFormState = {
-  symbol: 'AAPL', barSize: '1d',
-  startDate: '2024-01-01', endDate: '2024-06-01',
-  dataRoot: 'data', strategyId: 'trend_momentum',
+  symbol: 'AAPL',
+  barSize: '1d',
+  startDate: '2024-01-01',
+  endDate: '2024-06-01',
+  dataRoot: 'data',
+  strategyId: 'trend_momentum',
   ledgerDir: 'data/ledger/paper',
 };
 
-type USEquitySyncResponse = {run_id: string; status: string; symbol: string; bar_size: string; rows_received: number; rows_cleaned: number};
-type USFeatureBuildResponse = {run_id: string; status: string; rows_written: number; version: string};
-type USEventBacktestResponse = {run_id: string; status: string; summary: Record<string, number>; order_count: number; fill_count: number; snapshot_count: number; event_count: number};
-type USReconciliationResponse = {status: string; break_count: number; breaks: Array<{symbol: string; local_quantity: number; broker_quantity: number}>; halt_new_orders?: boolean; alert_sent?: boolean; cash_diff?: number; position_diffs?: Record<string, unknown>; order_diffs?: Record<string, unknown>; fill_diffs?: Record<string, unknown>; report_path?: string};
-type USQualityReportResponse = {symbol: string; data_version: string; total_issues: number; has_issues: boolean; reports: Array<{report_type: string; issues_found: number; details: Array<Record<string, unknown>>}>};
-type USUnifiedBacktestResponse = {run_id: string; status: string; summary: Record<string, number>; equity_consistent: boolean; equity_consistency_msg: string; order_count: number; fill_count: number; snapshot_count: number; event_count: number; ledger_final_equity: number; ledger_total_fees: number; equity_curve: Array<{time: number; value: number}>; drawdown_curve: Array<{time: number; value: number}>};
-type USPaperStatusResponse = {equity: number; cash: number; buying_power: number; positions: number; kill_switch_triggered: boolean; kill_switch_reason: string | null; days_traded: number; healthy: boolean; last_reconciliation_passed: boolean | null};
-type USPaperDayResultResponse = {date: string; starting_equity: number; ending_equity: number; daily_pnl: number; daily_return_pct: number; orders_submitted: number; orders_filled: number; orders_rejected: number; orders_cancelled: number; kill_switch_triggered: boolean; reconciliation_passed: boolean; reconciliation_diff: Record<string, unknown>; errors: string[]};
-type PaperBacktestResponse = {status: string; days_processed: number; total_pnl: number; final_equity: number; healthy: boolean; kill_switch_triggered: boolean; daily_results: USPaperDayResultResponse[]};
-
 export type USEquityWorkspaceProps = {
   strategies: StrategyInfo[];
+  health: HealthState | null;
 };
 
-export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) {
+function metricValue(value?: number, digits = 2, suffix = ''): string {
+  if (typeof value !== 'number' || Number.isNaN(value)) return '-';
+  return `${value.toFixed(digits)}${suffix}`;
+}
+
+function toneForPaper(status: USPaperStatusResponse | null): GateTone {
+  if (!status) return 'neutral';
+  if (!status.healthy || status.kill_switch_triggered || status.last_reconciliation_passed === false) return 'bad';
+  if (status.days_traded > 0 && status.last_reconciliation_passed) return 'good';
+  return 'neutral';
+}
+
+function getPaperStatusLabel(status: USPaperStatusResponse | null): string {
+  if (!status) return '待运行';
+  if (status.kill_switch_triggered) return '已冻结';
+  if (!status.healthy) return '需处理';
+  if (status.days_traded === 0) return '待观察';
+  return '可复核';
+}
+
+function toneFromOverviewStatus(status?: string | boolean | null): GateTone {
+  if (status === true || status === 'PASS' || status === 'present' || status === 'PASS/STABLE' || status === 'reviewable') return 'good';
+  if (status === false || status === 'blocked' || status === 'frozen') return 'bad';
+  return 'neutral';
+}
+
+function asRecord(value: unknown): LooseRecord | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as LooseRecord : null;
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function firstPresent<T>(...values: Array<T | null | undefined>): T | null {
+  return values.find(value => value !== null && value !== undefined) ?? null;
+}
+
+function readRecord(source: LooseRecord | null, ...keys: string[]): LooseRecord | null {
+  for (const key of keys) {
+    const value = source?.[key];
+    const record = asRecord(value);
+    if (record) return record;
+  }
+  return null;
+}
+
+function readArray(source: LooseRecord | null, ...keys: string[]): unknown[] {
+  for (const key of keys) {
+    const value = source?.[key];
+    if (Array.isArray(value)) return value;
+  }
+  return [];
+}
+
+function readString(source: LooseRecord | null, ...keys: string[]): string | null {
+  for (const key of keys) {
+    const value = source?.[key];
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return null;
+}
+
+function readBoolean(source: LooseRecord | null, ...keys: string[]): boolean | null {
+  for (const key of keys) {
+    const value = source?.[key];
+    if (typeof value === 'boolean') return value;
+  }
+  return null;
+}
+
+function readNumber(source: LooseRecord | null, ...keys: string[]): number | null {
+  for (const key of keys) {
+    const value = source?.[key];
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string' && value.trim()) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+  }
+  return null;
+}
+
+function formatPercentValue(value: number | null, digits = 1): string {
+  if (value === null || Number.isNaN(value)) return '-';
+  const normalized = Math.abs(value) <= 1 ? value * 100 : value;
+  return `${normalized.toFixed(digits)}%`;
+}
+
+function formatSignedPrice(value: number | null): string {
+  if (value === null || Number.isNaN(value)) return '-';
+  const prefix = value > 0 ? '+' : '';
+  return `${prefix}$${formatPrice(value)}`;
+}
+
+export default function USEquityWorkspace({strategies, health}: USEquityWorkspaceProps) {
   const [usForm, setUSForm] = useState<USEquityFormState>(() => ({
     ...defaultUSForm,
     strategyId: strategies[0]?.id ?? defaultUSForm.strategyId,
@@ -56,396 +304,1095 @@ export default function USEquityWorkspace({strategies}: USEquityWorkspaceProps) 
   const [usPaperDailyResults, setUSPaperDailyResults] = useState<USPaperDayResultResponse[]>([]);
   const [paperBacktest, setPaperBacktest] = useState<PaperBacktestResponse | null>(null);
   const [edCostStress, setEDCostStress] = useState<EventDrivenCostStressResponse | null>(null);
-  const [promotionGateResult, setPromotionGateResult] = useState<Record<string, unknown> | null>(null);
+  const [promotionGateResult, setPromotionGateResult] = useState<PromotionGateResponse | null>(null);
+  const [systemOverview, setSystemOverview] = useState<SystemOverviewResponse | null>(null);
 
   useEffect(() => {
-    if (strategies.length > 0 && !strategies.find(s => s.id === usForm.strategyId)) {
-      setUSForm(f => ({...f, strategyId: strategies[0].id}));
+    if (strategies.length > 0 && !strategies.find(strategy => strategy.id === usForm.strategyId)) {
+      setUSForm(current => ({...current, strategyId: strategies[0].id}));
     }
-  }, [strategies]);
-
-  const handleUSDataSync = async () => {
-    setUSLoading(true); setUSMessage('');
-    try {
-      const result = await apiPost<USEquitySyncResponse>('/api/us/data/sync', {
-        vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
-        start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
-        end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
-        data_root: usForm.dataRoot,
-      });
-      setUSSync(result); setUSMessage(`同步完成：清洗 ${result.rows_cleaned} 行`);
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '同步失败'); }
-    finally { setUSLoading(false); }
-  };
-
-  const handleUSBuildFeatures = async () => {
-    setUSLoading(true); setUSMessage('');
-    try {
-      const result = await apiPost<USFeatureBuildResponse>('/api/us/features/build', {
-        vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
-        start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
-        end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
-        data_root: usForm.dataRoot, version: 'v1', universe: 'default', auto_sync: true,
-      });
-      setUSFeature(result); setUSMessage(`因子构建完成：写入 ${result.rows_written} 行`);
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '构建失败'); }
-    finally { setUSLoading(false); }
-  };
-
-  const handleUSBacktest = async () => {
-    setUSLoading(true); setUSMessage('');
-    try {
-      const result = await apiPost<USEventBacktestResponse>('/api/us/backtests/event', {
-        vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
-        strategy_id: usForm.strategyId,
-        start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
-        end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
-        data_root: usForm.dataRoot, auto_sync: true,
-      });
-      setUSBacktest(result); setUSMessage(`事件回测完成：${result.fill_count} 成交 / ${result.order_count} 订单`);
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '回测失败'); }
-    finally { setUSLoading(false); }
-  };
-
-  const handleUSReconcile = async () => {
-    setUSLoading(true); setUSMessage('');
-    try {
-      const result = await apiPost<USReconciliationResponse>('/api/us/reconcile', {ledger_dir: usForm.ledgerDir, tolerance: 0.000001});
-      setUSReconcile(result); setUSMessage(result.status === 'clean' ? '对账一致' : `发现 ${result.break_count} 个差异`);
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '对账失败'); }
-    finally { setUSLoading(false); }
-  };
-
-  const handleUSUnifiedBacktest = async () => {
-    setUSLoading(true); setUSMessage('');
-    try {
-      const result = await apiPost<USUnifiedBacktestResponse>('/api/us/backtests/unified', {
-        vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
-        strategy_id: usForm.strategyId,
-        start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
-        end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
-        data_root: usForm.dataRoot, auto_sync: true,
-      });
-      setUSUnifiedBacktest(result); setUSMessage(result.equity_consistent ? '权益验证 PASS' : '权益验证 FAIL');
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '回测失败'); }
-    finally { setUSLoading(false); }
-  };
-
-  const handleUSPaperRunDay = async () => {
-    setUSLoading(true); setUSMessage('');
-    try {
-      await apiPost<USPaperDayResultResponse>('/api/us/paper/run-day', {
-        vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
-        strategy_id: usForm.strategyId, target_date: usForm.startDate, data_root: usForm.dataRoot, capital: 100000,
-      });
-      handleUSPaperStatus(); handleUSPaperDailyResults();
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '运行失败'); }
-    finally { setUSLoading(false); }
-  };
+  }, [strategies, usForm.strategyId]);
 
   const handleUSPaperStatus = async () => {
     try {
       const result = await apiGet<USPaperStatusResponse>('/api/us/paper/status');
       setUSPaperStatus(result);
-    } catch { /* silent */ }
+    } catch {
+      // read-only dashboard fetch
+    }
   };
 
   const handleUSPaperDailyResults = async () => {
     try {
       const results = await apiGet<USPaperDayResultResponse[]>('/api/us/paper/daily-results');
       setUSPaperDailyResults(results);
-    } catch { /* silent */ }
+    } catch {
+      // read-only dashboard fetch
+    }
   };
 
-  const handleUSPaperBacktest = async () => {
-    setUSLoading(true); setUSMessage('');
+  const loadSystemOverview = async (dataRoot = usForm.dataRoot) => {
     try {
-      const result = await apiPost<PaperBacktestResponse>('/api/us/paper/backtest', {
-        vendor: 'yfinance', asset_class: 'equity', symbol: usForm.symbol, bar_size: usForm.barSize,
+      const result = await apiGet<SystemOverviewResponse>(`/api/system/overview?data_root=${encodeURIComponent(dataRoot)}`);
+      setSystemOverview(result);
+    } catch {
+      // overview is additive; page still works with direct endpoints
+    }
+  };
+
+  useEffect(() => {
+    void loadSystemOverview();
+    void handleUSPaperStatus();
+    void handleUSPaperDailyResults();
+    const interval = setInterval(() => {
+      void loadSystemOverview();
+      void handleUSPaperStatus();
+      void handleUSPaperDailyResults();
+    }, 20000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    void loadSystemOverview(usForm.dataRoot);
+  }, [usForm.dataRoot]);
+
+  const selectedStrategy = useMemo(
+    () => strategies.find(strategy => strategy.id === usForm.strategyId) ?? null,
+    [strategies, usForm.strategyId],
+  );
+
+  const recentPaperRuns = usPaperDailyResults.slice(-6).reverse();
+  const paperPnL = usPaperDailyResults.reduce((sum, day) => sum + day.daily_pnl, 0);
+  const paperOrdersSubmitted = usPaperDailyResults.reduce((sum, day) => sum + day.orders_submitted, 0);
+  const paperOrdersFilled = usPaperDailyResults.reduce((sum, day) => sum + day.orders_filled, 0);
+  const paperReconPasses = usPaperDailyResults.filter(day => day.reconciliation_passed).length;
+
+  const handleUSDataSync = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await apiPost<USEquitySyncResponse>('/api/us/data/sync', {
+        vendor: 'yfinance',
+        asset_class: 'equity',
+        symbol: usForm.symbol,
+        bar_size: usForm.barSize,
+        start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+        end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+        data_root: usForm.dataRoot,
+      });
+      setUSSync(result);
+      setUSMessage(`数据同步完成，清洗 ${result.rows_cleaned} 行。`);
+      void loadSystemOverview();
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : '同步失败');
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSBuildFeatures = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await apiPost<USFeatureBuildResponse>('/api/us/features/build', {
+        vendor: 'yfinance',
+        asset_class: 'equity',
+        symbol: usForm.symbol,
+        bar_size: usForm.barSize,
+        start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+        end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+        data_root: usForm.dataRoot,
+        version: 'v1',
+        universe: 'default',
+        auto_sync: true,
+      });
+      setUSFeature(result);
+      setUSMessage(`特征写入 ${result.rows_written} 行，版本 ${result.version}。`);
+      void loadSystemOverview();
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : '构建失败');
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSBacktest = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await apiPost<USEventBacktestResponse>('/api/us/backtests/event', {
+        vendor: 'yfinance',
+        asset_class: 'equity',
+        symbol: usForm.symbol,
+        bar_size: usForm.barSize,
         strategy_id: usForm.strategyId,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
-        data_root: usForm.dataRoot, capital: 100000, auto_sync: true,
+        data_root: usForm.dataRoot,
+        auto_sync: true,
       });
-      setPaperBacktest(result); setUSMessage(`纸交易回测：${result.days_processed} 天 PnL $${result.total_pnl.toFixed(2)}`);
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '回测失败'); }
-    finally { setUSLoading(false); }
+      setUSBacktest(result);
+      setUSMessage(`事件回测完成，${result.fill_count} 笔成交。`);
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : '回测失败');
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSReconcile = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await apiPost<USReconciliationResponse>('/api/us/reconcile', {
+        ledger_dir: usForm.ledgerDir,
+        tolerance: 0.000001,
+      });
+      setUSReconcile(result);
+      setUSMessage(result.status === 'clean' ? '账本与券商侧对账一致。' : `发现 ${result.break_count} 个对账差异。`);
+      void loadSystemOverview();
+      void handleUSPaperStatus();
+      void handleUSPaperDailyResults();
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : '对账失败');
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSUnifiedBacktest = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await apiPost<USUnifiedBacktestResponse>('/api/us/backtests/unified', {
+        vendor: 'yfinance',
+        asset_class: 'equity',
+        symbol: usForm.symbol,
+        bar_size: usForm.barSize,
+        strategy_id: usForm.strategyId,
+        start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+        end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+        data_root: usForm.dataRoot,
+        auto_sync: true,
+      });
+      setUSUnifiedBacktest(result);
+      setUSMessage(result.equity_consistent ? '统一回测完成，权益验证通过。' : '统一回测完成，权益验证失败。');
+      void loadSystemOverview();
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : '统一回测失败');
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSPaperRunDay = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await apiPost<USPaperDayResultResponse>('/api/us/paper/run-day', {
+        vendor: 'yfinance',
+        asset_class: 'equity',
+        symbol: usForm.symbol,
+        bar_size: usForm.barSize,
+        strategy_id: usForm.strategyId,
+        target_date: usForm.startDate,
+        data_root: usForm.dataRoot,
+        capital: 100000,
+      });
+      setUSMessage(`Paper 日运行完成，${result.date} PnL ${formatPrice(result.daily_pnl)}。`);
+      void loadSystemOverview();
+      void handleUSPaperStatus();
+      void handleUSPaperDailyResults();
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : 'paper 运行失败');
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
+  const handleUSPaperBacktest = async () => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      const result = await apiPost<PaperBacktestResponse>('/api/us/paper/backtest', {
+        vendor: 'yfinance',
+        asset_class: 'equity',
+        symbol: usForm.symbol,
+        bar_size: usForm.barSize,
+        strategy_id: usForm.strategyId,
+        start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+        end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+        data_root: usForm.dataRoot,
+        capital: 100000,
+        auto_sync: true,
+      });
+      setPaperBacktest(result);
+      setUSMessage(`Paper 回放完成，处理 ${result.days_processed} 天。`);
+      void loadSystemOverview();
+      void handleUSPaperStatus();
+      void handleUSPaperDailyResults();
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : 'paper 回测失败');
+    } finally {
+      setUSLoading(false);
+    }
   };
 
   const handleUSQualityReport = async () => {
-    setUSLoading(true); setUSMessage('');
+    setUSLoading(true);
+    setUSMessage('');
     try {
       const result = await apiPost<USQualityReportResponse>('/api/us/data/quality-report', {
-        symbol: usForm.symbol, start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
-        end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize), data_root: usForm.dataRoot,
+        symbol: usForm.symbol,
+        start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
+        end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
+        data_root: usForm.dataRoot,
       });
-      setUSQualityReport(result); setUSMessage(result.has_issues ? `发现 ${result.total_issues} 个问题` : '数据质量通过');
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '检查失败'); }
-    finally { setUSLoading(false); }
+      setUSQualityReport(result);
+      setUSMessage(result.has_issues ? `数据质量发现 ${result.total_issues} 个问题。` : '数据质量检查通过。');
+      void loadSystemOverview();
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : '数据质量检查失败');
+    } finally {
+      setUSLoading(false);
+    }
   };
 
   const handleUSCostStressED = async () => {
-    setUSLoading(true); setUSMessage('');
+    setUSLoading(true);
+    setUSMessage('');
     try {
       const result = await apiPost<EventDrivenCostStressResponse>('/api/backtests/cost-stress/event-driven', {
-        source: 'yfinance', symbol: usForm.symbol, interval: usForm.barSize, strategy_id: usForm.strategyId,
+        source: 'yfinance',
+        symbol: usForm.symbol,
+        interval: usForm.barSize,
+        strategy_id: usForm.strategyId,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
-        capital: 100000, max_scenarios: 5,
+        capital: 100000,
+        max_scenarios: 5,
       });
-      setEDCostStress(result); setUSMessage(`成本压力 ${result.survival_rate_pct.toFixed(0)}% 生存率`);
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '失败'); }
-    finally { setUSLoading(false); }
+      setEDCostStress(result);
+      setUSMessage(`成本压力完成，生存率 ${result.survival_rate_pct.toFixed(0)}%。`);
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : '成本压力失败');
+    } finally {
+      setUSLoading(false);
+    }
   };
 
   const handleUSWalkForward = async () => {
-    setUSLoading(true); setUSMessage('');
+    setUSLoading(true);
+    setUSMessage('');
     try {
-      const result = await apiPost<{stability: Record<string, unknown>; windows: Array<unknown>}>('/api/backtests/walk-forward', {
-        source: 'yfinance', symbol: usForm.symbol, interval: usForm.barSize,
+      const result = await apiPost<{stability: {pass_rate_pct?: number}; windows: Array<unknown>}>('/api/backtests/walk-forward', {
+        source: 'yfinance',
+        symbol: usForm.symbol,
+        interval: usForm.barSize,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
-        capital: 100000, commission_rate: 0.0001, strategy_id: usForm.strategyId, data_root: usForm.dataRoot,
+        capital: 100000,
+        commission_rate: 0.0001,
+        strategy_id: usForm.strategyId,
+        data_root: usForm.dataRoot,
       });
-      setUSMessage(`Walk-Forward: pass_rate ${((result.stability.pass_rate_pct ?? 0) as number).toFixed(0)}%, ${(result.windows as Array<unknown>).length} windows`);
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '失败'); }
-    finally { setUSLoading(false); }
+      setUSMessage(`Walk-forward 完成，pass rate ${metricValue(result.stability.pass_rate_pct, 0, '%')}。`);
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : 'walk-forward 失败');
+    } finally {
+      setUSLoading(false);
+    }
   };
 
   const handleUSPromotionGate = async () => {
-    setUSLoading(true); setUSMessage('');
+    setUSLoading(true);
+    setUSMessage('');
     try {
-      const result = await apiPost<{decision: string; next_stage: string; gates: Array<{name: string; status: string}>}>('/api/research/promotion-gate', {
-        strategy_id: usForm.strategyId, symbol: usForm.symbol, interval: usForm.barSize,
+      const result = await apiPost<PromotionGateResponse>('/api/research/promotion-gate', {
+        strategy_id: usForm.strategyId,
+        symbol: usForm.symbol,
+        interval: usForm.barSize,
         start: buildDateBoundary(usForm.startDate, 'start', usForm.barSize),
         end: buildDateBoundary(usForm.endDate, 'end', usForm.barSize),
-        capital: 100000, source: 'yfinance', data_root: usForm.dataRoot, skip_deep_checks: false,
+        capital: 100000,
+        source: 'yfinance',
+        data_root: usForm.dataRoot,
+        skip_deep_checks: false,
       });
-      setPromotionGateResult(result as unknown as Record<string, unknown>);
-      const passed = result.gates.filter(g => g.status === 'pass').length;
-      setUSMessage(`Promotion Gate: ${result.decision} → ${result.next_stage} (${passed}/${result.gates.length} pass)`);
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '失败'); }
-    finally { setUSLoading(false); }
+      setPromotionGateResult(result);
+      const passed = result.gates.filter(gate => gate.status === 'pass').length;
+      setUSMessage(`晋升门完成，${passed}/${result.gates.length} 通过，结论 ${result.decision.toUpperCase()}。`);
+      void loadSystemOverview();
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : '晋升门失败');
+    } finally {
+      setUSLoading(false);
+    }
   };
 
   const handleUSPaperReset = async () => {
     setUSLoading(true);
     try {
       await apiPost<{status: string}>('/api/us/paper/reset');
-      setUSMessage('纸交易已重置');
-      setPaperBacktest(null); setUSPaperStatus(null); setUSPaperDailyResults([]);
-    } catch (e: unknown) { setUSMessage(e instanceof Error ? e.message : '重置失败'); }
-    finally { setUSLoading(false); }
+      setUSMessage('Paper 账本已重置。');
+      setPaperBacktest(null);
+      setUSPaperStatus(null);
+      setUSPaperDailyResults([]);
+      setUSReconcile(null);
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : '重置失败');
+    } finally {
+      setUSLoading(false);
+      void loadSystemOverview();
+      void handleUSPaperStatus();
+      void handleUSPaperDailyResults();
+    }
   };
 
   const workflowSteps: MvpStep[] = [
-    {id: 'data', label: '数据同步', status: usSync ? 'done' : 'pending', detail: usSync ? `${usSync.rows_cleaned} 行清洗` : '等待同步'},
-    {id: 'features', label: '因子构建', status: usFeature ? 'done' : usSync ? 'warn' : 'pending', detail: usFeature ? `${usFeature.rows_written} 行` : '等待构建'},
-    {id: 'backtest', label: '事件回测', status: usBacktest ? 'done' : usFeature ? 'warn' : 'pending', detail: usBacktest ? `${usBacktest.fill_count} 笔成交` : '等待回测'},
-    {id: 'unified', label: '权益验证', status: usUnifiedBacktest ? (usUnifiedBacktest.equity_consistent ? 'done' : 'fail') : usBacktest ? 'warn' : 'pending', detail: usUnifiedBacktest ? (usUnifiedBacktest.equity_consistent ? '一致' : '不一致') : '等待验证'},
-    {id: 'paper', label: '纸交易', status: usPaperStatus?.days_traded && usPaperStatus.days_traded > 0 ? (usPaperStatus.healthy ? 'done' : 'warn') : usUnifiedBacktest ? 'warn' : 'pending', detail: usPaperStatus ? `${usPaperStatus.days_traded} 天 ${usPaperStatus.healthy ? '健康' : '异常'}` : '等待运行'},
+    {
+      id: 'data',
+      label: '数据质量',
+      status: usQualityReport ? (usQualityReport.has_issues ? 'fail' : 'done') : usSync ? 'warn' : 'pending',
+      detail: usQualityReport ? (usQualityReport.has_issues ? `${usQualityReport.total_issues} 个问题` : `版本 ${usQualityReport.data_version}`) : '先同步再校验',
+    },
+    {
+      id: 'features',
+      label: '研究快照',
+      status: usFeature ? 'done' : 'pending',
+      detail: usFeature ? `${usFeature.rows_written} 行 / ${usFeature.version}` : '保留特征版本',
+    },
+    {
+      id: 'backtest',
+      label: '账本回测',
+      status: usUnifiedBacktest ? (usUnifiedBacktest.equity_consistent ? 'done' : 'fail') : usBacktest ? 'warn' : 'pending',
+      detail: usUnifiedBacktest ? `${usUnifiedBacktest.fill_count} fills` : '等待统一回测',
+    },
+    {
+      id: 'promotion',
+      label: 'Paper Review',
+      status: systemOverview?.paper_review.status ? (systemOverview.paper_review.entry_allowed ? 'done' : 'fail') : 'pending',
+      detail: systemOverview?.paper_review.status ?? '未进入 paper review',
+    },
+    {
+      id: 'paper',
+      label: 'Paper Ready',
+      status: systemOverview?.paper_validation.state ? (systemOverview.paper_validation.state === 'PASS' ? 'done' : 'fail') : usPaperStatus ? (toneForPaper(usPaperStatus) === 'good' ? 'done' : toneForPaper(usPaperStatus) === 'bad' ? 'fail' : 'warn') : 'pending',
+      detail: systemOverview?.paper_validation.state ? `${systemOverview.paper_validation.days_completed ?? 0}/${systemOverview.paper_validation.days_required ?? 0} 天` : usPaperStatus ? `${usPaperStatus.days_traded} 天 / ${usPaperStatus.last_reconciliation_passed ? '对账通过' : '待复核'}` : '待 paper 记录',
+    },
   ];
 
+  const gateCards: GateCard[] = [
+    {
+      id: 'system',
+      title: '系统状态',
+      status: systemOverview?.status ?? (health?.fastapi_available ? 'online' : '等待连接'),
+      detail: systemOverview ? `${systemOverview.stage} · ${systemOverview.mode}` : health ? `${health.service} · 数据源 ${health.data_source_default}` : '后端未返回总览',
+      tone: systemOverview ? toneFromOverviewStatus(systemOverview.status) : health?.fastapi_available ? 'good' : 'neutral',
+    },
+    {
+      id: 'registry',
+      title: 'Registry',
+      status: systemOverview?.registry.integrity ?? usQualityReport?.data_version ?? '待检查',
+      detail: systemOverview?.registry.path ?? `${usForm.dataRoot}/research/evidence_registry.json`,
+      tone: systemOverview ? toneFromOverviewStatus(systemOverview.registry.integrity) : usQualityReport ? (usQualityReport.has_issues ? 'bad' : 'good') : 'neutral',
+    },
+    {
+      id: 'paper-validation',
+      title: 'Paper Validation',
+      status: systemOverview?.paper_validation.state ?? '待运行',
+      detail: systemOverview ? `${systemOverview.paper_validation.days_completed ?? 0}/${systemOverview.paper_validation.days_required ?? 0} 天 clean` : '等待 paper validation',
+      tone: systemOverview ? toneFromOverviewStatus(systemOverview.paper_validation.state) : 'neutral',
+    },
+    {
+      id: 'minute-data',
+      title: 'Minute Data',
+      status: systemOverview?.minute_data_quality?.status ?? '未检查',
+      detail: systemOverview?.minute_data_quality
+        ? `${systemOverview.minute_data_quality.evaluated_symbols?.length ?? 0} symbols · ${(systemOverview.minute_data_quality.bar_sizes ?? []).join('/') || '1m/5m/15m'}`
+        : '等待 1m/5m/15m quality gate',
+      tone: systemOverview ? toneFromOverviewStatus(systemOverview.minute_data_quality?.status) : 'neutral',
+    },
+    {
+      id: 'paper-review',
+      title: 'Paper Review',
+      status: systemOverview?.paper_review.status ?? '未出具',
+      detail: systemOverview?.paper_review.summary ?? '等待 review evidence',
+      tone: systemOverview ? (systemOverview.paper_review.entry_allowed ? 'good' : 'bad') : 'neutral',
+    },
+    {
+      id: 'credentials',
+      title: 'Broker Credentials',
+      status: systemOverview?.broker_credentials.credentials_present ? 'Present' : 'Missing',
+      detail: systemOverview ? `${systemOverview.broker_credentials.endpoint_kind ?? 'unset'} · base URL ${systemOverview.broker_credentials.base_url_valid ? 'valid' : 'invalid'}` : '等待总览',
+      tone: systemOverview ? (systemOverview.broker_credentials.credentials_present && systemOverview.broker_credentials.base_url_valid ? 'good' : 'bad') : 'neutral',
+    },
+    {
+      id: 'execution',
+      title: 'Execution State',
+      status: systemOverview?.execution.live_state ?? 'frozen',
+      detail: systemOverview
+        ? `paper submit ${systemOverview.execution.paper_network_submit_confirmation ? 'confirmed' : 'locked'} · ${systemOverview.execution.live_block_reason ?? 'live runtime frozen'}`
+        : 'live runtime frozen',
+      tone: systemOverview ? toneFromOverviewStatus(systemOverview.execution.live_state) : 'bad',
+    },
+  ];
+
+  const evidenceEntries: EvidenceEntry[] = [
+    {label: 'strategy_version', value: promotionGateResult?.strategy_version ?? selectedStrategy?.display_name ?? usForm.strategyId},
+    {label: 'data_version', value: usQualityReport?.data_version ?? promotionGateResult?.experiment_record.data_version ?? '未生成', muted: !usQualityReport && !promotionGateResult?.experiment_record.data_version},
+    {label: 'manifest', value: systemOverview?.paper_review.manifest_path ?? promotionGateResult?.manifest_path ?? '未出具', muted: !systemOverview?.paper_review.manifest_path && !promotionGateResult?.manifest_path},
+    {label: 'experiment', value: promotionGateResult?.experiment_record.experiment_id ?? '未记录', muted: !promotionGateResult?.experiment_record.experiment_id},
+    {label: 'registry', value: systemOverview?.registry.path ?? `${usForm.dataRoot}/research/evidence_registry.json`},
+    {label: 'paper_review', value: systemOverview?.paper_review.review_path ?? '未生成', muted: !systemOverview?.paper_review.review_path},
+    {label: 'evidence_pack', value: systemOverview?.paper_review.evidence_pack_path ?? '未生成', muted: !systemOverview?.paper_review.evidence_pack_path},
+    {label: 'ledger', value: usForm.ledgerDir},
+    {label: 'reconcile report', value: usReconcile?.report_path ?? '未生成', muted: !usReconcile?.report_path},
+  ];
+
+  const paperEquityCurve = paperBacktest?.daily_results.length
+    ? paperBacktest.daily_results.map((day, index) => ({time: index + 1, value: day.ending_equity}))
+    : usPaperDailyResults.map((day, index) => ({time: index + 1, value: day.ending_equity}));
+
+  const portfolioOverview = useMemo(() => {
+    const overviewRoot = systemOverview as unknown as LooseRecord | null;
+    const portfolioRoot = firstPresent(
+      readRecord(overviewRoot, 'multi_strategy_portfolio'),
+      readRecord(overviewRoot, 'multi_strategy'),
+      readRecord(overviewRoot, 'portfolio'),
+      readRecord(overviewRoot, 'portfolio_overview'),
+      readRecord(overviewRoot, 'portfolio_status'),
+    );
+    const gatesRoot = firstPresent(
+      readRecord(portfolioRoot, 'gates'),
+      readRecord(overviewRoot, 'gates'),
+    );
+    const weightRecords = readArray(portfolioRoot, 'strategy_weights', 'weights', 'allocations', 'strategy_allocations', 'strategies');
+    const overviewWeightRecords = readArray(overviewRoot, 'strategy_weights');
+    const pnlRecords = readArray(portfolioRoot, 'pnl_attribution', 'attribution', 'pnl_breakdown');
+    const overviewPnlRecords = readArray(overviewRoot, 'pnl_attribution');
+    const riskBudgetRoot = firstPresent(
+      readRecord(portfolioRoot, 'risk_budget'),
+      readRecord(overviewRoot, 'risk_budget'),
+    );
+
+    const strategyRows: PortfolioSectionRow[] = (weightRecords.length > 0 ? weightRecords : overviewWeightRecords)
+      .map((item, index) => {
+        const row = asRecord(item);
+        if (!row) return null;
+        const id = readString(row, 'strategy_id', 'id', 'strategy', 'name') ?? `strategy-${index + 1}`;
+        const label = readString(row, 'display_name', 'name', 'strategy_name', 'strategy_id', 'id') ?? id;
+        const weight = readNumber(row, 'weight_pct', 'weight', 'target_weight_pct', 'target_weight', 'allocation_pct');
+        const riskBudget = readNumber(row, 'risk_budget_pct', 'risk_contribution_pct', 'budget_pct', 'risk_budget');
+        const pnl = readNumber(row, 'pnl', 'pnl_usd', 'net_pnl', 'contribution_pnl', 'attribution_pnl');
+        const status = readString(row, 'status', 'state', 'readiness') ?? '';
+        const note = readString(row, 'summary', 'detail', 'notes', 'note') ?? '权重已加载，等待更细的组合归因字段。';
+        return {
+          key: id,
+          label,
+          value: weight !== null ? formatPercentValue(weight, 1) : '待提供',
+          detail: `${riskBudget !== null ? `风险预算 ${formatPercentValue(riskBudget, 1)}` : '风险预算待提供'} · ${pnl !== null ? `PnL ${formatSignedPrice(pnl)}` : 'PnL attribution 待提供'}${status ? ` · ${status}` : ''}`,
+          tone: pnl !== null ? (pnl >= 0 ? 'good' : 'bad') : 'neutral',
+        } satisfies PortfolioSectionRow;
+      })
+      .filter((row): row is PortfolioSectionRow => row !== null);
+
+    const pnlRows: PortfolioSectionRow[] = (pnlRecords.length > 0 ? pnlRecords : overviewPnlRecords)
+      .map((item, index) => {
+        const row = asRecord(item);
+        if (!row) return null;
+        const id = readString(row, 'strategy_id', 'id', 'bucket', 'name') ?? `attr-${index + 1}`;
+        const label = readString(row, 'display_name', 'name', 'bucket', 'strategy_name', 'strategy_id') ?? id;
+        const pnl = readNumber(row, 'pnl', 'pnl_usd', 'net_pnl', 'contribution_pnl', 'value');
+        const contribution = readNumber(row, 'contribution_pct', 'weight_pct', 'share_pct');
+        const detail = readString(row, 'summary', 'detail', 'notes') ?? '等待 API 返回更细的归因说明。';
+        return {
+          key: id,
+          label,
+          value: formatSignedPrice(pnl),
+          detail: `${contribution !== null ? `占比 ${formatPercentValue(contribution, 1)}` : '归因占比待提供'} · ${detail}`,
+          tone: pnl !== null ? (pnl >= 0 ? 'good' : 'bad') : 'neutral',
+        } satisfies PortfolioSectionRow;
+      })
+      .filter((row): row is PortfolioSectionRow => row !== null);
+
+    const pnlValues = (pnlRecords.length > 0 ? pnlRecords : overviewPnlRecords)
+      .map(item => {
+        const row = asRecord(item);
+        return row ? readNumber(row, 'pnl', 'pnl_usd', 'net_pnl', 'contribution_pnl', 'value') : null;
+      })
+      .filter((value): value is number => value !== null);
+
+    const strategyCount = readNumber(portfolioRoot, 'strategy_count', 'count') ?? strategyRows.length;
+    const grossExposure = readNumber(portfolioRoot, 'gross_exposure_pct', 'gross_weight_pct', 'gross_weight');
+    const netExposure = readNumber(portfolioRoot, 'net_exposure_pct', 'net_weight_pct', 'net_weight');
+    const totalPnL = firstPresent(
+      readNumber(portfolioRoot, 'total_pnl', 'pnl', 'portfolio_pnl'),
+      pnlValues.length > 0 ? pnlValues.reduce((sum, value) => sum + value, 0) : null,
+    );
+    const totalRiskBudget = firstPresent(
+      readNumber(riskBudgetRoot, 'total_budget_pct', 'portfolio_budget_pct', 'risk_budget_pct'),
+      strategyRows.length
+        ? strategyRows.reduce<number | null>((sum, row) => {
+          const match = row.detail.match(/风险预算 ([\d.]+)%/);
+          return match ? (sum ?? 0) + Number(match[1]) : sum;
+        }, 0)
+        : null,
+    );
+
+    const budgetItems: PortfolioBudgetItem[] = [
+      {
+        key: 'gross',
+        label: 'Gross Exposure',
+        value: formatPercentValue(grossExposure, 1),
+        detail: grossExposure !== null ? '组合总曝险' : 'API 未提供 gross exposure 字段',
+      },
+      {
+        key: 'net',
+        label: 'Net Exposure',
+        value: formatPercentValue(netExposure, 1),
+        detail: netExposure !== null ? '净曝险' : 'API 未提供 net exposure 字段',
+      },
+      {
+        key: 'risk-budget',
+        label: 'Risk Budget',
+        value: formatPercentValue(totalRiskBudget, 1),
+        detail: totalRiskBudget !== null ? '策略级预算汇总' : '显示占位，等待 risk_budget',
+      },
+      {
+        key: 'cash-buffer',
+        label: 'Cash Buffer',
+        value: formatPercentValue(readNumber(riskBudgetRoot, 'cash_buffer_pct', 'cash_reserve_pct', 'reserve_pct'), 1),
+        detail: '现金留存 / 风险缓冲',
+      },
+    ];
+
+    const paperGateRecord = firstPresent(
+      readRecord(gatesRoot, 'paper'),
+      readRecord(portfolioRoot, 'paper_gate'),
+    );
+    const liveGateRecord = firstPresent(
+      readRecord(gatesRoot, 'live'),
+      readRecord(portfolioRoot, 'live_gate'),
+    );
+    const reviewGateRecord = firstPresent(
+      readRecord(gatesRoot, 'review'),
+      readRecord(portfolioRoot, 'review_gate'),
+    );
+
+    const gateSummaries: PortfolioGateSummary[] = [
+      {
+        key: 'paper',
+        label: 'Paper Gate',
+        status: readString(paperGateRecord, 'status', 'state')
+          ?? systemOverview?.paper_validation.state
+          ?? getPaperStatusLabel(usPaperStatus),
+        detail: readString(paperGateRecord, 'summary', 'detail')
+          ?? systemOverview?.paper_review.summary
+          ?? (usPaperStatus ? `${usPaperStatus.days_traded} 天留样本` : '等待 paper validation'),
+        tone: toneFromOverviewStatus(
+          firstPresent(
+            readString(paperGateRecord, 'status', 'state'),
+            systemOverview?.paper_validation.state,
+          ),
+        ),
+      },
+      {
+        key: 'review',
+        label: 'Review Gate',
+        status: readString(reviewGateRecord, 'status', 'state')
+          ?? systemOverview?.paper_review.status
+          ?? 'manual_gate',
+        detail: readString(reviewGateRecord, 'summary', 'detail')
+          ?? systemOverview?.paper_review.summary
+          ?? '等待人工 review / manifest',
+        tone: toneFromOverviewStatus(
+          firstPresent(
+            readBoolean(reviewGateRecord, 'allowed', 'entry_allowed'),
+            systemOverview?.paper_review.entry_allowed,
+          ),
+        ),
+      },
+      {
+        key: 'live',
+        label: 'Live Gate',
+        status: readString(liveGateRecord, 'status', 'state')
+          ?? systemOverview?.execution.live_state
+          ?? 'frozen',
+        detail: readString(liveGateRecord, 'summary', 'detail', 'reason')
+          ?? systemOverview?.execution.live_block_reason
+          ?? 'live runtime frozen',
+        tone: toneFromOverviewStatus(
+          firstPresent(
+            readString(liveGateRecord, 'status', 'state'),
+            systemOverview?.execution.live_state,
+          ),
+        ),
+      },
+    ];
+
+    return {
+      profile: readString(portfolioRoot, 'profile', 'mode', 'scope') ?? (strategyRows.length > 1 ? 'multi-strategy' : 'single-strategy fallback'),
+      status: readString(portfolioRoot, 'status', 'state') ?? systemOverview?.status ?? 'pending',
+      detail: readString(portfolioRoot, 'summary', 'detail') ?? '若 overview 尚未返回组合字段，此区块使用单策略系统状态占位。',
+      strategyCount,
+      totalPnL,
+      totalRiskBudget,
+      strategyRows,
+      pnlRows,
+      budgetItems,
+      gateSummaries,
+    };
+  }, [systemOverview, usPaperStatus]);
+
   return (
-    <main className="us-workspace">
-      <section className="panel us-command-panel">
-        <div className="panel-header"><h2>美股任务配置</h2><span>{usBacktest?.status ?? 'event chain'}</span></div>
-
-        <div className="form-grid us-form-grid">
-          <label>标的<input value={usForm.symbol} onChange={(e: ValueEvent) => setUSForm({...usForm, symbol: e.target.value.toUpperCase()})} /></label>
-          <label>周期
-            <select value={usForm.barSize} onChange={(e: ValueEvent) => setUSForm({...usForm, barSize: e.target.value as USEquityFormState['barSize']})}>
-              {['1d', '1h', '30m', '15m', '5m', '2m', '1m'].map(b => <option key={b} value={b}>{b}</option>)}
-            </select>
-          </label>
-          <label>开始日期<input type="date" value={usForm.startDate} onChange={(e: ValueEvent) => setUSForm({...usForm, startDate: e.target.value})} /></label>
-          <label>结束日期<input type="date" value={usForm.endDate} onChange={(e: ValueEvent) => setUSForm({...usForm, endDate: e.target.value})} /></label>
-          <label className="wide-grid-field">数据湖根目录<input value={usForm.dataRoot} onChange={(e: ValueEvent) => setUSForm({...usForm, dataRoot: e.target.value})} /></label>
-          <label>策略
-            <select value={usForm.strategyId} onChange={(e: ValueEvent) => setUSForm({...usForm, strategyId: e.target.value})}>
-              {strategies.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
-            </select>
-          </label>
-          <label>Ledger<input value={usForm.ledgerDir} onChange={(e: ValueEvent) => setUSForm({...usForm, ledgerDir: e.target.value})} /></label>
+    <main className="ops-dashboard">
+      <section className="panel ops-hero-panel">
+        <div className="ops-hero-copy">
+          <div className="ops-title-row">
+            <div>
+              <p className="eyebrow">US Equity</p>
+              <h2>{selectedStrategy?.display_name ?? '单策略操作台'}</h2>
+            </div>
+            <div className="ops-title-badges">
+              <StatusBadge status={`Live ${systemOverview?.execution.live_state ?? 'frozen'}`} label="live-status" tone="bad" />
+              <StatusBadge status={systemOverview?.paper_review.entry_allowed ? 'Reviewable' : 'Manual Gate'} label="paper-status" tone={systemOverview?.paper_review.entry_allowed ? 'good' : 'neutral'} />
+            </div>
+          </div>
+          <p className="ops-hero-note">
+            当前仍以 US equity pre-live 操作台为主，但会兼容显示 multi-strategy portfolio 状态。缺失字段不会阻塞页面，live 仍冻结，paper 仍需证据和人工门禁。
+          </p>
+          <div className="ops-context-grid">
+            <div>
+              <span>交易标的</span>
+              <strong>{usForm.symbol}</strong>
+            </div>
+            <div>
+              <span>观察窗口</span>
+              <strong>{usForm.startDate} to {usForm.endDate}</strong>
+            </div>
+            <div>
+              <span>频率</span>
+              <strong>{usForm.barSize}</strong>
+            </div>
+            <div>
+              <span>默认参数</span>
+              <strong>{selectedStrategy ? `${Object.keys(selectedStrategy.default_params).length} 项` : '未配置'}</strong>
+            </div>
+            <div>
+              <span>小资金上限</span>
+              <strong>{systemOverview?.small_account.suggested_max_daily_notional ? `$${formatPrice(systemOverview.small_account.suggested_max_daily_notional)}/day` : '待加载'}</strong>
+            </div>
+            <div>
+              <span>每日单数</span>
+              <strong>{systemOverview?.small_account.suggested_max_daily_order_count ?? '-'}</strong>
+            </div>
+          </div>
         </div>
-
-        <div className="data-actions us-actions">
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSDataSync}>同步数据湖</button>
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSBuildFeatures}>构建因子</button>
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSBacktest}>事件回测</button>
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSReconcile}>持仓核对</button>
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSUnifiedBacktest}>统一回测</button>
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperRunDay}>纸交易（日）</button>
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperBacktest}>纸交易回测</button>
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSQualityReport}>数据质量</button>
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSCostStressED}>成本压力</button>
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSWalkForward}>Walk-Forward</button>
-          <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPromotionGate}>晋升门</button>
-          <button type="button" className="secondary-button danger" disabled={usLoading} onClick={handleUSPaperReset}>重置</button>
+        <div className="ops-command-summary">
+          <div className="ops-command-card">
+            <span>当前控制面</span>
+            <strong>{usLoading ? '任务运行中' : '等待操作'}</strong>
+            <p>{usLoading ? '同一时间只允许一条链路写入。' : '从右侧证据区确认状态后执行下一步。'}</p>
+          </div>
+          <div className="ops-command-card ops-command-card-alert">
+            <span>人工门禁</span>
+            <strong>Required</strong>
+            <p>promotion gate、paper 对账、风险摘要三项都要有证据，live 才能进入审批。</p>
+          </div>
         </div>
-
-        {usMessage ? <p className="data-message">{usMessage}</p> : null}
       </section>
 
       <section className="panel mvp-panel">
-        <div className="panel-header"><h2>美股工作流</h2><span>同步 → 回测 → 验证 → 纸交易</span></div>
+        <div className="panel-header">
+          <h3>晋升路径</h3>
+          <span>{usLoading ? <LoadingSpinner text="running" /> : 'single strategy workflow'}</span>
+        </div>
         <div className="mvp-step-grid">
-          {workflowSteps.map((step, i) => (
-            <div key={step.id} className={mvpStepClass(step.status)}><span>{i + 1}</span><strong>{step.label}</strong><p>{step.detail}</p></div>
+          {workflowSteps.map((step, index) => (
+            <div key={step.id} className={mvpStepClass(step.status)}>
+              <span>{index + 1}</span>
+              <strong>{step.label}</strong>
+              <p>{step.detail}</p>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="panel us-output-panel">
-        <div className="panel-header"><h2>链路状态</h2><span>{usLoading ? <LoadingSpinner text="running" /> : 'idle'}</span></div>
-        <div className="us-stage-grid">
-          <div><span>清洗数据</span><strong>{usSync ? `${usSync.rows_cleaned}/${usSync.rows_received}` : '-'}</strong></div>
-          <div><span>因子行数</span><strong>{usFeature?.rows_written ?? '-'}</strong></div>
-          <div><span>事件/成交</span><strong>{usBacktest ? `${usBacktest.event_count}/${usBacktest.fill_count}` : '-'}</strong></div>
-          <div><span>对账</span><strong>{usReconcile ? `${usReconcile.status} (${usReconcile.break_count})` : '-'}</strong></div>
+      <section className="ops-grid">
+        <div className="ops-main">
+          <section className="panel ops-gates-panel">
+            <div className="panel-header">
+              <h3>系统与门禁摘要</h3>
+              <span>{health?.status ?? 'unknown'}</span>
+            </div>
+            <div className="ops-gates-grid">
+              {gateCards.map(card => (
+                <article key={card.id} className={`ops-gate-card ops-gate-${card.tone}`}>
+                  <div className="ops-gate-header">
+                    <span>{card.title}</span>
+                    <StatusBadge status={card.status} label={card.title} tone={card.tone} />
+                  </div>
+                  <p>{card.detail}</p>
+                </article>
+              ))}
+            </div>
+            {systemOverview?.next_actions.length ? (
+              <div className="ops-next-actions">
+                {systemOverview.next_actions.map(action => (
+                  <div key={action} className="ops-next-action">{action}</div>
+                ))}
+              </div>
+            ) : null}
+          </section>
+
+          <section className="panel ops-portfolio-panel">
+            <div className="panel-header">
+              <h3>多策略组合总览</h3>
+              <span>{portfolioOverview.profile}</span>
+            </div>
+            <div className="ops-portfolio-summary-grid">
+              <div className={`metric-card ${toneFromOverviewStatus(portfolioOverview.status) === 'good' ? 'metric-good' : toneFromOverviewStatus(portfolioOverview.status) === 'bad' ? 'metric-bad' : ''}`}>
+                <span>Portfolio Status</span>
+                <strong>{portfolioOverview.status}</strong>
+              </div>
+              <div className="metric-card">
+                <span>策略数</span>
+                <strong>{portfolioOverview.strategyCount || '-'}</strong>
+              </div>
+              <div className={`metric-card ${portfolioOverview.totalRiskBudget !== null ? 'metric-good' : ''}`}>
+                <span>风险预算</span>
+                <strong>{formatPercentValue(portfolioOverview.totalRiskBudget, 1)}</strong>
+              </div>
+              <div className={`metric-card ${portfolioOverview.totalPnL !== null ? (portfolioOverview.totalPnL >= 0 ? 'metric-good' : 'metric-bad') : ''}`}>
+                <span>PnL Attribution</span>
+                <strong>{formatSignedPrice(portfolioOverview.totalPnL)}</strong>
+              </div>
+            </div>
+            <p className="ops-portfolio-detail">{portfolioOverview.detail}</p>
+
+            <div className="ops-portfolio-grid">
+              <section className="ops-subsection">
+                <div className="ops-subsection-header">
+                  <strong>策略权重</strong>
+                  <span>{portfolioOverview.strategyRows.length > 0 ? `${portfolioOverview.strategyRows.length} rows` : 'placeholder'}</span>
+                </div>
+                <div className="ops-section-list">
+                  {portfolioOverview.strategyRows.length > 0 ? portfolioOverview.strategyRows.map(row => (
+                    <div key={row.key} className={`ops-section-row ops-row-${row.tone}`}>
+                      <div>
+                        <strong>{row.label}</strong>
+                        <p>{row.detail}</p>
+                      </div>
+                      <span>{row.value}</span>
+                    </div>
+                  )) : (
+                    <div className="ops-empty-state">
+                      <strong>未返回多策略权重字段</strong>
+                      <p>兼容路径已启用，等待 `/api/system/overview` 提供 `strategy_weights` / `allocations` / `strategies`。</p>
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              <section className="ops-subsection">
+                <div className="ops-subsection-header">
+                  <strong>组合门禁</strong>
+                  <span>paper / review / live</span>
+                </div>
+                <div className="ops-section-list">
+                  {portfolioOverview.gateSummaries.map(gate => (
+                    <div key={gate.key} className={`ops-section-row ops-row-${gate.tone}`}>
+                      <div>
+                        <strong>{gate.label}</strong>
+                        <p>{gate.detail}</p>
+                      </div>
+                      <StatusBadge status={gate.status} label={gate.label} tone={gate.tone} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <div className="ops-portfolio-grid">
+              <section className="ops-subsection">
+                <div className="ops-subsection-header">
+                  <strong>风险预算占位</strong>
+                  <span>graceful fallback</span>
+                </div>
+                <div className="ops-budget-grid">
+                  {portfolioOverview.budgetItems.map(item => (
+                    <div key={item.key} className="ops-budget-card">
+                      <span>{item.label}</span>
+                      <strong>{item.value}</strong>
+                      <p>{item.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="ops-subsection">
+                <div className="ops-subsection-header">
+                  <strong>PnL Attribution</strong>
+                  <span>{portfolioOverview.pnlRows.length > 0 ? `${portfolioOverview.pnlRows.length} rows` : 'placeholder'}</span>
+                </div>
+                <div className="ops-section-list">
+                  {portfolioOverview.pnlRows.length > 0 ? portfolioOverview.pnlRows.map(row => (
+                    <div key={row.key} className={`ops-section-row ops-row-${row.tone}`}>
+                      <div>
+                        <strong>{row.label}</strong>
+                        <p>{row.detail}</p>
+                      </div>
+                      <span>{row.value}</span>
+                    </div>
+                  )) : (
+                    <div className="ops-empty-state">
+                      <strong>暂无归因明细</strong>
+                      <p>当前显示占位。API 若提供 `pnl_attribution` / `attribution` / `pnl_breakdown`，此处会自动渲染。</p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section className="panel ops-actions-panel">
+            <div className="panel-header">
+              <h3>工作流操作</h3>
+              <span>{usMessage || '按门禁顺序推进'}</span>
+            </div>
+            <div className="form-grid us-form-grid">
+              <label>标的
+                <input value={usForm.symbol} onChange={(e: ValueEvent) => setUSForm({...usForm, symbol: e.target.value.toUpperCase()})} />
+              </label>
+              <label>周期
+                <select value={usForm.barSize} onChange={(e: ValueEvent) => setUSForm({...usForm, barSize: e.target.value as USEquityFormState['barSize']})}>
+                  {['1d', '1h', '30m', '15m', '5m', '2m', '1m'].map(barSize => <option key={barSize} value={barSize}>{barSize}</option>)}
+                </select>
+              </label>
+              <label>开始日期
+                <input type="date" value={usForm.startDate} onChange={(e: ValueEvent) => setUSForm({...usForm, startDate: e.target.value})} />
+              </label>
+              <label>结束日期
+                <input type="date" value={usForm.endDate} onChange={(e: ValueEvent) => setUSForm({...usForm, endDate: e.target.value})} />
+              </label>
+              <label>策略
+                <select value={usForm.strategyId} onChange={(e: ValueEvent) => setUSForm({...usForm, strategyId: e.target.value})}>
+                  {strategies.map(strategy => <option key={strategy.id} value={strategy.id}>{strategy.display_name}</option>)}
+                </select>
+              </label>
+              <label>Ledger
+                <input value={usForm.ledgerDir} onChange={(e: ValueEvent) => setUSForm({...usForm, ledgerDir: e.target.value})} />
+              </label>
+              <label className="wide-grid-field">数据根目录
+                <input value={usForm.dataRoot} onChange={(e: ValueEvent) => setUSForm({...usForm, dataRoot: e.target.value})} />
+              </label>
+            </div>
+
+            <div className="ops-action-groups">
+              <div className="ops-action-group">
+                <div className="ops-action-group-header">
+                  <strong>Research Gate</strong>
+                  <span>数据版本、回测证据、晋升门</span>
+                </div>
+                <div className="ops-button-grid">
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSDataSync}>同步数据</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSQualityReport}>数据质量</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSBuildFeatures}>构建特征</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSBacktest}>事件回测</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSUnifiedBacktest}>统一回测</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSCostStressED}>成本压力</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSWalkForward}>Walk-Forward</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPromotionGate}>晋升门</button>
+                </div>
+              </div>
+
+              <div className="ops-action-group">
+                <div className="ops-action-group-header">
+                  <strong>Paper Gate</strong>
+                  <span>先对账，再留样本，再人工审批</span>
+                </div>
+                <div className="ops-button-grid">
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperRunDay}>运行 Paper 日</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperBacktest}>Paper 回放</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSReconcile}>运行对账</button>
+                  <button type="button" className="secondary-button danger" disabled={usLoading} onClick={handleUSPaperReset}>重置 Paper</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="panel ops-metrics-panel">
+            <div className="panel-header">
+              <h3>Paper 与风险摘要</h3>
+              <span>{usPaperDailyResults.length > 0 ? `最近 ${usPaperDailyResults.length} 天` : '暂无样本'}</span>
+            </div>
+            <div className="ops-metric-grid">
+              <div className="metric-card">
+                <span>Paper 权益</span>
+                <strong>{usPaperStatus ? formatPrice(usPaperStatus.equity) : '-'}</strong>
+              </div>
+              <div className={`metric-card ${paperPnL >= 0 ? 'metric-good' : 'metric-bad'}`}>
+                <span>累计 PnL</span>
+                <strong>{usPaperDailyResults.length > 0 ? formatPrice(paperPnL) : '-'}</strong>
+              </div>
+              <div className="metric-card">
+                <span>成交率</span>
+                <strong>{paperOrdersSubmitted > 0 ? `${((paperOrdersFilled / paperOrdersSubmitted) * 100).toFixed(0)}%` : '-'}</strong>
+              </div>
+              <div className={`metric-card ${usPaperStatus?.kill_switch_triggered ? 'metric-bad' : 'metric-good'}`}>
+                <span>Kill Switch</span>
+                <strong>{usPaperStatus?.kill_switch_triggered ? 'Triggered' : 'Clear'}</strong>
+              </div>
+            </div>
+            <div className="ops-risk-grid">
+              <div className="ops-risk-card">
+                <span>对账通过率</span>
+                <strong>{usPaperDailyResults.length > 0 ? `${paperReconPasses}/${usPaperDailyResults.length}` : '-'}</strong>
+                <p>{usPaperStatus?.last_reconciliation_passed === false ? '最近一次对账失败，禁止推进 live。' : '需要连续留存 paper 对账证据。'}</p>
+              </div>
+              <div className="ops-risk-card">
+                <span>Ledger 一致性</span>
+                <strong>{usUnifiedBacktest ? (usUnifiedBacktest.equity_consistent ? 'Pass' : 'Fail') : '-'}</strong>
+                <p>{usUnifiedBacktest?.equity_consistency_msg ?? '统一回测尚未出具账本一致性结论。'}</p>
+              </div>
+              <div className="ops-risk-card">
+                <span>晋升约束</span>
+                <strong>{promotionGateResult ? promotionGateResult.next_stage : 'research'}</strong>
+                <p>{systemOverview?.paper_review.summary ?? (promotionGateResult ? `决策 ${promotionGateResult.decision.toUpperCase()}，仍需人工门禁。` : '未出具 promotion manifest。')}</p>
+              </div>
+            </div>
+            {paperEquityCurve.length > 1 ? (
+              <div className="ops-chart-wrap">
+                <LineChart title="Paper Equity Trail" points={paperEquityCurve} accentClass="line-accent" />
+              </div>
+            ) : null}
+            {recentPaperRuns.length > 0 ? (
+              <div className="paper-results-table">
+                {recentPaperRuns.map(day => (
+                  <div key={day.date} className={`paper-result-row ${day.reconciliation_passed ? '' : 'paper-fail'}`}>
+                    <span>{day.date}</span>
+                    <span className={day.daily_pnl >= 0 ? 'metric-good' : 'metric-bad'}>{formatPrice(day.daily_pnl)}</span>
+                    <span>{day.orders_filled}/{day.orders_submitted} fills</span>
+                    <span className={`status-tag ${day.reconciliation_passed ? 'good' : 'bad'}`}>
+                      {day.reconciliation_passed ? '对账通过' : '对账失败'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </section>
         </div>
-        <div className="us-mini-metrics">
-          <div><span>总收益</span><strong>{usBacktest ? `${(usBacktest.summary.total_return_pct ?? 0).toFixed(2)}%` : '-'}</strong></div>
-          <div><span>Sharpe</span><strong>{usBacktest ? (usBacktest.summary.sharpe_ratio ?? 0).toFixed(2) : '-'}</strong></div>
-          <div><span>最大回撤</span><strong>{usBacktest ? `${(usBacktest.summary.max_drawdown_pct ?? 0).toFixed(2)}%` : '-'}</strong></div>
-        </div>
+
+        <aside className="ops-rail">
+          <section className="panel ops-evidence-panel">
+            <div className="panel-header">
+              <h3>账本 / 证据入口</h3>
+              <span>live 审批前必查</span>
+            </div>
+            <div className="ops-evidence-list">
+              {evidenceEntries.map(entry => (
+                <div key={entry.label} className="ops-evidence-row">
+                  <span>{entry.label}</span>
+                  <strong className={entry.muted ? 'text-muted' : ''}>{entry.value}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel ops-evidence-panel">
+            <div className="panel-header">
+              <h3>回测证据</h3>
+              <span>{usUnifiedBacktest ? usUnifiedBacktest.status : '未运行'}</span>
+            </div>
+            <div className="ops-evidence-list">
+              <div className="ops-evidence-row">
+                <span>total_return</span>
+                <strong>{metricValue(usUnifiedBacktest?.summary.total_return_pct, 2, '%')}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>sharpe</span>
+                <strong>{metricValue(usUnifiedBacktest?.summary.sharpe_ratio)}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>max_drawdown</span>
+                <strong>{metricValue(usUnifiedBacktest?.summary.max_drawdown_pct, 2, '%')}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>fills / events</span>
+                <strong>{usUnifiedBacktest ? `${usUnifiedBacktest.fill_count} / ${usUnifiedBacktest.event_count}` : '-'}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>paper_validation</span>
+                <strong>{systemOverview?.paper_validation.state ?? '-'}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>clean_days</span>
+                <strong>{systemOverview ? `${systemOverview.paper_validation.days_completed ?? 0}/${systemOverview.paper_validation.days_required ?? 0}` : '-'}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>registry_state</span>
+                <strong>{systemOverview?.registry.state ?? '-'}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>ledger_final_equity</span>
+                <strong>{usUnifiedBacktest ? formatPrice(usUnifiedBacktest.ledger_final_equity) : '-'}</strong>
+              </div>
+            </div>
+          </section>
+
+          <section className="panel ops-evidence-panel">
+            <div className="panel-header">
+              <h3>风控摘要</h3>
+              <span>{usReconcile?.status ?? '待生成'}</span>
+            </div>
+            <div className="ops-evidence-list">
+              <div className="ops-evidence-row">
+                <span>新单状态</span>
+                <strong className={usReconcile?.halt_new_orders || systemOverview?.execution.live_state === 'frozen' ? 'status-err' : ''}>{usReconcile?.halt_new_orders ? 'halted' : systemOverview?.execution.live_state === 'frozen' ? 'live frozen' : 'open'}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>break_count</span>
+                <strong>{usReconcile ? String(usReconcile.break_count) : '-'}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>cash_diff</span>
+                <strong>{typeof usReconcile?.cash_diff === 'number' ? formatPrice(usReconcile.cash_diff) : '-'}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>alert_sent</span>
+                <strong>{usReconcile?.alert_sent ? 'yes' : 'no'}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>audit_blocker</span>
+                <strong className="text-muted">{systemOverview?.paper_validation.audit_blocker_status ?? 'unknown'}</strong>
+              </div>
+              <div className="ops-evidence-row">
+                <span>kill_switch_reason</span>
+                <strong className="text-muted">{usPaperStatus?.kill_switch_reason ?? systemOverview?.execution.live_block_reason ?? 'none'}</strong>
+              </div>
+            </div>
+          </section>
+
+          {promotionGateResult ? (
+            <section className="panel ops-evidence-panel">
+              <div className="panel-header">
+                <h3>晋升门细项</h3>
+                <StatusBadge status={promotionGateResult.decision.toUpperCase()} label="promotion" tone={promotionGateResult.decision === 'pass' ? 'good' : promotionGateResult.decision === 'warn' ? 'neutral' : 'bad'} />
+              </div>
+              <div className="promotion-gate-list">
+                {promotionGateResult.gates.map(gate => (
+                  <div key={gate.name} className={`promotion-gate-row promotion-${gate.status}`}>
+                    <span>{gate.status.toUpperCase()}</span>
+                    <strong>{gate.name}</strong>
+                    <p>{gate.message}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </aside>
       </section>
-
-      {/* Unified backtest with charts */}
-      {usUnifiedBacktest ? (
-        <section className="panel us-unified-section">
-          <div className="panel-header">
-            <h3>统一回测结果</h3>
-            <StatusBadge status={usUnifiedBacktest.equity_consistent ? '权益验证 PASS' : '权益验证 FAIL'} label="验证" tone={usUnifiedBacktest.equity_consistent ? 'good' : 'bad'} />
-          </div>
-          <div className="us-mini-metrics">
-            <div><span>总收益</span><strong className={(usUnifiedBacktest.summary.total_return_pct ?? 0) >= 0 ? 'metric-good' : 'metric-bad'}>{(usUnifiedBacktest.summary.total_return_pct ?? 0).toFixed(2)}%</strong></div>
-            <div><span>Sharpe</span><strong>{(usUnifiedBacktest.summary.sharpe_ratio ?? 0).toFixed(2)}</strong></div>
-            <div><span>回撤</span><strong>{(usUnifiedBacktest.summary.max_drawdown_pct ?? 0).toFixed(2)}%</strong></div>
-            <div><span>账本权益</span><strong>{formatPrice(usUnifiedBacktest.ledger_final_equity)}</strong></div>
-          </div>
-          <div className="us-stage-grid">
-            <div><span>订单/成交</span><strong>{usUnifiedBacktest.order_count}/{usUnifiedBacktest.fill_count}</strong></div>
-            <div><span>快照/事件</span><strong>{usUnifiedBacktest.snapshot_count}/{usUnifiedBacktest.event_count}</strong></div>
-            <div><span>总费用</span><strong>{formatPrice(usUnifiedBacktest.ledger_total_fees)}</strong></div>
-            <div><span>验证</span><strong style={{color: usUnifiedBacktest.equity_consistent ? 'var(--good)' : 'var(--bad)'}}>{usUnifiedBacktest.equity_consistent ? '一致' : '不一致'}</strong></div>
-          </div>
-          <p className="data-message">{usUnifiedBacktest.equity_consistency_msg}</p>
-          {usUnifiedBacktest.equity_curve.length > 1 ? (
-            <div className="charts-grid" style={{marginTop: 14}}>
-              <LineChart title="美股权益曲线" points={usUnifiedBacktest.equity_curve} accentClass="line-accent" />
-              <LineChart title="美股回撤曲线" points={usUnifiedBacktest.drawdown_curve} accentClass="line-accent-secondary" />
-            </div>
-          ) : null}
-        </section>
-      ) : null}
-
-      {/* Paper status */}
-      {usPaperStatus ? (
-        <section className="us-paper-section panel">
-          <div className="panel-header"><h3>纸交易状态</h3><StatusBadge status={usPaperStatus.healthy ? '健康' : '异常'} label="健康" tone={usPaperStatus.healthy ? 'good' : 'bad'} /></div>
-          <div className="us-mini-metrics">
-            <div><span>权益</span><strong>{formatPrice(usPaperStatus.equity)}</strong></div>
-            <div><span>现金</span><strong>{formatPrice(usPaperStatus.cash)}</strong></div>
-            <div><span>购买力</span><strong>{formatPrice(usPaperStatus.buying_power)}</strong></div>
-            <div><span>持仓数</span><strong>{usPaperStatus.positions}</strong></div>
-          </div>
-          <div className="us-stage-grid">
-            <div><span>交易日数</span><strong>{usPaperStatus.days_traded}</strong></div>
-            <div><span>风控</span><strong style={{color: usPaperStatus.kill_switch_triggered ? 'var(--bad)' : 'var(--good)'}}>{usPaperStatus.kill_switch_triggered ? '已触发' : '正常'}</strong></div>
-            <div><span>上次对账</span><strong>{usPaperStatus.last_reconciliation_passed === null ? '-' : usPaperStatus.last_reconciliation_passed ? '通过' : '失败'}</strong></div>
-          </div>
-          {usPaperStatus.kill_switch_reason ? <p className="data-message">风控原因：{usPaperStatus.kill_switch_reason}</p> : null}
-        </section>
-      ) : null}
-
-      {/* Paper daily results */}
-      {usPaperDailyResults.length > 0 ? (
-        <div className="us-paper-results-section panel">
-          <div className="panel-header"><h3>纸交易每日结果</h3><span>最近 {Math.min(usPaperDailyResults.length, 10)} 天</span></div>
-          <div className="paper-results-table">
-            {usPaperDailyResults.slice(-10).reverse().map(day => (
-              <div key={day.date} className={`paper-result-row ${day.reconciliation_passed ? '' : 'paper-fail'}`}>
-                <span>{day.date}</span>
-                <span className={day.daily_pnl >= 0 ? 'metric-good' : 'metric-bad'}>${day.daily_pnl.toFixed(2)}</span>
-                <span className={`status-tag ${day.reconciliation_passed ? 'good' : 'bad'}`}>{day.reconciliation_passed ? '对账通过' : '对账失败'}</span>
-                <span>{day.orders_filled}/{day.orders_submitted} 成交</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      {/* Paper backtest summary */}
-      {paperBacktest ? (
-        <section className="us-unified-section panel">
-          <div className="panel-header"><h3>纸交易回测汇总</h3><StatusBadge status={paperBacktest.healthy ? '健康' : '异常'} label="" tone={paperBacktest.healthy ? 'good' : 'bad'} /></div>
-          <div className="us-mini-metrics">
-            <div><span>总 PnL</span><strong className={paperBacktest.total_pnl >= 0 ? 'metric-good' : 'metric-bad'}>${paperBacktest.total_pnl.toFixed(2)}</strong></div>
-            <div><span>最终权益</span><strong>{formatPrice(paperBacktest.final_equity)}</strong></div>
-            <div><span>处理天数</span><strong>{paperBacktest.days_processed}</strong></div>
-          </div>
-        </section>
-      ) : null}
-
-      {/* Cost stress */}
-      {edCostStress ? (
-        <section className="us-unified-section panel">
-          <div className="panel-header"><h3>成本压力测试</h3><StatusBadge status={`${edCostStress.survival_rate_pct.toFixed(0)}% 生存`} label="" tone={edCostStress.survival_rate_pct >= 50 ? 'good' : 'bad'} /></div>
-          <div className="us-stage-grid">
-            <div><span>引擎</span><strong>{edCostStress.engine}</strong></div>
-            <div><span>基准成交</span><strong>{edCostStress.baseline_fill_count}</strong></div>
-            <div><span>策略</span><strong>{edCostStress.strategy_id}</strong></div>
-          </div>
-          <div className="paper-results-table">
-            {edCostStress.scenarios.map(s => (
-              <div key={s.name} className={`paper-result-row ${s.survives ? '' : 'paper-fail'}`}>
-                <span>{s.name}</span>
-                <span className={s.total_return_pct >= 0 ? 'metric-good' : 'metric-bad'}>{s.total_return_pct?.toFixed(2) ?? '-'}%</span>
-                <span>Sharpe: {s.sharpe_ratio?.toFixed(2) ?? '-'}</span>
-                <span>成交: {s.fill_count ?? '-'}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {/* Quality report */}
-      {usQualityReport ? (
-        <section className="panel quality-panel">
-          <div className="panel-header"><h3>数据质量 — {usQualityReport.symbol}</h3><span className={usQualityReport.has_issues ? 'status-warn' : 'status-ok'}>{usQualityReport.has_issues ? `${usQualityReport.total_issues} 问题` : '通过'}</span></div>
-          <table className="quality-table"><thead><tr><th>检查项</th><th>问题数</th><th>详情</th></tr></thead>
-            <tbody>{usQualityReport.reports.map(r => <tr key={r.report_type}><td>{r.report_type}</td><td className={r.issues_found > 0 ? 'text-warn' : 'text-ok'}>{r.issues_found}</td><td className="text-muted">{r.details.slice(0, 3).map(d => JSON.stringify(d)).join(', ') || '-'}</td></tr>)}</tbody>
-          </table>
-        </section>
-      ) : null}
-
-      {/* Reconciliation */}
-      {usReconcile ? (
-        <section className="panel recon-panel">
-          <div className="panel-header"><h3>持仓核对</h3><span className={usReconcile.status === 'clean' ? 'status-ok' : 'status-err'}>{usReconcile.status === 'clean' ? '一致' : '差异'}{usReconcile.halt_new_orders ? ' — 已暂停' : ''}</span></div>
-          {usReconcile.status !== 'clean' ? (
-            <div className="recon-details">
-              {usReconcile.cash_diff !== undefined && usReconcile.cash_diff !== 0 ? <p>现金差异: ${usReconcile.cash_diff.toFixed(2)}</p> : null}
-              {usReconcile.position_diffs && Object.keys(usReconcile.position_diffs).length > 0 ? <p>持仓差异: {Object.keys(usReconcile.position_diffs).join(', ')}</p> : null}
-              {usReconcile.report_path ? <p className="text-muted">报告: {usReconcile.report_path}</p> : null}
-              {usReconcile.alert_sent ? <p className="text-warn">已发送告警</p> : null}
-            </div>
-          ) : null}
-        </section>
-      ) : null}
-
-      {/* Promotion gate */}
-      {promotionGateResult ? (
-        <section className="panel">
-          <div className="panel-header"><h3>晋升门</h3><span>{promotionGateResult.decision as string} → {promotionGateResult.next_stage as string}</span></div>
-          <div className="promotion-gate-list">
-            {(promotionGateResult.gates as Array<{name: string; status: string; message: string}>).map(g => (
-              <div key={g.name} className={`promotion-gate-row promotion-${g.status}`}><span>{g.status.toUpperCase()}</span><strong>{g.name}</strong><p>{g.message}</p></div>
-            ))}
-          </div>
-        </section>
-      ) : null}
     </main>
   );
 }

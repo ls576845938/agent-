@@ -52,6 +52,18 @@ def _parse_symbols(raw: str) -> list[str]:
     return [s.strip().upper() for s in raw.split(",") if s.strip()]
 
 
+def _parse_bar_sizes(raw: str) -> list[str]:
+    seen: set[str] = set()
+    values: list[str] = []
+    for item in str(raw or "").split(","):
+        bar_size = item.strip().lower()
+        if not bar_size or bar_size in seen:
+            continue
+        seen.add(bar_size)
+        values.append(bar_size)
+    return values
+
+
 def _read_json_file(path: Path) -> dict[str, Any]:
     """Read a JSON object with operator-friendly error messages."""
     try:
@@ -142,6 +154,14 @@ def _audit_research_evidence_command(data_root: str | Path) -> str:
     return f"python scripts/audit_research_evidence.py --data-root {data_root} --strict"
 
 
+def _rebuild_evidence_registry_command(data_root: str | Path) -> str:
+    return f"quant-us research evidence-registry-rebuild --data-root {data_root}"
+
+
+def _print_evidence_registry_rebuild_hint(data_root: str | Path, indent: str = "  ") -> None:
+    print(f"{indent}rebuild_command: {_rebuild_evidence_registry_command(data_root)}")
+
+
 def _print_audit_recommendation(data_root: str | Path, indent: str = "  ") -> None:
     script_path = Path("scripts") / "audit_research_evidence.py"
     if not script_path.exists():
@@ -185,6 +205,7 @@ def _print_evidence_registry_status(data_root: str, indent: str = "  ") -> None:
         print(f"{indent}evidence_registry_state: CONFLICT (inspect_failed)")
         print(f"{indent}evidence:     evidence_registry=(inspect failed)")
         print(f"{indent}evidence_registry_notes: {type(exc).__name__}: {exc}")
+        _print_evidence_registry_rebuild_hint(data_root, indent=indent)
         return
     raw_status = str(registry.get("registry_status", "missing"))
     notes = list(registry.get("registry_notes", []))
@@ -201,6 +222,8 @@ def _print_evidence_registry_status(data_root: str, indent: str = "  ") -> None:
             print(f"{indent}subject_index_{bucket}_count: {count}")
     if notes:
         print(f"{indent}evidence_registry_notes: {'; '.join(str(n) for n in notes[:3])}")
+    if raw_status != "present":
+        _print_evidence_registry_rebuild_hint(data_root, indent=indent)
 
 
 def _print_paper_review_status(data_root: str, indent: str = "  ") -> None:
@@ -214,6 +237,7 @@ def _print_paper_review_status(data_root: str, indent: str = "  ") -> None:
         print(f"{indent}manual_review_pending: NO")
         print(f"{indent}paper_review_note: evidence registry inspection failed: {type(exc).__name__}: {exc}")
         print(f"{indent}evidence:     paper_review_status=CONFLICT (registry inspect failed)")
+        _print_evidence_registry_rebuild_hint(data_root, indent=indent)
         return
 
     raw_registry_status = str(registry.get("registry_status", "missing"))
@@ -224,6 +248,7 @@ def _print_paper_review_status(data_root: str, indent: str = "  ") -> None:
         print(f"{indent}manual_review_pending: NO")
         print(f"{indent}paper_review_note: saved evidence registry is missing; paper-review status is blocked.")
         print(f"{indent}evidence:     paper_review_status=(missing registry)")
+        _print_evidence_registry_rebuild_hint(data_root, indent=indent)
         return
     if registry_state in {"STALE", "CONFLICT"}:
         print(f"{indent}paper_review_status: CONFLICT")
@@ -231,6 +256,7 @@ def _print_paper_review_status(data_root: str, indent: str = "  ") -> None:
         print(f"{indent}manual_review_pending: NO")
         print(f"{indent}paper_review_note: saved evidence registry state is {raw_registry_status}; rebuild explicitly before readiness/report review.")
         print(f"{indent}evidence:     paper_review_status=CONFLICT (registry {raw_registry_status})")
+        _print_evidence_registry_rebuild_hint(data_root, indent=indent)
         return
 
     try:
@@ -589,6 +615,104 @@ def _print_paper_validation_evidence(
     return evidence
 
 
+def _print_minute_quality_summary(
+    data_root: str | Path,
+    *,
+    symbols: list[str] | None = None,
+    vendor: str = "yfinance",
+    asset_class: str = "equity",
+    bar_sizes: list[str] | None = None,
+    lookback_trading_days: int = 5,
+    root_subdir: str = "raw",
+    indent: str = "  ",
+) -> Any:
+    from quant_us.reports.minute_quality import inspect_minute_quality_report
+
+    report = inspect_minute_quality_report(
+        data_root=data_root,
+        symbols=symbols,
+        vendor=vendor,
+        asset_class=asset_class,
+        bar_sizes=bar_sizes or ["1m", "5m", "15m"],
+        lookback_trading_days=lookback_trading_days,
+        root_subdir=root_subdir,
+    )
+    print(f"{indent}minute_data_quality:")
+    print(f"{indent}  status: {report.status}")
+    print(f"{indent}  as_of_utc: {report.as_of_utc}")
+    print(f"{indent}  dataset_root: {report.dataset_root}")
+    print(f"{indent}  bar_sizes: {','.join(report.bar_sizes)}")
+    print(f"{indent}  evaluated_symbols: {len(report.evaluated_symbols)}")
+    failing = [
+        interval
+        for symbol in report.symbols
+        for interval in symbol.intervals
+        if interval.status != "PASS"
+    ]
+    print(f"{indent}  failing_intervals: {len(failing)}")
+    for interval in failing[:6]:
+        print(
+            f"{indent}  issue: {interval.symbol} {interval.bar_size} "
+            f"status={interval.status} "
+            f"coverage={interval.coverage_pct:.2f}% "
+            f"freshness_lag_min={interval.freshness_lag_minutes:.2f} "
+            f"missing_files={len(interval.missing_file_dates)} "
+            f"missing_bars={interval.missing_bar_count} "
+            f"duplicates={interval.duplicate_timestamp_count} "
+            f"invalid_ohlc={interval.invalid_ohlc_count}"
+        )
+    if not failing:
+        print(f"{indent}  issue: (none)")
+    return report
+
+
+def _portfolio_observability_status(data_root: str | Path, strategy: str = "portfolio") -> dict[str, Any]:
+    from quant_us.reports.portfolio_observability import inspect_portfolio_observability
+
+    return inspect_portfolio_observability(data_root, strategy=strategy).to_dict()
+
+
+def _print_portfolio_observability_status(
+    data_root: str | Path,
+    *,
+    strategy: str = "portfolio",
+    indent: str = "  ",
+) -> dict[str, Any]:
+    status = _portfolio_observability_status(data_root, strategy=strategy)
+    multi_strategy = dict(status.get("multi_strategy", {}))
+    multi_timeframe = dict(status.get("multi_timeframe", {}))
+    pnl_attribution = dict(status.get("pnl_attribution", {}))
+    paper_gates = dict(status.get("paper_submit_gates", {}))
+    print(f"{indent}portfolio_observability:")
+    print(
+        f"{indent}  multi_strategy: "
+        f"{multi_strategy.get('status', 'UNKNOWN')} "
+        f"(strategies={multi_strategy.get('strategy_count', 0)})"
+    )
+    print(
+        f"{indent}  multi_timeframe: "
+        f"{multi_timeframe.get('status', 'UNKNOWN')} "
+        f"(timeframes={multi_timeframe.get('timeframe_count', 0)})"
+    )
+    print(
+        f"{indent}  pnl_attribution: "
+        f"{pnl_attribution.get('status', 'UNKNOWN')} "
+        f"(rows={pnl_attribution.get('row_count', 0)})"
+    )
+    print(f"{indent}  live_state: {status.get('live_state', 'FROZEN')}")
+    print(f"{indent}  paper_submit_gates: {paper_gates.get('state', 'BLOCKED_BY_DEFAULT')}")
+    print(f"{indent}  paper_submit_default: {paper_gates.get('paper_submit_default', 'disabled')}")
+    print(f"{indent}  next_paper_command: {status.get('next_paper_command', '')}")
+    for label, payload in (
+        ("multi_strategy", multi_strategy),
+        ("multi_timeframe", multi_timeframe),
+        ("pnl_attribution", pnl_attribution),
+    ):
+        evidence_path = payload.get("evidence_path", "")
+        print(f"{indent}  evidence:     {label}={evidence_path or '(not found)'}")
+    return status
+
+
 def _backtest_evidence_payload(payload: dict[str, Any]) -> dict[str, Any]:
     evidence = payload.get("evidence", {})
     return evidence if isinstance(evidence, dict) else {}
@@ -832,6 +956,7 @@ def cmd_report_daily(args: argparse.Namespace) -> None:
         ledger_root=ledger_root,
         validation_state=str(validation_state),
     )
+    _print_portfolio_observability_status(args.data_root)
     _print_evidence_registry_status(args.data_root)
     _print_paper_review_status(args.data_root)
     _print_report_only_note()
@@ -872,6 +997,35 @@ def cmd_report_evidence_registry(args: argparse.Namespace) -> None:
         print("  notes:")
         for note in notes[:10]:
             print(f"    - {note}")
+    subject_index_ready = (
+        str(registry.get("subject_index_schema_version", "")) == "subject_evidence_index_v1"
+        and isinstance(subject_index, dict)
+    )
+    if raw_status != "present" or not subject_index_ready:
+        _print_evidence_registry_rebuild_hint(args.data_root)
+    print("=" * 60)
+
+
+def cmd_research_evidence_registry_rebuild(args: argparse.Namespace) -> None:
+    """Explicitly rebuild the persisted research evidence registry."""
+    from quant_us.research.evidence_registry import rebuild_evidence_registry
+
+    registry = rebuild_evidence_registry(args.data_root, write=True)
+    counts = dict(registry.get("counts", {}))
+    subject_index = registry.get("subject_index", {})
+    print("Evidence Registry Rebuild")
+    print("=" * 60)
+    print(f"  registry_path: {registry.get('registry_path', '')}")
+    print(f"  generated_at:  {registry.get('generated_at', '')}")
+    print(f"  registry_state: PASS (rebuilt)")
+    print(f"  subject_index_schema: {_display_value(registry.get('subject_index_schema_version'))}")
+    if isinstance(subject_index, dict):
+        for bucket in _SUBJECT_INDEX_BUCKETS:
+            entries = subject_index.get(bucket, {})
+            count = len(entries) if isinstance(entries, dict) else 0
+            print(f"  subject_index_{bucket}_count: {count}")
+    for key in sorted(counts):
+        print(f"  {key}: {counts[key]}")
     print("=" * 60)
 
 
@@ -885,9 +1039,79 @@ def cmd_report_paper_validation(args: argparse.Namespace) -> None:
         ledger_root=args.ledger_root or None,
         validation_state=args.validation_state or None,
     )
+    _print_minute_quality_summary(
+        args.data_root,
+        symbols=_parse_symbols(args.minute_quality_symbols) if args.minute_quality_symbols else None,
+        vendor=args.minute_quality_vendor,
+        asset_class=args.minute_quality_asset_class,
+        bar_sizes=_parse_bar_sizes(args.minute_quality_bar_sizes),
+        lookback_trading_days=args.minute_quality_lookback_days,
+        root_subdir=args.minute_quality_root_subdir,
+    )
+    _print_portfolio_observability_status(args.data_root)
     _print_audit_recommendation(args.data_root)
     print(f"  readiness_result: {evidence.readiness_state}")
     print("  note:         Review evidence only. This does not approve or start paper/live trading.")
+    print("=" * 60)
+
+
+def cmd_report_minute_quality(args: argparse.Namespace) -> None:
+    """Print minute multi-timeframe data quality evidence without execution side effects."""
+    symbols = _parse_symbols(args.symbols) if args.symbols else None
+    bar_sizes = _parse_bar_sizes(args.bar_sizes)
+    print("Minute Data Quality Report")
+    print("=" * 60)
+    _print_report_only_note()
+    report = _print_minute_quality_summary(
+        args.data_root,
+        symbols=symbols,
+        vendor=args.vendor,
+        asset_class=args.asset_class,
+        bar_sizes=bar_sizes,
+        lookback_trading_days=args.lookback_trading_days,
+        root_subdir=args.root_subdir,
+        indent="  ",
+    )
+    print(f"  overall_status: {report.status}")
+    print(f"  symbols:        {','.join(report.evaluated_symbols) if report.evaluated_symbols else '(none)'}")
+    print(f"  lookback_days:  {report.lookback_trading_days}")
+    print(f"  root_subdir:    {args.root_subdir}")
+    print(f"  vendor:         {args.vendor}")
+    print(f"  asset_class:    {args.asset_class}")
+    for symbol in report.symbols:
+        print(f"  symbol: {symbol.symbol} [{symbol.status}]")
+        for interval in symbol.intervals:
+            print(
+                f"    {interval.bar_size}: status={interval.status} "
+                f"coverage={interval.coverage_pct:.2f}% "
+                f"freshness_lag_min={interval.freshness_lag_minutes:.2f} "
+                f"bars={interval.observed_bars}/{interval.expected_bars}"
+            )
+            if (
+                interval.duplicate_timestamp_count
+                or interval.conflicting_duplicate_count
+                or interval.invalid_ohlc_count
+                or interval.negative_volume_count
+                or interval.malformed_file_count
+            ):
+                print(
+                    "      data_errors: "
+                    f"duplicates={interval.duplicate_timestamp_count}, "
+                    f"conflicting_duplicates={interval.conflicting_duplicate_count}, "
+                    f"invalid_ohlc={interval.invalid_ohlc_count}, "
+                    f"negative_volume={interval.negative_volume_count}, "
+                    f"malformed_files={interval.malformed_file_count}"
+                )
+            if interval.missing_file_dates:
+                print(f"      missing_file_dates: {', '.join(interval.missing_file_dates[:5])}")
+            if interval.missing_bar_samples_utc:
+                print(f"      missing_bar_samples_utc: {', '.join(interval.missing_bar_samples_utc[:5])}")
+            if interval.file_errors:
+                print(f"      file_errors: {', '.join(interval.file_errors[:3])}")
+            print(
+                f"      latest={_display_value(interval.latest_timestamp_utc)} "
+                f"expected_latest={_display_value(interval.expected_latest_timestamp_utc)}"
+            )
     print("=" * 60)
 
 
@@ -919,7 +1143,26 @@ def _add_report_parser(subparsers: Any) -> None:
     paper_val_p.add_argument("--data-root", default="data", help="Data root directory")
     paper_val_p.add_argument("--ledger-root", default="", help="Override paper ledger root")
     paper_val_p.add_argument("--validation-state", default="", help="Override validation_state.json path")
+    paper_val_p.add_argument("--minute-quality-symbols", default="", help="Comma-separated symbols for minute data inspection (default: auto-discover)")
+    paper_val_p.add_argument("--minute-quality-bar-sizes", default="1m,5m,15m", help="Comma-separated minute bar sizes")
+    paper_val_p.add_argument("--minute-quality-vendor", default="yfinance", help="Minute data vendor")
+    paper_val_p.add_argument("--minute-quality-asset-class", default="equity", help="Minute data asset class")
+    paper_val_p.add_argument("--minute-quality-lookback-days", type=int, default=5, help="Trading-day lookback for minute quality evidence")
+    paper_val_p.add_argument("--minute-quality-root-subdir", default="raw", choices=["raw", "cleaned"], help="Inspect raw or cleaned parquet partitions")
     paper_val_p.set_defaults(func=cmd_report_paper_validation)
+
+    minute_quality_p = report_sub.add_parser(
+        "minute-quality",
+        help="Inspect minute multi-timeframe coverage/freshness evidence",
+    )
+    minute_quality_p.add_argument("--data-root", default="data", help="Data root directory")
+    minute_quality_p.add_argument("--symbols", default="", help="Comma-separated symbols (default: auto-discover)")
+    minute_quality_p.add_argument("--bar-sizes", default="1m,5m,15m", help="Comma-separated minute bar sizes")
+    minute_quality_p.add_argument("--vendor", default="yfinance", help="Data vendor")
+    minute_quality_p.add_argument("--asset-class", default="equity", help="Asset class partition")
+    minute_quality_p.add_argument("--lookback-trading-days", type=int, default=5, help="Completed trading days to inspect")
+    minute_quality_p.add_argument("--root-subdir", default="raw", choices=["raw", "cleaned"], help="Inspect raw or cleaned parquet partitions")
+    minute_quality_p.set_defaults(func=cmd_report_minute_quality)
 
 
 # ---------------------------------------------------------------------------
@@ -1167,6 +1410,7 @@ def cmd_paper(args: argparse.Namespace) -> None:
 def _cmd_paper_ready(symbols: list[str], args: argparse.Namespace) -> None:
     """Print paper-trading readiness info without starting a session."""
     from quant_us.live.paper_trading_loop import PaperTradingConfig, PaperTradingLoop
+    bar_sizes = _parse_bar_sizes(getattr(args, "bar_sizes", ""))
 
     config = PaperTradingConfig(
         initial_cash=args.initial_cash,
@@ -1186,6 +1430,8 @@ def _cmd_paper_ready(symbols: list[str], args: argparse.Namespace) -> None:
     print(f"  submit-orders:  {args.submit_orders}")
     print(f"  poll-interval:  {args.poll_interval}s")
     print(f"  bar-size:       {args.bar_size}")
+    if bar_sizes:
+        print(f"  bar-sizes:      {', '.join(bar_sizes)}")
     print(f"  data-vendor:    {args.data_vendor}")
     print(f"  max-runtime:    {args.max_runtime_hours}h")
     print()
@@ -1556,6 +1802,8 @@ def _cmd_paper_run(symbols: list[str], args: argparse.Namespace) -> None:
     from quant_us.strategies.factory import build_strategy as _build
 
     strategy = _build(args.strategy, {})
+    strategy_weights = getattr(strategy, "strategy_weights", {})
+    bar_sizes = _parse_bar_sizes(getattr(args, "bar_sizes", ""))
 
     # Configure PaperRuntime
     from quant_us.live.paper_runtime import PaperRuntimeConfig
@@ -1584,9 +1832,11 @@ def _cmd_paper_run(symbols: list[str], args: argparse.Namespace) -> None:
         paper_broker=broker,
         data_vendor=args.data_vendor,
         bar_size=args.bar_size,
+        bar_sizes=bar_sizes,
         reconcile_on_start=True,
         reconcile_on_close=True,
         kill_on_recon_fail=True,
+        strategy_weights=dict(strategy_weights) if isinstance(strategy_weights, dict) else {},
     )
 
     print(f"Paper runtime session: strategy={args.strategy}, broker={broker}")
@@ -1595,6 +1845,8 @@ def _cmd_paper_run(symbols: list[str], args: argparse.Namespace) -> None:
     print(f"  submit-orders: {submit_orders}")
     print(f"  poll-interval: {args.poll_interval}s")
     print(f"  bar-size:      {args.bar_size}")
+    if bar_sizes:
+        print(f"  bar-sizes:     {', '.join(bar_sizes)}")
     print(f"  data-vendor:   {args.data_vendor}")
     print(f"  max-runtime:   {args.max_runtime_hours}h")
     print()
@@ -1644,6 +1896,7 @@ def _add_paper_parser(subparsers: Any) -> None:
     p.add_argument("--max-runtime-hours", type=float, default=8.0, help="Max session wall-clock hours (default: 8)")
     p.add_argument("--poll-interval", type=float, default=60.0, help="Poll interval in seconds (default: 60)")
     p.add_argument("--bar-size", default="1m", help="Bar interval string e.g. 1m, 5m")
+    p.add_argument("--bar-sizes", default="", help="Comma-separated bar intervals for multi-timeframe paper, e.g. 1m,5m,15m")
     p.add_argument("--data-vendor", default="yfinance", help="Market-data connector (default: yfinance)")
 
     # paper smoke-test
@@ -2305,6 +2558,442 @@ def _check_alpaca_credentials(profile: str) -> None:
     print("=" * 60 + "\n")
 
 
+def _credential_env_state() -> tuple[str, str]:
+    api_key = os.environ.get("APCA_API_KEY_ID", "")
+    api_secret = os.environ.get("APCA_API_SECRET_KEY", "")
+    if api_key and api_secret:
+        return "PRESENT", f"APCA_API_KEY_ID={_mask_key(api_key)}, APCA_API_SECRET_KEY={_mask_key(api_secret)}"
+    missing = []
+    if not api_key:
+        missing.append("APCA_API_KEY_ID")
+    if not api_secret:
+        missing.append("APCA_API_SECRET_KEY")
+    return "MISSING", ", ".join(missing)
+
+
+def _paper_network_submit_env_state() -> str:
+    enabled = os.environ.get("QUANT_ALPACA_PAPER_NETWORK_SUBMIT", "").strip().lower()
+    return "CONFIRMED" if enabled in {"1", "true", "yes"} else "MISSING"
+
+
+def _paper_review_overview(data_root: str | Path) -> dict[str, Any]:
+    from quant_us.monitoring.paper_review_status import inspect_paper_review_status
+
+    path = _saved_evidence_registry_path(data_root)
+    try:
+        registry = _inspect_saved_evidence_registry(data_root)
+    except Exception as exc:
+        return {
+            "registry_state": "CONFLICT",
+            "registry_raw": "inspect_failed",
+            "review_status": "BLOCKED_REGISTRY",
+            "entry_allowed": False,
+            "manual_pending": False,
+            "summary": f"evidence registry inspection failed: {type(exc).__name__}: {exc}",
+            "evidence_path": str(path) if path.exists() else "",
+        }
+
+    raw_status = str(registry.get("registry_status", "missing"))
+    registry_state = _evidence_state(raw_status)
+    if registry_state != "PASS":
+        return {
+            "registry_state": registry_state,
+            "registry_raw": raw_status,
+            "review_status": f"BLOCKED_REGISTRY_{registry_state}",
+            "entry_allowed": False,
+            "manual_pending": False,
+            "summary": "saved evidence registry is not ready for paper-review status",
+            "evidence_path": str(path) if path.exists() else "",
+        }
+
+    try:
+        status = inspect_paper_review_status(data_root)
+    except Exception as exc:
+        return {
+            "registry_state": registry_state,
+            "registry_raw": raw_status,
+            "review_status": "CONFLICT",
+            "entry_allowed": False,
+            "manual_pending": False,
+            "summary": f"paper review inspection failed: {type(exc).__name__}: {exc}",
+            "evidence_path": str(path) if path.exists() else "",
+        }
+
+    return {
+        "registry_state": registry_state,
+        "registry_raw": raw_status,
+        "review_status": status.status,
+        "entry_allowed": status.paper_review_entry_allowed,
+        "manual_pending": status.manual_review_pending,
+        "summary": status.summary,
+        "evidence_path": status.evidence_path,
+        "review_path": status.review_path,
+        "manifest_path": status.manifest_path,
+        "evidence_pack_path": status.evidence_pack_path,
+    }
+
+
+def _paper_stage_status(
+    credential_state: str,
+    review: dict[str, Any],
+    paper_readiness_state: str,
+) -> str:
+    if credential_state != "PRESENT":
+        return "BLOCKED_CREDENTIALS"
+    if not bool(review.get("entry_allowed", False)) or bool(review.get("manual_pending", False)):
+        return "BLOCKED_REVIEW"
+    if paper_readiness_state != "PASS":
+        return "BLOCKED_VALIDATION"
+    return "READY_FOR_PAPER_ONLY_REVIEW"
+
+
+def _parse_as_of_utc(raw: str) -> datetime:
+    if not raw:
+        return datetime.now(timezone.utc)
+    value = raw.strip()
+    if value.endswith("Z"):
+        value = value[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError as exc:
+        print(f"ERROR: invalid --as-of timestamp: {raw}", file=sys.stderr)
+        raise SystemExit(2) from exc
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _market_hours_overview(as_of: datetime | None = None) -> dict[str, Any]:
+    from quant_us.core.calendar import USEquityCalendar
+    from quant_us.core.clock import to_et
+    from quant_us.core.enums import SessionName
+
+    ts = (as_of or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    calendar = USEquityCalendar.with_holidays()
+    session = calendar.session_for(ts)
+    status = "PASS" if session == SessionName.REGULAR else "BLOCKED"
+    return {
+        "status": status,
+        "session": getattr(session, "value", str(session)),
+        "as_of_utc": ts.isoformat(),
+        "as_of_et": to_et(ts).isoformat(),
+        "detail": "regular_session_open" if status == "PASS" else "regular_session_required",
+    }
+
+
+def _paper_credentials_overview() -> dict[str, str]:
+    credential_state, credential_detail = _credential_env_state()
+    base_url = os.environ.get("APCA_API_BASE_URL", "").strip()
+    if credential_state != "PRESENT":
+        return {
+            "status": "BLOCKED",
+            "detail": credential_detail,
+            "endpoint": base_url or "(not set)",
+        }
+    if base_url and "paper-api.alpaca.markets" not in base_url:
+        return {
+            "status": "BLOCKED",
+            "detail": "APCA_API_BASE_URL is not the Alpaca paper endpoint",
+            "endpoint": base_url,
+        }
+    return {
+        "status": "PASS",
+        "detail": credential_detail,
+        "endpoint": base_url or "default paper endpoint",
+    }
+
+
+def _print_pre_live_blocker(name: str, status: str, detail: str) -> None:
+    print(f"    {name}: {status}")
+    print(f"      detail: {detail}")
+
+
+def _paper_submit_preflight_snapshot(args: argparse.Namespace) -> dict[str, Any]:
+    from quant_us.reports.paper_validation import inspect_paper_validation_evidence
+
+    data_root = args.data_root
+    validation_state = args.validation_state or ""
+    ledger_root = args.ledger_root or None
+    as_of = _parse_as_of_utc(getattr(args, "as_of", ""))
+    market = _market_hours_overview(as_of)
+    credentials = _paper_credentials_overview()
+    review = _paper_review_overview(data_root)
+    paper_evidence = inspect_paper_validation_evidence(
+        data_root,
+        ledger_root=ledger_root,
+        validation_state_path=validation_state or None,
+    )
+
+    blockers: list[str] = []
+    if market["status"] != "PASS":
+        blockers.append("market_hours")
+    if credentials["status"] != "PASS":
+        blockers.append("paper_credentials")
+    if not bool(review.get("entry_allowed", False)) or bool(review.get("manual_pending", False)):
+        blockers.append("paper_review_evidence")
+    if paper_evidence.readiness_state != "PASS":
+        blockers.append("paper_validation_evidence")
+
+    return {
+        "status": "PASS" if not blockers else "BLOCKED",
+        "blockers": blockers,
+        "market": market,
+        "credentials": credentials,
+        "review": review,
+        "paper_evidence": paper_evidence,
+    }
+
+
+def _overview_next_action(
+    *,
+    data_root: str,
+    validation_state: str,
+    simulated_ready: bool,
+    credential_state: str,
+    review: dict[str, Any],
+    paper_readiness_state: str,
+) -> str:
+    if not simulated_ready:
+        return f"python -m quant_us.cli readiness --profile simulated --data-root {data_root}"
+    if review.get("registry_state") != "PASS":
+        return _rebuild_evidence_registry_command(data_root)
+    if credential_state != "PRESENT":
+        suffix = f" --validation-state {validation_state}" if validation_state else ""
+        return f"python -m quant_us.cli readiness --profile paper --data-root {data_root}{suffix} --check-credentials"
+    if bool(review.get("manual_pending", False)):
+        return "complete the pending human paper review, then re-run overview"
+    if not bool(review.get("entry_allowed", False)):
+        return f"python -m quant_us.cli research promotion-gate --candidate-id <candidate_id> --data-root {data_root}"
+    if paper_readiness_state != "PASS":
+        suffix = f" --validation-state {validation_state}" if validation_state else ""
+        return f"python -m quant_us.cli report paper-validation --data-root {data_root}{suffix}"
+    suffix = f" --validation-state {validation_state}" if validation_state else ""
+    return f"python -m quant_us.cli readiness --profile paper --data-root {data_root}{suffix}"
+
+
+def cmd_pre_live_next_step(args: argparse.Namespace) -> None:
+    """Print the next operator action for pre-live review; no execution."""
+    from quant_us.reports.live_readiness import LiveReadinessGate
+    from quant_us.reports.paper_validation import inspect_paper_validation_evidence
+
+    data_root = args.data_root
+    validation_state = args.validation_state or ""
+    credential_state, credential_detail = _credential_env_state()
+    gate = LiveReadinessGate()
+    simulated_report = gate.check_all(validation_state_path=validation_state, profile="simulated")
+    simulated_ready = bool(simulated_report.is_ready())
+    paper_evidence = inspect_paper_validation_evidence(
+        data_root,
+        ledger_root=args.ledger_root or None,
+        validation_state_path=validation_state or None,
+    )
+    review = _paper_review_overview(data_root)
+    market = _market_hours_overview(_parse_as_of_utc(args.as_of))
+    next_action = _overview_next_action(
+        data_root=data_root,
+        validation_state=validation_state,
+        simulated_ready=simulated_ready,
+        credential_state=credential_state,
+        review=review,
+        paper_readiness_state=paper_evidence.readiness_state,
+    )
+
+    print("Pre-Live Next Step")
+    print("=" * 60)
+    _print_report_only_note()
+    _print_review_only_scope()
+    print(f"  strategy:     {args.strategy}")
+    print(f"  data_root:    {data_root}")
+    print(f"  live_state:   FROZEN")
+    print("  external_blockers:")
+    _print_pre_live_blocker(
+        "market_hours",
+        market["status"],
+        f"session={market['session']} as_of_utc={market['as_of_utc']} ({market['detail']})",
+    )
+    _print_pre_live_blocker("paper_credentials", credential_state, credential_detail)
+    _print_pre_live_blocker(
+        "paper_review_evidence",
+        "PASS" if review.get("entry_allowed") and not review.get("manual_pending") else "BLOCKED",
+        str(review.get("summary", "")),
+    )
+    print(f"  simulated_readiness: {'READY' if simulated_ready else 'BLOCKED'}")
+    print(f"  paper_validation:    {paper_evidence.readiness_state}")
+    print(f"  next_action:         {next_action}")
+    print("  note: This command cannot start paper/live trading and cannot submit orders.")
+    print("=" * 60)
+
+
+def cmd_pre_live_paper_submit_preflight(args: argparse.Namespace) -> None:
+    """Fail-closed paper-submit preflight; review-only and no broker writes."""
+    snapshot = _paper_submit_preflight_snapshot(args)
+    market = snapshot["market"]
+    credentials = snapshot["credentials"]
+    review = snapshot["review"]
+    paper_evidence = snapshot["paper_evidence"]
+
+    print("Paper Submit Preflight")
+    print("=" * 60)
+    _print_review_only_scope()
+    print("  submit_order_path: DISABLED")
+    print("  paper_submit_authorized: NO")
+    print(f"  strategy:          {args.strategy}")
+    print(f"  data_root:         {args.data_root}")
+    print(f"  validation_state:  {args.validation_state or paper_evidence.validation_state_path or '(not found)'}")
+    print("  external_blockers:")
+    _print_pre_live_blocker(
+        "market_hours",
+        market["status"],
+        f"session={market['session']} as_of_utc={market['as_of_utc']} as_of_et={market['as_of_et']}",
+    )
+    _print_pre_live_blocker(
+        "paper_credentials",
+        credentials["status"],
+        f"{credentials['detail']}; endpoint={credentials['endpoint']}",
+    )
+    _print_pre_live_blocker(
+        "paper_review_evidence",
+        "PASS" if review.get("entry_allowed") and not review.get("manual_pending") else "BLOCKED",
+        str(review.get("summary", "")),
+    )
+    print(f"  paper_validation: {paper_evidence.readiness_state}")
+    if paper_evidence.gaps:
+        print(f"  paper_validation_gaps: {', '.join(paper_evidence.gaps[:5])}")
+    print(f"  RESULT: {snapshot['status']}")
+    if snapshot["blockers"]:
+        print(f"  blocking_reasons: {', '.join(snapshot['blockers'])}")
+    print("  note: Review-only/fail-closed. No broker client or runtime submit path is created.")
+    print("=" * 60)
+    if snapshot["status"] != "PASS":
+        raise SystemExit(1)
+
+
+def _add_pre_live_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser(
+        "pre-live",
+        help="Review-only pre-live next-step and paper submit preflight commands",
+    )
+    pre_sub = p.add_subparsers(dest="pre_live_command", required=True)
+
+    next_step = pre_sub.add_parser(
+        "next-step",
+        help="Print the next fail-closed pre-live operator action",
+    )
+    next_step.add_argument("--data-root", default="data", help="Data root directory")
+    next_step.add_argument("--ledger-root", default="", help="Override paper ledger root")
+    next_step.add_argument("--validation-state", default="", help="Path to validation_state.json")
+    next_step.add_argument("--strategy", default="etf_rotation", help="Single strategy identifier for display")
+    next_step.add_argument("--as-of", default="", help="UTC timestamp override for market-hours review")
+    next_step.set_defaults(func=cmd_pre_live_next_step)
+
+    preflight = pre_sub.add_parser(
+        "paper-submit-preflight",
+        help="Fail-closed small paper submit preflight; no broker writes",
+    )
+    preflight.add_argument("--data-root", default="data", help="Data root directory")
+    preflight.add_argument("--ledger-root", default="", help="Override paper ledger root")
+    preflight.add_argument("--validation-state", default="", help="Path to validation_state.json")
+    preflight.add_argument("--strategy", default="etf_rotation", help="Single strategy identifier for display")
+    preflight.add_argument("--as-of", default="", help="UTC timestamp override for market-hours review")
+    preflight.set_defaults(func=cmd_pre_live_paper_submit_preflight)
+
+
+def cmd_overview(args: argparse.Namespace) -> None:
+    """Operator overview for the pre-live workflow; read-only and no submit path."""
+    from quant_us.reports.live_readiness import LiveReadinessGate
+    from quant_us.reports.paper_validation import inspect_paper_validation_evidence
+
+    data_root = args.data_root
+    validation_state = args.validation_state or ""
+    ledger_root = args.ledger_root or None
+    credential_state, credential_detail = _credential_env_state()
+    paper_network_submit_state = _paper_network_submit_env_state()
+
+    gate = LiveReadinessGate()
+    simulated_report = gate.check_all(validation_state_path=validation_state, profile="simulated")
+    simulated_ready = bool(simulated_report.is_ready())
+    hard_failures = [
+        check.name
+        for check in simulated_report.checks
+        if not check.passed and not getattr(check, "warn", False)
+    ]
+
+    paper_evidence = inspect_paper_validation_evidence(
+        data_root,
+        ledger_root=ledger_root,
+        validation_state_path=validation_state or None,
+    )
+    review = _paper_review_overview(data_root)
+    portfolio_observability = _portfolio_observability_status(data_root, strategy=args.strategy)
+    paper_status = _paper_stage_status(
+        credential_state,
+        review,
+        paper_evidence.readiness_state,
+    )
+    next_action = _overview_next_action(
+        data_root=data_root,
+        validation_state=validation_state,
+        simulated_ready=simulated_ready,
+        credential_state=credential_state,
+        review=review,
+        paper_readiness_state=paper_evidence.readiness_state,
+    )
+
+    print("Pre-Live Workflow Overview")
+    print("=" * 60)
+    _print_report_only_note()
+    _print_review_only_scope()
+    print(f"  strategy:     {args.strategy}")
+    print(f"  capital:      ${args.initial_cash:,.2f}")
+    print(f"  data_root:    {data_root}")
+    print(f"  evidence:     validation_state={validation_state or '(not provided)'}")
+    print(f"  evidence:     ledger_root={ledger_root or Path(data_root) / 'paper_ledger'}")
+    print(f"  evidence:     evidence_registry={_saved_evidence_registry_path(data_root) if _saved_evidence_registry_path(data_root).exists() else '(not found)'}")
+    print()
+    print("  phases:")
+    print(f"    simulated: {'READY' if simulated_ready else 'BLOCKED'}")
+    if hard_failures:
+        print(f"      simulated_failures: {', '.join(hard_failures)}")
+    print(f"    paper:     {paper_status}")
+    print(f"      credentials: {credential_state} ({credential_detail})")
+    print(f"      network_submit_confirmation: {paper_network_submit_state}")
+    print(f"      review:      {review.get('review_status', 'UNKNOWN')}")
+    print(f"      review_entry_allowed: {'YES' if review.get('entry_allowed') else 'NO'}")
+    print(f"      manual_review_pending: {'YES' if review.get('manual_pending') else 'NO'}")
+    print(f"      validation:  {paper_evidence.readiness_state}")
+    print(f"      validation_days: {paper_evidence.days_completed}/{paper_evidence.days_required} completed, {paper_evidence.consecutive_clean_days}/{paper_evidence.days_required} clean")
+    if paper_evidence.gaps:
+        print(f"      validation_gaps: {', '.join(paper_evidence.gaps[:5])}")
+    print("    live:      FROZEN")
+    print("      live_order_path: frozen; current CLI surface is review-only/fail-closed")
+    print()
+    _print_minute_quality_summary(data_root, indent="  ")
+    print()
+    print("  portfolio_observability:")
+    multi_strategy = dict(portfolio_observability.get("multi_strategy", {}))
+    multi_timeframe = dict(portfolio_observability.get("multi_timeframe", {}))
+    pnl_attribution = dict(portfolio_observability.get("pnl_attribution", {}))
+    paper_gates = dict(portfolio_observability.get("paper_submit_gates", {}))
+    print(f"    multi_strategy:      {multi_strategy.get('status', 'UNKNOWN')} (strategies={multi_strategy.get('strategy_count', 0)})")
+    print(f"    multi_timeframe:     {multi_timeframe.get('status', 'UNKNOWN')} (timeframes={multi_timeframe.get('timeframe_count', 0)})")
+    print(f"    pnl_attribution:     {pnl_attribution.get('status', 'UNKNOWN')} (rows={pnl_attribution.get('row_count', 0)})")
+    print(f"    live_state:          {portfolio_observability.get('live_state', 'FROZEN')}")
+    print(f"    paper_submit_gates:  {paper_gates.get('state', 'BLOCKED_BY_DEFAULT')}")
+    print(f"    next_paper_command:  {portfolio_observability.get('next_paper_command', '')}")
+    print()
+    print(f"  next_action: {next_action}")
+    print()
+    print("  useful_commands:")
+    print(f"    simulated_readiness: python -m quant_us.cli readiness --profile simulated --data-root {data_root}")
+    print(f"    paper_validation:    python -m quant_us.cli report paper-validation --data-root {data_root}")
+    print(f"    minute_quality:      python -m quant_us.cli report minute-quality --data-root {data_root}")
+    validation_arg = f" --validation-state {validation_state}" if validation_state else ""
+    print(f"    paper_readiness:     python -m quant_us.cli readiness --profile paper --data-root {data_root}{validation_arg} --check-credentials")
+    print("    live_review_only:    python -m quant_us.cli readiness --profile live --check-credentials")
+    print("  note: live remains frozen here even if readiness evidence passes.")
+    print("=" * 60)
+
+
 def cmd_readiness(args: argparse.Namespace) -> None:
     """Check readiness evidence without starting any order path."""
     from quant_us.reports.live_readiness import LiveReadinessGate
@@ -2494,6 +3183,19 @@ def _add_micro_live_readiness_parser(subparsers: Any) -> None:
     p.add_argument("--data-root", default="data", help="Data root directory")
     p.add_argument("--ledger-root", default="", help="Override paper ledger root")
     p.set_defaults(func=cmd_micro_live_readiness)
+
+
+def _add_overview_parser(subparsers: Any) -> None:
+    p = subparsers.add_parser(
+        "overview",
+        help="Show pre-live workflow status and next operator action; no execution",
+    )
+    p.add_argument("--data-root", default="data", help="Data root directory")
+    p.add_argument("--ledger-root", default="", help="Override paper ledger root")
+    p.add_argument("--validation-state", default="", help="Path to validation_state.json")
+    p.add_argument("--strategy", default="etf_rotation", help="Single strategy identifier for display")
+    p.add_argument("--initial-cash", type=float, default=10_000.0, help="Small-funds notional capital for display")
+    p.set_defaults(func=cmd_overview)
 
 
 def _add_readiness_parser(subparsers: Any) -> None:
@@ -6022,6 +6724,27 @@ def _add_research_parser(subparsers: Any) -> None:
     exp_archive.add_argument("--data-root", default="data", help="Data root path")
     exp_archive.set_defaults(func=cmd_research_experiment_archive)
 
+    # --- auto-cycle ---
+    auto_p = research_sub.add_parser(
+        "auto-cycle",
+        help="Run the research closed loop: experiments, candidates, evidence, gate, registry",
+    )
+    auto_p.add_argument("--config", default="", help="JSON config path for ResearchAutomationPipeline")
+    auto_p.add_argument("--strategy-id", default="", help="Strategy ID when --config is not provided")
+    auto_p.add_argument("--symbols", default="", help="Comma-separated symbols when --config is not provided")
+    auto_p.add_argument("--family", default="", help="Experiment/strategy family label")
+    auto_p.add_argument("--params", default="{}", help="Base params as JSON object")
+    auto_p.add_argument("--param-grid", default="{}", help="Parameter grid as JSON object")
+    auto_p.add_argument("--start", default="", help="Start date YYYY-MM-DD")
+    auto_p.add_argument("--end", default="", help="End date YYYY-MM-DD")
+    auto_p.add_argument("--data-version", default="", help="Optional data version recorded in experiments")
+    auto_p.add_argument("--feature-version", default="", help="Optional feature version recorded in experiments")
+    auto_p.add_argument("--skip-evidence-pack", action="store_true", help="Do not save candidate evidence packs")
+    auto_p.add_argument("--skip-registry-rebuild", action="store_true", help="Do not rebuild evidence registry")
+    auto_p.add_argument("--allow-empty", action="store_true", help="Exit zero even if no candidates are produced")
+    auto_p.add_argument("--data-root", default="data", help="Data root path")
+    auto_p.set_defaults(func=cmd_research_auto_cycle)
+
     # --- candidate ---
     cand_p = research_sub.add_parser("candidate", help="Manage strategy candidates")
     cand_sub = cand_p.add_subparsers(dest="candidate_command")
@@ -6098,6 +6821,14 @@ def _add_research_parser(subparsers: Any) -> None:
     pg_p.add_argument("--data-root", default="data", help="Data root path")
     pg_p.set_defaults(func=cmd_research_promotion_gate)
 
+    # --- evidence-registry-rebuild ---
+    er_p = research_sub.add_parser(
+        "evidence-registry-rebuild",
+        help="Explicitly rebuild the saved evidence registry and subject index",
+    )
+    er_p.add_argument("--data-root", default="data", help="Data root path")
+    er_p.set_defaults(func=cmd_research_evidence_registry_rebuild)
+
     # --- report (v2) ---
     rep_p = research_sub.add_parser(
         "report", help="Generate research report for an experiment"
@@ -6132,6 +6863,8 @@ def _add_research_parser(subparsers: Any) -> None:
     fb.add_argument("--symbols", required=True, help="Comma-separated symbols")
     fb.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
     fb.add_argument("--end", default="", help="End date YYYY-MM-DD (default: today)")
+    fb.add_argument("--bar-size", default="1d", help="Research bar size, e.g. 1d, 1m, 5m, 15m")
+    fb.add_argument("--timeframe", default="", help="Optional timeframe label override")
     fb.add_argument("--data-root", default="data", help="Data root path")
     fb.set_defaults(func=cmd_research_feature_build)
 
@@ -6283,7 +7016,12 @@ def _add_research_parser(subparsers: Any) -> None:
         "paper-review-create",
         help="Create a paper review from a portfolio simulation",
     )
-    prc_p.add_argument("--portfolio-sim-id", required=True, help="Portfolio simulation ID")
+    prc_group = prc_p.add_mutually_exclusive_group(required=True)
+    prc_group.add_argument("--portfolio-sim-id", help="Portfolio simulation ID")
+    prc_group.add_argument(
+        "--evidence-pack-id",
+        help="Evidence pack ID (typically the candidate ID directory under research/evidence_packs)",
+    )
     prc_p.add_argument("--data-root", default="data", help="Data root path")
     prc_p.set_defaults(func=cmd_research_paper_review_create)
 
@@ -6522,6 +7260,155 @@ def cmd_research_experiment_archive(args: argparse.Namespace) -> None:
         print(f"ERROR: {exc}")
 
 
+def _load_research_auto_cycle_config(args: argparse.Namespace) -> dict[str, Any]:
+    if args.config:
+        config_path = Path(args.config)
+        try:
+            payload = json.loads(config_path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            print(f"ERROR: config not found: {config_path}", file=sys.stderr)
+            raise SystemExit(2)
+        except json.JSONDecodeError as exc:
+            print(f"ERROR: invalid JSON config {config_path}: {exc}", file=sys.stderr)
+            raise SystemExit(2)
+        if not isinstance(payload, dict):
+            print(f"ERROR: config must be a JSON object: {config_path}", file=sys.stderr)
+            raise SystemExit(2)
+        return payload
+
+    if not args.strategy_id:
+        print("ERROR: --strategy-id is required when --config is not provided", file=sys.stderr)
+        raise SystemExit(2)
+
+    symbols = _parse_symbols(args.symbols)
+    if not symbols:
+        print("ERROR: --symbols is required when --config is not provided", file=sys.stderr)
+        raise SystemExit(2)
+
+    try:
+        params = json.loads(args.params or "{}")
+        param_grid = json.loads(args.param_grid or "{}")
+    except json.JSONDecodeError as exc:
+        print(f"ERROR: invalid params JSON: {exc}", file=sys.stderr)
+        raise SystemExit(2)
+    if not isinstance(params, dict) or not isinstance(param_grid, dict):
+        print("ERROR: --params and --param-grid must be JSON objects", file=sys.stderr)
+        raise SystemExit(2)
+
+    config: dict[str, Any] = {
+        "experiment_name": args.family or args.strategy_id,
+        "strategy_id": args.strategy_id,
+        "symbols": symbols,
+        "params": params,
+        "param_grid": param_grid,
+        "start_date": args.start,
+        "end_date": args.end,
+    }
+    if args.data_version:
+        config["data_version"] = args.data_version
+    if args.feature_version:
+        config["feature_version"] = args.feature_version
+    return config
+
+
+def _print_research_auto_cycle_step(step: int, name: str, status: str, detail: str = "") -> None:
+    print(f"  [{step}] {name}: {status}")
+    if detail:
+        print(f"      {detail}")
+
+
+def cmd_research_auto_cycle(args: argparse.Namespace) -> None:
+    """Run the research closed-loop orchestration and rebuild evidence registry."""
+    from quant_us.research.automation.pipeline import ResearchAutomationPipeline
+    from quant_us.research.automation.promotion_gate import ResearchPromotionGate
+    from quant_us.research.evidence_pack import EvidencePackGenerator
+    from quant_us.research.evidence_registry import rebuild_evidence_registry
+
+    config = _load_research_auto_cycle_config(args)
+
+    print("Research Auto-Cycle")
+    print("=" * 60)
+    print("  scope: research-only; no broker access; no paper/live order path")
+    print(f"  data_root: {args.data_root}")
+    print(f"  strategy_id: {_display_value(config.get('strategy_id'))}")
+    print(f"  symbols: {', '.join([str(s) for s in config.get('symbols', [])]) or '(missing)'}")
+    _print_research_auto_cycle_step(1, "candidate_generation", "START", "via ResearchAutomationPipeline")
+
+    pipeline = ResearchAutomationPipeline(data_root=args.data_root)
+    result = pipeline.run(config)
+    status = str(result.get("status", "unknown"))
+    experiment_ids = [str(v) for v in result.get("experiment_ids", [])]
+    candidate_ids = [str(v) for v in result.get("candidate_ids", [])]
+    _print_research_auto_cycle_step(
+        2,
+        "experiment_run",
+        status.upper(),
+        f"experiments={len(experiment_ids)} candidates={len(candidate_ids)}",
+    )
+    if result.get("error"):
+        print(f"  error: {result['error']}")
+
+    evidence_paths: dict[str, str] = {}
+    if args.skip_evidence_pack:
+        _print_research_auto_cycle_step(3, "evidence_materialize", "SKIPPED")
+    else:
+        generator = EvidencePackGenerator(data_root=args.data_root)
+        for candidate_id in candidate_ids:
+            generator.generate(candidate_id)
+            path = generator.save(candidate_id)
+            evidence_paths[candidate_id] = str(path)
+        _print_research_auto_cycle_step(
+            3,
+            "evidence_materialize",
+            "PASS" if evidence_paths or not candidate_ids else "EMPTY",
+            f"evidence_packs={len(evidence_paths)}",
+        )
+
+    gate_results: dict[str, str] = {}
+    gate = ResearchPromotionGate(data_root=args.data_root)
+    for candidate_id in candidate_ids:
+        gate_result = gate.evaluate(candidate_id)
+        gate_results[candidate_id] = str(gate_result.decision)
+    _print_research_auto_cycle_step(
+        4,
+        "promotion_gate",
+        "PASS" if gate_results else "EMPTY",
+        ", ".join(f"{cid}={decision}" for cid, decision in sorted(gate_results.items())) or "no candidates",
+    )
+
+    registry_path = ""
+    if args.skip_registry_rebuild:
+        _print_research_auto_cycle_step(5, "evidence_registry_rebuild", "SKIPPED")
+    else:
+        registry = rebuild_evidence_registry(args.data_root, write=True)
+        registry_path = str(registry.get("registry_path", ""))
+        _print_research_auto_cycle_step(
+            5,
+            "evidence_registry_rebuild",
+            "PASS",
+            registry_path or "(path not reported)",
+        )
+
+    print()
+    print("  Summary:")
+    print(f"    pipeline_id: {result.get('pipeline_id', '(missing)')}")
+    print(f"    status: {status}")
+    print(f"    experiments: {', '.join(experiment_ids) or '(none)'}")
+    print(f"    candidates: {', '.join(candidate_ids) or '(none)'}")
+    print(f"    paper_review_ready: {', '.join([str(v) for v in result.get('paper_review_ready', [])]) or '(none)'}")
+    for candidate_id, path in sorted(evidence_paths.items()):
+        print(f"    evidence_pack[{candidate_id}]: {path}")
+    if registry_path:
+        print(f"    evidence_registry: {registry_path}")
+    print("  note: This command never marks PAPER_ELIGIBLE and never starts paper trading.")
+    print("=" * 60)
+
+    if status != "completed":
+        raise SystemExit(1)
+    if not candidate_ids and not args.allow_empty:
+        raise SystemExit(1)
+
+
 def cmd_research_candidate_list(args: argparse.Namespace) -> None:
     """List all candidates."""
     from quant_us.research.lab.manifest import ExperimentManager
@@ -6668,10 +7555,10 @@ def cmd_research_feature_list(args: argparse.Namespace) -> None:
         print("No feature snapshots found.")
         return
 
-    print(f"{'Snapshot ID':42s} {'Feature':20s} {'Version':8s} {'Rows':8s} {'Created At'}")
-    print("-" * 100)
+    print(f"{'Snapshot ID':42s} {'Feature':20s} {'TF':8s} {'Version':8s} {'Rows':8s} {'Created At'}")
+    print("-" * 110)
     for s in snapshots:
-        print(f"{s.snapshot_id:42s} {s.feature_id:20s} {s.feature_version:8s} {str(s.row_count):8s} {s.created_at[:19]}")
+        print(f"{s.snapshot_id:42s} {s.feature_id:20s} {s.timeframe:8s} {s.feature_version:8s} {str(s.row_count):8s} {s.created_at[:19]}")
     print(f"\nTotal: {len(snapshots)} snapshot(s)")
 
 
@@ -6690,12 +7577,16 @@ def cmd_research_feature_build(args: argparse.Namespace) -> None:
         symbols=symbols,
         start=args.start,
         end=end,
+        bar_size=args.bar_size,
+        timeframe=args.timeframe or args.bar_size,
     )
 
     print(f"Feature snapshot built:")
     print(f"  snapshot_id:     {snapshot.snapshot_id}")
     print(f"  feature_id:      {snapshot.feature_id}")
     print(f"  version:         {snapshot.feature_version}")
+    print(f"  bar_size:        {snapshot.bar_size}")
+    print(f"  timeframe:       {snapshot.timeframe}")
     print(f"  symbols:         {len(snapshot.symbols)} symbols")
     print(f"  date range:      {snapshot.start} -> {snapshot.end}")
     print(f"  rows:            {snapshot.row_count}")
@@ -6718,6 +7609,8 @@ def cmd_research_feature_inspect(args: argparse.Namespace) -> None:
     print(f"Feature Snapshot: {s.snapshot_id}")
     print(f"  feature_id:       {s.feature_id}")
     print(f"  version:          {s.feature_version}")
+    print(f"  bar_size:         {s.bar_size}")
+    print(f"  timeframe:        {s.timeframe}")
     print(f"  symbols:          {', '.join(s.symbols[:10])}{'...' if len(s.symbols) > 10 else ''}")
     print(f"  date range:       {s.start} -> {s.end}")
     print(f"  data_version:     {s.data_version}")
@@ -7263,9 +8156,18 @@ def cmd_factor_compute(args: argparse.Namespace) -> None:
     factor_ids = _resolve_factor_ids(args.factor)
     symbols = _parse_symbols(args.symbols)
     pipe = FactorPipeline(data_root=args.data_root)
-    df = pipe.compute(factor_ids=factor_ids, symbols=symbols, start=args.start, end=args.end)
+    df = pipe.compute(
+        factor_ids=factor_ids,
+        symbols=symbols,
+        start=args.start,
+        end=args.end,
+        bar_size=args.bar_size,
+        timeframe=args.timeframe or args.bar_size,
+    )
     print(f"Computed {len(factor_ids)} factor(s) for {len(symbols)} symbols")
     print(f"  dates:  {args.start} -> {args.end}")
+    print(f"  bar_size: {args.bar_size}")
+    print(f"  timeframe: {args.timeframe or args.bar_size}")
     print(f"  rows:   {len(df)}")
     print(f"  columns: {list(df.columns)}")
     print()
@@ -7291,8 +8193,12 @@ def cmd_factor_evaluate(args: argparse.Namespace) -> None:
         start=args.start,
         end=end,
         forward_period=args.forward_period,
+        bar_size=args.bar_size,
+        timeframe=args.timeframe or args.bar_size,
     )
     print(f"Evaluation for '{factor_id}'")
+    print(f"  {'Bar Size:':20s} {args.bar_size}")
+    print(f"  {'Timeframe:':20s} {args.timeframe or args.bar_size}")
     print(f"  {'Observations:':20s} {result.n_observations}")
     print(f"  {'Dates:':20s} {result.n_dates}")
     print(f"  {'IC (mean):':20s} {result.ic_mean:.4f}")
@@ -7350,6 +8256,8 @@ def cmd_factor_report(args: argparse.Namespace) -> None:
         start=args.start,
         end=end,
         forward_period=args.forward_period,
+        bar_size=args.bar_size,
+        timeframe=args.timeframe or args.bar_size,
     )
     builder = FactorReportBuilder()
     md = builder.build_report(factor_id, result)
@@ -7376,6 +8284,8 @@ def cmd_factor_compare(args: argparse.Namespace) -> None:
             start=args.start,
             end=end,
             forward_period=args.forward_period,
+            bar_size=args.bar_size,
+            timeframe=args.timeframe or args.bar_size,
         )
 
     if not results:
@@ -7576,11 +8486,16 @@ def cmd_research_paper_review_create(args: argparse.Namespace) -> None:
     mgr = PaperReviewManager(data_root=args.data_root)
 
     try:
-        review = mgr.create_review(args.portfolio_sim_id)
+        if getattr(args, "evidence_pack_id", ""):
+            review = mgr.create_from_portfolio_evidence(args.evidence_pack_id)
+        else:
+            review = mgr.create_review(args.portfolio_sim_id)
         print(f"Created paper review: {review.paper_review_id}")
         print(f"  Status:             {review.status}")
         print(f"  Strategy Manifest:  {review.strategy_manifest_id}")
         print(f"  Portfolio Sim:      {review.portfolio_sim_id}")
+        if review.evidence_pack_path:
+            print(f"  Evidence Pack:      {review.evidence_pack_path}")
         print(f"  Proposed Symbols:   {', '.join(review.proposed_symbols[:10])}")
         if len(review.proposed_symbols) > 10:
             print(f"    ... and {len(review.proposed_symbols) - 10} more")
@@ -7668,9 +8583,18 @@ def cmd_research_evidence_pack(args: argparse.Namespace) -> None:
             _print_report_only_note()
             sections = evidence.get("sections", {})
             for sec_key, sec_data in sections.items():
-                status = "PASS" if "error" not in str(sec_data) else "MISSING"
+                status = "PASS"
+                if isinstance(sec_data, dict):
+                    status = str(
+                        sec_data.get("review_candidate_status")
+                        or sec_data.get("overall_status")
+                        or sec_data.get("status")
+                        or status
+                    )
                 if isinstance(sec_data, dict) and "error" in sec_data:
                     status = f"MISSING: {sec_data['error']}"
+                elif "error" in str(sec_data):
+                    status = "MISSING"
                 print(f"  {sec_key}: {status}")
 
         if args.save or args.output_dir:
@@ -8243,6 +9167,8 @@ def _add_factor_parser(subparsers: Any) -> None:
     comp.add_argument("--factor", required=True, help="Factor ID (comma-separated for multiple)")
     comp.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
     comp.add_argument("--end", default="", help="End date YYYY-MM-DD (default: today)")
+    comp.add_argument("--bar-size", default="1d", help="Research bar size, e.g. 1d, 1m, 5m, 15m")
+    comp.add_argument("--timeframe", default="", help="Optional timeframe label override")
     comp.set_defaults(func=cmd_factor_compute)
 
     # --- evaluate ---
@@ -8252,6 +9178,8 @@ def _add_factor_parser(subparsers: Any) -> None:
     ev.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
     ev.add_argument("--end", default="", help="End date YYYY-MM-DD (default: today)")
     ev.add_argument("--forward-period", type=int, default=5, help="Forward return period in days (default: 5)")
+    ev.add_argument("--bar-size", default="1d", help="Research bar size, e.g. 1d, 1m, 5m, 15m")
+    ev.add_argument("--timeframe", default="", help="Optional timeframe label override")
     ev.set_defaults(func=cmd_factor_evaluate)
 
     # --- list ---
@@ -8266,6 +9194,8 @@ def _add_factor_parser(subparsers: Any) -> None:
     rep.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
     rep.add_argument("--end", default="", help="End date YYYY-MM-DD (default: today)")
     rep.add_argument("--forward-period", type=int, default=5, help="Forward return period in days (default: 5)")
+    rep.add_argument("--bar-size", default="1d", help="Research bar size, e.g. 1d, 1m, 5m, 15m")
+    rep.add_argument("--timeframe", default="", help="Optional timeframe label override")
     rep.set_defaults(func=cmd_factor_report)
 
     # --- compare ---
@@ -8275,6 +9205,8 @@ def _add_factor_parser(subparsers: Any) -> None:
     cmp.add_argument("--start", default="2020-01-01", help="Start date YYYY-MM-DD")
     cmp.add_argument("--end", default="", help="End date YYYY-MM-DD (default: today)")
     cmp.add_argument("--forward-period", type=int, default=5, help="Forward return period in days (default: 5)")
+    cmp.add_argument("--bar-size", default="1d", help="Research bar size, e.g. 1d, 1m, 5m, 15m")
+    cmp.add_argument("--timeframe", default="", help="Optional timeframe label override")
     cmp.set_defaults(func=cmd_factor_compare)
 
     # --- check-lookahead ---
@@ -8302,6 +9234,8 @@ def build_parser() -> argparse.ArgumentParser:
     _add_paper_parser(subparsers)
     _add_shadow_live_parser(subparsers)
     _add_reconcile_parser(subparsers)
+    _add_pre_live_parser(subparsers)
+    _add_overview_parser(subparsers)
     _add_readiness_parser(subparsers)
     _add_micro_live_readiness_parser(subparsers)
     _add_live_parser(subparsers)
