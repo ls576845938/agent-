@@ -1,1 +1,1 @@
-"""Research automation: pipeline, scoring, overfit detection, ranking, promotion."""
+"""Research automation: pipeline, scoring, compilation, ranking, promotion."""

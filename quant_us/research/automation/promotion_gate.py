@@ -264,25 +264,47 @@ class ResearchPromotionGate:
                 "(>= 50% threshold)"
             )
 
-        monte_carlo_survival = float(metrics.get("monte_carlo_survival_rate", 0.0))
+        monte_carlo_present, monte_carlo_survival = self._metric_value(
+            metrics, "monte_carlo_survival_rate"
+        )
         evidence["monte_carlo_survival_rate"] = monte_carlo_survival
-        if monte_carlo_survival <= 0.80:
+        evidence["monte_carlo_survival_rate_present"] = monte_carlo_present
+        if not monte_carlo_present:
+            reasons.append(
+                "missing_monte_carlo_survival_rate: promotion requires Monte Carlo survival evidence"
+            )
+        elif monte_carlo_survival <= 0.80:
             reasons.append(
                 f"monte_carlo_survival_low: survival_rate={monte_carlo_survival:.3f} "
                 "(<= 0.80 threshold)"
             )
 
         alpha_decay_half_life = float(metrics.get("alpha_decay_half_life_days", 0.0))
+        alpha_decay_present, alpha_decay_half_life = self._metric_value(
+            metrics, "alpha_decay_half_life_days"
+        )
         evidence["alpha_decay_half_life_days"] = alpha_decay_half_life
-        if alpha_decay_half_life <= 5.0:
+        evidence["alpha_decay_half_life_days_present"] = alpha_decay_present
+        if not alpha_decay_present:
+            warnings.append(
+                "missing_alpha_decay_half_life_days: promotion evidence is missing alpha decay half-life metadata"
+            )
+        elif alpha_decay_half_life <= 5.0:
             warnings.append(
                 f"rapid_alpha_decay: half_life={alpha_decay_half_life:.1f} days "
                 "(<= 5 days threshold)"
             )
 
-        param_stability = float(metrics.get("param_stability_score", 0.0))
+        param_stability_present, param_stability = self._metric_value(
+            metrics, "param_stability_score"
+        )
         evidence["param_stability_score"] = param_stability
-        if param_stability <= 0.5:
+        evidence["param_stability_score_present"] = param_stability_present
+        if not param_stability_present:
+            reasons.append(
+                "missing_param_stability_score: promotion requires parameter stability evidence"
+            )
+        elif param_stability <= 0.5:
             reasons.append(
                 f"param_unstable: stability_score={param_stability:.3f} "
                 "(<= 0.5 threshold)"
@@ -296,16 +318,24 @@ class ResearchPromotionGate:
                 "(>= 0.70 threshold)"
             )
 
-        stress_survival_rate = self._artifact_metric(
+        stress_survival_present, stress_survival_rate = self._artifact_metric_value(
             cost_stress_artifact,
             metric_names=("stress_survival_rate", "survival_rate"),
             nested=("stability", "survival_rate_pct"),
-            default=metrics.get("stress_survival_rate", 0.0),
         )
+        if not stress_survival_present:
+            stress_survival_present, stress_survival_rate = self._metric_value(
+                metrics, "stress_survival_rate"
+            )
         if stress_survival_rate > 1.0:
             stress_survival_rate = stress_survival_rate / 100.0
         evidence["stress_survival_rate"] = stress_survival_rate
-        if stress_survival_rate <= 0.70:
+        evidence["stress_survival_rate_present"] = stress_survival_present
+        if not stress_survival_present:
+            reasons.append(
+                "missing_stress_survival_rate: promotion requires persisted cost-stress survival evidence"
+            )
+        elif stress_survival_rate <= 0.70:
             reasons.append(
                 f"stress_survival_low: survival_rate={stress_survival_rate:.3f} "
                 "(<= 0.70 threshold)"
@@ -318,6 +348,17 @@ class ResearchPromotionGate:
                 "promotion_status_inconsistent: stored PAPER_ELIGIBLE but "
                 "current gate evidence is not clean"
             )
+
+        evidence["machine_readable_blockers"] = list(reasons)
+        evidence["machine_readable_warnings"] = list(warnings)
+        evidence["machine_readable_needs_more_research"] = list(needs_more_research)
+        evidence["next_commands"] = self._build_next_commands(
+            candidate_id=candidate_id,
+            candidate_data=candidate_data,
+            experiment_data=experiment_data,
+            reasons=reasons,
+            warnings=warnings,
+        )
 
         if reasons:
             decision = "BLOCKED"
@@ -516,7 +557,12 @@ class ResearchPromotionGate:
         candidate = Path(str(raw_path))
         if candidate.exists() or candidate.is_absolute():
             return candidate
-        return self.data_root / candidate
+        data_relative = self.data_root / candidate
+        if data_relative.exists():
+            return data_relative
+        if candidate.parts and self.data_root.name and candidate.parts[0] == self.data_root.name:
+            return candidate
+        return data_relative
 
     def _persist_promotion_result(
         self,
@@ -567,24 +613,47 @@ class ResearchPromotionGate:
         nested: tuple[str, ...],
         default: Any,
     ) -> float:
-        value = default
+        present, value = ResearchPromotionGate._artifact_metric_value(
+            artifact,
+            metric_names=metric_names,
+            nested=nested,
+        )
+        if not present:
+            value = default
+        return float(value)
+
+    @staticmethod
+    def _artifact_metric_value(
+        artifact: dict[str, Any] | None,
+        *,
+        metric_names: tuple[str, ...],
+        nested: tuple[str, ...],
+    ) -> tuple[bool, float]:
         if isinstance(artifact, dict):
             metrics = artifact.get("metrics", {})
             if not isinstance(metrics, dict):
                 metrics = {}
             for name in metric_names:
-                if name in artifact:
-                    value = artifact[name]
-                    break
-                if name in metrics:
-                    value = metrics[name]
-                    break
-            else:
-                if nested:
-                    container = artifact.get(nested[0], {})
-                    if isinstance(container, dict) and nested[1] in container:
-                        value = container[nested[1]]
-        return float(value)
+                value = artifact.get(name)
+                if value not in (None, ""):
+                    return True, float(value)
+                value = metrics.get(name)
+                if value not in (None, ""):
+                    return True, float(value)
+            if nested:
+                container = artifact.get(nested[0], {})
+                if isinstance(container, dict):
+                    value = container.get(nested[1])
+                    if value not in (None, ""):
+                        return True, float(value)
+        return False, 0.0
+
+    @staticmethod
+    def _metric_value(metrics: dict[str, Any], key: str) -> tuple[bool, float]:
+        value = metrics.get(key)
+        if value in (None, ""):
+            return False, 0.0
+        return True, float(value)
 
     def _evaluate_validation_statistics(
         self,
@@ -1690,6 +1759,70 @@ class ResearchPromotionGate:
         if not required.issubset(payload):
             return None
         return DataManifest(**payload)
+
+    def _build_next_commands(
+        self,
+        *,
+        candidate_id: str,
+        candidate_data: dict[str, Any],
+        experiment_data: dict[str, Any],
+        reasons: list[str],
+        warnings: list[str],
+    ) -> list[str]:
+        commands: list[str] = [
+            "PYTHONPATH=. venv/bin/python -c "
+            f"\"from quant_us.research.automation.evidence_materializer import ResearchEvidenceMaterializer; "
+            f"ResearchEvidenceMaterializer('data').materialize_candidate('{candidate_id}')\""
+        ]
+        reason_text = " ".join([*reasons, *warnings])
+
+        symbols = candidate_data.get("symbols") or experiment_data.get("symbols") or []
+        symbol = str(symbols[0]) if symbols else ""
+        start = str(experiment_data.get("start_date", "") or "")
+        end = str(experiment_data.get("end_date", "") or "")
+        timeframe = str(experiment_data.get("timeframe", "1d") or "1d")
+        strategy_id = str(
+            experiment_data.get("strategy_id")
+            or candidate_data.get("strategy_id")
+            or "trend_momentum"
+        )
+        params = experiment_data.get("params", {})
+        if not isinstance(params, dict):
+            params = {}
+        vendor = str(
+            experiment_data.get("data_source")
+            or experiment_data.get("source")
+            or candidate_data.get("data_source")
+            or "yfinance"
+        )
+        experiment_id = str(experiment_data.get("experiment_id", "") or "")
+
+        if symbol and start and end and any(
+            token in reason_text
+            for token in (
+                "missing_deflated_sharpe_ratio",
+                "missing_pbo_evidence",
+                "validation_cv_",
+                "single_path_validation_not_allowed",
+                "insufficient_effective_trials",
+                "multiple_testing_missing",
+            )
+        ):
+            commands.append(
+                "PYTHONPATH=. venv/bin/python scripts/run_walk_forward.py "
+                f"--symbol {symbol} --start {start} --end {end} --bar-size {timeframe} --data-root data"
+            )
+
+        if symbol and start and end and experiment_id:
+            commands.append(
+                "PYTHONPATH=. venv/bin/python scripts/run_research_experiment.py "
+                f"--experiment-name rerun-{experiment_id} "
+                f"--symbols {symbol} --start {start} --end {end} "
+                f"--strategy-id {strategy_id} "
+                f"--strategy-params-json '{json.dumps(params, sort_keys=True)}' "
+                f"--bar-size {timeframe} --data-root data --vendor {vendor}"
+            )
+        return list(dict.fromkeys(commands))
 
     @staticmethod
     def _source_from_data_version(data_version: str) -> str:

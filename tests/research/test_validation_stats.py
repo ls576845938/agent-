@@ -4,6 +4,8 @@ from dataclasses import asdict
 import json
 from pathlib import Path
 
+import pytest
+
 from quant_us.backtest.ledger_pnl import compute_ledger_reconciliation_artifact_hash
 from quant_us.data.storage.data_manifest import DataManifest, DataManifestStore
 from quant_us.research.automation.promotion_gate import ResearchPromotionGate
@@ -764,3 +766,95 @@ def test_strategy_manifest_captures_validation_evidence(tmp_path: Path) -> None:
     assert manifest.purge_embargo["embargoed"] is True
     assert manifest.evidence["promotion_gate"]["decision"] == "READY_FOR_PAPER_REVIEW"
     assert manifest.evidence["promotion_gate"]["validation_stats"]["status"] == "complete"
+
+
+def test_promotion_gate_resolves_repo_relative_canonical_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    data_root = tmp_path / "data"
+    candidate_id = _write_candidate_fixture(
+        data_root,
+        candidate_id="cand_repo_relative",
+        profile="good",
+        include_strategy_manifest=True,
+    )
+    candidate_path = data_root / "research" / "candidates" / candidate_id / "candidate.json"
+    payload = json.loads(candidate_path.read_text(encoding="utf-8"))
+    for key in (
+        "backtest_manifest_path",
+        "scorecard_path",
+        "walk_forward_result_path",
+        "cost_stress_result_path",
+    ):
+        absolute = Path(payload[key])
+        payload[key] = str(absolute.relative_to(tmp_path))
+        payload["metrics"][key] = payload[key]
+    candidate_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+    result = ResearchPromotionGate(data_root="data").evaluate(candidate_id)
+
+    assert result.decision == "READY_FOR_PAPER_REVIEW"
+    assert not any(reason.startswith("non_canonical_walk_forward_artifact_path") for reason in result.reasons)
+    assert not any(reason.startswith("non_canonical_cost_stress_artifact_path") for reason in result.reasons)
+    assert result.evidence["walk_forward_artifact_resolved_path"] == (
+        f"data/research/walk_forward/{candidate_id}/result.json"
+    )
+
+
+def test_promotion_gate_uses_missing_metric_blockers_when_validation_metrics_absent(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_missing_validation_metrics",
+        profile="good",
+        include_strategy_manifest=True,
+    )
+    candidate_path = tmp_path / "research" / "candidates" / candidate_id / "candidate.json"
+    payload = json.loads(candidate_path.read_text(encoding="utf-8"))
+    for key in (
+        "monte_carlo_survival_rate",
+        "param_stability_score",
+        "alpha_decay_half_life_days",
+        "stress_survival_rate",
+    ):
+        payload["metrics"].pop(key, None)
+    candidate_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    cost_stress_path = tmp_path / "research" / "cost_stress" / candidate_id / "result.json"
+    cost_stress = json.loads(cost_stress_path.read_text(encoding="utf-8"))
+    cost_stress.pop("stress_survival_rate", None)
+    cost_stress_metrics = dict(cost_stress.get("metrics", {}))
+    cost_stress_metrics.pop("stress_survival_rate", None)
+    cost_stress["metrics"] = cost_stress_metrics
+    _write_json(cost_stress_path, cost_stress)
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert "missing_monte_carlo_survival_rate: promotion requires Monte Carlo survival evidence" in result.reasons
+    assert "missing_param_stability_score: promotion requires parameter stability evidence" in result.reasons
+    assert "missing_stress_survival_rate: promotion requires persisted cost-stress survival evidence" in result.reasons
+    assert "missing_alpha_decay_half_life_days: promotion evidence is missing alpha decay half-life metadata" in result.warnings
+    assert not any(reason.startswith("monte_carlo_survival_low:") for reason in result.reasons)
+    assert not any(reason.startswith("param_unstable:") for reason in result.reasons)
+    assert not any(reason.startswith("stress_survival_low:") for reason in result.reasons)
+    assert not any(warning.startswith("rapid_alpha_decay:") for warning in result.warnings)
+
+
+def test_blocked_strategy_manifest_persists_gate_blockers_and_next_commands(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_manifest_blocked_summary",
+        profile="bad",
+        include_strategy_manifest=False,
+    )
+
+    with pytest.raises(ValueError):
+        StrategyManifestManager(data_root=str(tmp_path)).create_from_candidate(candidate_id)
+
+    manifest_paths = sorted((tmp_path / "research" / "manifests").glob("*/manifest.json"))
+    assert manifest_paths
+    manifest_payload = json.loads(manifest_paths[0].read_text(encoding="utf-8"))
+
+    assert manifest_payload["promotion_status"] == "BLOCKED"
+    assert manifest_payload["promotion_gate_decision"] == "BLOCKED"
+    assert manifest_payload["promotion_gate_blocking_reasons"]
+    assert manifest_payload["promotion_gate_next_commands"]
+    assert manifest_payload["evidence"]["promotion_gate"]["next_commands"] == manifest_payload["promotion_gate_next_commands"]

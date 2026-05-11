@@ -115,14 +115,18 @@ class FakeResearchService:
             chart={"candles": [], "markers": [], "equity": [], "drawdown": [], "exposure": [], "net_units": []},
             strategy_details=[],
             latest_weights=[],
-            diagnostics={"engine": "event_driven", "pnl_source": "ledger_fills"},
+            diagnostics={
+                "engine": "event_driven",
+                "pnl_source": "ledger_fills",
+                "ledger_equity_consistent": True,
+            },
         )
 
     def run_event_driven_cost_stress(self, request: dict):
         return {
             "status": "completed",
             "engine": "event_driven",
-            "survival_rate_pct": 50.0,
+            "survival_rate_pct": 100.0,
             "ledger_consistency_pct": 100.0,
             "scenarios": [],
             "recommendations": [],
@@ -132,9 +136,10 @@ class FakeResearchService:
         return {
             "status": "completed",
             "stability": {
-                "fold_pass_rate_pct": 50.0,
-                "pass_rate_pct": 50.0,
+                "fold_pass_rate_pct": 100.0,
+                "pass_rate_pct": 100.0,
                 "ledger_consistency_pct": 100.0,
+                "regime_pass_rate_pct": 100.0,
             },
             "windows": [],
             "regimes": [],
@@ -257,8 +262,9 @@ def test_crypto_closure_runs_data_candidate_event_risk_and_gate() -> None:
             "target_intervals": ["1h"],
             "strategy_ids": ["trend_macd", "donchian_breakout"],
             "max_candidates_per_strategy": 2,
-            "max_scenarios": 2,
+            "max_scenarios": 8,
             "windows": 2,
+            "min_bars_by_interval": {"1h": 1},
         }
     )
 
@@ -268,9 +274,9 @@ def test_crypto_closure_runs_data_candidate_event_risk_and_gate() -> None:
     assert research.event_calls[0]["strategy_id"] == "donchian_breakout"
     assert result["event_backtest"]["diagnostics"]["pnl_source"] == "ledger_fills"
     assert result["cost_stress"]["engine"] == "event_driven"
+    assert result["candidate_screen"]["qualification"]["selected_count"] == 1
     assert result["promotion_gate"]["decision"] == "fail"
-    assert any("cost_stress" in item for item in result["blockers"])
-    assert any("walk_forward" in item for item in result["blockers"])
+    assert any("promotion_gate" in item for item in result["blockers"])
 
 
 def test_crypto_closure_blocks_before_research_when_data_integrity_fails() -> None:
@@ -290,6 +296,7 @@ def test_crypto_closure_blocks_before_research_when_data_integrity_fails() -> No
             "end": datetime(2024, 2, 1, tzinfo=UTC),
             "target_intervals": ["1h"],
             "strategy_ids": ["trend_macd"],
+            "min_bars_by_interval": {"1h": 1},
         }
     )
 
@@ -316,6 +323,7 @@ def test_crypto_closure_outer_blockers_override_passing_promotion_gate() -> None
             "end": datetime(2024, 2, 1, tzinfo=UTC),
             "target_intervals": ["1h"],
             "strategy_ids": ["trend_macd"],
+            "min_bars_by_interval": {"1h": 1},
         }
     )
 
@@ -341,6 +349,7 @@ def test_crypto_closure_rejects_malformed_optimizer_results_before_event_backtes
             "end": datetime(2024, 2, 1, tzinfo=UTC),
             "target_intervals": ["1h"],
             "strategy_ids": ["trend_macd"],
+            "min_bars_by_interval": {"1h": 1},
         }
     )
 
@@ -365,9 +374,62 @@ def test_crypto_closure_blocks_non_ledger_event_backtest_even_when_gate_passes()
             "end": datetime(2024, 2, 1, tzinfo=UTC),
             "target_intervals": ["1h"],
             "strategy_ids": ["trend_macd"],
+            "min_bars_by_interval": {"1h": 1},
         }
     )
 
     assert result["event_backtest"]["diagnostics"]["pnl_source"] != "ledger_fills"
     assert result["decision"] != "pass"
     assert any("ledger" in blocker.lower() or "event" in blocker.lower() for blocker in result["blockers"])
+
+
+def test_crypto_closure_blocks_long_sample_failures_before_research() -> None:
+    research = FakeResearchService()
+    service = CryptoClosureService(
+        research_service=research,
+        promotion_gate_service=PassingPromotionGateService(),
+        market_data_service=FakeMarketDataService(),
+        quality_inspector=lambda **kwargs: _quality(kwargs["interval"]),
+    )
+
+    result = service.run(
+        {
+            "symbol": "BTCUSDT",
+            "interval": "1h",
+            "start": datetime(2024, 1, 1, tzinfo=UTC),
+            "end": datetime(2024, 2, 1, tzinfo=UTC),
+            "target_intervals": ["1h"],
+            "strategy_ids": ["trend_macd"],
+            "min_bars_by_interval": {"1h": 10_000},
+        }
+    )
+
+    assert result["status"] == "blocked"
+    assert result["data_integrity"]["validation_summary"]["status"] == "fail"
+    assert any("long_sample_min_bars" in blocker for blocker in result["blockers"])
+    assert research.optimize_calls == []
+
+
+def test_crypto_closure_does_not_select_candidate_when_strict_qualification_fails() -> None:
+    service = CryptoClosureService(
+        research_service=WeakRiskResearchService(),
+        promotion_gate_service=PassingPromotionGateService(),
+        market_data_service=FakeMarketDataService(),
+        quality_inspector=lambda **kwargs: _quality(kwargs["interval"]),
+    )
+
+    result = service.run(
+        {
+            "symbol": "BTCUSDT",
+            "interval": "1h",
+            "start": datetime(2024, 1, 1, tzinfo=UTC),
+            "end": datetime(2024, 2, 1, tzinfo=UTC),
+            "target_intervals": ["1h"],
+            "strategy_ids": ["trend_macd"],
+            "min_bars_by_interval": {"1h": 1},
+        }
+    )
+
+    assert result["selected_candidate"] is None
+    assert result["candidate_screen"]["qualification"]["selected_count"] == 0
+    assert any("cost survival_rate" in blocker for blocker in result["blockers"])

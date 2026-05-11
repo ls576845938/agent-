@@ -438,9 +438,24 @@ def _validation_state_check(state_path: Path, state: dict[str, Any]) -> Prefligh
     required = int(state.get("days_required", 30) or 30)
     completed = int(state.get("days_completed", 0) or 0)
     clean = int(state.get("consecutive_clean_days", 0) or 0)
+    detail = f"days_completed={completed}/{required} consecutive_clean_days={clean}/{required}"
+    if completed < required:
+        return _blocked_check(
+            "validation_state_path",
+            "validation_days_incomplete",
+            artifact_path=state_path,
+            extra=detail,
+        )
+    if clean < required:
+        return _blocked_check(
+            "validation_state_path",
+            "validation_clean_days_incomplete",
+            artifact_path=state_path,
+            extra=detail,
+        )
     return _pass_check(
         "validation_state_path",
-        f"days_completed={completed}/{required} consecutive_clean_days={clean}/{required}",
+        detail,
         artifact_path=state_path,
     )
 

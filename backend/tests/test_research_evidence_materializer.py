@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from quant_us.research.automation.evidence_materializer import (
     ResearchEvidenceMaterializer,
 )
@@ -130,3 +132,34 @@ def test_materializer_does_not_fabricate_missing_robustness_artifacts(
     assert result.cost_stress_result_path == ""
     assert "walk_forward_metrics_missing" in result.warnings
     assert "cost_stress_metrics_missing" in result.warnings
+
+
+def test_materializer_resolves_repo_relative_canonical_backtest_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate_id = "cand_repo_relative_materializer"
+    data_root = tmp_path / "data"
+    canonical_manifest = (
+        data_root / "research" / "backtests" / candidate_id / "run_manifest.json"
+    )
+    _write_json(canonical_manifest, {"engine": "event_driven", "canonical_for_promotion": True})
+    candidate_path = data_root / "research" / "candidates" / candidate_id / "candidate.json"
+    _write_json(
+        candidate_path,
+        _candidate_payload(
+            candidate_id=candidate_id,
+            backtest_manifest_path=f"data/research/backtests/{candidate_id}/run_manifest.json",
+            metrics={"trade_count": 12, "walk_forward_pass_rate": 0.5, "cost_sensitivity": 0.2},
+        ),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = ResearchEvidenceMaterializer(data_root="data").materialize_candidate(
+        candidate_id,
+        create_strategy_manifest=False,
+        run_promotion_gate=False,
+    )
+
+    assert result.backtest_manifest_path == str(canonical_manifest.relative_to(tmp_path))
+    assert "backtest_manifest_missing" not in result.warnings

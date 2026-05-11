@@ -263,6 +263,23 @@ def test_paper_validation_preflight_blocks_when_ledger_recon_artifact_is_missing
     assert "ledger_reconciliation_artifact_missing" in preflight.blocking_reasons
 
 
+def test_paper_validation_preflight_blocks_when_validation_days_are_incomplete(tmp_path: Path) -> None:
+    data_root, state_path = _write_preflight_artifacts(tmp_path)
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    state["days_completed"] = 12
+    state["consecutive_clean_days"] = 12
+    state_path.write_text(json.dumps(state), encoding="utf-8")
+
+    preflight = check_paper_validation_preflight(
+        data_root,
+        ledger_root=data_root / "paper_ledger",
+        validation_state_path=state_path,
+    )
+
+    assert preflight.status == "BLOCKED"
+    assert "validation_days_incomplete" in preflight.blocking_reasons
+
+
 def _write_runtime_validation_state(data_root: Path) -> Path:
     market_data_dir = (
         data_root

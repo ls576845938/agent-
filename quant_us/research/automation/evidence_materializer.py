@@ -29,6 +29,7 @@ class CandidateEvidenceMaterializationResult:
     promotion_gate_decision: str = "NOT_RUN"
     promotion_gate_reasons: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    next_commands: list[str] = field(default_factory=list)
     paths_written: list[str] = field(default_factory=list)
 
     @property
@@ -244,6 +245,7 @@ class ResearchEvidenceMaterializer:
             key in metrics
             for key in (
                 "stress_survival_rate",
+                "cost_sensitivity",
                 "cost_stress_levels",
                 "cost_stress_result",
                 "cost_stress",
@@ -314,6 +316,7 @@ class ResearchEvidenceMaterializer:
         result.promotion_gate_decision = gate_result.decision
         result.promotion_gate_reasons = list(gate_result.reasons)
         result.warnings.extend(gate_result.warnings)
+        result.next_commands = list(gate_result.evidence.get("next_commands", []) or [])
 
     def _update_candidate(
         self,
@@ -408,7 +411,14 @@ class ResearchEvidenceMaterializer:
         path = Path(raw_path)
         if path.is_absolute():
             return path
-        return self.data_root / path
+        if path.exists():
+            return path
+        data_relative = self.data_root / path
+        if data_relative.exists():
+            return data_relative
+        if path.parts and self.data_root.name and path.parts[0] == self.data_root.name:
+            return path
+        return data_relative
 
     def _candidate_path(self, candidate_id: str) -> Path:
         return (

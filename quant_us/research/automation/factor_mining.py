@@ -24,6 +24,7 @@ from quant_us.research.automation.factor_evidence import (
     build_factor_correlation_matrix,
     estimate_candidate_style_exposure,
 )
+from quant_us.research.automation.strategy_compiler import ResearchStrategyCompiler
 
 
 @dataclass(frozen=True)
@@ -83,6 +84,7 @@ class FactorMiningEngine:
 
     def __init__(self, data_root: str = "data") -> None:
         self.data_root = Path(data_root)
+        self._strategy_compiler = ResearchStrategyCompiler(data_root=str(self.data_root))
 
     def mine(
         self,
@@ -272,6 +274,7 @@ class FactorMiningEngine:
             selected=selected,
             correlation_report_path=correlation_report_path,
             bars_by_bar_size=bars_by_bar_size,
+            strategy_config_count=len(strategy_configs),
         )
         result = FactorMiningResult(
             run_id=run_id,
@@ -513,6 +516,7 @@ class FactorMiningEngine:
         symbols: list[str],
     ) -> dict[str, Any]:
         top_n = min(3, max(1, len(symbols)))
+        candidate_evidence = _single_candidate_evidence(score)
         logic = {
             "logic_id": f"{run_id}:{score.bar_size}:{score.factor_id}",
             "logic_version": "factor_rank_dsl_v1",
@@ -542,16 +546,11 @@ class FactorMiningEngine:
             "stability_score": round(score.stability_score, 6),
             "rank_ic_mean": score.rank_ic_mean,
             "long_short_spread": score.long_short_spread,
-            "candidate_evidence": _single_candidate_evidence(score),
+            "candidate_evidence": candidate_evidence,
             "lookahead_guard": "never uses same-bar future return; strategy config must enter backtest through research gate",
             "created_at": utc_now().isoformat(),
         }
-        logic_path = self._persist_strategy_logic(
-            run_id,
-            f"single_{score.bar_size}_{score.factor_id}",
-            logic,
-        )
-        return {
+        config = {
             "template_id": "single_factor_rank",
             "strategy_id": "factor_rank",
             "bar_size": score.bar_size,
@@ -568,7 +567,17 @@ class FactorMiningEngine:
             "stability_score": round(score.stability_score, 6),
             "rank_ic_mean": score.rank_ic_mean,
             "long_short_spread": score.long_short_spread,
-            "candidate_evidence": _single_candidate_evidence(score),
+            "candidate_evidence": candidate_evidence,
+        }
+        logic_path = self._persist_strategy_logic(
+            run_id,
+            f"single_{score.bar_size}_{score.factor_id}",
+            logic,
+            config=config,
+            candidate_evidence=candidate_evidence,
+        )
+        return {
+            **config,
             "logic": logic,
             "logic_path": str(logic_path),
         }
@@ -583,6 +592,7 @@ class FactorMiningEngine:
     ) -> dict[str, Any]:
         top_n = min(3, max(1, len(symbols)))
         basket = self._basket_weights(scores)
+        candidate_evidence = _aggregate_candidate_evidence(scores, basket)
         logic = {
             "logic_id": f"{run_id}:{bar_size}:basket:{len(scores)}",
             "logic_version": "factor_rank_dsl_v2",
@@ -613,16 +623,11 @@ class FactorMiningEngine:
             "stability_score": round(sum(score.stability_score for score in scores) / len(scores), 6),
             "rank_ic_mean": round(sum(score.rank_ic_mean for score in scores) / len(scores), 6),
             "long_short_spread": round(sum(score.long_short_spread for score in scores) / len(scores), 6),
-            "candidate_evidence": _aggregate_candidate_evidence(scores, basket),
+            "candidate_evidence": candidate_evidence,
             "lookahead_guard": "constituent factors are computed at bar close and blended cross-sectionally for next-bar execution only",
             "created_at": utc_now().isoformat(),
         }
-        logic_path = self._persist_strategy_logic(
-            run_id,
-            f"basket_{bar_size}_{'_'.join(score.factor_id for score in scores)}",
-            logic,
-        )
-        return {
+        config = {
             "template_id": "weighted_factor_basket",
             "strategy_id": "factor_basket",
             "bar_size": bar_size,
@@ -639,10 +644,16 @@ class FactorMiningEngine:
             "stability_score": logic["stability_score"],
             "rank_ic_mean": logic["rank_ic_mean"],
             "long_short_spread": logic["long_short_spread"],
-            "candidate_evidence": logic["candidate_evidence"],
-            "logic": logic,
-            "logic_path": str(logic_path),
+            "candidate_evidence": candidate_evidence,
         }
+        logic_path = self._persist_strategy_logic(
+            run_id,
+            f"basket_{bar_size}_{'_'.join(score.factor_id for score in scores)}",
+            logic,
+            config=config,
+            candidate_evidence=candidate_evidence,
+        )
+        return {**config, "logic": logic, "logic_path": str(logic_path)}
 
     def _build_consensus_strategy_config(
         self,
@@ -655,6 +666,7 @@ class FactorMiningEngine:
         top_n = min(3, max(1, len(symbols)))
         basket = self._basket_weights(scores)
         min_agreement = min(len(scores), 2)
+        candidate_evidence = _aggregate_candidate_evidence(scores, basket)
         logic = {
             "logic_id": f"{run_id}:{bar_size}:consensus:{len(scores)}",
             "logic_version": "factor_rank_dsl_v2",
@@ -686,16 +698,11 @@ class FactorMiningEngine:
             "stability_score": round(sum(score.stability_score for score in scores) / len(scores), 6),
             "rank_ic_mean": round(sum(score.rank_ic_mean for score in scores) / len(scores), 6),
             "long_short_spread": round(max(score.long_short_spread for score in scores), 6),
-            "candidate_evidence": _aggregate_candidate_evidence(scores, basket),
+            "candidate_evidence": candidate_evidence,
             "lookahead_guard": "consensus is formed from same-timestamp factor ranks and only forwarded as next-bar research intent",
             "created_at": utc_now().isoformat(),
         }
-        logic_path = self._persist_strategy_logic(
-            run_id,
-            f"consensus_{bar_size}_{'_'.join(score.factor_id for score in scores)}",
-            logic,
-        )
-        return {
+        config = {
             "template_id": "consensus_rank",
             "strategy_id": "factor_consensus",
             "bar_size": bar_size,
@@ -713,10 +720,16 @@ class FactorMiningEngine:
             "stability_score": logic["stability_score"],
             "rank_ic_mean": logic["rank_ic_mean"],
             "long_short_spread": logic["long_short_spread"],
-            "candidate_evidence": logic["candidate_evidence"],
-            "logic": logic,
-            "logic_path": str(logic_path),
+            "candidate_evidence": candidate_evidence,
         }
+        logic_path = self._persist_strategy_logic(
+            run_id,
+            f"consensus_{bar_size}_{'_'.join(score.factor_id for score in scores)}",
+            logic,
+            config=config,
+            candidate_evidence=candidate_evidence,
+        )
+        return {**config, "logic": logic, "logic_path": str(logic_path)}
 
     @staticmethod
     def _basket_weights(scores: list[FactorMiningScore]) -> list[dict[str, Any]]:
@@ -740,15 +753,17 @@ class FactorMiningEngine:
         run_id: str,
         strategy_key: str,
         logic: dict[str, Any],
+        *,
+        config: dict[str, Any],
+        candidate_evidence: dict[str, Any],
     ) -> Path:
-        path = (
-            self.data_root
-            / "research"
-            / "generated_strategies"
-            / f"{run_id}_{_safe_name(strategy_key)}.json"
+        _, path = self._strategy_compiler.compile(
+            run_id=run_id,
+            strategy_key=strategy_key,
+            logic=logic,
+            config=config,
+            candidate_evidence=candidate_evidence,
         )
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(logic, indent=2, default=str, sort_keys=True), encoding="utf-8")
         return path
 
     def _persist(self, result: FactorMiningResult) -> Path:
@@ -822,6 +837,7 @@ class FactorMiningEngine:
         selected: list[FactorMiningScore],
         correlation_report_path: Path,
         bars_by_bar_size: dict[str, pd.DataFrame],
+        strategy_config_count: int,
     ) -> dict[str, Any]:
         covered = [
             score for score in final_scores if score.style_exposure and not score.style_exposure.get("missing_reason")
@@ -841,6 +857,7 @@ class FactorMiningEngine:
             "candidate_count": len(final_scores),
             "selected_count": len(selected),
             "selected_factor_ids": [score.factor_id for score in selected],
+            "compiled_strategy_count": int(strategy_config_count),
             "style_exposure_coverage": {
                 "covered_candidates": len(covered),
                 "missing_candidates": len(final_scores) - len(covered),
@@ -1106,6 +1123,7 @@ def _single_candidate_evidence(score: FactorMiningScore) -> dict[str, Any]:
         "turnover": dict(score.turnover_profile),
         "generation_family": score.generation_family,
         "complexity_score": score.complexity_score,
+        "formula_signature": score.formula_signature,
         "max_abs_correlation_to_selected": round(score.max_abs_correlation_to_selected, 6),
         "redundant_with_factor_id": score.redundant_with_factor_id,
     }
@@ -1147,6 +1165,11 @@ def _aggregate_candidate_evidence(
         },
         "component_complexity": {
             score.factor_id: int(score.complexity_score) for score in scores
+        },
+        "component_formula_signatures": {
+            score.factor_id: score.formula_signature
+            for score in scores
+            if str(score.formula_signature).strip()
         },
     }
 

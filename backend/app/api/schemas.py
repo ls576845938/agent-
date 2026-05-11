@@ -171,8 +171,9 @@ class ResearchPromotionGateRequest(BaseBacktestRequest):
     register_experiment: bool = False
     experiment_name: str = ""
     notes: str = ""
-    max_scenarios: int = Field(default=2, ge=1, le=6)
+    max_scenarios: int = Field(default=8, ge=1, le=8)
     windows: int = Field(default=2, ge=1, le=8)
+    min_bars_by_interval: Dict[str, int] = Field(default_factory=dict)
     max_candidates: int = Field(default=1, ge=1, le=32)
     max_single_weight: float = Field(default=0.35, ge=0.05, le=1.0)
     correlation_penalty: float = Field(default=0.75, ge=0.0, le=2.0)

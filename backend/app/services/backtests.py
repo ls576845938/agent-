@@ -689,8 +689,10 @@ def _cost_stress_scenarios(max_scenarios: int) -> list[dict[str, Any]]:
         {"name": "fees_2x", "label": "手续费 2x", "commission_multiplier": 2.0, "slippage_multiplier": 1.0},
         {"name": "slippage_2x", "label": "滑点 2x", "commission_multiplier": 1.0, "slippage_multiplier": 2.0},
         {"name": "costs_2x", "label": "手续费+滑点 2x", "commission_multiplier": 2.0, "slippage_multiplier": 2.0},
-        {"name": "severe_3x", "label": "极端成本 3x", "commission_multiplier": 3.0, "slippage_multiplier": 3.0},
-        {"name": "stress_5x", "label": "压力上限 5x", "commission_multiplier": 5.0, "slippage_multiplier": 5.0},
+        {"name": "fees_3x_slippage_5x", "label": "手续费 3x + 滑点 5x", "commission_multiplier": 3.0, "slippage_multiplier": 5.0},
+        {"name": "slippage_5x", "label": "滑点 5x", "commission_multiplier": 1.0, "slippage_multiplier": 5.0},
+        {"name": "costs_5x", "label": "手续费+滑点 5x", "commission_multiplier": 5.0, "slippage_multiplier": 5.0},
+        {"name": "tail_10x", "label": "尾部成本冲击 10x", "commission_multiplier": 10.0, "slippage_multiplier": 10.0},
     ]
     return scenarios[: max(1, min(max_scenarios, len(scenarios)))]
 

@@ -141,6 +141,9 @@ def test_factor_mining_selects_low_redundancy_strategy_configs(
     assert persisted["run_id"] == result.run_id
     assert len(persisted["selected_factors"]) == 2
     assert persisted["manifest_evidence"]["selected_count"] == 2
+    assert persisted["manifest_evidence"]["compiled_strategy_count"] == len(
+        result.strategy_configs
+    )
 
     ranks = {
         (row["factor_id"], row["bar_size"]): row["candidate_rank"]
@@ -171,6 +174,22 @@ def test_factor_mining_selects_low_redundancy_strategy_configs(
         row["factor_id"] == "momentum_60d"
         and row["redundant_with_factor_id"] == "momentum_20d"
         for row in bar_report["redundant_candidates"]
+    )
+
+    compiled_logic = json.loads(
+        Path(result.strategy_logic_paths[0]).read_text(encoding="utf-8")
+    )
+    assert compiled_logic["schema_version"] == "research_strategy_artifact_v1"
+    assert compiled_logic["artifact_type"] == "research_strategy_logic_template"
+    assert compiled_logic["research_controls"]["promotion_status"] == "RESEARCH_ONLY"
+    assert compiled_logic["research_controls"]["paper_trading_enabled"] is False
+    assert compiled_logic["research_controls"]["live_trading_enabled"] is False
+    assert compiled_logic["safeguards"]["capacity"]
+    assert compiled_logic["safeguards"]["turnover"]
+    assert compiled_logic["safeguards"]["style_exposure"]
+    assert (
+        compiled_logic["validation_summary"]["status"]
+        == "pending_research_validation"
     )
 
 

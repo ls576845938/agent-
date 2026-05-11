@@ -66,6 +66,11 @@ class StrategyCandidateManifest:
     delisting_conditions: dict[str, Any] = field(default_factory=dict)
     contract_missing_reasons: dict[str, str] = field(default_factory=dict)
     promotion_result_path: str = ""
+    promotion_gate_decision: str = ""
+    promotion_gate_blocking_reasons: list[str] = field(default_factory=list)
+    promotion_gate_warning_reasons: list[str] = field(default_factory=list)
+    promotion_gate_needs_more_research: list[str] = field(default_factory=list)
+    promotion_gate_next_commands: list[str] = field(default_factory=list)
     evidence: dict[str, Any] = field(default_factory=dict)
     paper_review_evidence_required: bool = True
     portfolio_evidence_pack_id: str = ""
@@ -421,6 +426,15 @@ class StrategyManifestManager:
             **dict(manifest.cost_model),
             "validation_summary": cost_before_after,
         }
+        manifest.promotion_gate_decision = str(gate_result.decision or "")
+        manifest.promotion_gate_blocking_reasons = list(gate_result.reasons)
+        manifest.promotion_gate_warning_reasons = list(gate_result.warnings)
+        manifest.promotion_gate_needs_more_research = list(
+            getattr(gate_result, "needs_more_research", []) or []
+        )
+        manifest.promotion_gate_next_commands = list(
+            dict(gate_result.evidence or {}).get("next_commands", []) or []
+        )
         existing_evidence = dict(getattr(manifest, "evidence", {}) or {})
         existing_evidence["promotion_gate"] = {
             "candidate_id": str(
@@ -434,6 +448,9 @@ class StrategyManifestManager:
             ),
             "promotion_result_path": manifest.promotion_result_path,
             "validation_stats": validation_stats,
+            "next_commands": list(
+                dict(gate_result.evidence or {}).get("next_commands", []) or []
+            ),
         }
         manifest.evidence = existing_evidence
         experiment = self._load_raw_experiment(manifest.source_experiment_id) or {}
@@ -648,7 +665,12 @@ class StrategyManifestManager:
             return path
         if path.exists():
             return path
-        return self.data_root / path
+        data_relative = self.data_root / path
+        if data_relative.exists():
+            return data_relative
+        if path.parts and self.data_root.name and path.parts[0] == self.data_root.name:
+            return path
+        return data_relative
 
     def _build_sample_window(
         self,
