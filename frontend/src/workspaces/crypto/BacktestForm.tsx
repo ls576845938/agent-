@@ -25,16 +25,20 @@ export default function BacktestForm({
   return (
     <form className="panel control-panel" onSubmit={onSubmit}>
       <div className="panel-header">
-        <h2>运行配置</h2>
+        <h2>事件驱动回测</h2>
         <div className="mode-toggle">
-          <button type="button" className={mode === 'portfolio' ? 'active' : ''} onClick={() => onChangeMode('portfolio')}>组合回测</button>
-          <button type="button" className={mode === 'single' ? 'active' : ''} onClick={() => onChangeMode('single')}>单策略</button>
+          <button type="button" className={mode === 'portfolio' ? 'active' : ''} onClick={() => onChangeMode('portfolio')}>组合研究回测</button>
+          <button type="button" className={mode === 'single' ? 'active' : ''} onClick={() => onChangeMode('single')}>单策略 event-driven</button>
         </div>
+      </div>
+      <div className="hero-status" style={{marginBottom: 12}}>
+        <span className="status-chip">event-driven</span>
+        <span className="status-chip muted">SQLite / BTC</span>
       </div>
       <div className="form-grid">
         <label>数据源
           <select value={form.source} onChange={(e: ValueEvent) => onChangeForm({...form, source: e.target.value as FormState['source']})}>
-            <option value="fixture">Fixture</option><option value="auto">Auto</option><option value="sqlite">SQLite</option>
+            <option value="sqlite">SQLite</option><option value="auto">Auto</option><option value="fixture">Fixture</option>
           </select>
         </label>
         <label>标的<input value={form.symbol} onChange={(e: ValueEvent) => onChangeForm({...form, symbol: e.target.value})} /></label>
@@ -75,7 +79,7 @@ export default function BacktestForm({
           ))}
         </div>
       )}
-      <button type="submit" className="primary-button" disabled={loading}>{loading ? '运行中...' : '启动回测'}</button>
+      <button type="submit" className="primary-button" disabled={loading}>{loading ? '运行中...' : mode === 'single' ? '启动 event-driven 回测' : '启动组合研究回测'}</button>
     </form>
   );
 }

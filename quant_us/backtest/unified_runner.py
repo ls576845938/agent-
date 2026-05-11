@@ -16,7 +16,7 @@ import subprocess as _subprocess
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 
 import numpy as np
 import pandas as pd
@@ -39,8 +39,13 @@ from quant_us.backtest.commission import PercentCommission
 from quant_us.backtest.slippage import BpsSlippage
 from quant_us.backtest.turnover import TurnoverReport, compute_turnover
 from quant_us.core.calendar import USEquityCalendar
-from quant_us.core.types import new_id
+from quant_us.core.events import MarketEvent
+from quant_us.core.types import Bar, new_id
 from quant_us.data.storage.data_manifest import DataManifestStore
+from quant_us.portfolio.allocation import AllocationConfig
+from quant_us.portfolio.position_sizer import PositionSizerConfig
+from quant_us.portfolio.rebalance import RebalanceConfig
+from quant_us.risk.pre_trade import PreTradeRiskConfig
 from quant_us.strategies.base import Strategy
 
 
@@ -102,6 +107,10 @@ class UnifiedBacktestConfig:
     save_replay_path: str | None = None
     verify_determinism: bool = False
     adjustment_log: LedgerAdjustmentLog | None = None
+    risk: PreTradeRiskConfig = field(default_factory=PreTradeRiskConfig)
+    sizing: PositionSizerConfig = field(default_factory=PositionSizerConfig)
+    allocation: AllocationConfig = field(default_factory=AllocationConfig)
+    rebalance: RebalanceConfig = field(default_factory=RebalanceConfig)
     run_id: str = field(default_factory=lambda: new_id("ubt"))
 
 
@@ -130,13 +139,23 @@ class UnifiedBacktestRunner:
         data_version: str = "",
         strategy_version: str = "",
         bars_override: list | None = None,
+        market_events_override: Iterable[MarketEvent] | None = None,
     ) -> UnifiedBacktestResult:
         _random.seed(42)
         np.random.seed(42)
 
         start_dt = datetime.now(timezone.utc)
 
-        if bars_override is not None:
+        if market_events_override is not None and (bars_override is not None or frame is not None):
+            raise ValueError("Provide only one market input: frame, bars_override, or market_events_override")
+
+        if market_events_override is not None:
+            bars = []
+            for event in market_events_override:
+                if event.bar is None:
+                    raise ValueError("MarketEvent.bar is required")
+                bars.append(event.bar)
+        elif bars_override is not None:
             bars = list(bars_override)
         elif frame is not None:
             bars = bars_from_dataframe(frame)
@@ -176,6 +195,10 @@ class UnifiedBacktestRunner:
             commission_rate=self.config.commission_rate,
             slippage_bps=self.config.slippage_bps,
             run_id=self.config.run_id,
+            risk=self.config.risk,
+            sizing=self.config.sizing,
+            allocation=self.config.allocation,
+            rebalance=self.config.rebalance,
         )
         broker = self._build_broker()
         engine = EventDrivenBacktestEngine(
@@ -350,6 +373,14 @@ class UnifiedBacktestRunner:
             volume_participation_cap_pct=self.config.volume_participation_cap_pct,
             adjustment_log=self.config.adjustment_log,
         )
+
+    def connection_health(self) -> dict[str, object]:
+        broker = self._build_broker()
+        return {
+            "status": "ok",
+            "broker": getattr(broker, "broker_name", broker.__class__.__name__),
+            "market_prices": len(getattr(broker, "market_prices", {})),
+        }
 
 
 def compare_vectorized_vs_event_driven(

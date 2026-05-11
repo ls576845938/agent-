@@ -704,6 +704,14 @@ def _cost_stress_survives(summary: dict[str, float | int]) -> bool:
     )
 
 
+def _is_crypto_cost_stress_request(request: dict[str, Any], symbol: str) -> bool:
+    asset_class = str(request.get("asset_class", "")).strip().lower()
+    if asset_class == "crypto":
+        return True
+    normalized = symbol.upper().replace("/", "").replace("-", "")
+    return normalized in {"BTCUSD", "BTCUSDT", "ETHUSD", "ETHUSDT"} or normalized.endswith(("USDT", "USDC"))
+
+
 def _build_cost_stress_recommendations(rows: list[dict[str, Any]]) -> list[str]:
     if not rows:
         return ["没有生成压力测试场景，请检查输入数据范围。"]
@@ -1341,6 +1349,38 @@ class ResearchBacktestService:
     def list_strategies(self) -> list[StrategyDescriptor]:
         return strategy_registry.list_descriptors()
 
+    def run_crypto_event(self, request: dict[str, Any]) -> BacktestArtifacts:
+        from quant_us.backtest.crypto_event import run_crypto_event_backtest
+
+        result = run_crypto_event_backtest(
+            source=request.get("source", settings.default_data_source),
+            symbol=request.get("symbol", settings.default_symbol),
+            interval=request.get("interval", settings.default_interval),
+            start=request["start"],
+            end=request["end"],
+            strategy_id=request["strategy_id"],
+            params=request.get("strategy_params", {}),
+            capital=float(request.get("capital", settings.default_capital)),
+            commission_rate=float(request.get("commission_rate", settings.default_commission_rate)),
+            slippage_bps=float(request.get("slippage", settings.default_slippage)),
+            sqlite_path=str(request.get("data_db_path", "")),
+            db_path=str(request.get("data_db_path", "")),
+            target_weight=min(0.98, max(0.0, float(request.get("target_weight", 0.90)))),
+            min_cash_buffer_pct=(
+                None if request.get("min_cash_buffer_pct") is None else float(request.get("min_cash_buffer_pct"))
+            ),
+            min_trade_notional=float(request.get("min_trade_notional", 25.0)),
+            long_only=True,
+        )
+        return BacktestArtifacts(
+            mode=result.mode,
+            summary=result.summary,
+            chart=result.chart,
+            strategy_details=result.strategy_details,
+            latest_weights=result.latest_weights,
+            diagnostics=result.diagnostics,
+        )
+
     def run_single(self, request: dict[str, Any]) -> BacktestArtifacts:
         config = SimulationConfig(
             mode="single",
@@ -1552,6 +1592,7 @@ class ResearchBacktestService:
 
     def run_walk_forward(self, request: dict[str, Any]) -> dict[str, Any]:
         from quant_us.backtest.data_bridge import bars_from_dataframe
+        from quant_us.backtest.crypto_event import _crypto_execution_settings, _with_crypto_execution_config
         from quant_us.backtest.unified_runner import UnifiedBacktestConfig
         from quant_us.backtest.walk_forward import WalkForwardConfig, run_walk_forward_unified
         from quant_us.core.enums import SignalDirection
@@ -1574,6 +1615,7 @@ class ResearchBacktestService:
         # Per-symbol walk-forward
         all_windows: list[dict[str, Any]] = []
         all_regimes: list[dict[str, Any]] = []
+        unified_window_results: list[Any] = []
         symbol_results: dict[str, dict[str, Any]] = {}
         insufficient_symbols: list[str] = []
 
@@ -1626,19 +1668,27 @@ class ResearchBacktestService:
 
                 def on_bar(self, event: MarketEvent, context: StrategyContext):
                     sig = signal_lookup.get(event.timestamp_utc, 0.0)
-                    if abs(sig) > 0:
-                        direction = SignalDirection.LONG if sig > 0 else SignalDirection.SHORT
-                        return [
-                            Signal(
-                                timestamp_utc=event.timestamp_utc,
-                                strategy_id=_wf_strategy_id,
-                                symbol=event.bar.symbol,
-                                direction=direction,
-                                strength=abs(sig),
-                                horizon="1b",
-                            )
-                        ]
-                    return []
+                    if sig > 0:
+                        direction = SignalDirection.LONG
+                        strength = min(1.0, abs(sig))
+                    elif sig < 0:
+                        direction = SignalDirection.SHORT
+                        strength = min(1.0, abs(sig))
+                    else:
+                        direction = SignalDirection.FLAT
+                        strength = 1.0
+                    return [
+                        Signal(
+                            timestamp_utc=event.timestamp_utc,
+                            strategy_id=_wf_strategy_id,
+                            symbol=event.bar.symbol,
+                            direction=direction,
+                            strength=strength,
+                            horizon="1b",
+                            reason="walk_forward_signal_replay",
+                            metadata={"raw_signal": sig},
+                        )
+                    ]
 
             _WfSignalStrategy.strategy_id = f"wf_{_wf_strategy_id}"
 
@@ -1656,6 +1706,17 @@ class ResearchBacktestService:
                 slippage_bps=config.slippage,
                 run_id=f"wf_{strategy_id}_{symbol}",
             )
+            if _is_crypto_cost_stress_request({**request, "asset_class": request.get("asset_class", "")}, symbol):
+                execution_settings = _crypto_execution_settings(
+                    target_weight=min(0.98, max(0.0, float(request.get("target_weight", 0.90)))),
+                    min_cash_buffer_pct=float(request.get("min_cash_buffer_pct", 0.0)),
+                    min_trade_notional=float(request.get("min_trade_notional", 25.0)),
+                    long_only=True,
+                )
+                unified_config = _with_crypto_execution_config(
+                    unified_config,
+                    execution_settings=execution_settings,
+                )
 
             wf_results = run_walk_forward_unified(
                 bars=bars,
@@ -1663,6 +1724,7 @@ class ResearchBacktestService:
                 wf_config=wf_config,
                 unified_config=unified_config,
             )
+            unified_window_results.extend(wf_results)
 
             symbol_folds: list[dict[str, Any]] = []
             for fold, result in enumerate(wf_results, start=1):
@@ -1747,6 +1809,7 @@ class ResearchBacktestService:
             from quant_us.backtest.walk_forward import WalkForwardAggregate
 
             wf_aggregate = WalkForwardAggregate(
+                windows=unified_window_results,
                 total_windows=total_folds,
                 windows_consistent=consistent_count,
                 oos_total_return_pct=float(stability.get("avg_oos_return_pct", 0.0)),
@@ -1971,6 +2034,7 @@ class ResearchBacktestService:
         Registry strategies are adapted via _prepare_strategy_pack signal replay so
         this path is not tied to a specific quant_us Strategy implementation.
         """
+        from quant_us.backtest.crypto_event import run_crypto_event_backtest
         from quant_us.backtest.unified_runner import UnifiedBacktestConfig, UnifiedBacktestRunner
 
         strategy_id = str(request.get("strategy_id", "trend_momentum"))
@@ -1978,6 +2042,7 @@ class ResearchBacktestService:
         symbol = str(request.get("symbol", settings.default_symbol))
         interval = str(request.get("interval", settings.default_interval))
         initial_cash = float(request.get("capital", settings.default_capital))
+        is_crypto = _is_crypto_cost_stress_request(request, symbol)
 
         frame = load_market_frame(
             source=request.get("source", settings.default_data_source),
@@ -1992,6 +2057,10 @@ class ResearchBacktestService:
 
         base_commission = float(request.get("commission_rate", settings.default_commission_rate))
         base_slippage = float(request.get("slippage", settings.default_slippage))
+        target_weight = min(0.98, max(0.0, float(request.get("target_weight", 0.90 if is_crypto else 0.10))))
+        min_cash_buffer_pct = request.get("min_cash_buffer_pct")
+        min_trade_notional = float(request.get("min_trade_notional", 25.0))
+        long_only = True if is_crypto else bool(request.get("long_only", True))
 
         scenarios = _cost_stress_scenarios(int(request.get("max_scenarios", 5)))
         results: list[dict[str, Any]] = []
@@ -1999,29 +2068,70 @@ class ResearchBacktestService:
         ledger_consistent_count = 0
         total_fill_count = 0
         total_order_count = 0
+        crypto_signal = signal.copy()
+        crypto_signal.index = pd.to_datetime(crypto_signal.index, utc=True)
+
+        def replay_signal_provider(loaded_frame: pd.DataFrame, _strategy_id: str, _params: dict[str, Any]) -> pd.Series:
+            loaded_index = pd.to_datetime(loaded_frame.index, utc=True)
+            return crypto_signal.reindex(loaded_index).fillna(0.0).clip(-1.0, 1.0)
 
         for scenario_def in scenarios:
-            scenario_config = UnifiedBacktestConfig(
-                initial_cash=initial_cash,
-                commission_rate=base_commission * float(scenario_def["commission_multiplier"]),
-                slippage_bps=base_slippage * float(scenario_def["slippage_multiplier"]),
-                run_id=f"ed_cost_{strategy_id}_{scenario_def['name']}",
-            )
-            runner = UnifiedBacktestRunner(config=scenario_config)
-            result = runner.run(
-                strategies=[RegistrySignalReplayStrategy(strategy_id=strategy_id, signal=signal)],
-                frame=frame,
-                data_version=str(request.get("data_version", "")),
-                strategy_version=f"{strategy_id}:registry_signal_replay_v1",
-            )
-            event_summary = result.summary
-            summary = {
-                "total_return_pct": float(event_summary.get("total_return_pct", 0.0)),
-                "sharpe_ratio": float(event_summary.get("sharpe_ratio", 0.0)),
-                "max_drawdown_pct": float(event_summary.get("max_drawdown_pct", 0.0)),
-                "profit_factor": float(event_summary.get("profit_factor", 0.0)),
-                "trade_count": int(event_summary.get("trade_count", 0)),
-            }
+            if is_crypto:
+                scenario_result = run_crypto_event_backtest(
+                    source=request.get("source", settings.default_data_source),
+                    symbol=symbol,
+                    interval=interval,
+                    start=request["start"],
+                    end=request["end"],
+                    strategy_id=strategy_id,
+                    params=strategy_params,
+                    capital=initial_cash,
+                    commission_rate=base_commission * float(scenario_def["commission_multiplier"]),
+                    slippage_bps=base_slippage * float(scenario_def["slippage_multiplier"]),
+                    sqlite_path=str(request.get("data_db_path", "")),
+                    db_path=str(request.get("data_db_path", "")),
+                    data_version=str(request.get("data_version", "")),
+                    strategy_version=f"{strategy_id}:registry_signal_replay_v1",
+                    market_loader=lambda **_kwargs: frame.copy(),
+                    signal_provider=replay_signal_provider,
+                    target_weight=target_weight,
+                    min_cash_buffer_pct=None if min_cash_buffer_pct is None else float(min_cash_buffer_pct),
+                    min_trade_notional=min_trade_notional,
+                    long_only=long_only,
+                    run_id=f"ed_cost_{strategy_id}_{scenario_def['name']}",
+                )
+                result = scenario_result.unified
+                summary = scenario_result.summary
+                commission_rate = base_commission * float(scenario_def["commission_multiplier"])
+                slippage_bps = base_slippage * float(scenario_def["slippage_multiplier"])
+                connection_health = scenario_result.diagnostics.get("connection_health", {})
+                execution_config = scenario_result.diagnostics.get("execution_config", {})
+            else:
+                scenario_config_obj = UnifiedBacktestConfig(
+                    initial_cash=initial_cash,
+                    commission_rate=base_commission * float(scenario_def["commission_multiplier"]),
+                    slippage_bps=base_slippage * float(scenario_def["slippage_multiplier"]),
+                    run_id=f"ed_cost_{strategy_id}_{scenario_def['name']}",
+                )
+                runner = UnifiedBacktestRunner(config=scenario_config_obj)
+                connection_health = runner.connection_health()
+                result = runner.run(
+                    strategies=[RegistrySignalReplayStrategy(strategy_id=strategy_id, signal=signal)],
+                    frame=frame,
+                    data_version=str(request.get("data_version", "")),
+                    strategy_version=f"{strategy_id}:registry_signal_replay_v1",
+                )
+                event_summary = result.summary
+                summary = {
+                    "total_return_pct": float(event_summary.get("total_return_pct", 0.0)),
+                    "sharpe_ratio": float(event_summary.get("sharpe_ratio", 0.0)),
+                    "max_drawdown_pct": float(event_summary.get("max_drawdown_pct", 0.0)),
+                    "profit_factor": float(event_summary.get("profit_factor", 0.0)),
+                    "trade_count": int(event_summary.get("trade_count", 0)),
+                }
+                commission_rate = scenario_config_obj.commission_rate
+                slippage_bps = scenario_config_obj.slippage_bps
+                execution_config = {}
             if baseline_summary is None:
                 baseline_summary = summary
 
@@ -2038,8 +2148,8 @@ class ResearchBacktestService:
                 {
                     **scenario_def,
                     "engine": "event_driven",
-                    "commission_rate": round(scenario_config.commission_rate, 8),
-                    "slippage_bps": round(scenario_config.slippage_bps, 4),
+                    "commission_rate": round(float(commission_rate), 8),
+                    "slippage_bps": round(float(slippage_bps), 4),
                     "survives": survives,
                     "summary": summary,
                     "execution": {
@@ -2047,7 +2157,11 @@ class ResearchBacktestService:
                         "orders": order_count,
                         "fills": fill_count,
                         "ledger_equity_consistent": result.equity_consistent,
+                        "pnl_source": result.evidence.get("pnl", {}).get("source", "ledger_fills"),
+                        "connection_health": connection_health,
+                        "execution_config": execution_config,
                     },
+                    "execution_config": execution_config,
                     "fill_count": fill_count,
                     "order_count": order_count,
                     "ledger_equity_consistent": result.equity_consistent,
@@ -2076,6 +2190,8 @@ class ResearchBacktestService:
             "strategy_params": strategy_params,
             "symbol": symbol,
             "interval": interval,
+            "asset_class": "crypto" if is_crypto else "equity",
+            "execution_config": results[0]["execution_config"] if results else {},
             "baseline": results[0] if results else None,
             "scenarios": results,
             "survival_rate_pct": round(survival_rate, 4),

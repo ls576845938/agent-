@@ -1,5 +1,6 @@
 import type {DatabaseStatusResponse, KlinePreviewResponse, DataSyncRunResponse, SchedulerStatusResponse} from '../../lib/view-model';
 import type {ValueEvent} from '../../lib/shared-types';
+import type {CryptoCoverageSummary, CryptoInterval, CryptoResamplePlanItem} from '../../lib/shared-types';
 import {formatIso, formatPrice} from '../../lib/utils';
 
 type DataFormState = {
@@ -13,11 +14,15 @@ interface DataManagerProps {
   klinePreview: KlinePreviewResponse | null;
   syncRuns: DataSyncRunResponse[];
   scheduler: SchedulerStatusResponse | null;
+  coverageSummary: CryptoCoverageSummary;
+  resamplePlan: CryptoResamplePlanItem[];
   dataLoading: boolean;
   dataMessage: string;
   onChangeDataForm: (form: DataFormState) => void;
   onRefresh: () => void;
   onSync: () => void;
+  onResampleInterval: (interval: CryptoInterval) => void;
+  onResampleChain: () => void;
   onUpdateLatest: () => void;
   onStartScheduler: () => void;
   onStopScheduler: () => void;
@@ -27,16 +32,23 @@ export type {DataFormState};
 
 export default function DataManager({
   dataForm, database, klinePreview, syncRuns, scheduler,
+  coverageSummary, resamplePlan,
   dataLoading, dataMessage,
-  onChangeDataForm, onRefresh, onSync, onUpdateLatest,
+  onChangeDataForm, onRefresh, onSync, onResampleInterval, onResampleChain, onUpdateLatest,
   onStartScheduler, onStopScheduler,
 }: DataManagerProps) {
   return (
-    <section className="panel data-panel">
-      <div className="panel-header"><h2>数据管理</h2><span>{database?.initialized ? 'SQLite 已就绪' : '等待初始化'}</span></div>
+    <section className="panel data-panel" data-testid="crypto-data-panel">
+      <div className="panel-header">
+        <h2>数据管理</h2>
+        <span>{database?.initialized ? 'SQLite 已就绪' : '等待初始化'}</span>
+      </div>
       <div className="data-status-grid">
         <div><span>数据库</span><strong>{database?.exists ? '已创建' : '未创建'}</strong></div>
-        <div><span>覆盖组合</span><strong>{database?.coverage.length ?? 0}</strong></div>
+        <div><span>覆盖组合</span><strong>{coverageSummary.covered_intervals}</strong></div>
+        <div><span>总行数</span><strong>{coverageSummary.total_rows.toLocaleString('en-US')}</strong></div>
+        <div><span>缺口</span><strong>{coverageSummary.missing_intervals.length ? coverageSummary.missing_intervals.join('/') : '无'}</strong></div>
+        <div><span>最近更新</span><strong>{coverageSummary.latest_updated_at ? formatIso(coverageSummary.latest_updated_at) : '未知'}</strong></div>
         <div><span>日更任务</span><strong>{scheduler?.running ? '运行中' : '停止'}</strong></div>
       </div>
 
@@ -60,11 +72,25 @@ export default function DataManager({
       <div className="data-actions">
         <button type="button" className="secondary-button" disabled={dataLoading} onClick={onSync}>下载区间</button>
         <button type="button" className="secondary-button" disabled={dataLoading} onClick={onUpdateLatest}>更新到最新</button>
+        <button type="button" className="secondary-button" disabled={dataLoading} onClick={onResampleChain}>1m→1d 重采样链</button>
         <button type="button" className="secondary-button" disabled={dataLoading || scheduler?.running} onClick={onStartScheduler}>启动日更</button>
         <button type="button" className="secondary-button danger" disabled={dataLoading || !scheduler?.running} onClick={onStopScheduler}>停止日更</button>
       </div>
 
       {dataMessage ? <p className="data-message">{dataMessage}</p> : null}
+
+      <div className="coverage-list" data-testid="crypto-sqlite-coverage">
+        {resamplePlan.map((item) => (
+          <div key={item.target_interval} className={`coverage-row coverage-${item.status}`}>
+            <strong>{item.symbol} {item.target_interval}</strong>
+            <span>{item.rows.toLocaleString('en-US')} 根</span>
+            <span>{item.action}</span>
+            <button type="button" className="ghost-button" disabled={dataLoading} onClick={() => onResampleInterval(item.target_interval)}>
+              {item.status === 'ready' ? '重采样' : item.status === 'seed' ? '刷新 1m' : '补齐'}
+            </button>
+          </div>
+        ))}
+      </div>
 
       <div className="coverage-list">
         {(database?.coverage ?? []).slice(0, 4).map((item) => (

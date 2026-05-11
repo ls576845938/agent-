@@ -147,7 +147,10 @@ class ResearchPromotionGateService:
             interval=base_request["interval"],
             asset_class=str(request.get("asset_class") or self._asset_class(base_request["symbol"])),
         )
-        data_manifest_validation = validate_manifest_for_promotion(data_manifest)
+        data_manifest_validation = validate_manifest_for_promotion(
+            data_manifest,
+            allow_asset_classes={"equity", "crypto"},
+        )
 
         if mode == "single":
             strategy_id = request.get("strategy_id") or "trend_macd"
@@ -156,7 +159,10 @@ class ResearchPromotionGateService:
                 "strategy_id": strategy_id,
                 "strategy_params": dict(request.get("strategy_params", {}) or {}),
             }
-            artifacts = self.research_service.run_single(backtest_request)
+            if self._asset_class(base_request["symbol"]) == "crypto":
+                artifacts = self.research_service.run_crypto_event(backtest_request)
+            else:
+                artifacts = self.research_service.run_single(backtest_request)
         else:
             backtest_request = {
                 **base_request,
@@ -268,7 +274,7 @@ class ResearchPromotionGateService:
         }
 
     def _base_backtest_request(self, request: dict[str, Any]) -> dict[str, Any]:
-        return {
+        base = {
             "source": request.get("source", settings.default_data_source),
             "symbol": request.get("symbol", settings.default_symbol),
             "interval": request.get("interval", settings.default_interval),
@@ -281,6 +287,18 @@ class ResearchPromotionGateService:
             "position_basis": str(request.get("position_basis", "equity")),
             "data_db_path": str(request.get("data_db_path", "")),
         }
+        asset_class = str(request.get("asset_class") or self._asset_class(str(base["symbol"])))
+        base["asset_class"] = asset_class
+        if asset_class == "crypto":
+            target_weight = min(0.98, max(0.0, float(request.get("target_weight", 0.90))))
+            base["target_weight"] = target_weight
+            base["min_cash_buffer_pct"] = round(
+                max(0.02, 1.0 - target_weight, float(request.get("min_cash_buffer_pct", 0.0))),
+                8,
+            )
+            base["min_trade_notional"] = float(request.get("min_trade_notional", 25.0))
+            base["long_only"] = bool(request.get("long_only", True))
+        return base
 
     def _weights(self, request: dict[str, Any]) -> list[dict[str, float | str]]:
         weights = [
@@ -371,17 +389,23 @@ class ResearchPromotionGateService:
         symbol = str(base_request.get("symbol", "")).upper()
         asset_class = str(request.get("asset_class") or self._asset_class(symbol)).lower()
         allowed_sources = {"yfinance", "alpaca", "sqlite"}
+        allowed_asset_classes = {"equity", "crypto"}
         fixture_used = requested_source == "fixture" or actual_source == "fixture"
-        failed = fixture_used or asset_class != "equity" or actual_source not in allowed_sources
-        warned = not failed and (requested_source == "auto" or actual_source == "sqlite")
+        crypto_source_invalid = asset_class == "crypto" and actual_source != "sqlite"
+        failed = fixture_used or asset_class not in allowed_asset_classes or actual_source not in allowed_sources or crypto_source_invalid
+        warned = not failed and asset_class == "equity" and (requested_source == "auto" or actual_source == "sqlite")
         if fixture_used:
             message = "晋级证据不能来自 fixture 数据；fixture 只允许用于本地测试或演示。"
-        elif asset_class != "equity":
-            message = "晋级证据必须限定在美股 equity 范围，crypto/非 equity 标的不得进入 paper candidate。"
+        elif asset_class not in allowed_asset_classes:
+            message = "晋级证据必须限定在受治理的 equity 或 crypto 范围。"
         elif actual_source not in allowed_sources:
             message = "晋级证据来源不在受支持的数据谱系中。"
+        elif crypto_source_invalid:
+            message = "BTC/crypto paper candidate 只接受受治理 SQLite 数据；fixture/auto/yfinance 不能晋级。"
         elif warned:
             message = "数据来源可研究使用，但进入 paper candidate 前需要显式的 yfinance/Alpaca 或受治理 SQLite 证据确认。"
+        elif asset_class == "crypto":
+            message = "BTC/crypto 晋级证据限定为受治理 SQLite 数据，且未使用 fixture。"
         else:
             message = "晋级证据限定在 US equity 数据谱系内，且未使用 fixture。"
         return _gate(
@@ -394,9 +418,11 @@ class ResearchPromotionGateService:
                 "symbol": symbol,
                 "asset_class": asset_class,
                 "fixture_used": fixture_used,
+                "crypto_source_invalid": crypto_source_invalid,
                 "allowed_actual_sources": sorted(allowed_sources),
+                "allowed_asset_classes": sorted(allowed_asset_classes),
             },
-            threshold="paper candidate requires US equity evidence and no fixture fallback; auto/sqlite evidence stays research_iteration until explicitly governed",
+            threshold="paper candidate requires no fixture fallback; equity allows yfinance/alpaca/sqlite, BTC/crypto requires governed sqlite data",
         )
 
     def _backtest_survival_gate(self, summary: dict[str, float | int], interval: str = "1d", mode: str = "single") -> dict[str, Any]:
@@ -407,14 +433,19 @@ class ResearchPromotionGateService:
         trade_count = int(summary.get("trade_count", 0))
         signal_count = int(summary.get("signal_count", trade_count))
         is_low_frequency = interval in ("1d", "4h", "1w") or mode == "portfolio"
-        if is_low_frequency:
-            failed = total_return <= 0 or max_drawdown <= -25 or sharpe < 0 or profit_factor < 0.5 or trade_count < 3
-            warned = sharpe < 0.5 or profit_factor < 1.2 or max_drawdown <= -15 or trade_count < 5
-            criteria = f"low_frequency_profile: return>0,sharpe>=0,pf>=0.5,mdd>-25%,trades>=3 (interval={interval})"
+        if trade_count <= 0:
+            failed = True
+            warned = False
+            criteria = "paper_candidate requires trade_count>0"
         else:
-            failed = total_return <= 0 or max_drawdown <= -25 or sharpe < 0 or profit_factor < 0.5 or trade_count < 10
-            warned = sharpe < 0.5 or profit_factor < 1.2 or max_drawdown <= -15 or trade_count < 30
-            criteria = f"standard_profile: return>0,sharpe>=0,pf>=0.5,mdd>-25%,trades>=10 (interval={interval})"
+            if is_low_frequency:
+                failed = total_return <= 0 or max_drawdown <= -25 or sharpe < 0 or profit_factor < 0.5 or trade_count < 3
+                warned = sharpe < 0.5 or profit_factor < 1.2 or max_drawdown <= -15 or trade_count < 5
+                criteria = f"low_frequency_profile: return>0,sharpe>=0,pf>=0.5,mdd>-25%,trades>=3 (interval={interval})"
+            else:
+                failed = total_return <= 0 or max_drawdown <= -25 or sharpe < 0 or profit_factor < 0.5 or trade_count < 10
+                warned = sharpe < 0.5 or profit_factor < 1.2 or max_drawdown <= -15 or trade_count < 30
+                criteria = f"standard_profile: return>0,sharpe>=0,pf>=0.5,mdd>-25%,trades>=10 (interval={interval})"
         return _gate(
             name="backtest_survival",
             status=_gate_status(failed=failed, warned=warned),
@@ -475,6 +506,11 @@ class ResearchPromotionGateService:
     def _single_deep_checks(self, request: dict[str, Any], base_request: dict[str, Any]) -> dict[str, Any]:
         strategy_id = request.get("strategy_id") or "trend_macd"
         strategy_params = dict(request.get("strategy_params", {}) or {})
+        default_symbols = (
+            [str(base_request["symbol"]).upper()]
+            if self._asset_class(base_request["symbol"]) == "crypto"
+            else ["SPY", "QQQ", "IWM", "DIA"]
+        )
         cost = self.research_service.run_event_driven_cost_stress(
             {
                 **base_request,
@@ -490,7 +526,7 @@ class ResearchPromotionGateService:
                 "strategy_params": strategy_params,
                 "windows": min(int(request.get("windows", 2)), 3),
                 "max_candidates": min(int(request.get("max_candidates", 1)), 3),
-                "symbols": request.get("symbols") or ["SPY", "QQQ", "IWM", "DIA"],
+                "symbols": request.get("symbols") or default_symbols,
             }
         )
         # Safely extract stability metrics; walk-forward may return error/insufficient data

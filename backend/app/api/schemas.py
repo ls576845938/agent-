@@ -203,6 +203,69 @@ class ResearchPromotionGateResponse(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
 
 
+class CryptoClosureRequest(BaseBacktestRequest):
+    source: str = "sqlite"
+    symbol: str = "BTCUSDT"
+    interval: str = "1h"
+    target_intervals: List[str] = Field(default_factory=lambda: ["5m", "15m", "1h", "4h", "1d"])
+    strategy_ids: List[str] = Field(
+        default_factory=lambda: [
+            "trend_macd",
+            "donchian_breakout",
+            "reversion_rsi",
+            "volatility_squeeze",
+            "macro_trend",
+            "dynamic_grid",
+            "time_window",
+        ]
+    )
+    max_candidates_per_strategy: int = Field(default=4, ge=1, le=12)
+    max_ranked_candidates: int = Field(default=8, ge=1, le=20)
+    max_scenarios: int = Field(default=2, ge=1, le=6)
+    windows: int = Field(default=2, ge=1, le=8)
+    persist_data_manifest: bool = True
+    persist_manifest: bool = True
+    register_experiment: bool = True
+    experiment_name: str = ""
+    notes: str = ""
+
+    @field_validator("source")
+    @classmethod
+    def validate_crypto_closure_source(cls, value: str) -> str:
+        if value != "sqlite":
+            raise ValueError("BTC closure currently requires governed sqlite data")
+        return value
+
+    @field_validator("target_intervals")
+    @classmethod
+    def validate_crypto_target_intervals(cls, value: List[str]) -> List[str]:
+        allowed = {"5m", "15m", "1h", "4h", "1d"}
+        invalid = [item for item in value if item not in allowed]
+        if invalid:
+            raise ValueError(f"target_intervals must be in {sorted(allowed)}")
+        return value
+
+
+class CryptoClosureResponse(BaseModel):
+    status: str
+    selected_priority: str
+    symbol: str
+    source: str
+    interval: str
+    target_intervals: List[str] = Field(default_factory=list)
+    data_integrity: Dict[str, Any] = Field(default_factory=dict)
+    candidate_screen: Dict[str, Any] = Field(default_factory=dict)
+    selected_candidate: Optional[Dict[str, Any]] = None
+    event_backtest: Dict[str, Any] = Field(default_factory=dict)
+    cost_stress: Dict[str, Any] = Field(default_factory=dict)
+    walk_forward: Dict[str, Any] = Field(default_factory=dict)
+    promotion_gate: Dict[str, Any] = Field(default_factory=dict)
+    decision: str
+    next_stage: str
+    blockers: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)
+
+
 class BacktestSummary(BaseModel):
     total_return_pct: float
     annual_return_pct: float
@@ -388,6 +451,47 @@ class LatestDataUpdateRequest(BaseModel):
         return value
 
 
+class CryptoResampleRequest(BaseModel):
+    exchange: str = "binance_spot"
+    symbol: str = "BTCUSDT"
+    source_interval: str = "1m"
+    target_interval: str = "1h"
+    start: Optional[datetime] = None
+    end: Optional[datetime] = None
+    db_path: str = ""
+    persist_manifest: bool = True
+
+    @field_validator("exchange")
+    @classmethod
+    def validate_resample_exchange(cls, value: str) -> str:
+        if value != "binance_spot":
+            raise ValueError("only binance_spot is supported by the built-in resampler")
+        return value
+
+    @field_validator("source_interval")
+    @classmethod
+    def validate_source_interval(cls, value: str) -> str:
+        if value != "1m":
+            raise ValueError("source_interval must be 1m")
+        return value
+
+    @field_validator("target_interval")
+    @classmethod
+    def validate_target_interval(cls, value: str) -> str:
+        allowed = {"5m", "15m", "1h", "4h", "1d"}
+        if value not in allowed:
+            raise ValueError(f"target_interval must be one of {sorted(allowed)}")
+        return value
+
+    @field_validator("end")
+    @classmethod
+    def validate_resample_dates(cls, value: Optional[datetime], info: Any) -> Optional[datetime]:
+        start = info.data.get("start")
+        if value is not None and start is not None and value <= start:
+            raise ValueError("end must be later than start")
+        return value
+
+
 class DataSyncRunResponse(BaseModel):
     run_id: str
     status: str
@@ -403,6 +507,27 @@ class DataSyncRunResponse(BaseModel):
     created_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     error: Optional[str] = None
+
+
+class CryptoResampleResponse(BaseModel):
+    status: str
+    db_path: str
+    exchange: str
+    symbol: str
+    source_interval: str
+    target_interval: str
+    start: datetime
+    end: datetime
+    source_rows: int
+    expected_source_rows: int
+    rows_written: int
+    coverage_pct: float
+    quality_score: float
+    manifest_path: str = ""
+    data_version: str = ""
+    fingerprint: str = ""
+    completed_at: Optional[datetime] = None
+    quality_summary: Dict[str, int] = Field(default_factory=dict)
 
 
 class DataCoverageItem(BaseModel):

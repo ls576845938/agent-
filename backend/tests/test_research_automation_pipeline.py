@@ -547,6 +547,22 @@ class TestResearchAutomationPipeline(unittest.TestCase):
                 "param_stability_score": 0.8,
                 "correlation_redundancy": 0.2,
                 "stress_survival_rate": 0.9,
+                "estimated_capacity_usd": 1_000_000.0,
+                "fragility_score": 0.12,
+                "turnover": 0.35,
+                "annual_turnover_pct": 120.0,
+                "expected_holding_period": "5d",
+                "avg_holding_period": 5.0,
+                "avg_exposure": 0.72,
+                "max_gross_exposure_pct": 100.0,
+                "max_single_symbol_exposure_pct": 100.0,
+                "style_exposure": {
+                    "observations": 60,
+                    "betas": {"MKT": 1.0, "SMB": 0.1},
+                    "benchmark_columns": ["MKT", "SMB"],
+                    "r_squared": 0.82,
+                },
+                "failure_conditions": ["manual_review_if_oos_sharpe_below_zero"],
             },
         }
         if inline_backtest_manifest is not None:
@@ -566,6 +582,13 @@ class TestResearchAutomationPipeline(unittest.TestCase):
                     "data_version": data_version,
                     "symbols": ["AAPL"],
                     "asset_class": "equity",
+                    "start_date": "2024-01-01T00:00:00+00:00",
+                    "end_date": "2024-02-01T00:00:00+00:00",
+                    "timeframe": "1d",
+                    "cost_model": "fixed_bps",
+                    "slippage_model": "fixed_bps",
+                    "delisting_policy": "manual_review_required",
+                    "failure_conditions": ["manual_review_if_oos_sharpe_below_zero"],
                     "param_grid": {
                         "lookback": [10, 20, 40],
                         "threshold": [0.1, 0.2],
@@ -575,7 +598,22 @@ class TestResearchAutomationPipeline(unittest.TestCase):
             encoding="utf-8",
         )
         (scorecard_dir / f"{candidate_id}.json").write_text(
-            json.dumps({"candidate_id": candidate_id, "status": "ok"}),
+            json.dumps(
+                {
+                    "candidate_id": candidate_id,
+                    "status": "ok",
+                    "capacity_usd": 1_000_000.0,
+                    "fragility_score": 0.12,
+                    "avg_holding_period": 5.0,
+                    "turnover": 0.35,
+                    "sector_exposures": {"technology": 1.0},
+                    "style_exposure": {
+                        "observations": 60,
+                        "betas": {"MKT": 1.0, "SMB": 0.1},
+                        "benchmark_columns": ["MKT", "SMB"],
+                    },
+                }
+            ),
             encoding="utf-8",
         )
         (strategy_manifest_dir / "manifest.json").write_text(
@@ -586,6 +624,63 @@ class TestResearchAutomationPipeline(unittest.TestCase):
                     "source_experiment_id": experiment_id,
                     "promotion_status": "DRAFT",
                     "params_frozen": True,
+                    "data_version": data_version,
+                    "sample_window": {
+                        "start": "2024-01-01T00:00:00+00:00",
+                        "end": "2024-02-01T00:00:00+00:00",
+                        "timeframe": "1d",
+                    },
+                    "purge_embargo": {
+                        "purged": True,
+                        "embargo_bars": 2,
+                    },
+                    "trial_id": candidate_id,
+                    "trial_count": 6,
+                    "pbo": 0.12,
+                    "dsr": 0.8,
+                    "cpcv": {
+                        "method": "cpcv",
+                        "purged": True,
+                        "embargoed": True,
+                        "embargo_steps": 2,
+                        "fold_count": 4,
+                        "path_count": 6,
+                        "pass_rate": 0.9,
+                    },
+                    "cost_model": {"name": "fixed_bps", "commission_rate": 0.0001},
+                    "slippage_model": {"name": "fixed_bps", "slippage_bps": 1.0},
+                    "cost_stress": {
+                        "status": "completed",
+                        "stress_survival_rate": 0.9,
+                        "cost_sensitivity": 0.1,
+                        "level_count": 3,
+                    },
+                    "style_exposure": {
+                        "observations": 60,
+                        "betas": {"MKT": 1.0, "SMB": 0.1},
+                        "benchmark_columns": ["MKT", "SMB"],
+                    },
+                    "capacity": {
+                        "estimated_capacity_usd": 1_000_000.0,
+                        "fragility_score": 0.12,
+                    },
+                    "turnover": {"annual_turnover_pct": 120.0, "trade_count": 12},
+                    "holding_period": {
+                        "expected": "5d",
+                        "avg_holding_period": 5.0,
+                    },
+                    "exposure_limits": {
+                        "avg_exposure": 0.72,
+                        "max_gross_exposure_pct": 100.0,
+                        "max_single_symbol_exposure_pct": 100.0,
+                    },
+                    "failure_conditions": ["manual_review_if_oos_sharpe_below_zero"],
+                    "delisting_conditions": {
+                        "policy": "manual_review_required",
+                        "survivorship_bias_risk": "clean",
+                        "universe_id": "us_equity_core",
+                        "universe_source": "governed",
+                    },
                     "created_at": "2026-05-09T12:01:00+00:00",
                 }
             ),
@@ -622,6 +717,8 @@ class TestResearchAutomationPipeline(unittest.TestCase):
                     "status": "completed",
                     "cost_sensitivity": 0.1,
                     "stress_survival_rate": 0.9,
+                    "estimated_capacity_usd": 1_000_000.0,
+                    "fragility_score": 0.12,
                     "levels": [
                         {
                             "cost_multiplier": 1.0,
@@ -668,6 +765,16 @@ class TestResearchAutomationPipeline(unittest.TestCase):
                 "adjustment_count": 0,
                 "split_event_count": 0,
             },
+            "execution": {"annual_turnover_pct": 120.0},
+            "exposure": {
+                "avg_gross_exposure_pct": 72.0,
+                "max_gross_exposure_pct": 100.0,
+            },
+            "cost_model": "fixed_bps",
+            "commission_rate": 0.0001,
+            "slippage_model": "fixed_bps",
+            "slippage_bps": 1.0,
+            "trade_count": 12,
             "evidence": {
                 "equity": {"consistent": True},
                 "orders": {

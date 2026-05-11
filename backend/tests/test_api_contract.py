@@ -291,6 +291,103 @@ class ApiContractTests(unittest.TestCase):
         payload = response.json()
         self.assertEqual(payload["status"], "ok")
 
+    def test_crypto_resample_endpoint_serializes_dataclass_result(self) -> None:
+        from backend.app.services.data_management import CryptoResampleResult
+
+        start = datetime(2024, 1, 1, tzinfo=timezone.utc)
+        end = start + timedelta(hours=1)
+        fake_result = CryptoResampleResult(
+            status="completed",
+            db_path="data/market_data.sqlite",
+            exchange="binance_spot",
+            symbol="BTCUSDT",
+            source_interval="1m",
+            target_interval="1h",
+            start=start,
+            end=end,
+            source_rows=60,
+            expected_source_rows=60,
+            rows_written=1,
+            coverage_pct=100.0,
+            quality_score=100.0,
+            data_version="btc-resample-test",
+            quality_summary={"issues": 0},
+        )
+        with patch(
+            "backend.app.api.app_factory.market_data_service.resample_crypto_klines",
+            return_value=fake_result,
+        ):
+            response = self.client.post(
+                "/api/data/resample",
+                json={
+                    "exchange": "binance_spot",
+                    "symbol": "BTCUSDT",
+                    "source_interval": "1m",
+                    "target_interval": "1h",
+                    "start": start.isoformat(),
+                    "end": end.isoformat(),
+                    "persist_manifest": True,
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "completed")
+        self.assertEqual(payload["target_interval"], "1h")
+        self.assertEqual(payload["rows_written"], 1)
+
+    def test_crypto_event_backtest_endpoint_uses_research_service(self) -> None:
+        from backend.app.domain.models import BacktestArtifacts
+
+        start = datetime(2024, 1, 1, tzinfo=timezone.utc)
+        end = start + timedelta(hours=2)
+        fake_artifacts = BacktestArtifacts(
+            mode="crypto_event",
+            summary={
+                "total_return_pct": 0.0,
+                "annual_return_pct": 0.0,
+                "annual_volatility_pct": 0.0,
+                "sharpe_ratio": 0.0,
+                "sortino_ratio": 0.0,
+                "max_drawdown_pct": 0.0,
+                "calmar_ratio": 0.0,
+                "win_rate_pct": 0.0,
+                "profit_factor": 0.0,
+                "trade_count": 0,
+            },
+            chart={"candles": [], "markers": [], "equity": [], "drawdown": [], "exposure": [], "net_units": []},
+            strategy_details=[],
+            latest_weights=[],
+            diagnostics={"engine": "event_driven"},
+        )
+        with patch(
+            "backend.app.api.app_factory.research_service.run_crypto_event",
+            return_value=fake_artifacts,
+        ) as run_crypto_event:
+            response = self.client.post(
+                "/api/backtests/crypto-event",
+                json={
+                    "source": "sqlite",
+                    "symbol": "BTCUSDT",
+                    "interval": "1h",
+                    "start": start.isoformat(),
+                    "end": end.isoformat(),
+                    "capital": 100000,
+                    "commission_rate": 0.0004,
+                    "slippage": 4,
+                    "leverage": 1,
+                    "strategy_id": "trend_macd",
+                    "strategy_params": {},
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "completed")
+        self.assertEqual(payload["mode"], "crypto_event")
+        self.assertEqual(payload["diagnostics"]["engine"], "event_driven")
+        self.assertTrue(run_crypto_event.called)
+
     def test_system_overview_is_pre_live_and_read_only(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)

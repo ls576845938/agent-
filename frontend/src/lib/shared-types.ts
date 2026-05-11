@@ -2,6 +2,35 @@ import type {Summary} from './view-model';
 
 export type ValueEvent = {target: {value: string}};
 
+export type CryptoInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
+
+export type CryptoCoverageSummary = {
+  total_rows: number;
+  covered_intervals: number;
+  missing_intervals: CryptoInterval[];
+  latest_updated_at?: string | null;
+};
+
+export type CryptoResamplePlanItem = {
+  exchange: string;
+  symbol: string;
+  source_interval: CryptoInterval;
+  target_interval: CryptoInterval;
+  rows: number;
+  start?: string | null;
+  end?: string | null;
+  updated_at?: string | null;
+  status: 'seed' | 'ready' | 'missing';
+  action: string;
+  db_path: string;
+};
+
+export type CryptoBlockerGroup = {
+  title: string;
+  blockers: string[];
+  tone: 'good' | 'neutral' | 'warn' | 'bad';
+};
+
 export type SystemOverviewResponse = {
   status: string;
   stage: string;
@@ -227,6 +256,7 @@ export type WalkForwardResponse = {
   framework: OptimizationFrameworkItem[];
   stability: {
     pass_rate_pct: number;
+    fold_pass_rate_pct?: number;
     median_oos_sharpe: number;
     avg_oos_return_pct: number;
     parameter_stability_pct: number;
@@ -308,6 +338,54 @@ export type PromotionGateResponse = {
   data_quality: DataQualityResponse;
   backtest_summary: Summary;
   gates: PromotionGate[];
+  recommendations: string[];
+};
+
+export type CryptoClosureCandidate = {
+  rank: number;
+  strategy_id: string;
+  parameters: Record<string, number>;
+  score: number;
+  validation: Partial<Summary>;
+  train?: Partial<Summary>;
+  overfit_gap?: number;
+  candidate_count?: number;
+};
+
+export type CryptoClosureResponse = {
+  status: string;
+  selected_priority: string;
+  symbol: string;
+  source: string;
+  interval: string;
+  target_intervals: string[];
+  data_integrity: {
+    status?: string;
+    blockers?: string[];
+    resample_results?: Array<Record<string, unknown>>;
+    quality_results?: Array<Record<string, unknown>>;
+  };
+  candidate_screen: {
+    status?: string;
+    candidate_count?: number;
+    candidates?: CryptoClosureCandidate[];
+    selected_candidate?: CryptoClosureCandidate | null;
+    errors?: Array<Record<string, string>>;
+    blockers?: string[];
+  };
+  selected_candidate?: CryptoClosureCandidate | null;
+  event_backtest: {
+    status?: string;
+    mode?: string;
+    summary?: Summary;
+    diagnostics?: Record<string, unknown>;
+  };
+  cost_stress: Record<string, unknown>;
+  walk_forward: Partial<WalkForwardResponse> & {stability?: Partial<WalkForwardResponse['stability']> & Record<string, unknown>};
+  promotion_gate: Partial<PromotionGateResponse>;
+  decision: string;
+  next_stage: string;
+  blockers: string[];
   recommendations: string[];
 };
 

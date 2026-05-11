@@ -1,10 +1,10 @@
 import {FormEvent, useEffect, useMemo, useState} from 'react';
 
-import type {ChartSeriesPayload, DataSyncRunResponse, DatabaseStatusResponse, KlinePreviewResponse, RunStatusResponse, SchedulerStatusResponse, StrategyInfo} from '../lib/view-model';
-import {buildPortfolioRequest, buildSingleRequest, createRunViewModel, humanizeError, summarizeMetrics} from '../lib/view-model';
+import type {ChartSeriesPayload, CryptoResampleResponse, DataSyncRunResponse, DatabaseStatusResponse, KlinePreviewResponse, RunStatusResponse, SchedulerStatusResponse, StrategyInfo} from '../lib/view-model';
+import {buildCryptoResamplePlan, buildPortfolioRequest, buildSingleRequest, collectCryptoBlockers, createRunViewModel, humanizeError, summarizeCryptoCoverage, summarizeMetrics, cryptoIntervalOrder} from '../lib/view-model';
 import {buildDateBoundary, diagnosticsList} from '../lib/utils';
 import {apiGet, apiPost} from '../lib/api';
-import type {CostStressResponse, DataQualityResponse, DrawdownPeriod, FormState, MvpStep, OptimizationHint, PeriodReturn, PortfolioOptimizationResponse, PromotionGateResponse, ReportSection, StrategyOptimizationResponse, WalkForwardResponse} from '../lib/shared-types';
+import type {CostStressResponse, CryptoClosureResponse, DataQualityResponse, DrawdownPeriod, FormState, MvpStep, OptimizationHint, PeriodReturn, PortfolioOptimizationResponse, PromotionGateResponse, ReportSection, StrategyOptimizationResponse, WalkForwardResponse} from '../lib/shared-types';
 import {defaultOptimizationFramework} from '../lib/shared-types';
 
 import BacktestForm from './crypto/BacktestForm';
@@ -16,7 +16,7 @@ import ResultsPanel from './crypto/ResultsPanel';
 type Mode = 'single' | 'portfolio';
 
 const defaultForm: FormState = {
-  source: 'fixture', symbol: 'BTCUSDT', interval: '1h',
+  source: 'sqlite', symbol: 'BTCUSDT', interval: '1h',
   startDate: '2024-01-01', endDate: '2024-02-15',
   capital: 100000, commissionRate: 0.0004, slippage: 4,
   leverage: 1, positionBasis: 'equity', strategyId: 'trend_macd', dataDbPath: '',
@@ -33,7 +33,7 @@ export type CryptoWorkspaceProps = {
 };
 
 export default function CryptoWorkspace({health, strategies}: CryptoWorkspaceProps) {
-  const [mode, setMode] = useState<Mode>('portfolio');
+  const [mode, setMode] = useState<Mode>('single');
   const [form, setForm] = useState<FormState>(defaultForm);
   const [weightMap, setWeightMap] = useState<Record<string, number>>({});
   const [run, setRun] = useState<RunStatusResponse | null>(null);
@@ -64,6 +64,9 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   const [promotionGate, setPromotionGate] = useState<PromotionGateResponse | null>(null);
   const [promotionGateLoading, setPromotionGateLoading] = useState(false);
   const [promotionGateMessage, setPromotionGateMessage] = useState('');
+  const [cryptoClosure, setCryptoClosure] = useState<CryptoClosureResponse | null>(null);
+  const [cryptoClosureLoading, setCryptoClosureLoading] = useState(false);
+  const [cryptoClosureMessage, setCryptoClosureMessage] = useState('');
   const [mvpLoading, setMvpLoading] = useState(false);
   const [mvpMessage, setMvpMessage] = useState('');
   const [error, setError] = useState<string>('');
@@ -100,6 +103,12 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   const drawdownPeriods = useMemo(() => diagnosticsList<DrawdownPeriod>(run?.diagnostics, 'drawdown_periods'), [run]);
   const monthlyReturns = useMemo(() => diagnosticsList<PeriodReturn>(run?.diagnostics, 'monthly_returns'), [run]);
   const optimizationFramework = promotionGate?.framework ?? dataQuality?.framework ?? portfolioOptimization?.framework ?? walkForward?.framework ?? costStress?.framework ?? optimization?.framework ?? defaultOptimizationFramework;
+  const cryptoCoverageSummary = useMemo(() => summarizeCryptoCoverage(database?.coverage ?? []), [database]);
+  const cryptoResamplePlan = useMemo(
+    () => buildCryptoResamplePlan(database?.coverage ?? [], dataForm.symbol, dataForm.dbPath || database?.db_path || ''),
+    [database?.coverage, database?.db_path, dataForm.dbPath, dataForm.symbol],
+  );
+  const cryptoBlockers = useMemo(() => collectCryptoBlockers(dataQuality, promotionGate), [dataQuality, promotionGate]);
 
   const mvpSteps = useMemo<MvpStep[]>(() => {
     const gateFails = (promotionGate?.gates ?? []).filter((g: {status: string}) => g.status === 'fail').length;
@@ -116,6 +125,43 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
 
   const mvpDoneCount = mvpSteps.filter((s) => s.status === 'done').length;
 
+  const syncCryptoInterval = async (
+    interval: FormState['interval'],
+    options: {applySelection?: boolean; refreshSelection?: FormState['interval']; messagePrefix?: string} = {},
+  ) => {
+    setDataLoading(true); setDataMessage(options.messagePrefix ?? ''); setError('');
+    try {
+      const nextRun = await apiPost<DataSyncRunResponse>('/api/data/sync', {
+        exchange: 'binance_spot',
+        symbol: dataForm.symbol,
+        interval,
+        start: buildDateBoundary(dataForm.startDate, 'start', interval),
+        end: buildDateBoundary(dataForm.endDate, 'end', interval),
+        db_path: dataForm.dbPath,
+        limit: 1000,
+        closed_only: true,
+      });
+      const nextMessage = `${interval} SQLite 同步完成：写入 ${nextRun.rows_written} K 线`;
+      setDataMessage(nextMessage);
+      if (options.applySelection !== false) {
+        setDataForm((current) => ({...current, interval}));
+        setForm((current) => ({...current, source: 'sqlite', symbol: dataForm.symbol, interval, startDate: dataForm.startDate, endDate: dataForm.endDate, dataDbPath: dataForm.dbPath}));
+      }
+      await refreshDataPanel({
+        ...dataForm,
+        interval: options.refreshSelection ?? (options.applySelection === false ? dataForm.interval : interval),
+      });
+      return nextRun;
+    } catch (e) {
+      const message = humanizeError(e);
+      setDataMessage(message);
+      setError(message);
+      throw e;
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
   const buildPromotionGateRequest = () => ({
     mode, source: form.source, symbol: form.symbol, interval: form.interval,
     start: buildDateBoundary(form.startDate, 'start', form.interval),
@@ -130,11 +176,39 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     notes: 'Created from QuantStation MVP acceptance flow.',
   });
 
+  const buildCryptoClosureRequest = () => {
+    const researchInterval = form.interval === '1m' ? '1h' : form.interval;
+    return {
+      source: 'sqlite',
+      symbol: form.symbol,
+      interval: researchInterval,
+      start: buildDateBoundary(form.startDate, 'start', researchInterval),
+      end: buildDateBoundary(form.endDate, 'end', researchInterval),
+      capital: form.capital,
+      commission_rate: form.commissionRate,
+      slippage: form.slippage,
+      leverage: 1,
+      position_basis: form.positionBasis,
+      data_db_path: form.dataDbPath,
+      target_intervals: cryptoIntervalOrder.slice(1),
+      strategy_ids: ['trend_macd', 'donchian_breakout', 'reversion_rsi', 'volatility_squeeze', 'macro_trend', 'dynamic_grid', 'time_window'],
+      max_candidates_per_strategy: 4,
+      max_ranked_candidates: 8,
+      max_scenarios: 2,
+      windows: 2,
+      persist_data_manifest: true,
+      persist_manifest: true,
+      register_experiment: true,
+      experiment_name: `${form.symbol.toLowerCase()}_closure_gate`,
+      notes: 'Created from QuantStation BTC closure flow.',
+    };
+  };
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setLoading(true); setError('');
     try {
-      const endpoint = mode === 'single' ? '/api/backtests/single' : '/api/backtests/portfolio';
+      const endpoint = mode === 'single' ? '/api/backtests/crypto-event' : '/api/backtests/portfolio';
       const payload = mode === 'single' ? {...buildSingleRequest(form), strategy_params: optimizedStrategyParams ?? {}} : buildPortfolioRequest(form, weightMap);
       const nextRun = await apiPost<RunStatusResponse>(endpoint, payload);
       setRun(nextRun);
@@ -160,7 +234,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
       if (!quality.is_usable) throw new Error('数据质量阻断级问题');
 
       setMvpMessage('回测运行中...');
-      const endpoint = mode === 'single' ? '/api/backtests/single' : '/api/backtests/portfolio';
+      const endpoint = mode === 'single' ? '/api/backtests/crypto-event' : '/api/backtests/portfolio';
       const payload = mode === 'single' ? {...buildSingleRequest(form), strategy_params: optimizedStrategyParams ?? {}} : buildPortfolioRequest(form, weightMap);
       const nextRun = await apiPost<RunStatusResponse>(endpoint, payload);
       setRun(nextRun);
@@ -197,6 +271,33 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
       }
     } catch (e) { setOptimizationMessage(humanizeError(e)); }
     finally { setOptimizationLoading(false); }
+  };
+
+  const handleCryptoClosure = async () => {
+    setCryptoClosureLoading(true); setCryptoClosureMessage('BTC 闭环运行中：数据 -> 候选 -> event-driven -> cost/walk-forward -> gate'); setError('');
+    try {
+      const result = await apiPost<CryptoClosureResponse>('/api/crypto/research/closure', buildCryptoClosureRequest());
+      setCryptoClosure(result);
+      if (result.selected_candidate?.parameters) {
+        setOptimizedStrategyParams(result.selected_candidate.parameters);
+        setForm((current) => ({...current, strategyId: result.selected_candidate?.strategy_id ?? current.strategyId, interval: (result.interval as FormState['interval']) || current.interval}));
+      }
+      if (result.promotion_gate?.decision) {
+        setPromotionGate(result.promotion_gate as PromotionGateResponse);
+        setPromotionGateMessage(`准入门 Decision ${String(result.promotion_gate.decision).toUpperCase()}，下一阶段 ${result.promotion_gate.next_stage ?? result.next_stage}`);
+      }
+      if (result.walk_forward?.stability) {
+        setWalkForward(result.walk_forward as WalkForwardResponse);
+        setWalkForwardMessage(`Walk-forward: OOS pass rate ${Number(result.walk_forward.stability.fold_pass_rate_pct ?? result.walk_forward.stability.pass_rate_pct ?? 0).toFixed(0)}%`);
+      }
+      setCryptoClosureMessage(`BTC 闭环完成：${result.decision.toUpperCase()}，blockers ${result.blockers.length}`);
+    } catch (e) {
+      const message = humanizeError(e);
+      setCryptoClosureMessage(message);
+      setError(message);
+    } finally {
+      setCryptoClosureLoading(false);
+    }
   };
 
   const handleCostStress = async () => {
@@ -281,19 +382,82 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   };
 
   const handleDataSync = async () => {
-    setDataLoading(true); setDataMessage(''); setError('');
     try {
-      const nextRun = await apiPost<DataSyncRunResponse>('/api/data/sync', {
-        exchange: 'binance_spot', symbol: dataForm.symbol, interval: dataForm.interval,
-        start: buildDateBoundary(dataForm.startDate, 'start', dataForm.interval),
-        end: buildDateBoundary(dataForm.endDate, 'end', dataForm.interval),
-        db_path: dataForm.dbPath, limit: 1000, closed_only: true,
+      await syncCryptoInterval(dataForm.interval, {messagePrefix: '下载区间'});
+    } catch {
+      // syncCryptoInterval already surfaced the error state
+    }
+  };
+
+  const handleResampleInterval = async (interval: FormState['interval']) => {
+    if (interval === '1m') {
+      try {
+        await syncCryptoInterval(interval, {refreshSelection: interval});
+      } catch {
+        // syncCryptoInterval already surfaced the error state
+      }
+      return;
+    }
+    setDataLoading(true); setDataMessage(`开始 1m -> ${interval} 聚合`); setError('');
+    try {
+      const result = await apiPost<CryptoResampleResponse>('/api/data/resample', {
+        exchange: 'binance_spot',
+        symbol: dataForm.symbol,
+        source_interval: '1m',
+        target_interval: interval,
+        start: buildDateBoundary(dataForm.startDate, 'start', '1m'),
+        end: buildDateBoundary(dataForm.endDate, 'end', '1m'),
+        db_path: dataForm.dbPath,
+        persist_manifest: true,
       });
-      setDataMessage(`下载完成：写入 ${nextRun.rows_written} K 线`);
-      setForm((c) => ({...c, source: 'sqlite', symbol: dataForm.symbol, interval: dataForm.interval, startDate: dataForm.startDate, endDate: dataForm.endDate, dataDbPath: dataForm.dbPath}));
-      await refreshDataPanel(dataForm);
-    } catch (e) { setDataMessage(humanizeError(e)); }
-    finally { setDataLoading(false); }
+      setDataMessage(`重采样完成：${interval} 写入 ${result.rows_written} 根，manifest ${result.data_version}`);
+      setDataForm((current) => ({...current, interval}));
+      setForm((current) => ({...current, source: 'sqlite', symbol: dataForm.symbol, interval, dataDbPath: dataForm.dbPath}));
+      await refreshDataPanel({...dataForm, interval});
+    } catch (e) {
+      const message = humanizeError(e);
+      setDataMessage(message);
+      setError(message);
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const handleResampleChain = async () => {
+    setDataLoading(true); setDataMessage('开始 1m -> 5m/15m/1h/4h/1d 重采样链'); setError('');
+    try {
+      const currentInterval = dataForm.interval;
+      await apiPost<DataSyncRunResponse>('/api/data/sync', {
+        exchange: 'binance_spot',
+        symbol: dataForm.symbol,
+        interval: '1m',
+        start: buildDateBoundary(dataForm.startDate, 'start', '1m'),
+        end: buildDateBoundary(dataForm.endDate, 'end', '1m'),
+        db_path: dataForm.dbPath,
+        limit: 1000,
+        closed_only: true,
+      });
+      for (const interval of cryptoIntervalOrder.slice(1)) {
+        await apiPost<CryptoResampleResponse>('/api/data/resample', {
+          exchange: 'binance_spot',
+          symbol: dataForm.symbol,
+          source_interval: '1m',
+          target_interval: interval,
+          start: buildDateBoundary(dataForm.startDate, 'start', '1m'),
+          end: buildDateBoundary(dataForm.endDate, 'end', '1m'),
+          db_path: dataForm.dbPath,
+          persist_manifest: true,
+        });
+      }
+      setDataMessage('重采样链完成：SQLite 已覆盖 1m/5m/15m/1h/4h/1d');
+      await refreshDataPanel({...dataForm, interval: currentInterval});
+    } catch (e) {
+      const message = humanizeError(e);
+      setDataMessage(message);
+      setError(message);
+    } finally {
+      setDataLoading(false);
+    }
   };
 
   const handleUpdateLatest = async () => {
@@ -371,11 +535,15 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
           klinePreview={klinePreview}
           syncRuns={syncRuns}
           scheduler={scheduler}
+          coverageSummary={cryptoCoverageSummary}
+          resamplePlan={cryptoResamplePlan}
           dataLoading={dataLoading}
           dataMessage={dataMessage}
           onChangeDataForm={handleChangeDataForm}
           onRefresh={() => refreshDataPanel(dataForm)}
           onSync={handleDataSync}
+          onResampleInterval={handleResampleInterval}
+          onResampleChain={handleResampleChain}
           onUpdateLatest={handleUpdateLatest}
           onStartScheduler={handleStartScheduler}
           onStopScheduler={handleStopScheduler}
@@ -399,6 +567,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
           viewModel={viewModel}
           drawdownPeriods={drawdownPeriods}
           monthlyReturns={monthlyReturns}
+          blockers={cryptoBlockers}
           onMvpAcceptance={handleMvpAcceptance}
         >
           <section className="panel optimization-panel">
@@ -421,8 +590,12 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
               promotionGate={promotionGate}
               promotionGateLoading={promotionGateLoading}
               promotionGateMessage={promotionGateMessage}
+              cryptoClosure={cryptoClosure}
+              cryptoClosureLoading={cryptoClosureLoading}
+              cryptoClosureMessage={cryptoClosureMessage}
               optimizationFramework={optimizationFramework}
               optimizedStrategyParams={optimizedStrategyParams}
+              onCryptoClosure={handleCryptoClosure}
               onOptimize={handlePriorityOptimization}
               onCostStress={handleCostStress}
               onWalkForward={handleWalkForward}

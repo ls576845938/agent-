@@ -110,6 +110,31 @@ def test_strategy_modules_do_not_import_or_call_broker_execution_surfaces() -> N
     assert violations == []
 
 
+def test_shadow_live_oms_is_never_wired_to_real_broker() -> None:
+    path = Path("quant_us/live/shadow_live.py")
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    violations: list[str] = []
+    paper_broker_wiring_seen = False
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        if not (isinstance(func, ast.Name) and func.id == "OrderManagementSystem"):
+            continue
+        for keyword in node.keywords:
+            if keyword.arg != "broker":
+                continue
+            value = keyword.value
+            if isinstance(value, ast.Attribute) and value.attr == "paper_broker":
+                paper_broker_wiring_seen = True
+            elif isinstance(value, ast.Attribute) and value.attr == "real_broker":
+                violations.append(f"{path}: shadow_live OMS broker wired to real_broker")
+
+    assert paper_broker_wiring_seen is True
+    assert violations == []
+
+
 def test_paper_runtime_reconciliation_break_blocks_before_oms(tmp_path: Path) -> None:
     broker = CountingPaperBroker()
     runtime = LiveRuntime(

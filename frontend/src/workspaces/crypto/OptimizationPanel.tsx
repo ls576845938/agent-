@@ -1,4 +1,4 @@
-import type {StrategyOptimizationResponse, CostStressResponse, WalkForwardResponse, PortfolioOptimizationResponse, DataQualityResponse, PromotionGateResponse, OptimizationFrameworkItem} from '../../lib/shared-types';
+import type {StrategyOptimizationResponse, CostStressResponse, WalkForwardResponse, PortfolioOptimizationResponse, DataQualityResponse, PromotionGateResponse, OptimizationFrameworkItem, CryptoClosureResponse} from '../../lib/shared-types';
 import {formatOptimizationScore, formatParams, formatTimestamp, formatPrice, scenarioClass, gateClass} from '../../lib/utils';
 
 interface OptimizationPanelProps {
@@ -20,8 +20,12 @@ interface OptimizationPanelProps {
   promotionGate: PromotionGateResponse | null;
   promotionGateLoading: boolean;
   promotionGateMessage: string;
+  cryptoClosure: CryptoClosureResponse | null;
+  cryptoClosureLoading: boolean;
+  cryptoClosureMessage: string;
   optimizationFramework: OptimizationFrameworkItem[];
   optimizedStrategyParams: Record<string, number> | null;
+  onCryptoClosure: () => void;
   onOptimize: () => void;
   onCostStress: () => void;
   onWalkForward: () => void;
@@ -38,7 +42,9 @@ export default function OptimizationPanel({
   portfolioOptimization, portfolioOptimizationLoading, portfolioOptimizationMessage,
   dataQuality, dataQualityLoading, dataQualityMessage,
   promotionGate, promotionGateLoading, promotionGateMessage,
+  cryptoClosure, cryptoClosureLoading, cryptoClosureMessage,
   optimizationFramework, optimizedStrategyParams,
+  onCryptoClosure,
   onOptimize, onCostStress, onWalkForward, onPortfolioOptimize,
   onDataQuality, onPromotionGate, onApplyWeights,
 }: OptimizationPanelProps) {
@@ -51,6 +57,7 @@ export default function OptimizationPanel({
         ))}
       </div>
       <div className="optimization-actions">
+        <button type="button" className="primary-button" disabled={cryptoClosureLoading} onClick={onCryptoClosure}>{cryptoClosureLoading ? '闭环运行中...' : '一键 BTC 闭环'}</button>
         <button type="button" className="secondary-button" disabled={optimizationLoading} onClick={onOptimize}>{optimizationLoading ? '优化中...' : '运行优先优化'}</button>
         <button type="button" className="secondary-button" disabled={costStressLoading} onClick={onCostStress}>{costStressLoading ? '中...' : '成本压力测试'}</button>
         <button type="button" className="secondary-button" disabled={walkForwardLoading} onClick={onWalkForward}>{walkForwardLoading ? '中...' : 'Walk-forward'}</button>
@@ -59,12 +66,47 @@ export default function OptimizationPanel({
         <button type="button" className="secondary-button" disabled={promotionGateLoading} onClick={onPromotionGate}>{promotionGateLoading ? '中...' : '研究准入门'}</button>
         {optimizedStrategyParams ? <span>已应用：{formatParams(optimizedStrategyParams)}</span> : null}
       </div>
+      {cryptoClosureMessage ? <p className="data-message">{cryptoClosureMessage}</p> : null}
       {optimizationMessage ? <p className="data-message">{optimizationMessage}</p> : null}
       {costStressMessage ? <p className="data-message">{costStressMessage}</p> : null}
       {walkForwardMessage ? <p className="data-message">{walkForwardMessage}</p> : null}
       {portfolioOptimizationMessage ? <p className="data-message">{portfolioOptimizationMessage}</p> : null}
       {dataQualityMessage ? <p className="data-message">{dataQualityMessage}</p> : null}
       {promotionGateMessage ? <p className="data-message">{promotionGateMessage}</p> : null}
+
+      {cryptoClosure ? (
+        <div className="promotion-panel" data-testid="crypto-closure-panel">
+          <div className="stress-summary-grid">
+            <div className="optimization-best"><span>闭环状态</span><strong>{cryptoClosure.decision.toUpperCase()}</strong><p>{cryptoClosure.next_stage}</p></div>
+            <div className="optimization-best"><span>数据完整性</span><strong>{String(cryptoClosure.data_integrity.status ?? '-').toUpperCase()}</strong><p>{cryptoClosure.target_intervals.join(' / ')}</p></div>
+            <div className="optimization-best"><span>选中候选</span><strong>{cryptoClosure.selected_candidate?.strategy_id ?? '-'}</strong><p>{formatParams(cryptoClosure.selected_candidate?.parameters ?? {})}</p></div>
+            <div className="optimization-best"><span>事件回测</span><strong>{Number(cryptoClosure.event_backtest.summary?.sharpe_ratio ?? 0).toFixed(2)} Sharpe</strong><p>Return {Number(cryptoClosure.event_backtest.summary?.total_return_pct ?? 0).toFixed(2)}% · Trades {Number(cryptoClosure.event_backtest.summary?.trade_count ?? 0)}</p></div>
+            <div className="optimization-best"><span>成本压力</span><strong>{Number(cryptoClosure.cost_stress.survival_rate_pct ?? 0).toFixed(0)}%</strong><p>ledger {Number(cryptoClosure.cost_stress.ledger_consistency_pct ?? 0).toFixed(0)}%</p></div>
+            <div className="optimization-best"><span>Walk-forward</span><strong>{Number(cryptoClosure.walk_forward.stability?.fold_pass_rate_pct ?? cryptoClosure.walk_forward.stability?.pass_rate_pct ?? 0).toFixed(0)}%</strong><p>ledger {Number(cryptoClosure.walk_forward.stability?.ledger_consistency_pct ?? 0).toFixed(0)}%</p></div>
+          </div>
+          {(cryptoClosure.candidate_screen.candidates ?? []).length ? (
+            <div className="optimization-table">
+              {(cryptoClosure.candidate_screen.candidates ?? []).slice(0, 6).map((candidate) => (
+                <div key={`${candidate.strategy_id}-${candidate.rank}`} className="optimization-row">
+                  <span>#{candidate.rank}</span>
+                  <span>{candidate.strategy_id}</span>
+                  <span>{formatOptimizationScore(candidate.score)}</span>
+                  <span>{Number(candidate.validation?.sharpe_ratio ?? 0).toFixed(2)} Sharpe</span>
+                  <span>{Number(candidate.validation?.max_drawdown_pct ?? 0).toFixed(2)}% MDD</span>
+                  <span>{formatParams(candidate.parameters)}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <div className="promotion-gate-list">
+            {cryptoClosure.blockers.map((blocker) => (
+              <div key={blocker} className="promotion-gate promotion-fail"><span>BLOCK</span><strong>{blocker}</strong><p>保持 paper/live 关闭。</p></div>
+            ))}
+            {!cryptoClosure.blockers.length ? <div className="promotion-gate promotion-pass"><span>PASS</span><strong>无显式阻断</strong><p>仍需人工复核 evidence pack。</p></div> : null}
+          </div>
+          <div className="optimization-recommendations">{cryptoClosure.recommendations.map((item, index) => <p key={index}>{item}</p>)}</div>
+        </div>
+      ) : null}
 
       {/* Optimization results */}
       {optimization?.best ? (
@@ -103,9 +145,9 @@ export default function OptimizationPanel({
       {walkForward ? (
         <div className="walk-panel">
           <div className="stress-summary-grid">
-            <div className="optimization-best"><span>OOS 通过率</span><strong>{walkForward.stability.pass_rate_pct.toFixed(0)}%</strong><p>{walkForward.selected_priority}</p></div>
-            <div className="optimization-best"><span>OOS 中位 Sharpe</span><strong>{walkForward.stability.median_oos_sharpe.toFixed(2)}</strong><p>Avg Return {walkForward.stability.avg_oos_return_pct.toFixed(2)}%</p></div>
-            <div className="optimization-best"><span>参数稳定性</span><strong>{walkForward.stability.parameter_stability_pct.toFixed(0)}%</strong><p>Worst MDD {walkForward.stability.worst_oos_drawdown_pct.toFixed(2)}%</p></div>
+            <div className="optimization-best"><span>OOS 通过率</span><strong>{Number(walkForward.stability.pass_rate_pct ?? walkForward.stability.fold_pass_rate_pct ?? 0).toFixed(0)}%</strong><p>{walkForward.selected_priority}</p></div>
+            <div className="optimization-best"><span>OOS 中位 Sharpe</span><strong>{Number(walkForward.stability.median_oos_sharpe ?? 0).toFixed(2)}</strong><p>Avg Return {Number(walkForward.stability.avg_oos_return_pct ?? 0).toFixed(2)}%</p></div>
+            <div className="optimization-best"><span>参数稳定性</span><strong>{Number(walkForward.stability.parameter_stability_pct ?? 0).toFixed(0)}%</strong><p>Worst MDD {Number(walkForward.stability.worst_oos_drawdown_pct ?? 0).toFixed(2)}%</p></div>
           </div>
           <div className="walk-table">
             {walkForward.windows.map((w) => (
@@ -145,7 +187,7 @@ export default function OptimizationPanel({
 
       {/* Data quality */}
       {dataQuality ? (
-        <div className="data-quality-panel">
+        <div className="data-quality-panel" data-testid="crypto-data-quality">
           <div className="stress-summary-grid">
             <div className="optimization-best"><span>质量分数</span><strong>{dataQuality.quality_score.toFixed(0)}</strong><p>{dataQuality.is_usable ? '可用' : '阻断'}</p></div>
             <div className="optimization-best"><span>覆盖率</span><strong>{dataQuality.coverage_pct.toFixed(2)}%</strong><p>{dataQuality.row_count.toLocaleString('en-US')} / {dataQuality.expected_rows.toLocaleString('en-US')}</p></div>
@@ -158,12 +200,18 @@ export default function OptimizationPanel({
             <div><span>价格跳变</span><strong>{dataQuality.large_price_jumps}</strong></div>
           </div>
           <div className="quality-issue-list">{dataQuality.issues.map((issue) => <div key={`${issue.code}-${issue.message}`} className={`quality-issue quality-${issue.severity}`}><span>{issue.severity}</span><strong>{issue.code}</strong><p>{issue.message}</p></div>)}</div>
+          <div className="optimization-recommendations">
+            {dataQuality.is_usable ? <p>SQLite 覆盖可用于 event-driven 回测。</p> : null}
+            {dataQuality.issues.filter((issue) => ['high', 'critical'].includes(String(issue.severity).toLowerCase())).map((issue) => (
+              <p key={`dq-blocker-${issue.code}`}>阻断: {issue.code} - {issue.message}</p>
+            ))}
+          </div>
         </div>
       ) : null}
 
       {/* Promotion gate */}
       {promotionGate ? (
-        <div className="promotion-panel">
+        <div className="promotion-panel" data-testid="crypto-promotion-blockers">
           <div className="stress-summary-grid">
             <div className="optimization-best"><span>晋级决策</span><strong>{promotionGate.decision.toUpperCase()}</strong><p>{promotionGate.next_stage}</p></div>
             <div className="optimization-best"><span>核心 Sharpe</span><strong>{promotionGate.backtest_summary.sharpe_ratio.toFixed(2)}</strong><p>MDD {promotionGate.backtest_summary.max_drawdown_pct.toFixed(2)}%</p></div>
@@ -171,6 +219,11 @@ export default function OptimizationPanel({
             <div className="optimization-best"><span>实验</span><strong>{promotionGate.experiment_record.experiment_name ?? '-'}</strong></div>
           </div>
           <div className="promotion-gate-list">{promotionGate.gates.map((g) => <div key={g.name} className={gateClass(g.status)}><span>{g.status.toUpperCase()}</span><strong>{g.name}</strong><p>{g.message}</p></div>)}</div>
+          <div className="optimization-recommendations">
+            {promotionGate.gates.filter((g) => g.status !== 'pass').map((g) => (
+              <p key={`promotion-blocker-${g.name}`}>阻断: {g.name} - {g.message}</p>
+            ))}
+          </div>
           <div className="optimization-recommendations">{promotionGate.recommendations.map((r, i) => <p key={i}>{r}</p>)}</div>
         </div>
       ) : null}

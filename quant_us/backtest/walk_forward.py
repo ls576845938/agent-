@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
@@ -178,13 +178,10 @@ def run_walk_forward_unified(
         for bar in train_bars:
             strategy.on_bar(MarketEvent.from_bar(bar), StrategyContext(run_id="wf_warmup"))
 
-        runner_config = UnifiedBacktestConfig(
-            initial_cash=uc.initial_cash,
-            commission_rate=uc.commission_rate,
-            slippage_bps=uc.slippage_bps,
-            fill_ratio=uc.fill_ratio,
-            volume_participation_cap_pct=uc.volume_participation_cap_pct,
+        runner_config = replace(
+            uc,
             run_id=f"{uc.run_id}_w{len(results)}",
+            save_replay_path=None,
         )
         runner = UnifiedBacktestRunner(config=runner_config)
         unified = runner.run(strategies=[strategy], frame=None, bars_override=test_bars)

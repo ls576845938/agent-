@@ -223,17 +223,40 @@ def _write_candidate_fixture(
     candidate_id: str,
     profile: str,
     include_strategy_manifest: bool,
+    source: str = "yfinance",
+    symbol: str = "AAPL",
+    asset_class: str = "equity",
+    data_version: str | None = None,
 ) -> str:
     metrics, walk_forward_artifact, cost_stress_artifact, experiment_data = _validation_inputs(profile)
     experiment_id = experiment_data["experiment_id"]
-    data_version = experiment_data["data_version"]
+    data_version = data_version or (
+        experiment_data["data_version"]
+        if source == "yfinance" and symbol == "AAPL" and asset_class == "equity"
+        else f"qs-{source}-{symbol}-1d-validation"
+    )
+    experiment_data = {
+        **experiment_data,
+        "symbols": [symbol],
+        "data_version": data_version,
+        "source": source,
+        "data_source": source,
+        "asset_class": asset_class,
+    }
+    metrics = {
+        **metrics,
+        "symbols": [symbol],
+        "data_source": source,
+        "asset_class": asset_class,
+        "data_version": data_version,
+    }
 
     data_manifest = DataManifest(
         data_version=data_version,
-        source="yfinance",
-        symbol="AAPL",
+        source=source,
+        symbol=symbol,
         interval="1d",
-        asset_class="equity",
+        asset_class=asset_class,
         timezone="UTC",
         start="2024-01-01T00:00:00+00:00",
         end="2024-02-01T00:00:00+00:00",
@@ -384,10 +407,10 @@ def _write_candidate_fixture(
             "candidate_id": candidate_id,
             "experiment_id": experiment_id,
             "strategy_id": "trend_momentum",
-            "symbols": ["AAPL"],
+            "symbols": [symbol],
             "timeframe": "1d",
-            "data_source": "yfinance",
-            "asset_class": "equity",
+            "data_source": source,
+            "asset_class": asset_class,
             "data_version": data_version,
             "backtest_manifest_path": str(backtest_manifest_path),
             "scorecard_path": str(scorecard_path),
@@ -507,6 +530,133 @@ def test_promotion_gate_blocks_high_pbo_and_low_dsr(tmp_path: Path) -> None:
     assert any(reason.startswith("pbo_too_high:") for reason in result.reasons)
     assert result.evidence["validation_stats"]["pbo"]["pbo"] == 1.0
     assert result.evidence["validation_stats"]["deflated_sharpe_ratio"]["dsr"] < 0.10
+
+
+def test_crypto_sqlite_candidate_can_reach_paper_review_with_full_evidence(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_btc_sqlite_ready",
+        profile="good",
+        include_strategy_manifest=True,
+        source="sqlite",
+        symbol="BTCUSD",
+        asset_class="crypto",
+        data_version="qs-sqlite-BTCUSD-1d-validation",
+    )
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "READY_FOR_PAPER_REVIEW"
+    assert result.evidence["asset_class"] == "crypto"
+    assert result.evidence["data_source"] == "sqlite"
+    assert result.evidence["data_manifest_validation"]["ok"] is True
+    assert result.evidence["engine"] == "event_driven"
+    assert result.evidence["ledger_artifact_ok"] is True
+    assert result.evidence["orders_have_risk_check_id"] is True
+
+
+def test_crypto_fixture_candidate_is_blocked_from_promotion(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_btc_fixture_blocked",
+        profile="good",
+        include_strategy_manifest=True,
+        source="fixture",
+        symbol="BTCUSD",
+        asset_class="crypto",
+        data_version="qs-fixture-BTCUSD-1d-validation",
+    )
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert result.evidence["fixture_used"] is True
+    assert any("fixture_data_not_allowed" in reason for reason in result.reasons)
+
+
+def test_crypto_yfinance_candidate_is_blocked_until_sqlite_evidence_exists(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_btc_yfinance_blocked",
+        profile="good",
+        include_strategy_manifest=True,
+        source="yfinance",
+        symbol="BTCUSDT",
+        asset_class="crypto",
+        data_version="qs-yfinance-BTCUSDT-1d-validation",
+    )
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert result.evidence["asset_class"] == "crypto"
+    assert any(reason.startswith("crypto_requires_sqlite_data_source:") for reason in result.reasons)
+
+
+def test_crypto_trade_count_zero_fails_promotion(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_btc_zero_trades",
+        profile="good",
+        include_strategy_manifest=True,
+        source="sqlite",
+        symbol="BTCUSD",
+        asset_class="crypto",
+        data_version="qs-sqlite-BTCUSD-1d-zero-trades",
+    )
+    candidate_path = tmp_path / "research" / "candidates" / candidate_id / "candidate.json"
+    payload = json.loads(candidate_path.read_text(encoding="utf-8"))
+    payload["metrics"]["trade_count"] = 0
+    _write_json(candidate_path, payload)
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert "trade_count_zero: paper-review candidates must have at least one completed trade" in result.reasons
+
+
+def test_crypto_missing_event_driven_ledger_evidence_blocks_paper_candidate(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_btc_missing_ledger",
+        profile="good",
+        include_strategy_manifest=True,
+        source="sqlite",
+        symbol="BTCUSD",
+        asset_class="crypto",
+        data_version="qs-sqlite-BTCUSD-1d-missing-ledger",
+    )
+    manifest_path = tmp_path / "research" / "backtests" / candidate_id / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["engine"] = "vectorized"
+    manifest["evidence"].pop("ledger_artifact", None)
+    manifest.pop("ledger_artifact", None)
+    _write_json(manifest_path, manifest)
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert "event_driven_required: promotion requires event_driven backtest evidence" in result.reasons
+    assert any("ledger_reconciliation_artifact" in reason for reason in result.reasons)
+
+
+def test_crypto_sqlite_candidate_without_data_quality_manifest_is_blocked(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_btc_missing_data_manifest",
+        profile="good",
+        include_strategy_manifest=True,
+        source="sqlite",
+        symbol="BTCUSD",
+        asset_class="crypto",
+        data_version="qs-sqlite-BTCUSD-1d-missing-data-manifest",
+    )
+    (tmp_path / "manifests" / "qs-sqlite-BTCUSD-1d-missing-data-manifest.json").unlink()
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert any(reason.startswith("missing_canonical_data_manifest:") for reason in result.reasons)
 
 
 def test_promotion_gate_blocks_single_path_high_sharpe_candidate(tmp_path: Path) -> None:

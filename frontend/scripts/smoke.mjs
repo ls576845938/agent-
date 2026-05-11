@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 
 import {
+  buildCryptoResamplePlan,
   buildPortfolioRequest,
   buildSingleRequest,
+  collectCryptoBlockers,
   createRunViewModel,
+  summarizeCryptoCoverage,
   normalizeWeights,
   summarizeMetrics,
 } from '../src/lib/view-model.js';
@@ -58,6 +61,67 @@ const summary = {
   profit_factor: 1.22,
   trade_count: 18,
 };
+const coverageSummary = summarizeCryptoCoverage([
+  {exchange: 'binance_spot', symbol: 'BTCUSDT', interval: '1m', rows: 120, updated_at: '2026-05-10T00:00:00Z'},
+  {exchange: 'binance_spot', symbol: 'BTCUSDT', interval: '5m', rows: 24, updated_at: '2026-05-10T00:10:00Z'},
+]);
+assert.equal(coverageSummary.covered_intervals, 2);
+assert.equal(coverageSummary.missing_intervals.includes('1d'), true);
+assert.equal(coverageSummary.total_rows, 144);
+
+const resamplePlan = buildCryptoResamplePlan([
+  {exchange: 'binance_spot', symbol: 'BTCUSDT', interval: '1m', rows: 120, updated_at: '2026-05-10T00:00:00Z'},
+], 'BTCUSDT', 'data/market_data.sqlite');
+assert.equal(resamplePlan.length, 6);
+assert.equal(resamplePlan[1].action.includes('1m -> 5m'), true);
+
+const blockers = collectCryptoBlockers(
+  {
+    status: 'FAIL',
+    selected_priority: 'data',
+    framework: [],
+    source: 'sqlite',
+    actual_source: 'sqlite',
+    symbol: 'BTCUSDT',
+    interval: '1h',
+    row_count: 10,
+    raw_row_count: 10,
+    expected_rows: 100,
+    coverage_pct: 10,
+    missing_bars: 90,
+    duplicate_timestamps: 0,
+    cleaning_loss_rows: 0,
+    invalid_ohlc: 1,
+    non_positive_prices: 0,
+    non_positive_volume: 0,
+    large_price_jumps: 0,
+    volume_anomalies: 0,
+    max_gap_bars: 0,
+    max_price_jump_pct: 0,
+    quality_score: 10,
+    is_usable: false,
+    fingerprint: 'demo',
+    data_version: 'v1',
+    issues: [{severity: 'high', code: 'missing_bars', message: 'missing bars'}],
+  },
+  {
+    status: 'pass',
+    selected_priority: 'gate',
+    framework: [],
+    decision: 'fail',
+    next_stage: 'research_ready',
+    manifest_id: 'manifest-1',
+    manifest_path: '',
+    strategy_version: 'v1',
+    experiment_record: {},
+    data_quality: {},
+    backtest_summary: summary,
+    gates: [{name: 'data_quality', status: 'fail', message: 'coverage below threshold', metrics: {}, threshold: '>=95%'}],
+    recommendations: [],
+  },
+);
+assert.equal(blockers.blockers.length > 0, true);
+
 const cards = summarizeMetrics(summary);
 const viewModel = createRunViewModel(
   {

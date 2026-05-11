@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 import threading
@@ -15,6 +16,7 @@ from typing import Any
 
 from backend.app.core.config import logger, settings
 from backend.app.core.exceptions import DataNotAvailableError, DataSyncError
+from quant_us.data.storage.data_manifest import DataManifest, DataManifestStore
 
 
 SUPPORTED_INTERVALS = {"1m", "5m", "15m", "1h", "4h", "1d"}
@@ -106,6 +108,18 @@ class LatestUpdateSpec:
     limit: int = 1000
 
 
+@dataclass(frozen=True)
+class CryptoResampleSpec:
+    symbol: str = "BTCUSDT"
+    target_interval: str = "1h"
+    start: datetime | None = None
+    end: datetime | None = None
+    db_path: str = ""
+    exchange: str = DEFAULT_EXCHANGE
+    source_interval: str = "1m"
+    persist_manifest: bool = True
+
+
 @dataclass
 class DataSyncResult:
     run_id: str
@@ -122,6 +136,28 @@ class DataSyncResult:
     created_at: datetime | None = None
     completed_at: datetime | None = None
     error: str | None = None
+
+
+@dataclass
+class CryptoResampleResult:
+    status: str
+    db_path: str
+    exchange: str
+    symbol: str
+    source_interval: str
+    target_interval: str
+    start: datetime
+    end: datetime
+    source_rows: int
+    expected_source_rows: int
+    rows_written: int
+    coverage_pct: float
+    quality_score: float
+    manifest_path: str = ""
+    data_version: str = ""
+    fingerprint: str = ""
+    completed_at: datetime | None = None
+    quality_summary: dict[str, int] | None = None
 
 
 class MarketDataRepository:
@@ -350,6 +386,55 @@ class MarketDataRepository:
             ).fetchone()
         value = row["latest_open_time_ms"] if row else None
         return int(value) if value is not None else None
+
+    def interval_bounds(self, exchange: str, symbol: str, interval: str) -> dict[str, int] | None:
+        self.ensure_schema()
+        with self.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT
+                    MIN(open_time_ms) AS start_ms,
+                    MAX(open_time_ms) AS end_ms,
+                    COUNT(*) AS row_count
+                FROM market_klines
+                WHERE exchange = ? AND symbol = ? AND interval = ?
+                """,
+                (exchange, symbol, interval),
+            ).fetchone()
+        if row is None or row["start_ms"] is None or row["end_ms"] is None:
+            return None
+        return {
+            "start_ms": int(row["start_ms"]),
+            "end_ms": int(row["end_ms"]),
+            "row_count": int(row["row_count"]),
+        }
+
+    def load_klines(
+        self,
+        *,
+        exchange: str,
+        symbol: str,
+        interval: str,
+        start_open_time_ms: int,
+        end_open_time_ms: int,
+    ) -> list[dict[str, Any]]:
+        self.ensure_schema()
+        with self.connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT
+                    exchange, symbol, interval, open_time_ms, open_time,
+                    close_time_ms, close_time, open, high, low, close,
+                    volume, quote_volume, trade_count, taker_buy_base_volume,
+                    taker_buy_quote_volume, source
+                FROM market_klines
+                WHERE exchange = ? AND symbol = ? AND interval = ?
+                  AND open_time_ms >= ? AND open_time_ms <= ?
+                ORDER BY open_time_ms ASC
+                """,
+                (exchange, symbol, interval, start_open_time_ms, end_open_time_ms),
+            ).fetchall()
+        return [dict(row) for row in rows]
 
     def coverage(self, exchange: str = "", symbol: str = "", interval: str = "") -> list[dict[str, Any]]:
         self.ensure_schema()
@@ -603,6 +688,99 @@ class MarketDataService:
     def list_sync_runs(self, db_path: str = "", limit: int = 20) -> list[dict[str, Any]]:
         return self.repository(db_path).list_sync_runs(limit=limit)
 
+    def resample_crypto_klines(self, spec: CryptoResampleSpec) -> CryptoResampleResult:
+        symbol = spec.symbol.upper()
+        exchange = spec.exchange or DEFAULT_EXCHANGE
+        source_interval = normalize_interval(spec.source_interval)
+        target_interval = normalize_interval(spec.target_interval)
+        if source_interval != "1m":
+            raise DataSyncError(f"Crypto resample only supports source_interval=1m, got {source_interval}.")
+        if target_interval == source_interval:
+            raise DataSyncError("Crypto resample target_interval must be larger than 1m.")
+
+        repository = self.repository(spec.db_path)
+        source_bounds = repository.interval_bounds(exchange=exchange, symbol=symbol, interval=source_interval)
+        if source_bounds is None:
+            raise DataSyncError(
+                f"Source 1m klines not found for {exchange} {symbol}. "
+                "Load Binance BTCUSDT 1m data into market_klines before resampling."
+            )
+
+        source_interval_ms = interval_to_milliseconds(source_interval)
+        target_interval_ms = interval_to_milliseconds(target_interval)
+        start_ms, end_ms = self._resolve_resample_bounds(
+            spec=spec,
+            source_bounds=source_bounds,
+            target_interval_ms=target_interval_ms,
+        )
+        expected_target_rows = ((end_ms - start_ms) // target_interval_ms) + 1
+        expected_source_rows = expected_target_rows * (target_interval_ms // source_interval_ms)
+        source_end_open_time_ms = end_ms + target_interval_ms - source_interval_ms
+        source_rows = repository.load_klines(
+            exchange=exchange,
+            symbol=symbol,
+            interval=source_interval,
+            start_open_time_ms=start_ms,
+            end_open_time_ms=source_end_open_time_ms,
+        )
+
+        aggregated_records = self._aggregate_resampled_records(
+            exchange=exchange,
+            symbol=symbol,
+            target_interval=target_interval,
+            start_ms=start_ms,
+            end_ms=end_ms,
+            target_interval_ms=target_interval_ms,
+            source_interval_ms=source_interval_ms,
+            source_rows=source_rows,
+        )
+        if len(source_rows) != expected_source_rows:
+            raise DataSyncError(
+                f"Insufficient source 1m klines for {symbol} {target_interval}: "
+                f"expected {expected_source_rows} rows from {from_milliseconds(start_ms).isoformat()} "
+                f"to {from_milliseconds(source_end_open_time_ms).isoformat()}, found {len(source_rows)}."
+            )
+
+        rows_written = repository.upsert_klines(aggregated_records)
+        fingerprint = self._fingerprint_records(aggregated_records)
+        quality_summary = {
+            "missing_bars": 0,
+            "duplicate_bars": 0,
+            "price_jump_bars": 0,
+            "zero_volume_bars": 0,
+            "corporate_action_flags": 0,
+            "invalid_ohlc_rows": 0,
+            "non_positive_price_rows": 0,
+            "duplicate_timestamps_removed": 0,
+            "cleaning_loss_rows": 0,
+            "total_issue_count": 0,
+        }
+        completed_at = utc_now()
+        result = CryptoResampleResult(
+            status="completed",
+            db_path=str(repository.db_path),
+            exchange=exchange,
+            symbol=symbol,
+            source_interval=source_interval,
+            target_interval=target_interval,
+            start=from_milliseconds(start_ms),
+            end=from_milliseconds(end_ms),
+            source_rows=len(source_rows),
+            expected_source_rows=expected_source_rows,
+            rows_written=rows_written,
+            coverage_pct=100.0,
+            quality_score=100.0,
+            fingerprint=fingerprint,
+            completed_at=completed_at,
+            quality_summary=quality_summary,
+        )
+        if spec.persist_manifest:
+            manifest = self._build_resample_manifest(result=result)
+            manifest_path = DataManifestStore(root=settings.repo_root / "data" / "manifests").write(manifest)
+            result.data_version = manifest.data_version
+            result.manifest_path = str(manifest_path)
+        return result
+
     def sync_binance_klines(self, spec: DataSyncSpec) -> DataSyncResult:
         spec = DataSyncSpec(
             symbol=spec.symbol.upper(),
@@ -728,6 +906,163 @@ class MarketDataService:
     def _latest_closed_open_time_ms(self, interval_ms: int) -> int:
         now_ms = int(utc_now().timestamp() * 1000)
         return (now_ms // interval_ms) * interval_ms - interval_ms
+
+    def _resolve_resample_bounds(
+        self,
+        *,
+        spec: CryptoResampleSpec,
+        source_bounds: dict[str, int],
+        target_interval_ms: int,
+    ) -> tuple[int, int]:
+        source_start_ms = int(source_bounds["start_ms"])
+        source_end_ms = int(source_bounds["end_ms"])
+        start_ms = source_start_ms if spec.start is None else to_milliseconds(to_utc(spec.start))
+        end_ms = source_end_ms if spec.end is None else to_milliseconds(to_utc(spec.end))
+        aligned_start_ms = ((start_ms + target_interval_ms - 1) // target_interval_ms) * target_interval_ms
+        aligned_end_ms = (end_ms // target_interval_ms) * target_interval_ms
+        if aligned_start_ms > aligned_end_ms:
+            raise DataSyncError(
+                f"Requested range does not contain a full {spec.target_interval} bar after alignment: "
+                f"start={from_milliseconds(start_ms).isoformat()} end={from_milliseconds(end_ms).isoformat()}."
+            )
+        return aligned_start_ms, aligned_end_ms
+
+    def _aggregate_resampled_records(
+        self,
+        *,
+        exchange: str,
+        symbol: str,
+        target_interval: str,
+        start_ms: int,
+        end_ms: int,
+        target_interval_ms: int,
+        source_interval_ms: int,
+        source_rows: list[dict[str, Any]],
+    ) -> list[KlineRecord]:
+        if not source_rows:
+            raise DataSyncError(
+                f"Insufficient source 1m klines for {symbol} {target_interval}: no source rows found in the requested range."
+            )
+
+        records_by_open_time = {int(row["open_time_ms"]): row for row in source_rows}
+        expected_group_size = target_interval_ms // source_interval_ms
+        aggregated: list[KlineRecord] = []
+        bucket_open_time_ms = start_ms
+        while bucket_open_time_ms <= end_ms:
+            bucket_rows: list[dict[str, Any]] = []
+            missing_open_times: list[int] = []
+            for offset in range(expected_group_size):
+                minute_open_time_ms = bucket_open_time_ms + offset * source_interval_ms
+                row = records_by_open_time.get(minute_open_time_ms)
+                if row is None:
+                    missing_open_times.append(minute_open_time_ms)
+                    continue
+                bucket_rows.append(row)
+            if missing_open_times:
+                first_missing = from_milliseconds(missing_open_times[0]).isoformat()
+                raise DataSyncError(
+                    f"Insufficient source 1m klines for {symbol} {target_interval} bucket "
+                    f"{from_milliseconds(bucket_open_time_ms).isoformat()}: missing {len(missing_open_times)} "
+                    f"source rows, first missing {first_missing}."
+                )
+
+            aggregated.append(
+                KlineRecord(
+                    exchange=exchange,
+                    symbol=symbol,
+                    interval=target_interval,
+                    open_time_ms=bucket_open_time_ms,
+                    open_time=from_milliseconds(bucket_open_time_ms).isoformat(),
+                    close_time_ms=bucket_open_time_ms + target_interval_ms - 1,
+                    close_time=from_milliseconds(bucket_open_time_ms + target_interval_ms - 1).isoformat(),
+                    open=float(bucket_rows[0]["open"]),
+                    high=max(float(row["high"]) for row in bucket_rows),
+                    low=min(float(row["low"]) for row in bucket_rows),
+                    close=float(bucket_rows[-1]["close"]),
+                    volume=sum(float(row["volume"]) for row in bucket_rows),
+                    quote_volume=sum(float(row["quote_volume"]) for row in bucket_rows),
+                    trade_count=sum(int(row["trade_count"]) for row in bucket_rows),
+                    taker_buy_base_volume=sum(float(row["taker_buy_base_volume"]) for row in bucket_rows),
+                    taker_buy_quote_volume=sum(float(row["taker_buy_quote_volume"]) for row in bucket_rows),
+                    source="sqlite_resample_1m",
+                )
+            )
+            bucket_open_time_ms += target_interval_ms
+        return aggregated
+
+    def _fingerprint_records(self, records: list[KlineRecord]) -> str:
+        payload = [
+            {
+                "exchange": record.exchange,
+                "symbol": record.symbol,
+                "interval": record.interval,
+                "open_time_ms": record.open_time_ms,
+                "close_time_ms": record.close_time_ms,
+                "open": record.open,
+                "high": record.high,
+                "low": record.low,
+                "close": record.close,
+                "volume": record.volume,
+                "quote_volume": record.quote_volume,
+                "trade_count": record.trade_count,
+                "taker_buy_base_volume": record.taker_buy_base_volume,
+                "taker_buy_quote_volume": record.taker_buy_quote_volume,
+            }
+            for record in records
+        ]
+        return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
+
+    def _build_resample_manifest(self, *, result: CryptoResampleResult) -> DataManifest:
+        data_version = (
+            f"qs-sqlite-{result.symbol}-{result.target_interval}-"
+            f"{result.start.strftime('%Y%m%dT%H%M%S')}-{result.fingerprint[:12]}"
+        )
+        quality_summary = result.quality_summary or {}
+        return DataManifest(
+            data_version=data_version,
+            source="sqlite",
+            symbol=result.symbol,
+            interval=result.target_interval,
+            asset_class="crypto",
+            timezone="UTC",
+            adjustment="raw",
+            adjustment_policy="raw",
+            corporate_action_adjustment="raw",
+            start=result.start.isoformat(),
+            end=result.end.isoformat(),
+            row_count=result.rows_written,
+            expected_rows=result.rows_written,
+            coverage_pct=result.coverage_pct,
+            fingerprint=result.fingerprint,
+            checksum=result.fingerprint,
+            quality_score=result.quality_score,
+            fields=[
+                "open_time",
+                "open",
+                "high",
+                "low",
+                "close",
+                "volume",
+                "quote_volume",
+                "trade_count",
+                "taker_buy_base_volume",
+                "taker_buy_quote_volume",
+            ],
+            issues=[],
+            cleaning={
+                "duplicate_timestamps_removed": 0,
+                "invalid_ohlc_removed": 0,
+                "non_positive_prices_removed": 0,
+                "cleaning_loss_rows": 0,
+                "missing_bars": 0,
+            },
+            quality_summary=quality_summary,
+            raw_path=f"sqlite://{result.db_path}#market_klines/{result.exchange}/{result.symbol}/{result.source_interval}",
+            cleaned_path=f"sqlite://{result.db_path}#market_klines/{result.exchange}/{result.symbol}/{result.target_interval}",
+            universe_id=f"{result.exchange}:{result.symbol}",
+            universe_source="sqlite:market_klines",
+            survivorship_bias_risk="clean",
+        )
 
     def _parse_binance_kline(
         self,

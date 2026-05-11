@@ -12,6 +12,10 @@ from backend.app.api.schemas import (
     ChartSeriesPayload,
     CostStressRequest,
     CostStressResponse,
+    CryptoClosureRequest,
+    CryptoClosureResponse,
+    CryptoResampleRequest,
+    CryptoResampleResponse,
     DataCoverageItem,
     EventDrivenCostStressResponse,
     PaperBacktestResponse,
@@ -61,7 +65,7 @@ from backend.app.api.schemas import (
     WalkForwardResponse,
 )
 from backend.app.core.config import settings
-from backend.app.core.deps import data_update_scheduler, market_data_service, promotion_gate_service, research_service, run_registry, us_quant_service
+from backend.app.core.deps import crypto_closure_service, data_update_scheduler, market_data_service, promotion_gate_service, research_service, run_registry, us_quant_service
 from backend.app.core.exceptions import QuantStationError, RunNotFoundError
 
 
@@ -653,7 +657,7 @@ def create_app():
             "FastAPI is not installed. Install project dependencies from pyproject.toml before starting the API."
         ) from exc
 
-    from backend.app.services.data_management import DataSyncSpec, LatestUpdateSpec, resolve_data_db_path
+    from backend.app.services.data_management import CryptoResampleSpec, DataSyncSpec, LatestUpdateSpec, resolve_data_db_path
     from backend.app.services.market_data import inspect_market_data_quality
 
     api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -830,6 +834,25 @@ def create_app():
                 )
             )
             return _serialize_data_sync_result(result)
+        except QuantStationError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/data/resample", response_model=CryptoResampleResponse, dependencies=[Depends(verify_api_key)])
+    async def resample_crypto_market_data(request: CryptoResampleRequest) -> CryptoResampleResponse:
+        try:
+            result = market_data_service.resample_crypto_klines(
+                CryptoResampleSpec(
+                    exchange=request.exchange,
+                    symbol=request.symbol,
+                    source_interval=request.source_interval,
+                    target_interval=request.target_interval,
+                    start=request.start,
+                    end=request.end,
+                    db_path=request.db_path,
+                    persist_manifest=request.persist_manifest,
+                )
+            )
+            return CryptoResampleResponse.model_validate(asdict(result))
         except QuantStationError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -1012,6 +1035,16 @@ def create_app():
             record = run_registry.create_failed_run(mode="single", request=payload, error=str(exc))
         return _serialize_run(record)
 
+    @router.post("/backtests/crypto-event", response_model=RunStatusResponse, dependencies=[Depends(verify_api_key)])
+    async def run_crypto_event_backtest(request: SingleBacktestRequest) -> RunStatusResponse:
+        payload = request.model_dump()
+        try:
+            result = research_service.run_crypto_event(payload)
+            record = run_registry.create_completed_run(mode="crypto_event", request=payload, result=result)
+        except (QuantStationError, ValueError) as exc:
+            record = run_registry.create_failed_run(mode="crypto_event", request=payload, error=str(exc))
+        return _serialize_run(record)
+
     @router.post("/backtests/portfolio", response_model=RunStatusResponse, dependencies=[Depends(verify_api_key)])
     async def run_portfolio_backtest(request: PortfolioBacktestRequest) -> RunStatusResponse:
         payload = request.model_dump()
@@ -1033,6 +1066,13 @@ def create_app():
     async def evaluate_research_promotion_gate(request: ResearchPromotionGateRequest) -> ResearchPromotionGateResponse:
         try:
             return ResearchPromotionGateResponse.model_validate(promotion_gate_service.evaluate(request.model_dump()))
+        except (QuantStationError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/crypto/research/closure", response_model=CryptoClosureResponse, dependencies=[Depends(verify_api_key)])
+    async def run_crypto_research_closure(request: CryptoClosureRequest) -> CryptoClosureResponse:
+        try:
+            return CryptoClosureResponse.model_validate(crypto_closure_service.run(request.model_dump()))
         except (QuantStationError, ValueError) as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 

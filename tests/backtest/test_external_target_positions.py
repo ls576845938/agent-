@@ -25,6 +25,20 @@ def _bar(ts: datetime, *, open_: float, close: float) -> Bar:
     )
 
 
+def _btc_bar(ts: datetime, *, open_: float = 50_000.0, close: float = 50_000.0) -> Bar:
+    return Bar(
+        timestamp_utc=ts,
+        symbol="BTCUSD",
+        open=open_,
+        high=max(open_, close) + 100.0,
+        low=min(open_, close) - 100.0,
+        close=close,
+        volume=100.0,
+        source="sqlite",
+        bar_size="1m",
+    )
+
+
 def _pypfopt_target(ts: datetime, weight: float = 0.55) -> TargetPosition:
     return TargetPosition(
         timestamp_utc=ts,
@@ -36,6 +50,16 @@ def _pypfopt_target(ts: datetime, weight: float = 0.55) -> TargetPosition:
             "optimizer": "max_sharpe",
             "source": "pypfopt_target_weights",
         },
+    )
+
+
+def _btc_target(ts: datetime, weight: float = 0.55) -> TargetPosition:
+    return TargetPosition(
+        timestamp_utc=ts,
+        strategy_id="btc_research_candidate",
+        symbol="BTCUSD",
+        target_weight=weight,
+        metadata={"source": "crypto_research_target"},
     )
 
 
@@ -132,3 +156,33 @@ def test_external_target_weights_rejected_by_risk_gate_never_create_orders_or_fi
     assert result.metadata["external_target_position_semantics"] == (
         "target_weights_imported_as_target_positions_rebalanced_before_risk_gate"
     )
+
+
+def test_crypto_target_positions_do_not_bypass_backtest_risk_gate() -> None:
+    start = datetime(2026, 5, 11, 12, 0, tzinfo=UTC)
+    bars = [
+        _btc_bar(start),
+        _btc_bar(start + timedelta(minutes=1), open_=50_100.0, close=50_200.0),
+    ]
+    engine = EventDrivenBacktestEngine(
+        strategies=[],
+        config=BacktestConfig(
+            commission_rate=0.0,
+            slippage_bps=0.0,
+            risk=PreTradeRiskConfig(
+                skip_session_check=True,
+                max_symbol_weight=1.0,
+                max_order_notional_pct=0.05,
+            ),
+            target_positions=(_btc_target(start),),
+        ),
+    )
+
+    result = engine.run(bars)
+
+    risk_events = [event for event in result.events if isinstance(event, RiskEvent)]
+    assert len(risk_events) == 1
+    assert risk_events[0].decision.approved is False
+    assert risk_events[0].decision.reason == "order_notional_limit"
+    assert result.orders == []
+    assert result.fills == []

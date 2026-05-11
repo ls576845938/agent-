@@ -33,6 +33,7 @@ from quant_us.research.validation import summarize_candidate_validation
 
 
 ALLOWED_DATA_SOURCES = {"yfinance", "alpaca", "sqlite"}
+ALLOWED_ASSET_CLASSES = {"equity", "crypto"}
 CRYPTO_SYMBOL_SUFFIXES = ("USDT", "USD", "BTC", "ETH")
 DATA_MANIFEST_ADVISORY_WARNINGS = {
     "universe_id_missing",
@@ -234,6 +235,8 @@ class ResearchPromotionGate:
 
         trade_count = int(metrics.get("trade_count", 0))
         evidence["trade_count"] = trade_count
+        if trade_count <= 0:
+            reasons.append("trade_count_zero: paper-review candidates must have at least one completed trade")
         if trade_count <= 10:
             warnings.append(
                 f"trade_count_too_low: only {trade_count} trades "
@@ -929,10 +932,15 @@ class ResearchPromotionGate:
                 f"unsupported_data_source: data_source={data_source or 'unknown'} "
                 f"(allowed={sorted(ALLOWED_DATA_SOURCES)})"
             )
-        if asset_class != "equity":
+        if asset_class not in ALLOWED_ASSET_CLASSES:
             reasons.append(
                 f"asset_class_not_allowed: asset_class={asset_class or 'unknown'} "
-                "must be equity"
+                f"must be one of {sorted(ALLOWED_ASSET_CLASSES)}"
+            )
+        if asset_class == "crypto" and data_source != "sqlite":
+            reasons.append(
+                f"crypto_requires_sqlite_data_source: data_source={data_source or 'unknown'} "
+                "must be sqlite for BTC/crypto paper-review candidates"
             )
         if data_version:
             self._evaluate_data_manifest(
@@ -1547,7 +1555,10 @@ class ResearchPromotionGate:
             return
 
         manifest = store_manifest
-        validation = validate_manifest_for_promotion(manifest)
+        validation = validate_manifest_for_promotion(
+            manifest,
+            allow_asset_classes=ALLOWED_ASSET_CLASSES,
+        )
         evidence["data_manifest_id"] = manifest.manifest_id
         evidence["data_manifest_checksum"] = manifest.effective_checksum
         evidence["data_manifest_fingerprint"] = manifest.fingerprint

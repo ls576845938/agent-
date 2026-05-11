@@ -196,7 +196,7 @@ class ResearchPromotionGateDeepTests(unittest.TestCase):
         with (
             patch("backend.app.services.research_gate.inspect_market_data_quality",
                   return_value=_quality(source="yfinance", actual_source="yfinance", symbol="BTCUSDT")),
-            patch.object(ResearchBacktestService, "run_single", return_value=_mock_artifacts()),
+            patch.object(ResearchBacktestService, "run_crypto_event", return_value=_mock_artifacts()),
         ):
             result = self.service.evaluate(request)
         scope_gate = next(g for g in result["gates"] if g["name"] == "evidence_scope")

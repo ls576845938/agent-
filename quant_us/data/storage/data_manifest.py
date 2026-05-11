@@ -328,6 +328,7 @@ def validate_manifest_for_promotion(
     *,
     now: datetime | None = None,
     allow_sources: set[str] | None = None,
+    allow_asset_classes: set[str] | None = None,
     min_coverage_pct: float = 90.0,
     min_quality_score: float = 80.0,
     strict: bool = False,
@@ -335,6 +336,7 @@ def validate_manifest_for_promotion(
     reasons: list[str] = []
     warnings: list[str] = []
     sources = allow_sources or PROMOTION_SOURCES
+    asset_classes = allow_asset_classes or {"equity"}
     timestamp_now = now or utc_now()
     if timestamp_now.tzinfo is None:
         timestamp_now = timestamp_now.replace(tzinfo=timezone.utc)
@@ -364,7 +366,7 @@ def validate_manifest_for_promotion(
         reasons.append("fixture_data_not_allowed")
     if source not in sources:
         reasons.append(f"unsupported_data_source:{source or 'unknown'}")
-    if asset_class != "equity":
+    if asset_class not in asset_classes:
         reasons.append(f"asset_class_not_allowed:{asset_class or 'unknown'}")
     if not manifest.fingerprint:
         reasons.append("missing_fingerprint")

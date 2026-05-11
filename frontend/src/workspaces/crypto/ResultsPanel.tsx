@@ -21,6 +21,12 @@ interface ResultsPanelProps {
   viewModel: {hasResult: boolean; hasError: boolean; candleCount: number; equityPoints: number; statusTone: string};
   drawdownPeriods: DrawdownPeriod[];
   monthlyReturns: PeriodReturn[];
+  blockers: {
+    dataQualityBlockers: string[];
+    promotionBlockers: string[];
+    coverageBlockers: string[];
+    blockers: string[];
+  };
   onMvpAcceptance: () => void;
 }
 
@@ -32,14 +38,15 @@ export default function ResultsPanel({
   reportSections, optimizationHints,
   chart, run, viewModel,
   drawdownPeriods, monthlyReturns,
+  blockers,
   onMvpAcceptance,
 }: ResultsPanelProps) {
   return (
     <>
-      <section className="panel mvp-panel">
+      <section className="panel mvp-panel" data-testid="crypto-results">
         <div className="panel-header"><h2>MVP 交付闭环</h2><span>已完成 {mvpDoneCount}/{mvpSteps.length}</span></div>
         <div className="mvp-command-row">
-          <div><strong>{promotionGate ? promotionGate.next_stage : run?.status === 'completed' ? 'ready_for_gate' : 'research_ready'}</strong><p>{promotionGate?.manifest_id ? `Manifest ${promotionGate.manifest_id}` : '最小闭环待验收'}</p></div>
+          <div><strong>{promotionGate ? promotionGate.next_stage : run?.status === 'completed' ? 'ready_for_gate' : 'research_ready'}</strong><p>{promotionGate?.manifest_id ? `Manifest ${promotionGate.manifest_id}` : '事件驱动回测结果待验收'}</p></div>
           <button type="button" className="primary-button" disabled={disableMvp} onClick={onMvpAcceptance}>{mvpLoading ? '验收中...' : '一键 MVP 验收'}</button>
         </div>
         <div className="mvp-step-grid">
@@ -51,6 +58,16 @@ export default function ResultsPanel({
       </section>
 
       {error ? <div className="panel error-panel"><div className="panel-header"><h2>运行错误</h2></div><p>{error}</p></div> : null}
+
+      <section className="panel insight-panel" data-testid="crypto-blockers">
+        <div className="panel-header"><h3>Data quality / promotion blockers</h3><span>{blockers.blockers.length} 项</span></div>
+        <div className="hint-list">
+          {blockers.coverageBlockers.map((item) => <div key={item} className="hint-row hint-medium"><span>coverage</span><p>{item}</p></div>)}
+          {blockers.dataQualityBlockers.map((item) => <div key={item} className="hint-row hint-high"><span>quality</span><p>{item}</p></div>)}
+          {blockers.promotionBlockers.map((item) => <div key={item} className="hint-row hint-medium"><span>promotion</span><p>{item}</p></div>)}
+          {!blockers.blockers.length ? <div className="hint-row"><span>ready</span><p>SQLite 覆盖、event-driven 回测和准入门都没有显式 blocker。</p></div> : null}
+        </div>
+      </section>
 
       {children}
 

@@ -1224,8 +1224,8 @@ class TestPromotionGateEnhanced:
         assert result.evidence["data_manifest_exists"] is False
         assert any("missing_data_manifest" in r for r in result.reasons)
 
-    def test_crypto_symbol_is_blocked(self, tmp_path: Path) -> None:
-        """Automation promotion gate blocks crypto-like symbols from US equity paper review."""
+    def test_crypto_symbol_requires_sqlite_evidence(self, tmp_path: Path) -> None:
+        """Automation promotion gate blocks BTC/crypto without governed sqlite evidence."""
         from quant_us.research.automation.promotion_gate import (
             ResearchPromotionGate,
         )
@@ -1271,7 +1271,7 @@ class TestPromotionGateEnhanced:
 
         assert result.decision == "BLOCKED"
         assert result.evidence["asset_class"] == "crypto"
-        assert any("asset_class_not_allowed" in r for r in result.reasons)
+        assert any("crypto_requires_sqlite_data_source" in r for r in result.reasons)
 
     def test_missing_event_ledger_metadata_is_blocked(self, tmp_path: Path) -> None:
         """Clean scalar metrics are not enough without event-driven ledger metadata."""

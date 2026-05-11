@@ -1,3 +1,5 @@
+import type {CryptoCoverageSummary, CryptoResamplePlanItem} from './shared-types';
+
 export type StrategyInfo = {
   id: string;
   display_name: string;
@@ -79,6 +81,27 @@ export type DataSyncRunResponse = {
   error?: string | null;
 };
 
+export type CryptoResampleResponse = {
+  status: string;
+  db_path: string;
+  exchange: string;
+  symbol: string;
+  source_interval: string;
+  target_interval: string;
+  start: string;
+  end: string;
+  source_rows: number;
+  expected_source_rows: number;
+  rows_written: number;
+  coverage_pct: number;
+  quality_score: number;
+  manifest_path: string;
+  data_version: string;
+  fingerprint: string;
+  completed_at?: string | null;
+  quality_summary: Record<string, number>;
+};
+
 export type KlinePreviewResponse = {
   db_path: string;
   rows: Array<{
@@ -125,6 +148,22 @@ export type FormState = {
 };
 
 export function normalizeWeights(weightMap: Record<string, number>): Record<string, number>;
+export const cryptoIntervalOrder: Array<'1m' | '5m' | '15m' | '1h' | '4h' | '1d'>;
+export function summarizeCryptoCoverage(coverage: DataCoverageItem[]): CryptoCoverageSummary & {intervals: DataCoverageItem[]};
+export function buildCryptoResamplePlan(
+  coverage: DataCoverageItem[],
+  symbol?: string,
+  dbPath?: string,
+): CryptoResamplePlanItem[];
+export function collectCryptoBlockers(
+  dataQuality: import('./shared-types').DataQualityResponse | null | undefined,
+  promotionGate: import('./shared-types').PromotionGateResponse | null | undefined,
+): {
+  dataQualityBlockers: string[];
+  promotionBlockers: string[];
+  coverageBlockers: string[];
+  blockers: string[];
+};
 export function buildSingleRequest(form: FormState): Record<string, unknown>;
 export function buildPortfolioRequest(form: FormState, weightMap: Record<string, number>): Record<string, unknown>;
 export function summarizeMetrics(summary?: Summary | null): Array<{label: string; value: string; tone: string}>;

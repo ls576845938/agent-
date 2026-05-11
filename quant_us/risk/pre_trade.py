@@ -45,7 +45,12 @@ class PortfolioRiskPolicy:
 class PreTradeRiskConfig:
     max_symbol_weight: float = 0.10
     max_gross_exposure: float = 1.0
+    max_leverage: float = 1.0
     max_order_notional_pct: float = 0.10
+    max_daily_turnover_pct: float = 1.0
+    max_orders_per_minute: int = 60
+    max_data_staleness_seconds: float = 300.0
+    max_gap_pct: float = 20.0
     min_cash_buffer_pct: float = 0.02
     long_only: bool = True
     allowed_sessions: set[SessionName] = field(default_factory=lambda: {SessionName.REGULAR, SessionName.AFTER_HOURS})
@@ -67,8 +72,22 @@ class PreTradeRiskEngine:
         timestamp: datetime,
     ) -> RiskDecision:
         symbol = intent.symbol.upper()
+        metadata = dict(intent.metadata or {})
         if symbol in self.config.blacklisted_symbols:
             return self._reject(intent, "symbol_blacklisted")
+        if self._metadata_bool(metadata, "market_data_stale"):
+            return self._reject(intent, "market_data_stale", self.config.max_data_staleness_seconds)
+        stale_seconds = self._metadata_float(metadata, "data_stale_seconds")
+        if stale_seconds is not None and stale_seconds > self.config.max_data_staleness_seconds:
+            return self._reject(intent, "market_data_stale", self.config.max_data_staleness_seconds)
+        if self._metadata_bool(metadata, "market_data_gap") or self._metadata_bool(metadata, "data_gap_blocker"):
+            return self._reject(intent, "market_data_gap", self.config.max_gap_pct)
+        gap_pct = self._metadata_float(metadata, "gap_pct")
+        if gap_pct is not None and abs(gap_pct) > self.config.max_gap_pct:
+            return self._reject(intent, "market_data_gap", self.config.max_gap_pct)
+        orders_last_minute = self._metadata_float(metadata, "orders_last_minute")
+        if orders_last_minute is not None and orders_last_minute >= self.config.max_orders_per_minute:
+            return self._reject(intent, "order_frequency_limit", float(self.config.max_orders_per_minute))
         if intent.quantity <= 0:
             return self._reject(intent, "non_positive_quantity")
         if market_price <= 0:
@@ -87,6 +106,13 @@ class PreTradeRiskEngine:
         order_notional = abs(intent.quantity * market_price)
         if order_notional / equity > self.config.max_order_notional_pct:
             return self._reject(intent, "order_notional_limit", self.config.max_order_notional_pct)
+        daily_turnover_notional = self._metadata_float(metadata, "daily_turnover_notional")
+        if daily_turnover_notional is None:
+            daily_turnover_pct = self._metadata_float(metadata, "daily_turnover_pct")
+            daily_turnover_notional = 0.0 if daily_turnover_pct is None else daily_turnover_pct * equity
+        projected_turnover_pct = (max(0.0, daily_turnover_notional) + order_notional) / equity
+        if projected_turnover_pct > self.config.max_daily_turnover_pct + 1e-9:
+            return self._reject(intent, "turnover_limit", self.config.max_daily_turnover_pct)
 
         projected_symbol_weight = abs(projected_quantity * market_price) / equity
         if projected_symbol_weight > self.config.max_symbol_weight + 1e-9:
@@ -110,8 +136,11 @@ class PreTradeRiskEngine:
             from quant_us.core.types import Position
 
             projected_positions[symbol] = Position(symbol=symbol, quantity=projected_quantity, market_price=market_price)
-        if gross_exposure(projected_positions) / equity > self.config.max_gross_exposure + 1e-9:
+        projected_gross_pct = gross_exposure(projected_positions) / equity
+        if projected_gross_pct > self.config.max_gross_exposure + 1e-9:
             return self._reject(intent, "gross_exposure_limit", self.config.max_gross_exposure)
+        if projected_gross_pct > self.config.max_leverage + 1e-9:
+            return self._reject(intent, "leverage_limit", self.config.max_leverage)
 
         return RiskDecision(
             approved=True,
@@ -131,3 +160,21 @@ class PreTradeRiskEngine:
             rule_name=rule_name,
             threshold=threshold,
         )
+
+    @staticmethod
+    def _metadata_float(metadata: dict[str, object], key: str) -> float | None:
+        if key not in metadata or metadata[key] is None:
+            return None
+        try:
+            return float(metadata[key])
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _metadata_bool(metadata: dict[str, object], key: str) -> bool:
+        value = metadata.get(key)
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.strip().lower() in {"1", "true", "yes", "y"}
+        return bool(value)

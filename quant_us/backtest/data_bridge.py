@@ -2,16 +2,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any
+from typing import Callable
 
 import pandas as pd
 
-from quant_us.backtest.engine import BacktestConfig, BacktestResult, EventDrivenBacktestEngine
+from quant_us.backtest.engine import BacktestBroker, BacktestConfig, BacktestResult, EventDrivenBacktestEngine
 from quant_us.core.calendar import USEquityCalendar
-from quant_us.core.types import Bar
+from quant_us.core.enums import SignalDirection
+from quant_us.core.events import MarketEvent
+from quant_us.core.types import Bar, Signal
 from quant_us.data.storage.data_manifest import DataManifest, DataManifestStore
-from quant_us.strategies.base import Strategy
+from quant_us.strategies.base import Strategy, StrategyContext
 
 
 def bars_from_dataframe(
@@ -63,12 +64,61 @@ def feature_map_from_frame(
     return {datetime.combine(d, datetime.min.time()): v for d, v in raw.items()}
 
 
+class SignalReplayStrategy(Strategy):
+    """Replay precomputed target signals through the event-driven engine."""
+
+    version = "signal_replay_v1"
+
+    def __init__(
+        self,
+        strategy_id: str,
+        signal: pd.Series,
+        horizon: str = "replay",
+        params: dict | None = None,
+    ) -> None:
+        self.strategy_id = strategy_id
+        self.horizon = horizon
+        self.params = dict(params or {})
+        normalized = signal.fillna(0.0).clip(-1.0, 1.0).copy()
+        normalized.index = pd.to_datetime(normalized.index, utc=True)
+        self._signals = {
+            pd.Timestamp(timestamp).to_pydatetime(): float(value)
+            for timestamp, value in normalized.items()
+        }
+
+    def on_bar(self, event: MarketEvent, context: StrategyContext):
+        raw_signal = float(self._signals.get(pd.Timestamp(event.timestamp_utc).to_pydatetime(), 0.0))
+        if raw_signal > 0:
+            direction = SignalDirection.LONG
+            strength = min(1.0, abs(raw_signal))
+        elif raw_signal < 0:
+            direction = SignalDirection.SHORT
+            strength = min(1.0, abs(raw_signal))
+        else:
+            direction = SignalDirection.FLAT
+            strength = 1.0
+
+        return [
+            Signal(
+                timestamp_utc=event.timestamp_utc,
+                strategy_id=self.strategy_id,
+                symbol=event.bar.symbol,
+                direction=direction,
+                strength=strength,
+                horizon=self.horizon,
+                reason="signal_replay",
+                metadata={"raw_signal": raw_signal},
+            )
+        ]
+
+
 @dataclass
 class EventDrivenBacktestRunner:
     strategies: list[Strategy]
     config: BacktestConfig = field(default_factory=BacktestConfig)
     calendar: USEquityCalendar = field(default_factory=USEquityCalendar)
     manifest_store: DataManifestStore | None = None
+    broker_factory: Callable[[BacktestConfig], BacktestBroker] | None = None
 
     def run_from_dataframe(
         self,
@@ -88,6 +138,7 @@ class EventDrivenBacktestRunner:
             config=self.config,
             calendar=self.calendar,
             features_by_date=features_by_date,
+            broker=self._build_broker(),
         )
         result = engine.run(bars)
 
@@ -114,8 +165,28 @@ class EventDrivenBacktestRunner:
             config=self.config,
             calendar=self.calendar,
             features_by_date=features_by_date,
+            broker=self._build_broker(),
         )
         return engine.run(bars)
+
+    def connection_health(self) -> dict[str, object]:
+        broker = self._build_broker()
+        if broker is None:
+            return {
+                "status": "ok",
+                "broker": "SimulatedBroker(default)",
+                "market_prices": 0,
+            }
+        return {
+            "status": "ok",
+            "broker": getattr(broker, "broker_name", broker.__class__.__name__),
+            "market_prices": len(getattr(broker, "market_prices", {})),
+        }
+
+    def _build_broker(self) -> BacktestBroker | None:
+        if self.broker_factory is None:
+            return None
+        return self.broker_factory(self.config)
 
     def _attach_manifest(self, result: BacktestResult) -> None:
         store = self.manifest_store or DataManifestStore()
