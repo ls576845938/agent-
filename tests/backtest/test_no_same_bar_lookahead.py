@@ -78,3 +78,29 @@ def test_backtest_does_not_fill_signal_when_no_next_bar_exists() -> None:
     assert result.orders == []
     assert result.fills == []
     assert result.metadata["pending_intent_count"] == 1
+
+
+def test_streaming_market_events_keep_next_bar_execution_semantics() -> None:
+    start = datetime(2026, 5, 11, 14, 30, tzinfo=timezone.utc)
+    bars = [
+        _bar(start, open_=95.0, close=100.0),
+        _bar(start + timedelta(minutes=1), open_=99.0, close=101.0),
+    ]
+    batch_engine = EventDrivenBacktestEngine(
+        strategies=[FirstBarLongStrategy()],
+        config=BacktestConfig(commission_rate=0.0, slippage_bps=0.0),
+    )
+    stream_engine = EventDrivenBacktestEngine(
+        strategies=[FirstBarLongStrategy()],
+        config=BacktestConfig(commission_rate=0.0, slippage_bps=0.0),
+    )
+
+    batch_result = batch_engine.run(bars)
+    stream_result = stream_engine.run_streaming(MarketEvent.from_bar(bar) for bar in bars)
+
+    assert [fill.price for fill in stream_result.fills] == [fill.price for fill in batch_result.fills]
+    assert [fill.filled_at for fill in stream_result.fills] == [
+        fill.filled_at for fill in batch_result.fills
+    ]
+    assert stream_result.fills[0].price == 99.0
+    assert stream_result.metadata["execution_semantics"] == "signal_at_bar_close_order_next_bar"

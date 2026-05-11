@@ -22,6 +22,7 @@ class PortfolioConfig:
     max_single_weight: float = 0.25
     max_sector_weight: float = 0.40
     target_volatility: float = 0.15
+    allocation_method: str = AllocationMethod.INVERSE_VOL
     rebalance_frequency: str = "monthly"
     risk_free_rate: float = 0.02
 
@@ -90,7 +91,7 @@ class PortfolioConstructionEngine:
 
         strategy_weights = self._allocator.allocate(
             candidates=candidate_scorecards,
-            method=AllocationMethod.INVERSE_VOL,
+            method=config.allocation_method,
             constraints=constraints,
         )
 

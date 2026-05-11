@@ -29,6 +29,11 @@ dev = [
 research = [
   "polars>=1.0"
 ]
+integrations = [
+  "pyqlib>=0.9.7",
+  "lightgbm>=4.0",
+  "PyPortfolioOpt>=1.5"
+]
 live = [
   "vnpy>=3.9"
 ]
@@ -46,5 +51,5 @@ quant-us = "quant_us.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["backend*", "quant_us*"]
+include = ["backend*", "quant_us*", "integrations*"]
 namespaces = true

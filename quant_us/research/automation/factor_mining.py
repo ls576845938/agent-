@@ -8,8 +8,9 @@ that still need backtest, cost stress, walk-forward, and paper-review gates.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field, replace
 import json
+import re
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +19,7 @@ import pandas as pd
 from quant_us.core.clock import utc_now
 from quant_us.core.types import new_id
 from quant_us.factors.definition import FactorLibrary
+from quant_us.factors.formula import GeneratedFactorLibrary
 
 
 @dataclass(frozen=True)
@@ -48,6 +50,8 @@ class FactorMiningResult:
     factor_scores: list[FactorMiningScore] = field(default_factory=list)
     selected_factors: list[FactorMiningScore] = field(default_factory=list)
     strategy_configs: list[dict[str, Any]] = field(default_factory=list)
+    generated_factor_ids: list[str] = field(default_factory=list)
+    strategy_logic_paths: list[str] = field(default_factory=list)
     output_path: str = ""
 
     def to_dict(self) -> dict[str, Any]:
@@ -74,6 +78,8 @@ class FactorMiningEngine:
         min_observations: int = 20,
         max_abs_correlation: float = 0.90,
         max_selected: int = 8,
+        auto_generate_formulas: bool = False,
+        max_generated_factors: int = 24,
     ) -> FactorMiningResult:
         """Run factor mining and persist the result."""
         from quant_us.factors.evaluation import FactorEvaluator
@@ -82,6 +88,14 @@ class FactorMiningEngine:
         normalized_bar_sizes = _normalize_bar_sizes(bar_sizes or ["1d"])
         library = FactorLibrary()
         ids = factor_ids or library.factor_ids()
+        generated_factor_ids: list[str] = []
+        if auto_generate_formulas:
+            generated_specs = GeneratedFactorLibrary(self.data_root).generate_and_register(
+                seed_factor_ids=ids,
+                max_specs=max(0, int(max_generated_factors)),
+            )
+            generated_factor_ids = [spec.factor_id for spec in generated_specs]
+            ids = _dedupe(ids + generated_factor_ids)
 
         raw_scores: list[FactorMiningScore] = []
         evaluator = FactorEvaluator(data_root=str(self.data_root))
@@ -144,22 +158,12 @@ class FactorMiningEngine:
             max_abs_correlation=max_abs_correlation,
             max_selected=max_selected,
         )
-        strategy_configs = [
-            {
-                "strategy_id": "factor_rank",
-                "bar_size": score.bar_size,
-                "timeframe": score.bar_size,
-                "symbols": normalized_symbols,
-                "params": {
-                    "factor_name": score.factor_id,
-                    "top_n": min(3, max(1, len(normalized_symbols))),
-                    "min_symbols": min(3, max(1, len(normalized_symbols))),
-                },
-                "research_score": round(score.score, 6),
-                "rank_ic_mean": score.rank_ic_mean,
-                "long_short_spread": score.long_short_spread,
-            }
-            for score in selected
+        run_id = new_id("fmine")
+        strategy_configs = self._build_strategy_configs(run_id, selected, normalized_symbols)
+        strategy_logic_paths = [
+            str(config["logic_path"])
+            for config in strategy_configs
+            if config.get("logic_path")
         ]
 
         selected_by_key = {(score.factor_id, score.bar_size): score for score in selected}
@@ -168,7 +172,7 @@ class FactorMiningEngine:
             for score in raw_scores
         ]
         result = FactorMiningResult(
-            run_id=new_id("fmine"),
+            run_id=run_id,
             generated_at=utc_now().isoformat(),
             symbols=normalized_symbols,
             start=start,
@@ -177,6 +181,8 @@ class FactorMiningEngine:
             factor_scores=sorted(final_scores, key=lambda item: item.score, reverse=True),
             selected_factors=selected,
             strategy_configs=strategy_configs,
+            generated_factor_ids=generated_factor_ids,
+            strategy_logic_paths=strategy_logic_paths,
         )
         output_path = self._persist(result)
         return replace(result, output_path=str(output_path))
@@ -230,6 +236,268 @@ class FactorMiningEngine:
             selected.append(_replace_score(score, selected=True, max_abs_correlation_to_selected=max_corr))
         return selected
 
+    def _build_strategy_configs(
+        self,
+        run_id: str,
+        scores: list[FactorMiningScore],
+        symbols: list[str],
+    ) -> list[dict[str, Any]]:
+        configs: list[dict[str, Any]] = []
+        grouped: dict[str, list[FactorMiningScore]] = {}
+        for score in scores:
+            grouped.setdefault(score.bar_size, []).append(score)
+
+        for score in scores:
+            configs.append(self._build_single_factor_strategy_config(run_id, score, symbols))
+
+        for bar_size, bar_scores in grouped.items():
+            ranked = sorted(bar_scores, key=lambda item: item.score, reverse=True)
+            if len(ranked) >= 2:
+                configs.append(
+                    self._build_weighted_basket_strategy_config(
+                        run_id=run_id,
+                        bar_size=bar_size,
+                        scores=ranked[: min(3, len(ranked))],
+                        symbols=symbols,
+                    )
+                )
+                configs.append(
+                    self._build_consensus_strategy_config(
+                        run_id=run_id,
+                        bar_size=bar_size,
+                        scores=ranked[: min(3, len(ranked))],
+                        symbols=symbols,
+                    )
+                )
+        return configs
+
+    def _build_single_factor_strategy_config(
+        self,
+        run_id: str,
+        score: FactorMiningScore,
+        symbols: list[str],
+    ) -> dict[str, Any]:
+        top_n = min(3, max(1, len(symbols)))
+        logic = {
+            "logic_id": f"{run_id}:{score.bar_size}:{score.factor_id}",
+            "logic_version": "factor_rank_dsl_v1",
+            "template_id": "single_factor_rank",
+            "strategy_id": "factor_rank",
+            "factor_id": score.factor_id,
+            "factor_ids": [score.factor_id],
+            "bar_size": score.bar_size,
+            "timeframe": score.bar_size,
+            "symbols": list(symbols),
+            "signal": {
+                "type": "cross_sectional_factor_rank",
+                "rank_order": "descending",
+                "long_top_n": top_n,
+                "min_symbols": top_n,
+            },
+            "execution_semantics": "signal_at_bar_close_order_next_bar",
+            "risk_overlays": {
+                "long_only": True,
+                "max_symbol_weight": round(1.0 / top_n, 6),
+                "requires_cost_stress": True,
+                "requires_walk_forward": True,
+                "requires_paper_review": True,
+            },
+            "research_score": round(score.score, 6),
+            "rank_ic_mean": score.rank_ic_mean,
+            "long_short_spread": score.long_short_spread,
+            "lookahead_guard": "never uses same-bar future return; strategy config must enter backtest through research gate",
+            "created_at": utc_now().isoformat(),
+        }
+        logic_path = self._persist_strategy_logic(
+            run_id,
+            f"single_{score.bar_size}_{score.factor_id}",
+            logic,
+        )
+        return {
+            "template_id": "single_factor_rank",
+            "strategy_id": "factor_rank",
+            "bar_size": score.bar_size,
+            "timeframe": score.bar_size,
+            "symbols": symbols,
+            "factor_ids": [score.factor_id],
+            "params": {
+                "factor_name": score.factor_id,
+                "top_n": top_n,
+                "min_symbols": top_n,
+            },
+            "research_score": round(score.score, 6),
+            "rank_ic_mean": score.rank_ic_mean,
+            "long_short_spread": score.long_short_spread,
+            "logic": logic,
+            "logic_path": str(logic_path),
+        }
+
+    def _build_weighted_basket_strategy_config(
+        self,
+        *,
+        run_id: str,
+        bar_size: str,
+        scores: list[FactorMiningScore],
+        symbols: list[str],
+    ) -> dict[str, Any]:
+        top_n = min(3, max(1, len(symbols)))
+        basket = self._basket_weights(scores)
+        logic = {
+            "logic_id": f"{run_id}:{bar_size}:basket:{len(scores)}",
+            "logic_version": "factor_rank_dsl_v2",
+            "template_id": "weighted_factor_basket",
+            "strategy_id": "factor_basket",
+            "factor_ids": [score.factor_id for score in scores],
+            "bar_size": bar_size,
+            "timeframe": bar_size,
+            "symbols": list(symbols),
+            "signal": {
+                "type": "weighted_factor_basket",
+                "rank_order": "descending",
+                "long_top_n": top_n,
+                "min_symbols": top_n,
+                "components": basket,
+            },
+            "execution_semantics": "signal_at_bar_close_order_next_bar",
+            "risk_overlays": {
+                "long_only": True,
+                "max_symbol_weight": round(1.0 / top_n, 6),
+                "requires_cost_stress": True,
+                "requires_walk_forward": True,
+                "requires_paper_review": True,
+                "max_strategy_turnover": round(max(score.turnover for score in scores), 6),
+            },
+            "research_score": round(sum(score.score for score in scores) / len(scores), 6),
+            "rank_ic_mean": round(sum(score.rank_ic_mean for score in scores) / len(scores), 6),
+            "long_short_spread": round(sum(score.long_short_spread for score in scores) / len(scores), 6),
+            "lookahead_guard": "constituent factors are computed at bar close and blended cross-sectionally for next-bar execution only",
+            "created_at": utc_now().isoformat(),
+        }
+        logic_path = self._persist_strategy_logic(
+            run_id,
+            f"basket_{bar_size}_{'_'.join(score.factor_id for score in scores)}",
+            logic,
+        )
+        return {
+            "template_id": "weighted_factor_basket",
+            "strategy_id": "factor_basket",
+            "bar_size": bar_size,
+            "timeframe": bar_size,
+            "symbols": symbols,
+            "factor_ids": [score.factor_id for score in scores],
+            "params": {
+                "factor_basket": basket,
+                "top_n": top_n,
+                "min_symbols": top_n,
+            },
+            "research_score": logic["research_score"],
+            "rank_ic_mean": logic["rank_ic_mean"],
+            "long_short_spread": logic["long_short_spread"],
+            "logic": logic,
+            "logic_path": str(logic_path),
+        }
+
+    def _build_consensus_strategy_config(
+        self,
+        *,
+        run_id: str,
+        bar_size: str,
+        scores: list[FactorMiningScore],
+        symbols: list[str],
+    ) -> dict[str, Any]:
+        top_n = min(3, max(1, len(symbols)))
+        basket = self._basket_weights(scores)
+        min_agreement = min(len(scores), 2)
+        logic = {
+            "logic_id": f"{run_id}:{bar_size}:consensus:{len(scores)}",
+            "logic_version": "factor_rank_dsl_v2",
+            "template_id": "consensus_rank",
+            "strategy_id": "factor_consensus",
+            "factor_ids": [score.factor_id for score in scores],
+            "bar_size": bar_size,
+            "timeframe": bar_size,
+            "symbols": list(symbols),
+            "signal": {
+                "type": "factor_consensus_rank",
+                "rank_order": "descending",
+                "long_top_n": top_n,
+                "min_symbols": top_n,
+                "min_agreement": min_agreement,
+                "components": basket,
+            },
+            "execution_semantics": "signal_at_bar_close_order_next_bar",
+            "risk_overlays": {
+                "long_only": True,
+                "max_symbol_weight": round(1.0 / top_n, 6),
+                "requires_cost_stress": True,
+                "requires_walk_forward": True,
+                "requires_paper_review": True,
+                "consensus_required": min_agreement,
+            },
+            "research_score": round(max(score.score for score in scores), 6),
+            "rank_ic_mean": round(sum(score.rank_ic_mean for score in scores) / len(scores), 6),
+            "long_short_spread": round(max(score.long_short_spread for score in scores), 6),
+            "lookahead_guard": "consensus is formed from same-timestamp factor ranks and only forwarded as next-bar research intent",
+            "created_at": utc_now().isoformat(),
+        }
+        logic_path = self._persist_strategy_logic(
+            run_id,
+            f"consensus_{bar_size}_{'_'.join(score.factor_id for score in scores)}",
+            logic,
+        )
+        return {
+            "template_id": "consensus_rank",
+            "strategy_id": "factor_consensus",
+            "bar_size": bar_size,
+            "timeframe": bar_size,
+            "symbols": symbols,
+            "factor_ids": [score.factor_id for score in scores],
+            "params": {
+                "factor_basket": basket,
+                "top_n": top_n,
+                "min_symbols": top_n,
+                "min_agreement": min_agreement,
+            },
+            "research_score": logic["research_score"],
+            "rank_ic_mean": logic["rank_ic_mean"],
+            "long_short_spread": logic["long_short_spread"],
+            "logic": logic,
+            "logic_path": str(logic_path),
+        }
+
+    @staticmethod
+    def _basket_weights(scores: list[FactorMiningScore]) -> list[dict[str, Any]]:
+        positive_total = sum(max(score.score, 0.0) for score in scores)
+        fallback_equal = positive_total <= 0.0
+        total = float(len(scores)) if fallback_equal else positive_total
+        basket: list[dict[str, Any]] = []
+        for score in scores:
+            raw_weight = 1.0 if fallback_equal else max(score.score, 0.0)
+            basket.append(
+                {
+                    "factor_id": score.factor_id,
+                    "weight": round(raw_weight / total, 6),
+                    "rank_ic_mean": round(score.rank_ic_mean, 6),
+                }
+            )
+        return basket
+
+    def _persist_strategy_logic(
+        self,
+        run_id: str,
+        strategy_key: str,
+        logic: dict[str, Any],
+    ) -> Path:
+        path = (
+            self.data_root
+            / "research"
+            / "generated_strategies"
+            / f"{run_id}_{_safe_name(strategy_key)}.json"
+        )
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(logic, indent=2, default=str, sort_keys=True), encoding="utf-8")
+        return path
+
     def _persist(self, result: FactorMiningResult) -> Path:
         path = self.data_root / "research" / "factor_mining" / f"{result.run_id}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -276,6 +544,21 @@ def _normalize_bar_sizes(bar_sizes: list[str]) -> list[str]:
         seen.add(bar_size)
         normalized.append(bar_size)
     return normalized
+
+
+def _dedupe(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for item in items:
+        value = str(item).strip()
+        if value and value not in seen:
+            seen.add(value)
+            result.append(value)
+    return result
+
+
+def _safe_name(value: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9._-]+", "_", str(value)).strip("_")[:120] or "item"
 
 
 def _replace_score(

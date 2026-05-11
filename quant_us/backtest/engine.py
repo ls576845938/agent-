@@ -15,6 +15,7 @@ from quant_us.backtest.gap_session import GapConfig, SessionConfig, gap_adjusted
 from quant_us.backtest.liquidity_slippage import LiquiditySlippage
 from quant_us.backtest.performance import compute_performance
 from quant_us.backtest.slippage import BpsSlippage
+from quant_us.backtest.timeframe_scheduler import MultiTimeframeBarScheduler, MultiTimeframeSchedule
 from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.events import Event, MarketEvent, OrderIntentEvent, SignalEvent, TargetPositionEvent
 from quant_us.core.types import AccountState, Bar, Fill, Order, OrderIntent, PortfolioSnapshot, new_id
@@ -74,6 +75,8 @@ class BacktestConfig:
     sizing: PositionSizerConfig = field(default_factory=PositionSizerConfig)
     allocation: AllocationConfig = field(default_factory=AllocationConfig)
     rebalance: RebalanceConfig = field(default_factory=RebalanceConfig)
+    execution_semantics: str = "signal_at_bar_close_order_next_bar"
+    timeframe_schedule: MultiTimeframeSchedule | None = None
 
 
 @dataclass(frozen=True)
@@ -94,6 +97,7 @@ class _BacktestRunState:
     oms_results: list[OMSResult] = field(default_factory=list)
     snapshots: list[PortfolioSnapshot] = field(default_factory=list)
     pending_intents: list[OrderIntent] = field(default_factory=list)
+    timeframe_scheduler: MultiTimeframeBarScheduler = field(default_factory=MultiTimeframeBarScheduler)
 
 
 class EventDrivenBacktestEngine:
@@ -138,7 +142,9 @@ class EventDrivenBacktestEngine:
 
         self._prev_close = {}
         self._gap_rejected_orders = []
-        state = _BacktestRunState()
+        state = _BacktestRunState(
+            timeframe_scheduler=MultiTimeframeBarScheduler(self.config.timeframe_schedule)
+        )
 
         ordered = sorted(bars, key=lambda item: (item.timestamp_utc, item.symbol))
         for timestamp_utc, slice_iter in groupby(ordered, key=lambda item: item.timestamp_utc):
@@ -147,6 +153,16 @@ class EventDrivenBacktestEngine:
         fills = self.broker.get_fills()
         orders = self.broker.get_orders()
         metadata: dict[str, object] = {}
+        metadata["execution_semantics"] = self.config.execution_semantics
+        if self.config.timeframe_schedule is not None:
+            metadata["timeframe_schedule"] = {
+                "execution": self.config.timeframe_schedule.execution,
+                "confirm": list(self.config.timeframe_schedule.confirm),
+                "regime": list(self.config.timeframe_schedule.regime),
+                "availability_delay_seconds": (
+                    self.config.timeframe_schedule.availability_delay.total_seconds()
+                ),
+            }
         if self._gap_rejected_orders:
             metadata["gap_rejected_orders"] = list(self._gap_rejected_orders)
             metadata["gap_rejected_count"] = len(self._gap_rejected_orders)
@@ -212,20 +228,21 @@ class EventDrivenBacktestEngine:
 
         for bar in slice_bars:
             self.broker.update_market(bar)
+        state.timeframe_scheduler.update_available(slice_bars, timestamp_utc)
 
         account = self.broker.get_account()
         prices = {symbol: float(price) for symbol, price in self.broker.market_prices.items()}
-        context = StrategyContext(
-            run_id=self.config.run_id,
-            account=account,
-            market_prices=prices,
-            features=self.features_by_date.get(timestamp_utc.date(), {}),
-            universe=sorted(prices),
-        )
 
         signals = []
         for bar in slice_bars:
             market_event = MarketEvent.from_bar(bar)
+            context = self._strategy_context(
+                account=account,
+                prices=prices,
+                bar=bar,
+                timestamp_utc=timestamp_utc,
+                timeframe_scheduler=state.timeframe_scheduler,
+            )
             state.events.append(market_event)
             for strategy in self.strategies:
                 strategy_signals = list(strategy.on_market_event(market_event, context))
@@ -325,6 +342,32 @@ class EventDrivenBacktestEngine:
             position = positions[bar.symbol]
             position.market_price = execution_price
             position.unrealized_pnl = (position.market_price - position.avg_price) * position.quantity
+
+    def _strategy_context(
+        self,
+        *,
+        account: AccountState,
+        prices: dict[str, float],
+        bar: Bar,
+        timestamp_utc,
+        timeframe_scheduler: MultiTimeframeBarScheduler,
+    ) -> StrategyContext:
+        event_prices = dict(prices)
+        event_prices[bar.symbol] = float(bar.close)
+        snapshot = timeframe_scheduler.snapshot_for(bar, timestamp_utc)
+        return StrategyContext(
+            run_id=self.config.run_id,
+            account=account,
+            market_prices=event_prices,
+            features=self.features_by_date.get(timestamp_utc.date(), {}),
+            universe=sorted(event_prices),
+            parameters={
+                "execution_semantics": self.config.execution_semantics,
+                "bar_availability_semantics": "bar_close_available_frozen_asof_event_time",
+                "timeframe_snapshot": snapshot,
+                "timeframe_snapshot_metadata": snapshot.to_metadata(),
+            },
+        )
 
     @staticmethod
     def _with_execution_timestamp(intent: OrderIntent, timestamp_utc) -> OrderIntent:

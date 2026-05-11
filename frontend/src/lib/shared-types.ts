@@ -38,6 +38,28 @@ export type SystemOverviewResponse = {
     bar_sizes?: string[];
     symbols?: Array<Record<string, unknown>>;
     lookback_trading_days?: number;
+    datasets?: Array<Record<string, unknown>>;
+    dataset_statuses?: Record<string, {
+      status?: string;
+      dataset_root?: string;
+      issue_count?: number;
+      evaluated_symbols?: string[];
+      coverage_pct?: number | null;
+      min_coverage_pct?: number | null;
+    }>;
+  };
+  data_coverage?: {
+    status?: string;
+    coverage_pct?: number | null;
+    min_coverage_pct?: number | null;
+    dataset_summaries?: Array<{
+      root_subdir?: string;
+      status?: string;
+      issue_count?: number;
+      evaluated_symbols?: string[];
+      coverage_pct?: number | null;
+      min_coverage_pct?: number | null;
+    }>;
   };
   paper_review: {
     status?: string;
@@ -48,6 +70,14 @@ export type SystemOverviewResponse = {
     review_path?: string;
     manifest_path?: string;
     evidence_pack_path?: string;
+    diagnostics?: {
+      registry_state?: string;
+      registry_integrity?: string;
+      conflict_notes?: string[];
+      latest_review_status?: string;
+      latest_manifest_status?: string;
+      conflict_detected?: boolean;
+    };
   };
   broker_credentials: {
     credentials_present?: boolean;
@@ -73,6 +103,29 @@ export type SystemOverviewResponse = {
     suggested_max_order_notional?: number;
     suggested_max_daily_notional?: number;
     suggested_max_daily_order_count?: number;
+  };
+  integrations?: {
+    dependencies?: {
+      qlib?: boolean;
+      lightgbm?: boolean;
+      pypfopt?: boolean;
+    };
+    qlib?: {
+      artifacts_root?: string;
+      run_count?: number;
+      status?: string;
+      latest_run_id?: string;
+      latest_updated_at?: string;
+      latest_run?: Record<string, unknown>;
+    };
+    portfolio?: {
+      artifacts_root?: string;
+      run_count?: number;
+      status?: string;
+      latest_run_id?: string;
+      latest_updated_at?: string;
+      latest_run?: Record<string, unknown>;
+    };
   };
   portfolio?: Record<string, unknown>;
   multi_strategy?: Record<string, unknown>;

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -32,6 +32,8 @@ def _serialize(value: Any) -> Any:
         return [_serialize(v) for v in value]
     if isinstance(value, datetime | date):
         return value.isoformat()
+    if isinstance(value, timedelta):
+        return value.total_seconds()
     if isinstance(value, Enum):
         return value.value
     return value

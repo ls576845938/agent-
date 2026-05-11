@@ -46,6 +46,7 @@ const tabs = [
   {key: 'cycle', label: '研究闭环'},
   {key: 'factors', label: '因子特征'},
   {key: 'evidence', label: '候选证据'},
+  {key: 'qlib', label: 'Qlib组合'},
   {key: 'review', label: '组合复核'},
   {key: 'records', label: '列表报告'},
 ];
@@ -181,6 +182,37 @@ function ResultBlock({title, value}: {title: string; value: unknown}) {
   );
 }
 
+function PreviewTable({title, rows, columns}: {title: string; rows?: LooseRecord[]; columns: string[]}) {
+  const data = Array.isArray(rows) ? rows : [];
+  return (
+    <section style={sectionStyle}>
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10}}>
+        <h3 style={{margin: 0, fontSize: '0.95rem'}}>{title}</h3>
+        <span style={{color: '#94a3b8', fontSize: '0.78rem'}}>{data.length} rows</span>
+      </div>
+      <div style={{overflowX: 'auto'}}>
+        <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '0.76rem'}}>
+          <thead style={{color: '#94a3b8'}}>
+            <tr>
+              {columns.map(column => <th key={column} style={{textAlign: 'left', padding: 7}}>{column}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row, idx) => (
+              <tr key={`${idx}-${columns.map(column => row[column]).join('-')}`} style={{borderTop: '1px solid rgba(148,163,184,0.12)'}}>
+                {columns.map(column => (
+                  <td key={column} style={{padding: 7, whiteSpace: 'nowrap'}}>{fmt(row[column], typeof row[column] === 'number' ? 4 : 2)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!data.length ? <p style={{color: '#94a3b8', margin: 0}}>暂无预览数据</p> : null}
+      </div>
+    </section>
+  );
+}
+
 export default function ResearchDashboard() {
   const [dataRoot, setDataRoot] = useState('data');
   const [experiments, setExperiments] = useState<Experiment[]>([]);
@@ -189,6 +221,12 @@ export default function ResearchDashboard() {
   const [factors, setFactors] = useState<LooseRecord[]>([]);
   const [manifests, setManifests] = useState<LooseRecord[]>([]);
   const [pendingReviews, setPendingReviews] = useState<LooseRecord[]>([]);
+  const [qlibStatus, setQlibStatus] = useState<LooseRecord | null>(null);
+  const [qlibRuns, setQlibRuns] = useState<LooseRecord[]>([]);
+  const [qlibRunDetail, setQlibRunDetail] = useState<LooseRecord | null>(null);
+  const [portfolioIntegrationStatus, setPortfolioIntegrationStatus] = useState<LooseRecord | null>(null);
+  const [portfolioIntegrationRuns, setPortfolioIntegrationRuns] = useState<LooseRecord[]>([]);
+  const [portfolioIntegrationDetail, setPortfolioIntegrationDetail] = useState<LooseRecord | null>(null);
   const [registry, setRegistry] = useState<LooseRecord | null>(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -232,6 +270,25 @@ export default function ResearchDashboard() {
     reviewer: '',
     reviewReason: 'manual frontend review',
   });
+  const [qlibForm, setQlibForm] = useState({
+    dataVersion: 'latest',
+    universe: 'configs/universe/us_core_liquid.yaml',
+    qlibConfig: 'configs/qlib/us_lgbm_alpha158_daily.yaml',
+    startDate: '2020-01-01',
+    endDate: '2025-12-31',
+    runId: '',
+    artifactsRoot: 'artifacts/qlib_runs',
+    source: '',
+    dryRun: true,
+  });
+  const [pypfoptForm, setPypfoptForm] = useState({
+    scoreRunId: '',
+    portfolioRunId: '',
+    config: 'configs/portfolio/pypfopt_long_only_max_sharpe.yaml',
+    artifactsRoot: 'artifacts/portfolio_runs',
+    fallbackOptimizer: 'equal_weight_topk',
+    strategyId: 'pypfopt_daily_only',
+  });
 
   const [autoResult, setAutoResult] = useState<LooseRecord | null>(null);
   const [factorResult, setFactorResult] = useState<LooseRecord | null>(null);
@@ -240,17 +297,21 @@ export default function ResearchDashboard() {
   const [featureResult, setFeatureResult] = useState<LooseRecord | null>(null);
   const [candidateActionResult, setCandidateActionResult] = useState<LooseRecord | null>(null);
   const [portfolioResult, setPortfolioResult] = useState<LooseRecord | null>(null);
+  const [qlibActionResult, setQlibActionResult] = useState<LooseRecord | null>(null);
+  const [pypfoptActionResult, setPypfoptActionResult] = useState<LooseRecord | null>(null);
 
   const refresh = async (root = dataRoot) => {
     setError('');
-    const [exps, cands, snaps, factorDefs, manifestRows, reviews, registryPayload] = await Promise.all([
+    const [exps, cands, snaps, factorDefs, manifestRows, reviews, registryPayload, qlibPayload, portfolioPayload] = await Promise.all([
       researchApi.listExperiments(root).catch(() => []),
       researchApi.listCandidates(root).catch(() => []),
       researchApi.listFeatures().catch(() => []),
-      researchApi.listFactors().catch(() => []),
+      researchApi.listFactors(root).catch(() => []),
       researchApi.listStrategyManifests(root).catch(() => []),
       researchApi.listPendingReviews().catch(() => []),
       researchApi.getEvidenceRegistry(root).catch(() => null),
+      researchApi.listQlibRuns(qlibForm.artifactsRoot).catch(() => null),
+      researchApi.listPortfolioIntegrationRuns(pypfoptForm.artifactsRoot).catch(() => null),
     ]);
     setExperiments(exps || []);
     setCandidates(cands || []);
@@ -259,6 +320,10 @@ export default function ResearchDashboard() {
     setManifests(manifestRows || []);
     setPendingReviews(reviews || []);
     setRegistry(registryPayload);
+    setQlibStatus(qlibPayload);
+    setQlibRuns(Array.isArray(qlibPayload?.runs) ? qlibPayload.runs : []);
+    setPortfolioIntegrationStatus(portfolioPayload);
+    setPortfolioIntegrationRuns(Array.isArray(portfolioPayload?.runs) ? portfolioPayload.runs : []);
     if ((factorDefs || []).length && !factorDefs.find((f: LooseRecord) => f.factor_id === factorForm.factorId)) {
       setFactorForm(current => ({...current, factorId: String(factorDefs[0].factor_id)}));
       setFeatureForm(current => ({...current, featureId: String(factorDefs[0].factor_id)}));
@@ -291,6 +356,11 @@ export default function ResearchDashboard() {
   const updateFactor = (key: string, value: string) => setFactorForm(current => ({...current, [key]: value}));
   const updateFeature = (key: string, value: string) => setFeatureForm(current => ({...current, [key]: value}));
   const updatePortfolio = (key: string, value: string) => setPortfolioForm(current => ({...current, [key]: value}));
+  const updateQlib = (key: string, value: string | boolean) => setQlibForm(current => ({...current, [key]: value}));
+  const updatePypfopt = (key: string, value: string) => setPypfoptForm(current => ({...current, [key]: value}));
+
+  const selectedQlibRunId = qlibForm.runId.trim() || String(qlibRuns[0]?.run_id || '');
+  const selectedPortfolioRunId = pypfoptForm.portfolioRunId.trim() || String(portfolioIntegrationRuns[0]?.portfolio_run_id || '');
 
   const runTask = async (label: string, task: () => Promise<void>) => {
     setBusy(label);
@@ -365,6 +435,8 @@ export default function ResearchDashboard() {
       min_observations: 20,
       max_abs_correlation: 0.9,
       max_selected: 8,
+      auto_generate_formulas: true,
+      max_generated_factors: 24,
       data_root: dataRoot,
     });
     setFactorMiningResult(result);
@@ -382,6 +454,8 @@ export default function ResearchDashboard() {
       max_abs_correlation: 0.9,
       max_selected: 8,
       max_runs: 4,
+      auto_generate_formulas: true,
+      max_generated_factors: 24,
       data_root: dataRoot,
     });
     setFactorMiningResult(result);
@@ -443,6 +517,99 @@ export default function ResearchDashboard() {
     const result = await researchApi.approvePaperReview(reviewId, portfolioForm.reviewer, portfolioForm.reviewReason);
     setPortfolioResult({approved_review: result});
     await refresh(dataRoot);
+  });
+
+  const refreshIntegrationPanels = async () => {
+    const [qlibPayload, portfolioPayload] = await Promise.all([
+      researchApi.listQlibRuns(qlibForm.artifactsRoot).catch(() => null),
+      researchApi.listPortfolioIntegrationRuns(pypfoptForm.artifactsRoot).catch(() => null),
+    ]);
+    setQlibStatus(qlibPayload);
+    setQlibRuns(Array.isArray(qlibPayload?.runs) ? qlibPayload.runs : []);
+    setPortfolioIntegrationStatus(portfolioPayload);
+    setPortfolioIntegrationRuns(Array.isArray(portfolioPayload?.runs) ? portfolioPayload.runs : []);
+  };
+
+  const qlibPayload = () => ({
+    data_root: dataRoot,
+    data_version: qlibForm.dataVersion,
+    universe: qlibForm.universe,
+    config: qlibForm.qlibConfig,
+    start_date: qlibForm.startDate,
+    end_date: qlibForm.endDate,
+    run_id: qlibForm.runId.trim() || undefined,
+    artifacts_root: qlibForm.artifactsRoot,
+    source: qlibForm.source.trim() || undefined,
+    dry_run: qlibForm.dryRun,
+    asset_class: 'equity',
+    bar_size: '1d',
+  });
+
+  const pypfoptPayload = () => ({
+    score_run_id: pypfoptForm.scoreRunId.trim() || selectedQlibRunId,
+    portfolio_run_id: pypfoptForm.portfolioRunId.trim() || undefined,
+    config: pypfoptForm.config,
+    fallback_optimizer: pypfoptForm.fallbackOptimizer || undefined,
+    strategy_id: pypfoptForm.strategyId.trim() || undefined,
+  });
+
+  const handleQlibAction = (action: string) => runTask(`qlib-${action}`, async () => {
+    let result: LooseRecord;
+    if (action === 'build') {
+      result = await researchApi.buildQlibDataset(qlibPayload());
+    } else if (action === 'workflow') {
+      result = await researchApi.runQlibWorkflow(qlibPayload());
+    } else if (action === 'scores') {
+      if (!selectedQlibRunId) throw new Error('先填写或选择 run_id');
+      result = await researchApi.importQlibPredScore({...qlibPayload(), run_id: selectedQlibRunId});
+    } else if (action === 'metrics') {
+      if (!selectedQlibRunId) throw new Error('先填写或选择 run_id');
+      result = await researchApi.importQlibRecorderMetrics({...qlibPayload(), run_id: selectedQlibRunId});
+    } else {
+      if (!selectedQlibRunId) throw new Error('先填写或选择 run_id');
+      result = await researchApi.compileQlibStrategyManifest({...qlibPayload(), run_id: selectedQlibRunId});
+    }
+    setQlibActionResult({action, ...result});
+    await refreshIntegrationPanels();
+    const runId = String(result.run_id || selectedQlibRunId || '');
+    if (runId) {
+      setQlibRunDetail(await researchApi.getQlibRun(runId, qlibForm.artifactsRoot).catch(() => null));
+      setPypfoptForm(current => ({...current, scoreRunId: current.scoreRunId || runId}));
+    }
+  });
+
+  const loadQlibRunDetail = (runId: string) => runTask(`qlib-detail-${runId}`, async () => {
+    setQlibRunDetail(await researchApi.getQlibRun(runId, qlibForm.artifactsRoot));
+    setQlibForm(current => ({...current, runId}));
+    setPypfoptForm(current => ({...current, scoreRunId: current.scoreRunId || runId}));
+  });
+
+  const handlePypfoptAction = (action: string) => runTask(`pypfopt-${action}`, async () => {
+    const payload = pypfoptPayload();
+    if (action !== 'import' && !payload.score_run_id) throw new Error('先填写 score_run_id 或选择 Qlib run');
+    if (action === 'import' && !selectedPortfolioRunId) throw new Error('先填写或选择 portfolio_run_id');
+    let result: LooseRecord;
+    if (action === 'expected') {
+      result = await researchApi.buildPortfolioExpectedReturns(payload);
+    } else if (action === 'covariance') {
+      result = await researchApi.buildPortfolioCovariance(payload);
+    } else if (action === 'optimize') {
+      result = await researchApi.optimizePortfolioWeights(payload);
+    } else {
+      result = await researchApi.importPortfolioTargetWeights({...payload, portfolio_run_id: selectedPortfolioRunId});
+    }
+    setPypfoptActionResult({action, ...result});
+    await refreshIntegrationPanels();
+    const portfolioRunId = String(result.portfolio_run_id || payload.portfolio_run_id || selectedPortfolioRunId || portfolioIntegrationRuns[0]?.portfolio_run_id || '');
+    if (portfolioRunId) {
+      setPypfoptForm(current => ({...current, portfolioRunId: current.portfolioRunId || portfolioRunId}));
+      setPortfolioIntegrationDetail(await researchApi.getPortfolioIntegrationRun(portfolioRunId, pypfoptForm.artifactsRoot).catch(() => null));
+    }
+  });
+
+  const loadPortfolioRunDetail = (portfolioRunId: string) => runTask(`portfolio-detail-${portfolioRunId}`, async () => {
+    setPortfolioIntegrationDetail(await researchApi.getPortfolioIntegrationRun(portfolioRunId, pypfoptForm.artifactsRoot));
+    setPypfoptForm(current => ({...current, portfolioRunId}));
   });
 
   if (loading) return <LoadingSpinner text="加载研究数据..." />;
@@ -669,6 +836,170 @@ export default function ResearchDashboard() {
               </div>
             </section>
             <ResultBlock title="candidate action result" value={candidateActionResult} />
+          </div>
+        </div>
+      )}
+
+      {tab === 'qlib' && (
+        <div style={{display: 'grid', gap: 16}}>
+          <section style={{...sectionStyle, display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12}}>
+            <div>
+              <div style={{color: '#94a3b8', fontSize: '0.75rem'}}>Qlib dependency</div>
+              <StatusPill value={qlibStatus?.dependencies?.qlib ? 'installed' : 'missing'} />
+            </div>
+            <div>
+              <div style={{color: '#94a3b8', fontSize: '0.75rem'}}>LightGBM</div>
+              <StatusPill value={qlibStatus?.dependencies?.lightgbm ? 'installed' : 'missing'} />
+            </div>
+            <div>
+              <div style={{color: '#94a3b8', fontSize: '0.75rem'}}>PyPortfolioOpt</div>
+              <StatusPill value={portfolioIntegrationStatus?.dependencies?.pypfopt ? 'installed' : 'missing'} />
+            </div>
+            <div>
+              <div style={{color: '#94a3b8', fontSize: '0.75rem'}}>boundary</div>
+              <strong>daily research only</strong>
+            </div>
+          </section>
+
+          <div style={{display: 'grid', gridTemplateColumns: 'minmax(380px, 0.95fr) minmax(520px, 1.05fr)', gap: 16}}>
+            <section style={sectionStyle}>
+              <h3 style={{marginTop: 0}}>Qlib daily baseline</h3>
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
+                <Field label="data_version"><input style={inputStyle} value={qlibForm.dataVersion} onChange={(e: any) => updateQlib('dataVersion', e.target.value)} /></Field>
+                <Field label="run_id"><input style={inputStyle} value={qlibForm.runId} onChange={(e: any) => updateQlib('runId', e.target.value)} placeholder={String(qlibRuns[0]?.run_id || 'auto/latest')} /></Field>
+                <Field label="start_date"><input style={inputStyle} value={qlibForm.startDate} onChange={(e: any) => updateQlib('startDate', e.target.value)} /></Field>
+                <Field label="end_date"><input style={inputStyle} value={qlibForm.endDate} onChange={(e: any) => updateQlib('endDate', e.target.value)} /></Field>
+                <Field label="universe"><input style={inputStyle} value={qlibForm.universe} onChange={(e: any) => updateQlib('universe', e.target.value)} /></Field>
+                <Field label="workflow config"><input style={inputStyle} value={qlibForm.qlibConfig} onChange={(e: any) => updateQlib('qlibConfig', e.target.value)} /></Field>
+                <Field label="artifacts_root"><input style={inputStyle} value={qlibForm.artifactsRoot} onChange={(e: any) => updateQlib('artifactsRoot', e.target.value)} /></Field>
+                <Field label="source override"><input style={inputStyle} value={qlibForm.source} onChange={(e: any) => updateQlib('source', e.target.value)} placeholder="default from universe" /></Field>
+              </div>
+              <label style={{display: 'flex', gap: 8, alignItems: 'center', marginTop: 12, color: '#cbd5e1', fontSize: '0.82rem'}}>
+                <input type="checkbox" checked={qlibForm.dryRun} onChange={(e: any) => updateQlib('dryRun', !!e.target.checked)} />
+                dry-run workflow/build when possible
+              </label>
+              <div style={{display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 14}}>
+                <button style={buttonStyle} disabled={!!busy} onClick={() => handleQlibAction('build')}>构建数据集</button>
+                <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handleQlibAction('workflow')}>运行 workflow</button>
+                <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handleQlibAction('scores')}>导入 score</button>
+                <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handleQlibAction('metrics')}>导入 metrics</button>
+                <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handleQlibAction('manifest')}>编译 candidate</button>
+              </div>
+              <p style={{color: '#94a3b8', fontSize: '0.78rem', lineHeight: 1.5}}>
+                当前只允许 1d、long-only、research-only。Qlib 回测结果不会直接变成 paper/live 结论。
+              </p>
+            </section>
+
+            <div style={{display: 'grid', gap: 12}}>
+              <section style={sectionStyle}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10}}>
+                  <h3 style={{margin: 0}}>Qlib runs</h3>
+                  <button style={ghostButtonStyle} disabled={!!busy} onClick={() => runTask('integration-refresh', refreshIntegrationPanels)}>刷新集成</button>
+                </div>
+                <div style={{display: 'grid', gap: 8}}>
+                  {qlibRuns.slice(0, 8).map(run => (
+                    <button
+                      key={run.run_id}
+                      style={{...ghostButtonStyle, display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 10, textAlign: 'left', alignItems: 'center'}}
+                      disabled={!!busy}
+                      onClick={() => loadQlibRunDetail(String(run.run_id))}
+                    >
+                      <span>
+                        <strong>{run.run_id}</strong>
+                        <div style={{fontSize: '0.74rem', color: '#94a3b8'}}>{(run.symbols || []).slice(0, 6).join(', ') || 'no symbols'}</div>
+                      </span>
+                      <StatusPill value={run.workflow_status || run.dataset_status} />
+                      <span>{fmt(run.score_rows, 0)} scores</span>
+                    </button>
+                  ))}
+                  {!qlibRuns.length ? <span style={{color: '#94a3b8'}}>暂无 Qlib run；先构建数据集。</span> : null}
+                </div>
+              </section>
+              <ResultBlock title="Qlib action result" value={qlibActionResult} />
+              <PreviewTable
+                title="research_model_scores preview"
+                rows={qlibRunDetail?.scores_preview}
+                columns={['datetime', 'symbol', 'score', 'rank', 'model_id', 'feature_set']}
+              />
+            </div>
+          </div>
+
+          <div style={{display: 'grid', gridTemplateColumns: 'minmax(380px, 0.95fr) minmax(520px, 1.05fr)', gap: 16}}>
+            <section style={sectionStyle}>
+              <h3 style={{marginTop: 0}}>PyPortfolioOpt target weights</h3>
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
+                <Field label="score_run_id"><input style={inputStyle} value={pypfoptForm.scoreRunId} onChange={(e: any) => updatePypfopt('scoreRunId', e.target.value)} placeholder={selectedQlibRunId || 'qlib run id'} /></Field>
+                <Field label="portfolio_run_id"><input style={inputStyle} value={pypfoptForm.portfolioRunId} onChange={(e: any) => updatePypfopt('portfolioRunId', e.target.value)} placeholder={String(portfolioIntegrationRuns[0]?.portfolio_run_id || 'auto')} /></Field>
+                <Field label="optimizer config">
+                  <select style={inputStyle} value={pypfoptForm.config} onChange={(e: any) => updatePypfopt('config', e.target.value)}>
+                    <option value="configs/portfolio/pypfopt_long_only_max_sharpe.yaml">max_sharpe</option>
+                    <option value="configs/portfolio/pypfopt_long_only_min_volatility.yaml">min_volatility</option>
+                    <option value="configs/portfolio/pypfopt_hrp.yaml">hrp</option>
+                  </select>
+                </Field>
+                <Field label="fallback"><select style={inputStyle} value={pypfoptForm.fallbackOptimizer} onChange={(e: any) => updatePypfopt('fallbackOptimizer', e.target.value)}><option value="equal_weight_topk">equal_weight_topk</option><option value="">none</option></select></Field>
+                <Field label="artifacts_root"><input style={inputStyle} value={pypfoptForm.artifactsRoot} onChange={(e: any) => updatePypfopt('artifactsRoot', e.target.value)} /></Field>
+                <Field label="strategy_id"><input style={inputStyle} value={pypfoptForm.strategyId} onChange={(e: any) => updatePypfopt('strategyId', e.target.value)} /></Field>
+              </div>
+              <div style={{display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 14}}>
+                <button style={buttonStyle} disabled={!!busy} onClick={() => handlePypfoptAction('expected')}>生成 expected returns</button>
+                <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handlePypfoptAction('covariance')}>生成 covariance</button>
+                <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handlePypfoptAction('optimize')}>优化 target weights</button>
+                <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handlePypfoptAction('import')}>导入 target positions</button>
+              </div>
+              <p style={{color: '#94a3b8', fontSize: '0.78rem', lineHeight: 1.5}}>
+                这里只产 target weights / TargetPosition-compatible artifact，不生成 OrderIntent，不提交 broker。
+              </p>
+            </section>
+
+            <div style={{display: 'grid', gap: 12}}>
+              <section style={sectionStyle}>
+                <h3 style={{margin: '0 0 10px'}}>Portfolio runs</h3>
+                <div style={{display: 'grid', gap: 8}}>
+                  {portfolioIntegrationRuns.slice(0, 8).map(run => (
+                    <button
+                      key={run.portfolio_run_id}
+                      style={{...ghostButtonStyle, display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 10, textAlign: 'left', alignItems: 'center'}}
+                      disabled={!!busy}
+                      onClick={() => loadPortfolioRunDetail(String(run.portfolio_run_id))}
+                    >
+                      <span>
+                        <strong>{run.portfolio_run_id}</strong>
+                        <div style={{fontSize: '0.74rem', color: '#94a3b8'}}>{run.source_score_run_id || 'no score run'}</div>
+                      </span>
+                      <StatusPill value={run.fallback_used ? 'fallback' : run.optimizer || 'pending'} />
+                      <span>{pct(run.latest_weight_sum)}</span>
+                    </button>
+                  ))}
+                  {!portfolioIntegrationRuns.length ? <span style={{color: '#94a3b8'}}>暂无 portfolio run；先生成 expected returns。</span> : null}
+                </div>
+              </section>
+              <ResultBlock title="PyPortfolioOpt action result" value={pypfoptActionResult} />
+              <PreviewTable
+                title="target_weights preview"
+                rows={portfolioIntegrationDetail?.target_weights_preview || pypfoptActionResult?.preview}
+                columns={['datetime', 'symbol', 'target_weight', 'raw_weight', 'clipped_weight', 'optimizer', 'fallback']}
+              />
+              <PreviewTable
+                title="target_positions preview"
+                rows={portfolioIntegrationDetail?.target_positions_preview}
+                columns={['timestamp_utc', 'strategy_id', 'symbol', 'target_weight', 'target_quantity']}
+              />
+            </div>
+          </div>
+
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16}}>
+            <ResultBlock title="Qlib run detail" value={qlibRunDetail?.summary ? {
+              summary: qlibRunDetail.summary,
+              strategy_manifest: qlibRunDetail.strategy_manifest,
+              failure_report: qlibRunDetail.failure_report,
+              recorder_metrics: qlibRunDetail.recorder_metrics,
+            } : null} />
+            <ResultBlock title="Portfolio run detail" value={portfolioIntegrationDetail?.summary ? {
+              summary: portfolioIntegrationDetail.summary,
+              run_manifest: portfolioIntegrationDetail.run_manifest,
+              target_positions_json: portfolioIntegrationDetail.target_positions_json,
+            } : null} />
           </div>
         </div>
       )}

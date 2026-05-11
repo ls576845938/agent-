@@ -5,14 +5,19 @@ from pathlib import Path
 
 import pandas as pd
 
-from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.clock import UTC
-from quant_us.data.minute_quality_gate import _expected_regular_timestamps, inspect_minute_data_quality
+from quant_us.core.calendar import USEquityCalendar
+from quant_us.data.minute_quality_gate import (
+    _expected_regular_timestamps,
+    inspect_minute_data_quality,
+    inspect_minute_data_quality_overview,
+)
 
 
 def _write_minute_partition(
     data_root: Path,
     *,
+    root_subdir: str = "raw",
     symbol: str,
     bar_size: str,
     trading_day: str,
@@ -25,7 +30,7 @@ def _write_minute_partition(
 ) -> None:
     path = (
         data_root
-        / "raw"
+        / root_subdir
         / "vendor=yfinance"
         / "asset_class=equity"
         / f"bar_size={bar_size}"
@@ -75,6 +80,8 @@ def test_minute_quality_passes_for_complete_1m_5m_15m_data(tmp_path: Path) -> No
     assert intervals["5m"].observed_bars == 78
     assert intervals["15m"].observed_bars == 26
     assert all(interval.status == "PASS" for interval in intervals.values())
+    assert all(interval.coverage_pct == 100.0 for interval in intervals.values())
+    assert all(interval.session_coverage[0]["coverage_pct"] == 100.0 for interval in intervals.values())
 
 
 def test_minute_quality_flags_missing_files_and_missing_bars(tmp_path: Path) -> None:
@@ -111,7 +118,7 @@ def test_minute_quality_flags_missing_files_and_missing_bars(tmp_path: Path) -> 
     intervals = {interval.bar_size: interval for interval in symbol.intervals}
 
     one_minute = intervals["1m"]
-    assert one_minute.status == "DEGRADED"
+    assert one_minute.status == "FAIL"
     assert day_one.isoformat() in one_minute.missing_file_dates
     assert one_minute.missing_bar_count > 0
     assert one_minute.coverage_pct < 100.0
@@ -122,7 +129,7 @@ def test_minute_quality_flags_missing_files_and_missing_bars(tmp_path: Path) -> 
     assert set(five_minute.missing_file_dates) == {day_one.isoformat(), day_two.isoformat()}
 
     fifteen_minute = intervals["15m"]
-    assert fifteen_minute.status == "DEGRADED"
+    assert fifteen_minute.status == "FAIL"
     assert fifteen_minute.missing_file_dates == [day_one.isoformat()]
 
 
@@ -184,10 +191,79 @@ def test_minute_quality_blocks_conflicting_duplicates_and_invalid_ohlc(tmp_path:
     )
 
     interval = report.symbols[0].intervals[0]
-    assert report.status == "INVALID"
-    assert interval.status == "INVALID"
+    assert report.status == "FAIL"
+    assert interval.status == "FAIL"
     assert interval.duplicate_timestamp_count == 2
     assert interval.conflicting_duplicate_count == 1
     assert interval.non_positive_price_count == 1
-    assert interval.invalid_ohlc_count == 2
+    assert interval.non_positive_count == 2
+    assert interval.invalid_ohlc_count == 1
     assert interval.negative_volume_count == 1
+    assert interval.zero_volume_count == 0
+
+
+def test_minute_quality_warns_for_small_regular_session_gap_and_zero_volume(tmp_path: Path) -> None:
+    calendar = USEquityCalendar.with_holidays()
+    trading_day = datetime(2026, 5, 8, tzinfo=UTC).date()
+    timestamps = _expected_regular_timestamps(trading_day, 1, calendar)
+    _write_minute_partition(
+        tmp_path,
+        symbol="AAPL",
+        bar_size="1m",
+        trading_day=trading_day.isoformat(),
+        timestamps=timestamps[1:],
+        volume_values=[0] + [1_000] * (len(timestamps) - 2),
+    )
+
+    report = inspect_minute_data_quality(
+        tmp_path,
+        symbols=["AAPL"],
+        bar_sizes=["1m"],
+        lookback_trading_days=1,
+        as_of=datetime(2026, 5, 8, 21, 0, tzinfo=UTC),
+    )
+
+    interval = report.symbols[0].intervals[0]
+    assert report.status == "WARN"
+    assert interval.status == "WARN"
+    assert interval.coverage_pct > 99.0
+    assert interval.missing_bars == 1
+    assert interval.zero_volume == 1
+    assert "missing_bars:1" in interval.gate_reasons
+    assert "zero_volume:1" in interval.gate_reasons
+
+
+def test_minute_quality_overview_audits_raw_and_cleaned_roots(tmp_path: Path) -> None:
+    calendar = USEquityCalendar.with_holidays()
+    trading_day = datetime(2026, 5, 8, tzinfo=UTC).date()
+    raw_timestamps = _expected_regular_timestamps(trading_day, 1, calendar)[1:]
+    clean_timestamps = _expected_regular_timestamps(trading_day, 1, calendar)
+    _write_minute_partition(
+        tmp_path,
+        root_subdir="raw",
+        symbol="AAPL",
+        bar_size="1m",
+        trading_day=trading_day.isoformat(),
+        timestamps=raw_timestamps,
+    )
+    _write_minute_partition(
+        tmp_path,
+        root_subdir="cleaned",
+        symbol="AAPL",
+        bar_size="1m",
+        trading_day=trading_day.isoformat(),
+        timestamps=clean_timestamps,
+    )
+
+    report = inspect_minute_data_quality_overview(
+        tmp_path,
+        symbols=["AAPL"],
+        bar_sizes=["1m"],
+        lookback_trading_days=1,
+        as_of=datetime(2026, 5, 8, 21, 0, tzinfo=UTC),
+    )
+
+    assert report.status == "WARN"
+    assert report.evaluated_symbols == ["AAPL"]
+    dataset_statuses = {dataset.root_subdir: dataset.status for dataset in report.datasets}
+    assert dataset_statuses == {"raw": "WARN", "cleaned": "PASS"}

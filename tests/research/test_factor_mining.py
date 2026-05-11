@@ -116,7 +116,12 @@ def test_factor_mining_selects_low_redundancy_strategy_configs(
     assert ("momentum_20d", "1d") in selected_keys
     assert ("momentum_60d", "1d") not in selected_keys
     assert ("volatility_20d", "1d") in selected_keys
-    assert all(config["strategy_id"] == "factor_rank" for config in result.strategy_configs)
+    assert {"single_factor_rank", "weighted_factor_basket", "consensus_rank"} <= {
+        config["template_id"] for config in result.strategy_configs
+    }
+    assert any(config["strategy_id"] == "factor_rank" for config in result.strategy_configs)
+    assert any(config["strategy_id"] == "factor_basket" for config in result.strategy_configs)
+    assert any(config["strategy_id"] == "factor_consensus" for config in result.strategy_configs)
     assert all(config["timeframe"] == "1d" for config in result.strategy_configs)
 
     persisted = json.loads(Path(result.output_path).read_text(encoding="utf-8"))

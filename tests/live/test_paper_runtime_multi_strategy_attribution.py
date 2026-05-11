@@ -243,3 +243,58 @@ def test_strategy_attribution_ignores_prior_session_ledger_rows(
     assert attribution["by_strategy"] == {}
     assert attribution["totals"]["orders"] == 0
     assert attribution["totals"]["fills"] == 0
+
+
+@patch("quant_us.live.paper_runtime.MarketDataLoop")
+def test_strategy_attribution_recovers_fill_identity_from_current_session_order(
+    _mock_loop: object,
+    tmp_path: Path,
+) -> None:
+    ledger_root = tmp_path / "ledger"
+    runtime = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(ledger_root),
+            reconcile_on_start=False,
+            reconcile_on_close=False,
+            submit_orders=False,
+        )
+    )
+    runtime.bootstrap(strategy=None)
+    runtime.ledger.append_order(
+        {
+            "order_id": "current_order_without_fill_metadata",
+            "strategy_id": "attribution_strategy",
+            "run_id": "paper_run_attribution_strategy",
+            "signal_id": "signal_attribution_001",
+            "client_order_id": "client_attribution_001",
+            "paper_session_id": runtime.session_id,
+            "symbol": "SPY",
+            "metadata": {"paper_session_id": runtime.session_id},
+        }
+    )
+    runtime.ledger.append_fill(
+        {
+            "fill_id": "fill_without_session_or_strategy",
+            "order_id": "current_order_without_fill_metadata",
+            "symbol": "SPY",
+            "quantity": 2.0,
+            "price": 500.0,
+            "commission": 1.25,
+        }
+    )
+
+    runtime.on_session_close()
+
+    report_files = sorted((ledger_root / "daily_reports").glob("daily_report_*.json"))
+    attribution = _read_json(report_files[-1])["strategy_attribution"]
+    strategy = attribution["by_strategy"]["attribution_strategy"]
+    assert attribution["totals"]["orders"] == 1
+    assert attribution["totals"]["fills"] == 1
+    assert strategy["orders"] == 1.0
+    assert strategy["fills"] == 1.0
+    assert strategy["filled_quantity"] == 2.0
+    assert strategy["filled_notional"] == 1000.0
+    assert strategy["commission"] == 1.25
+    assert strategy["client_order_ids"] == ["client_attribution_001"]
+    assert strategy["signal_ids"] == ["signal_attribution_001"]

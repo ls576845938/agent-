@@ -389,6 +389,70 @@ def test_registry_marks_conflict_for_noncanonical_backtest_manifest_path(
     assert any(note.startswith("backtest_manifest_conflict:") for note in chain.notes)
 
 
+def test_registry_collapses_legacy_backtest_manifest_mirror_without_conflict(
+    tmp_path: Path,
+) -> None:
+    ids = _write_candidate_chain_fixture(tmp_path)
+    canonical_path = (
+        tmp_path / "research" / "backtests" / ids["candidate_id"] / "run_manifest.json"
+    )
+    canonical_payload = json.loads(canonical_path.read_text(encoding="utf-8"))
+    _write_json(
+        tmp_path / "manifests" / f"run_{canonical_payload['run_id']}.json",
+        canonical_payload,
+    )
+
+    registry = rebuild_evidence_registry(tmp_path)
+    saved = inspect_saved_evidence_registry(tmp_path)
+    chain = inspect_candidate_evidence(ids["candidate_id"], tmp_path, use_saved=False)
+
+    backtest_rows = registry["evidence"]["backtest_manifests"]
+    assert len(backtest_rows) == 1
+    assert backtest_rows[0]["integrity_status"] == "PASS/STABLE"
+    assert backtest_rows[0]["details"]["legacy_mirror_paths"] == [
+        str(tmp_path / "manifests" / f"run_{canonical_payload['run_id']}.json")
+    ]
+    assert saved["registry_status"] == "present"
+    assert saved["registry_integrity_status"] == "PASS/STABLE"
+    assert saved["conflict_report"]["has_conflicts"] is False
+    assert chain.backtest_manifest.integrity_status == "PASS/STABLE"
+
+
+def test_saved_registry_conflict_report_surfaces_conflict_diagnosis(
+    tmp_path: Path,
+) -> None:
+    ids = _write_candidate_chain_fixture(tmp_path, duplicate_data_manifest=True)
+    rebuild_evidence_registry(tmp_path)
+
+    saved = inspect_saved_evidence_registry(tmp_path)
+
+    assert saved["registry_status"] == "conflict"
+    report = saved["conflict_report"]
+    assert report["has_conflicts"] is True
+    assert report["evidence_conflict_count"] == 1
+    conflict = next(
+        entry
+        for entry in report["evidence_conflicts"]
+        if entry["section"] == "data_manifests" and entry["evidence_id"] == ids["data_version"]
+    )
+    assert conflict["diagnosis"] == "duplicate_evidence_id_with_different_paths_and_hashes"
+    assert len(conflict["conflict_paths"]) == 2
+
+
+def test_live_registry_inspection_does_not_silent_pass_conflicts(tmp_path: Path) -> None:
+    _write_candidate_chain_fixture(tmp_path, duplicate_data_manifest=True)
+
+    live_registry = inspect_evidence_registry(
+        tmp_path,
+        use_saved=False,
+        rebuild_if_missing=False,
+    )
+
+    assert live_registry["registry_status"] == "conflict"
+    assert live_registry["registry_integrity_status"] == "CONFLICT"
+    assert live_registry["conflict_report"]["has_conflicts"] is True
+
+
 def test_saved_registry_projection_blocks_missing_without_rebuild(tmp_path: Path) -> None:
     ids = _write_candidate_chain_fixture(tmp_path)
     review_path = (

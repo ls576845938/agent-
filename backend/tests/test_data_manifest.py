@@ -327,6 +327,30 @@ class TestDataManifestStoreReadLatest(unittest.TestCase):
             self.assertIsNotNone(latest)
             self.assertEqual(latest.data_version, "qs-test-AAPL-1d-20240701")
 
+    def test_read_latest_uses_created_at_not_hash_lexicographic_order(self) -> None:
+        with TemporaryDirectory() as directory:
+            store = DataManifestStore(root=directory)
+            older_lexicographically_larger = DataManifest(
+                data_version="qs-test-AAPL-1d-zzzz",
+                source="test",
+                symbol="AAPL",
+                interval="1d",
+                created_at="2024-01-01T00:00:00+00:00",
+            )
+            newer_lexicographically_smaller = DataManifest(
+                data_version="qs-test-AAPL-1d-aaaa",
+                source="test",
+                symbol="AAPL",
+                interval="1d",
+                created_at="2024-02-01T00:00:00+00:00",
+            )
+            store.write(older_lexicographically_larger)
+            store.write(newer_lexicographically_smaller)
+
+            latest = store.read_latest(source="test", symbol="AAPL", interval="1d")
+            self.assertIsNotNone(latest)
+            self.assertEqual(latest.data_version, "qs-test-AAPL-1d-aaaa")
+
     def test_read_latest_returns_none_when_no_match(self) -> None:
         with TemporaryDirectory() as directory:
             store = DataManifestStore(root=directory)

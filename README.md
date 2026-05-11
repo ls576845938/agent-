@@ -17,12 +17,23 @@
 | 实盘 / micro live | `LiveRuntime` 是 safety shell，live mode 不执行订单；真实 live 需独立 executor、人工审批、submission gate、readiness、endpoint guard |
 | Ledger | fill idempotent append 使用同 ledger root 的文件锁；直接 `append_fill()` 不提供幂等保护 |
 
+## Qlib / PyPortfolioOpt 边界
+
+- 这一阶段只做 `daily` 研究链路，不接 `minute` 数据。
+- Qlib 只作为 research / model experiment engine，不进入 paper/live readiness。
+- PyPortfolioOpt 只生成 target weights，不直接生成订单。
+- 策略不允许直接调用 broker；所有订单仍必须经过 Risk Engine。
+- 本轮不引入 live trading 代码，不开放直接下单路径。
+- 缺失数据必须 fail-closed，不允许通过隐式下载补齐。
+- `configs/` 用于新增的集成配置，和现有 `config/` 核心配置目录并存。
+
 ## 快速开始
 
 ```bash
 # 安装
 python -m venv venv && source venv/bin/activate
 pip install -e .
+pip install -e ".[integrations]"  # 需要 Qlib / LightGBM / PyPortfolioOpt 时执行
 
 # 测试
 PYTHONPATH=. pytest backend/tests/ -q
@@ -94,6 +105,7 @@ backend/           # FastAPI 后端
   app/services/    # 业务逻辑
   app/domain/      # 领域模型、策略注册
 frontend/          # React 仪表盘
+configs/           # 新增的集成配置（Qlib / PyPortfolioOpt / universe）
 scripts/           # CLI 脚本
 config/            # SQL Schema, Prometheus 配置
 ```

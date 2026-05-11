@@ -25,6 +25,7 @@ import pandas as pd
 
 from quant_us.data.storage.feature_store import ParquetFeatureStore
 from quant_us.factors.definition import FACTOR_CATEGORIES, FactorDefinition, FactorLibrary
+from quant_us.factors.formula import GeneratedFactorLibrary, GeneratedFactorSpec
 from quant_us.factors.liquidity import average_dollar_volume
 from quant_us.factors.momentum import rolling_momentum_score
 from quant_us.factors.volatility import realized_volatility
@@ -268,6 +269,7 @@ class FactorPipeline:
     ) -> None:
         self.data_root = data_root
         self.lib = factor_library or FactorLibrary()
+        self.generated_lib = GeneratedFactorLibrary(data_root)
         self._store = ParquetFeatureStore(f"{data_root}/features")
         self.data_vendor = data_vendor
         self.asset_class = asset_class
@@ -294,12 +296,15 @@ class FactorPipeline:
 
         Returns a wide DataFrame ready for evaluation or export.
         """
-        # 1. Validate factor_ids
-        for fid in factor_ids:
-            self.lib.get(fid)  # raises KeyError if unknown
+        # 1. Validate factor_ids and expand generated formulas into primitives.
+        definitions = {fid: self._definition_for(fid) for fid in factor_ids}
+        generated_specs = self._generated_specs_for(factor_ids)
+        compute_factor_ids = self._expand_compute_factor_ids(factor_ids)
 
         # 2. Load raw bars (extend lookback to accommodate rolling windows)
-        max_lookback = max(self.lib.get(fid).lookback for fid in factor_ids)
+        max_lookback = max(definition.lookback for definition in definitions.values())
+        for component_id in compute_factor_ids:
+            max_lookback = max(max_lookback, self._definition_for(component_id).lookback)
         padded_start = self._padded_start(start, max_lookback)
         effective_bar_size = timeframe or bar_size
         bars = _load_bars(
@@ -324,7 +329,7 @@ class FactorPipeline:
             dates = group["timestamp_utc"].dt.date
             timestamps = group["timestamp_utc"]
 
-            for fid in factor_ids:
+            for fid in compute_factor_ids:
                 raw = _compute_factor_series(fid, close, volume)
                 for ts, dt, val in zip(timestamps, dates, raw):
                     if pd.isna(val):
@@ -345,9 +350,9 @@ class FactorPipeline:
         # 4. Widen: group records into date × symbol grid
         df = pd.DataFrame(records)
         # Pivot only if we have more than one factor
-        if len(factor_ids) == 1:
+        if len(compute_factor_ids) == 1:
             # Single factor: records already have the factor column
-            result = df[["timestamp_utc", "date", "symbol"] + factor_ids].drop_duplicates(["timestamp_utc", "symbol"])
+            result = df[["timestamp_utc", "date", "symbol"] + compute_factor_ids].drop_duplicates(["timestamp_utc", "symbol"])
         else:
             # Melted records: each record has date, symbol, ONE factor_id column
             melted = df.melt(
@@ -363,17 +368,23 @@ class FactorPipeline:
                 aggfunc="first",
             ).reset_index()
             result.columns.name = None
-            # Ensure all requested factor columns exist
-            for fid in factor_ids:
+            # Ensure all computed factor columns exist
+            for fid in compute_factor_ids:
                 if fid not in result.columns:
                     result[fid] = pd.NA
 
         result = result.sort_values(["timestamp_utc", "symbol"]).reset_index(drop=True)
+        if generated_specs:
+            result = self._compute_generated_formula_columns(result, generated_specs)
+        for fid in factor_ids:
+            if fid not in result.columns:
+                result[fid] = pd.NA
+        result = result[["timestamp_utc", "date", "symbol"] + factor_ids]
 
         # 5. Cross-sectional post-processing per factor
         cross_section_key = "timestamp_utc" if "timestamp_utc" in result.columns else "date"
         for fid in factor_ids:
-            definition = self.lib.get(fid)
+            definition = definitions[fid]
             series = result[fid]
             if definition.winsorize_pct > 0:
                 series = result.groupby(cross_section_key, group_keys=False)[fid].transform(
@@ -409,7 +420,28 @@ class FactorPipeline:
         This loads a wider window to satisfy lookback requirements, then
         returns only the values for *date*.
         """
-        definition = self.lib.get(factor_id)
+        definition = self._definition_for(factor_id)
+        if self._generated_spec_for(factor_id) is not None:
+            frame = self.compute(
+                factor_ids=[factor_id],
+                symbols=universe,
+                start=date,
+                end=date,
+                bar_size=bar_size,
+                timeframe=timeframe,
+            )
+            if frame.empty:
+                return {}
+            day_frame = frame[frame["date"].astype(str) == date]
+            if day_frame.empty:
+                day_frame = frame
+            latest = day_frame.sort_values("timestamp_utc").groupby("symbol", as_index=False).tail(1)
+            values = pd.to_numeric(latest[factor_id], errors="coerce")
+            return {
+                str(symbol): float(value)
+                for symbol, value in zip(latest["symbol"], values)
+                if not pd.isna(value)
+            }
         padded_start = self._padded_start(date, definition.lookback)
         effective_bar_size = timeframe or bar_size
         bars = _load_bars(
@@ -551,6 +583,93 @@ class FactorPipeline:
         padding = int(lookback * 1.4) + 5
         padded = dt - timedelta(days=padding)
         return padded.strftime("%Y-%m-%d")
+
+    def _definition_for(self, factor_id: str) -> FactorDefinition:
+        try:
+            return self.lib.get(factor_id)
+        except KeyError:
+            return self.generated_lib.definition(factor_id)
+
+    def _generated_spec_for(self, factor_id: str) -> GeneratedFactorSpec | None:
+        try:
+            return self.generated_lib.get(factor_id)
+        except KeyError:
+            return None
+
+    def _generated_specs_for(self, factor_ids: list[str]) -> list[GeneratedFactorSpec]:
+        specs: list[GeneratedFactorSpec] = []
+        for factor_id in factor_ids:
+            spec = self._generated_spec_for(factor_id)
+            if spec is not None:
+                specs.append(spec)
+        return specs
+
+    def _expand_compute_factor_ids(self, factor_ids: list[str]) -> list[str]:
+        expanded: list[str] = []
+        seen: set[str] = set()
+
+        def add_factor(factor_id: str) -> None:
+            spec = self._generated_spec_for(factor_id)
+            if spec is None:
+                self.lib.get(factor_id)
+                if factor_id not in seen:
+                    seen.add(factor_id)
+                    expanded.append(factor_id)
+                return
+            for component in spec.components:
+                add_factor(component)
+
+        for fid in factor_ids:
+            add_factor(fid)
+        return expanded
+
+    def _compute_generated_formula_columns(
+        self,
+        frame: pd.DataFrame,
+        specs: list[GeneratedFactorSpec],
+    ) -> pd.DataFrame:
+        result = frame.copy()
+        cross_section_key = "timestamp_utc" if "timestamp_utc" in result.columns else "date"
+        for spec in specs:
+            missing = [component for component in spec.components if component not in result.columns]
+            if missing:
+                result[spec.factor_id] = pd.NA
+                continue
+            components = [
+                pd.to_numeric(result[component], errors="coerce")
+                .groupby(result[cross_section_key])
+                .transform(_zscore)
+                for component in spec.components
+            ]
+            weights = spec.weights or [1.0] * len(components)
+            if spec.formula_type == "linear_combo":
+                values = sum(float(weight) * component for weight, component in zip(weights, components))
+            elif spec.formula_type == "interaction":
+                values = components[0]
+                for component in components[1:]:
+                    values = values * component
+            elif spec.formula_type == "ratio" and len(components) >= 2:
+                values = components[0] / (components[1].abs() + 1e-6)
+            elif spec.formula_type == "signed_power":
+                power = float(spec.params.get("power", 1.5))
+                base = components[0]
+                values = np.sign(base) * np.power(base.abs(), power)
+            elif spec.formula_type == "gated_combo":
+                gate_scale = float(spec.params.get("gate_scale", 1.0))
+                base_components = components[:-1] if len(components) > 1 else components
+                base_weights = weights[: len(base_components)] or [1.0] * len(base_components)
+                combo = sum(float(weight) * component for weight, component in zip(base_weights, base_components))
+                gate_source = components[-1]
+                gate = 1.0 - np.tanh(gate_source.abs() * gate_scale)
+                values = combo * gate
+            elif spec.formula_type == "minmax_spread":
+                stacked = pd.concat(components, axis=1)
+                values = stacked.max(axis=1) - stacked.min(axis=1)
+            else:
+                values = pd.Series(pd.NA, index=result.index, dtype="Float64")
+            values = values.replace([np.inf, -np.inf], pd.NA)
+            result[spec.factor_id] = values
+        return result
 
 
 def _candidate_vendors(data_root: Path, preferred_vendor: str) -> list[str]:

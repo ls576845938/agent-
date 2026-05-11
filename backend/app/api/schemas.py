@@ -253,7 +253,9 @@ class SystemOverviewResponse(BaseModel):
     mode: str = "pre_live"
     data_root: str
     health: Dict[str, Any] = Field(default_factory=dict)
+    data_coverage: Dict[str, Any] = Field(default_factory=dict)
     registry: Dict[str, Any] = Field(default_factory=dict)
+    integrations: Dict[str, Any] = Field(default_factory=dict)
     paper_validation: Dict[str, Any] = Field(default_factory=dict)
     minute_data_quality: Dict[str, Any] = Field(default_factory=dict)
     paper_review: Dict[str, Any] = Field(default_factory=dict)
@@ -514,6 +516,8 @@ class USDataSyncResponse(BaseModel):
     raw_files: List[str] = Field(default_factory=list)
     cleaned_files: List[str] = Field(default_factory=list)
     quality: USDataQualityResponse
+    data_version: str = ""
+    data_manifest_path: str = ""
     created_at: datetime
     completed_at: Optional[datetime] = None
     error: Optional[str] = None

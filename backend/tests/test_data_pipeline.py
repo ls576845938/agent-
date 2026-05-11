@@ -18,6 +18,7 @@ import pandas as pd
 from quant_us.data.cleaners.bar_cleaner import BarCleaner, CleaningResult
 from quant_us.data.cleaners.data_validator import DataQualityReport
 from quant_us.data.pipeline import DataLakeConfig, DataLakeService, DataLakeSyncResult
+from quant_us.data.storage.data_manifest import DataManifestStore, validate_manifest_for_promotion
 
 
 # ---------------------------------------------------------------------------
@@ -252,6 +253,38 @@ class TestDataLakeService(unittest.TestCase):
         self.assertIsInstance(result.created_at, datetime)
         self.assertIsInstance(result.completed_at, (datetime, type(None)))
         self.assertIsNone(result.error)
+
+    def test_sync_writes_promotion_manifest_and_data_version(self) -> None:
+        """Successful sync must materialize cleaned data and a usable data manifest."""
+        with TemporaryDirectory() as tmpdir:
+            with patch("quant_us.data.pipeline.YFinanceDataConnector") as cls:
+                cls.return_value = _mock_connector(_synthetic_bars(5))
+
+                service = DataLakeService(DataLakeConfig(data_root=Path(tmpdir)))
+                result = service.sync_bars(
+                    symbol="AAPL",
+                    start=datetime(2024, 1, 2, tzinfo=timezone.utc),
+                    end=datetime(2024, 1, 8, tzinfo=timezone.utc),
+                    bar_size="1d",
+                )
+
+            self.assertEqual(result.status, "completed")
+            self.assertTrue(result.data_version.startswith("qs-yfinance-AAPL-1d-"))
+            self.assertTrue(result.data_manifest_path)
+            self.assertTrue(Path(result.data_manifest_path).is_file())
+            manifest = DataManifestStore(Path(tmpdir) / "manifests").read(result.data_version)
+            self.assertIsNotNone(manifest)
+            assert manifest is not None
+            validation = validate_manifest_for_promotion(manifest)
+            self.assertTrue(validation.ok, validation.reasons)
+            loaded = service.read_cleaned_bars(
+                symbol="AAPL",
+                start=datetime(2024, 1, 2, tzinfo=timezone.utc),
+                end=datetime(2024, 1, 8, tzinfo=timezone.utc),
+                bar_size="1d",
+            )
+            self.assertIn("data_version", loaded.columns)
+            self.assertEqual(set(loaded["data_version"]), {result.data_version})
 
     # -- full flow -----------------------------------------------------------
 

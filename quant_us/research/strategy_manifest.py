@@ -40,12 +40,32 @@ class StrategyCandidateManifest:
     overfit_risk: str = "UNKNOWN"
     promotion_status: str = "DRAFT"
     # DRAFT|READY_FOR_PORTFOLIO_SIM|BLOCKED|PAPER_REVIEW_CANDIDATE|REJECTED
+    data_version: str = ""
     data_manifest_path: str = ""
     backtest_manifest_path: str = ""
     scorecard_path: str = ""
     walk_forward_result_path: str = ""
     cost_stress_result_path: str = ""
+    sample_window: dict[str, Any] = field(default_factory=dict)
+    purge_embargo: dict[str, Any] = field(default_factory=dict)
+    trial_id: str = ""
+    trial_count: int = 0
+    pbo: float | None = None
+    dsr: float | None = None
+    cost_model: dict[str, Any] = field(default_factory=dict)
+    slippage_model: dict[str, Any] = field(default_factory=dict)
+    capacity: dict[str, Any] = field(default_factory=dict)
+    turnover: dict[str, Any] = field(default_factory=dict)
+    holding_period: dict[str, Any] = field(default_factory=dict)
+    exposure_limits: dict[str, Any] = field(default_factory=dict)
+    failure_conditions: list[str] = field(default_factory=list)
+    delisting_conditions: dict[str, Any] = field(default_factory=dict)
     promotion_result_path: str = ""
+    evidence: dict[str, Any] = field(default_factory=dict)
+    paper_review_evidence_required: bool = True
+    portfolio_evidence_pack_id: str = ""
+    portfolio_evidence_pack_path: str = ""
+    paper_review_gate_status: str = ""
     paper_review_evidence_pack_path: str = ""
     paper_review_candidate_path: str = ""
     paper_review_candidate_status: str = ""
@@ -134,6 +154,7 @@ class StrategyManifestManager:
         manifest.promotion_result_path = str(
             gate_result.evidence.get("promotion_result_path", "")
         )
+        self._bind_gate_evidence(manifest, gate_result, candidate_data)
         if gate_result.decision != "READY_FOR_PAPER_REVIEW":
             manifest.promotion_status = "BLOCKED"
             self._save_manifest(manifest)
@@ -256,6 +277,11 @@ class StrategyManifestManager:
         if manifest is None:
             raise ValueError(f"Manifest {manifest_id} not found")
         manifest.paper_review_id = str(paper_review_id or "")
+        manifest.portfolio_evidence_pack_path = str(evidence_pack_path or "")
+        manifest.portfolio_evidence_pack_id = self._extract_evidence_pack_id(
+            manifest.portfolio_evidence_pack_path
+        )
+        manifest.paper_review_gate_status = str(review_candidate_status or "")
         manifest.paper_review_evidence_pack_path = str(evidence_pack_path or "")
         manifest.paper_review_candidate_path = str(review_candidate_path or "")
         manifest.paper_review_candidate_status = str(review_candidate_status or "")
@@ -288,6 +314,7 @@ class StrategyManifestManager:
         if candidate_path.exists():
             candidate_data = json.loads(candidate_path.read_text(encoding="utf-8"))
         data_version = str(candidate_data.get("data_version", "") or "")
+        manifest.data_version = data_version
         manifest.data_manifest_path = (
             str(self.data_root / "manifests" / f"{data_version}.json")
             if data_version
@@ -316,6 +343,99 @@ class StrategyManifestManager:
                 f"research/cost_stress/{candidate_id}/result.json",
             )
             or ""
+        )
+        experiment = self._load_raw_experiment(manifest.source_experiment_id) or {}
+        self._refresh_contract_fields(
+            manifest=manifest,
+            candidate_data=candidate_data,
+            experiment=experiment,
+        )
+
+    def _bind_gate_evidence(
+        self,
+        manifest: StrategyCandidateManifest,
+        gate_result: Any,
+        candidate_data: dict[str, Any],
+    ) -> None:
+        validation_stats = dict(gate_result.evidence.get("validation_stats", {}) or {})
+        trial_counting = validation_stats.get("trial_counting", {})
+        if not isinstance(trial_counting, dict):
+            trial_counting = {}
+        cv_summary = validation_stats.get("cv_summary", {})
+        if not isinstance(cv_summary, dict):
+            cv_summary = {}
+        cost_before_after = validation_stats.get("cost_before_after", {})
+        if not isinstance(cost_before_after, dict):
+            cost_before_after = {}
+        dsr_summary = validation_stats.get("deflated_sharpe_ratio", {})
+        if not isinstance(dsr_summary, dict):
+            dsr_summary = {}
+        pbo_summary = validation_stats.get("pbo", {})
+        if not isinstance(pbo_summary, dict):
+            pbo_summary = {}
+
+        effective_trial_count = int(trial_counting.get("effective_trial_count", 0) or 0)
+        if effective_trial_count > 0:
+            manifest.trial_count = effective_trial_count
+        pbo = gate_result.evidence.get(
+            "probability_of_backtest_overfitting",
+            pbo_summary.get("pbo"),
+        )
+        if pbo is not None:
+            manifest.pbo = pbo
+        dsr = gate_result.evidence.get(
+            "deflated_sharpe_ratio",
+            dsr_summary.get("dsr"),
+        )
+        if dsr is not None:
+            manifest.dsr = dsr
+        gate_purge_embargo = {
+            "method": str(cv_summary.get("method", "unknown")),
+            "purged": bool(cv_summary.get("purged", False)),
+            "embargoed": bool(cv_summary.get("embargoed", False)),
+            "embargo_steps": int(cv_summary.get("embargo_steps", 0) or 0),
+            "fold_count": int(cv_summary.get("fold_count", 0) or 0),
+            "path_count": int(cv_summary.get("path_count", 0) or 0),
+        }
+        gate_has_contract_signal = bool(validation_stats) and any(
+            [
+                gate_purge_embargo["method"] != "unknown",
+                gate_purge_embargo["purged"],
+                gate_purge_embargo["embargoed"],
+                gate_purge_embargo["embargo_steps"] > 0,
+                gate_purge_embargo["fold_count"] > 0,
+                gate_purge_embargo["path_count"] > 0,
+            ]
+        )
+        if gate_has_contract_signal:
+            manifest.purge_embargo = {
+                **dict(manifest.purge_embargo),
+                **{k: v for k, v in gate_purge_embargo.items() if v not in ("", None)},
+            }
+        manifest.cost_model = {
+            **dict(manifest.cost_model),
+            "validation_summary": cost_before_after,
+        }
+        existing_evidence = dict(getattr(manifest, "evidence", {}) or {})
+        existing_evidence["promotion_gate"] = {
+            "candidate_id": str(
+                getattr(gate_result, "candidate_id", manifest.source_candidate_id) or ""
+            ),
+            "decision": gate_result.decision,
+            "reasons": list(gate_result.reasons),
+            "warnings": list(gate_result.warnings),
+            "needs_more_research": list(
+                getattr(gate_result, "needs_more_research", []) or []
+            ),
+            "promotion_result_path": manifest.promotion_result_path,
+            "validation_stats": validation_stats,
+        }
+        manifest.evidence = existing_evidence
+        experiment = self._load_raw_experiment(manifest.source_experiment_id) or {}
+        self._refresh_contract_fields(
+            manifest=manifest,
+            candidate_data=candidate_data,
+            experiment=experiment,
         )
 
     def _load_raw_candidate(self, candidate_id: str) -> dict[str, Any] | None:
@@ -346,3 +466,449 @@ class StrategyManifestManager:
             if data.get("source_candidate_id") == candidate_id:
                 return StrategyCandidateManifest(**data)
         return None
+
+    def _refresh_contract_fields(
+        self,
+        *,
+        manifest: StrategyCandidateManifest,
+        candidate_data: dict[str, Any],
+        experiment: dict[str, Any],
+    ) -> None:
+        backtest = self._read_json_dict(manifest.backtest_manifest_path)
+        scorecard = self._read_json_dict(manifest.scorecard_path)
+        walk_forward = self._read_json_dict(manifest.walk_forward_result_path)
+        cost_stress = self._read_json_dict(manifest.cost_stress_result_path)
+        data_manifest = self._read_json_dict(manifest.data_manifest_path)
+        candidate_metrics = dict(candidate_data.get("metrics", {}))
+
+        manifest.data_version = str(
+            manifest.data_version
+            or candidate_data.get("data_version", "")
+            or experiment.get("data_version", "")
+            or backtest.get("data_version", "")
+            or ""
+        )
+        manifest.sample_window = self._build_sample_window(
+            manifest=manifest,
+            candidate_data=candidate_data,
+            experiment=experiment,
+            backtest=backtest,
+            walk_forward=walk_forward,
+            data_manifest=data_manifest,
+        )
+        built_purge_embargo = self._build_purge_embargo(
+            candidate_data=candidate_data,
+            experiment=experiment,
+            walk_forward=walk_forward,
+        )
+        manifest.purge_embargo = {
+            **dict(manifest.purge_embargo),
+            **{
+                key: value
+                for key, value in built_purge_embargo.items()
+                if value not in ("", None, 0, False, [])
+            },
+        }
+        manifest.trial_id = str(
+            candidate_data.get("trial_id")
+            or candidate_metrics.get("trial_id")
+            or candidate_data.get("candidate_id")
+            or manifest.source_candidate_id
+            or manifest.strategy_candidate_id
+        )
+        resolved_trial_count = self._resolve_trial_count(candidate_data, experiment)
+        if resolved_trial_count > 0:
+            manifest.trial_count = resolved_trial_count
+        resolved_pbo = self._first_float(
+            candidate_metrics,
+            scorecard,
+            walk_forward,
+            cost_stress,
+            keys=("pbo", "PBO", "probability_of_backtest_overfitting"),
+        )
+        if resolved_pbo is not None:
+            manifest.pbo = resolved_pbo
+        resolved_dsr = self._first_float(
+            candidate_metrics,
+            scorecard,
+            walk_forward,
+            cost_stress,
+            keys=("dsr", "DSR", "deflated_sharpe_ratio"),
+        )
+        if resolved_dsr is not None:
+            manifest.dsr = resolved_dsr
+        manifest.cost_model = self._build_cost_model(
+            experiment=experiment,
+            backtest=backtest,
+            candidate_metrics=candidate_metrics,
+            cost_stress=cost_stress,
+        )
+        manifest.slippage_model = self._build_slippage_model(
+            experiment=experiment,
+            backtest=backtest,
+            candidate_metrics=candidate_metrics,
+            cost_stress=cost_stress,
+        )
+        manifest.capacity = self._build_capacity(
+            candidate_metrics=candidate_metrics,
+            cost_stress=cost_stress,
+            scorecard=scorecard,
+        )
+        manifest.turnover = self._build_turnover(
+            candidate_metrics=candidate_metrics,
+            backtest=backtest,
+            scorecard=scorecard,
+        )
+        manifest.holding_period = self._build_holding_period(
+            manifest=manifest,
+            candidate_metrics=candidate_metrics,
+            scorecard=scorecard,
+            walk_forward=walk_forward,
+        )
+        if not manifest.expected_holding_period:
+            manifest.expected_holding_period = str(
+                manifest.holding_period.get("expected", "") or ""
+            )
+        manifest.exposure_limits = self._build_exposure_limits(
+            candidate_metrics=candidate_metrics,
+            backtest=backtest,
+            scorecard=scorecard,
+        )
+        manifest.failure_conditions = self._build_failure_conditions(
+            candidate_data=candidate_data,
+            experiment=experiment,
+            candidate_metrics=candidate_metrics,
+        )
+        manifest.delisting_conditions = self._build_delisting_conditions(
+            candidate_data=candidate_data,
+            experiment=experiment,
+            data_manifest=data_manifest,
+        )
+
+    def _read_json_dict(self, raw_path: str) -> dict[str, Any]:
+        path = self._resolve_artifact_path(raw_path)
+        if path is None or not path.exists():
+            return {}
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return {}
+        return payload if isinstance(payload, dict) else {}
+
+    def _resolve_artifact_path(self, raw_path: str) -> Path | None:
+        cleaned = str(raw_path or "").strip()
+        if not cleaned:
+            return None
+        path = Path(cleaned)
+        if path.is_absolute():
+            return path
+        if path.exists():
+            return path
+        return self.data_root / path
+
+    def _build_sample_window(
+        self,
+        *,
+        manifest: StrategyCandidateManifest,
+        candidate_data: dict[str, Any],
+        experiment: dict[str, Any],
+        backtest: dict[str, Any],
+        walk_forward: dict[str, Any],
+        data_manifest: dict[str, Any],
+    ) -> dict[str, Any]:
+        existing = candidate_data.get("sample_window", {})
+        if isinstance(existing, dict) and existing:
+            sample_window = dict(existing)
+        else:
+            sample_window = {
+                "start": str(
+                    candidate_data.get("start_date")
+                    or experiment.get("start_date")
+                    or backtest.get("start")
+                    or data_manifest.get("start")
+                    or ""
+                ),
+                "end": str(
+                    candidate_data.get("end_date")
+                    or experiment.get("end_date")
+                    or backtest.get("end")
+                    or data_manifest.get("end")
+                    or ""
+                ),
+                "train_period": str(
+                    candidate_data.get("train_period")
+                    or experiment.get("train_period")
+                    or walk_forward.get("train_period")
+                    or ""
+                ),
+                "test_period": str(
+                    candidate_data.get("test_period")
+                    or experiment.get("test_period")
+                    or walk_forward.get("test_period")
+                    or ""
+                ),
+                "timeframe": str(manifest.timeframe or experiment.get("timeframe", "1d")),
+            }
+        return {k: v for k, v in sample_window.items() if v not in ("", None, [], {})}
+
+    def _build_purge_embargo(
+        self,
+        *,
+        candidate_data: dict[str, Any],
+        experiment: dict[str, Any],
+        walk_forward: dict[str, Any],
+    ) -> dict[str, Any]:
+        config_sources = [
+            candidate_data,
+            dict(candidate_data.get("metrics", {})),
+            experiment,
+            dict(experiment.get("params", {})),
+            dict(experiment.get("walk_forward_config", {})),
+            walk_forward,
+        ]
+        payload = {
+            "purge_bars": self._first_int(*config_sources, keys=("purge_bars",)),
+            "purge_days": self._first_int(*config_sources, keys=("purge_days",)),
+            "embargo_bars": self._first_int(*config_sources, keys=("embargo_bars",)),
+            "embargo_days": self._first_int(*config_sources, keys=("embargo_days",)),
+        }
+        return {k: v for k, v in payload.items() if v is not None}
+
+    def _resolve_trial_count(
+        self, candidate_data: dict[str, Any], experiment: dict[str, Any]
+    ) -> int:
+        metrics = dict(candidate_data.get("metrics", {}))
+        for source in (candidate_data, metrics, experiment):
+            value = source.get("trial_count")
+            if value is not None and int(value or 0) > 0:
+                return int(value)
+        param_grid = experiment.get("param_grid", {})
+        if isinstance(param_grid, dict) and param_grid:
+            total = 1
+            for value in param_grid.values():
+                if isinstance(value, list) and value:
+                    total *= len(value)
+            if total > 0:
+                return total
+        return 1
+
+    def _build_cost_model(
+        self,
+        *,
+        experiment: dict[str, Any],
+        backtest: dict[str, Any],
+        candidate_metrics: dict[str, Any],
+        cost_stress: dict[str, Any],
+    ) -> dict[str, Any]:
+        payload = {
+            "name": str(
+                experiment.get("cost_model")
+                or candidate_metrics.get("cost_model")
+                or backtest.get("cost_model")
+                or "default"
+            ),
+            "commission_model": str(backtest.get("commission_model", "") or ""),
+            "commission_rate": self._first_float(
+                backtest, candidate_metrics, cost_stress, keys=("commission_rate",)
+            ),
+            "stress_result_path": str(self._resolve_artifact_path(cost_stress.get("path", "")) or ""),
+        }
+        return {k: v for k, v in payload.items() if v not in ("", None)}
+
+    def _build_slippage_model(
+        self,
+        *,
+        experiment: dict[str, Any],
+        backtest: dict[str, Any],
+        candidate_metrics: dict[str, Any],
+        cost_stress: dict[str, Any],
+    ) -> dict[str, Any]:
+        payload = {
+            "name": str(
+                experiment.get("slippage_model")
+                or candidate_metrics.get("slippage_model")
+                or backtest.get("slippage_model")
+                or "default"
+            ),
+            "slippage_bps": self._first_float(
+                backtest, candidate_metrics, cost_stress, keys=("slippage_bps", "slippage")
+            ),
+        }
+        return {k: v for k, v in payload.items() if v not in ("", None)}
+
+    def _build_capacity(
+        self,
+        *,
+        candidate_metrics: dict[str, Any],
+        cost_stress: dict[str, Any],
+        scorecard: dict[str, Any],
+    ) -> dict[str, Any]:
+        payload = {
+            "estimated_capacity_usd": self._first_float(
+                candidate_metrics,
+                cost_stress,
+                scorecard,
+                keys=("estimated_capacity_usd", "capacity_usd"),
+            ),
+            "capacity_warning": str(
+                candidate_metrics.get("capacity_warning")
+                or cost_stress.get("capacity_warning")
+                or "UNKNOWN"
+            ),
+            "fragility_score": self._first_float(
+                candidate_metrics, cost_stress, keys=("fragility_score",)
+            ),
+        }
+        return {k: v for k, v in payload.items() if v not in ("", None)}
+
+    def _build_turnover(
+        self,
+        *,
+        candidate_metrics: dict[str, Any],
+        backtest: dict[str, Any],
+        scorecard: dict[str, Any],
+    ) -> dict[str, Any]:
+        execution = dict(backtest.get("execution", {}))
+        payload = {
+            "turnover": self._first_float(
+                candidate_metrics, scorecard, backtest, keys=("turnover", "turnover_pct")
+            ),
+            "annual_turnover_pct": self._first_float(
+                execution,
+                candidate_metrics,
+                backtest,
+                keys=("annual_turnover_pct",),
+            ),
+            "trade_count": self._first_int(
+                candidate_metrics, scorecard, backtest, keys=("trade_count",)
+            ),
+        }
+        return {k: v for k, v in payload.items() if v is not None}
+
+    def _build_holding_period(
+        self,
+        *,
+        manifest: StrategyCandidateManifest,
+        candidate_metrics: dict[str, Any],
+        scorecard: dict[str, Any],
+        walk_forward: dict[str, Any],
+    ) -> dict[str, Any]:
+        expected = str(
+            manifest.expected_holding_period
+            or candidate_metrics.get("expected_holding_period")
+            or walk_forward.get("recommended_holding_period")
+            or ""
+        )
+        payload = {
+            "expected": expected,
+            "avg_holding_period": self._first_float(
+                candidate_metrics, scorecard, keys=("avg_holding_period",)
+            ),
+        }
+        return {k: v for k, v in payload.items() if v not in ("", None)}
+
+    def _build_exposure_limits(
+        self,
+        *,
+        candidate_metrics: dict[str, Any],
+        backtest: dict[str, Any],
+        scorecard: dict[str, Any],
+    ) -> dict[str, Any]:
+        exposure = dict(backtest.get("exposure", {}))
+        payload = {
+            "avg_exposure": self._first_float(
+                candidate_metrics, scorecard, exposure, keys=("avg_exposure", "avg_gross_exposure_pct")
+            ),
+            "max_gross_exposure_pct": self._first_float(
+                exposure, candidate_metrics, keys=("max_gross_exposure_pct",)
+            ),
+            "max_single_symbol_exposure_pct": self._first_float(
+                candidate_metrics, keys=("max_single_symbol_exposure_pct",)
+            ),
+            "sector_exposures": dict(scorecard.get("sector_exposures", {})),
+        }
+        return {k: v for k, v in payload.items() if v not in ("", None, {}, [])}
+
+    def _build_failure_conditions(
+        self,
+        *,
+        candidate_data: dict[str, Any],
+        experiment: dict[str, Any],
+        candidate_metrics: dict[str, Any],
+    ) -> list[str]:
+        raw_values: list[Any] = []
+        for key in ("failure_conditions", "invalidation_conditions", "delist_conditions"):
+            value = candidate_data.get(key)
+            if isinstance(value, list):
+                raw_values.extend(value)
+        params = experiment.get("params", {})
+        if isinstance(params, dict):
+            for key in ("failure_conditions", "invalidation_conditions"):
+                value = params.get(key)
+                if isinstance(value, list):
+                    raw_values.extend(value)
+        if candidate_data.get("reject_reason"):
+            raw_values.append(candidate_data["reject_reason"])
+        metric_failure = candidate_metrics.get("failure_conditions")
+        if isinstance(metric_failure, list):
+            raw_values.extend(metric_failure)
+        return list(dict.fromkeys(str(item).strip() for item in raw_values if str(item).strip()))
+
+    def _build_delisting_conditions(
+        self,
+        *,
+        candidate_data: dict[str, Any],
+        experiment: dict[str, Any],
+        data_manifest: dict[str, Any],
+    ) -> dict[str, Any]:
+        policy = (
+            candidate_data.get("delisting_policy")
+            or experiment.get("delisting_policy")
+            or "manual_review_required"
+        )
+        return {
+            "policy": str(policy),
+            "survivorship_bias_risk": str(
+                data_manifest.get("survivorship_bias_risk", "unknown") or "unknown"
+            ),
+            "universe_id": str(data_manifest.get("universe_id", "") or ""),
+            "universe_source": str(data_manifest.get("universe_source", "") or ""),
+        }
+
+    def _first_float(
+        self, *sources: dict[str, Any], keys: tuple[str, ...]
+    ) -> float | None:
+        for source in sources:
+            if not isinstance(source, dict):
+                continue
+            for key in keys:
+                value = source.get(key)
+                if value is None or value == "":
+                    continue
+                try:
+                    return float(value)
+                except (TypeError, ValueError):
+                    continue
+        return None
+
+    def _first_int(self, *sources: dict[str, Any], keys: tuple[str, ...]) -> int | None:
+        for source in sources:
+            if not isinstance(source, dict):
+                continue
+            for key in keys:
+                value = source.get(key)
+                if value is None or value == "":
+                    continue
+                try:
+                    return int(value)
+                except (TypeError, ValueError):
+                    continue
+        return None
+
+    def _extract_evidence_pack_id(self, evidence_pack_path: str) -> str:
+        path = Path(str(evidence_pack_path or ""))
+        if not path.name:
+            return ""
+        if path.name == "evidence_pack.json":
+            return path.parent.name
+        return path.name

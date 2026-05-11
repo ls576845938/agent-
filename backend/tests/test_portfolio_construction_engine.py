@@ -93,6 +93,59 @@ class TestPortfolioConstructionEngine(unittest.TestCase):
             target.strategy_weights["high_vol"],
         )
 
+    def test_construct_can_use_equal_weight_baseline(self) -> None:
+        config = PortfolioConfig(
+            portfolio_id="pf_equal_method",
+            allocation_method=AllocationMethod.EQUAL_WEIGHT,
+            max_single_weight=1.0,
+        )
+        candidates = [
+            self._make_scorecard("strat_a", vol=0.10),
+            self._make_scorecard("strat_b", vol=0.30),
+        ]
+        target = self.engine.construct(config, candidates)
+        self.assertAlmostEqual(target.strategy_weights["strat_a"], 0.5)
+        self.assertAlmostEqual(target.strategy_weights["strat_b"], 0.5)
+
+    def test_construct_can_use_hrp_baseline(self) -> None:
+        covariance = [
+            [0.04, 0.01, 0.00],
+            [0.01, 0.09, 0.02],
+            [0.00, 0.02, 0.16],
+        ]
+        config = PortfolioConfig(
+            portfolio_id="pf_hrp",
+            allocation_method=AllocationMethod.HRP,
+            max_single_weight=1.0,
+        )
+        candidates = [
+            {**self._make_scorecard("low_var", vol=0.20), "covariance_matrix": covariance},
+            self._make_scorecard("mid_var", vol=0.30),
+            self._make_scorecard("high_var", vol=0.40),
+        ]
+        target = self.engine.construct(config, candidates)
+        self.assertEqual(set(target.strategy_weights), {"low_var", "mid_var", "high_var"})
+        self.assertAlmostEqual(sum(target.strategy_weights.values()), 1.0, places=8)
+        self.assertGreater(target.strategy_weights["low_var"], target.strategy_weights["high_var"])
+
+    def test_construct_can_use_covariance_risk_parity(self) -> None:
+        covariance = [
+            [0.04, 0.01],
+            [0.01, 0.16],
+        ]
+        config = PortfolioConfig(
+            portfolio_id="pf_rp",
+            allocation_method=AllocationMethod.RISK_PARITY,
+            max_single_weight=1.0,
+        )
+        candidates = [
+            {**self._make_scorecard("low_var", vol=0.20), "covariance_matrix": covariance},
+            self._make_scorecard("high_var", vol=0.40),
+        ]
+        target = self.engine.construct(config, candidates)
+        self.assertAlmostEqual(sum(target.strategy_weights.values()), 1.0, places=8)
+        self.assertGreater(target.strategy_weights["low_var"], target.strategy_weights["high_var"])
+
     def test_construct_with_capital(self) -> None:
         config = PortfolioConfig(portfolio_id="pf_cap", capital=200000.0)
         candidates = [self._make_scorecard("strat_a")]

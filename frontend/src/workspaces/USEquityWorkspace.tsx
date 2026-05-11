@@ -38,6 +38,8 @@ type USEquitySyncResponse = {
   bar_size: string;
   rows_received: number;
   rows_cleaned: number;
+  data_version?: string;
+  data_manifest_path?: string;
 };
 
 type USFeatureBuildResponse = {
@@ -381,7 +383,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
         data_root: usForm.dataRoot,
       });
       setUSSync(result);
-      setUSMessage(`数据同步完成，清洗 ${result.rows_cleaned} 行。`);
+      setUSMessage(`数据同步完成，清洗 ${result.rows_cleaned} 行，版本 ${result.data_version || '未生成'}。`);
       void loadSystemOverview();
     } catch (e: unknown) {
       setUSMessage(e instanceof Error ? e.message : '同步失败');
@@ -750,6 +752,68 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
     {label: 'reconcile report', value: usReconcile?.report_path ?? '未生成', muted: !usReconcile?.report_path},
   ];
 
+  const planningOverview = useMemo(() => {
+    const overviewRoot = systemOverview as unknown as LooseRecord | null;
+    const integrationsRoot = readRecord(overviewRoot, 'integrations');
+    const dependencyRoot = readRecord(integrationsRoot, 'dependencies');
+    const qlibRoot = readRecord(integrationsRoot, 'qlib');
+    const portfolioRoot = readRecord(integrationsRoot, 'portfolio');
+    const coverageRoot = readRecord(overviewRoot, 'data_coverage');
+    const reviewRoot = readRecord(overviewRoot, 'paper_review');
+    const diagnosticsRoot = readRecord(reviewRoot, 'diagnostics');
+    const qlibLatestRun = readRecord(qlibRoot, 'latest_run');
+    const portfolioLatestRun = readRecord(portfolioRoot, 'latest_run');
+    const rawCoverage = readNumber(coverageRoot, 'coverage_pct');
+    const minCoverage = readNumber(coverageRoot, 'min_coverage_pct');
+    const coverageStatus = readString(coverageRoot, 'status') ?? readString(readRecord(overviewRoot, 'minute_data_quality'), 'status') ?? '未检查';
+    const qlibInstalled = readBoolean(dependencyRoot, 'qlib');
+    const pypfoptInstalled = readBoolean(dependencyRoot, 'pypfopt');
+    const latestQlibLabel = readString(qlibLatestRun, 'run_id') ?? readString(qlibRoot, 'latest_run_id') ?? '未找到';
+    const latestQlibStatus = readString(qlibLatestRun, 'workflow_status', 'dataset_status', 'manifest_status', 'status') ?? readString(qlibRoot, 'status') ?? 'missing';
+    const latestPortfolioLabel = readString(portfolioLatestRun, 'portfolio_run_id') ?? readString(portfolioRoot, 'latest_run_id') ?? '未找到';
+    const latestPortfolioStatus = readString(portfolioLatestRun, 'optimizer', 'status') ?? readString(portfolioRoot, 'status') ?? 'missing';
+    const conflictDetected = readBoolean(diagnosticsRoot, 'conflict_detected') ?? false;
+    const conflictNotes = readArray(diagnosticsRoot, 'conflict_notes');
+    const nextActions = (systemOverview?.next_actions ?? []).slice(0, 3);
+    const recommendedActions: Array<{label: string; onClick: () => void; disabled: boolean}> = [
+      {
+        label: '同步数据',
+        onClick: handleUSDataSync,
+        disabled: usLoading,
+      },
+      {
+        label: '检查质量',
+        onClick: handleUSQualityReport,
+        disabled: usLoading,
+      },
+      {
+        label: '统一回测',
+        onClick: handleUSUnifiedBacktest,
+        disabled: usLoading,
+      },
+      {
+        label: '晋升门',
+        onClick: handleUSPromotionGate,
+        disabled: usLoading,
+      },
+    ];
+    return {
+      qlibInstalled,
+      pypfoptInstalled,
+      coverageStatus,
+      rawCoverage,
+      minCoverage,
+      latestQlibLabel,
+      latestQlibStatus,
+      latestPortfolioLabel,
+      latestPortfolioStatus,
+      conflictDetected,
+      conflictNotes: conflictNotes.map(note => String(note)),
+      nextActions,
+      recommendedActions,
+    };
+  }, [systemOverview, usLoading, handleUSDataSync, handleUSQualityReport, handleUSUnifiedBacktest, handleUSPromotionGate]);
+
   const paperEquityCurve = paperBacktest?.daily_results.length
     ? paperBacktest.daily_results.map((day, index) => ({time: index + 1, value: day.ending_equity}))
     : usPaperDailyResults.map((day, index) => ({time: index + 1, value: day.ending_equity}));
@@ -1000,6 +1064,64 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
             <strong>Required</strong>
             <p>promotion gate、paper 对账、风险摘要三项都要有证据，live 才能进入审批。</p>
           </div>
+        </div>
+      </section>
+
+      <section className="panel" style={{marginBottom: 18}}>
+        <div className="panel-header">
+          <h3>规划总览</h3>
+          <span>{systemOverview?.stage ?? 'waiting'}</span>
+        </div>
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10}}>
+          <div className={`metric-card ${planningOverview.qlibInstalled ? 'metric-good' : 'metric-bad'}`}>
+            <span>Qlib dependency</span>
+            <strong>{planningOverview.qlibInstalled ? 'installed' : 'missing'}</strong>
+            <p className="ops-portfolio-detail">{planningOverview.latestQlibLabel} · {planningOverview.latestQlibStatus}</p>
+          </div>
+          <div className={`metric-card ${planningOverview.pypfoptInstalled ? 'metric-good' : 'metric-bad'}`}>
+            <span>PyPortfolioOpt dependency</span>
+            <strong>{planningOverview.pypfoptInstalled ? 'installed' : 'missing'}</strong>
+            <p className="ops-portfolio-detail">{planningOverview.latestPortfolioLabel} · {planningOverview.latestPortfolioStatus}</p>
+          </div>
+          <div className={`metric-card ${planningOverview.rawCoverage !== null ? 'metric-good' : ''}`}>
+            <span>真实数据覆盖</span>
+            <strong>{planningOverview.rawCoverage !== null ? formatPercentValue(planningOverview.rawCoverage, 1) : '未检查'}</strong>
+            <p className="ops-portfolio-detail">
+              {planningOverview.coverageStatus}
+              {planningOverview.minCoverage !== null ? ` · min ${formatPercentValue(planningOverview.minCoverage, 1)}` : ''}
+            </p>
+          </div>
+          <div className={`metric-card ${planningOverview.latestQlibLabel !== '未找到' ? 'metric-good' : ''}`}>
+            <span>Latest Qlib run</span>
+            <strong>{planningOverview.latestQlibLabel}</strong>
+            <p className="ops-portfolio-detail">{planningOverview.latestQlibStatus}</p>
+          </div>
+          <div className={`metric-card ${planningOverview.latestPortfolioLabel !== '未找到' ? 'metric-good' : ''}`}>
+            <span>Latest portfolio run</span>
+            <strong>{planningOverview.latestPortfolioLabel}</strong>
+            <p className="ops-portfolio-detail">{planningOverview.latestPortfolioStatus}</p>
+          </div>
+          <div className={`metric-card ${planningOverview.conflictDetected ? 'metric-bad' : 'metric-good'}`}>
+            <span>Paper review conflict</span>
+            <strong>{planningOverview.conflictDetected ? 'conflict' : 'clear'}</strong>
+            <p className="ops-portfolio-detail">
+              {planningOverview.conflictNotes.length > 0 ? planningOverview.conflictNotes[0] : systemOverview?.paper_review.summary ?? 'no conflict diagnostics'}
+            </p>
+          </div>
+        </div>
+        {planningOverview.nextActions.length ? (
+          <div className="ops-next-actions" style={{marginTop: 12}}>
+            {planningOverview.nextActions.map(action => (
+              <div key={action} className="ops-next-action">{action}</div>
+            ))}
+          </div>
+        ) : null}
+        <div style={{display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12}}>
+          {planningOverview.recommendedActions.map(action => (
+            <button key={action.label} type="button" className="secondary-button" disabled={action.disabled} onClick={action.onClick}>
+              {action.label}
+            </button>
+          ))}
         </div>
       </section>
 

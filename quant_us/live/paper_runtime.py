@@ -160,6 +160,18 @@ def _normalized_unique_strings(values: Iterable[Any]) -> list[str]:
     return sorted(normalized)
 
 
+def _normalized_unique_ids(values: Iterable[Any]) -> list[str]:
+    seen: set[str] = set()
+    normalized: list[str] = []
+    for value in values:
+        text = str(value or "").strip()
+        key = text.lower()
+        if text and key not in seen:
+            seen.add(key)
+            normalized.append(text)
+    return sorted(normalized, key=str.lower)
+
+
 class PaperRuntime:
     """Orchestrates a paper trading session from bootstrap to shutdown.
 
@@ -2202,6 +2214,27 @@ class PaperRuntime:
     def _paper_entry_evidence_config_mismatch(self, projection: dict[str, Any]) -> str:
         review = dict(projection.get("review", {}))
         details = dict(review.get("details", {}))
+        approved_strategy_id = str(
+            review.get("strategy_manifest_id")
+            or details.get("strategy_manifest_id")
+            or ""
+        ).strip()
+        runtime_strategy_ids = _normalized_unique_ids(
+            [
+                self.config.strategy_id,
+                *self.config.strategy_weights.keys(),
+            ]
+        )
+        if approved_strategy_id and runtime_strategy_ids:
+            approved_key = approved_strategy_id.lower()
+            runtime_keys = {strategy_id.lower() for strategy_id in runtime_strategy_ids}
+            if approved_key not in runtime_keys:
+                return (
+                    "paper_review_strategy_mismatch:"
+                    f"approved={approved_strategy_id}:"
+                    f"runtime={','.join(runtime_strategy_ids)}"
+                )
+
         proposed_symbols = _normalized_unique_strings(details.get("proposed_symbols", []))
         runtime_symbols = _normalized_unique_strings(self.config.symbols)
         if proposed_symbols and runtime_symbols and proposed_symbols != runtime_symbols:

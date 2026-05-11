@@ -29,7 +29,7 @@ export const researchApi = {
     apiGet<any>(`/api/research/evidence-registry${query({data_root: dataRoot, rebuild})}`),
   rebuildEvidenceRegistry: (dataRoot = 'data') =>
     apiPost<any>('/api/research/evidence-registry/rebuild', {data_root: dataRoot}),
-  listFactors: () => apiGet<any[]>('/api/research/factors'),
+  listFactors: (dataRoot = 'data') => apiGet<any[]>(`/api/research/factors${query({data_root: dataRoot})}`),
   computeFactor: (payload: any) => apiPost<any>('/api/research/factors/compute', payload),
   evaluateFactor: (payload: any) => apiPost<any>('/api/research/factors/evaluate', payload),
   mineFactors: (payload: any) => apiPost<any>('/api/research/factors/mine', payload),
@@ -52,4 +52,21 @@ export const researchApi = {
       data_root: dataRoot,
       n_simulations: nSimulations,
     }),
+  listQlibRuns: (artifactsRoot = 'artifacts/qlib_runs') =>
+    apiGet<any>(`/api/integrations/qlib/runs${query({artifacts_root: artifactsRoot})}`),
+  getQlibRun: (runId: string, artifactsRoot = 'artifacts/qlib_runs') =>
+    apiGet<any>(`/api/integrations/qlib/runs/${encodeURIComponent(runId)}${query({artifacts_root: artifactsRoot})}`),
+  buildQlibDataset: (payload: any) => apiPost<any>('/api/integrations/qlib/build-dataset', payload),
+  runQlibWorkflow: (payload: any) => apiPost<any>('/api/integrations/qlib/run-workflow', payload),
+  importQlibPredScore: (payload: any) => apiPost<any>('/api/integrations/qlib/import-pred-score', payload),
+  importQlibRecorderMetrics: (payload: any) => apiPost<any>('/api/integrations/qlib/import-recorder-metrics', payload),
+  compileQlibStrategyManifest: (payload: any) => apiPost<any>('/api/integrations/qlib/compile-strategy-manifest', payload),
+  listPortfolioIntegrationRuns: (artifactsRoot = 'artifacts/portfolio_runs') =>
+    apiGet<any>(`/api/integrations/portfolio/runs${query({artifacts_root: artifactsRoot})}`),
+  getPortfolioIntegrationRun: (portfolioRunId: string, artifactsRoot = 'artifacts/portfolio_runs') =>
+    apiGet<any>(`/api/integrations/portfolio/runs/${encodeURIComponent(portfolioRunId)}${query({artifacts_root: artifactsRoot})}`),
+  buildPortfolioExpectedReturns: (payload: any) => apiPost<any>('/api/integrations/portfolio/build-expected-returns', payload),
+  buildPortfolioCovariance: (payload: any) => apiPost<any>('/api/integrations/portfolio/build-covariance', payload),
+  optimizePortfolioWeights: (payload: any) => apiPost<any>('/api/integrations/portfolio/optimize-weights', payload),
+  importPortfolioTargetWeights: (payload: any) => apiPost<any>('/api/integrations/portfolio/import-target-weights', payload),
 };

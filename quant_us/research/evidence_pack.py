@@ -11,6 +11,10 @@ from pathlib import Path
 from typing import Any
 
 from quant_us.core.clock import utc_now
+from quant_us.research.evidence_contracts import (
+    build_portfolio_paper_review_evidence_contract,
+    summarize_strategy_manifest_contract,
+)
 
 
 class EvidencePackGenerator:
@@ -161,15 +165,31 @@ class EvidencePackGenerator:
             sections = dict(candidate_pack.get("sections", {}))
             review_candidate = dict(sections.get("paper_review_candidate", {}))
             promotion_gate = dict(sections.get("promotion_gate", {}))
+            manifest_payload = next(
+                (
+                    dict(item)
+                    for item in manifests
+                    if str(item.get("strategy_candidate_id", "")) == manifest_id
+                ),
+                {},
+            )
+            manifest_contract = summarize_strategy_manifest_contract(manifest_payload)
             candidate_entry = {
                 "candidate_id": candidate_id,
                 "strategy_manifest_id": manifest_id,
+                "strategy_manifest_path": str(
+                    self.data_root / "research" / "manifests" / manifest_id / "manifest.json"
+                ),
                 "evidence_pack_path": candidate_path,
                 "promotion_gate_decision": str(promotion_gate.get("decision", "UNKNOWN")),
                 "review_candidate_status": str(
                     review_candidate.get("review_candidate_status", "BLOCKED")
                 ),
                 "blocking_reasons": list(review_candidate.get("blocking_reasons", [])),
+                "strategy_manifest_contract": manifest_contract,
+                "strategy_manifest_contract_complete": bool(
+                    manifest_contract.get("contract_complete", False)
+                ),
             }
             candidate_sections.append(candidate_entry)
             if not primary_candidate_data:
@@ -207,6 +227,7 @@ class EvidencePackGenerator:
         if promotion_blockers:
             promotion_gate_section["reasons"] = promotion_blockers
         evidence = {
+            "schema_version": "evidence_pack_v2",
             "generated_at": utc_now().isoformat(),
             "candidate_id": candidate_ids[0],
             "paper_review_scope": "portfolio_sim",
@@ -216,6 +237,11 @@ class EvidencePackGenerator:
             "proposed_symbols": list(dict.fromkeys(proposed_symbols)),
             "proposed_capital": float(proposed_capital),
             "proposed_risk_envelope": dict(proposed_risk_envelope),
+            "evidence_contract": build_portfolio_paper_review_evidence_contract(
+                portfolio_sim_id=portfolio_sim_id,
+                strategy_manifest_ids=strategy_manifest_ids,
+                candidate_sections=candidate_sections,
+            ),
             "sections": {
                 "candidate_data": primary_candidate_data,
                 "portfolio_candidates": candidate_sections,

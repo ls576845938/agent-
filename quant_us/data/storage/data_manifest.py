@@ -102,14 +102,18 @@ class DataManifestStore:
         return _dict_to_manifest(data)
 
     def read_latest(self, source: str, symbol: str, interval: str) -> DataManifest | None:
-        candidates = sorted(self.root.glob(f"qs-{source}-{symbol.upper()}-{interval}-*.json"), reverse=True)
-        for path in candidates:
+        candidates: list[tuple[tuple[float, float, str], DataManifest]] = []
+        paths = sorted(self.root.glob(f"qs-{source}-{symbol.upper()}-{interval}-*.json"))
+        for path in paths:
             if _is_backtest_run_manifest_path(path):
                 continue
             data = json.loads(path.read_text(encoding="utf-8"))
             if _looks_like_data_manifest(data):
-                return _dict_to_manifest(data)
-        return None
+                manifest = _dict_to_manifest(data)
+                candidates.append((_latest_manifest_sort_key(path, manifest), manifest))
+        if not candidates:
+            return None
+        return max(candidates, key=lambda item: item[0])[1]
 
     def list_manifests(
         self, source: str | None = None, symbol: str | None = None, interval: str | None = None
@@ -203,6 +207,20 @@ def _dict_to_manifest(data: dict[str, Any]) -> DataManifest:
 
 def _is_backtest_run_manifest_path(path: Path) -> bool:
     return path.suffix == ".json" and path.stem.startswith("run_")
+
+
+def _latest_manifest_sort_key(path: Path, manifest: DataManifest) -> tuple[float, float, str]:
+    created_at_ts = 0.0
+    if manifest.created_at:
+        try:
+            created_at_ts = datetime.fromisoformat(manifest.created_at.replace("Z", "+00:00")).timestamp()
+        except ValueError:
+            created_at_ts = 0.0
+    try:
+        mtime = path.stat().st_mtime
+    except OSError:
+        mtime = 0.0
+    return created_at_ts, mtime, manifest.data_version
 
 
 def _looks_like_data_manifest(data: dict[str, Any]) -> bool:

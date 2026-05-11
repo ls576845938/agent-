@@ -7,6 +7,10 @@ from types import SimpleNamespace
 import pytest
 
 from quant_us.research.evidence_pack import EvidencePackGenerator
+from quant_us.research.evidence_contracts import (
+    PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
+    PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+)
 from quant_us.research.paper_review_bridge import PaperReviewManager
 from quant_us.research.strategy_manifest import StrategyManifestManager
 from quant_us.research.paper_review_candidate import (
@@ -111,6 +115,21 @@ def _write_manifest(tmp_path: Path, manifest_id: str, candidate_id: str) -> None
                 "promotion_status": "READY_FOR_PORTFOLIO_SIM",
                 "created_at": "2026-05-10T00:00:00+00:00",
                 "params_frozen": True,
+                "data_version": "qs-yfinance-SPY-1d-test",
+                "sample_window": {"start": "2024-01-01", "end": "2024-12-31"},
+                "purge_embargo": {"purge_bars": 3, "embargo_bars": 1},
+                "trial_id": candidate_id,
+                "trial_count": 4,
+                "pbo": 0.07,
+                "dsr": 0.88,
+                "cost_model": {"name": "default", "commission_rate": 0.0001},
+                "slippage_model": {"name": "default", "slippage_bps": 1.0},
+                "capacity": {"estimated_capacity_usd": 1_000_000.0},
+                "turnover": {"turnover": 0.2, "annual_turnover_pct": 120.0},
+                "holding_period": {"expected": "5d", "avg_holding_period": 5.0},
+                "exposure_limits": {"max_gross_exposure_pct": 95.0},
+                "failure_conditions": ["drawdown_limit_breach"],
+                "delisting_conditions": {"policy": "manual_review_required"},
             }
         ),
         encoding="utf-8",
@@ -195,11 +214,25 @@ def test_evidence_pack_includes_paper_review_candidate_section(
 def test_create_from_portfolio_evidence_requires_ready_paper_review_candidate(
     tmp_path: Path,
 ) -> None:
+    _write_manifest(tmp_path, "sm_001", "cand_001")
     evidence_dir = tmp_path / "research" / "evidence_packs" / "cand_001"
     evidence_dir.mkdir(parents=True, exist_ok=True)
     (evidence_dir / "evidence_pack.json").write_text(
         json.dumps(
             {
+                "schema_version": "evidence_pack_v2",
+                "paper_review_scope": "portfolio_sim",
+                "portfolio_sim_id": "psim_001",
+                "strategy_manifest_ids": ["sm_001"],
+                "evidence_contract": {
+                    "schema_version": PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+                    "origin": PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
+                    "portfolio_sim_id": "psim_001",
+                    "strategy_manifest_ids": ["sm_001"],
+                    "candidate_count": 1,
+                    "all_strategy_manifest_contracts_complete": True,
+                    "paper_review_gate": "portfolio_evidence_pack_required",
+                },
                 "sections": {
                     "portfolio_sim": {
                         "status": "manifest_created",
@@ -212,6 +245,27 @@ def test_create_from_portfolio_evidence_requires_ready_paper_review_candidate(
                         "symbols": ["SPY", "QQQ"],
                         "metrics": {"max_drawdown_pct": -0.12},
                     },
+                    "portfolio_candidates": [
+                        {
+                            "candidate_id": "cand_001",
+                            "strategy_manifest_id": "sm_001",
+                            "strategy_manifest_path": str(
+                                tmp_path / "research" / "manifests" / "sm_001" / "manifest.json"
+                            ),
+                            "evidence_pack_path": str(
+                                tmp_path
+                                / "research"
+                                / "evidence_packs"
+                                / "cand_001"
+                                / "evidence_pack.json"
+                            ),
+                            "strategy_manifest_contract": {
+                                "contract_complete": True,
+                                "missing_fields": [],
+                            },
+                            "strategy_manifest_contract_complete": True,
+                        }
+                    ],
                     "promotion_gate": {"decision": "READY_FOR_PAPER_REVIEW"},
                     "paper_review_candidate": {
                         "review_candidate_status": "BLOCKED",
@@ -272,9 +326,22 @@ def test_create_review_from_portfolio_sim_requires_saved_evidence_gate_and_updat
         path.write_text(
             json.dumps(
                 {
+                    "schema_version": "evidence_pack_v2",
                     "proposed_symbols": proposed_symbols,
                     "proposed_capital": proposed_capital,
                     "proposed_risk_envelope": proposed_risk_envelope,
+                    "paper_review_scope": "portfolio_sim",
+                    "portfolio_sim_id": portfolio_sim_id,
+                    "strategy_manifest_ids": strategy_manifest_ids,
+                    "evidence_contract": {
+                        "schema_version": PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+                        "origin": PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
+                        "portfolio_sim_id": portfolio_sim_id,
+                        "strategy_manifest_ids": strategy_manifest_ids,
+                        "candidate_count": len(strategy_manifest_ids),
+                        "all_strategy_manifest_contracts_complete": True,
+                        "paper_review_gate": "portfolio_evidence_pack_required",
+                    },
                     "sections": {
                         "candidate_data": {
                             "candidate_id": "cand_001",
@@ -285,10 +352,32 @@ def test_create_review_from_portfolio_sim_requires_saved_evidence_gate_and_updat
                             {
                                 "candidate_id": "cand_001",
                                 "strategy_manifest_id": strategy_manifest_ids[0],
+                                "strategy_manifest_path": str(
+                                    tmp_path / "research" / "manifests" / strategy_manifest_ids[0] / "manifest.json"
+                                ),
+                                "evidence_pack_path": str(
+                                    tmp_path / "research" / "evidence_packs" / "cand_001" / "evidence_pack.json"
+                                ),
+                                "strategy_manifest_contract": {
+                                    "contract_complete": True,
+                                    "missing_fields": [],
+                                },
+                                "strategy_manifest_contract_complete": True,
                             },
                             {
                                 "candidate_id": "cand_002",
                                 "strategy_manifest_id": strategy_manifest_ids[1],
+                                "strategy_manifest_path": str(
+                                    tmp_path / "research" / "manifests" / strategy_manifest_ids[1] / "manifest.json"
+                                ),
+                                "evidence_pack_path": str(
+                                    tmp_path / "research" / "evidence_packs" / "cand_002" / "evidence_pack.json"
+                                ),
+                                "strategy_manifest_contract": {
+                                    "contract_complete": True,
+                                    "missing_fields": [],
+                                },
+                                "strategy_manifest_contract_complete": True,
                             },
                         ],
                         "portfolio_sim": {
@@ -373,10 +462,37 @@ def test_create_review_from_portfolio_sim_no_longer_bypasses_blocked_candidate_g
         path.write_text(
             json.dumps(
                 {
+                    "schema_version": "evidence_pack_v2",
+                    "paper_review_scope": "portfolio_sim",
+                    "portfolio_sim_id": "psim_blocked",
+                    "strategy_manifest_ids": ["sm_001"],
+                    "evidence_contract": {
+                        "schema_version": PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+                        "origin": PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
+                        "portfolio_sim_id": "psim_blocked",
+                        "strategy_manifest_ids": ["sm_001"],
+                        "candidate_count": 1,
+                        "all_strategy_manifest_contracts_complete": True,
+                        "paper_review_gate": "portfolio_evidence_pack_required",
+                    },
                     "sections": {
                         "candidate_data": {"candidate_id": "cand_001", "symbols": ["SPY"]},
                         "portfolio_candidates": [
-                            {"candidate_id": "cand_001", "strategy_manifest_id": "sm_001"}
+                            {
+                                "candidate_id": "cand_001",
+                                "strategy_manifest_id": "sm_001",
+                                "strategy_manifest_path": str(
+                                    tmp_path / "research" / "manifests" / "sm_001" / "manifest.json"
+                                ),
+                                "evidence_pack_path": str(
+                                    tmp_path / "research" / "evidence_packs" / "cand_001" / "evidence_pack.json"
+                                ),
+                                "strategy_manifest_contract": {
+                                    "contract_complete": True,
+                                    "missing_fields": [],
+                                },
+                                "strategy_manifest_contract_complete": True,
+                            }
                         ],
                         "portfolio_sim": {
                             "status": "manifest_created",
@@ -408,3 +524,177 @@ def test_create_review_from_portfolio_sim_no_longer_bypasses_blocked_candidate_g
 
     with pytest.raises(ValueError, match="strategy_attribution_missing_fills"):
         PaperReviewManager(data_root=str(tmp_path)).create_review("psim_blocked")
+
+
+def test_create_from_portfolio_evidence_blocks_incomplete_strategy_manifest_contract(
+    tmp_path: Path,
+) -> None:
+    _write_manifest(tmp_path, "sm_001", "cand_001")
+    evidence_dir = tmp_path / "research" / "evidence_packs" / "pack_incomplete"
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    (evidence_dir / "evidence_pack.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "evidence_pack_v2",
+                "paper_review_scope": "portfolio_sim",
+                "portfolio_sim_id": "psim_002",
+                "strategy_manifest_ids": ["sm_001"],
+                "evidence_contract": {
+                    "schema_version": PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+                    "origin": PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
+                    "portfolio_sim_id": "psim_002",
+                    "strategy_manifest_ids": ["sm_001"],
+                    "candidate_count": 1,
+                    "all_strategy_manifest_contracts_complete": False,
+                    "paper_review_gate": "portfolio_evidence_pack_required",
+                },
+                "sections": {
+                    "candidate_data": {
+                        "candidate_id": "cand_001",
+                        "symbols": ["SPY"],
+                        "metrics": {"max_drawdown_pct": -0.12},
+                    },
+                    "portfolio_candidates": [
+                        {
+                            "candidate_id": "cand_001",
+                            "strategy_manifest_id": "sm_001",
+                            "strategy_manifest_path": str(
+                                tmp_path / "research" / "manifests" / "sm_001" / "manifest.json"
+                            ),
+                            "evidence_pack_path": str(
+                                tmp_path / "research" / "evidence_packs" / "cand_001" / "evidence_pack.json"
+                            ),
+                            "strategy_manifest_contract": {
+                                "contract_complete": False,
+                                "missing_fields": ["pbo", "dsr"],
+                            },
+                            "strategy_manifest_contract_complete": False,
+                        }
+                    ],
+                    "portfolio_sim": {
+                        "status": "manifest_created",
+                        "portfolio_sim_id": "psim_002",
+                        "final_equity": 101500.0,
+                        "decision": "PORTFOLIO_PASS",
+                    },
+                    "promotion_gate": {"decision": "READY_FOR_PAPER_REVIEW"},
+                    "paper_review_candidate": {
+                        "review_candidate_status": "READY_FOR_REVIEW",
+                        "blocking_reasons": [],
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="strategy_manifest_contract_incomplete:sm_001"):
+        PaperReviewManager(data_root=str(tmp_path)).create_from_portfolio_evidence(
+            "pack_incomplete"
+        )
+
+
+def test_create_from_candidate_evidence_builds_deterministic_pending_review(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _write_candidate(tmp_path, "cand_001")
+    _write_manifest(tmp_path, "sm_001", "cand_001")
+
+    def _write_portfolio_pack(
+        self,
+        portfolio_evidence_pack_id: str,
+        **_: object,
+    ) -> str:
+        path = (
+            Path(self.data_root)
+            / "research"
+            / "evidence_packs"
+            / portfolio_evidence_pack_id
+            / "evidence_pack.json"
+        )
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "evidence_pack_v2",
+                    "paper_review_scope": "portfolio_sim",
+                    "portfolio_sim_id": portfolio_evidence_pack_id,
+                    "strategy_manifest_ids": ["sm_001"],
+                    "evidence_contract": {
+                        "schema_version": PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+                        "origin": PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
+                        "portfolio_sim_id": portfolio_evidence_pack_id,
+                        "strategy_manifest_ids": ["sm_001"],
+                        "candidate_count": 1,
+                        "all_strategy_manifest_contracts_complete": True,
+                        "paper_review_gate": "portfolio_evidence_pack_required",
+                    },
+                    "candidate_id": "cand_001",
+                    "proposed_symbols": ["SPY", "QQQ"],
+                    "proposed_capital": 100000.0,
+                    "proposed_risk_envelope": {"max_drawdown_pct": 0.12},
+                    "sections": {
+                        "portfolio_sim": {
+                            "status": "manifest_created",
+                            "decision": "READY_FOR_PAPER_REVIEW",
+                            "portfolio_sim_id": portfolio_evidence_pack_id,
+                            "final_equity": 100000.0,
+                            "proposed_symbols": ["SPY", "QQQ"],
+                        },
+                        "candidate_data": {
+                            "candidate_id": "cand_001",
+                            "symbols": ["SPY", "QQQ"],
+                            "metrics": {"max_drawdown_pct": 0.12},
+                        },
+                        "portfolio_candidates": [
+                            {
+                                "candidate_id": "cand_001",
+                                "strategy_manifest_id": "sm_001",
+                                "strategy_manifest_path": str(
+                                    tmp_path / "research" / "manifests" / "sm_001" / "manifest.json"
+                                ),
+                                "evidence_pack_path": str(
+                                    tmp_path / "research" / "evidence_packs" / "cand_001" / "evidence_pack.json"
+                                ),
+                                "strategy_manifest_contract": {
+                                    "contract_complete": True,
+                                    "missing_fields": [],
+                                },
+                                "strategy_manifest_contract_complete": True,
+                            }
+                        ],
+                        "promotion_gate": {"decision": "READY_FOR_PAPER_REVIEW"},
+                        "paper_review_candidate": {
+                            "review_candidate_status": "READY_FOR_REVIEW",
+                            "blocking_reasons": [],
+                        },
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        return str(path)
+
+    monkeypatch.setattr(
+        EvidencePackGenerator,
+        "save_portfolio_review_pack",
+        _write_portfolio_pack,
+    )
+
+    manager = PaperReviewManager(data_root=str(tmp_path))
+    review = manager.create_from_candidate_evidence(strategy_manifest_id="sm_001")
+    manifest = StrategyManifestManager(data_root=str(tmp_path)).load("sm_001")
+
+    assert review.status == "PENDING_HUMAN_REVIEW"
+    assert review.strategy_manifest_id == "sm_001"
+    assert review.source_candidate_ids == ["cand_001"]
+    assert review.evidence_pack_path.endswith(
+        "/research/evidence_packs/pending_review_sm_001/evidence_pack.json"
+    )
+    assert manifest is not None
+    assert manifest.paper_review_id == review.paper_review_id
+    assert manifest.paper_review_candidate_status == "READY_FOR_REVIEW"
+
+    same_review = manager.create_from_candidate_evidence(strategy_manifest_id="sm_001")
+    assert same_review.paper_review_id == review.paper_review_id

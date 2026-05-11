@@ -8,6 +8,7 @@ class AllocationMethod:
     """Canonical allocation method identifiers used by CapitalAllocator."""
     EQUAL_WEIGHT = "equal_weight"
     INVERSE_VOL = "inverse_volatility"
+    HRP = "hierarchical_risk_parity"
     RISK_PARITY = "risk_parity"
     VOL_TARGET = "vol_targeting"
     DRAWDOWN_ADJUSTED = "drawdown_adjusted"
@@ -60,9 +61,19 @@ class CapitalAllocator:
             vols = {c["id"]: c["volatility"] for c in candidates}
             result = self.inverse_volatility(vols)
         elif method == AllocationMethod.RISK_PARITY:
-            # Simplified: uses inverse vol as proxy (full cov not always available)
             vols = {c["id"]: c["volatility"] for c in candidates}
-            result = self.inverse_volatility(vols)
+            cov_matrix = _covariance_from_candidates(candidates, ids)
+            if cov_matrix:
+                result = self.risk_parity(cov_matrix, ids)
+            else:
+                result = self.inverse_volatility(vols)
+        elif method == AllocationMethod.HRP:
+            vols = {c["id"]: c["volatility"] for c in candidates}
+            cov_matrix = _covariance_from_candidates(candidates, ids)
+            if cov_matrix:
+                result = self.hierarchical_risk_parity(cov_matrix, ids)
+            else:
+                result = self.inverse_volatility(vols)
         elif method == AllocationMethod.VOL_TARGET:
             vols = {c["id"]: c["volatility"] for c in candidates}
             equal = dict(zip(ids, self.equal_weight(n)))
@@ -171,6 +182,55 @@ class CapitalAllocator:
         return dict(zip(labels, w))
 
     @staticmethod
+    def hierarchical_risk_parity(
+        cov_matrix: list[list[float]],
+        labels: list[str],
+    ) -> dict[str, float]:
+        """Long-only HRP baseline using deterministic recursive bisection.
+
+        This implementation avoids external clustering dependencies.  It uses
+        covariance-implied correlations to build a stable nearest-neighbor
+        ordering, then recursively allocates capital by inverse cluster
+        variance.  It is intended as a robust baseline, not a high-touch
+        optimizer.
+        """
+        n = len(labels)
+        if n == 0:
+            return {}
+        if n == 1:
+            return {labels[0]: 1.0}
+        variances = [max(float(cov_matrix[i][i]), 1e-12) for i in range(n)]
+        order = _quasi_diagonal_order(cov_matrix, variances)
+        weights = {idx: 1.0 for idx in order}
+
+        def split(cluster: list[int]) -> None:
+            if len(cluster) <= 1:
+                return
+            midpoint = len(cluster) // 2
+            left = cluster[:midpoint]
+            right = cluster[midpoint:]
+            left_var = _cluster_variance(cov_matrix, left)
+            right_var = _cluster_variance(cov_matrix, right)
+            total = left_var + right_var
+            if total <= 0:
+                left_alloc = right_alloc = 0.5
+            else:
+                left_alloc = right_var / total
+                right_alloc = left_var / total
+            for idx in left:
+                weights[idx] *= left_alloc
+            for idx in right:
+                weights[idx] *= right_alloc
+            split(left)
+            split(right)
+
+        split(order)
+        total_weight = sum(weights.values())
+        if total_weight <= 0:
+            return {label: 0.0 for label in labels}
+        return {labels[idx]: weights[idx] / total_weight for idx in range(n)}
+
+    @staticmethod
     def vol_targeting(
         weights: dict[str, float],
         target_vol: float,
@@ -209,3 +269,87 @@ class CapitalAllocator:
         if total > 0:
             adjusted = {k: v / total for k, v in adjusted.items()}
         return adjusted
+
+
+def _covariance_from_candidates(candidates: list[dict[str, Any]], ids: list[str]) -> list[list[float]] | None:
+    matrix = _matrix_from_any(candidates, "covariance_matrix", ids)
+    if matrix is not None:
+        return matrix
+    correlation = _matrix_from_any(candidates, "correlation_matrix", ids)
+    if correlation is None:
+        return None
+    vol_by_id = {str(candidate["id"]): max(float(candidate.get("volatility", 0.0)), 1e-12) for candidate in candidates}
+    return [
+        [
+            float(correlation[i][j]) * vol_by_id[ids[i]] * vol_by_id[ids[j]]
+            for j in range(len(ids))
+        ]
+        for i in range(len(ids))
+    ]
+
+
+def _matrix_from_any(candidates: list[dict[str, Any]], key: str, ids: list[str]) -> list[list[float]] | None:
+    for candidate in candidates:
+        value = candidate.get(key)
+        if value is None:
+            continue
+        if isinstance(value, dict):
+            try:
+                return [
+                    [float(value[row_id][col_id]) for col_id in ids]
+                    for row_id in ids
+                ]
+            except Exception:
+                return None
+        if isinstance(value, list) and len(value) == len(ids):
+            try:
+                matrix = [[float(item) for item in row] for row in value]
+            except Exception:
+                return None
+            if all(len(row) == len(ids) for row in matrix):
+                return matrix
+    return None
+
+
+def _quasi_diagonal_order(cov_matrix: list[list[float]], variances: list[float]) -> list[int]:
+    remaining = list(range(len(cov_matrix)))
+    order = [remaining.pop(0)]
+    while remaining:
+        last = order[-1]
+        next_idx = min(
+            remaining,
+            key=lambda idx: (
+                _correlation_distance(cov_matrix, variances, last, idx),
+                idx,
+            ),
+        )
+        remaining.remove(next_idx)
+        order.append(next_idx)
+    return order
+
+
+def _correlation_distance(
+    cov_matrix: list[list[float]],
+    variances: list[float],
+    left: int,
+    right: int,
+) -> float:
+    denom = math.sqrt(max(variances[left] * variances[right], 1e-24))
+    corr = max(-1.0, min(1.0, float(cov_matrix[left][right]) / denom))
+    return math.sqrt(max(0.0, 0.5 * (1.0 - corr)))
+
+
+def _cluster_variance(cov_matrix: list[list[float]], indices: list[int]) -> float:
+    if not indices:
+        return 0.0
+    inv_diag = [1.0 / max(float(cov_matrix[idx][idx]), 1e-12) for idx in indices]
+    total_inv = sum(inv_diag)
+    if total_inv <= 0:
+        weights = [1.0 / len(indices)] * len(indices)
+    else:
+        weights = [value / total_inv for value in inv_diag]
+    variance = 0.0
+    for i, left_idx in enumerate(indices):
+        for j, right_idx in enumerate(indices):
+            variance += weights[i] * weights[j] * float(cov_matrix[left_idx][right_idx])
+    return max(variance, 0.0)

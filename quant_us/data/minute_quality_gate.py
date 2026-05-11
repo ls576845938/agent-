@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 import pandas as pd
 
@@ -11,7 +11,8 @@ from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.clock import ET, UTC, ensure_utc, to_et, utc_now
 
 SUPPORTED_MINUTE_BAR_SIZES: tuple[str, ...] = ("1m", "5m", "15m")
-_STATUS_RANK = {"PASS": 0, "DEGRADED": 1, "STALE": 2, "MISSING": 3, "INVALID": 4}
+SUPPORTED_ROOT_SUBDIRS: tuple[str, ...] = ("raw", "cleaned")
+_STATUS_RANK = {"PASS": 0, "WARN": 1, "FAIL": 2, "MISSING": 3}
 _PRICE_COLUMNS = ("open", "high", "low", "close")
 
 
@@ -27,6 +28,7 @@ class MinuteBarQualitySnapshot:
     observed_bars: int
     missing_bar_count: int
     coverage_pct: float
+    session_coverage: list[dict[str, Any]] = field(default_factory=list)
     latest_timestamp_utc: str = ""
     expected_latest_timestamp_utc: str = ""
     freshness_lag_minutes: float = 0.0
@@ -36,9 +38,35 @@ class MinuteBarQualitySnapshot:
     conflicting_duplicate_count: int = 0
     invalid_ohlc_count: int = 0
     non_positive_price_count: int = 0
+    zero_volume_count: int = 0
     negative_volume_count: int = 0
     malformed_file_count: int = 0
     file_errors: list[str] = field(default_factory=list)
+    gate_reasons: list[str] = field(default_factory=list)
+
+    @property
+    def duplicate_count(self) -> int:
+        return self.duplicate_timestamp_count
+
+    @property
+    def conflict_count(self) -> int:
+        return self.conflicting_duplicate_count
+
+    @property
+    def invalid_ohlc(self) -> int:
+        return self.invalid_ohlc_count
+
+    @property
+    def non_positive_count(self) -> int:
+        return self.non_positive_price_count + self.negative_volume_count
+
+    @property
+    def zero_volume(self) -> int:
+        return self.zero_volume_count
+
+    @property
+    def missing_bars(self) -> int:
+        return self.missing_bar_count
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -51,19 +79,28 @@ class MinuteBarQualitySnapshot:
             "expected_bars": self.expected_bars,
             "observed_bars": self.observed_bars,
             "missing_bar_count": self.missing_bar_count,
+            "missing_bars": self.missing_bars,
             "coverage_pct": self.coverage_pct,
+            "session_coverage": [dict(item) for item in self.session_coverage],
             "latest_timestamp_utc": self.latest_timestamp_utc,
             "expected_latest_timestamp_utc": self.expected_latest_timestamp_utc,
             "freshness_lag_minutes": self.freshness_lag_minutes,
             "missing_bar_samples_utc": list(self.missing_bar_samples_utc),
             "evidence_paths": list(self.evidence_paths),
             "duplicate_timestamp_count": self.duplicate_timestamp_count,
+            "duplicate": self.duplicate_count,
             "conflicting_duplicate_count": self.conflicting_duplicate_count,
+            "conflict": self.conflict_count,
             "invalid_ohlc_count": self.invalid_ohlc_count,
+            "invalid_ohlc": self.invalid_ohlc,
             "non_positive_price_count": self.non_positive_price_count,
             "negative_volume_count": self.negative_volume_count,
+            "non_positive": self.non_positive_count,
+            "zero_volume_count": self.zero_volume_count,
+            "zero_volume": self.zero_volume,
             "malformed_file_count": self.malformed_file_count,
             "file_errors": list(self.file_errors),
+            "gate_reasons": list(self.gate_reasons),
         }
 
 
@@ -87,6 +124,7 @@ class MinuteDataQualityReport:
     as_of_utc: str
     data_root: str
     dataset_root: str
+    root_subdir: str
     vendor: str
     asset_class: str
     lookback_trading_days: int
@@ -100,6 +138,7 @@ class MinuteDataQualityReport:
             "as_of_utc": self.as_of_utc,
             "data_root": self.data_root,
             "dataset_root": self.dataset_root,
+            "root_subdir": self.root_subdir,
             "vendor": self.vendor,
             "asset_class": self.asset_class,
             "lookback_trading_days": self.lookback_trading_days,
@@ -118,6 +157,45 @@ class MinuteDataQualityReport:
         )
 
 
+@dataclass(frozen=True)
+class MinuteDataQualityOverviewReport:
+    status: str
+    as_of_utc: str
+    data_root: str
+    vendor: str
+    asset_class: str
+    lookback_trading_days: int
+    bar_sizes: list[str]
+    evaluated_symbols: list[str]
+    datasets: list[MinuteDataQualityReport]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "as_of_utc": self.as_of_utc,
+            "data_root": self.data_root,
+            "vendor": self.vendor,
+            "asset_class": self.asset_class,
+            "lookback_trading_days": self.lookback_trading_days,
+            "bar_sizes": list(self.bar_sizes),
+            "evaluated_symbols": list(self.evaluated_symbols),
+            "datasets": [dataset.to_dict() for dataset in self.datasets],
+            "dataset_statuses": {
+                dataset.root_subdir: {
+                    "status": dataset.status,
+                    "dataset_root": dataset.dataset_root,
+                    "issue_count": dataset.issue_count,
+                    "evaluated_symbols": list(dataset.evaluated_symbols),
+                }
+                for dataset in self.datasets
+            },
+        }
+
+    @property
+    def issue_count(self) -> int:
+        return sum(dataset.issue_count for dataset in self.datasets)
+
+
 def inspect_minute_data_quality(
     data_root: str | Path = "data",
     *,
@@ -133,9 +211,10 @@ def inspect_minute_data_quality(
 ) -> MinuteDataQualityReport:
     root = Path(data_root)
     normalized_bar_sizes = _normalize_bar_sizes(bar_sizes)
+    normalized_root_subdir = _normalize_root_subdir(root_subdir)
     as_of_utc = ensure_utc(as_of or utc_now())
     calendar = USEquityCalendar.with_holidays()
-    dataset_root = root / root_subdir / f"vendor={vendor}" / f"asset_class={asset_class}"
+    dataset_root = root / normalized_root_subdir / f"vendor={vendor}" / f"asset_class={asset_class}"
     resolved_symbols = _resolve_symbols(dataset_root, normalized_bar_sizes, symbols)
 
     symbol_summaries: list[MinuteSymbolQualitySummary] = []
@@ -169,12 +248,70 @@ def inspect_minute_data_quality(
         as_of_utc=as_of_utc.isoformat(),
         data_root=str(root),
         dataset_root=str(dataset_root),
+        root_subdir=normalized_root_subdir,
         vendor=vendor,
         asset_class=asset_class,
         lookback_trading_days=lookback_trading_days,
         bar_sizes=list(normalized_bar_sizes),
         evaluated_symbols=list(resolved_symbols),
         symbols=symbol_summaries,
+    )
+
+
+def inspect_minute_data_quality_overview(
+    data_root: str | Path = "data",
+    *,
+    symbols: list[str] | None = None,
+    vendor: str = "yfinance",
+    asset_class: str = "equity",
+    bar_sizes: list[str] | tuple[str, ...] = SUPPORTED_MINUTE_BAR_SIZES,
+    lookback_trading_days: int = 5,
+    as_of: datetime | None = None,
+    root_subdirs: Iterable[str] = SUPPORTED_ROOT_SUBDIRS,
+    min_coverage_pct: float = 99.0,
+    max_missing_samples: int = 8,
+) -> MinuteDataQualityOverviewReport:
+    root = Path(data_root)
+    normalized_bar_sizes = _normalize_bar_sizes(bar_sizes)
+    normalized_root_subdirs = _normalize_root_subdirs(root_subdirs)
+    as_of_utc = ensure_utc(as_of or utc_now())
+    resolved_symbols = _resolve_symbols_across_roots(
+        data_root=root,
+        vendor=vendor,
+        asset_class=asset_class,
+        bar_sizes=normalized_bar_sizes,
+        root_subdirs=normalized_root_subdirs,
+        symbols=symbols,
+    )
+
+    datasets = [
+        inspect_minute_data_quality(
+            data_root=root,
+            symbols=list(resolved_symbols),
+            vendor=vendor,
+            asset_class=asset_class,
+            bar_sizes=normalized_bar_sizes,
+            lookback_trading_days=lookback_trading_days,
+            as_of=as_of_utc,
+            root_subdir=root_subdir,
+            min_coverage_pct=min_coverage_pct,
+            max_missing_samples=max_missing_samples,
+        )
+        for root_subdir in normalized_root_subdirs
+    ]
+    overall_status = _worst_status(dataset.status for dataset in datasets) if datasets else "MISSING"
+    merged_symbols = sorted({symbol for dataset in datasets for symbol in dataset.evaluated_symbols})
+
+    return MinuteDataQualityOverviewReport(
+        status=overall_status,
+        as_of_utc=as_of_utc.isoformat(),
+        data_root=str(root),
+        vendor=vendor,
+        asset_class=asset_class,
+        lookback_trading_days=lookback_trading_days,
+        bar_sizes=list(normalized_bar_sizes),
+        evaluated_symbols=merged_symbols or list(resolved_symbols),
+        datasets=datasets,
     )
 
 
@@ -194,24 +331,6 @@ def _inspect_symbol_interval(
     coverage_end = _latest_completed_trading_day(as_of_utc, calendar)
     expected_days = _recent_trading_days(coverage_end, lookback_trading_days, calendar)
     expected_dates = [day.isoformat() for day in expected_days]
-
-    if not base.exists():
-        expected_latest = _expected_latest_timestamp(as_of_utc, interval_minutes, calendar)
-        return MinuteBarQualitySnapshot(
-            symbol=symbol.upper(),
-            bar_size=bar_size,
-            status="MISSING",
-            expected_trading_days=expected_dates,
-            observed_file_dates=[],
-            missing_file_dates=expected_dates,
-            expected_bars=sum(len(_expected_regular_timestamps(day, interval_minutes, calendar)) for day in expected_days),
-            observed_bars=0,
-            missing_bar_count=sum(len(_expected_regular_timestamps(day, interval_minutes, calendar)) for day in expected_days),
-            coverage_pct=0.0,
-            expected_latest_timestamp_utc=expected_latest.isoformat() if expected_latest else "",
-            freshness_lag_minutes=0.0,
-        )
-
     expected_ts_by_day = {
         day.isoformat(): _expected_regular_timestamps(day, interval_minutes, calendar)
         for day in expected_days
@@ -221,7 +340,29 @@ def _inspect_symbol_interval(
         for timestamps in expected_ts_by_day.values()
         for timestamp in timestamps
     }
+    expected_latest = _expected_latest_timestamp(as_of_utc, interval_minutes, calendar)
+
+    if not base.exists():
+        missing_bars = len(expected_ts)
+        return MinuteBarQualitySnapshot(
+            symbol=symbol.upper(),
+            bar_size=bar_size,
+            status="MISSING",
+            expected_trading_days=expected_dates,
+            observed_file_dates=[],
+            missing_file_dates=expected_dates,
+            expected_bars=missing_bars,
+            observed_bars=0,
+            missing_bar_count=missing_bars,
+            coverage_pct=0.0,
+            session_coverage=_missing_session_coverage(expected_ts_by_day),
+            expected_latest_timestamp_utc=expected_latest.isoformat() if expected_latest else "",
+            freshness_lag_minutes=0.0,
+            gate_reasons=["dataset_partition_missing"],
+        )
+
     observed_ts: set[datetime] = set()
+    observed_ts_by_day: dict[str, set[datetime]] = {key: set() for key in expected_ts_by_day}
     evidence_paths: list[str] = []
     observed_dates: list[str] = []
     missing_file_dates: list[str] = []
@@ -229,6 +370,7 @@ def _inspect_symbol_interval(
     conflicting_duplicate_count = 0
     invalid_ohlc_count = 0
     non_positive_price_count = 0
+    zero_volume_count = 0
     negative_volume_count = 0
     malformed_file_count = 0
     file_errors: list[str] = []
@@ -252,39 +394,44 @@ def _inspect_symbol_interval(
         conflicting_duplicate_count += quality["conflicting_duplicate_count"]
         invalid_ohlc_count += quality["invalid_ohlc_count"]
         non_positive_price_count += quality["non_positive_price_count"]
+        zero_volume_count += quality["zero_volume_count"]
         negative_volume_count += quality["negative_volume_count"]
         malformed_file_count += quality["malformed_file_count"]
         file_errors.extend(quality["file_errors"])
         for timestamp in quality["timestamps"]:
             observed_ts.add(timestamp)
+            observed_ts_by_day.setdefault(date_str, set()).add(timestamp)
 
     missing_timestamps = sorted(expected_ts - observed_ts)
-    expected_latest = _expected_latest_timestamp(as_of_utc, interval_minutes, calendar)
     latest_observed = max(observed_ts) if observed_ts else None
     freshness_lag = _freshness_lag_minutes(expected_latest, latest_observed)
     coverage_pct = round((len(observed_ts) / max(1, len(expected_ts))) * 100.0, 4)
-
-    status = "PASS"
-    has_invalid_rows = (
-        malformed_file_count > 0
-        or conflicting_duplicate_count > 0
-        or invalid_ohlc_count > 0
-        or non_positive_price_count > 0
-        or negative_volume_count > 0
+    session_coverage = _build_session_coverage(expected_ts_by_day, observed_ts_by_day)
+    gate_reasons = _gate_reasons(
+        coverage_pct=coverage_pct,
+        min_coverage_pct=min_coverage_pct,
+        missing_file_dates=missing_file_dates,
+        missing_bar_count=len(missing_timestamps),
+        duplicate_timestamp_count=duplicate_timestamp_count,
+        conflicting_duplicate_count=conflicting_duplicate_count,
+        invalid_ohlc_count=invalid_ohlc_count,
+        non_positive_count=non_positive_price_count + negative_volume_count,
+        zero_volume_count=zero_volume_count,
+        malformed_file_count=malformed_file_count,
+        observed_bars=len(observed_ts),
     )
-    if has_invalid_rows:
-        status = "INVALID"
-    elif not observed_ts:
-        status = "MISSING"
-    elif freshness_lag > float(interval_minutes):
-        status = "STALE"
-    elif (
-        coverage_pct < min_coverage_pct
-        or missing_file_dates
-        or missing_timestamps
-        or duplicate_timestamp_count > 0
-    ):
-        status = "DEGRADED"
+    status = _classify_status(
+        coverage_pct=coverage_pct,
+        min_coverage_pct=min_coverage_pct,
+        missing_bar_count=len(missing_timestamps),
+        duplicate_timestamp_count=duplicate_timestamp_count,
+        conflicting_duplicate_count=conflicting_duplicate_count,
+        invalid_ohlc_count=invalid_ohlc_count,
+        non_positive_count=non_positive_price_count + negative_volume_count,
+        zero_volume_count=zero_volume_count,
+        malformed_file_count=malformed_file_count,
+        observed_bars=len(observed_ts),
+    )
 
     return MinuteBarQualitySnapshot(
         symbol=symbol.upper(),
@@ -297,6 +444,7 @@ def _inspect_symbol_interval(
         observed_bars=len(observed_ts),
         missing_bar_count=len(missing_timestamps),
         coverage_pct=coverage_pct,
+        session_coverage=session_coverage,
         latest_timestamp_utc=latest_observed.isoformat() if latest_observed else "",
         expected_latest_timestamp_utc=expected_latest.isoformat() if expected_latest else "",
         freshness_lag_minutes=freshness_lag,
@@ -308,9 +456,11 @@ def _inspect_symbol_interval(
         conflicting_duplicate_count=conflicting_duplicate_count,
         invalid_ohlc_count=invalid_ohlc_count,
         non_positive_price_count=non_positive_price_count,
+        zero_volume_count=zero_volume_count,
         negative_volume_count=negative_volume_count,
         malformed_file_count=malformed_file_count,
         file_errors=file_errors[:max_missing_samples],
+        gate_reasons=gate_reasons,
     )
 
 
@@ -332,6 +482,7 @@ def _regular_frame_quality(
         "conflicting_duplicate_count": 0,
         "invalid_ohlc_count": 0,
         "non_positive_price_count": 0,
+        "zero_volume_count": 0,
         "negative_volume_count": 0,
         "malformed_file_count": 0,
         "file_errors": [],
@@ -368,33 +519,139 @@ def _regular_frame_quality(
     duplicate_timestamp_count = int(duplicate_mask.sum())
     conflicting_duplicate_count = 0
     if duplicate_timestamp_count:
+        compare_columns = [*list(_PRICE_COLUMNS), *([ "volume"] if "volume" in regular.columns else [])]
         for _, group in regular[duplicate_mask].groupby("_timestamp_utc_norm", dropna=True):
-            if len(group[list(_PRICE_COLUMNS)].drop_duplicates()) > 1:
+            if len(group[compare_columns].drop_duplicates()) > 1:
                 conflicting_duplicate_count += 1
 
     price_frame = regular.loc[:, _PRICE_COLUMNS].apply(pd.to_numeric, errors="coerce")
-    non_positive_mask = price_frame.le(0).any(axis=1) | price_frame.isna().any(axis=1)
-    invalid_ohlc_mask = (
-        non_positive_mask
-        | (price_frame["high"] < price_frame["low"])
+    positive_price_mask = price_frame.gt(0).all(axis=1) & price_frame.notna().all(axis=1)
+    structural_invalid_mask = positive_price_mask & (
+        (price_frame["high"] < price_frame["low"])
         | (price_frame["high"] < price_frame[["open", "close"]].max(axis=1))
         | (price_frame["low"] > price_frame[["open", "close"]].min(axis=1))
     )
+    non_positive_price_mask = ~positive_price_mask
+
+    zero_volume_count = 0
     negative_volume_count = 0
     if "volume" in regular.columns:
         volume = pd.to_numeric(regular["volume"], errors="coerce")
+        zero_volume_count = int((volume.eq(0) | volume.isna()).sum())
         negative_volume_count = int(volume.lt(0).sum())
 
     return {
         "timestamps": set(regular["_timestamp_utc_norm"].dropna().drop_duplicates()),
         "duplicate_timestamp_count": duplicate_timestamp_count,
         "conflicting_duplicate_count": conflicting_duplicate_count,
-        "invalid_ohlc_count": int(invalid_ohlc_mask.sum()),
-        "non_positive_price_count": int(non_positive_mask.sum()),
+        "invalid_ohlc_count": int(structural_invalid_mask.sum()),
+        "non_positive_price_count": int(non_positive_price_mask.sum()),
+        "zero_volume_count": zero_volume_count,
         "negative_volume_count": negative_volume_count,
         "malformed_file_count": 0,
         "file_errors": [],
     }
+
+
+def _missing_session_coverage(
+    expected_ts_by_day: dict[str, list[datetime]],
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "date": trading_day,
+            "expected_bars": len(expected),
+            "observed_bars": 0,
+            "missing_bars": len(expected),
+            "coverage_pct": 0.0,
+        }
+        for trading_day, expected in expected_ts_by_day.items()
+    ]
+
+
+def _build_session_coverage(
+    expected_ts_by_day: dict[str, list[datetime]],
+    observed_ts_by_day: dict[str, set[datetime]],
+) -> list[dict[str, Any]]:
+    coverage: list[dict[str, Any]] = []
+    for trading_day, expected in expected_ts_by_day.items():
+        observed = len(observed_ts_by_day.get(trading_day, set()))
+        expected_count = len(expected)
+        coverage.append(
+            {
+                "date": trading_day,
+                "expected_bars": expected_count,
+                "observed_bars": observed,
+                "missing_bars": max(0, expected_count - observed),
+                "coverage_pct": round((observed / max(1, expected_count)) * 100.0, 4),
+            }
+        )
+    return coverage
+
+
+def _gate_reasons(
+    *,
+    coverage_pct: float,
+    min_coverage_pct: float,
+    missing_file_dates: list[str],
+    missing_bar_count: int,
+    duplicate_timestamp_count: int,
+    conflicting_duplicate_count: int,
+    invalid_ohlc_count: int,
+    non_positive_count: int,
+    zero_volume_count: int,
+    malformed_file_count: int,
+    observed_bars: int,
+) -> list[str]:
+    reasons: list[str] = []
+    if observed_bars == 0:
+        reasons.append("regular_session_bars_missing")
+    if malformed_file_count > 0:
+        reasons.append(f"malformed_files:{malformed_file_count}")
+    if conflicting_duplicate_count > 0:
+        reasons.append(f"conflicting_duplicates:{conflicting_duplicate_count}")
+    if invalid_ohlc_count > 0:
+        reasons.append(f"invalid_ohlc:{invalid_ohlc_count}")
+    if non_positive_count > 0:
+        reasons.append(f"non_positive:{non_positive_count}")
+    if coverage_pct < min_coverage_pct:
+        reasons.append(f"coverage_below_threshold:{coverage_pct:.4f}")
+    elif missing_bar_count > 0:
+        reasons.append(f"missing_bars:{missing_bar_count}")
+    if missing_file_dates:
+        reasons.append(f"missing_files:{len(missing_file_dates)}")
+    if duplicate_timestamp_count > 0:
+        reasons.append(f"duplicate_rows:{duplicate_timestamp_count}")
+    if zero_volume_count > 0:
+        reasons.append(f"zero_volume:{zero_volume_count}")
+    return reasons
+
+
+def _classify_status(
+    *,
+    coverage_pct: float,
+    min_coverage_pct: float,
+    missing_bar_count: int,
+    duplicate_timestamp_count: int,
+    conflicting_duplicate_count: int,
+    invalid_ohlc_count: int,
+    non_positive_count: int,
+    zero_volume_count: int,
+    malformed_file_count: int,
+    observed_bars: int,
+) -> str:
+    if observed_bars == 0:
+        return "MISSING"
+    if (
+        malformed_file_count > 0
+        or conflicting_duplicate_count > 0
+        or invalid_ohlc_count > 0
+        or non_positive_count > 0
+        or coverage_pct < min_coverage_pct
+    ):
+        return "FAIL"
+    if missing_bar_count > 0 or duplicate_timestamp_count > 0 or zero_volume_count > 0:
+        return "WARN"
+    return "PASS"
 
 
 def _expected_regular_timestamps(
@@ -478,14 +735,7 @@ def _resolve_symbols(
     symbols: list[str] | None,
 ) -> list[str]:
     if symbols:
-        seen: set[str] = set()
-        resolved: list[str] = []
-        for symbol in symbols:
-            normalized = str(symbol or "").strip().upper()
-            if normalized and normalized not in seen:
-                seen.add(normalized)
-                resolved.append(normalized)
-        return resolved
+        return _normalize_symbols(symbols)
 
     discovered: set[str] = set()
     for bar_size in bar_sizes:
@@ -496,6 +746,35 @@ def _resolve_symbols(
             if path.is_dir():
                 discovered.add(path.name.split("=", 1)[-1].upper())
     return sorted(discovered)
+
+
+def _resolve_symbols_across_roots(
+    *,
+    data_root: Path,
+    vendor: str,
+    asset_class: str,
+    bar_sizes: list[str],
+    root_subdirs: list[str],
+    symbols: list[str] | None,
+) -> list[str]:
+    if symbols:
+        return _normalize_symbols(symbols)
+    discovered: set[str] = set()
+    for root_subdir in root_subdirs:
+        dataset_root = data_root / root_subdir / f"vendor={vendor}" / f"asset_class={asset_class}"
+        discovered.update(_resolve_symbols(dataset_root, bar_sizes, None))
+    return sorted(discovered)
+
+
+def _normalize_symbols(values: Iterable[str]) -> list[str]:
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        symbol = str(value or "").strip().upper()
+        if symbol and symbol not in seen:
+            seen.add(symbol)
+            normalized.append(symbol)
+    return normalized
 
 
 def _normalize_bar_sizes(values: list[str] | tuple[str, ...]) -> list[str]:
@@ -510,8 +789,26 @@ def _normalize_bar_sizes(values: list[str] | tuple[str, ...]) -> list[str]:
     return normalized or list(SUPPORTED_MINUTE_BAR_SIZES)
 
 
-def _worst_status(statuses: Any) -> str:
-    resolved = list(statuses)
+def _normalize_root_subdir(root_subdir: str) -> str:
+    normalized = str(root_subdir or "").strip().lower()
+    if normalized not in SUPPORTED_ROOT_SUBDIRS:
+        return "raw"
+    return normalized
+
+
+def _normalize_root_subdirs(root_subdirs: Iterable[str]) -> list[str]:
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for root_subdir in root_subdirs:
+        resolved = _normalize_root_subdir(root_subdir)
+        if resolved not in seen:
+            seen.add(resolved)
+            normalized.append(resolved)
+    return normalized or list(SUPPORTED_ROOT_SUBDIRS)
+
+
+def _worst_status(statuses: Iterable[str]) -> str:
+    resolved = [str(status) for status in statuses]
     if not resolved:
         return "MISSING"
-    return max(resolved, key=lambda value: _STATUS_RANK.get(str(value), 0))
+    return max(resolved, key=lambda value: _STATUS_RANK.get(value, 0))

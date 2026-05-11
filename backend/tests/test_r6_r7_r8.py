@@ -392,6 +392,72 @@ class TestPromotionGateEnhanced:
             "baseline_order_count": 1,
             "total_fill_count": 2,
             "total_order_count": 2,
+            "sharpe_ratio": 1.55,
+            "gross_sharpe_ratio": 1.78,
+            "total_return_pct": 0.24,
+            "gross_total_return_pct": 0.28,
+            "trial_count": 6,
+            "daily_returns": [
+                0.012,
+                0.008,
+                -0.004,
+                0.011,
+                0.007,
+                0.009,
+                -0.003,
+                0.010,
+                0.006,
+                0.005,
+                0.013,
+                -0.002,
+                0.011,
+                0.009,
+                0.004,
+                0.008,
+                -0.001,
+                0.007,
+                0.010,
+                0.006,
+            ],
+            "trial_sharpes": [0.82, 0.91, 1.02, 0.88, 0.95, 1.05],
+            "pbo_trials": [
+                {
+                    "split_id": "s1",
+                    "config_id": "a",
+                    "train_sharpe": 1.30,
+                    "test_sharpe": 1.10,
+                },
+                {
+                    "split_id": "s1",
+                    "config_id": "b",
+                    "train_sharpe": 1.10,
+                    "test_sharpe": 0.70,
+                },
+                {
+                    "split_id": "s1",
+                    "config_id": "c",
+                    "train_sharpe": 0.90,
+                    "test_sharpe": 0.40,
+                },
+                {
+                    "split_id": "s2",
+                    "config_id": "a",
+                    "train_sharpe": 1.25,
+                    "test_sharpe": 1.00,
+                },
+                {
+                    "split_id": "s2",
+                    "config_id": "b",
+                    "train_sharpe": 1.00,
+                    "test_sharpe": 0.60,
+                },
+                {
+                    "split_id": "s2",
+                    "config_id": "c",
+                    "train_sharpe": 0.80,
+                    "test_sharpe": 0.20,
+                },
+            ],
             **metrics,
         }
         data = {
@@ -480,11 +546,24 @@ class TestPromotionGateEnhanced:
             json.dumps(
                 {
                     "candidate_id": candidate_id,
+                    "schema_version": "research_walk_forward_result_v2",
                     "status": "completed",
+                    "validation_method": "cpcv",
+                    "purged": True,
+                    "embargo_bars": 2,
+                    "n_splits": 4,
+                    "test_splits": 2,
+                    "combination_count": 6,
                     "walk_forward_pass_rate": float(
                         metrics.get("walk_forward_pass_rate", 0.8)
                     ),
-                    "folds": [{"fold": 1, "passed": True}],
+                    "folds": [
+                        {"fold": 1, "oos_sharpe": 1.20, "passed": True},
+                        {"fold": 2, "oos_sharpe": 1.05, "passed": True},
+                        {"fold": 3, "oos_sharpe": 0.95, "passed": True},
+                        {"fold": 4, "oos_sharpe": 1.00, "passed": True},
+                    ],
+                    "pbo_trials": list(metrics.get("pbo_trials", [])),
                 }
             ),
             encoding="utf-8",
@@ -500,6 +579,39 @@ class TestPromotionGateEnhanced:
                     "stress_survival_rate": float(
                         metrics.get("stress_survival_rate", 0.85)
                     ),
+                    "levels": [
+                        {
+                            "cost_multiplier": 1.0,
+                            "total_return_pct": float(
+                                metrics.get("total_return_pct", 0.24)
+                            ),
+                            "sharpe_ratio": float(
+                                metrics.get("sharpe_ratio", metrics.get("sharpe", 1.5))
+                            ),
+                        },
+                        {
+                            "cost_multiplier": 2.0,
+                            "total_return_pct": float(
+                                metrics.get("total_return_pct", 0.24)
+                            )
+                            - 0.03,
+                            "sharpe_ratio": float(
+                                metrics.get("sharpe_ratio", metrics.get("sharpe", 1.5))
+                            )
+                            - 0.18,
+                        },
+                        {
+                            "cost_multiplier": 5.0,
+                            "total_return_pct": float(
+                                metrics.get("total_return_pct", 0.24)
+                            )
+                            - 0.08,
+                            "sharpe_ratio": float(
+                                metrics.get("sharpe_ratio", metrics.get("sharpe", 1.5))
+                            )
+                            - 0.42,
+                        },
+                    ],
                     "scenarios": [{"name": "high_cost", "passed": True}],
                 }
             ),
@@ -1660,7 +1772,47 @@ class TestPromotionGateEnhanced:
         # Create a valid evidence pack with portfolio-level evidence
         ev_dir = tmp_path / "research" / "evidence_packs" / "pack_valid"
         ev_dir.mkdir(parents=True)
+        manifest_dir = tmp_path / "research" / "manifests" / "sman_valid"
+        manifest_dir.mkdir(parents=True)
+        (manifest_dir / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "strategy_candidate_id": "sman_valid",
+                    "source_candidate_id": "cand_valid",
+                    "source_experiment_id": "exp_valid",
+                    "data_version": "dv_valid",
+                    "sample_window": {"start": "2024-01-01", "end": "2024-12-31"},
+                    "purge_embargo": {"purge_bars": 2, "embargo_bars": 1},
+                    "trial_id": "cand_valid",
+                    "trial_count": 4,
+                    "pbo": 0.05,
+                    "dsr": 0.9,
+                    "cost_model": {"name": "default"},
+                    "slippage_model": {"name": "default"},
+                    "capacity": {"estimated_capacity_usd": 1000000.0},
+                    "turnover": {"turnover": 0.2},
+                    "holding_period": {"expected": "5d"},
+                    "exposure_limits": {"max_gross_exposure_pct": 90.0},
+                    "failure_conditions": ["dd_limit"],
+                    "delisting_conditions": {"policy": "manual_review_required"},
+                }
+            ),
+            encoding="utf-8",
+        )
         evidence = {
+            "schema_version": "evidence_pack_v2",
+            "paper_review_scope": "portfolio_sim",
+            "portfolio_sim_id": "pack_valid",
+            "strategy_manifest_ids": ["sman_valid"],
+            "evidence_contract": {
+                "schema_version": "portfolio_paper_review_evidence_v2",
+                "origin": "quant_us.research.evidence_pack:EvidencePackGenerator.save_portfolio_review_pack",
+                "portfolio_sim_id": "pack_valid",
+                "strategy_manifest_ids": ["sman_valid"],
+                "candidate_count": 1,
+                "all_strategy_manifest_contracts_complete": True,
+                "paper_review_gate": "portfolio_evidence_pack_required",
+            },
             "candidate_id": "cand_valid",
             "sections": {
                 "portfolio_sim": {
@@ -1673,6 +1825,23 @@ class TestPromotionGateEnhanced:
                     "symbols": ["AAPL", "MSFT"],
                     "metrics": {"max_drawdown_pct": 0.15},
                 },
+                "portfolio_candidates": [
+                    {
+                        "candidate_id": "cand_valid",
+                        "strategy_manifest_id": "sman_valid",
+                        "strategy_manifest_path": str(
+                            tmp_path / "research" / "manifests" / "sman_valid" / "manifest.json"
+                        ),
+                        "evidence_pack_path": str(
+                            tmp_path / "research" / "evidence_packs" / "cand_valid" / "evidence_pack.json"
+                        ),
+                        "strategy_manifest_contract": {
+                            "contract_complete": True,
+                            "missing_fields": [],
+                        },
+                        "strategy_manifest_contract_complete": True,
+                    }
+                ],
                 "promotion_gate": {
                     "decision": "READY_FOR_PAPER_REVIEW",
                 },
@@ -1703,7 +1872,47 @@ class TestPromotionGateEnhanced:
         mgr = PaperReviewManager(data_root=str(tmp_path))
         ev_dir = tmp_path / "research" / "evidence_packs" / "pack_watchlist"
         ev_dir.mkdir(parents=True)
+        manifest_dir = tmp_path / "research" / "manifests" / "sman_watchlist"
+        manifest_dir.mkdir(parents=True)
+        (manifest_dir / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "strategy_candidate_id": "sman_watchlist",
+                    "source_candidate_id": "cand_watchlist",
+                    "source_experiment_id": "exp_watchlist",
+                    "data_version": "dv_watchlist",
+                    "sample_window": {"start": "2024-01-01", "end": "2024-12-31"},
+                    "purge_embargo": {"purge_bars": 2, "embargo_bars": 1},
+                    "trial_id": "cand_watchlist",
+                    "trial_count": 4,
+                    "pbo": 0.05,
+                    "dsr": 0.9,
+                    "cost_model": {"name": "default"},
+                    "slippage_model": {"name": "default"},
+                    "capacity": {"estimated_capacity_usd": 1000000.0},
+                    "turnover": {"turnover": 0.2},
+                    "holding_period": {"expected": "5d"},
+                    "exposure_limits": {"max_gross_exposure_pct": 90.0},
+                    "failure_conditions": ["dd_limit"],
+                    "delisting_conditions": {"policy": "manual_review_required"},
+                }
+            ),
+            encoding="utf-8",
+        )
         evidence = {
+            "schema_version": "evidence_pack_v2",
+            "paper_review_scope": "portfolio_sim",
+            "portfolio_sim_id": "pack_watchlist",
+            "strategy_manifest_ids": ["sman_watchlist"],
+            "evidence_contract": {
+                "schema_version": "portfolio_paper_review_evidence_v2",
+                "origin": "quant_us.research.evidence_pack:EvidencePackGenerator.save_portfolio_review_pack",
+                "portfolio_sim_id": "pack_watchlist",
+                "strategy_manifest_ids": ["sman_watchlist"],
+                "candidate_count": 1,
+                "all_strategy_manifest_contracts_complete": True,
+                "paper_review_gate": "portfolio_evidence_pack_required",
+            },
             "candidate_id": "cand_watchlist",
             "sections": {
                 "portfolio_sim": {
@@ -1716,6 +1925,23 @@ class TestPromotionGateEnhanced:
                     "symbols": ["AAPL"],
                     "metrics": {"max_drawdown_pct": 0.15},
                 },
+                "portfolio_candidates": [
+                    {
+                        "candidate_id": "cand_watchlist",
+                        "strategy_manifest_id": "sman_watchlist",
+                        "strategy_manifest_path": str(
+                            tmp_path / "research" / "manifests" / "sman_watchlist" / "manifest.json"
+                        ),
+                        "evidence_pack_path": str(
+                            tmp_path / "research" / "evidence_packs" / "cand_watchlist" / "evidence_pack.json"
+                        ),
+                        "strategy_manifest_contract": {
+                            "contract_complete": True,
+                            "missing_fields": [],
+                        },
+                        "strategy_manifest_contract_complete": True,
+                    }
+                ],
                 "promotion_gate": {
                     "decision": gate_decision,
                 },

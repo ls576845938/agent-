@@ -13,6 +13,9 @@ from typing import Any
 
 from quant_us.core.clock import utc_now
 from quant_us.core.types import new_id
+from quant_us.research.evidence_contracts import (
+    validate_portfolio_paper_review_evidence,
+)
 from quant_us.research.evidence_registry import inspect_candidate_evidence
 
 
@@ -358,6 +361,16 @@ class PaperReviewManager:
 
         evidence = json.loads(ev_path.read_text(encoding="utf-8"))
         sections = evidence.get("sections", {})
+        evidence_validation = validate_portfolio_paper_review_evidence(
+            evidence,
+            root=self.data_root,
+        )
+        if evidence_validation.status != "READY":
+            blocker_text = ", ".join(evidence_validation.blocking_reasons)
+            raise ValueError(
+                f"Evidence pack {portfolio_evidence_pack_id} failed portfolio evidence contract: "
+                f"{blocker_text}"
+            )
 
         # Verify portfolio-level evidence exists
         portfolio_sim = sections.get("portfolio_sim", {})
@@ -431,7 +444,8 @@ class PaperReviewManager:
             evidence_pack_path=str(ev_path),
             source_candidate_ids=source_candidate_ids,
             evidence_gate_status=review_candidate_status,
-            evidence_gate_blocking_reasons=review_blockers,
+            evidence_gate_blocking_reasons=review_blockers
+            + evidence_validation.blocking_reasons,
             proposed_symbols=proposed_symbols,
             proposed_capital=float(
                 evidence.get("proposed_capital", portfolio_sim.get("final_equity", 100000.0))
@@ -456,6 +470,73 @@ class PaperReviewManager:
             review_candidate=review_candidate,
         )
         return review
+
+    def create_from_candidate_evidence(
+        self,
+        *,
+        candidate_id: str = "",
+        strategy_manifest_id: str = "",
+        portfolio_evidence_pack_id: str = "",
+    ) -> PaperReviewCandidate:
+        """Prepare a pending paper review from candidate/manifest evidence only.
+
+        This path is research-only. It materializes a deterministic portfolio-style
+        evidence pack under `research/evidence_packs/` and then reuses the normal
+        manual review queue flow. It never approves a review and never opens any
+        paper/live submit path.
+        """
+        from quant_us.research.evidence_pack import EvidencePackGenerator
+        from quant_us.research.strategy_manifest import StrategyManifestManager
+
+        manifest_manager = StrategyManifestManager(data_root=str(self.data_root))
+        manifest = self._resolve_manifest_for_candidate_review(
+            manifest_manager,
+            candidate_id=candidate_id,
+            strategy_manifest_id=strategy_manifest_id,
+        )
+        resolved_candidate_id = str(manifest.source_candidate_id or "").strip()
+        if not resolved_candidate_id:
+            raise ValueError(
+                f"Strategy manifest {manifest.strategy_candidate_id} does not declare source_candidate_id"
+            )
+        if manifest.promotion_status not in {
+            "READY_FOR_PORTFOLIO_SIM",
+            "PAPER_REVIEW_CANDIDATE",
+        }:
+            raise ValueError(
+                f"Strategy manifest {manifest.strategy_candidate_id} has promotion_status "
+                f"'{manifest.promotion_status}'. Pending paper review requires "
+                "READY_FOR_PORTFOLIO_SIM or PAPER_REVIEW_CANDIDATE."
+            )
+
+        pack_id = (
+            str(portfolio_evidence_pack_id or "").strip()
+            or f"pending_review_{manifest.strategy_candidate_id}"
+        )
+        existing = self._find_existing_review(
+            strategy_manifest_id=manifest.strategy_candidate_id,
+            evidence_pack_path=str(
+                self.data_root / "research" / "evidence_packs" / pack_id / "evidence_pack.json"
+            ),
+        )
+        if existing is not None:
+            return existing
+
+        candidate_payload = self._load_candidate_payload(resolved_candidate_id)
+        generator = EvidencePackGenerator(data_root=str(self.data_root))
+        generator.save_portfolio_review_pack(
+            pack_id,
+            portfolio_sim_id=pack_id,
+            strategy_manifest_ids=[manifest.strategy_candidate_id],
+            proposed_symbols=self._proposed_symbols(manifest, candidate_payload),
+            proposed_capital=self._proposed_capital(candidate_payload),
+            proposed_risk_envelope=self._proposed_risk_envelope(
+                manifest,
+                candidate_payload,
+            ),
+            portfolio_decision="READY_FOR_PAPER_REVIEW",
+        )
+        return self.create_from_portfolio_evidence(pack_id)
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -497,6 +578,121 @@ class PaperReviewManager:
 
         results.sort(key=lambda r: r.created_at, reverse=True)
         return results
+
+    def _resolve_manifest_for_candidate_review(
+        self,
+        manager: Any,
+        *,
+        candidate_id: str,
+        strategy_manifest_id: str,
+    ) -> Any:
+        manifest_id = str(strategy_manifest_id or "").strip()
+        if manifest_id:
+            manifest = manager.load(manifest_id)
+            if manifest is None:
+                raise ValueError(f"Strategy manifest {manifest_id} not found")
+            return manifest
+
+        resolved_candidate_id = str(candidate_id or "").strip()
+        if not resolved_candidate_id:
+            raise ValueError(
+                "candidate_id or strategy_manifest_id is required for candidate evidence staging"
+            )
+        for manifest in manager.list_manifests():
+            if str(manifest.source_candidate_id or "").strip() == resolved_candidate_id:
+                return manifest
+        raise ValueError(
+            f"No strategy manifest found for candidate {resolved_candidate_id}"
+        )
+
+    def _find_existing_review(
+        self,
+        *,
+        strategy_manifest_id: str,
+        evidence_pack_path: str,
+    ) -> PaperReviewCandidate | None:
+        normalized_pack_path = ""
+        if evidence_pack_path:
+            normalized_pack_path = str(Path(evidence_pack_path).resolve(strict=False))
+        for review in self._list_reviews():
+            if review.status not in {
+                "PENDING_HUMAN_REVIEW",
+                "APPROVED_FOR_PAPER_ONLY",
+            }:
+                continue
+            if (
+                strategy_manifest_id
+                and review.strategy_manifest_id == strategy_manifest_id
+            ):
+                return review
+            review_pack_path = str(
+                Path(review.evidence_pack_path).resolve(strict=False)
+            ) if review.evidence_pack_path else ""
+            if normalized_pack_path and review_pack_path == normalized_pack_path:
+                return review
+        return None
+
+    def _load_candidate_payload(self, candidate_id: str) -> dict[str, Any]:
+        candidate_path = (
+            self.data_root / "research" / "candidates" / candidate_id / "candidate.json"
+        )
+        if not candidate_path.exists():
+            raise ValueError(f"Candidate {candidate_id} not found")
+        payload = json.loads(candidate_path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError(f"Candidate {candidate_id} payload is not a JSON object")
+        return payload
+
+    def _proposed_symbols(
+        self,
+        manifest: Any,
+        candidate_payload: dict[str, Any],
+    ) -> list[str]:
+        symbols = [
+            str(item).strip()
+            for item in (
+                list(getattr(manifest, "symbols", []) or [])
+                or list(candidate_payload.get("symbols", []) or [])
+            )
+            if str(item).strip()
+        ]
+        return list(dict.fromkeys(symbols))
+
+    def _proposed_capital(self, candidate_payload: dict[str, Any]) -> float:
+        metrics = candidate_payload.get("metrics", {})
+        if not isinstance(metrics, dict):
+            metrics = {}
+        for key in (
+            "proposed_capital",
+            "initial_cash",
+            "initial_capital",
+            "starting_cash",
+            "starting_capital",
+        ):
+            value = metrics.get(key, candidate_payload.get(key))
+            if value not in (None, ""):
+                return float(value)
+        return 100_000.0
+
+    def _proposed_risk_envelope(
+        self,
+        manifest: Any,
+        candidate_payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        metrics = candidate_payload.get("metrics", {})
+        if not isinstance(metrics, dict):
+            metrics = {}
+        envelope = {
+            "max_drawdown_pct": float(metrics.get("max_drawdown_pct", 0.0) or 0.0),
+            "exposure_limits": dict(getattr(manifest, "exposure_limits", {}) or {}),
+            "failure_conditions": list(getattr(manifest, "failure_conditions", []) or []),
+            "delisting_conditions": dict(getattr(manifest, "delisting_conditions", {}) or {}),
+        }
+        return {
+            key: value
+            for key, value in envelope.items()
+            if value not in ({}, [], "", None)
+        }
 
     def _build_approval(
         self,

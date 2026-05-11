@@ -62,9 +62,8 @@ class TestNyseHolidays(unittest.TestCase):
         self._assert_holidays(2021, expected)
 
     def test_holidays_2022(self) -> None:
-        """2022 includes first Juneteenth and a cross-year New Year's observance."""
+        """2022 includes first Juneteenth; NYSE did not close on Dec 31 2021."""
         expected = {
-            date(2021, 12, 31): "New Year's Day",
             date(2022, 1, 17): "Martin Luther King Jr. Day",
             date(2022, 2, 21): "Presidents' Day",
             date(2022, 4, 15): "Good Friday",
@@ -110,6 +109,7 @@ class TestNyseHolidays(unittest.TestCase):
     def test_holidays_2025(self) -> None:
         expected = {
             date(2025, 1, 1): "New Year's Day",
+            date(2025, 1, 9): "National Day of Mourning for President Jimmy Carter",
             date(2025, 1, 20): "Martin Luther King Jr. Day",
             date(2025, 2, 17): "Presidents' Day",
             date(2025, 4, 18): "Good Friday",
@@ -320,17 +320,10 @@ class TestNyseHolidays(unittest.TestCase):
     # ------------------------------------------------------------------
 
     def test_year_boundary_dec31_new_years(self) -> None:
-        """New Year's on Saturday produces a Dec 31 date in nyse_holidays(year).
-
-        Note: is_nyse_trading_day(date(2021, 12, 31)) returns True because
-        it only checks nyse_holidays(2021) which does NOT contain Dec 31.
-        The cross-year observance (from nyse_holidays(2022)) is not visible
-        to the single-year check.  USEquityCalendar.with_holidays() loads
-        multiple years at once and correctly handles this case.
-        """
+        """NYSE does not observe New Year's on the prior Friday when Jan 1 is Saturday."""
         holidays_2022 = nyse_holidays(2022)
-        self.assertIn(date(2021, 12, 31), holidays_2022,
-                      "Jan 1 2022 Saturday => observed Dec 31 2021")
+        self.assertNotIn(date(2021, 12, 31), holidays_2022)
+        self.assertTrue(is_nyse_trading_day(date(2021, 12, 31)))
 
     def test_holidays_handles_leap_year_feb29(self) -> None:
         """Leap year does not produce spurious holidays."""

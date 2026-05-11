@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -10,10 +11,12 @@ from unittest.mock import patch
 import pandas as pd
 
 from quant_us.data.cleaners.bar_cleaner import BarCleaner
+from quant_us.data.minute_quality_gate import _expected_regular_timestamps
 from quant_us.data.pipeline import DataLakeConfig, DataLakeService
 from quant_us.execution.ledger import JsonlLedgerStore
 from quant_us.core.enums import OrderSide
 from quant_us.core.types import Fill
+from quant_us.core.calendar import USEquityCalendar
 
 
 TESTCLIENT_AVAILABLE = bool(importlib.util.find_spec("fastapi")) and bool(importlib.util.find_spec("httpx"))
@@ -30,6 +33,124 @@ def _write_portfolio_observability(data_root: Path) -> None:
 }""",
         encoding="utf-8",
     )
+
+
+def _write_qlib_run(artifacts_root: Path, run_id: str, *, workflow_status: str = "completed", dataset_status: str = "completed") -> None:
+    run_root = artifacts_root / run_id
+    (run_root / "qlib_input").mkdir(parents=True, exist_ok=True)
+    (run_root / "qlib_input" / "dataset_manifest.json").write_text(
+        json.dumps({
+            "status": dataset_status,
+            "symbols_exported": ["AAPL", "MSFT"],
+            "symbols_requested": ["AAPL", "MSFT"],
+        }),
+        encoding="utf-8",
+    )
+    (run_root / "provider_manifest.json").write_text(json.dumps({"status": "completed"}), encoding="utf-8")
+    (run_root / "workflow_run_result.json").write_text(json.dumps({"status": workflow_status}), encoding="utf-8")
+    (run_root / "qlib_strategy_manifest.json").write_text(
+        json.dumps({
+            "status": "completed",
+            "promotion_status": "READY_FOR_PAPER_REVIEW",
+            "strategy_id": "trend_macd",
+        }),
+        encoding="utf-8",
+    )
+
+
+def _write_portfolio_run(artifacts_root: Path, run_id: str, *, optimizer: str = "max_sharpe") -> None:
+    run_root = artifacts_root / run_id
+    run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "run_manifest.json").write_text(
+        json.dumps({
+            "source_score_run_id": "qlib_run_20260511",
+            "config": {"optimizer": optimizer},
+            "fallback_used": False,
+        }),
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "datetime": ["2026-05-11T00:00:00Z", "2026-05-11T00:00:00Z"],
+            "symbol": ["AAPL", "MSFT"],
+            "target_weight": [0.6, 0.4],
+        }
+    ).to_parquet(run_root / "target_weights.parquet", index=False)
+    pd.DataFrame(
+        {
+            "timestamp_utc": ["2026-05-11T00:00:00Z"],
+            "strategy_id": ["pypfopt_daily_only"],
+            "symbol": ["AAPL"],
+            "target_weight": [0.6],
+            "target_quantity": [6],
+        }
+    ).to_parquet(run_root / "target_positions.parquet", index=False)
+
+
+def _write_conflicting_registry(data_root: Path) -> None:
+    registry_path = data_root / "research" / "evidence_registry.json"
+    registry_path.parent.mkdir(parents=True, exist_ok=True)
+    registry_path.write_text(
+        json.dumps({
+            "schema_version": "evidence_registry_v1",
+            "generated_at": "2026-05-11T00:00:00Z",
+            "registry_notes": ["conflicting_registry_evidence:paper_review:demo"],
+            "counts": {},
+            "evidence": {
+                "paper_reviews": [
+                    {
+                        "id": "review_conflict_1",
+                        "path": str(data_root / "research" / "paper_review" / "review_conflict_1.json"),
+                        "integrity_status": "CONFLICT",
+                        "details": {
+                            "status": "CONFLICT",
+                            "evidence_pack_path": str(data_root / "research" / "paper_review" / "pack.json"),
+                        },
+                    }
+                ],
+                "strategy_manifests": [
+                    {
+                        "id": "manifest_1",
+                        "path": str(data_root / "research" / "strategy_manifests" / "manifest_1.json"),
+                        "details": {"promotion_status": "READY_FOR_PAPER_REVIEW"},
+                    }
+                ],
+            },
+        }),
+        encoding="utf-8",
+    )
+
+
+def _write_minute_partition(
+    data_root: Path,
+    *,
+    root_subdir: str,
+    symbol: str,
+    bar_size: str,
+    trading_day: str,
+    timestamps: list[datetime],
+) -> None:
+    path = (
+        data_root
+        / root_subdir
+        / "vendor=yfinance"
+        / "asset_class=equity"
+        / f"bar_size={bar_size}"
+        / f"symbol={symbol}"
+        / f"date={trading_day}.parquet"
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(
+        {
+            "timestamp_utc": timestamps,
+            "symbol": [symbol] * len(timestamps),
+            "open": [100.0] * len(timestamps),
+            "high": [101.0] * len(timestamps),
+            "low": [99.0] * len(timestamps),
+            "close": [100.5] * len(timestamps),
+            "volume": [1_000] * len(timestamps),
+        }
+    ).to_parquet(path, index=False)
 
 
 class ApiSchemaDefaultTests(unittest.TestCase):
@@ -54,9 +175,10 @@ class ApiSchemaDefaultTests(unittest.TestCase):
         from backend.app.api.app_factory import _system_overview_payload
 
         with TemporaryDirectory() as directory:
-            _write_portfolio_observability(Path(directory))
+            root = Path(directory)
+            _write_portfolio_observability(root)
             payload = _system_overview_payload(directory)
-            self.assertFalse((Path(directory) / "research" / "evidence_registry.json").exists())
+            self.assertFalse((root / "research" / "evidence_registry.json").exists())
 
         self.assertEqual(payload["mode"], "pre_live")
         self.assertEqual(payload["execution"]["live_state"], "frozen")
@@ -67,13 +189,91 @@ class ApiSchemaDefaultTests(unittest.TestCase):
         self.assertEqual(payload["portfolio_observability"]["multi_timeframe"]["status"], "PASS")
         self.assertEqual(payload["portfolio_observability"]["pnl_attribution"]["status"], "PASS")
         self.assertEqual(payload["minute_data_quality"]["status"], "MISSING")
+        self.assertEqual(len(payload["minute_data_quality"]["datasets"]), 2)
+        self.assertEqual(
+            {item["root_subdir"] for item in payload["minute_data_quality"]["datasets"]},
+            {"raw", "cleaned"},
+        )
         self.assertEqual(
             payload["portfolio_observability"]["paper_submit_gates"]["state"],
             "BLOCKED_BY_DEFAULT",
         )
         self.assertFalse(payload["execution"]["paper_network_submit_confirmation"])
         self.assertEqual(payload["registry"]["state"], "missing")
+        self.assertIn("integrations", payload)
+        self.assertIn("data_coverage", payload)
+        self.assertIn("diagnostics", payload["paper_review"])
         self.assertTrue(payload["next_actions"])
+
+    def test_system_overview_payload_includes_latest_runs_and_conflict_diagnostics(self) -> None:
+        from backend.app.api.app_factory import _system_overview_payload
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            _write_portfolio_observability(root)
+            _write_conflicting_registry(root)
+            qlib_root = root / "artifacts" / "qlib_runs"
+            portfolio_root = root / "artifacts" / "portfolio_runs"
+            _write_qlib_run(qlib_root, "qlib_run_20260510")
+            _write_qlib_run(qlib_root, "qlib_run_20260511")
+            _write_portfolio_run(portfolio_root, "portfolio_run_20260510")
+            _write_portfolio_run(portfolio_root, "portfolio_run_20260511")
+
+            payload = _system_overview_payload(
+                directory,
+                qlib_artifacts_root=str(qlib_root),
+                portfolio_artifacts_root=str(portfolio_root),
+            )
+
+        self.assertEqual(payload["integrations"]["qlib"]["latest_run"]["run_id"], "qlib_run_20260511")
+        self.assertEqual(payload["integrations"]["portfolio"]["latest_run"]["portfolio_run_id"], "portfolio_run_20260511")
+        self.assertTrue(payload["paper_review"]["diagnostics"]["conflict_detected"])
+        self.assertEqual(payload["paper_review"]["status"], "CONFLICT")
+        self.assertIn("coverage_pct", payload["data_coverage"])
+
+    def test_system_overview_payload_blocks_on_minute_quality_fail(self) -> None:
+        from backend.app.api.app_factory import _system_overview_payload
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            _write_portfolio_observability(root)
+            calendar = USEquityCalendar.with_holidays()
+            trading_day = datetime(2026, 5, 8, tzinfo=timezone.utc).date()
+            trading_days = [trading_day]
+            while len(trading_days) < 5:
+                trading_days.append(calendar.previous_trading_day(trading_days[-1]))
+            for current_day in sorted(trading_days):
+                for bar_size in ("1m", "5m", "15m"):
+                    full = _expected_regular_timestamps(
+                        current_day,
+                        int(bar_size.removesuffix("m")),
+                        calendar,
+                    )
+                    raw_timestamps = full[:100] if (bar_size == "1m" and current_day == trading_day) else full
+                    _write_minute_partition(
+                        root,
+                        root_subdir="raw",
+                        symbol="AAPL",
+                        bar_size=bar_size,
+                        trading_day=current_day.isoformat(),
+                        timestamps=raw_timestamps,
+                    )
+                    _write_minute_partition(
+                        root,
+                        root_subdir="cleaned",
+                        symbol="AAPL",
+                        bar_size=bar_size,
+                        trading_day=current_day.isoformat(),
+                        timestamps=full,
+                    )
+            payload = _system_overview_payload(directory)
+
+        self.assertEqual(payload["status"], "blocked")
+        self.assertEqual(payload["stage"], "registry_blocked")
+        self.assertEqual(payload["minute_data_quality"]["status"], "FAIL")
+        dataset_statuses = payload["minute_data_quality"]["dataset_statuses"]
+        self.assertEqual(dataset_statuses["raw"]["status"], "FAIL")
+        self.assertEqual(dataset_statuses["cleaned"]["status"], "PASS")
 
 
 @unittest.skipUnless(TESTCLIENT_AVAILABLE, "FastAPI TestClient dependencies are not installed in the current environment")
@@ -93,7 +293,8 @@ class ApiContractTests(unittest.TestCase):
 
     def test_system_overview_is_pre_live_and_read_only(self) -> None:
         with TemporaryDirectory() as directory:
-            _write_portfolio_observability(Path(directory))
+            root = Path(directory)
+            _write_portfolio_observability(root)
             response = self.client.get(
                 "/api/system/overview",
                 params={"data_root": directory},
@@ -110,8 +311,40 @@ class ApiContractTests(unittest.TestCase):
         self.assertEqual(payload["portfolio_observability"]["pnl_attribution"]["row_count"], 1)
         self.assertIn("paper --data-root", payload["portfolio_observability"]["next_paper_command"])
         self.assertEqual(payload["minute_data_quality"]["status"], "MISSING")
+        self.assertEqual(len(payload["minute_data_quality"]["datasets"]), 2)
         self.assertEqual(payload["registry"]["state"], "missing")
+        self.assertIn("integrations", payload)
+        self.assertIn("qlib", payload["integrations"])
+        self.assertIn("portfolio", payload["integrations"])
+        self.assertIn("data_coverage", payload)
         self.assertIn("next_actions", payload)
+
+    def test_system_overview_api_surface_latest_runs(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            _write_portfolio_observability(root)
+            _write_conflicting_registry(root)
+            qlib_root = root / "artifacts" / "qlib_runs"
+            portfolio_root = root / "artifacts" / "portfolio_runs"
+            _write_qlib_run(qlib_root, "qlib_run_20260510")
+            _write_qlib_run(qlib_root, "qlib_run_20260511")
+            _write_portfolio_run(portfolio_root, "portfolio_run_20260510")
+            _write_portfolio_run(portfolio_root, "portfolio_run_20260511")
+            response = self.client.get(
+                "/api/system/overview",
+                params={
+                    "data_root": directory,
+                    "qlib_artifacts_root": str(qlib_root),
+                    "portfolio_artifacts_root": str(portfolio_root),
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["integrations"]["qlib"]["latest_run"]["run_id"], "qlib_run_20260511")
+        self.assertEqual(payload["integrations"]["portfolio"]["latest_run"]["portfolio_run_id"], "portfolio_run_20260511")
+        self.assertTrue(payload["paper_review"]["diagnostics"]["conflict_detected"])
+        self.assertEqual(payload["paper_review"]["status"], "CONFLICT")
 
     def test_metrics_endpoint(self) -> None:
         response = self.client.get("/metrics")
@@ -278,6 +511,70 @@ class ApiContractTests(unittest.TestCase):
         self.assertTrue(payload["is_usable"])
         self.assertIn("data_version", payload)
 
+    def test_paper_review_create_accepts_portfolio_evidence_pack(self) -> None:
+        class FakeReview:
+            paper_review_id = "prev_001"
+            status = "PENDING_HUMAN_REVIEW"
+            evidence_pack_path = "/tmp/research/evidence_packs/psim_001/evidence_pack.json"
+            evidence_gate_status = "READY_FOR_REVIEW"
+            proposed_symbols = ["SPY", "QQQ"]
+            proposed_capital = 101500.0
+            created_at = "2026-05-11T00:00:00+00:00"
+
+        with patch(
+            "quant_us.research.paper_review_bridge.PaperReviewManager.create_from_portfolio_evidence",
+            return_value=FakeReview(),
+        ) as create_from_pack:
+            response = self.client.post(
+                "/api/research/paper-review/create",
+                json={
+                    "portfolio_evidence_pack_id": "psim_001",
+                    "data_root": "/tmp/quant-data",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["paper_review_id"], "prev_001")
+        self.assertEqual(payload["evidence_gate_status"], "READY_FOR_REVIEW")
+        self.assertTrue(payload["evidence_pack_path"].endswith("/psim_001/evidence_pack.json"))
+        create_from_pack.assert_called_once_with("psim_001")
+
+    def test_paper_review_create_accepts_candidate_or_manifest_preparation_path(self) -> None:
+        class FakeReview:
+            paper_review_id = "prev_prepare_001"
+            status = "PENDING_HUMAN_REVIEW"
+            evidence_pack_path = "/tmp/research/evidence_packs/pending_review_sman_001/evidence_pack.json"
+            evidence_gate_status = "READY_FOR_REVIEW"
+            proposed_symbols = ["SPY"]
+            proposed_capital = 100000.0
+            source_candidate_ids = ["cand_001"]
+            created_at = "2026-05-11T00:00:00+00:00"
+
+        with patch(
+            "quant_us.research.paper_review_bridge.PaperReviewManager.create_from_candidate_evidence",
+            return_value=FakeReview(),
+        ) as create_from_candidate:
+            response = self.client.post(
+                "/api/research/paper-review/create",
+                json={
+                    "strategy_manifest_id": "sman_001",
+                    "prepared_evidence_pack_id": "pending_review_sman_001",
+                    "data_root": "/tmp/quant-data",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["paper_review_id"], "prev_prepare_001")
+        self.assertEqual(payload["source_candidate_ids"], ["cand_001"])
+        self.assertIn("never approves or submits paper orders", payload["note"])
+        create_from_candidate.assert_called_once_with(
+            candidate_id="",
+            strategy_manifest_id="sman_001",
+            portfolio_evidence_pack_id="pending_review_sman_001",
+        )
+
     def test_factor_mine_and_run_endpoint_is_research_only(self) -> None:
         class FakeMiningResult:
             strategy_configs = [
@@ -330,6 +627,88 @@ class ApiContractTests(unittest.TestCase):
         self.assertIn("no paper/live order path", payload["note"])
         mine.assert_called_once()
         run_pipeline.assert_called_once()
+
+    def test_qlib_pypfopt_integration_endpoints_are_research_only(self) -> None:
+        from tests.integrations.helpers import write_portfolio_config, write_qlib_run_inputs
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            artifacts = root / "artifacts"
+            score_dates = pd.to_datetime(["2026-01-05", "2026-01-06"], utc=True)
+            scores = pd.DataFrame(
+                [
+                    {"datetime": score_dates[0], "symbol": "AAPL", "score": 0.70, "model_id": "lgbm_alpha158", "feature_set": "Alpha158"},
+                    {"datetime": score_dates[0], "symbol": "MSFT", "score": 0.55, "model_id": "lgbm_alpha158", "feature_set": "Alpha158"},
+                    {"datetime": score_dates[1], "symbol": "AAPL", "score": 0.50, "model_id": "lgbm_alpha158", "feature_set": "Alpha158"},
+                    {"datetime": score_dates[1], "symbol": "MSFT", "score": 0.82, "model_id": "lgbm_alpha158", "feature_set": "Alpha158"},
+                ]
+            )
+            write_qlib_run_inputs(artifacts, "qlib_http", scores)
+            qlib_root = artifacts / "qlib_runs"
+
+            response = self.client.post(
+                "/api/integrations/qlib/import-pred-score",
+                json={"run_id": "qlib_http", "artifacts_root": str(qlib_root)},
+            )
+            self.assertEqual(response.status_code, 200)
+            payload = response.json()
+            self.assertTrue(payload["research_only"])
+            self.assertFalse(payload["live_enabled"])
+            self.assertEqual(payload["status"], "completed")
+
+            config_path = root / "qlib.yaml"
+            config_path.write_text(
+                "model:\n  name: lgbm_alpha158\n  feature_set: Alpha158\n  strategy_version: qlib_lgbm_alpha158_us_daily_v1\n",
+                encoding="utf-8",
+            )
+            response = self.client.post(
+                "/api/integrations/qlib/compile-strategy-manifest",
+                json={"run_id": "qlib_http", "artifacts_root": str(qlib_root), "config": str(config_path)},
+            )
+            self.assertEqual(response.status_code, 200)
+            manifest_payload = response.json()["strategy_manifest"]
+            self.assertEqual(manifest_payload["promotion_status"], "candidate")
+            self.assertEqual(manifest_payload["execution_freq"], "deferred_to_system")
+
+            portfolio_root = artifacts / "portfolio_runs" / "pf_http"
+            portfolio_root.mkdir(parents=True, exist_ok=True)
+            pd.DataFrame(
+                [
+                    {
+                        "portfolio_run_id": "pf_http",
+                        "source_score_run_id": "qlib_http",
+                        "datetime": "2026-01-06T00:00:00+00:00",
+                        "symbol": "AAPL",
+                        "target_weight": 0.15,
+                        "raw_weight": 0.20,
+                        "clipped_weight": 0.15,
+                        "optimizer": "max_sharpe",
+                        "constraints_hash": "abc123",
+                        "fallback": "equal_weight_topk",
+                        "created_at": "2026-05-11T00:00:00+00:00",
+                    }
+                ]
+            ).to_parquet(portfolio_root / "target_weights.parquet", index=False)
+            (portfolio_root / "run_manifest.json").write_text(
+                '{"source_score_run_id": "qlib_http", "config": {"optimizer": "max_sharpe", "strategy_id": "pypfopt_daily_only"}}',
+                encoding="utf-8",
+            )
+            portfolio_config = write_portfolio_config(
+                root / "portfolio.yaml",
+                score_runs_root=qlib_root,
+                portfolio_runs_root=artifacts / "portfolio_runs",
+                portfolio_run_id="pf_http",
+            )
+            response = self.client.post(
+                "/api/integrations/portfolio/import-target-weights",
+                json={"portfolio_run_id": "pf_http", "config": str(portfolio_config)},
+            )
+            self.assertEqual(response.status_code, 200)
+            target_payload = response.json()
+            self.assertEqual(target_payload["order_generation"], "disabled")
+            self.assertTrue(target_payload["research_only"])
+            self.assertNotIn("side", target_payload["preview"][0])
+            self.assertNotIn("order_type", target_payload["preview"][0])
 
     def test_us_event_backtest_endpoint_uses_local_data_lake(self) -> None:
         with TemporaryDirectory() as directory:

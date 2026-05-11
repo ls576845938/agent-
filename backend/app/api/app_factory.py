@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 from dataclasses import asdict
@@ -103,30 +104,47 @@ def _serialize_data_sync_result(result: Any):
     )
 
 
-def _system_overview_payload(data_root: str = "data") -> dict[str, Any]:
+def _system_overview_payload(
+    data_root: str = "data",
+    *,
+    qlib_artifacts_root: str = "artifacts/qlib_runs",
+    portfolio_artifacts_root: str = "artifacts/portfolio_runs",
+) -> dict[str, Any]:
     root = Path(data_root or "data")
 
     from quant_us.live.paper_adapter_contract import audit_apca_paper_credentials
-    from quant_us.reports.minute_quality import inspect_minute_quality_report
+    from quant_us.data.minute_quality_gate import inspect_minute_data_quality_overview
     from quant_us.reports.paper_validation import inspect_paper_validation_evidence
     from quant_us.reports.portfolio_observability import inspect_portfolio_observability
 
     registry = _fast_saved_evidence_registry(root)
-    minute_quality = inspect_minute_quality_report(root).to_dict()
+    minute_quality = inspect_minute_data_quality_overview(root).to_dict()
     paper_evidence = inspect_paper_validation_evidence(root)
     portfolio_observability = inspect_portfolio_observability(root).to_dict()
     paper_review = _fast_paper_review_status(root, registry)
     credentials = audit_apca_paper_credentials()
+    minute_coverage = _coverage_from_minute_quality(minute_quality)
+    qlib_integration = _latest_integration_run(qlib_artifacts_root, "qlib")
+    portfolio_integration = _latest_integration_run(portfolio_artifacts_root, "portfolio")
 
     registry_state = str(registry.get("registry_status", "missing"))
     registry_integrity = str(registry.get("registry_integrity_status", "MISSING"))
     paper_state = str(paper_evidence.readiness_state)
     paper_review_status = str(paper_review.get("status", "UNKNOWN"))
+    minute_quality_status = str(minute_quality.get("status", "MISSING"))
+    minute_quality_hard_blocked = minute_quality_status in {"FAIL", "MISSING"}
+    qlib_dependencies = {
+        "qlib": importlib.util.find_spec("qlib") is not None,
+        "lightgbm": importlib.util.find_spec("lightgbm") is not None,
+    }
+    portfolio_dependencies = {
+        "pypfopt": importlib.util.find_spec("pypfopt") is not None,
+    }
 
     next_actions: list[str] = []
     if registry_state != "present" or registry_integrity != "PASS/STABLE":
         next_actions.append("Run: quant-us research evidence-registry-rebuild --data-root <data_root>")
-    if str(minute_quality.get("status", "MISSING")) != "PASS":
+    if minute_quality_status != "PASS":
         next_actions.append("Load and validate 1m/5m/15m minute data before paper review.")
     if paper_state != "PASS":
         next_actions.append("Complete paper validation evidence before any paper submission gate.")
@@ -142,7 +160,7 @@ def _system_overview_payload(data_root: str = "data") -> dict[str, Any]:
     if registry_state != "present" or registry_integrity != "PASS/STABLE":
         stage = "registry_blocked"
         status = "blocked"
-    elif str(minute_quality.get("status", "MISSING")) != "PASS":
+    elif minute_quality_hard_blocked:
         stage = "minute_data_quality_blocked"
         status = "blocked"
     elif paper_state != "PASS":
@@ -189,6 +207,7 @@ def _system_overview_payload(data_root: str = "data") -> dict[str, Any]:
             "evidence": [pointer.__dict__ for pointer in paper_evidence.evidence],
         },
         "minute_data_quality": minute_quality,
+        "data_coverage": minute_coverage,
         "paper_review": {
             "status": paper_review_status,
             "entry_allowed": bool(paper_review.get("entry_allowed", False)),
@@ -198,8 +217,46 @@ def _system_overview_payload(data_root: str = "data") -> dict[str, Any]:
             "review_path": str(paper_review.get("review_path", "")),
             "manifest_path": str(paper_review.get("manifest_path", "")),
             "evidence_pack_path": str(paper_review.get("evidence_pack_path", "")),
+            "diagnostics": {
+                "registry_state": registry_state,
+                "registry_integrity": registry_integrity,
+                "conflict_notes": [str(note) for note in registry.get("registry_notes", []) if isinstance(note, str) and "conflict" in note.lower()],
+                "latest_review_status": str(paper_review.get("status", "")),
+                "latest_manifest_status": str(
+                    next(
+                        (
+                            str(row.get("details", {}).get("promotion_status", row.get("summary", "UNKNOWN")))
+                            for row in registry.get("evidence", {}).get("strategy_manifests", [])
+                            if isinstance(row, dict)
+                        ),
+                        "",
+                    ),
+                ),
+                "conflict_detected": bool(
+                    any(
+                        isinstance(row, dict) and row.get("integrity_status") == "CONFLICT"
+                        for section in registry.get("evidence", {}).values()
+                        if isinstance(section, list)
+                        for row in section
+                    )
+                ),
+            },
         },
         "portfolio_observability": portfolio_observability,
+        "integrations": {
+            "dependencies": {
+                **qlib_dependencies,
+                **portfolio_dependencies,
+            },
+            "qlib": {
+                "artifacts_root": qlib_artifacts_root,
+                **qlib_integration,
+            },
+            "portfolio": {
+                "artifacts_root": portfolio_artifacts_root,
+                **portfolio_integration,
+            },
+        },
         "broker_credentials": {
             "credentials_present": bool(credentials.get("credentials_present")),
             "api_key_present": bool(credentials.get("api_key_present")),
@@ -406,6 +463,140 @@ def _fast_paper_review_status(root: Path, registry: dict[str, Any]) -> dict[str,
     }
 
 
+def _mean_or_none(values: list[float]) -> float | None:
+    if not values:
+        return None
+    return round(sum(values) / len(values), 4)
+
+
+def _coverage_from_minute_quality(minute_quality: dict[str, Any]) -> dict[str, Any]:
+    dataset_summaries: list[dict[str, Any]] = []
+    coverage_values: list[float] = []
+
+    datasets = minute_quality.get("datasets", [])
+    if not isinstance(datasets, list):
+        datasets = []
+
+    for dataset in datasets:
+        if not isinstance(dataset, dict):
+            continue
+        dataset_coverages: list[float] = []
+        symbols = dataset.get("symbols", [])
+        if not isinstance(symbols, list):
+            symbols = []
+        for symbol in symbols:
+            if not isinstance(symbol, dict):
+                continue
+            intervals = symbol.get("intervals", [])
+            if not isinstance(intervals, list):
+                continue
+            for interval in intervals:
+                if not isinstance(interval, dict):
+                    continue
+                coverage = interval.get("coverage_pct")
+                if isinstance(coverage, (int, float)):
+                    value = float(coverage)
+                    coverage_values.append(value)
+                    dataset_coverages.append(value)
+        status = str(dataset.get("status", "UNKNOWN"))
+        dataset_summaries.append(
+            {
+                "root_subdir": str(dataset.get("root_subdir", "")),
+                "status": status,
+                "issue_count": int(dataset.get("issue_count", 0) or 0),
+                "evaluated_symbols": list(dataset.get("evaluated_symbols", [])) if isinstance(dataset.get("evaluated_symbols", []), list) else [],
+                "coverage_pct": _mean_or_none(dataset_coverages),
+                "min_coverage_pct": round(min(dataset_coverages), 4) if dataset_coverages else None,
+            }
+        )
+
+    return {
+        "status": str(minute_quality.get("status", "MISSING")),
+        "coverage_pct": _mean_or_none(coverage_values),
+        "min_coverage_pct": round(min(coverage_values), 4) if coverage_values else None,
+        "dataset_summaries": dataset_summaries,
+    }
+
+
+def _run_directory_summaries(artifacts_root: str, kind: str) -> list[dict[str, Any]]:
+    root = Path(artifacts_root)
+    if not root.exists():
+        return []
+    runs = sorted(
+        [path for path in root.iterdir() if path.is_dir()],
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    summaries: list[dict[str, Any]] = []
+    for run_root in runs:
+        updated_at = ""
+        try:
+            from datetime import datetime, timezone
+
+            updated_at = datetime.fromtimestamp(run_root.stat().st_mtime, tz=timezone.utc).isoformat()
+        except OSError:
+            updated_at = ""
+        if kind == "qlib":
+            dataset_manifest = _json_file(run_root / "qlib_input" / "dataset_manifest.json")
+            provider_manifest = _json_file(run_root / "provider_manifest.json")
+            workflow_result = _json_file(run_root / "workflow_run_result.json")
+            strategy_manifest = _json_file(run_root / "qlib_strategy_manifest.json")
+            summaries.append(
+                {
+                    "run_id": run_root.name,
+                    "updated_at": updated_at,
+                    "dataset_status": str(dataset_manifest.get("status", "missing")),
+                    "provider_status": str(provider_manifest.get("status", "missing")),
+                    "workflow_status": str(workflow_result.get("status", "missing")),
+                    "manifest_status": str(strategy_manifest.get("status", "missing")),
+                    "promotion_status": str(strategy_manifest.get("promotion_status", "")),
+                    "strategy_id": str(strategy_manifest.get("strategy_id") or strategy_manifest.get("strategy_version", "")),
+                }
+            )
+            continue
+        if kind == "portfolio":
+            manifest = _json_file(run_root / "run_manifest.json")
+            has_weights = (run_root / "target_weights.parquet").exists()
+            has_positions = (run_root / "target_positions.parquet").exists()
+            run_status = "completed" if has_weights else str(manifest.get("status", "missing") or "missing")
+            summaries.append(
+                {
+                    "portfolio_run_id": run_root.name,
+                    "updated_at": updated_at,
+                    "status": run_status,
+                    "source_score_run_id": str(manifest.get("source_score_run_id", "")),
+                    "optimizer": str(manifest.get("config", {}).get("optimizer", "")) if isinstance(manifest.get("config", {}), dict) else "",
+                    "fallback_used": bool(manifest.get("fallback_used", False)),
+                    "has_target_weights": has_weights,
+                    "has_target_positions": has_positions,
+                }
+            )
+    return summaries
+
+
+def _latest_integration_run(artifacts_root: str, kind: str) -> dict[str, Any]:
+    runs = _run_directory_summaries(artifacts_root, kind)
+    latest = runs[0] if runs else {}
+    return {
+        "artifacts_root": artifacts_root,
+        "run_count": len(runs),
+        "status": str(latest.get("workflow_status", latest.get("dataset_status", latest.get("status", "missing")))) if latest else "missing",
+        "latest_run": latest,
+        "latest_run_id": str(latest.get("run_id", latest.get("portfolio_run_id", ""))) if latest else "",
+        "latest_updated_at": str(latest.get("updated_at", "")) if latest else "",
+    }
+
+
+def _json_file(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
 def create_app():
     try:
         from fastapi import APIRouter, Depends, FastAPI, HTTPException, Response, Security
@@ -461,8 +652,18 @@ def create_app():
         )
 
     @router.get("/system/overview", response_model=SystemOverviewResponse, dependencies=[Depends(verify_api_key)])
-    async def system_overview(data_root: str = "data") -> SystemOverviewResponse:
-        return SystemOverviewResponse.model_validate(_system_overview_payload(data_root))
+    async def system_overview(
+        data_root: str = "data",
+        qlib_artifacts_root: str = "artifacts/qlib_runs",
+        portfolio_artifacts_root: str = "artifacts/portfolio_runs",
+    ) -> SystemOverviewResponse:
+        return SystemOverviewResponse.model_validate(
+            _system_overview_payload(
+                data_root,
+                qlib_artifacts_root=qlib_artifacts_root,
+                portfolio_artifacts_root=portfolio_artifacts_root,
+            )
+        )
 
     @router.get("/data/database", response_model=DatabaseStatusResponse, dependencies=[Depends(verify_api_key)])
     async def database_status(db_path: str = "") -> DatabaseStatusResponse:
@@ -614,10 +815,10 @@ def create_app():
         return SchedulerStatusResponse.model_validate(data_update_scheduler.stop())
 
     @router.post("/us/data/quality-report", dependencies=[Depends(verify_api_key)])
-    async def us_data_quality_report(request: USDataSyncRequest):
-        """Generate 6-type data quality report for a symbol."""
+    async def us_data_quality_report(request: dict[str, Any]):
+        """Generate auditable minute quality gates for raw and cleaned US equity data."""
         try:
-            result = us_quant_service.data_quality_report(request.model_dump())
+            result = us_quant_service.data_quality_report(request)
             return result
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc))
@@ -633,6 +834,47 @@ def create_app():
             raise
         except Exception as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/us/data/bulk-sync", dependencies=[Depends(verify_api_key)])
+    async def sync_us_market_data_bulk(request: dict) -> dict:
+        """Sync multiple US symbols and bar sizes into raw/cleaned lake partitions."""
+        symbols = request.get("symbols") or request.get("symbol") or []
+        if isinstance(symbols, str):
+            symbols = [s.strip().upper() for s in symbols.split(",") if s.strip()]
+        bar_sizes = request.get("bar_sizes") or request.get("bar_size") or ["1d"]
+        if isinstance(bar_sizes, str):
+            bar_sizes = [s.strip().lower() for s in bar_sizes.split(",") if s.strip()]
+        results: list[dict[str, Any]] = []
+        failures = 0
+        for symbol in symbols:
+            for bar_size in bar_sizes:
+                payload = dict(request)
+                payload["symbol"] = symbol
+                payload["bar_size"] = bar_size
+                payload.pop("symbols", None)
+                payload.pop("bar_sizes", None)
+                try:
+                    validated = USDataSyncRequest.model_validate(payload)
+                    result = us_quant_service.sync_data(validated.model_dump())
+                except Exception as exc:
+                    failures += 1
+                    result = {
+                        "status": "failed",
+                        "symbol": symbol,
+                        "bar_size": bar_size,
+                        "error": str(exc),
+                    }
+                if result.get("status") != "completed":
+                    failures += 1
+                results.append(result)
+        return {
+            "status": "completed" if failures == 0 else "partial_failed",
+            "symbols": list(symbols),
+            "bar_sizes": list(bar_sizes),
+            "result_count": len(results),
+            "failure_count": failures,
+            "results": results,
+        }
 
     @router.post("/us/features/build", response_model=USFeatureBuildResponse, dependencies=[Depends(verify_api_key)])
     async def build_us_features(request: USFeatureBuildRequest) -> USFeatureBuildResponse:
@@ -985,11 +1227,17 @@ def create_app():
         return rebuild_evidence_registry(str(payload.get("data_root") or "data"), write=True)
 
     @router.get("/research/factors")
-    async def list_research_factors():
+    async def list_research_factors(data_root: str = "data"):
         """List registered research factors."""
         from quant_us.factors.definition import FactorLibrary
+        from quant_us.factors.formula import GeneratedFactorLibrary
 
-        return [asdict(factor) for factor in FactorLibrary().list_all()]
+        builtin = [asdict(factor) for factor in FactorLibrary().list_all()]
+        generated = [
+            asdict(spec.to_definition()) | {"generated": True, "formula_type": spec.formula_type, "components": spec.components}
+            for spec in GeneratedFactorLibrary(data_root).list_specs()
+        ]
+        return builtin + generated
 
     @router.post("/research/factors/evaluate")
     async def evaluate_research_factor(request: dict):
@@ -1039,8 +1287,29 @@ def create_app():
             min_observations=int(request.get("min_observations") or 20),
             max_abs_correlation=float(request.get("max_abs_correlation") or 0.90),
             max_selected=int(request.get("max_selected") or 8),
+            auto_generate_formulas=bool(request.get("auto_generate_formulas", False)),
+            max_generated_factors=int(request.get("max_generated_factors") or 24),
         )
         return result.to_dict()
+
+    @router.post("/research/factors/generate")
+    async def generate_research_formula_factors(request: dict):
+        """Generate and persist safe formula-factor candidates."""
+        from quant_us.factors.formula import GeneratedFactorLibrary
+
+        factor_ids = request.get("factor_ids") or []
+        if isinstance(factor_ids, str):
+            factor_ids = [s.strip() for s in factor_ids.split(",") if s.strip()]
+        specs = GeneratedFactorLibrary(str(request.get("data_root") or "data")).generate_and_register(
+            seed_factor_ids=list(factor_ids) or None,
+            max_specs=int(request.get("max_generated_factors") or request.get("max_specs") or 24),
+        )
+        return {
+            "status": "completed",
+            "generated_factor_count": len(specs),
+            "generated_factor_ids": [spec.factor_id for spec in specs],
+            "factors": [asdict(spec.to_definition()) | {"formula_type": spec.formula_type, "components": spec.components} for spec in specs],
+        }
 
     @router.post("/research/factors/mine-and-run")
     async def mine_and_run_research_factors(request: dict):
@@ -1073,6 +1342,8 @@ def create_app():
             min_observations=int(request.get("min_observations") or 20),
             max_abs_correlation=float(request.get("max_abs_correlation") or 0.90),
             max_selected=int(request.get("max_selected") or 8),
+            auto_generate_formulas=bool(request.get("auto_generate_formulas", False)),
+            max_generated_factors=int(request.get("max_generated_factors") or 24),
         )
 
         max_runs = max(0, int(request.get("max_runs") or len(mining.strategy_configs)))
@@ -1199,6 +1470,392 @@ def create_app():
             return {"status": "error", "detail": str(exc)}
 
     # ------------------------------------------------------------------
+    # Qlib / PyPortfolioOpt research-only integration endpoints
+    # ------------------------------------------------------------------
+
+    def _artifact_json(path: Path) -> dict[str, Any]:
+        if not path.exists():
+            return {}
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return {}
+        return payload if isinstance(payload, dict) else {}
+
+    def _artifact_preview(path: Path, limit: int = 12) -> list[dict[str, Any]]:
+        if not path.exists():
+            return []
+        try:
+            import pandas as pd
+
+            frame = pd.read_parquet(path).head(max(1, min(limit, 100)))
+            return json.loads(frame.to_json(orient="records", date_format="iso"))
+        except Exception:
+            return []
+
+    def _result_dict(result: Any) -> dict[str, Any]:
+        if hasattr(result, "__dataclass_fields__"):
+            return asdict(result)
+        if isinstance(result, dict):
+            return dict(result)
+        return {"result": result}
+
+    def _mtime_iso(path: Path) -> str:
+        if not path.exists():
+            return ""
+        from datetime import datetime, timezone
+
+        return datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat()
+
+    def _qlib_run_summary(run_root: Path) -> dict[str, Any]:
+        dataset_manifest = _artifact_json(run_root / "qlib_input" / "dataset_manifest.json")
+        provider_manifest = _artifact_json(run_root / "provider_manifest.json")
+        workflow_result = _artifact_json(run_root / "workflow_run_result.json")
+        strategy_manifest = _artifact_json(run_root / "qlib_strategy_manifest.json")
+        score_rows = 0
+        score_path = run_root / "research_model_scores.parquet"
+        if score_path.exists():
+            try:
+                import pandas as pd
+
+                score_rows = int(len(pd.read_parquet(score_path, columns=["symbol"])))
+            except Exception:
+                score_rows = 0
+        return {
+            "run_id": run_root.name,
+            "updated_at": _mtime_iso(run_root),
+            "dataset_status": dataset_manifest.get("status", "missing"),
+            "provider_status": provider_manifest.get("status", "missing"),
+            "workflow_status": workflow_result.get("status", "missing"),
+            "manifest_status": strategy_manifest.get("status", "missing"),
+            "promotion_status": strategy_manifest.get("promotion_status", ""),
+            "strategy_id": strategy_manifest.get("strategy_id") or strategy_manifest.get("strategy_version", ""),
+            "symbols": dataset_manifest.get("symbols_exported") or dataset_manifest.get("symbols_requested", []),
+            "score_rows": score_rows,
+            "paths": {
+                "run_root": str(run_root),
+                "dataset_manifest": str(run_root / "qlib_input" / "dataset_manifest.json"),
+                "research_model_scores": str(score_path),
+                "strategy_manifest": str(run_root / "qlib_strategy_manifest.json"),
+            },
+        }
+
+    def _portfolio_run_summary(run_root: Path) -> dict[str, Any]:
+        manifest = _artifact_json(run_root / "run_manifest.json")
+        weights_path = run_root / "target_weights.parquet"
+        positions_path = run_root / "target_positions.parquet"
+        run_status = "completed" if weights_path.exists() else str(manifest.get("status", "missing") or "missing")
+        weight_rows = 0
+        latest_weight_sum = None
+        if weights_path.exists():
+            try:
+                import pandas as pd
+
+                frame = pd.read_parquet(weights_path)
+                weight_rows = int(len(frame))
+                if not frame.empty and "datetime" in frame.columns:
+                    latest_date = frame["datetime"].max()
+                    latest = frame[frame["datetime"] == latest_date]
+                    latest_weight_sum = float(latest["target_weight"].sum()) if "target_weight" in latest.columns else None
+            except Exception:
+                weight_rows = 0
+        return {
+            "portfolio_run_id": run_root.name,
+            "updated_at": _mtime_iso(run_root),
+            "status": run_status,
+            "source_score_run_id": manifest.get("source_score_run_id", ""),
+            "optimizer": manifest.get("config", {}).get("optimizer", ""),
+            "fallback_used": bool(manifest.get("fallback_used", False)),
+            "target_weight_rows": weight_rows,
+            "latest_weight_sum": latest_weight_sum,
+            "has_target_positions": positions_path.exists(),
+            "paths": {
+                "run_root": str(run_root),
+                "target_weights": str(weights_path),
+                "target_positions": str(positions_path),
+                "manifest": str(run_root / "run_manifest.json"),
+            },
+        }
+
+    @router.get("/integrations/qlib/runs", dependencies=[Depends(verify_api_key)])
+    async def list_qlib_integration_runs(artifacts_root: str = "artifacts/qlib_runs", limit: int = 20):
+        import importlib.util
+
+        root = Path(artifacts_root)
+        runs = sorted([path for path in root.iterdir() if path.is_dir()], key=lambda path: path.stat().st_mtime, reverse=True) if root.exists() else []
+        universe = _artifact_json(Path("configs/universe/us_core_liquid.yaml"))
+        return {
+            "status": "ok",
+            "research_only": True,
+            "daily_only": True,
+            "live_enabled": False,
+            "dependencies": {
+                "qlib": importlib.util.find_spec("qlib") is not None,
+                "lightgbm": importlib.util.find_spec("lightgbm") is not None,
+            },
+            "configs": {
+                "universe": "configs/universe/us_core_liquid.yaml",
+                "qlib": "configs/qlib/us_lgbm_alpha158_daily.yaml",
+            },
+            "runs": [_qlib_run_summary(path) for path in runs[: max(1, min(limit, 100))]],
+        }
+
+    @router.get("/integrations/qlib/runs/{run_id}", dependencies=[Depends(verify_api_key)])
+    async def get_qlib_integration_run(run_id: str, artifacts_root: str = "artifacts/qlib_runs"):
+        run_root = Path(artifacts_root) / run_id
+        if not run_root.exists():
+            raise HTTPException(status_code=404, detail=f"Qlib run not found: {run_id}")
+        return {
+            "summary": _qlib_run_summary(run_root),
+            "dataset_manifest": _artifact_json(run_root / "qlib_input" / "dataset_manifest.json"),
+            "provider_manifest": _artifact_json(run_root / "provider_manifest.json"),
+            "workflow_result": _artifact_json(run_root / "workflow_run_result.json"),
+            "failure_report": _artifact_json(run_root / "failure_report.json"),
+            "recorder_metrics": _artifact_json(run_root / "imported_recorder_metrics.json") or _artifact_json(run_root / "recorder_metrics.json"),
+            "strategy_manifest": _artifact_json(run_root / "qlib_strategy_manifest.json"),
+            "scores_preview": _artifact_preview(run_root / "research_model_scores.parquet"),
+        }
+
+    @router.post("/integrations/qlib/build-dataset", dependencies=[Depends(verify_api_key)])
+    async def build_qlib_integration_dataset(request: dict):
+        try:
+            from integrations.qlib_adapter.build_qlib_dataset import build_qlib_dataset
+
+            result = build_qlib_dataset(
+                universe_path=request.get("universe") or request.get("universe_path") or "configs/universe/us_core_liquid.yaml",
+                start_date=str(request.get("start_date") or "2020-01-01"),
+                end_date=str(request.get("end_date") or "2025-12-31"),
+                data_version=str(request.get("data_version") or "latest"),
+                run_id=str(request.get("run_id") or "") or None,
+                data_root=str(request.get("data_root") or "data"),
+                artifacts_root=str(request.get("artifacts_root") or "artifacts/qlib_runs"),
+                source=str(request.get("source") or "") or None,
+                asset_class=str(request.get("asset_class") or "equity"),
+                bar_size=str(request.get("bar_size") or "1d"),
+                dry_run=bool(request.get("dry_run", False)),
+            )
+            payload = _result_dict(result)
+            payload["research_only"] = True
+            payload["live_enabled"] = False
+            return payload
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/integrations/qlib/run-workflow", dependencies=[Depends(verify_api_key)])
+    async def run_qlib_integration_workflow(request: dict):
+        try:
+            from integrations.qlib_adapter.run_qlib_workflow import run_qlib_workflow
+
+            result = run_qlib_workflow(
+                config_path=request.get("config") or request.get("config_path") or "configs/qlib/us_lgbm_alpha158_daily.yaml",
+                run_id=str(request.get("run_id") or "") or None,
+                artifacts_root=str(request.get("artifacts_root") or "artifacts/qlib_runs"),
+                dry_run=bool(request.get("dry_run", False)),
+            )
+            payload = _result_dict(result)
+            payload["research_only"] = True
+            payload["live_enabled"] = False
+            return payload
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/integrations/qlib/import-pred-score", dependencies=[Depends(verify_api_key)])
+    async def import_qlib_pred_score_endpoint(request: dict):
+        try:
+            from integrations.qlib_adapter.import_pred_score import import_pred_score
+
+            result = import_pred_score(
+                run_id=str(request.get("run_id") or "latest"),
+                artifacts_root=str(request.get("artifacts_root") or "artifacts/qlib_runs"),
+                pred_score_path=str(request.get("pred_score_path") or "") or None,
+            )
+            return _result_dict(result) | {"research_only": True, "live_enabled": False}
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/integrations/qlib/import-recorder-metrics", dependencies=[Depends(verify_api_key)])
+    async def import_qlib_recorder_metrics_endpoint(request: dict):
+        try:
+            from integrations.qlib_adapter.import_recorder_metrics import import_recorder_metrics
+
+            result = import_recorder_metrics(
+                run_id=str(request.get("run_id") or "latest"),
+                artifacts_root=str(request.get("artifacts_root") or "artifacts/qlib_runs"),
+                recorder_metrics_path=str(request.get("recorder_metrics_path") or "") or None,
+            )
+            return _result_dict(result) | {"research_only": True, "live_enabled": False}
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/integrations/qlib/compile-strategy-manifest", dependencies=[Depends(verify_api_key)])
+    async def compile_qlib_strategy_manifest_endpoint(request: dict):
+        try:
+            from integrations.qlib_adapter.compile_qlib_strategy_manifest import compile_qlib_strategy_manifest
+
+            path = compile_qlib_strategy_manifest(
+                run_id=str(request.get("run_id") or "latest"),
+                config_path=request.get("config") or request.get("config_path") or "configs/qlib/us_lgbm_alpha158_daily.yaml",
+                artifacts_root=str(request.get("artifacts_root") or "artifacts/qlib_runs"),
+            )
+            payload = _artifact_json(Path(path))
+            return {
+                "status": "completed",
+                "manifest_path": str(path),
+                "strategy_manifest": payload,
+                "research_only": True,
+                "live_enabled": False,
+            }
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.get("/integrations/portfolio/runs", dependencies=[Depends(verify_api_key)])
+    async def list_portfolio_integration_runs(artifacts_root: str = "artifacts/portfolio_runs", limit: int = 20):
+        import importlib.util
+
+        root = Path(artifacts_root)
+        runs = sorted([path for path in root.iterdir() if path.is_dir()], key=lambda path: path.stat().st_mtime, reverse=True) if root.exists() else []
+        return {
+            "status": "ok",
+            "research_only": True,
+            "daily_only": True,
+            "live_enabled": False,
+            "dependencies": {
+                "pypfopt": importlib.util.find_spec("pypfopt") is not None,
+            },
+            "configs": {
+                "max_sharpe": "configs/portfolio/pypfopt_long_only_max_sharpe.yaml",
+                "min_volatility": "configs/portfolio/pypfopt_long_only_min_volatility.yaml",
+                "hrp": "configs/portfolio/pypfopt_hrp.yaml",
+            },
+            "runs": [_portfolio_run_summary(path) for path in runs[: max(1, min(limit, 100))]],
+        }
+
+    @router.get("/integrations/portfolio/runs/{portfolio_run_id}", dependencies=[Depends(verify_api_key)])
+    async def get_portfolio_integration_run(portfolio_run_id: str, artifacts_root: str = "artifacts/portfolio_runs"):
+        run_root = Path(artifacts_root) / portfolio_run_id
+        if not run_root.exists():
+            raise HTTPException(status_code=404, detail=f"Portfolio run not found: {portfolio_run_id}")
+        return {
+            "summary": _portfolio_run_summary(run_root),
+            "run_manifest": _artifact_json(run_root / "run_manifest.json"),
+            "expected_returns_preview": _artifact_preview(run_root / "expected_returns.parquet"),
+            "covariance_preview": _artifact_preview(run_root / "covariance.parquet"),
+            "target_weights_preview": _artifact_preview(run_root / "target_weights.parquet"),
+            "target_positions_preview": _artifact_preview(run_root / "target_positions.parquet"),
+            "target_positions_json": _artifact_json(run_root / "target_positions.json"),
+        }
+
+    @router.post("/integrations/portfolio/build-expected-returns", dependencies=[Depends(verify_api_key)])
+    async def build_portfolio_expected_returns_endpoint(request: dict):
+        try:
+            from integrations.pypfopt_adapter.build_expected_returns import build_expected_returns
+            from integrations.pypfopt_adapter.schemas import load_portfolio_config
+
+            config = load_portfolio_config(request.get("config") or request.get("config_path") or "configs/portfolio/pypfopt_long_only_max_sharpe.yaml")
+            frame, path = build_expected_returns(
+                score_run_id=str(request.get("score_run_id") or request.get("run_id") or ""),
+                config=config,
+                portfolio_run_id=str(request.get("portfolio_run_id") or "") or None,
+            )
+            return {
+                "status": "completed",
+                "portfolio_run_id": path.parent.name,
+                "path": str(path),
+                "rows": int(len(frame)),
+                "preview": json.loads(frame.head(12).to_json(orient="records", date_format="iso")) if not frame.empty else [],
+                "research_only": True,
+                "live_enabled": False,
+            }
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/integrations/portfolio/build-covariance", dependencies=[Depends(verify_api_key)])
+    async def build_portfolio_covariance_endpoint(request: dict):
+        try:
+            from integrations.pypfopt_adapter.build_covariance import build_covariance
+            from integrations.pypfopt_adapter.schemas import load_portfolio_config
+
+            config = load_portfolio_config(request.get("config") or request.get("config_path") or "configs/portfolio/pypfopt_long_only_max_sharpe.yaml")
+            frame, path = build_covariance(
+                score_run_id=str(request.get("score_run_id") or request.get("run_id") or ""),
+                config=config,
+                portfolio_run_id=str(request.get("portfolio_run_id") or "") or None,
+            )
+            return {
+                "status": "completed",
+                "portfolio_run_id": path.parent.name,
+                "path": str(path),
+                "rows": int(len(frame)),
+                "preview": json.loads(frame.head(12).to_json(orient="records", date_format="iso")) if not frame.empty else [],
+                "research_only": True,
+                "live_enabled": False,
+            }
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/integrations/portfolio/optimize-weights", dependencies=[Depends(verify_api_key)])
+    async def optimize_portfolio_weights_endpoint(request: dict):
+        try:
+            from integrations.pypfopt_adapter.optimize_weights import optimize_weights
+            from integrations.pypfopt_adapter.schemas import load_portfolio_config
+
+            config = load_portfolio_config(request.get("config") or request.get("config_path") or "configs/portfolio/pypfopt_long_only_max_sharpe.yaml")
+            fallback_optimizer = str(request.get("fallback_optimizer") or "")
+            if fallback_optimizer:
+                config = config.with_overrides(fallback_optimizer=fallback_optimizer)
+            frame, path, fallback_used = optimize_weights(
+                score_run_id=str(request.get("score_run_id") or request.get("run_id") or ""),
+                config=config,
+                portfolio_run_id=str(request.get("portfolio_run_id") or "") or None,
+            )
+            latest_sum = None
+            if not frame.empty and "datetime" in frame.columns:
+                latest_date = frame["datetime"].max()
+                latest = frame[frame["datetime"] == latest_date]
+                latest_sum = float(latest["target_weight"].sum()) if "target_weight" in latest.columns else None
+            return {
+                "status": "completed",
+                "portfolio_run_id": path.parent.name,
+                "path": str(path),
+                "rows": int(len(frame)),
+                "fallback_used": bool(fallback_used),
+                "latest_weight_sum": latest_sum,
+                "preview": json.loads(frame.head(20).to_json(orient="records", date_format="iso")) if not frame.empty else [],
+                "research_only": True,
+                "live_enabled": False,
+                "order_generation": "disabled",
+            }
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.post("/integrations/portfolio/import-target-weights", dependencies=[Depends(verify_api_key)])
+    async def import_portfolio_target_weights_endpoint(request: dict):
+        try:
+            from integrations.pypfopt_adapter.import_target_weights import import_target_weights
+            from integrations.pypfopt_adapter.schemas import load_portfolio_config
+
+            config = load_portfolio_config(request.get("config") or request.get("config_path") or "configs/portfolio/pypfopt_long_only_max_sharpe.yaml")
+            portfolio_run_id = str(request.get("portfolio_run_id") or "")
+            frame, parquet_path, json_path = import_target_weights(
+                portfolio_run_id=portfolio_run_id,
+                config=config,
+                strategy_id=str(request.get("strategy_id") or "") or None,
+            )
+            return {
+                "status": "completed",
+                "portfolio_run_id": portfolio_run_id,
+                "target_positions_path": str(parquet_path),
+                "target_positions_json_path": str(json_path),
+                "rows": int(len(frame)),
+                "preview": json.loads(frame.head(20).to_json(orient="records", date_format="iso")) if not frame.empty else [],
+                "research_only": True,
+                "live_enabled": False,
+                "order_generation": "disabled",
+            }
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # ------------------------------------------------------------------
     # R3: Feature Store endpoints
     # ------------------------------------------------------------------
 
@@ -1288,22 +1945,46 @@ def create_app():
 
     @router.post("/research/paper-review/create")
     async def create_paper_review(request: dict):
-        """Create a paper review from a portfolio simulation."""
+        """Create a paper review from evidence only; never opens paper/live submit."""
         from quant_us.research.paper_review_bridge import PaperReviewManager
         from fastapi import HTTPException
 
+        data_root = str(request.get("data_root") or "data")
+        evidence_pack_id = str(request.get("portfolio_evidence_pack_id", "") or "")
         sim_id = request.get("portfolio_sim_id", "")
-        if not sim_id:
-            raise HTTPException(status_code=400, detail="portfolio_sim_id is required")
-        mgr = PaperReviewManager()
+        candidate_id = str(request.get("candidate_id", "") or "")
+        strategy_manifest_id = str(request.get("strategy_manifest_id", "") or "")
+        prepared_pack_id = str(request.get("prepared_evidence_pack_id", "") or "")
+        if not evidence_pack_id and not sim_id and not candidate_id and not strategy_manifest_id:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "portfolio_evidence_pack_id, portfolio_sim_id, candidate_id, or "
+                    "strategy_manifest_id is required"
+                ),
+            )
+        mgr = PaperReviewManager(data_root=data_root)
         try:
-            review = mgr.create_review(sim_id)
+            if evidence_pack_id:
+                review = mgr.create_from_portfolio_evidence(evidence_pack_id)
+            elif sim_id:
+                review = mgr.create_review(sim_id)
+            else:
+                review = mgr.create_from_candidate_evidence(
+                    candidate_id=candidate_id,
+                    strategy_manifest_id=strategy_manifest_id,
+                    portfolio_evidence_pack_id=prepared_pack_id,
+                )
             return {
                 "paper_review_id": review.paper_review_id,
                 "status": review.status,
+                "evidence_pack_path": review.evidence_pack_path,
+                "evidence_gate_status": review.evidence_gate_status,
                 "proposed_symbols": review.proposed_symbols,
                 "proposed_capital": review.proposed_capital,
+                "source_candidate_ids": getattr(review, "source_candidate_ids", []),
                 "created_at": review.created_at,
+                "note": "manual review queue only; this endpoint never approves or submits paper orders",
             }
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc

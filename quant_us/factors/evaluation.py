@@ -77,8 +77,6 @@ class FactorEvaluator:
             3. Run cross-sectional IC, rank IC, quantile returns, and decay.
             4. Aggregate into a single FactorEvaluationResult.
         """
-        definition = self._lib.get(factor_id)
-
         # 1. Compute factor values (extended lookback, then clipped to [start, end])
         df = self._pipeline.compute(
             factor_ids=[factor_id],

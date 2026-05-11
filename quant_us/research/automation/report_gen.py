@@ -136,20 +136,24 @@ def generate_v2(experiment_id: str, data_root: str = "data") -> str:
     sections.append(_v2_anti_overfit_section(candidate_ids, data_root))
     sections.append("")
 
-    # Section 5: Promotion gate results
+    # Section 5: Validation statistics
     gate_results = _evaluate_promotion_gate(candidate_ids, data_root)
+    sections.append(_v2_validation_section(gate_results))
+    sections.append("")
+
+    # Section 6: Promotion gate results
     sections.append(_v2_gate_section(gate_results))
     sections.append("")
 
-    # Section 6: Unified backtest evidence summary
+    # Section 7: Unified backtest evidence summary
     sections.append(_v2_backtest_evidence_section(gate_results))
     sections.append("")
 
-    # Section 7: Ready for paper review summary
+    # Section 8: Ready for paper review summary
     sections.append(_v2_ready_summary(gate_results))
     sections.append("")
 
-    # Section 8: Next research actions
+    # Section 9: Next research actions
     sections.append(_v2_next_actions(gate_results))
     sections.append("")
 
@@ -292,6 +296,40 @@ def _v2_gate_section(
             f"| {gr.get('decision', '?'):25s} "
             f"| {reasons} "
             f"| {warnings} |\n"
+        )
+    return "".join(lines)
+
+
+def _v2_validation_section(gate_results: list[dict]) -> str:
+    if not gate_results:
+        return "## Validation Statistics\n\nNo candidates evaluated.\n"
+
+    lines = [
+        "## Validation Statistics\n",
+        "| Candidate | CV Method | Trials | DSR | PBO | Cost Drag | Validation Status |\n",
+        "|-----------|-----------|--------|-----|-----|-----------|-------------------|\n",
+    ]
+    for gr in gate_results:
+        evidence = gr.get("evidence", {}) if isinstance(gr, dict) else {}
+        if not isinstance(evidence, dict):
+            evidence = {}
+        validation = evidence.get("validation_stats", {})
+        if not isinstance(validation, dict):
+            validation = {}
+        cv_summary = validation.get("cv_summary", {})
+        trial_counting = validation.get("trial_counting", {})
+        dsr = validation.get("deflated_sharpe_ratio", {})
+        pbo = validation.get("pbo", {})
+        cost_before_after = validation.get("cost_before_after", {})
+        cost_drag = cost_before_after.get("cost_drag_return")
+        lines.append(
+            f"| {gr.get('candidate_id', '?')[:16]} "
+            f"| {cv_summary.get('method', 'unknown')} "
+            f"| {trial_counting.get('effective_trial_count', 0)} "
+            f"| {_format_optional_number(dsr.get('dsr'), digits=3)} "
+            f"| {_format_optional_number(pbo.get('pbo'), digits=3)} "
+            f"| {_format_optional_number(cost_drag, digits=4)} "
+            f"| {validation.get('status', 'partial')} |\n"
         )
     return "".join(lines)
 
@@ -543,6 +581,15 @@ def _format_number(value: Any) -> str:
         return "N/A"
     try:
         return f"{float(value):.4f}"
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _format_optional_number(value: Any, *, digits: int) -> str:
+    if value is None:
+        return "N/A"
+    try:
+        return f"{float(value):.{digits}f}"
     except (TypeError, ValueError):
         return str(value)
 

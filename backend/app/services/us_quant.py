@@ -158,6 +158,40 @@ class USQuantService:
                 seen.add(symbol)
         return symbols
 
+    def _optional_symbols_from_payload(self, request: dict[str, Any]) -> list[str] | None:
+        raw_symbols = request.get("symbols")
+        if raw_symbols is None and not request.get("symbol"):
+            return None
+        if raw_symbols is None:
+            raw_symbols = [request["symbol"]]
+        symbols: list[str] = []
+        seen: set[str] = set()
+        for item in raw_symbols:
+            symbol = str(item).strip().upper()
+            if symbol and symbol not in seen:
+                symbols.append(symbol)
+                seen.add(symbol)
+        return symbols or None
+
+    def _minute_bar_sizes_from_payload(self, request: dict[str, Any]) -> list[str]:
+        from quant_us.data.minute_quality_gate import SUPPORTED_MINUTE_BAR_SIZES
+
+        raw_bar_sizes = request.get("bar_sizes")
+        if raw_bar_sizes is None and request.get("bar_size"):
+            raw_bar_sizes = [request["bar_size"]]
+        elif isinstance(raw_bar_sizes, str):
+            raw_bar_sizes = [item.strip() for item in raw_bar_sizes.split(",")]
+        raw_bar_sizes = raw_bar_sizes or list(SUPPORTED_MINUTE_BAR_SIZES)
+
+        bar_sizes: list[str] = []
+        seen: set[str] = set()
+        for item in raw_bar_sizes:
+            bar_size = str(item or "").strip().lower()
+            if bar_size in SUPPORTED_MINUTE_BAR_SIZES and bar_size not in seen:
+                bar_sizes.append(bar_size)
+                seen.add(bar_size)
+        return bar_sizes or list(SUPPORTED_MINUTE_BAR_SIZES)
+
     def _backtest_parameters_from_payload(self, request: dict[str, Any]) -> dict[str, Any]:
         return {
             "capital": request.get("capital", 100_000.0),
@@ -179,56 +213,27 @@ class USQuantService:
         }
 
     def data_quality_report(self, request: dict[str, Any]) -> dict[str, Any]:
-        """Generate 6-type quality report from latest manifest."""
-        from quant_us.data.quality_reports import generate_daily_quality_report
-        from quant_us.data.storage.duckdb_store import DuckDBBarReader, DuckDBQuery
-        from datetime import datetime, timezone
-        import pandas as pd
+        """Generate auditable minute quality gates for raw and cleaned US equity data."""
+        from quant_us.data.minute_quality_gate import inspect_minute_data_quality_overview
 
-        symbol = request.get("symbol", "AAPL").upper()
-        start = request.get("start", "2020-01-01")
-        end = request.get("end", "2025-12-31")
         data_root = request.get("data_root", "data")
+        symbols = self._optional_symbols_from_payload(request)
+        bar_sizes = self._minute_bar_sizes_from_payload(request)
+        lookback_trading_days = max(1, int(request.get("lookback_trading_days", 5)))
+        root_subdirs = request.get("root_subdirs") or ("raw", "cleaned")
+        if isinstance(root_subdirs, str):
+            root_subdirs = [item.strip() for item in root_subdirs.split(",") if item.strip()]
 
-        def _to_dt(val: Any) -> datetime:
-            if isinstance(val, datetime):
-                return val.replace(tzinfo=timezone.utc) if val.tzinfo is None else val
-            if isinstance(val, date):
-                return datetime(val.year, val.month, val.day, tzinfo=timezone.utc)
-            s = str(val)[:10]
-            return datetime.fromisoformat(s).replace(tzinfo=timezone.utc)
-
-        start_dt = _to_dt(start) if start else datetime(2020, 1, 1, tzinfo=timezone.utc)
-        end_dt = _to_dt(end) if end else datetime(2025, 12, 31, tzinfo=timezone.utc)
-
-        reader = DuckDBBarReader(Path(data_root) / "raw")
-        query = DuckDBQuery(vendor="yfinance", asset_class="equity", bar_size="1d", symbol=symbol, start=start_dt, end=end_dt)
-        try:
-            df = reader.query_bars(query)
-        except Exception:
-            df = pd.DataFrame()
-
-        if df.empty:
-            return {
-                "symbol": symbol, "data_version": "", "total_issues": 0, "has_issues": False,
-                "reports": [{"report_type": t, "issues_found": 0, "details": []} for t in
-                    ["missing_bars", "duplicate_bars", "price_jump", "zero_volume", "session_coverage", "corporate_action"]],
-            }
-
-        qr = generate_daily_quality_report(df, symbol, (start_dt.date(), end_dt.date()))
-        return {
-            "symbol": symbol,
-            "data_version": "",
-            "total_issues": qr.total_issues,
-            "has_issues": qr.has_issues,
-            "reports": [
-                {"report_type": r.report_type, "issues_found": r.issues_found, "details": r.details}
-                for r in [
-                    qr.missing_bars, qr.duplicate_bars, qr.price_jump,
-                    qr.zero_volume, qr.session_coverage, qr.corporate_action,
-                ]
-            ],
-        }
+        report = inspect_minute_data_quality_overview(
+            data_root=Path(data_root),
+            symbols=symbols,
+            vendor=str(request.get("vendor", "yfinance")),
+            asset_class=str(request.get("asset_class", "equity")),
+            bar_sizes=bar_sizes,
+            lookback_trading_days=lookback_trading_days,
+            root_subdirs=root_subdirs,
+        )
+        return report.to_dict()
 
     def sync_data(self, request: dict[str, Any]) -> dict[str, Any]:
         data = DataLakeService(DataLakeConfig(data_root=Path(request.get("data_root") or "data")))

@@ -16,14 +16,14 @@ import subprocess as _subprocess
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
 
 from quant_us.backtest.corporate_actions_ledger import LedgerAdjustmentLog
 from quant_us.backtest.data_bridge import EventDrivenBacktestRunner, bars_from_dataframe
-from quant_us.backtest.engine import BacktestConfig, BacktestResult, EventDrivenBacktestEngine
+from quant_us.backtest.engine import BacktestBroker, BacktestConfig, BacktestResult, EventDrivenBacktestEngine
 from quant_us.backtest.gap_session import GapConfig, SessionConfig, classify_session, is_bar_tradable
 from quant_us.backtest.ledger_pnl import (
     LedgerEquityCurve,
@@ -115,10 +115,12 @@ class UnifiedBacktestRunner:
         self,
         config: UnifiedBacktestConfig | None = None,
         calendar: USEquityCalendar | None = None,
+        broker_factory: Callable[[UnifiedBacktestConfig], BacktestBroker] | None = None,
     ) -> None:
         self.config = config or UnifiedBacktestConfig()
         self.calendar = calendar or USEquityCalendar.with_holidays()
         self.manifest_store = DataManifestStore()
+        self.broker_factory = broker_factory
 
     def run(
         self,
@@ -175,14 +177,7 @@ class UnifiedBacktestRunner:
             slippage_bps=self.config.slippage_bps,
             run_id=self.config.run_id,
         )
-        broker = SimulatedBroker(
-            initial_cash=self.config.initial_cash,
-            commission_model=PercentCommission(rate=self.config.commission_rate),
-            slippage_model=BpsSlippage(bps=self.config.slippage_bps),
-            fill_ratio=self.config.fill_ratio,
-            volume_participation_cap_pct=self.config.volume_participation_cap_pct,
-            adjustment_log=self.config.adjustment_log,
-        )
+        broker = self._build_broker()
         engine = EventDrivenBacktestEngine(
             strategies=strategies,
             config=engine_config,
@@ -283,6 +278,10 @@ class UnifiedBacktestRunner:
             "manifest_schema_version": "backtest_run_v2",
             "engine": "event_driven",
             "canonical_for_promotion": True,
+            "execution_semantics": event_result.metadata.get(
+                "execution_semantics",
+                engine_config.execution_semantics,
+            ),
             "run_id": self.config.run_id,
             "generated_at": evidence["generated_at"],
             "data_version": data_version,
@@ -338,6 +337,18 @@ class UnifiedBacktestRunner:
             determinism_details=determinism_details,
             evidence=evidence,
             manifest_path=str(manifest_path),
+        )
+
+    def _build_broker(self) -> BacktestBroker:
+        if self.broker_factory is not None:
+            return self.broker_factory(self.config)
+        return SimulatedBroker(
+            initial_cash=self.config.initial_cash,
+            commission_model=PercentCommission(rate=self.config.commission_rate),
+            slippage_model=BpsSlippage(bps=self.config.slippage_bps),
+            fill_ratio=self.config.fill_ratio,
+            volume_participation_cap_pct=self.config.volume_participation_cap_pct,
+            adjustment_log=self.config.adjustment_log,
         )
 
 
@@ -724,6 +735,10 @@ def _build_promotion_evidence(
         "engine": "event_driven",
         "canonical_for_promotion": True,
         "approximate_scan_engine": False,
+        "execution_semantics": event_result.metadata.get(
+            "execution_semantics",
+            "signal_at_bar_close_order_next_bar",
+        ),
         "generated_at": ledger_artifact_generated_at,
         "as_of_utc": ledger_artifact_data.get("as_of_utc"),
         "data_version": data_version,

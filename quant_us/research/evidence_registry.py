@@ -106,6 +106,12 @@ def inspect_evidence_registry(
             result["registry_integrity_status"] = _registry_integrity_status(saved_status)
             result["registry_notes"] = saved_notes
             result["rebuild_available"] = True
+            result["conflict_report"] = _registry_conflict_report(result)
+            conflict_notes = _registry_conflict_notes(result)
+            if conflict_notes:
+                result["registry_status"] = "conflict"
+                result["registry_integrity_status"] = INTEGRITY_CONFLICT
+                result["registry_notes"] = saved_notes + conflict_notes
             return result
         if not rebuild_if_missing:
             return {
@@ -119,9 +125,12 @@ def inspect_evidence_registry(
                 "chains": {},
             }
     result = rebuild_evidence_registry(root, write=rebuild_if_missing)
-    result["registry_status"] = "rebuilt"
-    result["registry_integrity_status"] = INTEGRITY_PASS
-    result["registry_notes"] = []
+    conflict_notes = _registry_conflict_notes(result)
+    result["registry_status"] = "conflict" if conflict_notes else "rebuilt"
+    result["registry_integrity_status"] = (
+        INTEGRITY_CONFLICT if conflict_notes else INTEGRITY_PASS
+    )
+    result["registry_notes"] = conflict_notes
     result["rebuild_available"] = True
     return result
 
@@ -186,6 +195,7 @@ def inspect_saved_evidence_registry(
     result["registry_integrity_status"] = _registry_integrity_status(saved_status)
     result["registry_notes"] = saved_notes
     result["rebuild_available"] = True
+    result["conflict_report"] = _registry_conflict_report(result)
     conflict_notes = _registry_conflict_notes(result)
     if conflict_notes:
         result["registry_status"] = "conflict"
@@ -283,10 +293,14 @@ def project_saved_paper_review_evidence(
         "registry_status": registry_status,
         "registry_integrity_status": registry_integrity,
         "registry_notes": list(registry.get("registry_notes", [])),
+        "diagnostics": {},
         "review": {},
         "review_path": "",
         "evidence_pack_path": "",
     }
+    conflict_report = dict(registry.get("conflict_report", {}))
+    if conflict_report:
+        projection["diagnostics"]["conflict_report"] = conflict_report
     if registry_status != "present" or registry_integrity != INTEGRITY_PASS:
         projection["reason"] = (
             f"paper_review_registry_not_ready:{registry_status}:{registry_integrity}"
@@ -413,7 +427,7 @@ def _build_registry_payload(root: Path, scanned: dict[str, Any]) -> dict[str, An
         )
     subject_index = _build_subject_index(scanned, chains)
 
-    return {
+    registry = {
         "schema_version": REGISTRY_SCHEMA_VERSION,
         "evidence_ref_schema_version": EVIDENCE_REF_SCHEMA_VERSION,
         "candidate_chain_schema_version": CANDIDATE_CHAIN_SCHEMA_VERSION,
@@ -460,6 +474,8 @@ def _build_registry_payload(root: Path, scanned: dict[str, Any]) -> dict[str, An
         "chains": chains,
         "subject_index": subject_index,
     }
+    registry["conflict_report"] = _registry_conflict_report(registry)
+    return registry
 
 
 def _build_subject_index(
@@ -1260,7 +1276,7 @@ def _scan_backtest_manifests(root: Path) -> list[dict[str, Any]]:
                 },
             }
         )
-    return _sort_rows(_normalize_scanned_rows(rows))
+    return _sort_rows(_normalize_backtest_manifest_rows(rows, root))
 
 
 def _scan_promotion_results(root: Path) -> list[dict[str, Any]]:
@@ -2067,23 +2083,125 @@ def _registry_evidence_meta(registry: dict[str, Any]) -> dict[str, dict[str, Any
 
 def _registry_conflict_notes(registry: dict[str, Any]) -> list[str]:
     notes: list[str] = []
+    report = _registry_conflict_report(registry)
+    for entry in report.get("evidence_conflicts", []):
+        if not isinstance(entry, dict):
+            continue
+        notes.append(
+            "conflicting_registry_evidence:"
+            f"{entry.get('section', 'unknown')}:"
+            f"{entry.get('evidence_id') or entry.get('path') or 'unknown'}:"
+            f"{entry.get('diagnosis', 'conflict')}"
+        )
+    for entry in report.get("chain_conflicts", []):
+        if not isinstance(entry, dict):
+            continue
+        notes.append(
+            "conflicting_registry_chain:"
+            f"{entry.get('candidate_id', 'unknown')}:"
+            f"{entry.get('diagnosis', 'conflict')}"
+        )
+    return _dedupe_notes(notes)
+
+
+def _registry_conflict_report(registry: dict[str, Any]) -> dict[str, Any]:
+    evidence_conflicts_by_key: dict[tuple[str, str], dict[str, Any]] = {}
     evidence = registry.get("evidence", {})
     if isinstance(evidence, dict):
         for section_name, rows in evidence.items():
             if not isinstance(rows, list):
                 continue
             for row in rows:
-                if isinstance(row, dict) and row.get("integrity_status") == INTEGRITY_CONFLICT:
-                    notes.append(
-                        "conflicting_registry_evidence:"
-                        f"{section_name}:{row.get('path') or row.get('id') or 'unknown'}"
-                    )
+                if not isinstance(row, dict):
+                    continue
+                if row.get("integrity_status") != INTEGRITY_CONFLICT:
+                    continue
+                details = dict(row.get("details", {}))
+                evidence_id = str(
+                    row.get("id") or row.get("data_version") or details.get("conflict_id", "")
+                )
+                conflict_id = str(details.get("conflict_id", "") or evidence_id)
+                key = (section_name, conflict_id)
+                entry = evidence_conflicts_by_key.setdefault(
+                    key,
+                    {
+                        "section": section_name,
+                        "evidence_type": str(
+                            row.get("evidence_type", _section_to_evidence_type(section_name))
+                        ),
+                        "evidence_id": evidence_id,
+                        "path": str(row.get("path", "")),
+                        "status": str(row.get("status", "")),
+                        "summary": str(row.get("summary", "")),
+                        "diagnosis": _conflict_diagnosis(section_name, row),
+                        "candidate_id": str(
+                            row.get("candidate_id", "") or details.get("candidate_id", "")
+                        ),
+                        "strategy_manifest_id": str(
+                            row.get("strategy_manifest_id", "")
+                            or row.get("strategy_candidate_id", "")
+                            or details.get("strategy_manifest_id", "")
+                        ),
+                        "conflict_id": conflict_id,
+                        "conflict_paths": [],
+                        "conflict_hashes": [],
+                    },
+                )
+                merged_paths = {
+                    *entry["conflict_paths"],
+                    str(row.get("path", "")),
+                    *[
+                        str(item)
+                        for item in details.get("conflict_paths", [])
+                        if str(item).strip()
+                    ],
+                }
+                merged_hashes = {
+                    *entry["conflict_hashes"],
+                    str(row.get("sha256", "")),
+                    *[
+                        str(item)
+                        for item in details.get("conflict_hashes", [])
+                        if str(item).strip()
+                    ],
+                }
+                entry["conflict_paths"] = sorted(path for path in merged_paths if path)
+                entry["conflict_hashes"] = sorted(hash_value for hash_value in merged_hashes if hash_value)
+
+    chain_conflicts: list[dict[str, Any]] = []
     chains = registry.get("chains", {})
     if isinstance(chains, dict):
         for candidate_id, chain in chains.items():
-            if isinstance(chain, dict) and chain.get("chain_status") == INTEGRITY_CONFLICT:
-                notes.append(f"conflicting_registry_chain:{candidate_id}")
-    return _dedupe_notes(notes)
+            if not isinstance(chain, dict):
+                continue
+            if chain.get("chain_status") != INTEGRITY_CONFLICT:
+                continue
+            notes = [str(item) for item in chain.get("notes", []) if str(item).strip()]
+            chain_conflicts.append(
+                {
+                    "candidate_id": str(candidate_id),
+                    "candidate_path": str(chain.get("candidate_path", "")),
+                    "diagnosis": notes[0] if notes else "candidate_chain_conflict",
+                    "notes": notes,
+                }
+            )
+
+    evidence_conflicts = list(evidence_conflicts_by_key.values())
+    evidence_conflicts.sort(
+        key=lambda item: (
+            str(item.get("section", "")),
+            str(item.get("evidence_id", "")),
+            str(item.get("path", "")),
+        )
+    )
+    chain_conflicts.sort(key=lambda item: str(item.get("candidate_id", "")))
+    return {
+        "has_conflicts": bool(evidence_conflicts or chain_conflicts),
+        "evidence_conflict_count": len(evidence_conflicts),
+        "chain_conflict_count": len(chain_conflicts),
+        "evidence_conflicts": evidence_conflicts,
+        "chain_conflicts": chain_conflicts,
+    }
 
 
 def _paper_review_row_matches(
@@ -2140,6 +2258,58 @@ def _normalize_scanned_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return normalized
 
 
+def _normalize_backtest_manifest_rows(
+    rows: list[dict[str, Any]],
+    root: Path,
+) -> list[dict[str, Any]]:
+    normalized = [_normalize_scanned_row(row) for row in rows]
+    by_id: dict[str, list[dict[str, Any]]] = {}
+    for row in normalized:
+        row_id = str(row.get("id", "")).strip()
+        if not row_id:
+            continue
+        by_id.setdefault(row_id, []).append(row)
+
+    collapsed: list[dict[str, Any]] = []
+    consumed_ids: set[str] = set()
+    for row_id, group in by_id.items():
+        if len(group) < 2:
+            continue
+        canonical_rows = [
+            row for row in group if _backtest_manifest_row_role(root, row) == "canonical"
+        ]
+        legacy_rows = [
+            row for row in group if _backtest_manifest_row_role(root, row) == "legacy"
+        ]
+        group_hashes = {str(row.get("sha256", "")) for row in group if str(row.get("sha256", "")).strip()}
+        if (
+            len(canonical_rows) == 1
+            and len(canonical_rows) + len(legacy_rows) == len(group)
+            and len(group_hashes) <= 1
+        ):
+            canonical_row = canonical_rows[0]
+            details = dict(canonical_row.get("details", {}))
+            details["legacy_mirror_paths"] = sorted(
+                str(row.get("path", "")) for row in legacy_rows if row.get("path")
+            )
+            details["deduplicated_duplicate_ids"] = [row_id]
+            canonical_row["details"] = details
+            collapsed.append(canonical_row)
+            consumed_ids.add(row_id)
+
+    for row in normalized:
+        row_id = str(row.get("id", "")).strip()
+        if row_id and row_id in consumed_ids:
+            if _backtest_manifest_row_role(root, row) == "legacy":
+                continue
+            if any(str(item.get("id", "")) == row_id for item in collapsed):
+                continue
+        collapsed.append(row)
+
+    _mark_conflicts(collapsed)
+    return collapsed
+
+
 def _normalize_scanned_row(row: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(row)
     status = str(normalized.get("status", "present"))
@@ -2185,6 +2355,75 @@ def _mark_conflicts(rows: list[dict[str, Any]]) -> None:
                 row["summary"] = f"conflict:{summary}"
             else:
                 row["summary"] = f"conflict:{row_id}"
+
+
+def _backtest_manifest_row_role(root: Path, row: dict[str, Any]) -> str:
+    path_text = str(row.get("path", "") or "")
+    return _backtest_manifest_path_role(path_text, root=root)
+
+
+def _backtest_manifest_path_role(path_text: str, *, root: Path | None = None) -> str:
+    if not path_text:
+        return "unknown"
+    path = Path(path_text).resolve(strict=False)
+    if root is not None:
+        research_root = (root / "research" / "backtests").resolve(strict=False)
+        manifests_root = (root / "manifests").resolve(strict=False)
+    else:
+        research_root = None
+        manifests_root = None
+    try:
+        if (
+            path.parent.name
+            and path.name == "run_manifest.json"
+            and (
+                (research_root is not None and research_root in path.parents)
+                or "research/backtests" in path.as_posix()
+            )
+        ):
+            return "canonical"
+    except OSError:
+        return "unknown"
+    try:
+        if path.name.startswith("run_") and path.suffix == ".json" and (
+            (manifests_root is not None and manifests_root in path.parents)
+            or "/manifests/" in path.as_posix()
+        ):
+            return "legacy"
+    except OSError:
+        return "unknown"
+    return "unknown"
+
+
+def _section_to_evidence_type(section_name: str) -> str:
+    singular = section_name[:-1] if section_name.endswith("s") else section_name
+    return singular
+
+
+def _conflict_diagnosis(section_name: str, row: dict[str, Any]) -> str:
+    details = dict(row.get("details", {}))
+    conflict_paths = [
+        str(item) for item in details.get("conflict_paths", []) if str(item).strip()
+    ]
+    conflict_hashes = [
+        str(item) for item in details.get("conflict_hashes", []) if str(item).strip()
+    ]
+    if section_name == "backtest_manifests":
+        roles = sorted(
+            {
+                _backtest_manifest_path_role(path)
+                for path in conflict_paths
+            }
+        )
+        if "canonical" in roles and "legacy" in roles:
+            return "duplicate_backtest_manifest_id"
+    if len(conflict_paths) > 1 and len(conflict_hashes) > 1:
+        return "duplicate_evidence_id_with_different_paths_and_hashes"
+    if len(conflict_paths) > 1:
+        return "duplicate_evidence_id_with_multiple_paths"
+    if len(conflict_hashes) > 1:
+        return "duplicate_evidence_id_with_multiple_hashes"
+    return "registry_integrity_conflict"
 
 
 def _scan_json_rows(root: Path, leaf_name: str) -> list[tuple[Path, dict[str, Any]]]:

@@ -9,10 +9,20 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
+_SPECIAL_CLOSURES: dict[int, dict[date, str]] = {
+    2025: {
+        date(2025, 1, 9): "National Day of Mourning for President Jimmy Carter",
+    },
+}
 
-def _new_years(year: int) -> date:
+
+def _new_years(year: int) -> date | None:
     d = date(year, 1, 1)
-    return _nearest_weekday(d)
+    if d.weekday() == 5:
+        return None
+    if d.weekday() == 6:
+        return d + timedelta(days=1)
+    return d
 
 
 def _mlk_day(year: int) -> date:
@@ -110,6 +120,7 @@ def nyse_holidays(year: int) -> dict[date, str]:
         holiday_date = rule_fn(year)
         if holiday_date is not None and holiday_date not in holidays:
             holidays[holiday_date] = name
+    holidays.update(_SPECIAL_CLOSURES.get(year, {}))
     return holidays
 
 

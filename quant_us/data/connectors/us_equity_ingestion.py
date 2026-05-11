@@ -17,7 +17,8 @@ from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.clock import utc_now
 from quant_us.core.enums import SessionName
 from quant_us.data.connectors.yfinance_data import YFinanceDataConnector
-from quant_us.data.storage.data_manifest import DataManifest, DataManifestStore, build_manifest_from_quality
+from quant_us.data.storage.data_manifest import DataManifestStore, build_manifest_from_quality
+from quant_us.data.storage.parquet_store import ParquetBarStore
 
 
 @dataclass
@@ -52,8 +53,9 @@ class USEquityIngestionPipeline:
     def __init__(self, config: USEquityIngestionConfig | None = None) -> None:
         self.config = config or USEquityIngestionConfig()
         self.calendar = USEquityCalendar.with_holidays()
-        self.manifest_store = DataManifestStore()
+        self.manifest_store = DataManifestStore(Path(self.config.data_root) / "manifests")
         self._connector = YFinanceDataConnector()
+        self.cleaned_store = ParquetBarStore(Path(self.config.data_root) / "cleaned")
 
     def run(self) -> list[IngestionResult]:
         results: list[IngestionResult] = []
@@ -88,9 +90,25 @@ class USEquityIngestionPipeline:
 
         quality = self._quality_report(cleaned, symbol, interval, start, end)
         data_version = quality["data_version"]
+        cleaned["symbol"] = symbol.upper()
         cleaned["data_version"] = data_version
 
         parquet_path = self._write_parquet(cleaned, symbol, interval)
+        clean_write = self.cleaned_store.write_bars(
+            cleaned,
+            vendor=self.config.source,
+            asset_class="equity",
+            bar_size=interval,
+            symbol=symbol,
+        )
+        cleaned_path = (
+            Path(self.config.data_root)
+            / "cleaned"
+            / f"vendor={self.config.source}"
+            / "asset_class=equity"
+            / f"bar_size={interval}"
+            / f"symbol={symbol.upper()}"
+        )
         quality.update(
             self._connector.quality_metadata(
                 symbol=symbol,
@@ -98,10 +116,12 @@ class USEquityIngestionPipeline:
                 end=quality.get("last_timestamp", end),
                 bar_size=interval,
                 frame=cleaned,
-                data_root=Path(self.config.data_root) / "raw",
+                data_root=Path(self.config.data_root) / "cleaned",
             )
         )
-        quality["cleaned_path"] = str(parquet_path)
+        quality["raw_path"] = str(parquet_path)
+        quality["cleaned_path"] = str(cleaned_path)
+        quality["cleaned_files"] = [str(path) for path in clean_write.files_written]
 
         manifest = build_manifest_from_quality(
             quality=quality,
@@ -109,7 +129,10 @@ class USEquityIngestionPipeline:
             symbol=symbol,
             interval=interval,
             asset_class="equity",
-            cleaned_path=str(parquet_path),
+            raw_path=str(parquet_path),
+            cleaned_path=str(cleaned_path),
+            requested_start=start,
+            requested_end=end,
         )
         if self.config.generate_manifest:
             manifest_path = str(self.manifest_store.write(manifest))

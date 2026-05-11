@@ -28,6 +28,7 @@ from quant_us.data.storage.data_manifest import (
     validate_manifest_for_promotion,
 )
 from quant_us.backtest.ledger_pnl import compute_ledger_reconciliation_artifact_hash
+from quant_us.research.validation import summarize_candidate_validation
 
 
 ALLOWED_DATA_SOURCES = {"yfinance", "alpaca", "sqlite"}
@@ -204,6 +205,16 @@ class ResearchPromotionGate:
             backtest_manifest=backtest_manifest,
             evidence=evidence,
             reasons=reasons,
+        )
+        self._evaluate_validation_statistics(
+            candidate_id=candidate_id,
+            metrics=metrics,
+            experiment_data=experiment_data,
+            walk_forward_artifact=walk_forward_artifact,
+            cost_stress_artifact=cost_stress_artifact,
+            evidence=evidence,
+            reasons=reasons,
+            warnings=warnings,
         )
 
         wf_pass_rate = self._artifact_metric(
@@ -551,6 +562,128 @@ class ResearchPromotionGate:
                     if isinstance(container, dict) and nested[1] in container:
                         value = container[nested[1]]
         return float(value)
+
+    def _evaluate_validation_statistics(
+        self,
+        *,
+        candidate_id: str,
+        metrics: dict[str, Any],
+        experiment_data: dict[str, Any],
+        walk_forward_artifact: dict[str, Any] | None,
+        cost_stress_artifact: dict[str, Any] | None,
+        evidence: dict[str, Any],
+        reasons: list[str],
+        warnings: list[str],
+    ) -> None:
+        summary = summarize_candidate_validation(
+            candidate_id=candidate_id,
+            metrics=metrics,
+            walk_forward_artifact=walk_forward_artifact,
+            cost_stress_artifact=cost_stress_artifact,
+            experiment_data=experiment_data,
+        )
+        evidence["validation_stats"] = summary
+        evidence["validation_status"] = str(summary.get("status", "partial"))
+
+        cv_summary = summary.get("cv_summary", {})
+        if not isinstance(cv_summary, dict):
+            cv_summary = {}
+        trial_counting = summary.get("trial_counting", {})
+        if not isinstance(trial_counting, dict):
+            trial_counting = {}
+        dsr_summary = summary.get("deflated_sharpe_ratio", {})
+        if not isinstance(dsr_summary, dict):
+            dsr_summary = {}
+        pbo_summary = summary.get("pbo", {})
+        if not isinstance(pbo_summary, dict):
+            pbo_summary = {}
+        multiple_testing = summary.get("multiple_testing", {})
+        if not isinstance(multiple_testing, dict):
+            multiple_testing = {}
+        cost_before_after = summary.get("cost_before_after", {})
+        if not isinstance(cost_before_after, dict):
+            cost_before_after = {}
+        promotion_contract = summary.get("promotion_gate_contract", {})
+        if not isinstance(promotion_contract, dict):
+            promotion_contract = {}
+        contract_checks = promotion_contract.get("checks", {})
+        if not isinstance(contract_checks, dict):
+            contract_checks = {}
+
+        evidence["validation_cv_method"] = str(cv_summary.get("method", "unknown"))
+        evidence["validation_effective_trial_count"] = int(
+            trial_counting.get("effective_trial_count", 0) or 0
+        )
+        evidence["validation_independent_trial_count"] = int(
+            trial_counting.get("independent_trial_count", 0) or 0
+        )
+        evidence["deflated_sharpe_ratio"] = dsr_summary.get("dsr")
+        evidence["probability_of_backtest_overfitting"] = pbo_summary.get("pbo")
+        evidence["validation_cost_mode"] = str(cost_before_after.get("mode", "unavailable"))
+        evidence["validation_multiple_testing"] = multiple_testing
+        evidence["validation_contract_status"] = str(promotion_contract.get("status", "unknown"))
+        evidence["validation_promotion_contract"] = promotion_contract
+
+        if evidence["validation_cv_method"] == "unknown":
+            warnings.append(
+                "validation_cv_summary_missing: walk-forward evidence should declare purged/embargoed CV or CPCV metadata"
+            )
+        if summary.get("status") != "complete":
+            warnings.append(
+                "validation_statistics_partial: promotion evidence is missing one or more validation statistics"
+            )
+
+        dsr_value = dsr_summary.get("dsr")
+        if not contract_checks.get("dsr_available", dsr_value is not None):
+            reasons.append(
+                "missing_deflated_sharpe_ratio: promotion requires DSR evidence after trial counting"
+            )
+        if dsr_value is not None and float(dsr_value) < 0.10:
+            reasons.append(
+                f"deflated_sharpe_too_low: dsr={float(dsr_value):.3f} (< 0.10 threshold)"
+            )
+
+        pbo_value = pbo_summary.get("pbo")
+        if not contract_checks.get("pbo_available", pbo_value is not None):
+            reasons.append(
+                "missing_pbo_evidence: promotion requires CPCV/PBO path statistics, not a single best-path summary"
+            )
+        if pbo_value is not None:
+            pbo_value = float(pbo_value)
+            if pbo_value > 0.50:
+                reasons.append(
+                    f"pbo_too_high: pbo={pbo_value:.3f} (> 0.50 threshold)"
+                )
+            elif pbo_value > 0.20:
+                warnings.append(
+                    f"pbo_watchlist: pbo={pbo_value:.3f} (> 0.20 advisory)"
+                )
+
+        if not contract_checks.get("cv_method_allowed", False):
+            reasons.append(
+                f"validation_cv_method_not_allowed: method={evidence['validation_cv_method']} "
+                "(need cpcv, purged_kfold, or embargoed_walk_forward)"
+            )
+        if not contract_checks.get("purged_or_embargoed", False):
+            reasons.append(
+                "validation_purge_embargo_missing: promotion requires purged or embargoed out-of-sample validation"
+            )
+        if not contract_checks.get("multi_path_validation", False):
+            reasons.append(
+                "single_path_validation_not_allowed: candidate cannot promote on a single validation path even with high Sharpe"
+            )
+        if not contract_checks.get("trial_count_sufficient", False):
+            reasons.append(
+                "insufficient_effective_trials: promotion requires at least 2 effective and independent trials"
+            )
+        if not contract_checks.get("multiple_testing_complete", False):
+            reasons.append(
+                "multiple_testing_missing: promotion requires family-wise multiple-testing statistics"
+            )
+        elif not contract_checks.get("multiple_testing_passed", False):
+            reasons.append(
+                "multiple_testing_rejected: observed Sharpe does not survive family-wise multiple-testing control"
+            )
 
     @staticmethod
     def _file_sha256(path: Path) -> str:
@@ -1468,11 +1601,6 @@ class ResearchPromotionGate:
             mismatches.append(
                 "data_manifest_version_mismatch: "
                 f"embedded={embedded.data_version} governed={governed.data_version}"
-            )
-        if embedded.manifest_id != governed.manifest_id:
-            mismatches.append(
-                "data_manifest_id_mismatch: "
-                f"embedded={embedded.manifest_id} governed={governed.manifest_id}"
             )
         if embedded.effective_checksum != governed.effective_checksum:
             mismatches.append(
