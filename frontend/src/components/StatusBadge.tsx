@@ -1,7 +1,7 @@
 export type StatusBadgeProps = {
   status: string;
   label: string;
-  tone?: string;
+  tone?: 'good' | 'bad' | 'neutral';
 };
 
 export default function StatusBadge({status, label, tone = 'neutral'}: StatusBadgeProps) {

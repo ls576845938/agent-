@@ -14,6 +14,8 @@ from quant_us.research.evidence_contracts import (
 from quant_us.research.evidence_registry import rebuild_evidence_registry
 from quant_us.research.evidence_pack import EvidencePackGenerator
 from quant_us.research.paper_review_bridge import PaperReviewManager
+from quant_us.research.strategy_manifest import StrategyManifestManager
+from quant_us.live.micro_live_design_freeze import design_freeze_metadata
 
 
 def _write_approved_review(
@@ -270,3 +272,170 @@ def test_candidate_review_preparation_has_no_live_runtime_side_effects(
     assert (tmp_path / "paper_ledger").exists() is False
     assert (tmp_path / "ledger").exists() is False
     assert (tmp_path / "research" / "paper_reviews" / review.paper_review_id / "review.json").exists()
+
+
+def test_ready_paper_candidate_enters_queue_but_runtime_waits_for_human_approval(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate_id = "cand_ready_for_paper"
+    manifest_id = "sm_ready_for_paper"
+    candidate_path = tmp_path / "research" / "candidates" / candidate_id / "candidate.json"
+    candidate_path.parent.mkdir(parents=True, exist_ok=True)
+    candidate_path.write_text(
+        json.dumps(
+            {
+                "candidate_id": candidate_id,
+                "experiment_id": "exp_ready_for_paper",
+                "strategy_id": "paper_candidate_strategy",
+                "symbols": ["SPY", "QQQ"],
+                "metrics": {
+                    "max_drawdown_pct": 0.07,
+                    "proposed_capital": 75_000.0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest_path = tmp_path / "research" / "manifests" / manifest_id / "manifest.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "strategy_candidate_id": manifest_id,
+                "source_candidate_id": candidate_id,
+                "source_experiment_id": "exp_ready_for_paper",
+                "strategy_template": "paper_candidate_strategy",
+                "symbols": ["SPY", "QQQ"],
+                "timeframe": "1d",
+                "promotion_status": "READY_FOR_PORTFOLIO_SIM",
+                "created_at": "2026-05-11T00:00:00+00:00",
+                "params_frozen": True,
+                "data_version": "test-data-v1",
+                "sample_window": {"start": "2024-01-01", "end": "2025-12-31"},
+                "purge_embargo": {"method": "cpcv", "purged": True, "embargoed": True},
+                "trial_id": "trial_ready_for_paper",
+                "trial_count": 8,
+                "pbo": 0.04,
+                "dsr": 1.15,
+                "cpcv": {"method": "cpcv", "fold_count": 6, "path_count": 10},
+                "cost_model": {"name": "bps_commission", "commission_rate": 0.0001},
+                "slippage_model": {"name": "fixed_bps", "slippage_bps": 2.0},
+                "cost_stress": {"stress_survival_rate": 0.88, "level_count": 4},
+                "style_exposure": {
+                    "betas": {"MKT": 0.93},
+                    "benchmark_columns": ["MKT"],
+                },
+                "capacity": {"estimated_capacity_usd": 500_000.0},
+                "turnover": {"turnover": 0.18},
+                "holding_period": {"expected": "5d"},
+                "exposure_limits": {"max_gross_exposure_pct": 90.0},
+                "failure_conditions": ["drawdown_limit_breach"],
+                "delisting_conditions": {"policy": "manual_review_required"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        EvidencePackGenerator,
+        "_get_promotion_gate",
+        lambda self, candidate_id: {
+            "decision": "READY_FOR_PAPER_REVIEW",
+            "reasons": [],
+            "warnings": [],
+            "evidence": {},
+        },
+    )
+    monkeypatch.setattr(
+        EvidencePackGenerator,
+        "_get_paper_review_candidate",
+        lambda self, candidate_id: {
+            "schema_version": "paper_review_candidate_evidence_v1",
+            "candidate_id": candidate_id,
+            "review_candidate_status": "READY_FOR_REVIEW",
+            "overall_status": "PASS",
+            "blocking_reasons": [],
+            "portfolio_observability": {
+                "live_state": "FROZEN",
+                "multi_strategy": {"status": "PASS", "strategy_count": 2},
+                "multi_timeframe": {"status": "PASS", "timeframe_count": 2},
+                "pnl_attribution": {"status": "PASS", "row_count": 2},
+            },
+            "paper_validation": {
+                "readiness_state": "PASS",
+                "audit_blocker_status": "PASS",
+                "gaps": [],
+                "ledger_reconciliation_summary": {
+                    "status": "clean",
+                    "halt_new_orders": False,
+                    "artifact_hash": "recon_hash",
+                },
+                "broker_local_diff_summary": {"total_diff_count": 0},
+            },
+        },
+    )
+
+    manager = PaperReviewManager(data_root=str(tmp_path))
+    review = manager.create_from_candidate_evidence(strategy_manifest_id=manifest_id)
+    review_path = (
+        tmp_path / "research" / "paper_reviews" / review.paper_review_id / "review.json"
+    )
+    evidence_path = Path(review.evidence_pack_path)
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    manifest = StrategyManifestManager(data_root=str(tmp_path)).load(manifest_id)
+
+    assert review.status == "PENDING_HUMAN_REVIEW"
+    assert review.approval is None
+    assert review.strategy_manifest_id == manifest_id
+    assert evidence["paper_review_scope"] == "portfolio_sim"
+    assert evidence["sections"]["promotion_gate"]["decision"] == "READY_FOR_PAPER_REVIEW"
+    assert evidence["sections"]["paper_review_candidate"]["overall_status"] == "PASS"
+    assert evidence["sections"]["portfolio_candidates"][0]["strategy_manifest_id"] == manifest_id
+    assert manifest is not None
+    assert manifest.promotion_status == "PAPER_REVIEW_CANDIDATE"
+    assert manifest.paper_review_id == review.paper_review_id
+    assert manifest.paper_review_evidence_pack_path == str(evidence_path)
+
+    rebuild_evidence_registry(tmp_path)
+    runtime = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY", "QQQ"],
+            capital=75_000.0,
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+        )
+    )
+
+    ok, reason = runtime._has_paper_entry_evidence()
+
+    assert ok is False
+    assert reason == "paper_review_not_approved:PENDING_HUMAN_REVIEW"
+    assert design_freeze_metadata()["frozen"] is True
+    assert design_freeze_metadata()["scope"] == "review_only"
+
+    approved = manager.approve(
+        review.paper_review_id,
+        reviewer="human-risk-reviewer",
+        reason="manual paper review approved",
+    )
+    rebuild_evidence_registry(tmp_path)
+    runtime_after_approval = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY", "QQQ"],
+            capital=75_000.0,
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+        )
+    )
+
+    ok_after_approval, reason_after_approval = runtime_after_approval._has_paper_entry_evidence()
+
+    assert approved.status == "APPROVED_FOR_PAPER_ONLY"
+    assert approved.approval is not None
+    assert approved.approval.gate_snapshot["paper_execution_authorized"] is False
+    assert ok_after_approval is True
+    assert reason_after_approval == "ok"
+    assert not (tmp_path / "ledger").exists()

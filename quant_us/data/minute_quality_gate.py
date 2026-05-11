@@ -14,6 +14,10 @@ SUPPORTED_MINUTE_BAR_SIZES: tuple[str, ...] = ("1m", "5m", "15m")
 SUPPORTED_ROOT_SUBDIRS: tuple[str, ...] = ("raw", "cleaned")
 _STATUS_RANK = {"PASS": 0, "WARN": 1, "FAIL": 2, "MISSING": 3}
 _PRICE_COLUMNS = ("open", "high", "low", "close")
+_EXTENDED_SESSION_OPEN_ET = time(4, 0)
+_REGULAR_SESSION_OPEN_ET = time(9, 30)
+_EXTENDED_SESSION_CLOSE_ET = time(20, 0)
+_EXTENDED_SESSION_CALENDAR = USEquityCalendar.with_holidays()
 
 
 @dataclass(frozen=True)
@@ -44,9 +48,11 @@ class MinuteBarQualitySnapshot:
     timezone_naive_count: int = 0
     timezone_non_utc_count: int = 0
     outside_session_count: int = 0
+    extended_session_count: int = 0
     malformed_file_count: int = 0
     file_errors: list[str] = field(default_factory=list)
     outside_session_samples_utc: list[str] = field(default_factory=list)
+    extended_session_samples_utc: list[str] = field(default_factory=list)
     gate_reasons: list[str] = field(default_factory=list)
 
     @property
@@ -107,6 +113,8 @@ class MinuteBarQualitySnapshot:
                 "timezone_non_utc_count": self.timezone_non_utc_count,
                 "outside_session_count": self.outside_session_count,
                 "outside_session_samples_utc": list(self.outside_session_samples_utc),
+                "extended_session_count": self.extended_session_count,
+                "extended_session_samples_utc": list(self.extended_session_samples_utc),
                 "session_coverage": [dict(item) for item in self.session_coverage],
             },
             "files": {
@@ -151,9 +159,11 @@ class MinuteBarQualitySnapshot:
             "timezone_naive_count": self.timezone_naive_count,
             "timezone_non_utc_count": self.timezone_non_utc_count,
             "outside_session_count": self.outside_session_count,
+            "extended_session_count": self.extended_session_count,
             "malformed_file_count": self.malformed_file_count,
             "file_errors": list(self.file_errors),
             "outside_session_samples_utc": list(self.outside_session_samples_utc),
+            "extended_session_samples_utc": list(self.extended_session_samples_utc),
             "gate_reasons": list(self.gate_reasons),
             "quality_dimensions": self.quality_dimensions,
         }
@@ -196,6 +206,8 @@ class MinuteDataQualityReport:
             "root_subdir": self.root_subdir,
             "vendor": self.vendor,
             "asset_class": self.asset_class,
+            "audit_scope": self.audit_scope,
+            "dataset_discovery": self.dataset_discovery,
             "lookback_trading_days": self.lookback_trading_days,
             "bar_sizes": list(self.bar_sizes),
             "evaluated_symbols": list(self.evaluated_symbols),
@@ -222,6 +234,20 @@ class MinuteDataQualityReport:
         return _build_remediation_summary(
             _interval_records_for_dataset(self),
             data_root=self.data_root,
+            dataset_layouts=[self.dataset_discovery],
+            audit_scope=self.audit_scope,
+        )
+
+    @property
+    def audit_scope(self) -> dict[str, Any]:
+        return _audit_scope_summary(vendor=self.vendor, asset_class=self.asset_class)
+
+    @property
+    def dataset_discovery(self) -> dict[str, Any]:
+        return _dataset_layout_summary(
+            dataset_root=self.dataset_root,
+            root_subdir=self.root_subdir,
+            requested_bar_sizes=self.bar_sizes,
         )
 
 
@@ -244,6 +270,8 @@ class MinuteDataQualityOverviewReport:
             "data_root": self.data_root,
             "vendor": self.vendor,
             "asset_class": self.asset_class,
+            "audit_scope": self.audit_scope,
+            "dataset_discovery": self.dataset_discovery,
             "lookback_trading_days": self.lookback_trading_days,
             "bar_sizes": list(self.bar_sizes),
             "evaluated_symbols": list(self.evaluated_symbols),
@@ -274,7 +302,17 @@ class MinuteDataQualityOverviewReport:
         return _build_remediation_summary(
             _interval_records_for_overview(self),
             data_root=self.data_root,
+            dataset_layouts=self.dataset_discovery,
+            audit_scope=self.audit_scope,
         )
+
+    @property
+    def audit_scope(self) -> dict[str, Any]:
+        return _audit_scope_summary(vendor=self.vendor, asset_class=self.asset_class)
+
+    @property
+    def dataset_discovery(self) -> list[dict[str, Any]]:
+        return [dataset.dataset_discovery for dataset in self.datasets]
 
 
 def inspect_minute_data_quality(
@@ -461,9 +499,11 @@ def _inspect_symbol_interval(
     timezone_naive_count = 0
     timezone_non_utc_count = 0
     outside_session_count = 0
+    extended_session_count = 0
     malformed_file_count = 0
     file_errors: list[str] = []
     outside_session_samples: list[str] = []
+    extended_session_samples: list[str] = []
 
     for day in expected_days:
         date_str = day.isoformat()
@@ -489,9 +529,11 @@ def _inspect_symbol_interval(
         timezone_naive_count += quality["timezone_naive_count"]
         timezone_non_utc_count += quality["timezone_non_utc_count"]
         outside_session_count += quality["outside_session_count"]
+        extended_session_count += quality["extended_session_count"]
         malformed_file_count += quality["malformed_file_count"]
         file_errors.extend(quality["file_errors"])
         outside_session_samples.extend(quality["outside_session_samples_utc"])
+        extended_session_samples.extend(quality["extended_session_samples_utc"])
         for timestamp in quality["timestamps"]:
             observed_ts.add(timestamp)
             observed_ts_by_day.setdefault(date_str, set()).add(timestamp)
@@ -518,6 +560,7 @@ def _inspect_symbol_interval(
         timezone_naive_count=timezone_naive_count,
         timezone_non_utc_count=timezone_non_utc_count,
         outside_session_count=outside_session_count,
+        extended_session_count=extended_session_count,
         malformed_file_count=malformed_file_count,
         observed_bars=len(observed_ts),
     )
@@ -533,6 +576,7 @@ def _inspect_symbol_interval(
         timezone_naive_count=timezone_naive_count,
         timezone_non_utc_count=timezone_non_utc_count,
         outside_session_count=outside_session_count,
+        extended_session_count=extended_session_count,
         malformed_file_count=malformed_file_count,
         observed_bars=len(observed_ts),
     )
@@ -566,9 +610,11 @@ def _inspect_symbol_interval(
         timezone_naive_count=timezone_naive_count,
         timezone_non_utc_count=timezone_non_utc_count,
         outside_session_count=outside_session_count,
+        extended_session_count=extended_session_count,
         malformed_file_count=malformed_file_count,
         file_errors=file_errors[:max_missing_samples],
         outside_session_samples_utc=outside_session_samples[:max_missing_samples],
+        extended_session_samples_utc=extended_session_samples[:max_missing_samples],
         gate_reasons=gate_reasons,
     )
 
@@ -596,9 +642,11 @@ def _regular_frame_quality(
         "timezone_naive_count": 0,
         "timezone_non_utc_count": 0,
         "outside_session_count": 0,
+        "extended_session_count": 0,
         "malformed_file_count": 0,
         "file_errors": [],
         "outside_session_samples_utc": [],
+        "extended_session_samples_utc": [],
     }
     if frame.empty:
         return empty
@@ -633,16 +681,28 @@ def _regular_frame_quality(
     regular = frame.copy()
     regular["_timestamp_utc_norm"] = normalized
     unexpected = regular[regular["_timestamp_utc_norm"].notna() & ~regular["_timestamp_utc_norm"].isin(expected_set)].copy()
+    if unexpected.empty:
+        extended_session = unexpected.copy()
+        outside_session = unexpected.copy()
+    else:
+        extended_mask = unexpected["_timestamp_utc_norm"].apply(_is_us_extended_session_timestamp)
+        extended_session = unexpected.loc[extended_mask].copy()
+        outside_session = unexpected.loc[~extended_mask].copy()
     regular = regular[regular["_timestamp_utc_norm"].isin(expected_set)].copy()
     if regular.empty:
         return {
             **empty,
             "timezone_naive_count": timezone_naive_count,
             "timezone_non_utc_count": timezone_non_utc_count,
-            "outside_session_count": int(len(unexpected)),
+            "outside_session_count": int(len(outside_session)),
+            "extended_session_count": int(len(extended_session)),
             "outside_session_samples_utc": [
                 timestamp.isoformat()
-                for timestamp in unexpected["_timestamp_utc_norm"].dropna().drop_duplicates().tolist()[:8]
+                for timestamp in outside_session["_timestamp_utc_norm"].dropna().drop_duplicates().tolist()[:8]
+            ],
+            "extended_session_samples_utc": [
+                timestamp.isoformat()
+                for timestamp in extended_session["_timestamp_utc_norm"].dropna().drop_duplicates().tolist()[:8]
             ],
         }
 
@@ -681,12 +741,17 @@ def _regular_frame_quality(
         "negative_volume_count": negative_volume_count,
         "timezone_naive_count": timezone_naive_count,
         "timezone_non_utc_count": timezone_non_utc_count,
-        "outside_session_count": int(len(unexpected)),
+        "outside_session_count": int(len(outside_session)),
+        "extended_session_count": int(len(extended_session)),
         "malformed_file_count": 0,
         "file_errors": [],
         "outside_session_samples_utc": [
             timestamp.isoformat()
-            for timestamp in unexpected["_timestamp_utc_norm"].dropna().drop_duplicates().tolist()[:8]
+            for timestamp in outside_session["_timestamp_utc_norm"].dropna().drop_duplicates().tolist()[:8]
+        ],
+        "extended_session_samples_utc": [
+            timestamp.isoformat()
+            for timestamp in extended_session["_timestamp_utc_norm"].dropna().drop_duplicates().tolist()[:8]
         ],
     }
 
@@ -744,6 +809,7 @@ def _gate_reasons(
     timezone_naive_count: int,
     timezone_non_utc_count: int,
     outside_session_count: int,
+    extended_session_count: int,
     malformed_file_count: int,
     observed_bars: int,
 ) -> list[str]:
@@ -764,6 +830,8 @@ def _gate_reasons(
         reasons.append(f"timezone_non_utc:{timezone_non_utc_count}")
     if outside_session_count > 0:
         reasons.append(f"outside_session:{outside_session_count}")
+    if extended_session_count > 0:
+        reasons.append(f"extended_session:{extended_session_count}")
     if coverage_pct < min_coverage_pct:
         reasons.append(f"coverage_below_threshold:{coverage_pct:.4f}")
     elif missing_bar_count > 0:
@@ -790,6 +858,7 @@ def _classify_status(
     timezone_naive_count: int,
     timezone_non_utc_count: int,
     outside_session_count: int,
+    extended_session_count: int,
     malformed_file_count: int,
     observed_bars: int,
 ) -> str:
@@ -806,7 +875,7 @@ def _classify_status(
         or coverage_pct < min_coverage_pct
     ):
         return "FAIL"
-    if missing_bar_count > 0 or duplicate_timestamp_count > 0 or zero_volume_count > 0:
+    if missing_bar_count > 0 or duplicate_timestamp_count > 0 or zero_volume_count > 0 or extended_session_count > 0:
         return "WARN"
     return "PASS"
 
@@ -873,6 +942,37 @@ def _expected_regular_timestamps(
         timestamps.append(current.astimezone(UTC))
         current += interval
     return timestamps
+
+
+def _is_us_extended_session_timestamp(value: Any) -> bool:
+    try:
+        timestamp = pd.Timestamp(value)
+    except (TypeError, ValueError):
+        return False
+    if pd.isna(timestamp):
+        return False
+    if timestamp.tzinfo is None:
+        timestamp = timestamp.tz_localize(UTC)
+    else:
+        timestamp = timestamp.tz_convert(UTC)
+
+    timestamp_et = timestamp.to_pydatetime().astimezone(ET)
+    trading_day = timestamp_et.date()
+    if not _EXTENDED_SESSION_CALENDAR.is_trading_day(trading_day):
+        return False
+
+    regular_close_time = (
+        _EXTENDED_SESSION_CALENDAR.early_close_time
+        if _EXTENDED_SESSION_CALENDAR.is_early_close(trading_day)
+        else time(16, 0)
+    )
+    extended_open = datetime.combine(trading_day, _EXTENDED_SESSION_OPEN_ET, tzinfo=ET)
+    regular_open = datetime.combine(trading_day, _REGULAR_SESSION_OPEN_ET, tzinfo=ET)
+    regular_close = datetime.combine(trading_day, regular_close_time, tzinfo=ET)
+    extended_close = datetime.combine(trading_day, _EXTENDED_SESSION_CLOSE_ET, tzinfo=ET)
+    return (extended_open <= timestamp_et < regular_open) or (
+        regular_close <= timestamp_et < extended_close
+    )
 
 
 def _expected_latest_timestamp(
@@ -1017,6 +1117,8 @@ def _timezone_session_dimension_status(snapshot: MinuteBarQualitySnapshot) -> st
         or snapshot.outside_session_count > 0
     ):
         return "FAIL"
+    if snapshot.extended_session_count > 0:
+        return "WARN"
     return "PASS"
 
 
@@ -1073,6 +1175,7 @@ def _build_evidence_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
         "timezone_naive_rows": 0,
         "timezone_non_utc_rows": 0,
         "outside_session_rows": 0,
+        "extended_session_rows": 0,
         "malformed_files": 0,
     }
     session_totals = {"regular_days": 0, "early_close_days": 0}
@@ -1093,6 +1196,7 @@ def _build_evidence_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
         category_totals["timezone_naive_rows"] += int(interval.timezone_naive_count)
         category_totals["timezone_non_utc_rows"] += int(interval.timezone_non_utc_count)
         category_totals["outside_session_rows"] += int(interval.outside_session_count)
+        category_totals["extended_session_rows"] += int(interval.extended_session_count)
         category_totals["malformed_files"] += int(interval.malformed_file_count)
         for session_row in interval.session_coverage:
             if bool(session_row.get("is_early_close", False)):
@@ -1130,6 +1234,8 @@ def _build_evidence_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
         "download_performed": False,
         "intervals_evaluated": len(records),
         "interval_status_counts": status_counts,
+        "blocking_fail_interval_count": int(status_counts.get("FAIL", 0)),
+        "missing_interval_count": int(status_counts.get("MISSING", 0)),
         "affected_symbols": sorted(affected_symbols),
         "bar_size_summary": normalized_bar_size_summary,
         "category_totals": category_totals,
@@ -1143,6 +1249,8 @@ def _build_remediation_summary(
     records: list[dict[str, Any]],
     *,
     data_root: str,
+    dataset_layouts: list[dict[str, Any]] | None = None,
+    audit_scope: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     grouped: dict[str, dict[str, Any]] = {}
     categories = (
@@ -1150,7 +1258,7 @@ def _build_remediation_summary(
         ("duplicates", "high", "Deduplicate vendor partitions upstream and preserve one canonical bar per timestamp before promoting data."),
         ("ohlc", "high", "Repair corrupted OHLC/price rows upstream; do not let invalid prices into cleaned research inputs."),
         ("volume", "medium", "Audit zero/negative volume rows against vendor raw evidence and either correct or quarantine the affected bars."),
-        ("timezone_session", "high", "Normalize timestamps to UTC before writing parquet and keep rows inside the expected US regular session window."),
+        ("timezone_session", "high", "Normalize timestamps to UTC before writing parquet; keep regular bars aligned to NYSE regular-session timestamps and classify valid 04:00-20:00 ET pre/post-market rows separately."),
         ("files", "high", "Repair unreadable parquet partitions or regenerate them explicitly; this gate did not fetch or download anything."),
     )
     for category, priority, instruction in categories:
@@ -1198,7 +1306,7 @@ def _build_remediation_summary(
                 )
             elif category == "timezone_session":
                 bucket["details"].append(
-                    f"{scope} timezone_naive={interval.timezone_naive_count} timezone_non_utc={interval.timezone_non_utc_count} outside_session={interval.outside_session_count}"
+                    f"{scope} timezone_naive={interval.timezone_naive_count} timezone_non_utc={interval.timezone_non_utc_count} outside_session={interval.outside_session_count} extended_session={interval.extended_session_count}"
                 )
             elif category == "files":
                 bucket["details"].append(
@@ -1210,20 +1318,79 @@ def _build_remediation_summary(
         bucket = grouped[category]
         if not bucket["affected_interval_keys"]:
             continue
+        bar_sizes = sorted(bucket["bar_sizes"], key=lambda value: SUPPORTED_MINUTE_BAR_SIZES.index(value))
+        root_subdirs = sorted(bucket["root_subdirs"])
         actions.append(
             {
                 "priority": bucket["priority"],
                 "category": category,
                 "summary": f"{category} issues detected in {len(bucket['affected_interval_keys'])} interval checks.",
                 "instruction": bucket["instruction"],
-                "root_subdirs": sorted(bucket["root_subdirs"]),
+                "root_subdirs": root_subdirs,
                 "symbols": sorted(bucket["symbols"]),
-                "bar_sizes": sorted(bucket["bar_sizes"], key=lambda value: SUPPORTED_MINUTE_BAR_SIZES.index(value)),
+                "bar_sizes": bar_sizes,
                 "affected_interval_count": len(bucket["affected_interval_keys"]),
                 "details": bucket["details"][:10],
                 "evidence_paths": sorted(bucket["evidence_paths"])[:12],
+                "recommended_commands": _recommended_sync_commands(
+                    data_root=data_root,
+                    root_subdirs=root_subdirs,
+                    bar_sizes=bar_sizes,
+                ),
             }
         )
+
+    if dataset_layouts:
+        coverage_layout_details: list[str] = []
+        coverage_layout_roots: set[str] = set()
+        coverage_layout_bars: set[str] = set()
+        coverage_layout_paths: set[str] = set()
+        requires_sync_recommendation = False
+        for layout in dataset_layouts:
+            requested_bar_sizes = list(layout.get("requested_bar_sizes", []))
+            present_bar_sizes = list(layout.get("present_bar_sizes", []))
+            missing_bar_sizes = list(layout.get("missing_bar_sizes", []))
+            discovered_symbols = int(layout.get("discovered_symbol_count", 0))
+            partition_files = int(layout.get("partition_file_count", 0))
+            empty_files = int(layout.get("empty_partition_file_count", 0))
+            root_subdir = str(layout.get("root_subdir", ""))
+            coverage_layout_paths.update(str(path) for path in layout.get("sample_paths", []))
+            if missing_bar_sizes or partition_files == 0 or discovered_symbols == 0:
+                requires_sync_recommendation = True
+                coverage_layout_roots.add(root_subdir)
+                coverage_layout_bars.update(requested_bar_sizes or missing_bar_sizes or present_bar_sizes)
+                coverage_layout_details.append(
+                    f"{root_subdir or 'dataset'} source={audit_scope.get('data_source', '') if audit_scope else ''} "
+                    f"calendar={audit_scope.get('calendar_name', '') if audit_scope else ''} "
+                    f"storage_tz={audit_scope.get('storage_timezone', '') if audit_scope else ''} "
+                    f"requested={requested_bar_sizes} present={present_bar_sizes} missing={missing_bar_sizes} "
+                    f"symbols={discovered_symbols} partition_files={partition_files} empty_files={empty_files}"
+                )
+        if requires_sync_recommendation:
+            normalized_root_subdirs = sorted(value for value in coverage_layout_roots if value)
+            normalized_bar_sizes = sorted(
+                (value for value in coverage_layout_bars if value in SUPPORTED_MINUTE_BAR_SIZES),
+                key=lambda value: SUPPORTED_MINUTE_BAR_SIZES.index(value),
+            )
+            actions.append(
+                {
+                    "priority": "high",
+                    "category": "coverage",
+                    "summary": "Requested 1m/5m/15m minute datasets are missing or only have placeholder structure.",
+                    "instruction": "Sync or repair real minute partitions before relying on minute-quality coverage; this gate stayed read-only and did not fetch any data.",
+                    "root_subdirs": normalized_root_subdirs,
+                    "symbols": [],
+                    "bar_sizes": normalized_bar_sizes,
+                    "affected_interval_count": 0,
+                    "details": coverage_layout_details[:10],
+                    "evidence_paths": sorted(coverage_layout_paths)[:12],
+                    "recommended_commands": _recommended_sync_commands(
+                        data_root=data_root,
+                        root_subdirs=normalized_root_subdirs,
+                        bar_sizes=normalized_bar_sizes,
+                    ),
+                }
+            )
 
     return {
         "strict_gate": True,
@@ -1233,6 +1400,109 @@ def _build_remediation_summary(
         "rerun_hint": f"quant-us report minute-quality --data-root {data_root}",
         "actions": actions,
     }
+
+
+def _audit_scope_summary(*, vendor: str, asset_class: str) -> dict[str, Any]:
+    return {
+        "data_source": vendor,
+        "asset_class": asset_class,
+        "calendar_name": "NYSE",
+        "calendar_timezone": "America/New_York",
+        "storage_timezone": "UTC",
+        "regular_session_open_et": "09:30",
+        "regular_session_close_et": "16:00",
+        "early_close_time_et": "13:00",
+        "checks": [
+            "missing_bar_count",
+            "missing_file_dates",
+            "duplicate_timestamp_count",
+            "conflicting_duplicate_count",
+            "timezone_naive_count",
+            "timezone_non_utc_count",
+            "outside_session_count",
+            "extended_session_count",
+            "early_close_session_coverage",
+        ],
+    }
+
+
+def _dataset_layout_summary(
+    *,
+    dataset_root: str | Path,
+    root_subdir: str,
+    requested_bar_sizes: list[str],
+) -> dict[str, Any]:
+    root = Path(dataset_root)
+    present_bar_sizes: list[str] = []
+    missing_bar_sizes: list[str] = []
+    discovered_symbols: set[str] = set()
+    bar_size_partition_counts: dict[str, int] = {}
+    bar_size_symbol_counts: dict[str, int] = {}
+    empty_partition_file_count = 0
+    partition_file_count = 0
+    sample_paths: list[str] = []
+
+    for bar_size in requested_bar_sizes:
+        base = root / f"bar_size={bar_size}"
+        if base.exists():
+            present_bar_sizes.append(bar_size)
+        else:
+            missing_bar_sizes.append(bar_size)
+            bar_size_partition_counts[bar_size] = 0
+            bar_size_symbol_counts[bar_size] = 0
+            continue
+        symbol_dirs = sorted(path for path in base.glob("symbol=*") if path.is_dir())
+        bar_size_symbol_counts[bar_size] = len(symbol_dirs)
+        for symbol_dir in symbol_dirs:
+            discovered_symbols.add(symbol_dir.name.split("=", 1)[-1].upper())
+        partition_paths = sorted(base.glob("symbol=*/date=*.parquet"))
+        bar_size_partition_counts[bar_size] = len(partition_paths)
+        partition_file_count += len(partition_paths)
+        for path in partition_paths:
+            try:
+                if path.stat().st_size == 0:
+                    empty_partition_file_count += 1
+            except OSError:
+                empty_partition_file_count += 1
+        for path in partition_paths[:4]:
+            sample_paths.append(str(path))
+
+    return {
+        "root_subdir": root_subdir,
+        "dataset_root": str(root),
+        "dataset_root_exists": root.exists(),
+        "requested_bar_sizes": list(requested_bar_sizes),
+        "present_bar_sizes": present_bar_sizes,
+        "missing_bar_sizes": missing_bar_sizes,
+        "discovered_symbol_count": len(discovered_symbols),
+        "discovered_symbols": sorted(discovered_symbols),
+        "partition_file_count": partition_file_count,
+        "empty_partition_file_count": empty_partition_file_count,
+        "bar_size_partition_counts": bar_size_partition_counts,
+        "bar_size_symbol_counts": bar_size_symbol_counts,
+        "placeholder_structure_detected": bool(present_bar_sizes) and partition_file_count == 0,
+        "sample_paths": sample_paths[:12],
+    }
+
+
+def _recommended_sync_commands(
+    *,
+    data_root: str,
+    root_subdirs: list[str],
+    bar_sizes: list[str],
+) -> list[str]:
+    normalized_bar_sizes = [bar_size for bar_size in bar_sizes if bar_size in SUPPORTED_MINUTE_BAR_SIZES]
+    target_bar_sizes = normalized_bar_sizes or list(SUPPORTED_MINUTE_BAR_SIZES)
+    return [
+        (
+            "python scripts/ingest_intraday.py "
+            f"--data-root {data_root} --symbol AAPL --bar-size {bar_size} "
+            "--start 2026-05-01T00:00:00Z --end 2026-05-11T00:00:00Z"
+        )
+        for bar_size in target_bar_sizes
+    ] + [
+        f"quant-us report minute-quality --data-root {data_root}"
+    ]
 
 
 def _normalize_symbols(values: Iterable[str]) -> list[str]:

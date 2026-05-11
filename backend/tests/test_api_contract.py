@@ -275,6 +275,83 @@ class ApiSchemaDefaultTests(unittest.TestCase):
         self.assertEqual(dataset_statuses["raw"]["status"], "FAIL")
         self.assertEqual(dataset_statuses["cleaned"]["status"], "PASS")
 
+    def test_system_overview_payload_does_not_block_on_placeholder_minute_layout(self) -> None:
+        from quant_us.reports.paper_validation import PaperValidationEvidence
+        from backend.app.api.app_factory import _system_overview_payload
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            _write_portfolio_observability(root)
+            for bar_size in ("1m", "5m", "15m"):
+                (
+                    root
+                    / "raw"
+                    / "vendor=yfinance"
+                    / "asset_class=equity"
+                    / f"bar_size={bar_size}"
+                ).mkdir(parents=True, exist_ok=True)
+
+            paper_evidence = PaperValidationEvidence(
+                data_root=directory,
+                ledger_root=str(root / "paper_ledger"),
+                validation_state_path=str(root / "reports" / "paper_production" / "validation_state.json"),
+                days_required=30,
+                days_completed=30,
+                consecutive_clean_days=30,
+                paper_submit_orders="disabled",
+                readiness_state="PASS",
+                audit_blocker_status="PASS",
+                data_strict_status="PASS",
+                recovery_status="PASS",
+                gaps=[],
+                evidence=[],
+            )
+
+            with (
+                patch(
+                    "backend.app.api.app_factory._fast_saved_evidence_registry",
+                    return_value={
+                        "registry_status": "present",
+                        "registry_integrity_status": "PASS/STABLE",
+                        "registry_path": str(root / "research" / "evidence_registry.json"),
+                        "counts": {},
+                        "registry_notes": [],
+                        "rebuild_available": True,
+                    },
+                ),
+                patch(
+                    "backend.app.api.app_factory._fast_paper_review_status",
+                    return_value={
+                        "status": "APPROVED",
+                        "entry_allowed": True,
+                        "manual_review_pending": False,
+                        "summary": "approved",
+                        "evidence_path": str(root / "reports" / "paper_review.json"),
+                        "diagnostics": {},
+                    },
+                ),
+                patch(
+                    "quant_us.reports.paper_validation.inspect_paper_validation_evidence",
+                    return_value=paper_evidence,
+                ),
+                patch(
+                    "quant_us.live.paper_adapter_contract.audit_apca_paper_credentials",
+                    return_value={
+                        "credentials_present": True,
+                        "base_url_valid": True,
+                    },
+                ),
+            ):
+                payload = _system_overview_payload(directory)
+
+        self.assertEqual(payload["minute_data_quality"]["status"], "MISSING")
+        self.assertEqual(payload["stage"], "paper_ready_for_manual_gate")
+        self.assertEqual(payload["status"], "reviewable")
+        self.assertGreaterEqual(payload["minute_data_quality"]["remediation_summary"]["action_count"], 1)
+        self.assertTrue(
+            any("ingest_intraday.py" in step for step in payload["next_actions"]),
+        )
+
 
 @unittest.skipUnless(TESTCLIENT_AVAILABLE, "FastAPI TestClient dependencies are not installed in the current environment")
 class ApiContractTests(unittest.TestCase):

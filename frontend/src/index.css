@@ -1,19 +1,19 @@
 :root {
-  color-scheme: dark;
-  --bg: #09131d;
-  --bg-soft: rgba(13, 27, 39, 0.88);
-  --panel: rgba(8, 20, 30, 0.84);
-  --panel-border: rgba(134, 170, 197, 0.16);
-  --panel-bg: rgba(255,255,255,0.05);
-  --border: rgba(255,255,255,0.1);
-  --accent-soft: rgba(99,102,241,0.3);
-  --text: #ecf4fb;
-  --muted: #9db2c3;
-  --good: #6ef3b0;
-  --bad: #ff8686;
-  --accent: #7ad7ff;
-  --accent-strong: #f2b35b;
-  --shadow: 0 18px 60px rgba(0, 0, 0, 0.32);
+  color-scheme: light;
+  --bg: #f3f7fb;
+  --bg-soft: rgba(255, 255, 255, 0.92);
+  --panel: rgba(255, 255, 255, 0.96);
+  --panel-border: rgba(148, 163, 184, 0.22);
+  --panel-bg: rgba(255, 255, 255, 0.86);
+  --border: rgba(148, 163, 184, 0.24);
+  --accent-soft: rgba(37, 99, 235, 0.16);
+  --text: #102033;
+  --muted: #5b7086;
+  --good: #15803d;
+  --bad: #c02626;
+  --accent: #2563eb;
+  --accent-strong: #b45309;
+  --shadow: 0 18px 48px rgba(15, 23, 42, 0.1);
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
@@ -33,9 +33,9 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(72, 145, 201, 0.32), transparent 40%),
-    radial-gradient(circle at bottom right, rgba(242, 179, 91, 0.22), transparent 42%),
-    linear-gradient(135deg, #08121b 0%, #122636 50%, #071018 100%);
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(251, 191, 36, 0.14), transparent 42%),
+    linear-gradient(135deg, #f8fbff 0%, #eef5fb 52%, #f7fafc 100%);
   color: var(--text);
 }
 
@@ -69,7 +69,7 @@ select {
   height: 320px;
   left: -80px;
   top: 120px;
-  background: #2a93d8;
+  background: #8cc8ff;
 }
 
 .ambient-b {
@@ -77,7 +77,7 @@ select {
   height: 380px;
   right: -100px;
   top: 340px;
-  background: #df965d;
+  background: #f7c98b;
 }
 
 .hero {
@@ -112,6 +112,99 @@ select {
   line-height: 1.6;
 }
 
+.module-state-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.module-state-good {
+  border-color: rgba(21, 128, 61, 0.25);
+  background: linear-gradient(180deg, rgba(240, 253, 244, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+.module-state-bad {
+  border-color: rgba(192, 38, 38, 0.24);
+  background: linear-gradient(180deg, rgba(254, 242, 242, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+.module-state-neutral {
+  border-color: rgba(37, 99, 235, 0.18);
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+.module-state-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.module-state-kicker {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.module-state-hint {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.module-state-reason {
+  color: var(--text);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.module-state-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.module-state-meta-item {
+  display: grid;
+  gap: 3px;
+  padding: 10px 11px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.module-state-meta-item span {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.module-state-meta-item strong {
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.module-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.module-state-actions .primary-button,
+.module-state-actions .secondary-button {
+  min-width: 0;
+}
+
+.state-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
 .hero-status {
   display: flex;
   gap: 10px;
@@ -131,7 +224,7 @@ select {
   padding: 6px;
   border: 1px solid var(--panel-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.86);
 }
 
 .system-switch button {
@@ -174,7 +267,7 @@ select {
   border: 1px solid var(--panel-border);
   border-radius: 999px;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.84);
   color: var(--text);
 }
 

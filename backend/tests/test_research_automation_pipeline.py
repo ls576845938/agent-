@@ -955,6 +955,47 @@ class TestResearchAutomationPipeline(unittest.TestCase):
             True,
         )
 
+    def test_pipeline_enriches_candidate_with_validation_capacity_and_turnover_evidence(self) -> None:
+        candidate_id = "cand_enriched"
+        experiment_id = "exp_enriched"
+        self._write_ready_promotion_gate_fixture(
+            candidate_id=candidate_id,
+            experiment_id=experiment_id,
+        )
+
+        self.pipeline._enrich_candidate_automation_evidence(
+            candidate_id,
+            experiment_id=experiment_id,
+        )
+
+        candidate_path = (
+            Path(self.tmp.name)
+            / "research"
+            / "candidates"
+            / candidate_id
+            / "candidate.json"
+        )
+        candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+        metrics = candidate["metrics"]
+
+        self.assertEqual(metrics["validation_status"], "complete")
+        self.assertEqual(metrics["cpcv_evidence"]["method"], "cpcv")
+        self.assertEqual(metrics["cpcv_evidence"]["path_count"], 2)
+        self.assertIn("dsr", metrics["dsr_evidence"])
+        self.assertIn("pbo", metrics["pbo_evidence"])
+        self.assertEqual(
+            metrics["capacity_evidence"]["estimated_capacity_usd"],
+            1_000_000.0,
+        )
+        self.assertEqual(
+            metrics["turnover_evidence"]["annual_turnover_pct"],
+            120.0,
+        )
+        self.assertEqual(
+            metrics["style_exposure_evidence"]["betas"]["MKT"],
+            1.0,
+        )
+
     def test_step_evaluate_unknown_raises(self) -> None:
         with self.assertRaises(ValueError):
             self.pipeline.step_evaluate("exp_nonexistent")

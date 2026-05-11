@@ -78,6 +78,7 @@ def test_factor_mining_style_exposure_enters_candidate_and_manifest_evidence(
             rank_ic_std=0.04,
             long_short_spread=0.03,
             hit_rate=0.62 if factor_id == "momentum_20d" else 0.57,
+            turnover=0.08 if factor_id == "momentum_20d" else 0.12,
             monotonicity=0.55,
             n_observations=200,
             n_dates=40,
@@ -124,7 +125,13 @@ def test_factor_mining_style_exposure_enters_candidate_and_manifest_evidence(
     assert evidence["style_exposure"]["betas"]
     assert "MKT" in evidence["style_exposure"]["benchmark_columns"]
     assert "lookahead_guard" in evidence["style_exposure"]
+    assert evidence["capacity"]["estimated_capacity_usd"] > 0.0
+    assert evidence["capacity"]["capacity_warning"] in {"OK", "MEDIUM", "LOW"}
+    assert evidence["turnover"]["annual_turnover_pct"] > 0.0
+    assert evidence["turnover"]["turnover_band"] in {"low", "medium", "high"}
     assert result.manifest_evidence["style_exposure_coverage"]["covered_candidates"] >= 1
+    assert result.manifest_evidence["capacity_coverage"]["covered_candidates"] >= 1
+    assert result.manifest_evidence["turnover_coverage"]["covered_candidates"] >= 1
     assert result.manifest_evidence["correlation_report_path"] == result.correlation_report_path
 
 

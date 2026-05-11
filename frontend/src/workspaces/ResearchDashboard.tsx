@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState} from 'react';
 
 import {LoadingSpinner} from '../components/LoadingSpinner';
+import {ModuleStateCard, type ModuleStateCardProps} from '../components/ModuleStateCard';
 import {apiGet} from '../lib/api';
 import {researchApi} from '../lib/research-api';
 import type {SystemOverviewResponse} from '../lib/shared-types';
@@ -59,9 +60,9 @@ const inputStyle = {
   minWidth: 0,
   padding: '8px 10px',
   borderRadius: 6,
-  border: '1px solid rgba(148,163,184,0.28)',
-  background: 'rgba(15,23,42,0.72)',
-  color: '#e2e8f0',
+  border: '1px solid rgba(148,163,184,0.32)',
+  background: 'rgba(255,255,255,0.96)',
+  color: '#102033',
   outline: 'none',
 } as const;
 
@@ -69,13 +70,13 @@ const labelStyle = {
   display: 'grid',
   gap: 6,
   fontSize: '0.78rem',
-  color: '#94a3b8',
+  color: '#5b7086',
 } as const;
 
 const buttonStyle = {
-  border: '1px solid rgba(99,102,241,0.42)',
-  background: 'rgba(99,102,241,0.18)',
-  color: '#c7d2fe',
+  border: '1px solid rgba(37,99,235,0.28)',
+  background: 'rgba(37,99,235,0.12)',
+  color: '#1d4ed8',
   borderRadius: 6,
   padding: '8px 12px',
   fontWeight: 650,
@@ -84,23 +85,24 @@ const buttonStyle = {
 
 const ghostButtonStyle = {
   ...buttonStyle,
-  border: '1px solid rgba(148,163,184,0.24)',
-  background: 'rgba(15,23,42,0.66)',
-  color: '#cbd5e1',
+  border: '1px solid rgba(148,163,184,0.28)',
+  background: 'rgba(255,255,255,0.96)',
+  color: '#334155',
 } as const;
 
 const dangerButtonStyle = {
   ...buttonStyle,
-  border: '1px solid rgba(239,68,68,0.42)',
-  background: 'rgba(239,68,68,0.14)',
-  color: '#fecaca',
+  border: '1px solid rgba(239,68,68,0.28)',
+  background: 'rgba(254,242,242,0.96)',
+  color: '#b91c1c',
 } as const;
 
 const sectionStyle = {
-  border: '1px solid rgba(148,163,184,0.16)',
-  background: 'rgba(15,23,42,0.58)',
+  border: '1px solid rgba(148,163,184,0.20)',
+  background: 'rgba(255,255,255,0.94)',
   borderRadius: 8,
   padding: 16,
+  boxShadow: '0 12px 32px rgba(15,23,42,0.08)',
 } as const;
 
 function splitCsv(value: string): string[] {
@@ -713,10 +715,73 @@ export default function ResearchDashboard() {
     await refresh(dataRoot);
   });
 
+  const moduleStateCards = useMemo<ModuleStateCardProps[]>(() => {
+    const latestQlibRun = asRecord(qlibRuns[0]);
+    const latestPortfolioRunRecord = asRecord(portfolioIntegrationRuns[0]);
+    const qlibStatusText = String(
+      latestQlibRun?.workflow_status
+      ?? latestQlibRun?.dataset_status
+      ?? latestQlibRun?.manifest_status
+      ?? latestQlibRun?.status
+      ?? qlibStatus?.status
+      ?? 'missing',
+    );
+    const portfolioStatusText = String(
+      latestPortfolioRunRecord?.status
+      ?? latestPortfolioRunRecord?.state
+      ?? portfolioIntegrationStatus?.status
+      ?? 'missing',
+    );
+    const qlibOutcome = qlibRuns.length > 0 && !/fail|error|missing|blocked/i.test(qlibStatusText) ? 'PASS' : 'BLOCKED';
+    const portfolioOutcome = targetWeightReady ? 'PASS' : 'BLOCKED';
+    return [
+      {
+        id: 'qlib',
+        title: 'Qlib',
+        status: qlibOutcome,
+        tone: qlibOutcome === 'PASS' ? 'good' : 'bad',
+        reason: qlibRuns.length > 0
+          ? `最新 ${String(latestQlibRun?.run_id ?? latestQlibRun?.latest_run_id ?? 'run')} · ${qlibStatusText}`
+          : '未生成 Qlib run，先构建数据集。',
+        hint: '研究数据集、workflow、score 导入、manifest 编译',
+        meta: [
+          {label: '最新 run', value: String(latestQlibRun?.run_id ?? latestQlibRun?.latest_run_id ?? 'none')},
+          {label: '状态', value: qlibStatusText.toUpperCase()},
+        ],
+        actions: [{
+          label: qlibRuns.length > 0 ? '运行 workflow' : '构建数据集',
+          onClick: () => void handleQlibAction(qlibRuns.length > 0 ? 'workflow' : 'build'),
+          disabled: !!busy,
+          variant: 'primary',
+        }],
+      },
+      {
+        id: 'pypfopt',
+        title: 'PyPortfolioOpt',
+        status: portfolioOutcome,
+        tone: portfolioOutcome === 'PASS' ? 'good' : 'bad',
+        reason: portfolioOutcome === 'PASS'
+          ? `target positions 已生成，最新权重和 ${pct(latestPortfolioRunRecord?.latest_weight_sum)}`
+          : targetWeightDetail,
+        hint: 'expected returns、covariance、优化、target positions',
+        meta: [
+          {label: '最新 run', value: String(latestPortfolioRunRecord?.portfolio_run_id ?? latestPortfolioRunRecord?.run_id ?? 'none')},
+          {label: '状态', value: portfolioStatusText.toUpperCase()},
+        ],
+        actions: [{
+          label: targetWeightReady ? '导入 target positions' : '生成 expected returns',
+          onClick: () => void handlePypfoptAction(targetWeightReady ? 'import' : 'expected'),
+          disabled: !!busy,
+          variant: 'primary',
+        }],
+      },
+    ] satisfies ModuleStateCardProps[];
+  }, [busy, handlePypfoptAction, handleQlibAction, portfolioIntegrationRuns, portfolioIntegrationStatus, qlibRuns, qlibStatus, targetWeightDetail, targetWeightReady]);
+
   if (loading) return <LoadingSpinner text="加载研究数据..." />;
 
   return (
-    <div data-testid="research-content" style={{padding: 24, color: '#e2e8f0'}}>
+    <div data-testid="research-content" style={{padding: 24, color: '#102033'}}>
       <div style={{display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start', marginBottom: 18}}>
         <div>
           <h2 style={{margin: '0 0 4px'}}>研究台</h2>
@@ -758,7 +823,29 @@ export default function ResearchDashboard() {
         ))}
       </div>
 
-      <div style={{display: 'flex', gap: 4, borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 18}}>
+      <section style={{marginBottom: 18}}>
+        <div className="panel-header" style={{marginBottom: 12}}>
+          <h3 style={{margin: 0}}>集成状态</h3>
+          <span>Qlib / PyPortfolioOpt</span>
+        </div>
+        <div className="state-board">
+          {moduleStateCards.map((card) => (
+            <ModuleStateCard
+              key={card.id}
+              id={card.id}
+              title={card.title}
+              status={card.status}
+              tone={card.tone}
+              reason={card.reason}
+              actions={card.actions}
+              meta={card.meta}
+              hint={card.hint}
+            />
+          ))}
+        </div>
+      </section>
+
+      <div style={{display: 'flex', gap: 4, borderBottom: '1px solid rgba(148,163,184,0.22)', marginBottom: 18}}>
         {tabs.map(item => {
           const active = tab === item.key;
           return (
@@ -769,10 +856,10 @@ export default function ResearchDashboard() {
                 padding: '9px 14px',
                 borderRadius: '6px 6px 0 0',
                 border: 'none',
-                background: active ? 'rgba(99,102,241,0.2)' : 'transparent',
-                color: active ? '#c7d2fe' : '#94a3b8',
+                background: active ? 'rgba(37,99,235,0.14)' : 'transparent',
+                color: active ? '#1d4ed8' : '#5b7086',
                 cursor: 'pointer',
-                borderBottom: active ? '2px solid #818cf8' : '2px solid transparent',
+                borderBottom: active ? '2px solid #2563eb' : '2px solid transparent',
                 fontWeight: active ? 700 : 500,
               }}
             >

@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState} from 'react';
 
 import LineChart from '../components/LineChart';
+import {ModuleStateCard, type ModuleStateCardProps} from '../components/ModuleStateCard';
 import StatusBadge from '../components/StatusBadge';
 import {LoadingSpinner} from '../components/LoadingSpinner';
 import {apiGet, apiPost} from '../lib/api';
@@ -814,6 +815,69 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
     };
   }, [systemOverview, usLoading, handleUSDataSync, handleUSQualityReport, handleUSUnifiedBacktest, handleUSPromotionGate]);
 
+  const statusCards = useMemo<ModuleStateCardProps[]>(() => {
+    const usOutcome = promotionGateResult?.decision === 'pass' ? 'PASS' : 'BLOCKED';
+    const paperOutcome = systemOverview?.paper_review.entry_allowed ? 'PASS' : 'BLOCKED';
+    const liveOutcome = systemOverview?.execution.live_state === 'frozen' ? 'PASS' : 'BLOCKED';
+    return [
+      {
+        id: 'us-equity',
+        title: '美股',
+        status: usOutcome,
+        tone: usOutcome === 'PASS' ? 'good' : 'bad',
+        reason: promotionGateResult
+          ? `${promotionGateResult.next_stage} · ${promotionGateResult.recommendations[0] ?? '晋升门已出具'}`
+          : systemOverview?.paper_review.summary ?? '等待数据质量、回测和晋升门证据。',
+        hint: '数据同步、特征、回测、成本压力、walk-forward、晋升门',
+        meta: [
+          {label: '策略', value: selectedStrategy?.display_name ?? usForm.strategyId},
+          {label: '阶段', value: systemOverview?.stage ?? 'waiting'},
+        ],
+        actions: [{
+          label: '运行晋升门',
+          onClick: () => { void handleUSPromotionGate(); },
+          disabled: usLoading,
+          variant: 'primary',
+        }],
+      },
+      {
+        id: 'paper-review',
+        title: 'paper review',
+        status: paperOutcome,
+        tone: paperOutcome === 'PASS' ? 'good' : 'bad',
+        reason: systemOverview?.paper_review.summary ?? '未进入 paper review。',
+        hint: 'manifest、evidence pack、人工 review 入口',
+        meta: [
+          {label: 'manifest', value: systemOverview?.paper_review.manifest_path ?? 'missing'},
+          {label: 'evidence', value: systemOverview?.paper_review.evidence_pack_path ?? 'missing'},
+        ],
+        actions: [{
+          label: '运行 Paper 日',
+          onClick: () => { void handleUSPaperRunDay(); },
+          disabled: usLoading,
+          variant: 'primary',
+        }],
+      },
+      {
+        id: 'live-freeze',
+        title: 'live freeze',
+        status: liveOutcome,
+        tone: liveOutcome === 'PASS' ? 'good' : 'bad',
+        reason: systemOverview?.execution.live_block_reason ?? 'live runtime frozen',
+        hint: '冻结是默认状态，只有证据闭环完成后才允许审批',
+        meta: [
+          {label: 'live state', value: systemOverview?.execution.live_state ?? 'frozen'},
+          {label: 'submit', value: systemOverview?.execution.paper_network_submit_confirmation ? 'confirmed' : 'locked'},
+        ],
+        actions: [{
+          label: '刷新冻结状态',
+          onClick: () => { void handleUSPaperStatus(); },
+          disabled: usLoading,
+        }],
+      },
+    ] satisfies ModuleStateCardProps[];
+  }, [handleUSPaperRunDay, handleUSPaperStatus, handleUSPromotionGate, promotionGateResult, selectedStrategy?.display_name, systemOverview?.execution.live_block_reason, systemOverview?.execution.live_state, systemOverview?.execution.paper_network_submit_confirmation, systemOverview?.paper_review.evidence_pack_path, systemOverview?.paper_review.entry_allowed, systemOverview?.paper_review.manifest_path, systemOverview?.paper_review.summary, systemOverview?.stage, usForm.strategyId, usLoading]);
+
   const paperEquityCurve = paperBacktest?.daily_results.length
     ? paperBacktest.daily_results.map((day, index) => ({time: index + 1, value: day.ending_equity}))
     : usPaperDailyResults.map((day, index) => ({time: index + 1, value: day.ending_equity}));
@@ -1121,6 +1185,28 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
             <button key={action.label} type="button" className="secondary-button" disabled={action.disabled} onClick={action.onClick}>
               {action.label}
             </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel" style={{marginBottom: 18}}>
+        <div className="panel-header">
+          <h3>状态卡</h3>
+          <span>美股 / paper review / live freeze</span>
+        </div>
+        <div className="state-board">
+          {statusCards.map(card => (
+            <ModuleStateCard
+              key={card.id}
+              id={card.id}
+              title={card.title}
+              status={card.status}
+              tone={card.tone}
+              reason={card.reason}
+              actions={card.actions}
+              meta={card.meta}
+              hint={card.hint}
+            />
           ))}
         </div>
       </section>

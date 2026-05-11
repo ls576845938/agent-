@@ -272,6 +272,37 @@ def test_minute_quality_overview_audits_raw_and_cleaned_roots(tmp_path: Path) ->
     assert report.remediation_summary["actions"][0]["category"] == "coverage"
 
 
+def test_minute_quality_overview_reports_placeholder_layout_without_silent_pass(tmp_path: Path) -> None:
+    dataset_root = tmp_path / "raw" / "vendor=yfinance" / "asset_class=equity"
+    for bar_size in ("1m", "5m", "15m"):
+        (dataset_root / f"bar_size={bar_size}").mkdir(parents=True, exist_ok=True)
+
+    report = inspect_minute_data_quality_overview(
+        tmp_path,
+        bar_sizes=["1m", "5m", "15m"],
+        lookback_trading_days=1,
+        as_of=datetime(2026, 5, 8, 21, 0, tzinfo=UTC),
+    )
+
+    assert report.status == "MISSING"
+    assert report.audit_scope["data_source"] == "yfinance"
+    assert report.audit_scope["calendar_name"] == "NYSE"
+    assert report.audit_scope["storage_timezone"] == "UTC"
+    raw_layout = next(item for item in report.dataset_discovery if item["root_subdir"] == "raw")
+    assert raw_layout["placeholder_structure_detected"] is True
+    assert raw_layout["present_bar_sizes"] == ["1m", "5m", "15m"]
+    assert raw_layout["discovered_symbol_count"] == 0
+    assert raw_layout["partition_file_count"] == 0
+    assert report.remediation_summary["action_count"] >= 1
+    coverage_actions = [
+        action for action in report.remediation_summary["actions"] if action["category"] == "coverage"
+    ]
+    assert coverage_actions
+    assert coverage_actions[0]["recommended_commands"]
+    assert "ingest_intraday.py" in coverage_actions[0]["recommended_commands"][0]
+    assert "quant-us report minute-quality" in coverage_actions[0]["recommended_commands"][-1]
+
+
 def test_minute_quality_classifies_timezone_session_and_early_close(tmp_path: Path) -> None:
     calendar = USEquityCalendar.with_holidays()
     trading_day = datetime(2026, 11, 27, tzinfo=UTC).date()
@@ -323,7 +354,8 @@ def test_minute_quality_classifies_timezone_session_and_early_close(tmp_path: Pa
     assert report.status == "FAIL"
     assert one_minute_interval.quality_dimensions["timezone_session"]["status"] == "FAIL"
     assert one_minute_interval.timezone_naive_count == len(one_minute_naive)
-    assert one_minute_interval.outside_session_count == 1
+    assert one_minute_interval.outside_session_count == 0
+    assert one_minute_interval.extended_session_count == 1
     assert one_minute_interval.session_coverage[0]["session_type"] == "early_close"
     assert one_minute_interval.session_coverage[0]["is_early_close"] is True
     assert one_minute_interval.session_coverage[0]["expected_bars"] == 210
@@ -342,6 +374,70 @@ def test_minute_quality_classifies_timezone_session_and_early_close(tmp_path: Pa
         action["category"] == "timezone_session"
         for action in report.remediation_summary["actions"]
     )
+
+
+def test_minute_quality_warns_for_valid_extended_session_rows(tmp_path: Path) -> None:
+    calendar = USEquityCalendar.with_holidays()
+    trading_day = datetime(2026, 5, 8, tzinfo=UTC).date()
+    timestamps = _expected_regular_timestamps(trading_day, 1, calendar)
+    extended = [
+        datetime(2026, 5, 8, 8, 0, tzinfo=UTC),
+        datetime(2026, 5, 8, 23, 59, tzinfo=UTC),
+    ]
+    _write_minute_partition(
+        tmp_path,
+        symbol="AAPL",
+        bar_size="1m",
+        trading_day=trading_day.isoformat(),
+        timestamps=[*extended, *timestamps],
+    )
+
+    report = inspect_minute_data_quality(
+        tmp_path,
+        symbols=["AAPL"],
+        bar_sizes=["1m"],
+        lookback_trading_days=1,
+        as_of=datetime(2026, 5, 8, 21, 0, tzinfo=UTC),
+    )
+
+    interval = report.symbols[0].intervals[0]
+    assert report.status == "WARN"
+    assert interval.status == "WARN"
+    assert interval.coverage_pct == 100.0
+    assert interval.outside_session_count == 0
+    assert interval.extended_session_count == 2
+    assert interval.quality_dimensions["timezone_session"]["status"] == "WARN"
+    assert "extended_session:2" in interval.gate_reasons
+    assert report.evidence_summary["category_totals"]["extended_session_rows"] == 2
+
+
+def test_minute_quality_fails_for_true_outside_extended_session_rows(tmp_path: Path) -> None:
+    calendar = USEquityCalendar.with_holidays()
+    trading_day = datetime(2026, 5, 8, tzinfo=UTC).date()
+    timestamps = _expected_regular_timestamps(trading_day, 1, calendar)
+    _write_minute_partition(
+        tmp_path,
+        symbol="AAPL",
+        bar_size="1m",
+        trading_day=trading_day.isoformat(),
+        timestamps=[*timestamps, datetime(2026, 5, 9, 0, 30, tzinfo=UTC)],
+    )
+
+    report = inspect_minute_data_quality(
+        tmp_path,
+        symbols=["AAPL"],
+        bar_sizes=["1m"],
+        lookback_trading_days=1,
+        as_of=datetime(2026, 5, 8, 21, 0, tzinfo=UTC),
+    )
+
+    interval = report.symbols[0].intervals[0]
+    assert report.status == "FAIL"
+    assert interval.status == "FAIL"
+    assert interval.coverage_pct == 100.0
+    assert interval.outside_session_count == 1
+    assert interval.extended_session_count == 0
+    assert interval.quality_dimensions["timezone_session"]["status"] == "FAIL"
 
 
 def test_minute_quality_rejects_invalid_inputs_instead_of_silent_fallback(tmp_path: Path) -> None:

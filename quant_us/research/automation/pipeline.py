@@ -32,6 +32,7 @@ from quant_us.research.automation.evidence_materializer import ResearchEvidenceM
 from quant_us.research.automation.overfit import OverfitDetector
 from quant_us.research.automation.ranking import CandidateRankingEngine
 from quant_us.research.lab.manifest import ExperimentManager, StrategyCandidate
+from quant_us.research.validation import summarize_candidate_validation
 
 
 @dataclass
@@ -147,6 +148,10 @@ class ResearchAutomationPipeline:
                         }
                         self._exp_mgr._save_manifest(manifest)
                     candidate = self._exp_mgr.promote_to_candidate(eid)
+                    self._enrich_candidate_automation_evidence(
+                        candidate.candidate_id,
+                        experiment_id=eid,
+                    )
                     candidate_ids.append(candidate.candidate_id)
                     materialized = self._evidence.materialize_candidate(
                         candidate.candidate_id
@@ -640,6 +645,79 @@ class ResearchAutomationPipeline:
 
         return metrics
 
+    def _enrich_candidate_automation_evidence(
+        self,
+        candidate_id: str,
+        *,
+        experiment_id: str,
+    ) -> None:
+        """Persist compact validation/capacity/turnover evidence onto the candidate.
+
+        This keeps research automation candidates self-describing before the
+        canonical strategy manifest is built, while staying derived from
+        completed research artifacts only.
+        """
+        path = self.data_root / "research" / "candidates" / candidate_id / "candidate.json"
+        if not path.exists():
+            return
+        candidate = json.loads(path.read_text(encoding="utf-8"))
+        metrics = candidate.get("metrics", {})
+        if not isinstance(metrics, dict):
+            metrics = {}
+
+        experiment = None
+        experiment_data: dict[str, Any] = {}
+        try:
+            experiment = self._exp_mgr.load(experiment_id)
+        except TypeError:
+            manifest_path = (
+                self.data_root
+                / "research"
+                / "experiments"
+                / experiment_id
+                / "manifest.json"
+            )
+            if manifest_path.exists():
+                raw_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+                if isinstance(raw_payload, dict):
+                    experiment_data = raw_payload
+        if experiment is not None:
+            experiment_data = asdict(experiment)
+        walk_forward_artifact = _synthetic_walk_forward_artifact(metrics)
+        cost_stress_artifact = _synthetic_cost_stress_artifact(metrics)
+        validation_stats = summarize_candidate_validation(
+            candidate_id=candidate_id,
+            metrics=metrics,
+            walk_forward_artifact=walk_forward_artifact,
+            cost_stress_artifact=cost_stress_artifact,
+            experiment_data=experiment_data,
+        )
+        style_exposure = _structured_style_exposure(metrics)
+        capacity_evidence = _structured_capacity_evidence(metrics)
+        turnover_evidence = _structured_turnover_evidence(metrics)
+
+        metrics.update(
+            {
+                "validation_status": str(validation_stats.get("status", "partial")),
+                "validation_stats": validation_stats,
+                "cpcv_evidence": dict(validation_stats.get("cv_summary", {})),
+                "dsr_evidence": dict(
+                    validation_stats.get("deflated_sharpe_ratio", {})
+                ),
+                "pbo_evidence": dict(validation_stats.get("pbo", {})),
+                "style_exposure_evidence": style_exposure,
+                "capacity_evidence": capacity_evidence,
+                "turnover_evidence": turnover_evidence,
+            }
+        )
+        if style_exposure and "style_exposure" not in metrics:
+            metrics["style_exposure"] = style_exposure
+        candidate["metrics"] = metrics
+        path.write_text(
+            json.dumps(candidate, indent=2, default=str),
+            encoding="utf-8",
+        )
+
     @staticmethod
     def _is_stage_experiment(strategy_family: str) -> bool:
         family = str(strategy_family or "")
@@ -741,3 +819,82 @@ def _config_timeframe(config: dict) -> str:
     """Return the canonical experiment timeframe from pipeline config."""
     timeframe = str(config.get("timeframe") or config.get("bar_size") or "1d").strip()
     return timeframe or "1d"
+
+
+def _synthetic_walk_forward_artifact(metrics: dict[str, Any]) -> dict[str, Any]:
+    fold_results = metrics.get("wf_fold_results") or []
+    folds: list[dict[str, Any]] = []
+    if isinstance(fold_results, list):
+        for item in fold_results:
+            if isinstance(item, dict):
+                folds.append(
+                    {
+                        "oos_sharpe": item.get(
+                            "oos_sharpe",
+                            item.get("test_sharpe", item.get("sharpe_ratio")),
+                        ),
+                        "passed": item.get("passed"),
+                    }
+                )
+    if not folds:
+        for value in metrics.get("wf_fold_sharpes", []) or []:
+            folds.append({"oos_sharpe": value})
+    pbo_trials = metrics.get("pbo_trials") or []
+    path_count = len(
+        {str(item.get("split_id", "")) for item in pbo_trials if isinstance(item, dict)}
+    )
+    method = "cpcv" if pbo_trials else "walk_forward"
+    return {
+        "validation_method": method,
+        "purged": bool(pbo_trials),
+        "embargo_bars": 1 if pbo_trials else 0,
+        "combination_count": path_count,
+        "folds": folds,
+        "walk_forward_pass_rate": metrics.get("walk_forward_pass_rate"),
+        "pbo_trials": pbo_trials,
+        "metrics": {
+            "walk_forward_pass_rate": metrics.get("walk_forward_pass_rate"),
+            "oos_degradation": metrics.get("oos_degradation"),
+        },
+    }
+
+
+def _synthetic_cost_stress_artifact(metrics: dict[str, Any]) -> dict[str, Any]:
+    levels = metrics.get("cost_stress_levels") or []
+    return {
+        "status": "completed" if levels else "missing",
+        "stress_survival_rate": metrics.get("stress_survival_rate"),
+        "cost_sensitivity": metrics.get("cost_sensitivity"),
+        "levels": levels if isinstance(levels, list) else [],
+        "metrics": {
+            "stress_survival_rate": metrics.get("stress_survival_rate"),
+            "cost_sensitivity": metrics.get("cost_sensitivity"),
+        },
+    }
+
+
+def _structured_style_exposure(metrics: dict[str, Any]) -> dict[str, Any]:
+    payload = metrics.get("style_exposure")
+    if isinstance(payload, dict):
+        return dict(payload)
+    return {}
+
+
+def _structured_capacity_evidence(metrics: dict[str, Any]) -> dict[str, Any]:
+    evidence = {
+        "estimated_capacity_usd": metrics.get("estimated_capacity_usd"),
+        "capacity_warning": metrics.get("capacity_warning"),
+        "fragility_score": metrics.get("fragility_score"),
+    }
+    return {key: value for key, value in evidence.items() if value not in ("", None)}
+
+
+def _structured_turnover_evidence(metrics: dict[str, Any]) -> dict[str, Any]:
+    evidence = {
+        "turnover": metrics.get("turnover"),
+        "annual_turnover_pct": metrics.get("annual_turnover_pct"),
+        "trade_count": metrics.get("trade_count"),
+        "expected_holding_period": metrics.get("expected_holding_period"),
+        "avg_holding_period": metrics.get("avg_holding_period"),
+    }
+    return {key: value for key, value in evidence.items() if value not in ("", None)}

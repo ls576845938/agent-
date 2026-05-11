@@ -1,5 +1,6 @@
 import type {StrategyOptimizationResponse, CostStressResponse, WalkForwardResponse, PortfolioOptimizationResponse, DataQualityResponse, PromotionGateResponse, OptimizationFrameworkItem, CryptoClosureResponse} from '../../lib/shared-types';
 import {formatOptimizationScore, formatParams, formatTimestamp, formatPrice, scenarioClass, gateClass} from '../../lib/utils';
+import {ModuleStateCard} from '../../components/ModuleStateCard';
 
 interface OptimizationPanelProps {
   optimization: StrategyOptimizationResponse | null;
@@ -48,8 +49,43 @@ export default function OptimizationPanel({
   onOptimize, onCostStress, onWalkForward, onPortfolioOptimize,
   onDataQuality, onPromotionGate, onApplyWeights,
 }: OptimizationPanelProps) {
+  const btcOutcome = cryptoClosure
+    ? cryptoClosure.blockers.length > 0 ? 'BLOCKED' : cryptoClosure.decision === 'pass' ? 'PASS' : 'BLOCKED'
+    : promotionGate
+      ? promotionGate.decision === 'pass' ? 'PASS' : 'BLOCKED'
+      : dataQuality?.is_usable ? 'PASS' : 'BLOCKED';
+  const btcTone = btcOutcome === 'PASS' ? 'good' : 'bad';
+  const btcReason = cryptoClosure
+    ? cryptoClosure.blockers.length > 0
+      ? cryptoClosure.blockers[0]
+      : cryptoClosure.recommendations[0] ?? `${cryptoClosure.next_stage} ready`
+    : promotionGate
+      ? promotionGate.gates.find((gate) => gate.status !== 'pass')?.message ?? promotionGate.recommendations[0] ?? '等待闭环评估'
+      : dataQuality?.issues?.[0]?.message ?? '等待数据质量与闭环结果';
+  const btcMeta = [
+    {label: '数据完整性', value: cryptoClosure ? String(cryptoClosure.data_integrity.status ?? '-').toUpperCase() : dataQuality ? (dataQuality.is_usable ? 'PASS' : 'BLOCKED') : 'WAITING'},
+    {label: '候选数', value: cryptoClosure ? String(cryptoClosure.candidate_screen.candidate_count ?? 0) : promotionGate ? String(promotionGate.gates.length) : '0'},
+    {label: '下一阶段', value: cryptoClosure?.next_stage ?? promotionGate?.next_stage ?? 'research'},
+    {label: '覆盖 interval', value: cryptoClosure?.target_intervals.join(' / ') ?? '1m / 5m / 15m / 1h / 4h / 1d'},
+  ];
   return (
     <>
+      <ModuleStateCard
+        id="btc"
+        title="BTC"
+        status={btcOutcome}
+        tone={btcTone}
+        reason={btcReason}
+        meta={btcMeta}
+        hint="闭环数据、成本压力、walk-forward 与晋级门统一汇总"
+        actions={[{
+          label: cryptoClosureLoading ? '闭环运行中...' : '一键 BTC 闭环',
+          onClick: () => { void onCryptoClosure(); },
+          disabled: cryptoClosureLoading,
+          variant: 'primary',
+        }]}
+      />
+
       <div className="panel-header"><h2>下一步优化框架</h2><span>{optimizationFramework[0]?.title ?? ''}</span></div>
       <div className="optimization-framework">
         {optimizationFramework.map((item) => (

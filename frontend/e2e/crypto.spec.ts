@@ -314,7 +314,8 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
   await expect(page.locator('[data-testid="crypto-promotion-blockers"]')).toContainText('coverage below threshold');
   await expect(page.locator('[data-testid="crypto-blockers"]')).toContainText('promotion');
 
-  await page.getByRole('button', {name: '一键 BTC 闭环'}).click();
+  await page.locator('[data-testid="module-state-btc"]').getByRole('button', {name: '一键 BTC 闭环'}).click();
   await expect(page.locator('[data-testid="crypto-closure-panel"]')).toContainText('trend_macd');
   await expect(page.locator('[data-testid="crypto-closure-panel"]')).toContainText('cost_stress survival_rate');
+  await expect(page.locator('[data-testid="module-state-btc"]')).toContainText('PASS');
 });

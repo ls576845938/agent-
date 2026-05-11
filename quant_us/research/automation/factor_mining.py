@@ -43,6 +43,8 @@ class FactorMiningScore:
     stability_components: dict[str, float] = field(default_factory=dict)
     score_components: dict[str, float] = field(default_factory=dict)
     style_exposure: dict[str, Any] = field(default_factory=dict)
+    capacity_profile: dict[str, Any] = field(default_factory=dict)
+    turnover_profile: dict[str, Any] = field(default_factory=dict)
     generation_family: str = ""
     complexity_score: int = 0
     formula_signature: str = ""
@@ -426,6 +428,11 @@ class FactorMiningEngine:
         enriched: list[FactorMiningScore] = []
         for score in scores:
             style_exposure = {"missing_reason": "style_exposure_inputs_unavailable"}
+            capacity_profile = {"missing_reason": "capacity_inputs_unavailable"}
+            turnover_profile = _estimate_turnover_profile(
+                turnover=score.turnover,
+                bar_size=score.bar_size,
+            )
             frame = frames_by_bar_size.get(score.bar_size)
             bars = bars_by_bar_size.get(score.bar_size)
             if frame is not None and bars is not None and not frame.empty and not bars.empty:
@@ -434,7 +441,19 @@ class FactorMiningEngine:
                     bars,
                     score.factor_id,
                 )
-            enriched.append(_replace_score(score, style_exposure=style_exposure))
+                capacity_profile = _estimate_capacity_profile(
+                    bars=bars,
+                    turnover=score.turnover,
+                    bar_size=score.bar_size,
+                )
+            enriched.append(
+                _replace_score(
+                    score,
+                    style_exposure=style_exposure,
+                    capacity_profile=capacity_profile,
+                    turnover_profile=turnover_profile,
+                )
+            )
 
         ranked = sorted(
             enriched,
@@ -807,6 +826,16 @@ class FactorMiningEngine:
         covered = [
             score for score in final_scores if score.style_exposure and not score.style_exposure.get("missing_reason")
         ]
+        capacity_covered = [
+            score
+            for score in final_scores
+            if score.capacity_profile and not score.capacity_profile.get("missing_reason")
+        ]
+        turnover_covered = [
+            score
+            for score in final_scores
+            if score.turnover_profile and not score.turnover_profile.get("missing_reason")
+        ]
         return {
             "schema_version": "factor_mining_manifest_evidence_v1",
             "candidate_count": len(final_scores),
@@ -816,8 +845,26 @@ class FactorMiningEngine:
                 "covered_candidates": len(covered),
                 "missing_candidates": len(final_scores) - len(covered),
             },
+            "capacity_coverage": {
+                "covered_candidates": len(capacity_covered),
+                "missing_candidates": len(final_scores) - len(capacity_covered),
+            },
+            "turnover_coverage": {
+                "covered_candidates": len(turnover_covered),
+                "missing_candidates": len(final_scores) - len(turnover_covered),
+            },
             "bar_samples_available": {
                 bar_size: not frame.empty for bar_size, frame in bars_by_bar_size.items()
+            },
+            "generation_family_counts": {
+                family: sum(1 for score in final_scores if score.generation_family == family)
+                for family in sorted(
+                    {
+                        str(score.generation_family)
+                        for score in final_scores
+                        if str(score.generation_family).strip()
+                    }
+                )
             },
             "correlation_report_path": str(correlation_report_path),
             "lookahead_guard": "ranking, de-correlation, and style exposure use factor[t] with next-bar returns only",
@@ -1012,6 +1059,8 @@ def _replace_score(
     stability_components: dict[str, float] | None = None,
     score_components: dict[str, float] | None = None,
     style_exposure: dict[str, Any] | None = None,
+    capacity_profile: dict[str, Any] | None = None,
+    turnover_profile: dict[str, Any] | None = None,
     selected: bool | None = None,
     reject_reason: str | None = None,
     max_abs_correlation_to_selected: float | None = None,
@@ -1028,6 +1077,10 @@ def _replace_score(
         payload["score_components"] = dict(score_components)
     if style_exposure is not None:
         payload["style_exposure"] = dict(style_exposure)
+    if capacity_profile is not None:
+        payload["capacity_profile"] = dict(capacity_profile)
+    if turnover_profile is not None:
+        payload["turnover_profile"] = dict(turnover_profile)
     if selected is not None:
         payload["selected"] = selected
     if reject_reason is not None:
@@ -1049,6 +1102,8 @@ def _single_candidate_evidence(score: FactorMiningScore) -> dict[str, Any]:
         "stability_components": dict(score.stability_components),
         "score_components": dict(score.score_components),
         "style_exposure": dict(score.style_exposure),
+        "capacity": dict(score.capacity_profile),
+        "turnover": dict(score.turnover_profile),
         "generation_family": score.generation_family,
         "complexity_score": score.complexity_score,
         "max_abs_correlation_to_selected": round(score.max_abs_correlation_to_selected, 6),
@@ -1065,6 +1120,8 @@ def _aggregate_candidate_evidence(
         for item in basket
     }
     style_exposure = _aggregate_style_exposure(scores, weights)
+    capacity = _aggregate_capacity_profiles(scores, weights)
+    turnover = _aggregate_turnover_profiles(scores, weights)
     return {
         "schema_version": "factor_mining_candidate_evidence_v1",
         "factor_ids": [score.factor_id for score in scores],
@@ -1083,6 +1140,14 @@ def _aggregate_candidate_evidence(
         },
         "component_weights": weights,
         "style_exposure": style_exposure,
+        "capacity": capacity,
+        "turnover": turnover,
+        "generation_families": {
+            score.factor_id: score.generation_family for score in scores if score.generation_family
+        },
+        "component_complexity": {
+            score.factor_id: int(score.complexity_score) for score in scores
+        },
     }
 
 
@@ -1149,3 +1214,175 @@ def _aggregate_style_exposure(
         "source_factor_ids": [score.factor_id for score in usable],
         "lookahead_guard": "factor[t] is paired with next_return[t->t+1] only",
     }
+
+
+def _estimate_turnover_profile(*, turnover: float, bar_size: str) -> dict[str, Any]:
+    normalized_turnover = max(0.0, float(turnover or 0.0))
+    periods_per_year = _periods_per_year(bar_size)
+    annual_turnover_pct = normalized_turnover * periods_per_year * 100.0
+    holding_period_bars = 0.0
+    if normalized_turnover > 1e-9:
+        holding_period_bars = 1.0 / normalized_turnover
+    return {
+        "turnover": round(normalized_turnover, 6),
+        "annual_turnover_pct": round(annual_turnover_pct, 3),
+        "estimated_holding_period_bars": round(holding_period_bars, 3),
+        "bar_size": bar_size,
+        "turnover_band": _turnover_band(annual_turnover_pct),
+        "lookahead_guard": "turnover is annualized from realized factor evaluation metrics only",
+    }
+
+
+def _estimate_capacity_profile(
+    *,
+    bars: pd.DataFrame,
+    turnover: float,
+    bar_size: str,
+) -> dict[str, Any]:
+    if bars.empty or "close" not in bars.columns or "volume" not in bars.columns:
+        return {"missing_reason": "capacity_inputs_unavailable"}
+    frame = bars.copy()
+    frame["close"] = pd.to_numeric(frame.get("close"), errors="coerce")
+    frame["volume"] = pd.to_numeric(frame.get("volume"), errors="coerce")
+    frame["timestamp_utc"] = pd.to_datetime(frame["timestamp_utc"], utc=True, errors="coerce")
+    frame = frame.dropna(subset=["close", "volume", "timestamp_utc"])
+    if frame.empty:
+        return {"missing_reason": "capacity_inputs_unavailable"}
+    frame["dollar_volume"] = frame["close"] * frame["volume"]
+    timestamp_liquidity = (
+        frame.groupby("timestamp_utc", sort=True)["dollar_volume"].median().dropna()
+    )
+    if timestamp_liquidity.empty:
+        return {"missing_reason": "capacity_inputs_unavailable"}
+    median_dollar_volume = float(timestamp_liquidity.median())
+    liquidity_floor = float(timestamp_liquidity.quantile(0.25))
+    usable_turnover = max(float(turnover or 0.0), 0.05)
+    participation_rate = 0.02
+    estimated_capacity_usd = liquidity_floor * participation_rate / usable_turnover
+    return {
+        "estimated_capacity_usd": round(estimated_capacity_usd, 2),
+        "liquidity_floor_usd": round(liquidity_floor, 2),
+        "median_dollar_volume_usd": round(median_dollar_volume, 2),
+        "participation_rate_assumption": participation_rate,
+        "capacity_warning": _capacity_warning(estimated_capacity_usd),
+        "bar_size": bar_size,
+        "lookahead_guard": (
+            "capacity uses historical bar close*volume observations inside the "
+            "research window only"
+        ),
+    }
+
+
+def _aggregate_capacity_profiles(
+    scores: list[FactorMiningScore],
+    weights: dict[str, float],
+) -> dict[str, Any]:
+    usable = [
+        score
+        for score in scores
+        if score.capacity_profile and not score.capacity_profile.get("missing_reason")
+    ]
+    if not usable:
+        return {
+            "missing_reason": "capacity_inputs_unavailable",
+            "source_factor_ids": [score.factor_id for score in scores],
+        }
+    total_weight = sum(abs(weights.get(score.factor_id, 0.0)) for score in usable) or float(len(usable))
+    weighted_capacity = 0.0
+    weighted_liquidity_floor = 0.0
+    warnings: set[str] = set()
+    for score in usable:
+        weight = abs(weights.get(score.factor_id, 0.0)) or (1.0 / float(len(usable)))
+        normalized_weight = weight / total_weight
+        weighted_capacity += normalized_weight * float(
+            score.capacity_profile.get("estimated_capacity_usd", 0.0) or 0.0
+        )
+        weighted_liquidity_floor += normalized_weight * float(
+            score.capacity_profile.get("liquidity_floor_usd", 0.0) or 0.0
+        )
+        warning = str(score.capacity_profile.get("capacity_warning", "") or "").strip()
+        if warning:
+            warnings.add(warning)
+    return {
+        "estimated_capacity_usd": round(weighted_capacity, 2),
+        "liquidity_floor_usd": round(weighted_liquidity_floor, 2),
+        "capacity_warning": _capacity_warning(weighted_capacity),
+        "component_warnings": sorted(warnings),
+        "source_factor_ids": [score.factor_id for score in usable],
+        "lookahead_guard": (
+            "capacity uses historical bar close*volume observations inside the "
+            "research window only"
+        ),
+    }
+
+
+def _aggregate_turnover_profiles(
+    scores: list[FactorMiningScore],
+    weights: dict[str, float],
+) -> dict[str, Any]:
+    usable = [
+        score
+        for score in scores
+        if score.turnover_profile and not score.turnover_profile.get("missing_reason")
+    ]
+    if not usable:
+        return {
+            "missing_reason": "turnover_inputs_unavailable",
+            "source_factor_ids": [score.factor_id for score in scores],
+        }
+    total_weight = sum(abs(weights.get(score.factor_id, 0.0)) for score in usable) or float(len(usable))
+    annual_turnover_pct = 0.0
+    raw_turnover = 0.0
+    holding_period_bars = 0.0
+    for score in usable:
+        weight = abs(weights.get(score.factor_id, 0.0)) or (1.0 / float(len(usable)))
+        normalized_weight = weight / total_weight
+        raw_turnover += normalized_weight * float(
+            score.turnover_profile.get("turnover", 0.0) or 0.0
+        )
+        annual_turnover_pct += normalized_weight * float(
+            score.turnover_profile.get("annual_turnover_pct", 0.0) or 0.0
+        )
+        holding_period_bars += normalized_weight * float(
+            score.turnover_profile.get("estimated_holding_period_bars", 0.0) or 0.0
+        )
+    return {
+        "turnover": round(raw_turnover, 6),
+        "annual_turnover_pct": round(annual_turnover_pct, 3),
+        "estimated_holding_period_bars": round(holding_period_bars, 3),
+        "turnover_band": _turnover_band(annual_turnover_pct),
+        "source_factor_ids": [score.factor_id for score in usable],
+        "lookahead_guard": "turnover is annualized from realized factor evaluation metrics only",
+    }
+
+
+def _periods_per_year(bar_size: str) -> float:
+    normalized = str(bar_size or "").strip().lower()
+    mapping = {
+        "1d": 252.0,
+        "1h": 252.0 * 6.5,
+        "60m": 252.0 * 6.5,
+        "30m": 252.0 * 13.0,
+        "15m": 252.0 * 26.0,
+        "5m": 252.0 * 78.0,
+        "1m": 252.0 * 390.0,
+    }
+    return mapping.get(normalized, 252.0)
+
+
+def _turnover_band(annual_turnover_pct: float) -> str:
+    value = float(annual_turnover_pct or 0.0)
+    if value <= 100.0:
+        return "low"
+    if value <= 400.0:
+        return "medium"
+    return "high"
+
+
+def _capacity_warning(estimated_capacity_usd: float) -> str:
+    value = float(estimated_capacity_usd or 0.0)
+    if value <= 250_000.0:
+        return "LOW"
+    if value <= 1_000_000.0:
+        return "MEDIUM"
+    return "OK"

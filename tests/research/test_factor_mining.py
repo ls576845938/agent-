@@ -125,6 +125,17 @@ def test_factor_mining_selects_low_redundancy_strategy_configs(
     assert all(config["timeframe"] == "1d" for config in result.strategy_configs)
     assert any(config["candidate_rank"] == 1 for config in result.strategy_configs)
     assert all("candidate_evidence" in config for config in result.strategy_configs)
+    composite_configs = [
+        config
+        for config in result.strategy_configs
+        if config["template_id"] in {"weighted_factor_basket", "consensus_rank"}
+    ]
+    assert composite_configs
+    for config in composite_configs:
+        evidence = config["candidate_evidence"]
+        assert "capacity" in evidence
+        assert "turnover" in evidence
+        assert evidence["turnover"]["annual_turnover_pct"] >= 0.0
 
     persisted = json.loads(Path(result.output_path).read_text(encoding="utf-8"))
     assert persisted["run_id"] == result.run_id

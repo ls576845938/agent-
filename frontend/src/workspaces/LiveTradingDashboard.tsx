@@ -1,8 +1,10 @@
 import {useEffect, useState} from 'react';
+import {ModuleStateCard} from '../components/ModuleStateCard';
 import StatusBadge from '../components/StatusBadge';
 import MetricCard from '../components/MetricCard';
 import {apiGet} from '../lib/api';
 import {formatPrice} from '../lib/utils';
+import type {SystemOverviewResponse} from '../lib/shared-types';
 
 type PaperStatus = {
   equity: number; cash: number; buying_power: number;
@@ -22,18 +24,21 @@ type DailyResult = {
 
 export default function LiveTradingDashboard() {
   const [status, setStatus] = useState<PaperStatus | null>(null);
+  const [overview, setOverview] = useState<SystemOverviewResponse | null>(null);
   const [dailyResults, setDailyResults] = useState<DailyResult[]>([]);
   const [lastUpdate, setLastUpdate] = useState<string>('');
   const [error, setError] = useState('');
 
   const refresh = async () => {
     try {
-      const [s, results] = await Promise.all([
+      const [s, results, systemOverview] = await Promise.all([
         apiGet<PaperStatus>('/api/us/paper/status'),
         apiGet<DailyResult[]>('/api/us/paper/daily-results'),
+        apiGet<SystemOverviewResponse>('/api/system/overview').catch(() => null),
       ]);
       setStatus(s);
       setDailyResults(results);
+      setOverview(systemOverview);
       setLastUpdate(new Date().toLocaleTimeString('zh-CN'));
       setError('');
     } catch (e) {
@@ -51,6 +56,8 @@ export default function LiveTradingDashboard() {
   const totalOrders = dailyResults.reduce((sum, d) => sum + d.orders_submitted, 0);
   const totalFilled = dailyResults.reduce((sum, d) => sum + d.orders_filled, 0);
   const reconPassCount = dailyResults.filter(d => d.reconciliation_passed).length;
+  const liveFreezeOutcome = overview?.execution.live_state === 'frozen' ? 'PASS' : 'BLOCKED';
+  const liveFreezeReason = overview?.execution.live_block_reason ?? (status?.healthy ? '当前保持冻结，等待人工审批' : '系统健康异常，保持冻结');
 
   return (
     <main className="live-dashboard">
@@ -63,6 +70,32 @@ export default function LiveTradingDashboard() {
       </div>
 
       {error ? <p className="data-message" style={{color: 'var(--bad)'}}>{error}</p> : null}
+
+      <section className="panel" style={{marginBottom: 16}}>
+        <div className="panel-header">
+          <h3>状态卡</h3>
+          <span>live freeze</span>
+        </div>
+        <ModuleStateCard
+          id="live-freeze"
+          title="live freeze"
+          status={liveFreezeOutcome}
+          tone={liveFreezeOutcome === 'PASS' ? 'good' : 'bad'}
+          reason={liveFreezeReason}
+          hint="实盘默认冻结，只有对账与审批完成后才允许进入 live"
+          meta={[
+            {label: '健康', value: status?.healthy ? 'PASS' : 'BLOCKED'},
+            {label: '对账', value: status?.last_reconciliation_passed === null ? 'UNKNOWN' : status?.last_reconciliation_passed ? 'PASS' : 'BLOCKED'},
+            {label: 'live state', value: overview?.execution.live_state ?? 'UNKNOWN'},
+            {label: '交易日', value: String(status?.days_traded ?? '—')},
+          ]}
+          actions={[{
+            label: '手动刷新',
+            onClick: () => { void refresh(); },
+            variant: 'primary',
+          }]}
+        />
+      </section>
 
       {/* Account overview */}
       <section className="metrics-grid">

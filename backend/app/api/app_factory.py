@@ -108,6 +108,20 @@ def _serialize_data_sync_result(result: Any):
     )
 
 
+def _as_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "y", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "n", "off", ""}:
+            return False
+    return bool(value)
+
+
 def _system_overview_payload(
     data_root: str = "data",
     *,
@@ -136,7 +150,11 @@ def _system_overview_payload(
     paper_state = str(paper_evidence.readiness_state)
     paper_review_status = str(paper_review.get("status", "UNKNOWN"))
     minute_quality_status = str(minute_quality.get("status", "MISSING"))
-    minute_quality_hard_blocked = minute_quality_status in {"FAIL", "MISSING"}
+    minute_quality_evidence = minute_quality.get("evidence_summary", {})
+    fail_interval_count = 0
+    if isinstance(minute_quality_evidence, dict):
+        fail_interval_count = int(minute_quality_evidence.get("blocking_fail_interval_count", 0) or 0)
+    minute_quality_hard_blocked = fail_interval_count > 0
     qlib_dependencies = {
         "qlib": importlib.util.find_spec("qlib") is not None,
         "lightgbm": importlib.util.find_spec("lightgbm") is not None,
@@ -149,7 +167,23 @@ def _system_overview_payload(
     if registry_state != "present" or registry_integrity != "PASS/STABLE":
         next_actions.append("Run: quant-us research evidence-registry-rebuild --data-root <data_root>")
     if minute_quality_status != "PASS":
-        next_actions.append("Load and validate 1m/5m/15m minute data before paper review.")
+        remediation = minute_quality.get("remediation_summary", {})
+        recommended_commands: list[str] = []
+        if isinstance(remediation, dict):
+            for action in remediation.get("actions", []):
+                if not isinstance(action, dict):
+                    continue
+                for command in action.get("recommended_commands", []):
+                    if isinstance(command, str) and command not in recommended_commands:
+                        recommended_commands.append(command)
+                    if len(recommended_commands) >= 2:
+                        break
+                if len(recommended_commands) >= 2:
+                    break
+        if recommended_commands:
+            next_actions.extend(recommended_commands)
+        else:
+            next_actions.append("Load and validate 1m/5m/15m minute data before paper review.")
     if paper_state != "PASS":
         next_actions.append("Complete paper validation evidence before any paper submission gate.")
     if not credentials.get("credentials_present"):
@@ -1373,8 +1407,9 @@ def create_app():
             min_observations=int(request.get("min_observations") or 20),
             max_abs_correlation=float(request.get("max_abs_correlation") or 0.90),
             max_selected=int(request.get("max_selected") or 8),
-            auto_generate_formulas=bool(request.get("auto_generate_formulas", False)),
+            auto_generate_formulas=_as_bool(request.get("auto_generate_formulas", False)),
             max_generated_factors=int(request.get("max_generated_factors") or 24),
+            max_formula_complexity=int(request.get("max_formula_complexity") or 6),
         )
         return result.to_dict()
 
@@ -1389,6 +1424,7 @@ def create_app():
         specs = GeneratedFactorLibrary(str(request.get("data_root") or "data")).generate_and_register(
             seed_factor_ids=list(factor_ids) or None,
             max_specs=int(request.get("max_generated_factors") or request.get("max_specs") or 24),
+            max_complexity=int(request.get("max_formula_complexity") or 6),
         )
         return {
             "status": "completed",
@@ -1428,8 +1464,9 @@ def create_app():
             min_observations=int(request.get("min_observations") or 20),
             max_abs_correlation=float(request.get("max_abs_correlation") or 0.90),
             max_selected=int(request.get("max_selected") or 8),
-            auto_generate_formulas=bool(request.get("auto_generate_formulas", False)),
+            auto_generate_formulas=_as_bool(request.get("auto_generate_formulas", False)),
             max_generated_factors=int(request.get("max_generated_factors") or 24),
+            max_formula_complexity=int(request.get("max_formula_complexity") or 6),
         )
 
         max_runs = max(0, int(request.get("max_runs") or len(mining.strategy_configs)))
@@ -1457,7 +1494,7 @@ def create_app():
             candidate_ids.extend(str(value) for value in result.get("candidate_ids", []))
 
         registry: dict[str, Any] = {}
-        if not request.get("skip_registry_rebuild", False):
+        if not _as_bool(request.get("skip_registry_rebuild", False)):
             registry = rebuild_evidence_registry(data_root, write=True)
 
         return {

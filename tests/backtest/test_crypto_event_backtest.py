@@ -8,7 +8,13 @@ import pandas as pd
 
 from backend.app.services import backtests as backtest_service_module
 from backend.app.services.backtests import ResearchBacktestService
-from quant_us.backtest.crypto_event import run_crypto_event_backtest
+from quant_us.backtest.crypto_event import (
+    CRYPTO_VALIDATION_INTERVALS,
+    default_crypto_cost_stress_scenarios,
+    qualify_crypto_candidates,
+    run_crypto_event_backtest,
+    summarize_crypto_interval_validation,
+)
 from quant_us.core.events import MarketEvent
 from quant_us.core.types import Bar
 
@@ -96,6 +102,9 @@ def test_crypto_event_backtest_uses_fills_ledger_manifest_and_consistent_equity(
     assert result.chart["markers"][1]["time"] == int((start + timedelta(hours=4)).timestamp())
     assert result.chart["equity"][-1]["value"] == result.diagnostics["ledger_final_equity"]
     assert result.summary["total_return_pct"] == 3.6
+    assert result.diagnostics["sample"]["bar_count"] == 5
+    assert result.diagnostics["sample"]["long_sample_pass"] is False
+    assert result.diagnostics["regime_split"]["regimes"]
 
 
 def test_crypto_event_backtest_does_not_use_same_bar_signal_price(tmp_path) -> None:
@@ -221,3 +230,153 @@ def test_btc_cost_stress_reuses_crypto_event_execution_config(monkeypatch) -> No
         "min_trade_notional": 25.0,
         "long_only": True,
     }
+
+
+def test_crypto_interval_validation_requires_all_btc_closure_timeframes_and_long_sample() -> None:
+    min_bars = {"5m": 10, "15m": 10, "1h": 10, "4h": 10, "1d": 10}
+    quality_results = [
+        {
+            "interval": interval,
+            "row_count": 12,
+            "coverage_pct": 100.0,
+            "quality_score": 100.0,
+            "is_usable": True,
+            "data_version": f"dv-{interval}",
+            "fingerprint": f"fp-{interval}",
+        }
+        for interval in CRYPTO_VALIDATION_INTERVALS
+    ]
+    resample_results = [
+        {
+            "target_interval": interval,
+            "rows_written": 12,
+            "coverage_pct": 100.0,
+            "quality_score": 100.0,
+            "data_version": f"resampled-{interval}",
+            "fingerprint": f"resample-fp-{interval}",
+        }
+        for interval in CRYPTO_VALIDATION_INTERVALS
+    ]
+
+    passed = summarize_crypto_interval_validation(
+        quality_results=quality_results,
+        resample_results=resample_results,
+        min_bars_by_interval=min_bars,
+    )
+
+    assert passed["status"] == "pass"
+    assert passed["target_intervals"] == list(CRYPTO_VALIDATION_INTERVALS)
+
+    failed = summarize_crypto_interval_validation(
+        quality_results=[row for row in quality_results if row["interval"] != "4h"],
+        resample_results=resample_results,
+        min_bars_by_interval={**min_bars, "1d": 20},
+    )
+
+    assert failed["status"] == "fail"
+    assert any("4h: missing quality result" in blocker for blocker in failed["blockers"])
+    assert any("1d: row_count 12 < long_sample_min_bars 20" in blocker for blocker in failed["blockers"])
+
+
+def test_default_crypto_cost_stress_scenarios_include_tail_shocks() -> None:
+    scenarios = default_crypto_cost_stress_scenarios()
+
+    assert len(scenarios) == 8
+    assert scenarios[0]["name"] == "base"
+    assert scenarios[-1] == {
+        "name": "tail_10x",
+        "label": "Tail cost shock 10x",
+        "commission_multiplier": 10.0,
+        "slippage_multiplier": 10.0,
+    }
+    assert default_crypto_cost_stress_scenarios(max_scenarios=3) == scenarios[:3]
+
+
+def test_qualify_crypto_candidates_selects_only_durable_gate_passes() -> None:
+    candidates = [
+        {
+            "strategy_id": "donchian_breakout",
+            "parameters": {"window": 20},
+            "score": 3.0,
+            "validation": {
+                "total_return_pct": 12.0,
+                "sharpe_ratio": 1.4,
+                "profit_factor": 1.8,
+                "max_drawdown_pct": -6.0,
+                "trade_count": 22,
+            },
+        },
+        {
+            "strategy_id": "trend_macd",
+            "parameters": {},
+            "score": 2.0,
+            "validation": {
+                "total_return_pct": 8.0,
+                "sharpe_ratio": 1.2,
+                "profit_factor": 1.4,
+                "max_drawdown_pct": -8.0,
+                "trade_count": 18,
+            },
+        },
+        {
+            "strategy_id": "reversion_rsi",
+            "parameters": {},
+            "score": 1.8,
+            "validation": {
+                "total_return_pct": 7.0,
+                "sharpe_ratio": 1.3,
+                "profit_factor": 1.5,
+                "max_drawdown_pct": -5.0,
+                "trade_count": 16,
+            },
+        },
+    ]
+    event_ok = {
+        "diagnostics": {
+            "engine": "event_driven",
+            "pnl_source": "ledger_fills",
+            "ledger_equity_consistent": True,
+        }
+    }
+    cost_ok = {
+        "engine": "event_driven",
+        "survival_rate_pct": 100.0,
+        "ledger_consistency_pct": 100.0,
+    }
+    walk_ok = {
+        "stability": {
+            "fold_pass_rate_pct": 100.0,
+            "ledger_consistency_pct": 100.0,
+            "regime_pass_rate_pct": 100.0,
+        }
+    }
+
+    result = qualify_crypto_candidates(
+        candidates,
+        cost_stress_by_candidate={
+            "donchian_breakout|window=20": cost_ok,
+            "trend_macd": {**cost_ok, "survival_rate_pct": 75.0},
+            "reversion_rsi": cost_ok,
+        },
+        walk_forward_by_candidate={
+            "donchian_breakout|window=20": walk_ok,
+            "trend_macd": walk_ok,
+            "reversion_rsi": walk_ok,
+        },
+        event_backtest_by_candidate={
+            "donchian_breakout|window=20": event_ok,
+            "trend_macd": event_ok,
+            "reversion_rsi": {"diagnostics": {"engine": "vectorized", "pnl_source": "signal_returns"}},
+        },
+        max_selected=2,
+    )
+
+    assert result["qualified_count"] == 1
+    assert result["selected_count"] == 1
+    assert result["selected_candidates"][0]["strategy_id"] == "donchian_breakout"
+    trend = next(row for row in result["candidates"] if row["strategy_id"] == "trend_macd")
+    reversion = next(row for row in result["candidates"] if row["strategy_id"] == "reversion_rsi")
+    assert trend["selected"] is False
+    assert any("cost survival_rate" in blocker for blocker in trend["qualification_blockers"])
+    assert reversion["qualified"] is False
+    assert any("event backtest is not event_driven" in blocker for blocker in reversion["qualification_blockers"])
