@@ -80,6 +80,7 @@ class FactorMiningEngine:
         max_selected: int = 8,
         auto_generate_formulas: bool = False,
         max_generated_factors: int = 24,
+        max_formula_complexity: int = 6,
     ) -> FactorMiningResult:
         """Run factor mining and persist the result."""
         from quant_us.factors.evaluation import FactorEvaluator
@@ -93,6 +94,7 @@ class FactorMiningEngine:
             generated_specs = GeneratedFactorLibrary(self.data_root).generate_and_register(
                 seed_factor_ids=ids,
                 max_specs=max(0, int(max_generated_factors)),
+                max_complexity=max(1, int(max_formula_complexity)),
             )
             generated_factor_ids = [spec.factor_id for spec in generated_specs]
             ids = _dedupe(ids + generated_factor_ids)
@@ -159,7 +161,9 @@ class FactorMiningEngine:
             max_selected=max_selected,
         )
         run_id = new_id("fmine")
-        strategy_configs = self._build_strategy_configs(run_id, selected, normalized_symbols)
+        strategy_configs = self._dedupe_strategy_configs(
+            self._build_strategy_configs(run_id, selected, normalized_symbols)
+        )
         strategy_logic_paths = [
             str(config["logic_path"])
             for config in strategy_configs
@@ -506,6 +510,24 @@ class FactorMiningEngine:
             encoding="utf-8",
         )
         return path
+
+    @staticmethod
+    def _dedupe_strategy_configs(
+        configs: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        seen: set[tuple[str, str, tuple[str, ...]]] = set()
+        deduped: list[dict[str, Any]] = []
+        for config in configs:
+            key = (
+                str(config.get("strategy_id", "")),
+                str(config.get("bar_size", "")),
+                tuple(str(item) for item in config.get("factor_ids", []) or []),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append(config)
+        return deduped
 
 
 def _score_factor_result(result: Any) -> float:

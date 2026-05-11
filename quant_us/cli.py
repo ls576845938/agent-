@@ -663,6 +663,22 @@ def _print_minute_quality_summary(
         )
     if not failing:
         print(f"{indent}  issue: (none)")
+    evidence_summary = getattr(report, "evidence_summary", {})
+    if evidence_summary:
+        counts = evidence_summary.get("interval_status_counts", {})
+        print(
+            f"{indent}  strict_evidence: "
+            f"read_only={bool(evidence_summary.get('read_only', True))} "
+            f"download_performed={bool(evidence_summary.get('download_performed', False))} "
+            f"intervals={int(evidence_summary.get('intervals_evaluated', 0))}"
+        )
+        print(
+            f"{indent}  status_counts: "
+            f"PASS={int(counts.get('PASS', 0))} "
+            f"WARN={int(counts.get('WARN', 0))} "
+            f"FAIL={int(counts.get('FAIL', 0))} "
+            f"MISSING={int(counts.get('MISSING', 0))}"
+        )
     return report
 
 
@@ -1078,6 +1094,19 @@ def cmd_report_minute_quality(args: argparse.Namespace) -> None:
     print(f"  root_subdir:    {args.root_subdir}")
     print(f"  vendor:         {args.vendor}")
     print(f"  asset_class:    {args.asset_class}")
+    evidence_summary = report.evidence_summary
+    print(
+        "  evidence_summary: "
+        f"read_only={bool(evidence_summary.get('read_only', True))} "
+        f"download_performed={bool(evidence_summary.get('download_performed', False))} "
+        f"affected_symbols={','.join(evidence_summary.get('affected_symbols', [])) or '(none)'}"
+    )
+    for bar_size, payload in report.evidence_summary.get("bar_size_summary", {}).items():
+        print(
+            f"  aggregate[{bar_size}]: status={payload.get('status', 'UNKNOWN')} "
+            f"intervals={int(payload.get('intervals_evaluated', 0))} "
+            f"affected_symbols={','.join(payload.get('affected_symbols', [])) or '(none)'}"
+        )
     for symbol in report.symbols:
         print(f"  symbol: {symbol.symbol} [{symbol.status}]")
         for interval in symbol.intervals:
@@ -1112,6 +1141,20 @@ def cmd_report_minute_quality(args: argparse.Namespace) -> None:
                 f"      latest={_display_value(interval.latest_timestamp_utc)} "
                 f"expected_latest={_display_value(interval.expected_latest_timestamp_utc)}"
             )
+    remediation_summary = report.remediation_summary
+    print(
+        f"  remediation_actions: {int(remediation_summary.get('action_count', 0))} "
+        f"(download_performed={bool(remediation_summary.get('download_performed', False))})"
+    )
+    for action in remediation_summary.get("actions", [])[:6]:
+        print(
+            f"    [{action.get('priority', 'unknown')}] {action.get('category', 'issue')}: "
+            f"{action.get('summary', '')}"
+        )
+        print(f"      instruction: {action.get('instruction', '')}")
+        details = action.get("details", [])
+        if details:
+            print(f"      evidence: {details[0]}")
     print("=" * 60)
 
 

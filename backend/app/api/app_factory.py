@@ -541,6 +541,7 @@ def _run_directory_summaries(artifacts_root: str, kind: str) -> list[dict[str, A
             provider_manifest = _json_file(run_root / "provider_manifest.json")
             workflow_result = _json_file(run_root / "workflow_run_result.json")
             strategy_manifest = _json_file(run_root / "qlib_strategy_manifest.json")
+            promotion_status = _qlib_research_only_promotion_status(strategy_manifest)
             summaries.append(
                 {
                     "run_id": run_root.name,
@@ -549,7 +550,7 @@ def _run_directory_summaries(artifacts_root: str, kind: str) -> list[dict[str, A
                     "provider_status": str(provider_manifest.get("status", "missing")),
                     "workflow_status": str(workflow_result.get("status", "missing")),
                     "manifest_status": str(strategy_manifest.get("status", "missing")),
-                    "promotion_status": str(strategy_manifest.get("promotion_status", "")),
+                    "promotion_status": promotion_status,
                     "strategy_id": str(strategy_manifest.get("strategy_id") or strategy_manifest.get("strategy_version", "")),
                 }
             )
@@ -572,6 +573,25 @@ def _run_directory_summaries(artifacts_root: str, kind: str) -> list[dict[str, A
                 }
             )
     return summaries
+
+
+def _qlib_research_only_promotion_status(strategy_manifest: dict[str, Any]) -> str:
+    """Qlib artifacts are research-only; never surface paper/live readiness."""
+    raw = str(strategy_manifest.get("promotion_status", "") or "").strip()
+    normalized = raw.lower()
+    forbidden_ready_states = {
+        "paper_ready",
+        "live_ready",
+        "ready_for_paper",
+        "ready_for_live",
+        "paper_eligible",
+        "live_eligible",
+        "paper_review_candidate",
+        "ready_for_portfolio_sim",
+    }
+    if normalized in forbidden_ready_states:
+        return "candidate"
+    return raw or "candidate"
 
 
 def _latest_integration_run(artifacts_root: str, kind: str) -> dict[str, Any]:
@@ -820,6 +840,8 @@ def create_app():
         try:
             result = us_quant_service.data_quality_report(request)
             return result
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc))
 
@@ -1528,7 +1550,7 @@ def create_app():
             "provider_status": provider_manifest.get("status", "missing"),
             "workflow_status": workflow_result.get("status", "missing"),
             "manifest_status": strategy_manifest.get("status", "missing"),
-            "promotion_status": strategy_manifest.get("promotion_status", ""),
+            "promotion_status": _qlib_research_only_promotion_status(strategy_manifest),
             "strategy_id": strategy_manifest.get("strategy_id") or strategy_manifest.get("strategy_version", ""),
             "symbols": dataset_manifest.get("symbols_exported") or dataset_manifest.get("symbols_requested", []),
             "score_rows": score_rows,

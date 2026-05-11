@@ -35,6 +35,7 @@ class GeneratedFactorSpec:
     rank_method: str = "percentile"
     generation_family: str = "generated_formula"
     signature: str = ""
+    complexity_score: int = 0
     version: str = "v1"
     created_at: str = field(default_factory=lambda: utc_now().isoformat())
 
@@ -107,10 +108,12 @@ class GeneratedFactorLibrary:
         *,
         seed_factor_ids: list[str] | None = None,
         max_specs: int = 24,
+        max_complexity: int = 6,
     ) -> list[GeneratedFactorSpec]:
         specs = generate_candidate_formula_specs(
             seed_factor_ids=seed_factor_ids or self._builtin.factor_ids(),
             max_specs=max_specs,
+            max_complexity=max_complexity,
             library=self._builtin,
         )
         self.save_specs(specs)
@@ -121,6 +124,7 @@ def generate_candidate_formula_specs(
     *,
     seed_factor_ids: list[str],
     max_specs: int = 24,
+    max_complexity: int = 6,
     library: FactorLibrary | None = None,
 ) -> list[GeneratedFactorSpec]:
     """Generate deterministic formula-factor candidates from known primitives."""
@@ -135,6 +139,8 @@ def generate_candidate_formula_specs(
     seen_signatures: set[str] = set()
 
     def append_spec(spec: GeneratedFactorSpec) -> bool:
+        if spec.complexity_score > max_complexity:
+            return False
         if spec.signature in seen_signatures:
             return False
         seen_signatures.add(spec.signature)
@@ -312,6 +318,11 @@ def _make_spec(
         required_fields=required_fields,
         generation_family=generation_family,
         signature=signature,
+        complexity_score=_formula_complexity(
+            formula_type=formula_type,
+            components=normalized_components,
+            params=normalized_params,
+        ),
     )
 
 
@@ -389,6 +400,21 @@ def _signature_for(
         "params": dict(params),
     }
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
+
+
+def _formula_complexity(
+    *,
+    formula_type: str,
+    components: list[str],
+    params: dict[str, Any],
+) -> int:
+    nonlinear_penalty = 0
+    if formula_type in {"signed_power", "ratio", "interaction", "minmax_spread"}:
+        nonlinear_penalty = 1
+    elif formula_type == "gated_combo":
+        nonlinear_penalty = 2
+    param_penalty = len(params)
+    return len(components) + nonlinear_penalty + param_penalty
 
 
 def _is_builtin(factor_id: str, library: FactorLibrary) -> bool:

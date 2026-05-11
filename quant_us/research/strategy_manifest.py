@@ -14,6 +14,7 @@ from typing import Any
 
 from quant_us.core.clock import utc_now
 from quant_us.core.types import new_id
+from quant_us.research.validation import summarize_candidate_validation
 
 
 @dataclass
@@ -52,6 +53,9 @@ class StrategyCandidateManifest:
     trial_count: int = 0
     pbo: float | None = None
     dsr: float | None = None
+    cpcv: dict[str, Any] = field(default_factory=dict)
+    cost_stress: dict[str, Any] = field(default_factory=dict)
+    style_exposure: dict[str, Any] = field(default_factory=dict)
     cost_model: dict[str, Any] = field(default_factory=dict)
     slippage_model: dict[str, Any] = field(default_factory=dict)
     capacity: dict[str, Any] = field(default_factory=dict)
@@ -60,6 +64,7 @@ class StrategyCandidateManifest:
     exposure_limits: dict[str, Any] = field(default_factory=dict)
     failure_conditions: list[str] = field(default_factory=list)
     delisting_conditions: dict[str, Any] = field(default_factory=dict)
+    contract_missing_reasons: dict[str, str] = field(default_factory=dict)
     promotion_result_path: str = ""
     evidence: dict[str, Any] = field(default_factory=dict)
     paper_review_evidence_required: bool = True
@@ -480,6 +485,18 @@ class StrategyManifestManager:
         cost_stress = self._read_json_dict(manifest.cost_stress_result_path)
         data_manifest = self._read_json_dict(manifest.data_manifest_path)
         candidate_metrics = dict(candidate_data.get("metrics", {}))
+        promotion_gate_evidence = dict(
+            dict(manifest.evidence or {}).get("promotion_gate", {}) or {}
+        )
+        validation_stats = dict(promotion_gate_evidence.get("validation_stats", {}) or {})
+        if not validation_stats:
+            validation_stats = summarize_candidate_validation(
+                candidate_id=manifest.source_candidate_id,
+                metrics=candidate_metrics,
+                walk_forward_artifact=walk_forward,
+                cost_stress_artifact=cost_stress,
+                experiment_data=experiment,
+            )
 
         manifest.data_version = str(
             manifest.data_version
@@ -517,6 +534,12 @@ class StrategyManifestManager:
             or manifest.strategy_candidate_id
         )
         resolved_trial_count = self._resolve_trial_count(candidate_data, experiment)
+        validation_trial_count = self._first_int(
+            dict(validation_stats.get("trial_counting", {}) or {}),
+            keys=("effective_trial_count",),
+        )
+        if validation_trial_count is not None:
+            resolved_trial_count = max(resolved_trial_count, validation_trial_count)
         if resolved_trial_count > 0:
             manifest.trial_count = resolved_trial_count
         resolved_pbo = self._first_float(
@@ -524,6 +547,7 @@ class StrategyManifestManager:
             scorecard,
             walk_forward,
             cost_stress,
+            dict(validation_stats.get("pbo", {}) or {}),
             keys=("pbo", "PBO", "probability_of_backtest_overfitting"),
         )
         if resolved_pbo is not None:
@@ -533,10 +557,21 @@ class StrategyManifestManager:
             scorecard,
             walk_forward,
             cost_stress,
+            dict(validation_stats.get("deflated_sharpe_ratio", {}) or {}),
             keys=("dsr", "DSR", "deflated_sharpe_ratio"),
         )
         if resolved_dsr is not None:
             manifest.dsr = resolved_dsr
+        manifest.cpcv = self._build_cpcv(
+            candidate_metrics=candidate_metrics,
+            walk_forward=walk_forward,
+            validation_stats=validation_stats,
+        )
+        manifest.cost_stress = self._build_cost_stress(
+            candidate_metrics=candidate_metrics,
+            cost_stress=cost_stress,
+            validation_stats=validation_stats,
+        )
         manifest.cost_model = self._build_cost_model(
             experiment=experiment,
             backtest=backtest,
@@ -574,6 +609,12 @@ class StrategyManifestManager:
             backtest=backtest,
             scorecard=scorecard,
         )
+        manifest.style_exposure = self._build_style_exposure(
+            candidate_data=candidate_data,
+            candidate_metrics=candidate_metrics,
+            scorecard=scorecard,
+            backtest=backtest,
+        )
         manifest.failure_conditions = self._build_failure_conditions(
             candidate_data=candidate_data,
             experiment=experiment,
@@ -583,6 +624,9 @@ class StrategyManifestManager:
             candidate_data=candidate_data,
             experiment=experiment,
             data_manifest=data_manifest,
+        )
+        manifest.contract_missing_reasons = self._build_contract_missing_reasons(
+            manifest=manifest
         )
 
     def _read_json_dict(self, raw_path: str) -> dict[str, Any]:
@@ -715,6 +759,64 @@ class StrategyManifestManager:
         }
         return {k: v for k, v in payload.items() if v not in ("", None)}
 
+    def _build_cpcv(
+        self,
+        *,
+        candidate_metrics: dict[str, Any],
+        walk_forward: dict[str, Any],
+        validation_stats: dict[str, Any],
+    ) -> dict[str, Any]:
+        cv_summary = validation_stats.get("cv_summary", {})
+        if not isinstance(cv_summary, dict):
+            cv_summary = {}
+        fold_records = walk_forward.get("folds")
+        fold_sharpes = walk_forward.get("fold_sharpes")
+        payload = {
+            "method": str(
+                cv_summary.get("method")
+                or walk_forward.get("validation_method")
+                or walk_forward.get("cv_method")
+                or candidate_metrics.get("validation_method")
+                or candidate_metrics.get("cv_method")
+                or ""
+            ).strip().lower(),
+            "purged": bool(cv_summary.get("purged", walk_forward.get("purged", False))),
+            "embargoed": bool(
+                cv_summary.get(
+                    "embargoed",
+                    bool((walk_forward.get("embargo_bars") or 0) > 0),
+                )
+            ),
+            "embargo_steps": int(
+                cv_summary.get("embargo_steps", walk_forward.get("embargo_bars", 0) or 0)
+                or 0
+            ),
+            "fold_count": int(
+                cv_summary.get(
+                    "fold_count",
+                    len(fold_records) if isinstance(fold_records, list) else len(fold_sharpes or []),
+                )
+                or 0
+            ),
+            "path_count": int(
+                cv_summary.get("path_count", walk_forward.get("combination_count", 0) or 0)
+                or 0
+            ),
+            "pass_rate": self._first_float(
+                cv_summary,
+                walk_forward,
+                candidate_metrics,
+                keys=("pass_rate", "walk_forward_pass_rate"),
+            ),
+        }
+        if payload["method"] != "cpcv":
+            payload["missing_reason"] = (
+                f"validation_method_not_cpcv:{payload['method'] or 'unknown'}"
+            )
+        elif payload["path_count"] <= 0 and payload["fold_count"] <= 0:
+            payload["missing_reason"] = "cpcv_path_metadata_missing"
+        return {k: v for k, v in payload.items() if v not in ("", None)}
+
     def _build_slippage_model(
         self,
         *,
@@ -734,6 +836,51 @@ class StrategyManifestManager:
                 backtest, candidate_metrics, cost_stress, keys=("slippage_bps", "slippage")
             ),
         }
+        return {k: v for k, v in payload.items() if v not in ("", None)}
+
+    def _build_cost_stress(
+        self,
+        *,
+        candidate_metrics: dict[str, Any],
+        cost_stress: dict[str, Any],
+        validation_stats: dict[str, Any],
+    ) -> dict[str, Any]:
+        summary = validation_stats.get("cost_before_after", {})
+        if not isinstance(summary, dict):
+            summary = {}
+        raw_levels = cost_stress.get("levels", [])
+        levels = raw_levels if isinstance(raw_levels, list) else []
+        payload = {
+            "status": str(cost_stress.get("status", "") or ""),
+            "stress_survival_rate": self._first_float(
+                cost_stress,
+                candidate_metrics,
+                keys=("stress_survival_rate", "survival_rate"),
+            ),
+            "cost_sensitivity": self._first_float(
+                cost_stress,
+                candidate_metrics,
+                keys=("cost_sensitivity",),
+            ),
+            "level_count": len(levels),
+            "surviving_levels": self._first_int(summary, keys=("surviving_levels",)),
+            "baseline_multiplier": self._first_float(
+                summary,
+                keys=("baseline_multiplier",),
+            ),
+            "worst_multiplier": self._first_float(
+                summary,
+                keys=("worst_multiplier",),
+            ),
+            "worst_return": self._first_float(summary, keys=("worst_return",)),
+            "worst_sharpe": self._first_float(summary, keys=("worst_sharpe",)),
+        }
+        if (
+            payload["stress_survival_rate"] is None
+            and payload["cost_sensitivity"] is None
+            and payload["level_count"] <= 0
+        ):
+            payload["missing_reason"] = "canonical_cost_stress_artifact_missing_or_empty"
         return {k: v for k, v in payload.items() if v not in ("", None)}
 
     def _build_capacity(
@@ -829,6 +976,80 @@ class StrategyManifestManager:
         }
         return {k: v for k, v in payload.items() if v not in ("", None, {}, [])}
 
+    def _build_style_exposure(
+        self,
+        *,
+        candidate_data: dict[str, Any],
+        candidate_metrics: dict[str, Any],
+        scorecard: dict[str, Any],
+        backtest: dict[str, Any],
+    ) -> dict[str, Any]:
+        raw_payload: dict[str, Any] = {}
+        for source in (candidate_data, candidate_metrics, scorecard, backtest):
+            for key in (
+                "style_exposure",
+                "style_exposures",
+                "benchmark_style_exposure",
+            ):
+                value = source.get(key)
+                if isinstance(value, dict) and value:
+                    raw_payload = dict(value)
+                    break
+            if raw_payload:
+                break
+
+        if not raw_payload:
+            return {"missing_reason": "style_exposure_benchmark_regression_missing"}
+
+        betas = raw_payload.get("betas")
+        if not isinstance(betas, dict):
+            factor_betas = raw_payload.get("factor_betas")
+            if isinstance(factor_betas, dict):
+                betas = factor_betas
+            else:
+                betas = {
+                    str(key): float(value)
+                    for key, value in raw_payload.items()
+                    if key
+                    not in {
+                        "observations",
+                        "alpha_period",
+                        "alpha_annualized",
+                        "r_squared",
+                        "residual_volatility_annualized",
+                        "benchmark_columns",
+                        "warnings",
+                        "status",
+                        "missing_reason",
+                    }
+                    and isinstance(value, (int, float))
+                }
+        warnings = raw_payload.get("warnings", [])
+        payload = {
+            "observations": self._first_int(raw_payload, keys=("observations",)),
+            "alpha_period": self._first_float(raw_payload, keys=("alpha_period",)),
+            "alpha_annualized": self._first_float(
+                raw_payload, keys=("alpha_annualized",)
+            ),
+            "betas": {
+                str(key): float(value)
+                for key, value in (betas or {}).items()
+                if value is not None
+            },
+            "r_squared": self._first_float(raw_payload, keys=("r_squared",)),
+            "residual_volatility_annualized": self._first_float(
+                raw_payload,
+                keys=("residual_volatility_annualized",),
+            ),
+            "benchmark_columns": list(raw_payload.get("benchmark_columns", []) or []),
+            "warnings": list(warnings) if isinstance(warnings, list) else [],
+        }
+        if not payload["betas"] and not payload["benchmark_columns"]:
+            payload["missing_reason"] = str(
+                raw_payload.get("missing_reason") or "style_exposure_betas_missing"
+            )
+        return {k: v for k, v in payload.items() if v not in ("", None, {}, [])}
+
     def _build_failure_conditions(
         self,
         *,
@@ -874,6 +1095,93 @@ class StrategyManifestManager:
             "universe_id": str(data_manifest.get("universe_id", "") or ""),
             "universe_source": str(data_manifest.get("universe_source", "") or ""),
         }
+
+    def _build_contract_missing_reasons(
+        self,
+        *,
+        manifest: StrategyCandidateManifest,
+    ) -> dict[str, str]:
+        reasons: dict[str, str] = {}
+        if not manifest.data_version:
+            reasons["data_version"] = "data_version_missing_from_candidate_or_experiment"
+        if not manifest.sample_window:
+            reasons["sample_window"] = "sample_window_missing_from_experiment_or_data_manifest"
+        if not manifest.purge_embargo:
+            reasons["purge_embargo"] = "purge_embargo_metadata_missing_from_validation"
+        if not manifest.trial_id:
+            reasons["trial_id"] = "trial_id_missing_from_candidate"
+        if int(manifest.trial_count or 0) <= 0:
+            reasons["trial_count"] = "effective_trial_count_missing_from_validation"
+        if manifest.pbo is None:
+            reasons["pbo"] = "pbo_missing_from_validation"
+        if manifest.dsr is None:
+            reasons["dsr"] = "deflated_sharpe_ratio_missing_from_validation"
+        if not self._cpcv_complete(manifest.cpcv):
+            reasons["cpcv"] = str(
+                manifest.cpcv.get("missing_reason") or "cpcv_validation_metadata_missing"
+            )
+        if not manifest.cost_model:
+            reasons["cost_model"] = "cost_model_missing_from_experiment_or_backtest"
+        if not manifest.slippage_model:
+            reasons["slippage_model"] = "slippage_model_missing_from_experiment_or_backtest"
+        if not self._cost_stress_complete(manifest.cost_stress):
+            reasons["cost_stress"] = str(
+                manifest.cost_stress.get("missing_reason")
+                or "cost_stress_summary_missing"
+            )
+        if not self._capacity_complete(manifest.capacity):
+            reasons["capacity"] = "capacity_estimate_missing_from_cost_stress_or_metrics"
+        if not self._turnover_complete(manifest.turnover):
+            reasons["turnover"] = "turnover_evidence_missing_from_scorecard_or_backtest"
+        if not manifest.holding_period:
+            reasons["holding_period"] = "holding_period_missing_from_walk_forward_or_scorecard"
+        if not manifest.exposure_limits:
+            reasons["exposure_limits"] = "exposure_limits_missing_from_backtest"
+        if not manifest.failure_conditions:
+            reasons["failure_conditions"] = "failure_conditions_missing_from_candidate_or_experiment"
+        if not manifest.delisting_conditions:
+            reasons["delisting_conditions"] = "delisting_conditions_missing_from_candidate_or_data_manifest"
+        if not self._style_exposure_complete(manifest.style_exposure):
+            reasons["style_exposure"] = str(
+                manifest.style_exposure.get("missing_reason")
+                or "style_exposure_benchmark_regression_missing"
+            )
+        return reasons
+
+    @staticmethod
+    def _cpcv_complete(payload: dict[str, Any]) -> bool:
+        return bool(payload) and str(payload.get("method", "")).lower() == "cpcv" and (
+            int(payload.get("path_count", 0) or 0) > 0
+            or int(payload.get("fold_count", 0) or 0) > 0
+        )
+
+    @staticmethod
+    def _cost_stress_complete(payload: dict[str, Any]) -> bool:
+        return bool(payload) and (
+            payload.get("stress_survival_rate") is not None
+            or payload.get("cost_sensitivity") is not None
+            or int(payload.get("level_count", 0) or 0) > 0
+        )
+
+    @staticmethod
+    def _style_exposure_complete(payload: dict[str, Any]) -> bool:
+        return bool(payload) and (
+            bool(payload.get("betas")) or bool(payload.get("benchmark_columns"))
+        )
+
+    @staticmethod
+    def _capacity_complete(payload: dict[str, Any]) -> bool:
+        return bool(payload) and any(
+            payload.get(key) is not None
+            for key in ("estimated_capacity_usd", "fragility_score")
+        )
+
+    @staticmethod
+    def _turnover_complete(payload: dict[str, Any]) -> bool:
+        return bool(payload) and any(
+            payload.get(key) is not None
+            for key in ("turnover", "annual_turnover_pct", "trade_count")
+        )
 
     def _first_float(
         self, *sources: dict[str, Any], keys: tuple[str, ...]

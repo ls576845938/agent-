@@ -28,6 +28,7 @@ from quant_us.data.storage.data_manifest import (
     validate_manifest_for_promotion,
 )
 from quant_us.backtest.ledger_pnl import compute_ledger_reconciliation_artifact_hash
+from quant_us.research.evidence_contracts import summarize_strategy_manifest_contract
 from quant_us.research.validation import summarize_candidate_validation
 
 
@@ -405,6 +406,25 @@ class ResearchPromotionGate:
             payload.get("strategy_candidate_id", manifest_path.parent.name)
         )
         evidence["strategy_manifest_status"] = str(payload.get("promotion_status", ""))
+        contract_summary = summarize_strategy_manifest_contract(payload)
+        evidence["strategy_manifest_contract"] = contract_summary
+        evidence["strategy_manifest_contract_complete"] = bool(
+            contract_summary.get("contract_complete", False)
+        )
+        if not contract_summary.get("contract_documented", False):
+            undocumented_missing_fields = list(
+                contract_summary.get("undocumented_missing_fields", [])
+            )
+            reasons.append(
+                "strategy_manifest_contract_missing_reasons:"
+                f"{evidence['strategy_manifest_id']}:{','.join(undocumented_missing_fields)}"
+            )
+        if not contract_summary.get("contract_complete", False):
+            missing_fields = list(contract_summary.get("missing_fields", []))
+            reasons.append(
+                "strategy_manifest_contract_incomplete:"
+                f"{evidence['strategy_manifest_id']}:{','.join(missing_fields)}"
+            )
 
     def _load_canonical_research_artifact(
         self,

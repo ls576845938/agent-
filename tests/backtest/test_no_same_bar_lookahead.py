@@ -33,10 +33,10 @@ class FirstBarLongStrategy(Strategy):
         ]
 
 
-def _bar(ts: datetime, *, open_: float, close: float) -> Bar:
+def _bar(ts: datetime, *, open_: float, close: float, symbol: str = "AAPL") -> Bar:
     return Bar(
         timestamp_utc=ts,
-        symbol="AAPL",
+        symbol=symbol,
         open=open_,
         high=max(open_, close) + 1.0,
         low=min(open_, close) - 1.0,
@@ -104,3 +104,24 @@ def test_streaming_market_events_keep_next_bar_execution_semantics() -> None:
     ]
     assert stream_result.fills[0].price == 99.0
     assert stream_result.metadata["execution_semantics"] == "signal_at_bar_close_order_next_bar"
+
+
+def test_multiple_bars_in_same_timestamp_slice_do_not_fill_new_signal_same_bar() -> None:
+    start = datetime(2026, 5, 11, 14, 30, tzinfo=timezone.utc)
+    bars = [
+        _bar(start, open_=95.0, close=100.0),
+        _bar(start, open_=10.0, close=11.0, symbol="MSFT"),
+        _bar(start + timedelta(minutes=1), open_=99.0, close=101.0),
+    ]
+    engine = EventDrivenBacktestEngine(
+        strategies=[FirstBarLongStrategy()],
+        config=BacktestConfig(commission_rate=0.0, slippage_bps=0.0),
+    )
+
+    result = engine.run(bars)
+
+    assert len(result.fills) == 1
+    assert result.fills[0].filled_at == bars[-1].timestamp_utc
+    assert result.fills[0].price == 99.0
+    assert result.orders[0].timestamp_utc == bars[-1].timestamp_utc
+    assert result.orders[0].metadata["signal_timestamp_utc"] == start.isoformat()

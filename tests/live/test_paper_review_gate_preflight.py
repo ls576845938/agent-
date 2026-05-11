@@ -7,6 +7,10 @@ from unittest.mock import patch
 import pytest
 
 from quant_us.live.paper_runtime import PaperRuntime, PaperRuntimeConfig
+from quant_us.research.evidence_contracts import (
+    PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
+    PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+)
 from quant_us.research.evidence_registry import rebuild_evidence_registry
 from quant_us.research.evidence_pack import EvidencePackGenerator
 from quant_us.research.paper_review_bridge import PaperReviewManager
@@ -200,12 +204,13 @@ def test_candidate_review_preparation_has_no_live_runtime_side_effects(
                     "portfolio_sim_id": portfolio_evidence_pack_id,
                     "strategy_manifest_ids": ["sm_001"],
                     "evidence_contract": {
-                        "schema_version": "portfolio_paper_review_evidence_v2",
-                        "origin": "quant_us.research.evidence_pack:EvidencePackGenerator.save_portfolio_review_pack",
+                        "schema_version": PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+                        "origin": PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
                         "portfolio_sim_id": portfolio_evidence_pack_id,
                         "strategy_manifest_ids": ["sm_001"],
                         "candidate_count": 1,
                         "all_strategy_manifest_contracts_complete": True,
+                        "all_strategy_manifest_contracts_documented": True,
                         "paper_review_gate": "portfolio_evidence_pack_required",
                     },
                     "candidate_id": "cand_001",

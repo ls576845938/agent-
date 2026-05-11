@@ -165,6 +165,8 @@ class MultiTimeframeBarScheduler:
         self.schedule = schedule
         self._latest: dict[tuple[str, str], Bar] = {}
         self._available_at: dict[tuple[str, str], datetime] = {}
+        self._pending: dict[tuple[str, str], Bar] = {}
+        self._pending_available_at: dict[tuple[str, str], datetime] = {}
 
     def update_available(self, bars: Iterable[Bar], timestamp_utc: datetime) -> None:
         now = ensure_utc(timestamp_utc)
@@ -175,13 +177,12 @@ class MultiTimeframeBarScheduler:
             if self.schedule is not None and bar_size not in self.schedule.all_bar_sizes:
                 continue
             available_at = ensure_utc(bar.timestamp_utc) + self._availability_delay()
-            if available_at > now:
-                continue
             key = (bar_size, bar.symbol.upper())
-            current = self._latest.get(key)
-            if current is None or bar.timestamp_utc >= current.timestamp_utc:
-                self._latest[key] = bar
-                self._available_at[key] = available_at
+            if available_at > now:
+                self._store_pending(key, bar, available_at)
+                continue
+            self._store_latest(key, bar, available_at)
+        self._release_pending(now)
 
     def snapshot_for(self, bar: Bar, timestamp_utc: datetime) -> FrozenTimeframeSnapshot:
         current_time = ensure_utc(timestamp_utc)
@@ -216,6 +217,36 @@ class MultiTimeframeBarScheduler:
         if self.schedule is None:
             return timedelta(0)
         return self.schedule.availability_delay
+
+    def _store_latest(
+        self,
+        key: tuple[str, str],
+        bar: Bar,
+        available_at: datetime,
+    ) -> None:
+        current = self._latest.get(key)
+        if current is None or bar.timestamp_utc >= current.timestamp_utc:
+            self._latest[key] = bar
+            self._available_at[key] = available_at
+
+    def _store_pending(
+        self,
+        key: tuple[str, str],
+        bar: Bar,
+        available_at: datetime,
+    ) -> None:
+        current = self._pending.get(key)
+        if current is None or bar.timestamp_utc >= current.timestamp_utc:
+            self._pending[key] = bar
+            self._pending_available_at[key] = available_at
+
+    def _release_pending(self, timestamp_utc: datetime) -> None:
+        for key, available_at in list(self._pending_available_at.items()):
+            if available_at > timestamp_utc:
+                continue
+            bar = self._pending.pop(key)
+            self._pending_available_at.pop(key)
+            self._store_latest(key, bar, available_at)
 
 
 def _as_tuple(value: Any) -> tuple[str, ...]:

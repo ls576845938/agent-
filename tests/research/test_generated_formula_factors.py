@@ -78,6 +78,28 @@ def test_generated_formula_specs_include_nonlinear_templates_and_dedup() -> None
         spec.formula_type for spec in specs
     }
     assert all(spec.factor_id.startswith("gf_") for spec in specs)
+    assert all(spec.complexity_score > 0 for spec in specs)
+
+
+def test_generated_formula_specs_respect_complexity_limit() -> None:
+    specs = generate_candidate_formula_specs(
+        seed_factor_ids=[
+            "momentum_20d",
+            "volatility_20d",
+            "liquidity_20d",
+            "reversal_1d",
+        ],
+        max_specs=24,
+        max_complexity=4,
+    )
+
+    assert specs
+    assert all(spec.complexity_score <= 4 for spec in specs)
+    assert "tri_factor_risk_gated" not in {spec.generation_family for spec in specs}
+    assert not any(
+        spec.formula_type == "gated_combo" and len(spec.components) >= 3
+        for spec in specs
+    )
 
 
 def test_factor_mining_can_generate_formulas_and_strategy_logic(monkeypatch, tmp_path) -> None:
@@ -143,12 +165,19 @@ def test_factor_mining_can_generate_formulas_and_strategy_logic(monkeypatch, tmp
         factor_ids=["momentum_20d", "volatility_20d", "liquidity_20d"],
         auto_generate_formulas=True,
         max_generated_factors=4,
+        max_formula_complexity=4,
         max_selected=3,
     )
 
     assert result.generated_factor_ids
+    assert len(result.generated_factor_ids) == len(set(result.generated_factor_ids))
     assert any(score.factor_id.startswith("gf_") for score in result.selected_factors)
     assert result.strategy_configs
+    config_keys = {
+        (config["strategy_id"], config["bar_size"], tuple(config["factor_ids"]))
+        for config in result.strategy_configs
+    }
+    assert len(config_keys) == len(result.strategy_configs)
     assert all(config.get("logic_path") for config in result.strategy_configs)
     assert {"single_factor_rank", "weighted_factor_basket", "consensus_rank"} <= {
         config["template_id"] for config in result.strategy_configs

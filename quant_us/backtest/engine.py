@@ -18,7 +18,7 @@ from quant_us.backtest.slippage import BpsSlippage
 from quant_us.backtest.timeframe_scheduler import MultiTimeframeBarScheduler, MultiTimeframeSchedule
 from quant_us.core.calendar import USEquityCalendar
 from quant_us.core.events import Event, MarketEvent, OrderIntentEvent, SignalEvent, TargetPositionEvent
-from quant_us.core.types import AccountState, Bar, Fill, Order, OrderIntent, PortfolioSnapshot, new_id
+from quant_us.core.types import AccountState, Bar, Fill, Order, OrderIntent, PortfolioSnapshot, TargetPosition, new_id
 from quant_us.execution.oms import OMSResult, OrderManagementSystem
 from quant_us.portfolio.allocation import AllocationCombiner, AllocationConfig
 from quant_us.portfolio.position_sizer import PercentOfEquitySizer, PositionSizerConfig
@@ -77,6 +77,7 @@ class BacktestConfig:
     rebalance: RebalanceConfig = field(default_factory=RebalanceConfig)
     execution_semantics: str = "signal_at_bar_close_order_next_bar"
     timeframe_schedule: MultiTimeframeSchedule | None = None
+    target_positions: tuple[TargetPosition, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -98,6 +99,8 @@ class _BacktestRunState:
     snapshots: list[PortfolioSnapshot] = field(default_factory=list)
     pending_intents: list[OrderIntent] = field(default_factory=list)
     timeframe_scheduler: MultiTimeframeBarScheduler = field(default_factory=MultiTimeframeBarScheduler)
+    target_position_cursor: int = 0
+    consumed_external_target_count: int = 0
 
 
 class EventDrivenBacktestEngine:
@@ -129,6 +132,7 @@ class EventDrivenBacktestEngine:
         self.rebalance = RebalancePlanner(self.config.rebalance)
         self.risk_engine = PreTradeRiskEngine(self.config.risk, calendar=self.calendar)
         self.oms = OrderManagementSystem(self.broker, self.risk_engine, calendar=self.calendar)
+        self._target_positions = self._sorted_target_positions(self.config.target_positions)
         self._prev_close: dict[str, float] = {}
         self._gap_rejected_orders: list[dict] = []
         self._stream_events: list[MarketEvent] = []
@@ -171,6 +175,15 @@ class EventDrivenBacktestEngine:
             metadata["pending_intent_ids"] = [
                 intent.order_intent_id for intent in state.pending_intents
             ]
+        if self._target_positions:
+            metadata["external_target_position_count"] = len(self._target_positions)
+            metadata["external_target_positions_consumed"] = state.consumed_external_target_count
+            metadata["external_target_positions_pending"] = (
+                len(self._target_positions) - state.consumed_external_target_count
+            )
+            metadata["external_target_position_semantics"] = (
+                "target_weights_imported_as_target_positions_rebalanced_before_risk_gate"
+            )
         return BacktestResult(
             run_id=self.config.run_id,
             snapshots=state.snapshots,
@@ -249,7 +262,11 @@ class EventDrivenBacktestEngine:
                 signals.extend(strategy_signals)
                 state.events.extend(SignalEvent.from_signal(signal) for signal in strategy_signals)
 
-        targets = self.allocator.combine(self.sizer.size(signals))
+        target_inputs = self.sizer.size(signals)
+        external_targets = self._consume_external_targets(timestamp_utc, state)
+        target_inputs.extend(external_targets)
+        targets = self.allocator.combine(target_inputs)
+        targets = self._annotate_external_target_outputs(targets, external_targets)
         state.events.extend(TargetPositionEvent.from_target(target) for target in targets)
         account = self.broker.get_account()
         intents = self.rebalance.plan(targets, account, prices, self.config.run_id)
@@ -368,6 +385,84 @@ class EventDrivenBacktestEngine:
                 "timeframe_snapshot_metadata": snapshot.to_metadata(),
             },
         )
+
+    @staticmethod
+    def _sorted_target_positions(targets: Iterable[TargetPosition]) -> tuple[TargetPosition, ...]:
+        return tuple(
+            sorted(
+                targets,
+                key=lambda target: (
+                    target.timestamp_utc,
+                    target.symbol,
+                    target.strategy_id,
+                    target.target_position_id,
+                ),
+            )
+        )
+
+    def _consume_external_targets(
+        self,
+        timestamp_utc,
+        state: _BacktestRunState,
+    ) -> list[TargetPosition]:
+        if not self._target_positions:
+            return []
+
+        released: list[TargetPosition] = []
+        while state.target_position_cursor < len(self._target_positions):
+            target = self._target_positions[state.target_position_cursor]
+            if target.timestamp_utc > timestamp_utc:
+                break
+            released.append(self._with_external_target_metadata(target))
+            state.target_position_cursor += 1
+
+        state.consumed_external_target_count += len(released)
+        return released
+
+    @staticmethod
+    def _with_external_target_metadata(target: TargetPosition) -> TargetPosition:
+        metadata = dict(target.metadata)
+        metadata.setdefault("source", "external_target_weights")
+        metadata.setdefault("input_type", "target_weight")
+        metadata.setdefault("boundary", "target_weight_to_target_position")
+        metadata.setdefault("order_intent_boundary", "rebalance_planner")
+        metadata.setdefault("risk_gate", "oms_pre_trade_risk")
+        return replace(target, metadata=metadata)
+
+    @staticmethod
+    def _annotate_external_target_outputs(
+        targets: list[TargetPosition],
+        external_targets: list[TargetPosition],
+    ) -> list[TargetPosition]:
+        if not external_targets:
+            return targets
+
+        external_by_symbol: dict[str, list[TargetPosition]] = {}
+        for target in external_targets:
+            external_by_symbol.setdefault(target.symbol, []).append(target)
+
+        annotated: list[TargetPosition] = []
+        for target in targets:
+            external_inputs = external_by_symbol.get(target.symbol)
+            if not external_inputs:
+                annotated.append(target)
+                continue
+
+            metadata = dict(target.metadata)
+            metadata.setdefault("source", external_inputs[0].metadata.get("source", "external_target_weights"))
+            metadata.setdefault("input_type", "target_weight")
+            metadata.setdefault("boundary", "target_weight_to_target_position")
+            metadata.setdefault("order_intent_boundary", "rebalance_planner")
+            metadata.setdefault("risk_gate", "oms_pre_trade_risk")
+            metadata["external_target_position_ids"] = [
+                item.target_position_id for item in external_inputs
+            ]
+            metadata["external_target_weights"] = [
+                item.target_weight for item in external_inputs
+            ]
+            annotated.append(replace(target, metadata=metadata))
+
+        return annotated
 
     @staticmethod
     def _with_execution_timestamp(intent: OrderIntent, timestamp_utc) -> OrderIntent:

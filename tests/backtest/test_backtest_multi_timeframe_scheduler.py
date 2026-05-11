@@ -67,6 +67,39 @@ class ExecutionBarStrategy(Strategy):
         ]
 
 
+@dataclass
+class ConfirmRequiredStrategy(Strategy):
+    strategy_id: str = "mtf_confirm_required"
+    version: str = "1.0.0"
+    emitted: bool = False
+    confirm_seen_at: list[datetime | None] = field(default_factory=list)
+    signal_timestamps: list[datetime] = field(default_factory=list)
+
+    def on_bar(self, event: MarketEvent, context: StrategyContext):
+        if event.bar.bar_size != "1m" or self.emitted:
+            return []
+
+        snapshot = context.parameters["timeframe_snapshot"]
+        confirm_bar = snapshot.bar("5m", event.bar.symbol)
+        self.confirm_seen_at.append(None if confirm_bar is None else confirm_bar.timestamp_utc)
+        if confirm_bar is None:
+            return []
+
+        self.emitted = True
+        self.signal_timestamps.append(event.timestamp_utc)
+        return [
+            Signal(
+                timestamp_utc=event.timestamp_utc,
+                strategy_id=self.strategy_id,
+                symbol=event.bar.symbol,
+                direction=SignalDirection.LONG,
+                strength=1.0,
+                horizon="next_bar",
+                reason="mtf_confirm_available",
+            )
+        ]
+
+
 def test_multi_timeframe_snapshot_freezes_only_asof_available_bars(tmp_path: Path) -> None:
     previous_daily = _bar(datetime(2026, 5, 8, 20, 0, tzinfo=UTC), 400.0, "1d")
     fifteen = _bar(datetime(2026, 5, 11, 14, 30, tzinfo=UTC), 103.0, "15m")
@@ -136,3 +169,63 @@ def test_timeframe_scheduler_respects_availability_delay() -> None:
     available_at = bar.timestamp_utc + timedelta(seconds=30)
     scheduler.update_available([bar], available_at)
     assert scheduler.snapshot_for(probe, available_at).close("5m", "SPY") == 105.0
+
+
+def test_same_timestamp_confirm_bar_visibility_still_executes_next_bar() -> None:
+    start = datetime(2026, 5, 11, 14, 35, tzinfo=UTC)
+    five = _bar(start, 105.0, "5m")
+    one = _bar(start, 106.0, "1m")
+    next_one = _bar(start + timedelta(minutes=1), 108.0, "1m", open_=104.0)
+    strategy = ConfirmRequiredStrategy()
+    engine = EventDrivenBacktestEngine(
+        strategies=[strategy],
+        config=BacktestConfig(
+            commission_rate=0.0,
+            slippage_bps=0.0,
+            timeframe_schedule=MultiTimeframeSchedule(
+                execution="1m",
+                confirm=("5m",),
+            ),
+        ),
+    )
+
+    result = engine.run([five, one, next_one])
+
+    assert strategy.confirm_seen_at == [start]
+    assert strategy.signal_timestamps == [start]
+    assert len(result.orders) == 1
+    assert result.orders[0].timestamp_utc == next_one.timestamp_utc
+    assert result.orders[0].metadata["signal_timestamp_utc"] == start.isoformat()
+    assert result.fills[0].filled_at == next_one.timestamp_utc
+    assert result.fills[0].price == 104.0
+
+
+def test_availability_delay_blocks_same_bar_confirm_until_later_execution_bar() -> None:
+    start = datetime(2026, 5, 11, 14, 35, tzinfo=UTC)
+    five = _bar(start, 105.0, "5m")
+    one = _bar(start, 106.0, "1m")
+    delayed_one = _bar(start + timedelta(minutes=1), 107.0, "1m")
+    execution_one = _bar(start + timedelta(minutes=2), 108.0, "1m", open_=103.0)
+    strategy = ConfirmRequiredStrategy()
+    engine = EventDrivenBacktestEngine(
+        strategies=[strategy],
+        config=BacktestConfig(
+            commission_rate=0.0,
+            slippage_bps=0.0,
+            timeframe_schedule=MultiTimeframeSchedule(
+                execution="1m",
+                confirm=("5m",),
+                availability_delay=timedelta(seconds=30),
+            ),
+        ),
+    )
+
+    result = engine.run([five, one, delayed_one, execution_one])
+
+    assert strategy.confirm_seen_at == [None, start]
+    assert strategy.signal_timestamps == [delayed_one.timestamp_utc]
+    assert len(result.orders) == 1
+    assert result.orders[0].timestamp_utc == execution_one.timestamp_utc
+    assert result.orders[0].metadata["signal_timestamp_utc"] == delayed_one.timestamp_utc.isoformat()
+    assert result.fills[0].filled_at == execution_one.timestamp_utc
+    assert result.fills[0].price == 103.0

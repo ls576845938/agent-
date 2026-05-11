@@ -9,8 +9,10 @@ Generated factor specs under `data/research/generated_factors/factors.json` now 
 - `params` for non-linear operators such as `power` and `gate_scale`
 - `generation_family`
 - `signature`
+- `complexity_score`
 
 The `signature` is a canonicalized hash input. Commutative templates are normalized before hashing so duplicate seeds or component order do not create duplicate factors.
+Generation also enforces a configurable `max_complexity` ceiling so automated formula search does not spill into overly nested blends before the research gate.
 
 ## Generated Strategy Configs
 
@@ -47,3 +49,23 @@ Required checks:
 - Family-wise multiple-testing control must be present and passed
 
 This blocks candidates that only look good on a single validation path, even when the raw Sharpe is high.
+
+## Strategy Manifest Contract
+
+Paper-review evidence now summarizes each strategy manifest against a documented contract. Required research fields include:
+
+- `trial_count`
+- `pbo`
+- `dsr`
+- `cpcv`
+- `cost_stress`
+- `style_exposure`
+- `turnover`
+- `capacity`
+
+The summary separates:
+
+- `contract_complete`: every required field is present
+- `contract_documented`: every missing field has an explicit reason
+
+Portfolio evidence may explain why a field is missing, but promotion and paper-review gates remain fail-closed when key statistics are absent.

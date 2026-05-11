@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 
-PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION = "portfolio_paper_review_evidence_v2"
+PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION = "portfolio_paper_review_evidence_v3"
 PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN = (
     "quant_us.research.evidence_pack:EvidencePackGenerator.save_portfolio_review_pack"
 )
@@ -23,8 +23,11 @@ REQUIRED_STRATEGY_MANIFEST_FIELDS = (
     "trial_count",
     "pbo",
     "dsr",
+    "cpcv",
     "cost_model",
     "slippage_model",
+    "cost_stress",
+    "style_exposure",
     "capacity",
     "turnover",
     "holding_period",
@@ -51,23 +54,37 @@ class PortfolioPaperReviewEvidenceValidation:
 
 
 def summarize_strategy_manifest_contract(manifest: dict[str, Any]) -> dict[str, Any]:
+    missing_reasons = dict(manifest.get("contract_missing_reasons", {}) or {})
     missing_fields: list[str] = []
+    documented_missing_fields: list[str] = []
+    undocumented_missing_fields: list[str] = []
+    field_status: dict[str, dict[str, Any]] = {}
     for field_name in REQUIRED_STRATEGY_MANIFEST_FIELDS:
-        value = manifest.get(field_name)
-        if value is None:
+        present = _field_value_present(field_name, manifest.get(field_name))
+        status = {"present": present}
+        if not present:
             missing_fields.append(field_name)
-            continue
-        if isinstance(value, str) and not value.strip():
-            missing_fields.append(field_name)
-        elif isinstance(value, dict) and not value:
-            missing_fields.append(field_name)
-        elif isinstance(value, list) and field_name != "failure_conditions" and not value:
-            missing_fields.append(field_name)
-        elif field_name == "trial_count" and int(value or 0) <= 0:
-            missing_fields.append(field_name)
+            reason = str(missing_reasons.get(field_name, "") or "").strip()
+            if not reason:
+                reason = _default_missing_reason(field_name, manifest.get(field_name))
+            status["missing_reason"] = reason
+            if reason:
+                documented_missing_fields.append(field_name)
+            else:
+                undocumented_missing_fields.append(field_name)
+        field_status[field_name] = status
     return {
         "required_fields": list(REQUIRED_STRATEGY_MANIFEST_FIELDS),
         "missing_fields": missing_fields,
+        "documented_missing_fields": documented_missing_fields,
+        "undocumented_missing_fields": undocumented_missing_fields,
+        "missing_field_reasons": {
+            field_name: field_status[field_name]["missing_reason"]
+            for field_name in missing_fields
+            if field_status[field_name].get("missing_reason")
+        },
+        "field_status": field_status,
+        "contract_documented": not undocumented_missing_fields,
         "contract_complete": not missing_fields,
         "data_version": str(manifest.get("data_version", "") or ""),
         "trial_id": str(manifest.get("trial_id", "") or ""),
@@ -83,10 +100,21 @@ def build_portfolio_paper_review_evidence_contract(
     strategy_manifest_ids: list[str],
     candidate_sections: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    manifest_statuses = [
-        bool(section.get("strategy_manifest_contract_complete", False))
-        for section in candidate_sections
-    ]
+    manifest_statuses = []
+    manifest_documentation = []
+    for section in candidate_sections:
+        manifest_statuses.append(
+            bool(section.get("strategy_manifest_contract_complete", False))
+        )
+        contract_summary = dict(section.get("strategy_manifest_contract", {}) or {})
+        manifest_documentation.append(
+            bool(
+                contract_summary.get(
+                    "contract_documented",
+                    not contract_summary.get("missing_fields", []),
+                )
+            )
+        )
     return {
         "schema_version": PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
         "origin": PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
@@ -95,6 +123,9 @@ def build_portfolio_paper_review_evidence_contract(
         "candidate_count": len(candidate_sections),
         "all_strategy_manifest_contracts_complete": all(manifest_statuses)
         if manifest_statuses
+        else False,
+        "all_strategy_manifest_contracts_documented": all(manifest_documentation)
+        if manifest_documentation
         else False,
         "paper_review_gate": "portfolio_evidence_pack_required",
     }
@@ -156,6 +187,14 @@ def validate_portfolio_paper_review_evidence(
             blockers.append(
                 f"strategy_manifest_contract_missing_fields:{row.get('strategy_manifest_id', '')}:{','.join(missing_fields)}"
             )
+        undocumented_missing_fields = list(
+            contract_summary.get("undocumented_missing_fields", [])
+        )
+        if undocumented_missing_fields:
+            blockers.append(
+                "strategy_manifest_contract_missing_reasons:"
+                f"{row.get('strategy_manifest_id', '')}:{','.join(undocumented_missing_fields)}"
+            )
         manifest_path = str(row.get("strategy_manifest_path", "") or "")
         if root is not None and manifest_path:
             resolved = _resolve_path(Path(root), manifest_path)
@@ -166,6 +205,15 @@ def validate_portfolio_paper_review_evidence(
 
     if not contract.get("all_strategy_manifest_contracts_complete", False):
         blockers.append("portfolio_evidence_contract_manifest_completeness_failed")
+    documented_contracts = contract.get("all_strategy_manifest_contracts_documented")
+    if documented_contracts is None:
+        documented_contracts = not any(
+            list(dict(row).get("strategy_manifest_contract", {}).get("undocumented_missing_fields", []))
+            for row in portfolio_candidates
+            if isinstance(row, dict)
+        )
+    if not documented_contracts:
+        blockers.append("portfolio_evidence_contract_manifest_documentation_failed")
 
     blockers = list(dict.fromkeys(str(item) for item in blockers if str(item).strip()))
     return PortfolioPaperReviewEvidenceValidation(
@@ -183,3 +231,58 @@ def _resolve_path(root: Path, raw_path: str) -> Path:
     if path.exists():
         return path
     return root / path
+
+
+def _field_value_present(field_name: str, value: Any) -> bool:
+    if field_name == "trial_count":
+        return int(value or 0) > 0
+    if field_name in {"pbo", "dsr"}:
+        return value is not None
+    if field_name == "cpcv":
+        return (
+            isinstance(value, dict)
+            and str(value.get("method", "")).lower() == "cpcv"
+            and (
+                int(value.get("path_count", 0) or 0) > 0
+                or int(value.get("fold_count", 0) or 0) > 0
+            )
+        )
+    if field_name == "cost_stress":
+        return isinstance(value, dict) and (
+            value.get("stress_survival_rate") is not None
+            or value.get("cost_sensitivity") is not None
+            or int(value.get("level_count", 0) or 0) > 0
+        )
+    if field_name == "style_exposure":
+        return isinstance(value, dict) and (
+            bool(value.get("betas")) or bool(value.get("benchmark_columns"))
+        )
+    if field_name == "capacity":
+        return isinstance(value, dict) and any(
+            value.get(key) is not None
+            for key in ("estimated_capacity_usd", "fragility_score")
+        )
+    if field_name == "turnover":
+        return isinstance(value, dict) and any(
+            value.get(key) is not None
+            for key in ("turnover", "annual_turnover_pct", "trade_count")
+        )
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, dict):
+        return bool(value)
+    if isinstance(value, list):
+        return field_name == "failure_conditions" or bool(value)
+    return True
+
+
+def _default_missing_reason(field_name: str, value: Any) -> str:
+    if field_name == "cpcv" and isinstance(value, dict):
+        return str(value.get("missing_reason", "") or "")
+    if field_name == "cost_stress" and isinstance(value, dict):
+        return str(value.get("missing_reason", "") or "")
+    if field_name == "style_exposure" and isinstance(value, dict):
+        return str(value.get("missing_reason", "") or "")
+    return f"{field_name}_missing"

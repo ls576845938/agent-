@@ -20,6 +20,10 @@ import pytest
 
 from quant_us.backtest.ledger_pnl import compute_ledger_reconciliation_artifact_hash
 from quant_us.data.storage.data_manifest import DataManifest, DataManifestStore
+from quant_us.research.evidence_contracts import (
+    PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
+    PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+)
 
 
 # ===========================================================================
@@ -521,6 +525,37 @@ class TestPromotionGateEnhanced:
                     "symbols": symbols or ["AAPL"],
                     "promotion_status": "DRAFT",
                     "params_frozen": True,
+                    "data_version": "qs-yfinance-AAPL-1d-test",
+                    "sample_window": {"start": "2024-01-01", "end": "2024-12-31"},
+                    "purge_embargo": {"purge_bars": 2, "embargo_bars": 1},
+                    "trial_id": candidate_id,
+                    "trial_count": 6,
+                    "pbo": 0.05,
+                    "dsr": 0.6,
+                    "cpcv": {
+                        "method": "cpcv",
+                        "path_count": 6,
+                        "fold_count": 4,
+                        "purged": True,
+                        "embargoed": True,
+                    },
+                    "cost_model": {"name": "default"},
+                    "slippage_model": {"name": "default"},
+                    "cost_stress": {
+                        "stress_survival_rate": 0.85,
+                        "cost_sensitivity": 0.2,
+                        "level_count": 3,
+                    },
+                    "style_exposure": {
+                        "betas": {"market": 0.8},
+                        "benchmark_columns": ["market"],
+                    },
+                    "capacity": {"estimated_capacity_usd": 1000000.0},
+                    "turnover": {"turnover": 0.2},
+                    "holding_period": {"expected": "5d"},
+                    "exposure_limits": {"max_gross_exposure_pct": 90.0},
+                    "failure_conditions": ["dd_limit"],
+                    "delisting_conditions": {"policy": "manual_review_required"},
                     "created_at": "2026-05-04T15:25:00+00:00",
                 }
             ),
@@ -1805,12 +1840,13 @@ class TestPromotionGateEnhanced:
             "portfolio_sim_id": "pack_valid",
             "strategy_manifest_ids": ["sman_valid"],
             "evidence_contract": {
-                "schema_version": "portfolio_paper_review_evidence_v2",
-                "origin": "quant_us.research.evidence_pack:EvidencePackGenerator.save_portfolio_review_pack",
+                "schema_version": PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+                "origin": PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
                 "portfolio_sim_id": "pack_valid",
                 "strategy_manifest_ids": ["sman_valid"],
                 "candidate_count": 1,
                 "all_strategy_manifest_contracts_complete": True,
+                "all_strategy_manifest_contracts_documented": True,
                 "paper_review_gate": "portfolio_evidence_pack_required",
             },
             "candidate_id": "cand_valid",
@@ -1905,12 +1941,13 @@ class TestPromotionGateEnhanced:
             "portfolio_sim_id": "pack_watchlist",
             "strategy_manifest_ids": ["sman_watchlist"],
             "evidence_contract": {
-                "schema_version": "portfolio_paper_review_evidence_v2",
-                "origin": "quant_us.research.evidence_pack:EvidencePackGenerator.save_portfolio_review_pack",
+                "schema_version": PORTFOLIO_PAPER_REVIEW_EVIDENCE_SCHEMA_VERSION,
+                "origin": PORTFOLIO_PAPER_REVIEW_EVIDENCE_ORIGIN,
                 "portfolio_sim_id": "pack_watchlist",
                 "strategy_manifest_ids": ["sman_watchlist"],
                 "candidate_count": 1,
                 "all_strategy_manifest_contracts_complete": True,
+                "all_strategy_manifest_contracts_documented": True,
                 "paper_review_gate": "portfolio_evidence_pack_required",
             },
             "candidate_id": "cand_watchlist",

@@ -1673,6 +1673,7 @@ class PaperRuntime:
             "alpaca_paper_adapter_enabled": bool(adapter_contract["adapter_enabled"]),
             "paper_credentials_present": True,
             "paper_review_or_promotion_evidence": True,
+            "paper_review_readiness": self._paper_review_readiness_summary(),
             "paper_adapter_contract": adapter_contract,
             "paper_credential_audit": credential_audit,
         }
@@ -2211,6 +2212,186 @@ class PaperRuntime:
                 projection["reason"] = mismatch
         return projection
 
+    def _paper_review_readiness_summary(
+        self,
+        projection: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Return read-only paper-review diagnostics for gate/API surfacing."""
+        if not self._alpaca_paper_requested() and projection is None:
+            return {
+                "required": False,
+                "allowed": True,
+                "status": "NOT_REQUIRED",
+                "manual_review_pending": False,
+                "blocking_reasons": [],
+                "checklist": {},
+                "delisting_conditions": {},
+            }
+
+        try:
+            cached = self._paper_entry_evidence_projection_cache
+            evidence = (
+                dict(projection)
+                if projection is not None
+                else dict(cached)
+                if isinstance(cached, dict)
+                else self._paper_entry_evidence_projection()
+            )
+        except Exception as exc:
+            return {
+                "required": True,
+                "allowed": False,
+                "status": "CONFLICT",
+                "manual_review_pending": False,
+                "blocking_reasons": [f"paper_review_registry_error:{exc}"],
+                "checklist": self._paper_review_checklist("", "", {}, [f"paper_review_registry_error:{exc}"]),
+                "delisting_conditions": {},
+            }
+
+        review = dict(evidence.get("review", {}))
+        details = dict(review.get("details", {}))
+        status = str(details.get("status") or review.get("summary") or "MISSING")
+        evidence_pack_path = str(
+            evidence.get("evidence_pack_path", "")
+            or details.get("evidence_pack_path", "")
+        )
+        risk_envelope = details.get("proposed_risk_envelope", {})
+        if not isinstance(risk_envelope, dict):
+            risk_envelope = {}
+
+        blocking_reasons = self._paper_review_blocking_reasons(evidence, details)
+        return {
+            "required": True,
+            "allowed": bool(evidence.get("allowed", False)),
+            "status": status,
+            "manual_review_pending": status == "PENDING_HUMAN_REVIEW",
+            "review_path": str(evidence.get("review_path", "") or review.get("path", "")),
+            "evidence_pack_path": evidence_pack_path,
+            "blocking_reasons": blocking_reasons,
+            "delisting_conditions": risk_envelope.get("delisting_conditions", {}),
+            "checklist": self._paper_review_checklist(
+                status,
+                evidence_pack_path,
+                risk_envelope,
+                blocking_reasons,
+            ),
+        }
+
+    @staticmethod
+    def _paper_review_blocking_reasons(
+        evidence: dict[str, Any],
+        details: dict[str, Any],
+    ) -> list[str]:
+        reasons: list[str] = []
+
+        def add(raw: Any) -> None:
+            text = str(raw or "").strip()
+            if text and text != "ok" and text not in reasons:
+                reasons.append(text)
+
+        add(evidence.get("reason", ""))
+        for item in details.get("evidence_gate_blocking_reasons", []):
+            add(item)
+        return reasons
+
+    def _paper_review_checklist(
+        self,
+        status: str,
+        evidence_pack_path: str,
+        risk_envelope: dict[str, Any],
+        blocking_reasons: list[str],
+    ) -> dict[str, Any]:
+        manual_status = "PASS" if status == "APPROVED_FOR_PAPER_ONLY" else "PENDING"
+        if status not in {"APPROVED_FOR_PAPER_ONLY", "PENDING_HUMAN_REVIEW"}:
+            manual_status = "BLOCKED"
+
+        pack_exists = bool(evidence_pack_path) and Path(evidence_pack_path).exists()
+        return {
+            "manual_review": {
+                "status": manual_status,
+                "required": True,
+                "reason": "" if manual_status == "PASS" else f"paper_review_not_approved:{status or 'MISSING'}",
+            },
+            "portfolio_evidence_pack": {
+                "status": "PRESENT" if pack_exists else "MISSING",
+                "required": True,
+                "path": evidence_pack_path,
+            },
+            "reconciliation": self._paper_review_required_check(
+                "reconciliation",
+                ("reconciliation", "ledger_reconciliation"),
+                risk_envelope,
+                blocking_reasons,
+            ),
+            "slippage": self._paper_review_required_check(
+                "slippage",
+                ("slippage", "slippage_bps", "max_slippage_bps", "slippage_model"),
+                risk_envelope,
+                blocking_reasons,
+            ),
+            "signal_drift": self._paper_review_required_check(
+                "signal_drift",
+                ("signal_drift", "signal drift", "drift"),
+                risk_envelope,
+                blocking_reasons,
+            ),
+            "delisting_conditions": self._paper_review_required_check(
+                "delisting_conditions",
+                ("delisting_conditions", "delisting", "downlist", "de_list"),
+                risk_envelope,
+                blocking_reasons,
+            ),
+        }
+
+    def _paper_review_required_check(
+        self,
+        name: str,
+        labels: tuple[str, ...],
+        risk_envelope: dict[str, Any],
+        blocking_reasons: list[str],
+    ) -> dict[str, Any]:
+        matched_blockers = [
+            reason
+            for reason in blocking_reasons
+            if any(label in reason.lower() for label in labels)
+        ]
+        if matched_blockers:
+            return {
+                "status": "BLOCKED",
+                "required": True,
+                "blocking_reasons": matched_blockers,
+            }
+        if self._paper_review_envelope_mentions(risk_envelope, labels):
+            return {
+                "status": "PRESENT",
+                "required": True,
+                "blocking_reasons": [],
+            }
+        return {
+            "status": "REVIEW_REQUIRED",
+            "required": True,
+            "blocking_reasons": [],
+            "reason": f"{name}_review_item_not_recorded",
+        }
+
+    @classmethod
+    def _paper_review_envelope_mentions(
+        cls,
+        value: Any,
+        labels: tuple[str, ...],
+    ) -> bool:
+        if isinstance(value, dict):
+            for key, nested in value.items():
+                key_text = str(key).lower()
+                if any(label in key_text for label in labels):
+                    if nested not in ({}, [], "", None):
+                        return True
+                if cls._paper_review_envelope_mentions(nested, labels):
+                    return True
+        elif isinstance(value, list):
+            return any(cls._paper_review_envelope_mentions(item, labels) for item in value)
+        return False
+
     def _paper_entry_evidence_config_mismatch(self, projection: dict[str, Any]) -> str:
         review = dict(projection.get("review", {}))
         details = dict(review.get("details", {}))
@@ -2643,6 +2824,7 @@ class PaperRuntime:
             "registry_status": str(evidence.get("registry_status", "")),
             "registry_integrity_status": str(evidence.get("registry_integrity_status", "")),
             "registry_notes": list(evidence.get("registry_notes", [])),
+            "paper_review_readiness": self._paper_review_readiness_summary(evidence),
         }
 
     def _no_real_order_submission_proof(self, startup_sync: dict[str, Any]) -> dict[str, Any]:

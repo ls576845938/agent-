@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -267,3 +267,109 @@ def test_minute_quality_overview_audits_raw_and_cleaned_roots(tmp_path: Path) ->
     assert report.evaluated_symbols == ["AAPL"]
     dataset_statuses = {dataset.root_subdir: dataset.status for dataset in report.datasets}
     assert dataset_statuses == {"raw": "WARN", "cleaned": "PASS"}
+    assert report.evidence_summary["bar_size_summary"]["1m"]["status"] == "WARN"
+    assert report.remediation_summary["download_performed"] is False
+    assert report.remediation_summary["actions"][0]["category"] == "coverage"
+
+
+def test_minute_quality_classifies_timezone_session_and_early_close(tmp_path: Path) -> None:
+    calendar = USEquityCalendar.with_holidays()
+    trading_day = datetime(2026, 11, 27, tzinfo=UTC).date()
+    assert calendar.is_early_close(trading_day)
+
+    one_minute = _expected_regular_timestamps(trading_day, 1, calendar)
+    one_minute_naive = [timestamp.replace(tzinfo=None) for timestamp in one_minute]
+    one_minute_naive.append((one_minute[-1] + timedelta(minutes=2)).replace(tzinfo=None))
+    five_minute = [
+        timestamp.astimezone(timezone(timedelta(hours=-5)))
+        for timestamp in _expected_regular_timestamps(trading_day, 5, calendar)
+    ]
+    fifteen_minute = _expected_regular_timestamps(trading_day, 15, calendar)
+
+    _write_minute_partition(
+        tmp_path,
+        symbol="AAPL",
+        bar_size="1m",
+        trading_day=trading_day.isoformat(),
+        timestamps=one_minute_naive,
+    )
+    _write_minute_partition(
+        tmp_path,
+        symbol="AAPL",
+        bar_size="5m",
+        trading_day=trading_day.isoformat(),
+        timestamps=five_minute,
+    )
+    _write_minute_partition(
+        tmp_path,
+        symbol="AAPL",
+        bar_size="15m",
+        trading_day=trading_day.isoformat(),
+        timestamps=fifteen_minute,
+    )
+
+    report = inspect_minute_data_quality(
+        tmp_path,
+        symbols=["AAPL"],
+        lookback_trading_days=1,
+        as_of=datetime(2026, 11, 27, 19, 0, tzinfo=UTC),
+    )
+
+    intervals = {interval.bar_size: interval for interval in report.symbols[0].intervals}
+    one_minute_interval = intervals["1m"]
+    five_minute_interval = intervals["5m"]
+    fifteen_minute_interval = intervals["15m"]
+
+    assert report.status == "FAIL"
+    assert one_minute_interval.quality_dimensions["timezone_session"]["status"] == "FAIL"
+    assert one_minute_interval.timezone_naive_count == len(one_minute_naive)
+    assert one_minute_interval.outside_session_count == 1
+    assert one_minute_interval.session_coverage[0]["session_type"] == "early_close"
+    assert one_minute_interval.session_coverage[0]["is_early_close"] is True
+    assert one_minute_interval.session_coverage[0]["expected_bars"] == 210
+    assert one_minute_interval.coverage_pct == 100.0
+
+    assert five_minute_interval.quality_dimensions["timezone_session"]["status"] == "FAIL"
+    assert five_minute_interval.timezone_non_utc_count == len(five_minute)
+    assert five_minute_interval.outside_session_count == 0
+
+    assert fifteen_minute_interval.status == "PASS"
+    assert report.evidence_summary["bar_size_summary"]["1m"]["status"] == "FAIL"
+    assert report.evidence_summary["bar_size_summary"]["5m"]["status"] == "FAIL"
+    assert report.evidence_summary["bar_size_summary"]["15m"]["status"] == "PASS"
+    assert report.evidence_summary["session_totals"]["early_close_days"] == 3
+    assert any(
+        action["category"] == "timezone_session"
+        for action in report.remediation_summary["actions"]
+    )
+
+
+def test_minute_quality_rejects_invalid_inputs_instead_of_silent_fallback(tmp_path: Path) -> None:
+    as_of = datetime(2026, 5, 8, 21, 0, tzinfo=UTC)
+
+    try:
+        inspect_minute_data_quality(
+            tmp_path,
+            symbols=["AAPL"],
+            bar_sizes=["2m"],
+            lookback_trading_days=1,
+            as_of=as_of,
+        )
+    except ValueError as exc:
+        assert "Unsupported minute bar sizes" in str(exc)
+    else:
+        raise AssertionError("expected invalid bar_sizes to raise ValueError")
+
+    try:
+        inspect_minute_data_quality_overview(
+            tmp_path,
+            symbols=["AAPL"],
+            bar_sizes=["1m"],
+            lookback_trading_days=1,
+            as_of=as_of,
+            root_subdirs=["archive"],
+        )
+    except ValueError as exc:
+        assert "Unsupported root_subdir" in str(exc)
+    else:
+        raise AssertionError("expected invalid root_subdirs to raise ValueError")

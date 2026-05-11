@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -476,6 +477,66 @@ def test_import_target_weights_stays_target_position_only(tmp_path: Path) -> Non
         assert "side" not in columns
         assert "order_type" not in columns
         assert "client_order_id" not in columns
+
+
+def test_import_target_weights_ignores_order_like_source_columns(tmp_path: Path) -> None:
+    artifacts_root = tmp_path / "artifacts"
+    portfolio_run_root = artifacts_root / "portfolio_runs" / "pf_order_like_source"
+    portfolio_run_root.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(
+        [
+            {
+                "portfolio_run_id": "pf_order_like_source",
+                "source_score_run_id": "score_run",
+                "datetime": "2026-01-08T00:00:00+00:00",
+                "symbol": "AAPL",
+                "target_weight": 0.55,
+                "raw_weight": 0.55,
+                "clipped_weight": 0.55,
+                "optimizer": "max_sharpe",
+                "constraints_hash": "abc123",
+                "fallback": "",
+                "created_at": "2026-05-11T00:00:00+00:00",
+                "side": "BUY",
+                "order_type": "MARKET",
+                "client_order_id": "must_not_propagate",
+                "broker_order_id": "must_not_propagate",
+                "risk_check_id": "must_not_propagate",
+            }
+        ]
+    ).to_parquet(portfolio_run_root / "target_weights.parquet", index=False)
+    (portfolio_run_root / "run_manifest.json").write_text(
+        json.dumps(
+            {
+                "source_score_run_id": "score_run",
+                "research_only": True,
+                "live_enabled": False,
+                "order_generation": "disabled",
+                "config": {"strategy_id": "pypfopt_daily_only"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    config_path = write_portfolio_config(
+        tmp_path / "configs" / "portfolio_import.yaml",
+        score_runs_root=artifacts_root / "qlib_runs",
+        portfolio_runs_root=artifacts_root / "portfolio_runs",
+        portfolio_run_id="pf_order_like_source",
+    )
+
+    frame, _, json_path = invoke_adapter_callable(
+        "integrations.pypfopt_adapter.import_target_weights",
+        ("import_target_weights", "import_weights", "run"),
+        portfolio_run_id="pf_order_like_source",
+        config=load_portfolio_config(config_path),
+    )
+
+    forbidden = {"side", "order_type", "client_order_id", "broker_order_id", "risk_check_id"}
+    assert forbidden.isdisjoint({str(column).lower() for column in frame.columns})
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    assert payload
+    assert forbidden.isdisjoint({str(key).lower() for key in payload[0]})
+    assert forbidden.isdisjoint({str(key).lower() for key in payload[0]["metadata"]})
 
 
 def test_optimize_weights_module_exists_even_without_optional_dependency() -> None:

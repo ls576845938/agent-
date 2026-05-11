@@ -510,6 +510,80 @@ def test_alpaca_paper_runtime_requires_approved_paper_review(
             runtime.bootstrap()
 
 
+def test_paper_runtime_gate_surfaces_pending_review_blockers_and_checklist(
+    tmp_path: Path,
+) -> None:
+    review_id = "prev_pending_checklist"
+    review_path = tmp_path / "research" / "paper_reviews" / review_id / "review.json"
+    evidence_pack_path = tmp_path / "research" / "evidence_packs" / review_id / "evidence_pack.json"
+    evidence_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    evidence_pack_path.write_text(json.dumps({"paper_review_id": review_id}), encoding="utf-8")
+    review_path.parent.mkdir(parents=True, exist_ok=True)
+    review_path.write_text(
+        json.dumps(
+            {
+                "paper_review_id": review_id,
+                "strategy_manifest_id": "sm_pending",
+                "status": "PENDING_HUMAN_REVIEW",
+                "reviewer": "",
+                "evidence_pack_path": str(evidence_pack_path),
+                "evidence_gate_status": "BLOCKED",
+                "evidence_gate_blocking_reasons": [
+                    "ledger_reconciliation_not_clean",
+                    "signal_drift_not_evaluated",
+                ],
+                "proposed_risk_envelope": {
+                    "max_slippage_bps": 12.5,
+                    "delisting_conditions": {
+                        "max_drawdown_pct": 0.12,
+                        "manual_review_required": True,
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    rebuild_evidence_registry(tmp_path)
+    runtime = PaperRuntime(
+        PaperRuntimeConfig(
+            symbols=["SPY"],
+            ledger_root=str(tmp_path / "ledger"),
+            paper_broker="alpaca",
+            paper_review_path=str(review_path),
+            promotion_data_root=str(tmp_path),
+            reconcile_on_start=False,
+        )
+    )
+
+    with patch.dict(
+        "os.environ",
+        {
+            "APCA_API_KEY_ID": "paper_key",
+            "APCA_API_SECRET_KEY": "paper_secret",
+            "APCA_API_BASE_URL": "https://paper-api.alpaca.markets",
+        },
+        clear=True,
+    ):
+        gate = runtime._check_runtime_entry_gate()
+
+    readiness = gate["checks"]["paper_review_readiness"]
+    checklist = readiness["checklist"]
+    assert gate["ok"] is False
+    assert "paper_review_not_approved:PENDING_HUMAN_REVIEW" in gate["reasons"]
+    assert readiness["status"] == "PENDING_HUMAN_REVIEW"
+    assert readiness["manual_review_pending"] is True
+    assert "ledger_reconciliation_not_clean" in readiness["blocking_reasons"]
+    assert "signal_drift_not_evaluated" in readiness["blocking_reasons"]
+    assert readiness["delisting_conditions"]["manual_review_required"] is True
+    assert checklist["manual_review"]["status"] == "PENDING"
+    assert checklist["portfolio_evidence_pack"]["status"] == "PRESENT"
+    assert checklist["reconciliation"]["status"] == "BLOCKED"
+    assert checklist["slippage"]["status"] == "PRESENT"
+    assert checklist["signal_drift"]["status"] == "BLOCKED"
+    assert checklist["delisting_conditions"]["status"] == "PRESENT"
+    assert not (tmp_path / "ledger").exists()
+
+
 def test_paper_runtime_blocks_when_registry_missing_even_with_review_json(tmp_path: Path) -> None:
     review_path = _write_unregistered_review(tmp_path)
     registry_path = tmp_path / "research" / "evidence_registry.json"

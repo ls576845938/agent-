@@ -401,6 +401,58 @@ def test_prepare_real_daily_data_dry_run_exports_and_builds_provider(
     assert prepare_manifest["export_result"]["status"] == "completed"
 
 
+def test_prepare_real_daily_data_missing_symbol_does_not_implicitly_download(
+    tmp_path: Path,
+    fake_market_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    universe_path = write_universe_yaml(
+        tmp_path / "configs" / "universe.yaml",
+        ["AAPL", "MSFT", "QQQ"],
+    )
+    sync_calls: list[str] = []
+
+    def fail_if_called(self, *, symbol: str, **kwargs):  # type: ignore[no-untyped-def]
+        sync_calls.append(symbol)
+        raise AssertionError("implicit data sync/download must not be called")
+
+    from quant_us.data import pipeline as pipeline_module
+
+    monkeypatch.setattr(pipeline_module.DataLakeService, "sync_bars", fail_if_called)
+
+    result = invoke_adapter_callable(
+        "integrations.qlib_adapter.prepare_real_daily_data",
+        ("prepare_real_daily_data",),
+        universe_path=universe_path,
+        start_date="2026-01-05",
+        end_date="2026-01-09",
+        data_root=fake_market_root,
+        artifacts_root=tmp_path / "artifacts" / "qlib_runs",
+        run_id="prepare_missing_no_sync",
+        sync_yfinance=False,
+        build_provider=False,
+        dry_run=False,
+    )
+
+    assert sync_calls == []
+    assert result.status == "failed"
+    assert result.error is not None
+    assert "qqq" in result.error.lower()
+    assert "implicit download" in result.error.lower() or "forbids implicit downloads" in result.error.lower()
+    prepare_manifest = json.loads(locate_single_file(tmp_path / "artifacts", "daily_data_prepare_manifest.json").read_text(encoding="utf-8"))
+    before = {
+        item["symbol"]: item["status"]
+        for item in prepare_manifest["manifest_candidates_before_sync"]
+    }
+    after = {
+        item["symbol"]: item["status"]
+        for item in prepare_manifest["manifest_candidates_after_sync"]
+    }
+    assert before["QQQ"] == "missing"
+    assert after["QQQ"] == "missing"
+    assert prepare_manifest["sync_results"] == []
+
+
 def test_real_universe_config_is_13_symbol_daily_only() -> None:
     config = load_universe_config("configs/universe/us_core_liquid.yaml")
 

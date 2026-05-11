@@ -181,16 +181,32 @@ class USQuantService:
             raw_bar_sizes = [request["bar_size"]]
         elif isinstance(raw_bar_sizes, str):
             raw_bar_sizes = [item.strip() for item in raw_bar_sizes.split(",")]
-        raw_bar_sizes = raw_bar_sizes or list(SUPPORTED_MINUTE_BAR_SIZES)
+        if raw_bar_sizes is None:
+            return list(SUPPORTED_MINUTE_BAR_SIZES)
 
         bar_sizes: list[str] = []
         seen: set[str] = set()
+        invalid: set[str] = set()
         for item in raw_bar_sizes:
             bar_size = str(item or "").strip().lower()
-            if bar_size in SUPPORTED_MINUTE_BAR_SIZES and bar_size not in seen:
-                bar_sizes.append(bar_size)
-                seen.add(bar_size)
-        return bar_sizes or list(SUPPORTED_MINUTE_BAR_SIZES)
+            if not bar_size:
+                continue
+            if bar_size not in SUPPORTED_MINUTE_BAR_SIZES:
+                invalid.add(bar_size)
+                continue
+            if bar_size in seen:
+                continue
+            bar_sizes.append(bar_size)
+            seen.add(bar_size)
+        if invalid:
+            raise ValueError(
+                f"Unsupported minute bar sizes: {sorted(invalid)}. Allowed values: {list(SUPPORTED_MINUTE_BAR_SIZES)}"
+            )
+        if not bar_sizes:
+            raise ValueError(
+                f"At least one minute bar size is required. Allowed values: {list(SUPPORTED_MINUTE_BAR_SIZES)}"
+            )
+        return bar_sizes
 
     def _backtest_parameters_from_payload(self, request: dict[str, Any]) -> dict[str, Any]:
         return {
@@ -220,9 +236,13 @@ class USQuantService:
         symbols = self._optional_symbols_from_payload(request)
         bar_sizes = self._minute_bar_sizes_from_payload(request)
         lookback_trading_days = max(1, int(request.get("lookback_trading_days", 5)))
-        root_subdirs = request.get("root_subdirs") or ("raw", "cleaned")
+        root_subdirs = request.get("root_subdirs")
+        if root_subdirs is None:
+            root_subdirs = ("raw", "cleaned")
         if isinstance(root_subdirs, str):
             root_subdirs = [item.strip() for item in root_subdirs.split(",") if item.strip()]
+        if not root_subdirs:
+            raise ValueError("At least one root_subdir is required. Allowed values: ['raw', 'cleaned']")
 
         report = inspect_minute_data_quality_overview(
             data_root=Path(data_root),

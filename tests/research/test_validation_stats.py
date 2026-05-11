@@ -102,6 +102,8 @@ def _validation_inputs(profile: str) -> tuple[dict, dict, dict, dict]:
             "walk_forward_pass_rate": 0.75,
             "oos_degradation": 0.12,
             "cost_sensitivity": 0.18,
+            "estimated_capacity_usd": 1_500_000.0,
+            "capacity_warning": "OK",
             "stress_survival_rate": 0.83,
             "monte_carlo_survival_rate": 0.91,
             "alpha_decay_half_life_days": 14.0,
@@ -118,6 +120,14 @@ def _validation_inputs(profile: str) -> tuple[dict, dict, dict, dict]:
             "wf_fold_sharpes": [1.20, 1.05, 0.95, 1.00],
             "wf_fold_drawdowns": [0.08, 0.10, 0.12, 0.09],
             "pbo_trials": pbo_good,
+            "style_exposure": {
+                "observations": 252,
+                "alpha_period": 0.0002,
+                "alpha_annualized": 0.0504,
+                "betas": {"MKT": 1.05, "SMB": -0.12},
+                "r_squared": 0.79,
+                "benchmark_columns": ["MKT", "SMB"],
+            },
             "symbols": ["AAPL"],
             "timeframe": "1d",
             "data_source": "yfinance",
@@ -134,6 +144,8 @@ def _validation_inputs(profile: str) -> tuple[dict, dict, dict, dict]:
             "walk_forward_pass_rate": 0.75,
             "oos_degradation": 0.08,
             "cost_sensitivity": 0.10,
+            "estimated_capacity_usd": 1_100_000.0,
+            "capacity_warning": "OK",
             "stress_survival_rate": 0.82,
             "monte_carlo_survival_rate": 0.90,
             "alpha_decay_half_life_days": 11.0,
@@ -150,6 +162,14 @@ def _validation_inputs(profile: str) -> tuple[dict, dict, dict, dict]:
             "wf_fold_sharpes": [0.30, 0.28, 0.22, 0.18],
             "wf_fold_drawdowns": [0.08, 0.10, 0.12, 0.09],
             "pbo_trials": pbo_bad,
+            "style_exposure": {
+                "observations": 252,
+                "alpha_period": 0.0001,
+                "alpha_annualized": 0.0252,
+                "betas": {"MKT": 0.98, "SMB": -0.08},
+                "r_squared": 0.74,
+                "benchmark_columns": ["MKT", "SMB"],
+            },
             "symbols": ["AAPL"],
             "timeframe": "1d",
             "data_source": "yfinance",
@@ -242,6 +262,11 @@ def _write_candidate_fixture(
             "walk_forward_pass_rate": metrics["walk_forward_pass_rate"],
             "cost_sensitivity": metrics["cost_sensitivity"],
             "robustness_score": 0.8,
+            "trade_count": metrics["trade_count"],
+            "turnover": 0.21,
+            "avg_holding_period": 5.0,
+            "avg_exposure": 0.68,
+            "style_exposure": metrics["style_exposure"],
         },
     )
 
@@ -380,6 +405,57 @@ def _write_candidate_fixture(
                 "strategy_candidate_id": f"sman_{candidate_id}",
                 "source_candidate_id": candidate_id,
                 "promotion_status": "DRAFT",
+                "data_version": data_version,
+                "sample_window": {
+                    "start": "2024-01-01T00:00:00+00:00",
+                    "end": "2024-02-01T00:00:00+00:00",
+                    "timeframe": "1d",
+                },
+                "purge_embargo": {
+                    "method": "cpcv",
+                    "purged": True,
+                    "embargoed": True,
+                    "embargo_steps": 2,
+                    "fold_count": 4,
+                    "path_count": 6,
+                },
+                "trial_id": candidate_id,
+                "trial_count": 6,
+                "pbo": 0.0 if profile == "good" else 1.0,
+                "dsr": 0.62 if profile == "good" else 0.02,
+                "cpcv": {
+                    "method": "cpcv",
+                    "purged": True,
+                    "embargoed": True,
+                    "embargo_steps": 2,
+                    "fold_count": 4,
+                    "path_count": 6,
+                    "pass_rate": metrics["walk_forward_pass_rate"],
+                },
+                "cost_model": {"name": "default", "commission_rate": 0.0001},
+                "slippage_model": {"name": "default", "slippage_bps": 1.0},
+                "cost_stress": {
+                    "stress_survival_rate": metrics["stress_survival_rate"],
+                    "cost_sensitivity": metrics["cost_sensitivity"],
+                    "level_count": 3,
+                },
+                "style_exposure": metrics["style_exposure"],
+                "capacity": {
+                    "estimated_capacity_usd": 1_500_000.0,
+                    "fragility_score": 0.14,
+                },
+                "turnover": {
+                    "turnover": 0.21,
+                    "annual_turnover_pct": 140.0,
+                    "trade_count": metrics["trade_count"],
+                },
+                "holding_period": {"expected": "5d", "avg_holding_period": 5.0},
+                "exposure_limits": {"max_gross_exposure_pct": 95.0},
+                "failure_conditions": ["oos_decay_gt_30pct"],
+                "delisting_conditions": {
+                    "policy": "manual_review_required",
+                    "survivorship_bias_risk": "clean",
+                },
             },
         )
 
@@ -486,6 +562,35 @@ def test_promotion_gate_blocks_single_path_high_sharpe_candidate(tmp_path: Path)
     contract = result.evidence["validation_promotion_contract"]
     assert contract["checks"]["multi_path_validation"] is False
     assert contract["checks"]["pbo_available"] is False
+
+
+def test_promotion_gate_fail_closed_on_missing_manifest_key_stats(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_missing_style_contract",
+        profile="good",
+        include_strategy_manifest=True,
+    )
+    manifest_path = (
+        tmp_path / "research" / "manifests" / f"sman_{candidate_id}" / "manifest.json"
+    )
+    manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest_payload["style_exposure"] = {
+        "missing_reason": "style_exposure_benchmark_regression_missing"
+    }
+    manifest_payload["contract_missing_reasons"] = {
+        "style_exposure": "style_exposure_benchmark_regression_missing"
+    }
+    _write_json(manifest_path, manifest_payload)
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert any(
+        reason == f"strategy_manifest_contract_incomplete:sman_{candidate_id}:style_exposure"
+        for reason in result.reasons
+    )
+    assert result.evidence["strategy_manifest_contract_complete"] is False
 
 
 def test_strategy_manifest_captures_validation_evidence(tmp_path: Path) -> None:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from quant_us.research.evidence_contracts import summarize_strategy_manifest_contract
 from quant_us.research.strategy_manifest import StrategyManifestManager
 
 
@@ -52,6 +53,14 @@ def test_strategy_manifest_creation_populates_research_contract(
                     "avg_exposure": 0.74,
                     "max_single_symbol_exposure_pct": 18.0,
                     "failure_conditions": ["oos_decay_gt_30pct"],
+                    "style_exposure": {
+                        "observations": 252,
+                        "alpha_period": 0.0002,
+                        "alpha_annualized": 0.0504,
+                        "betas": {"MKT": 1.12, "SMB": -0.18},
+                        "r_squared": 0.81,
+                        "benchmark_columns": ["MKT", "SMB"],
+                    },
                 },
                 "invalidation_conditions": ["max_drawdown_gt_15pct"],
                 "delisting_policy": "remove_and_manual_review",
@@ -113,11 +122,33 @@ def test_strategy_manifest_creation_populates_research_contract(
         encoding="utf-8",
     )
     (walk_forward_dir / "result.json").write_text(
-        json.dumps({"recommended_holding_period": "5d"}),
+        json.dumps(
+            {
+                "recommended_holding_period": "5d",
+                "validation_method": "cpcv",
+                "purged": True,
+                "embargo_bars": 2,
+                "combination_count": 6,
+                "folds": [{"oos_sharpe": 1.0, "passed": True}] * 4,
+                "walk_forward_pass_rate": 0.75,
+            }
+        ),
         encoding="utf-8",
     )
     (cost_stress_dir / "result.json").write_text(
-        json.dumps({"capacity_warning": "OK", "fragility_score": 0.14}),
+        json.dumps(
+            {
+                "status": "completed",
+                "capacity_warning": "OK",
+                "fragility_score": 0.14,
+                "stress_survival_rate": 0.84,
+                "cost_sensitivity": 0.19,
+                "levels": [
+                    {"cost_multiplier": 1.0, "total_return_pct": 0.21, "sharpe_ratio": 1.3},
+                    {"cost_multiplier": 2.0, "total_return_pct": 0.17, "sharpe_ratio": 1.1},
+                ],
+            }
+        ),
         encoding="utf-8",
     )
     (manifests_dir / f"{data_version}.json").write_text(
@@ -167,10 +198,15 @@ def test_strategy_manifest_creation_populates_research_contract(
     assert manifest.trial_count == 12
     assert manifest.pbo == 0.08
     assert manifest.dsr == 0.91
+    assert manifest.cpcv["method"] == "cpcv"
+    assert manifest.cpcv["path_count"] == 6
     assert manifest.cost_model["name"] == "default"
     assert manifest.cost_model["commission_model"] == "commission_pct"
     assert manifest.slippage_model["name"] == "default"
     assert manifest.slippage_model["slippage_bps"] == 1.0
+    assert manifest.cost_stress["stress_survival_rate"] == 0.84
+    assert manifest.cost_stress["level_count"] == 2
+    assert manifest.style_exposure["betas"]["MKT"] == 1.12
     assert manifest.capacity["estimated_capacity_usd"] == 2500000.0
     assert manifest.turnover["annual_turnover_pct"] == 190.0
     assert manifest.holding_period["expected"] == "5d"
@@ -178,4 +214,50 @@ def test_strategy_manifest_creation_populates_research_contract(
     assert "max_drawdown_gt_15pct" in manifest.failure_conditions
     assert manifest.delisting_conditions["policy"] == "remove_and_manual_review"
     assert manifest.delisting_conditions["survivorship_bias_risk"] == "clean"
+    assert manifest.contract_missing_reasons == {}
     assert manifest.promotion_status == "READY_FOR_PORTFOLIO_SIM"
+
+    contract = summarize_strategy_manifest_contract(manifest.__dict__)
+    assert contract["contract_complete"] is True
+    assert contract["field_status"]["style_exposure"]["present"] is True
+
+
+def test_strategy_manifest_contract_records_missing_reasons() -> None:
+    contract = summarize_strategy_manifest_contract(
+        {
+            "strategy_candidate_id": "sm_missing",
+            "source_candidate_id": "cand_missing",
+            "data_version": "qs-yfinance-test",
+            "sample_window": {"start": "2024-01-01", "end": "2024-12-31"},
+            "purge_embargo": {"purge_bars": 3, "embargo_bars": 1},
+            "trial_id": "cand_missing",
+            "trial_count": 6,
+            "pbo": 0.11,
+            "dsr": 0.42,
+            "cpcv": {"missing_reason": "validation_method_not_cpcv:purged_kfold"},
+            "cost_model": {"name": "default"},
+            "slippage_model": {"name": "default"},
+            "cost_stress": {"stress_survival_rate": 0.8},
+            "capacity": {"estimated_capacity_usd": 1_000_000.0},
+            "turnover": {"annual_turnover_pct": 120.0},
+            "holding_period": {"expected": "5d"},
+            "exposure_limits": {"max_gross_exposure_pct": 95.0},
+            "failure_conditions": ["drawdown_limit_breach"],
+            "delisting_conditions": {"policy": "manual_review_required"},
+            "style_exposure": {
+                "missing_reason": "style_exposure_benchmark_regression_missing"
+            },
+            "contract_missing_reasons": {
+                "cpcv": "validation_method_not_cpcv:purged_kfold",
+                "style_exposure": "style_exposure_benchmark_regression_missing",
+            },
+        }
+    )
+
+    assert contract["contract_complete"] is False
+    assert contract["contract_documented"] is True
+    assert contract["missing_fields"] == ["cpcv", "style_exposure"]
+    assert (
+        contract["missing_field_reasons"]["style_exposure"]
+        == "style_exposure_benchmark_regression_missing"
+    )
