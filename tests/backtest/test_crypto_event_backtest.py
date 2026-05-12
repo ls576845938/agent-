@@ -476,3 +476,124 @@ def test_qualify_crypto_candidates_selects_highest_ranked_qualified_candidate_st
 
     assert [row["strategy_id"] for row in result["candidates"]] == ["higher_ranked", "lower_ranked"]
     assert result["selected_candidates"][0]["strategy_id"] == "higher_ranked"
+
+
+def test_qualify_crypto_candidates_applies_runtime_turnover_holding_and_cost_filters() -> None:
+    candidate = {
+        "strategy_id": "macro_trend",
+        "score": 3.0,
+        "validation": {
+            "total_return_pct": 11.0,
+            "sharpe_ratio": 1.5,
+            "profit_factor": 1.8,
+            "max_drawdown_pct": -6.0,
+            "trade_count": 18,
+        },
+        "research_metadata": {
+            "runtime_hints": {
+                "cost_aware_filter": True,
+                "max_annual_turnover_pct": 365.0,
+                "min_holding_bars": 24,
+            }
+        },
+    }
+    event_ok = {"diagnostics": {"engine": "event_driven", "pnl_source": "ledger_fills", "ledger_equity_consistent": True}}
+    cost_stress = {
+        "engine": "event_driven",
+        "survival_rate_pct": 100.0,
+        "ledger_consistency_pct": 100.0,
+        "cost_sensitivity": 0.62,
+    }
+    walk_forward = {
+        "stability": {
+            "fold_pass_rate_pct": 100.0,
+            "ledger_consistency_pct": 100.0,
+            "regime_pass_rate_pct": 100.0,
+            "oos_avg_turnover_pct": 480.0,
+            "oos_avg_holding_bars": 12.0,
+        }
+    }
+
+    result = qualify_crypto_candidates(
+        [candidate],
+        cost_stress_by_candidate={"macro_trend": cost_stress},
+        walk_forward_by_candidate={"macro_trend": walk_forward},
+        event_backtest_by_candidate={"macro_trend": event_ok},
+        max_selected=1,
+    )
+
+    row = result["candidates"][0]
+    assert row["qualified"] is False
+    assert row["selected"] is False
+    assert row["screening_metrics"] == {
+        "annual_turnover_pct": 480.0,
+        "avg_holding_bars": 12.0,
+        "cost_sensitivity": 0.62,
+    }
+    assert "annual turnover > 365.0%" in row["qualification_blockers"]
+    assert "avg holding bars < 24.0" in row["qualification_blockers"]
+    assert "cost sensitivity > 0.5" in row["qualification_blockers"]
+
+
+def test_qualify_crypto_candidates_prefers_lower_turnover_and_cost_sensitive_candidates() -> None:
+    candidates = [
+        {
+            "strategy_id": "fast_trend",
+            "score": 3.5,
+            "validation": {
+                "total_return_pct": 12.0,
+                "sharpe_ratio": 1.4,
+                "profit_factor": 1.6,
+                "max_drawdown_pct": -6.0,
+                "trade_count": 20,
+            },
+            "research_metadata": {"runtime_hints": {"cost_aware_filter": True}},
+        },
+        {
+            "strategy_id": "slow_trend",
+            "score": 3.0,
+            "validation": {
+                "total_return_pct": 11.5,
+                "sharpe_ratio": 1.35,
+                "profit_factor": 1.6,
+                "max_drawdown_pct": -6.0,
+                "trade_count": 20,
+            },
+            "research_metadata": {"runtime_hints": {"cost_aware_filter": True}},
+        },
+    ]
+    event_ok = {"diagnostics": {"engine": "event_driven", "pnl_source": "ledger_fills", "ledger_equity_consistent": True}}
+    walk_forward = {
+        "stability": {
+            "fold_pass_rate_pct": 100.0,
+            "ledger_consistency_pct": 100.0,
+            "regime_pass_rate_pct": 100.0,
+        }
+    }
+
+    result = qualify_crypto_candidates(
+        candidates,
+        cost_stress_by_candidate={
+            "fast_trend": {
+                "engine": "event_driven",
+                "survival_rate_pct": 100.0,
+                "ledger_consistency_pct": 100.0,
+                "cost_sensitivity": 0.30,
+            },
+            "slow_trend": {
+                "engine": "event_driven",
+                "survival_rate_pct": 100.0,
+                "ledger_consistency_pct": 100.0,
+                "cost_sensitivity": 0.08,
+            },
+        },
+        walk_forward_by_candidate={
+            "fast_trend": {**walk_forward, "stability": {**walk_forward["stability"], "oos_avg_turnover_pct": 540.0}},
+            "slow_trend": {**walk_forward, "stability": {**walk_forward["stability"], "oos_avg_turnover_pct": 180.0}},
+        },
+        event_backtest_by_candidate={"fast_trend": event_ok, "slow_trend": event_ok},
+        max_selected=1,
+    )
+
+    assert [row["strategy_id"] for row in result["candidates"]] == ["slow_trend", "fast_trend"]
+    assert result["selected_candidates"][0]["strategy_id"] == "slow_trend"

@@ -20,7 +20,7 @@ type Mode = 'single' | 'portfolio';
 
 const defaultForm: FormState = {
   source: 'sqlite', symbol: 'BTCUSDT', interval: '1h',
-  startDate: '2024-01-01', endDate: '2024-02-15',
+  startDate: '2024-01-01', endDate: '2026-05-12',
   capital: 100000, commissionRate: 0.0004, slippage: 4,
   leverage: 1, positionBasis: 'equity', strategyId: 'trend_macd', dataDbPath: '',
 };
@@ -122,6 +122,10 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   const cryptoResamplePlan = useMemo(
     () => buildCryptoResamplePlan(database?.coverage ?? [], dataForm.symbol, dataForm.dbPath || database?.db_path || ''),
     [database?.coverage, database?.db_path, dataForm.dbPath, dataForm.symbol],
+  );
+  const cryptoClosureTask = useMemo(
+    () => taskQueue.find((task) => task.kind === 'crypto_closure') ?? null,
+    [taskQueue],
   );
   const cryptoBlockers = useMemo(() => collectCryptoBlockers(dataQuality, promotionGate), [dataQuality, promotionGate]);
 
@@ -252,12 +256,22 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
       position_basis: form.positionBasis,
       data_db_path: form.dataDbPath,
       target_intervals: cryptoIntervalOrder.slice(1),
-      strategy_ids: ['trend_macd', 'donchian_breakout', 'reversion_rsi', 'volatility_squeeze', 'macro_trend', 'dynamic_grid', 'time_window'],
+      strategy_ids: ['trend_macd', 'donchian_breakout', 'reversion_rsi', 'volatility_squeeze', 'funding_sentiment', 'macro_trend', 'dynamic_grid', 'time_window'],
       max_candidates_per_strategy: 4,
-      max_ranked_candidates: 8,
+      max_ranked_candidates: 12,
+      validation_candidate_count: 4,
+      max_validation_candidates: 4,
+      max_selected_candidates: 3,
       max_scenarios: 8,
       windows: 4,
+      cpcv_splits: 5,
+      cpcv_test_splits: 2,
+      cpcv_max_paths: 6,
+      cpcv_max_configs: 3,
+      purge_bars: 1,
+      embargo_bars: 1,
       persist_data_manifest: true,
+      persist_closure_evidence: true,
       persist_manifest: true,
       register_experiment: true,
       experiment_name: `${form.symbol.toLowerCase()}_closure_gate`,
@@ -335,7 +349,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   };
 
   const handleCryptoClosure = async () => {
-    setCryptoClosureLoading(true); setCryptoClosureMessage('BTC 闭环任务已提交，后台会继续运行。'); setError('');
+    setCryptoClosureLoading(true); setCryptoClosureMessage('BTC production closure 任务已提交，后台会继续运行。'); setError('');
     try {
       const task = await submitTrackedTask('crypto-closure', () => taskApi.submitCryptoClosureTask(buildCryptoClosureRequest()), async (finishedTask) => {
         const result = (finishedTask.result ?? {}) as CryptoClosureResponse;
@@ -352,9 +366,9 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
           setWalkForward(result.walk_forward as WalkForwardResponse);
           setWalkForwardMessage(`Walk-forward: OOS pass rate ${Number(result.walk_forward.stability.fold_pass_rate_pct ?? result.walk_forward.stability.pass_rate_pct ?? 0).toFixed(0)}%`);
         }
-        setCryptoClosureMessage(`BTC 闭环 ${finishedTask.status.toUpperCase()}：${String(result.decision || finishedTask.status).toUpperCase()}，blockers ${result.blockers?.length ?? finishedTask.blockers.length}`);
+        setCryptoClosureMessage(`BTC production closure ${finishedTask.status.toUpperCase()}：${String(result.decision || finishedTask.status).toUpperCase()}，blockers ${result.blockers?.length ?? finishedTask.blockers.length}`);
       });
-      setCryptoClosureMessage(`BTC 闭环任务已提交：${task.task_id}`);
+      setCryptoClosureMessage(`BTC production closure 任务已提交：${task.task_id}`);
     } catch (e) {
       const message = humanizeError(e);
       setCryptoClosureMessage(message);
@@ -658,6 +672,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
               promotionGateLoading={promotionGateLoading}
               promotionGateMessage={promotionGateMessage}
               cryptoClosure={cryptoClosure}
+              cryptoClosureTask={cryptoClosureTask}
               cryptoClosureLoading={cryptoClosureLoading}
               cryptoClosureMessage={cryptoClosureMessage}
               optimizationFramework={optimizationFramework}
@@ -673,10 +688,10 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
             />
           </section>
           <TaskQueuePanel
-            title="BTC 后台任务"
+            title="BTC production closure 任务"
             tasks={taskQueue.filter((task) => ['crypto_closure', 'promotion_gate'].includes(task.kind))}
             onRefresh={refreshTaskQueue}
-            emptyText="暂无 BTC 闭环或 promotion gate 后台任务"
+            emptyText="暂无 BTC production closure 或 promotion gate 后台任务"
           />
         </ResultsPanel>
       </section>

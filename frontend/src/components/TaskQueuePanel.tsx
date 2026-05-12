@@ -34,9 +34,40 @@ function summarizeResult(result: TaskResponse['result']): string {
     parts.push(`Status ${status}`);
   }
 
+  const selectedCandidate = record.selected_candidate;
+  if (selectedCandidate && typeof selectedCandidate === 'object') {
+    const candidateRecord = selectedCandidate as Record<string, unknown>;
+    const strategyId = candidateRecord.strategy_id;
+    if (typeof strategyId === 'string' && strategyId.trim()) {
+      parts.push(`Candidate ${strategyId}`);
+    }
+  }
+
+  const candidateScreen = record.candidate_screen;
+  if (candidateScreen && typeof candidateScreen === 'object') {
+    const candidateScreenRecord = candidateScreen as Record<string, unknown>;
+    const candidateCount = candidateScreenRecord.candidate_count;
+    if (typeof candidateCount === 'number' && Number.isFinite(candidateCount)) {
+      parts.push(`Candidates ${candidateCount}`);
+    }
+  }
+
   const sharpe = record.sharpe_ratio;
   if (typeof sharpe === 'number' && Number.isFinite(sharpe)) {
     parts.push(`Sharpe ${sharpe.toFixed(2)}`);
+  }
+
+  const eventBacktest = record.event_backtest;
+  if (eventBacktest && typeof eventBacktest === 'object') {
+    const eventBacktestRecord = eventBacktest as Record<string, unknown>;
+    const summary = eventBacktestRecord.summary;
+    if (summary && typeof summary === 'object') {
+      const summaryRecord = summary as Record<string, unknown>;
+      const eventSharpe = summaryRecord.sharpe_ratio;
+      if (typeof eventSharpe === 'number' && Number.isFinite(eventSharpe)) {
+        parts.push(`Event Sharpe ${eventSharpe.toFixed(2)}`);
+      }
+    }
   }
 
   const weightSum = record.latest_weight_sum;

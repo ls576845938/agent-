@@ -372,6 +372,13 @@ export type CryptoClosureCandidate = {
   train?: Partial<Summary>;
   overfit_gap?: number;
   candidate_count?: number;
+  candidate_key?: string;
+  qualified?: boolean;
+  selected?: boolean;
+  screening_metrics?: Record<string, number>;
+  qualification_blockers?: string[];
+  statistical_validation_blockers?: string[];
+  audit?: Record<string, unknown>;
 };
 
 export type CryptoClosureResponse = {
@@ -405,6 +412,7 @@ export type CryptoClosureResponse = {
   cost_stress: Record<string, unknown>;
   walk_forward: Partial<WalkForwardResponse> & {stability?: Partial<WalkForwardResponse['stability']> & Record<string, unknown>};
   promotion_gate: Partial<PromotionGateResponse>;
+  closure_evidence_paths?: string[];
   decision: string;
   next_stage: string;
   blockers: string[];

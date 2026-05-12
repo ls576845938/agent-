@@ -441,6 +441,11 @@ def qualify_crypto_candidates(
         cost = cost_map.get(key) or cost_map.get(strategy_id) or {}
         walk_forward = walk_map.get(key) or walk_map.get(strategy_id) or {}
         event_backtest = event_map.get(key) or event_map.get(strategy_id) or {}
+        screening_metrics = _crypto_candidate_screening_metrics(
+            candidate,
+            cost_stress=cost,
+            walk_forward=walk_forward,
+        )
         blockers = _crypto_candidate_blockers(
             candidate,
             cost_stress=cost,
@@ -452,6 +457,7 @@ def qualify_crypto_candidates(
         row["candidate_key"] = key
         row["qualified"] = not blockers
         row["selected"] = False
+        row["screening_metrics"] = screening_metrics
         row["qualification_blockers"] = blockers
         rows.append(row)
 
@@ -493,10 +499,17 @@ def _crypto_candidate_key(candidate: dict[str, Any]) -> str:
 def _crypto_candidate_selection_sort_key(candidate: dict[str, Any]) -> tuple[Any, ...]:
     rank = candidate.get("rank")
     validation = candidate.get("validation") or {}
+    screening_metrics = candidate.get("screening_metrics") or {}
     has_rank = isinstance(rank, (int, float))
+    cost_sensitivity = _finite_sort_value(screening_metrics.get("cost_sensitivity"))
+    annual_turnover_pct = _finite_sort_value(screening_metrics.get("annual_turnover_pct"))
+    avg_holding_bars = _finite_desc_sort_value(screening_metrics.get("avg_holding_bars"))
     return (
         0 if has_rank else 1,
         float(rank) if has_rank else 0.0,
+        cost_sensitivity,
+        annual_turnover_pct,
+        avg_holding_bars,
         -float(candidate.get("score", 0.0)),
         -float(validation.get("sharpe_ratio", 0.0)),
         -float(validation.get("total_return_pct", 0.0)),
@@ -563,7 +576,125 @@ def _crypto_candidate_blockers(
         if regime_pass_rate < thresholds.min_regime_pass_rate_pct:
             blockers.append(f"regime pass_rate < {thresholds.min_regime_pass_rate_pct}%")
 
+    runtime_hints = _crypto_candidate_runtime_hints(candidate)
+    max_annual_turnover_pct = _float_or_none(runtime_hints.get("max_annual_turnover_pct"))
+    annual_turnover_pct = _crypto_candidate_annual_turnover_pct(candidate, walk_forward)
+    if (
+        max_annual_turnover_pct is not None
+        and annual_turnover_pct is not None
+        and annual_turnover_pct > max_annual_turnover_pct
+    ):
+        blockers.append(f"annual turnover > {max_annual_turnover_pct}%")
+
+    min_holding_bars = _float_or_none(runtime_hints.get("min_holding_bars"))
+    avg_holding_bars = _crypto_candidate_avg_holding_bars(candidate, walk_forward)
+    if min_holding_bars is not None and avg_holding_bars is not None and avg_holding_bars < min_holding_bars:
+        blockers.append(f"avg holding bars < {min_holding_bars}")
+
+    if runtime_hints.get("cost_aware_filter"):
+        cost_sensitivity = _crypto_candidate_cost_sensitivity(candidate, cost_stress)
+        if cost_sensitivity is not None and cost_sensitivity > 0.5:
+            blockers.append("cost sensitivity > 0.5")
+
     return blockers
+
+
+def _crypto_candidate_screening_metrics(
+    candidate: dict[str, Any],
+    *,
+    cost_stress: dict[str, Any],
+    walk_forward: dict[str, Any],
+) -> dict[str, float]:
+    metrics: dict[str, float] = {}
+    annual_turnover_pct = _crypto_candidate_annual_turnover_pct(candidate, walk_forward)
+    if annual_turnover_pct is not None:
+        metrics["annual_turnover_pct"] = round(annual_turnover_pct, 4)
+    avg_holding_bars = _crypto_candidate_avg_holding_bars(candidate, walk_forward)
+    if avg_holding_bars is not None:
+        metrics["avg_holding_bars"] = round(avg_holding_bars, 4)
+    cost_sensitivity = _crypto_candidate_cost_sensitivity(candidate, cost_stress)
+    if cost_sensitivity is not None:
+        metrics["cost_sensitivity"] = round(cost_sensitivity, 6)
+    return metrics
+
+
+def _crypto_candidate_runtime_hints(candidate: dict[str, Any]) -> dict[str, Any]:
+    research_metadata = candidate.get("research_metadata")
+    if not isinstance(research_metadata, dict):
+        return {}
+    runtime_hints = research_metadata.get("runtime_hints")
+    return runtime_hints if isinstance(runtime_hints, dict) else {}
+
+
+def _crypto_candidate_annual_turnover_pct(
+    candidate: dict[str, Any],
+    walk_forward: dict[str, Any],
+) -> float | None:
+    stability = walk_forward.get("stability", {}) if isinstance(walk_forward, dict) else {}
+    for payload, key in (
+        (stability, "oos_avg_turnover_pct"),
+        (candidate.get("turnover"), "annual_turnover_pct"),
+        (candidate.get("metrics"), "annual_turnover_pct"),
+        (candidate.get("validation"), "annual_turnover_pct"),
+    ):
+        if isinstance(payload, dict):
+            value = _float_or_none(payload.get(key))
+            if value is not None:
+                return value
+    return None
+
+
+def _crypto_candidate_avg_holding_bars(
+    candidate: dict[str, Any],
+    walk_forward: dict[str, Any],
+) -> float | None:
+    stability = walk_forward.get("stability", {}) if isinstance(walk_forward, dict) else {}
+    for payload, key in (
+        (stability, "oos_avg_holding_bars"),
+        (candidate.get("holding_period"), "avg_holding_bars"),
+        (candidate.get("metrics"), "avg_holding_bars"),
+        (candidate.get("validation"), "avg_holding_bars"),
+    ):
+        if isinstance(payload, dict):
+            value = _float_or_none(payload.get(key))
+            if value is not None:
+                return value
+    return None
+
+
+def _crypto_candidate_cost_sensitivity(
+    candidate: dict[str, Any],
+    cost_stress: dict[str, Any],
+) -> float | None:
+    for payload, key in (
+        (cost_stress, "cost_sensitivity"),
+        (candidate.get("metrics"), "cost_sensitivity"),
+        (candidate.get("validation"), "cost_sensitivity"),
+    ):
+        if isinstance(payload, dict):
+            value = _float_or_none(payload.get(key))
+            if value is not None:
+                return value
+    return None
+
+
+def _float_or_none(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _finite_sort_value(value: Any) -> float:
+    parsed = _float_or_none(value)
+    return parsed if parsed is not None else float("inf")
+
+
+def _finite_desc_sort_value(value: Any) -> float:
+    parsed = _float_or_none(value)
+    return -parsed if parsed is not None else float("inf")
 
 
 def _crypto_sample_summary(frame: pd.DataFrame, *, interval: str) -> dict[str, Any]:

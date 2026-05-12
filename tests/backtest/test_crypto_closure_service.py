@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
+from pathlib import Path
 
 from backend.app.domain.models import BacktestArtifacts
 from backend.app.services.crypto_closure import CryptoClosureService
@@ -15,6 +17,7 @@ class _StubResearchService:
         self.crypto_event_request: dict[str, object] | None = None
         self.cost_request: dict[str, object] | None = None
         self.walk_request: dict[str, object] | None = None
+        self.cpcv_request: dict[str, object] | None = None
 
     def optimize_strategy(self, request: dict[str, object]) -> dict[str, object]:
         return {
@@ -93,6 +96,7 @@ class _StubResearchService:
         }
 
     def run_cpcv_validation(self, request: dict[str, object]) -> dict[str, object]:
+        self.cpcv_request = dict(request)
         pbo_trials = [
             {"split_id": "p1", "config_id": "a", "train_sharpe": 1.4, "test_sharpe": 1.3},
             {"split_id": "p1", "config_id": "b", "train_sharpe": 0.7, "test_sharpe": 0.5},
@@ -161,6 +165,49 @@ class _AuditFailResearchService(_StubResearchService):
         }
 
 
+class _NoCandidatePassesResearchService(_StubResearchService):
+    def run_event_driven_cost_stress(self, request: dict[str, object]) -> dict[str, object]:
+        payload = super().run_event_driven_cost_stress(request)
+        payload["survival_rate_pct"] = 0.0
+        return payload
+
+
+class _WeakStatisticalValidationResearchService(_StubResearchService):
+    def run_cpcv_validation(self, request: dict[str, object]) -> dict[str, object]:
+        self.cpcv_request = dict(request)
+        return {
+            "status": "completed",
+            "validation_method": "cpcv",
+            "cv_method": "cpcv",
+            "n_splits": 3,
+            "test_splits": 1,
+            "combination_count": 2,
+            "path_count": 2,
+            "purged": True,
+            "purge_bars": request["purge_bars"],
+            "embargoed": True,
+            "embargo_bars": request["embargo_bars"],
+            "lookahead_guard": "",
+            "config_count": 2,
+            "trial_count": 4,
+            "folds": [
+                {"split_id": "p1", "oos_sharpe": -0.2, "max_drawdown_pct": -8.0, "passed": False},
+                {"split_id": "p2", "oos_sharpe": -0.3, "max_drawdown_pct": -9.0, "passed": False},
+            ],
+            "fold_sharpes": [-0.2, -0.3],
+            "fold_drawdowns": [-8.0, -9.0],
+            "fold_returns": [],
+            "pbo_trials": [
+                {"split_id": "p1", "config_id": "selected", "train_sharpe": 2.0, "test_sharpe": -1.0},
+                {"split_id": "p1", "config_id": "alt", "train_sharpe": 0.5, "test_sharpe": 1.0},
+                {"split_id": "p2", "config_id": "selected", "train_sharpe": 2.0, "test_sharpe": -1.0},
+                {"split_id": "p2", "config_id": "alt", "train_sharpe": 0.5, "test_sharpe": 1.0},
+            ],
+            "bar_count": 1,
+            "return_observation_count": 0,
+        }
+
+
 class _StubMarketDataService:
     def resample_crypto_klines(self, spec) -> CryptoResampleResult:
         return CryptoResampleResult(
@@ -196,6 +243,21 @@ def _quality_inspector(*, interval: str, **_: object) -> dict[str, object]:
     }
 
 
+def _btc_closure_request(**overrides: object) -> dict[str, object]:
+    request: dict[str, object] = {
+        "symbol": "BTCUSDT",
+        "interval": "1h",
+        "start": datetime(2026, 1, 1, 0, 0, tzinfo=UTC),
+        "end": datetime(2026, 5, 1, 0, 0, tzinfo=UTC),
+        "data_root": "/tmp/crypto-closure",
+        "max_scenarios": 1,
+        "windows": 2,
+        "validation_candidate_count": 1,
+    }
+    request.update(overrides)
+    return request
+
+
 def test_crypto_closure_propagates_audit_context_across_btc_pipeline() -> None:
     research_service = _StubResearchService()
     promotion_gate_service = _StubPromotionGateService()
@@ -207,16 +269,7 @@ def test_crypto_closure_propagates_audit_context_across_btc_pipeline() -> None:
     )
 
     result = service.run(
-        {
-            "symbol": "BTCUSDT",
-            "interval": "1h",
-            "start": datetime(2026, 1, 1, 0, 0, tzinfo=UTC),
-            "end": datetime(2026, 5, 1, 0, 0, tzinfo=UTC),
-            "data_root": "/tmp/crypto-closure",
-            "max_scenarios": 1,
-            "windows": 2,
-            "validation_candidate_count": 1,
-        }
+        _btc_closure_request()
     )
 
     audit = result["candidate_screen"]["audit"]
@@ -225,6 +278,7 @@ def test_crypto_closure_propagates_audit_context_across_btc_pipeline() -> None:
     assert research_service.crypto_event_request is not None
     assert research_service.cost_request is not None
     assert research_service.walk_request is not None
+    assert research_service.cpcv_request is not None
     assert promotion_gate_service.request is not None
     assert research_service.crypto_event_request["data_version"] == audit["data_version"]
     assert research_service.cost_request["data_version"] == audit["data_version"]
@@ -233,6 +287,8 @@ def test_crypto_closure_propagates_audit_context_across_btc_pipeline() -> None:
     assert research_service.crypto_event_request["run_id"] == audit["event_run_id"]
     assert research_service.cost_request["run_id_prefix"] == audit["run_id_prefix"]
     assert research_service.walk_request["run_id_prefix"] == audit["run_id_prefix"]
+    assert research_service.cpcv_request["purge_bars"] == 1
+    assert research_service.cpcv_request["embargo_bars"] == 1
     assert result["event_backtest"]["audit"]["data_version"] == audit["data_version"]
     assert result["cost_stress"]["audit"]["scenario_manifests_complete"] is True
     assert result["walk_forward"]["audit"]["aggregate_manifest_path"] == "/tmp/walk_forward_manifest.json"
@@ -250,21 +306,118 @@ def test_crypto_closure_blocks_when_cost_or_walk_forward_manifests_are_missing()
     )
 
     result = service.run(
-        {
-            "symbol": "BTCUSDT",
-            "interval": "1h",
-            "start": datetime(2026, 1, 1, 0, 0, tzinfo=UTC),
-            "end": datetime(2026, 5, 1, 0, 0, tzinfo=UTC),
-            "data_root": "/tmp/crypto-closure",
-            "max_scenarios": 1,
-            "windows": 2,
-            "validation_candidate_count": 1,
-        }
+        _btc_closure_request()
     )
 
     assert result["decision"] == "fail"
     assert "cost_stress missing manifests: base" in result["blockers"]
     assert "walk_forward manifest_path is missing" in result["blockers"]
+
+
+def test_crypto_closure_skips_promotion_gate_when_no_candidate_passes_strict_qualification() -> None:
+    research_service = _NoCandidatePassesResearchService()
+    promotion_gate_service = _StubPromotionGateService()
+    service = CryptoClosureService(
+        research_service=research_service,
+        promotion_gate_service=promotion_gate_service,
+        market_data_service=_StubMarketDataService(),
+        quality_inspector=_quality_inspector,
+    )
+
+    result = service.run(_btc_closure_request())
+
+    assert result["selected_candidate"] is None
+    assert result["promotion_gate"]["status"] == "skipped"
+    assert result["promotion_gate"]["decision"] == "fail"
+    assert result["promotion_gate"]["next_stage"] == "blocked"
+    assert promotion_gate_service.request is None
+    assert result["decision"] == "fail"
+    assert result["next_stage"] == "blocked"
+    assert "no BTC candidate passed cost stress, walk-forward, CPCV/DSR/PBO gates" in result["blockers"]
+
+
+def test_crypto_closure_cannot_skip_cpcv_dsr_pbo_or_lookahead_blockers() -> None:
+    research_service = _WeakStatisticalValidationResearchService()
+    promotion_gate_service = _StubPromotionGateService()
+    service = CryptoClosureService(
+        research_service=research_service,
+        promotion_gate_service=promotion_gate_service,
+        market_data_service=_StubMarketDataService(),
+        quality_inspector=_quality_inspector,
+    )
+
+    result = service.run(_btc_closure_request(purge_bars=3, embargo_bars=2))
+
+    blockers = "\n".join(result["blockers"])
+    assert research_service.cpcv_request is not None
+    assert research_service.cpcv_request["purge_bars"] == 3
+    assert research_service.cpcv_request["embargo_bars"] == 2
+    assert result["selected_candidate"] is None
+    assert result["promotion_gate"]["status"] == "skipped"
+    assert promotion_gate_service.request is None
+    assert "CPCV/DSR/PBO promotion contract blocked" in blockers
+    assert "DSR below promotion threshold" in blockers
+    assert "PBO above promotion threshold or missing" in blockers
+    assert "multiple testing control did not pass" in blockers
+
+
+def test_crypto_closure_does_not_request_live_or_broker_side_effects() -> None:
+    research_service = _StubResearchService()
+    promotion_gate_service = _StubPromotionGateService()
+    service = CryptoClosureService(
+        research_service=research_service,
+        promotion_gate_service=promotion_gate_service,
+        market_data_service=_StubMarketDataService(),
+        quality_inspector=_quality_inspector,
+    )
+
+    result = service.run(_btc_closure_request())
+
+    assert result["decision"] == "pass"
+    assert promotion_gate_service.request is not None
+    assert promotion_gate_service.request["source"] == "sqlite"
+    assert promotion_gate_service.request["mode"] == "single"
+    assert promotion_gate_service.request["skip_deep_checks"] is False
+    assert "runtime_mode" not in promotion_gate_service.request
+    assert "broker" not in promotion_gate_service.request
+    service_source = Path("backend/app/services/crypto_closure.py").read_text()
+    assert "quant_us.live" not in service_source
+    assert "quant_us.execution" not in service_source
+
+
+def test_crypto_closure_reports_progress_and_persists_research_only_evidence(tmp_path) -> None:
+    research_service = _StubResearchService()
+    service = CryptoClosureService(
+        research_service=research_service,
+        promotion_gate_service=_StubPromotionGateService(),
+        market_data_service=_StubMarketDataService(),
+        quality_inspector=_quality_inspector,
+    )
+    progress_updates: list[dict[str, object]] = []
+
+    result = service.run(
+        _btc_closure_request(data_root=str(tmp_path), persist_closure_evidence=True),
+        progress_callback=lambda **kwargs: progress_updates.append(dict(kwargs)),
+    )
+
+    assert result["decision"] == "pass"
+    assert [item["stage"] for item in progress_updates] == [
+        "data_integrity",
+        "candidate_screen",
+        "candidate_validation",
+        "promotion_gate",
+        "completed",
+    ]
+    evidence_paths = result["closure_evidence_paths"]
+    assert len(evidence_paths) == 1
+    evidence_path = Path(evidence_paths[0])
+    assert evidence_path.exists()
+    payload = json.loads(evidence_path.read_text())
+    assert payload["scope"] == "btc_closure_candidate_strict_validation"
+    assert payload["status"] == "research_only"
+    assert payload["live_enabled"] is False
+    assert payload["candidate_key"].startswith("trend_macd|")
+    assert payload["event_backtest"]["diagnostics"]["pnl_source"] == "ledger_fills"
 
 
 def test_crypto_closure_quality_check_uses_resampled_complete_interval_end() -> None:
@@ -290,16 +443,7 @@ def test_crypto_closure_quality_check_uses_resampled_complete_interval_end() -> 
     )
 
     result = service.run(
-        {
-            "symbol": "BTCUSDT",
-            "interval": "1h",
-            "start": datetime(2026, 1, 1, 0, 0, tzinfo=UTC),
-            "end": requested_end,
-            "data_root": "/tmp/crypto-closure",
-            "target_intervals": ["1h"],
-            "max_scenarios": 1,
-            "windows": 2,
-        }
+        _btc_closure_request(end=requested_end, target_intervals=["1h"])
     )
 
     assert result["data_integrity"]["status"] == "pass"

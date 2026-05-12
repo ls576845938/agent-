@@ -160,11 +160,11 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
         json: {
           task_id: 'task-crypto-closure',
           kind: 'crypto_closure',
-          label: 'BTC closure BTCUSDT 1h',
+          label: 'BTC production closure BTCUSDT 1h',
           status: 'queued',
           stage: 'running',
           progress: 5,
-          message: 'BTC closure task queued',
+          message: 'BTC production closure task queued',
           request: {},
           result: null,
           blockers: [],
@@ -179,11 +179,11 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
         json: {
           task_id: 'task-crypto-closure',
           kind: 'crypto_closure',
-          label: 'BTC closure BTCUSDT 1h',
+          label: 'BTC production closure BTCUSDT 1h',
           status: 'completed',
           stage: 'completed',
           progress: 100,
-          message: 'BTC closure completed',
+          message: 'BTC production closure completed',
           request: {},
           result: {
             status: 'completed',
@@ -194,7 +194,11 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
             symbol: 'BTCUSDT',
             target_intervals: ['5m', '15m', '1h', '4h', '1d'],
             data_integrity: {status: 'pass'},
-            candidate_screen: {candidate_count: 2},
+            candidate_screen: {
+              candidate_count: 2,
+              selected_candidate: {rank: 1, strategy_id: 'trend_macd', parameters: {}, score: 1.4, validation: {sharpe_ratio: 1.4, max_drawdown_pct: -6.2}},
+            },
+            selected_candidate: {rank: 1, strategy_id: 'trend_macd', parameters: {}, score: 1.4, validation: {sharpe_ratio: 1.4, max_drawdown_pct: -6.2}},
             event_backtest: {summary: {sharpe_ratio: 1.4, total_return_pct: 5.6, trade_count: 3}},
             cost_stress: {survival_rate_pct: 88, ledger_consistency_pct: 100},
             walk_forward: {stability: {fold_pass_rate_pct: 75, ledger_consistency_pct: 100}},
@@ -439,8 +443,13 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
   await expect(page.locator('[data-testid="crypto-promotion-blockers"]')).toContainText('coverage below threshold');
   await expect(page.locator('[data-testid="crypto-blockers"]')).toContainText('promotion');
 
-  await page.locator('[data-testid="module-state-btc"]').getByRole('button', {name: '一键 BTC 闭环'}).click();
-  await expect(page.locator('.task-queue-panel')).toContainText('BTC 后台任务');
+  await page.locator('[data-testid="module-state-btc"]').getByRole('button', {name: '启动 BTC production closure'}).click();
+  await expect(page.locator('[data-testid="module-state-btc"]')).toContainText('任务进度');
+  await expect(page.locator('[data-testid="module-state-btc"]')).toContainText('任务阶段');
+  await expect(page.locator('.task-queue-panel')).toContainText('BTC production closure 任务');
   await expect(page.locator('.task-queue-panel')).toContainText('COMPLETED');
+  await expect(page.locator('.task-queue-panel')).toContainText('100%');
+  await expect(page.locator('.task-queue-panel')).toContainText('Decision FAIL');
+  await expect(page.locator('.task-queue-panel')).toContainText('Candidate trend_macd');
   await expect(page.locator('.task-queue-panel')).toContainText('coverage below threshold');
 });

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class StrategyInfo(BaseModel):
@@ -161,6 +161,8 @@ class PortfolioOptimizationResponse(BaseModel):
 
 
 class ResearchPromotionGateRequest(BaseBacktestRequest):
+    model_config = ConfigDict(extra="forbid")
+
     mode: str = "portfolio"
     strategy_id: str = "trend_macd"
     strategy_params: Dict[str, float] = Field(default_factory=dict)
@@ -205,6 +207,8 @@ class ResearchPromotionGateResponse(BaseModel):
 
 
 class CryptoClosureRequest(BaseBacktestRequest):
+    model_config = ConfigDict(extra="forbid")
+
     source: str = "sqlite"
     symbol: str = "BTCUSDT"
     interval: str = "1h"
@@ -215,6 +219,7 @@ class CryptoClosureRequest(BaseBacktestRequest):
             "donchian_breakout",
             "reversion_rsi",
             "volatility_squeeze",
+            "funding_sentiment",
             "macro_trend",
             "dynamic_grid",
             "time_window",
@@ -222,10 +227,20 @@ class CryptoClosureRequest(BaseBacktestRequest):
     )
     max_candidates_per_strategy: int = Field(default=4, ge=1, le=12)
     max_ranked_candidates: int = Field(default=8, ge=1, le=20)
+    validation_candidate_count: int = Field(default=3, ge=1, le=12)
+    max_validation_candidates: int = Field(default=3, ge=1, le=12)
+    max_selected_candidates: int = Field(default=3, ge=1, le=3)
     max_scenarios: int = Field(default=8, ge=1, le=8)
     windows: int = Field(default=2, ge=1, le=8)
+    cpcv_splits: int = Field(default=5, ge=3, le=10)
+    cpcv_test_splits: int = Field(default=2, ge=1, le=5)
+    cpcv_max_paths: int = Field(default=6, ge=1, le=30)
+    cpcv_max_configs: int = Field(default=3, ge=1, le=12)
+    purge_bars: int = Field(default=1, ge=0, le=100)
+    embargo_bars: int = Field(default=1, ge=0, le=100)
     min_bars_by_interval: Dict[str, int] = Field(default_factory=dict)
     persist_data_manifest: bool = True
+    persist_closure_evidence: bool = True
     persist_manifest: bool = True
     register_experiment: bool = True
     experiment_name: str = ""
@@ -247,6 +262,14 @@ class CryptoClosureRequest(BaseBacktestRequest):
             raise ValueError(f"target_intervals must be in {sorted(allowed)}")
         return value
 
+    @field_validator("cpcv_test_splits")
+    @classmethod
+    def validate_crypto_cpcv_test_splits(cls, value: int, info: Any) -> int:
+        splits = int(info.data.get("cpcv_splits", 5) or 5)
+        if value >= splits:
+            raise ValueError("cpcv_test_splits must be smaller than cpcv_splits")
+        return value
+
 
 class CryptoClosureResponse(BaseModel):
     status: str
@@ -262,6 +285,7 @@ class CryptoClosureResponse(BaseModel):
     cost_stress: Dict[str, Any] = Field(default_factory=dict)
     walk_forward: Dict[str, Any] = Field(default_factory=dict)
     promotion_gate: Dict[str, Any] = Field(default_factory=dict)
+    closure_evidence_paths: List[str] = Field(default_factory=list)
     decision: str
     next_stage: str
     blockers: List[str] = Field(default_factory=list)

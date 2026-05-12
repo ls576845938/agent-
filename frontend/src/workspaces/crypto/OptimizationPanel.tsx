@@ -1,4 +1,4 @@
-import type {StrategyOptimizationResponse, CostStressResponse, WalkForwardResponse, PortfolioOptimizationResponse, DataQualityResponse, PromotionGateResponse, OptimizationFrameworkItem, CryptoClosureResponse} from '../../lib/shared-types';
+import type {StrategyOptimizationResponse, CostStressResponse, WalkForwardResponse, PortfolioOptimizationResponse, DataQualityResponse, PromotionGateResponse, OptimizationFrameworkItem, CryptoClosureResponse, TaskResponse} from '../../lib/shared-types';
 import {formatOptimizationScore, formatParams, formatTimestamp, formatPrice, scenarioClass, gateClass} from '../../lib/utils';
 import {ModuleStateCard} from '../../components/ModuleStateCard';
 
@@ -22,6 +22,7 @@ interface OptimizationPanelProps {
   promotionGateLoading: boolean;
   promotionGateMessage: string;
   cryptoClosure: CryptoClosureResponse | null;
+  cryptoClosureTask: TaskResponse | null;
   cryptoClosureLoading: boolean;
   cryptoClosureMessage: string;
   optimizationFramework: OptimizationFrameworkItem[];
@@ -43,7 +44,7 @@ export default function OptimizationPanel({
   portfolioOptimization, portfolioOptimizationLoading, portfolioOptimizationMessage,
   dataQuality, dataQualityLoading, dataQualityMessage,
   promotionGate, promotionGateLoading, promotionGateMessage,
-  cryptoClosure, cryptoClosureLoading, cryptoClosureMessage,
+  cryptoClosure, cryptoClosureTask, cryptoClosureLoading, cryptoClosureMessage,
   optimizationFramework, optimizedStrategyParams,
   onCryptoClosure,
   onOptimize, onCostStress, onWalkForward, onPortfolioOptimize,
@@ -54,18 +55,30 @@ export default function OptimizationPanel({
   const promotionSummary = promotionGate?.backtest_summary;
   const btcOutcome = cryptoClosure
     ? cryptoClosure.blockers.length > 0 ? 'BLOCKED' : cryptoClosure.decision === 'pass' ? 'PASS' : 'BLOCKED'
-    : promotionGate
-      ? promotionGate.decision === 'pass' ? 'PASS' : 'BLOCKED'
-      : dataQuality?.is_usable ? 'PASS' : 'BLOCKED';
-  const btcTone = btcOutcome === 'PASS' ? 'good' : 'bad';
+    : cryptoClosureTask
+      ? cryptoClosureTask.status.toUpperCase()
+      : promotionGate
+        ? promotionGate.decision === 'pass' ? 'PASS' : 'BLOCKED'
+        : dataQuality?.is_usable ? 'PASS' : 'BLOCKED';
+  const btcTone = cryptoClosure
+    ? (cryptoClosure.blockers.length > 0 || cryptoClosure.decision !== 'pass' ? 'bad' : 'good')
+    : cryptoClosureTask
+      ? (cryptoClosureTask.status === 'failed' ? 'bad' : cryptoClosureTask.status === 'completed' ? 'good' : 'neutral')
+      : promotionGate
+        ? (promotionGate.decision === 'pass' ? 'good' : 'bad')
+        : dataQuality?.is_usable ? 'good' : 'bad';
   const btcReason = cryptoClosure
     ? cryptoClosure.blockers.length > 0
       ? cryptoClosure.blockers[0]
       : cryptoClosure.recommendations[0] ?? `${cryptoClosure.next_stage} ready`
+    : cryptoClosureTask
+      ? `${cryptoClosureTask.stage || cryptoClosureTask.status} · ${cryptoClosureTask.message || 'running'}`
     : promotionGate
       ? promotionGates.find((gate) => gate.status !== 'pass')?.message ?? promotionRecommendations[0] ?? '等待闭环评估'
       : dataQuality?.issues?.[0]?.message ?? '等待数据质量与闭环结果';
   const btcMeta = [
+    {label: '任务阶段', value: cryptoClosureTask ? (cryptoClosureTask.stage || cryptoClosureTask.status) : cryptoClosure ? cryptoClosure.decision : 'WAITING'},
+    {label: '任务进度', value: cryptoClosureTask ? `${cryptoClosureTask.progress}%` : '0%'},
     {label: '数据完整性', value: cryptoClosure ? String(cryptoClosure.data_integrity.status ?? '-').toUpperCase() : dataQuality ? (dataQuality.is_usable ? 'PASS' : 'BLOCKED') : 'WAITING'},
     {label: '候选数', value: cryptoClosure ? String(cryptoClosure.candidate_screen.candidate_count ?? 0) : promotionGate ? String(promotionGates.length) : '0'},
     {label: '下一阶段', value: cryptoClosure?.next_stage ?? promotionGate?.next_stage ?? 'research'},
@@ -82,7 +95,7 @@ export default function OptimizationPanel({
         meta={btcMeta}
         hint="闭环数据、成本压力、walk-forward 与晋级门统一汇总"
         actions={[{
-          label: cryptoClosureLoading ? '闭环运行中...' : '一键 BTC 闭环',
+          label: cryptoClosureLoading ? 'BTC production closure 运行中...' : '启动 BTC production closure',
           onClick: () => { void onCryptoClosure(); },
           disabled: cryptoClosureLoading,
           variant: 'primary',
@@ -96,7 +109,7 @@ export default function OptimizationPanel({
         ))}
       </div>
       <div className="optimization-actions">
-        <button type="button" className="primary-button" disabled={cryptoClosureLoading} onClick={onCryptoClosure}>{cryptoClosureLoading ? '闭环运行中...' : '一键 BTC 闭环'}</button>
+        <button type="button" className="primary-button" disabled={cryptoClosureLoading} onClick={onCryptoClosure}>{cryptoClosureLoading ? 'BTC production closure 运行中...' : '启动 BTC production closure'}</button>
         <button type="button" className="secondary-button" disabled={optimizationLoading} onClick={onOptimize}>{optimizationLoading ? '优化中...' : '运行优先优化'}</button>
         <button type="button" className="secondary-button" disabled={costStressLoading} onClick={onCostStress}>{costStressLoading ? '中...' : '成本压力测试'}</button>
         <button type="button" className="secondary-button" disabled={walkForwardLoading} onClick={onWalkForward}>{walkForwardLoading ? '中...' : 'Walk-forward'}</button>

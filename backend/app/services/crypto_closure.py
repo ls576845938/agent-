@@ -26,6 +26,7 @@ DEFAULT_CRYPTO_STRATEGIES = [
     "donchian_breakout",
     "reversion_rsi",
     "volatility_squeeze",
+    "funding_sentiment",
     "macro_trend",
     "dynamic_grid",
     "time_window",
@@ -58,7 +59,12 @@ class CryptoClosureService:
         self.market_data_service = market_data_service
         self.quality_inspector = quality_inspector
 
-    def run(self, request: dict[str, Any]) -> dict[str, Any]:
+    def run(
+        self,
+        request: dict[str, Any],
+        *,
+        progress_callback: Callable[..., None] | None = None,
+    ) -> dict[str, Any]:
         base_request = self._base_request(request)
         symbol = str(base_request["symbol"]).upper()
         research_interval = str(base_request["interval"])
@@ -66,6 +72,12 @@ class CryptoClosureService:
         blockers: list[str] = []
         recommendations: list[str] = []
 
+        self._progress(
+            progress_callback,
+            stage="data_integrity",
+            message="checking BTC multi-timeframe data integrity",
+            progress=8,
+        )
         data_integrity = self._run_data_integrity(
             request=request,
             base_request=base_request,
@@ -74,6 +86,12 @@ class CryptoClosureService:
         data_integrity["audit"] = self._data_integrity_audit(data_integrity, research_interval)
         blockers.extend(data_integrity["blockers"])
         if data_integrity["status"] != "pass":
+            self._progress(
+                progress_callback,
+                stage="blocked",
+                message="BTC data integrity gate blocked closure",
+                progress=100,
+            )
             return self._blocked_result(
                 base_request=base_request,
                 target_intervals=target_intervals,
@@ -84,10 +102,22 @@ class CryptoClosureService:
                 ],
             )
 
+        self._progress(
+            progress_callback,
+            stage="candidate_screen",
+            message="screening BTC strategy families",
+            progress=28,
+        )
         candidate_screen = self._screen_candidates(request=request, base_request=base_request)
         blockers.extend(candidate_screen["blockers"])
         preliminary_candidates = list(candidate_screen.get("candidates", []) or [])
         if not preliminary_candidates:
+            self._progress(
+                progress_callback,
+                stage="blocked",
+                message="BTC candidate screen produced no candidates",
+                progress=100,
+            )
             return self._blocked_result(
                 base_request=base_request,
                 target_intervals=target_intervals,
@@ -119,7 +149,14 @@ class CryptoClosureService:
         walk_by_candidate: dict[str, dict[str, Any]] = {}
         selected_request_by_candidate: dict[str, dict[str, Any]] = {}
 
-        for candidate in candidates_to_validate:
+        for index, candidate in enumerate(candidates_to_validate, start=1):
+            candidate_key = self._candidate_key(candidate)
+            self._progress(
+                progress_callback,
+                stage="candidate_validation",
+                message=f"strict-validating BTC candidate {index}/{validation_count}: {candidate_key}",
+                progress=42 + int(42 * (index - 1) / max(1, validation_count)),
+            )
             evaluated = self._evaluate_candidate(
                 request=request,
                 base_request=base_request,
@@ -178,6 +215,17 @@ class CryptoClosureService:
         walk_forward = walk_by_candidate.get(representative_key, {})
         audit_context = dict(representative.get("audit", {}))
         candidate_screen["audit"] = audit_context
+        closure_evidence_paths = [
+            str((row.get("audit") or {}).get("candidate_evidence_path", ""))
+            for row in validated_candidates
+            if str((row.get("audit") or {}).get("candidate_evidence_path", "")).strip()
+        ]
+        self._progress(
+            progress_callback,
+            stage="promotion_gate",
+            message="evaluating BTC closure promotion boundary",
+            progress=90,
+        )
         promotion_gate = {
             "status": "skipped",
             "decision": "fail",
@@ -224,6 +272,12 @@ class CryptoClosureService:
             recommendations.append("BTC 闭环无显式阻断；下一步仍需人工复核 evidence pack 后再考虑 paper review。")
         recommendations.extend(promotion_gate.get("recommendations", []))
         recommendations = self._stable_unique_strings(recommendations)
+        self._progress(
+            progress_callback,
+            stage="completed",
+            message="BTC closure finished",
+            progress=100,
+        )
 
         return {
             "status": "completed",
@@ -240,6 +294,7 @@ class CryptoClosureService:
             "cost_stress": cost_stress,
             "walk_forward": walk_forward,
             "promotion_gate": promotion_gate,
+            "closure_evidence_paths": closure_evidence_paths,
             "decision": decision,
             "next_stage": next_stage,
             "blockers": blockers,
@@ -602,6 +657,16 @@ class CryptoClosureService:
         }
         candidate["validation_statistics"] = validation_statistics
         candidate["statistical_validation_blockers"] = self._statistical_validation_blockers(candidate)
+        candidate["audit"]["candidate_evidence_path"] = self._persist_candidate_evidence(
+            request=request,
+            audit_context=audit_context,
+            candidate=candidate,
+            selected_request=selected_request,
+            event_backtest=event_payload,
+            cost_stress=cost_stress,
+            walk_forward=walk_forward,
+            cpcv=cpcv,
+        )
         return {
             "candidate": candidate,
             "selected_request": selected_request,
@@ -685,6 +750,100 @@ class CryptoClosureService:
                 }
             )
         return levels
+
+    def _persist_candidate_evidence(
+        self,
+        *,
+        request: dict[str, Any],
+        audit_context: dict[str, str],
+        candidate: dict[str, Any],
+        selected_request: dict[str, Any],
+        event_backtest: dict[str, Any],
+        cost_stress: dict[str, Any],
+        walk_forward: dict[str, Any],
+        cpcv: dict[str, Any],
+    ) -> str:
+        if request.get("persist_closure_evidence") is False:
+            return ""
+        data_root = Path(audit_context.get("data_root") or request.get("data_root", "data"))
+        output_dir = data_root / "research" / "btc_closure_runs"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        path = output_dir / f"{audit_context['run_id_prefix']}_strict_evidence.json"
+        payload = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "scope": "btc_closure_candidate_strict_validation",
+            "status": "research_only",
+            "live_enabled": False,
+            "candidate_key": self._candidate_key(candidate),
+            "candidate": candidate,
+            "selected_request": {
+                key: str(value) if isinstance(value, datetime) else value
+                for key, value in selected_request.items()
+                if key not in {"chart"}
+            },
+            "event_backtest": {
+                "summary": event_backtest.get("summary", {}),
+                "diagnostics": event_backtest.get("diagnostics", {}),
+                "audit": event_backtest.get("audit", {}),
+            },
+            "cost_stress": self._compact_cost_stress(cost_stress),
+            "walk_forward": self._compact_walk_forward(walk_forward),
+            "cpcv": self._compact_cpcv(cpcv),
+            "validation_statistics": candidate.get("validation_statistics", {}),
+            "statistical_validation_blockers": candidate.get("statistical_validation_blockers", []),
+        }
+        path.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str),
+            encoding="utf-8",
+        )
+        return str(path)
+
+    def _compact_cost_stress(self, cost_stress: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "engine": cost_stress.get("engine", ""),
+            "survival_rate_pct": cost_stress.get("survival_rate_pct", 0.0),
+            "ledger_consistency_pct": cost_stress.get("ledger_consistency_pct", 0.0),
+            "scenario_count": cost_stress.get("scenario_count", 0),
+            "scenario_manifests_complete": bool(cost_stress.get("scenario_manifests_complete", False)),
+            "missing_manifest_scenarios": cost_stress.get("missing_manifest_scenarios", []),
+            "scenarios": [
+                {
+                    "name": row.get("name", ""),
+                    "survives": bool(row.get("survives", False)),
+                    "commission_multiplier": row.get("commission_multiplier", 1.0),
+                    "slippage_multiplier": row.get("slippage_multiplier", 1.0),
+                    "summary": row.get("summary", {}),
+                }
+                for row in cost_stress.get("scenarios", []) or []
+                if isinstance(row, dict)
+            ],
+            "audit": cost_stress.get("audit", {}),
+        }
+
+    def _compact_walk_forward(self, walk_forward: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "status": walk_forward.get("status", ""),
+            "stability": walk_forward.get("stability", {}),
+            "audit": walk_forward.get("audit", {}),
+            "recommendations": walk_forward.get("recommendations", []),
+        }
+
+    def _compact_cpcv(self, cpcv: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "status": cpcv.get("status", ""),
+            "validation_method": cpcv.get("validation_method", "cpcv"),
+            "cv_method": cpcv.get("cv_method", "cpcv"),
+            "n_splits": cpcv.get("n_splits", 0),
+            "test_splits": cpcv.get("test_splits", 0),
+            "path_count": cpcv.get("path_count", 0),
+            "trial_count": cpcv.get("trial_count", 0),
+            "purged": bool(cpcv.get("purged", False)),
+            "embargoed": bool(cpcv.get("embargoed", False)),
+            "lookahead_guard": cpcv.get("lookahead_guard", ""),
+            "fold_sharpes": cpcv.get("fold_sharpes", []),
+            "fold_drawdowns": cpcv.get("fold_drawdowns", []),
+            "pbo_trials": cpcv.get("pbo_trials", []),
+        }
 
     def _min_bars_by_interval(self, request: dict[str, Any]) -> dict[str, int] | None:
         raw = request.get("min_bars_by_interval") or request.get("long_sample_min_bars_by_interval")
@@ -858,3 +1017,15 @@ class CryptoClosureService:
             seen.add(text)
             ordered.append(text)
         return ordered
+
+    def _progress(
+        self,
+        progress_callback: Callable[..., None] | None,
+        *,
+        stage: str,
+        message: str,
+        progress: int,
+    ) -> None:
+        if progress_callback is None:
+            return
+        progress_callback(stage=stage, message=message, progress=progress)

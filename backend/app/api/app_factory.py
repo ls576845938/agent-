@@ -116,6 +116,18 @@ def _serialize_task(task: dict[str, Any]) -> TaskStatusResponse:
     return TaskStatusResponse.model_validate(payload)
 
 
+def _run_crypto_closure_background_task(ctx, payload: dict[str, Any]) -> dict[str, Any]:
+    ctx.update(stage="data_integrity", message="BTC production closure: checking data integrity", progress=12)
+    try:
+        result = crypto_closure_service.run(payload, progress_callback=ctx.update)
+    except TypeError as exc:
+        if "progress_callback" not in str(exc):
+            raise
+        result = crypto_closure_service.run(payload)
+    ctx.update(stage="result_summary", message="BTC production closure: assembling result summary", progress=96)
+    return result
+
+
 def _as_bool(value: Any) -> bool:
     if isinstance(value, bool):
         return value
@@ -1204,9 +1216,9 @@ def create_app():
         payload = request.model_dump()
         return _submit_background_task(
             kind="crypto_closure",
-            label=f"BTC closure {request.symbol} {request.interval}",
+            label=f"BTC production closure {request.symbol} {request.interval}",
             request=payload,
-            job=lambda ctx: crypto_closure_service.run(payload),
+            job=lambda ctx: _run_crypto_closure_background_task(ctx, payload),
         )
 
     @router.post("/tasks/research/promotion-gate", response_model=TaskStatusResponse, dependencies=[Depends(verify_api_key)])
