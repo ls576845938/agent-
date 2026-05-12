@@ -121,6 +121,7 @@ def test_optimize_strategy_returns_runtime_metrics_hints_and_penalizes_hot_candi
             "max_annual_turnover_pct": 365.0,
             "min_holding_bars": 6,
             "cost_aware_filter": True,
+            "event_ledger_screen": False,
         }
     )
 
@@ -152,6 +153,147 @@ def test_btc_low_turnover_trend_has_optimizer_parameter_grid() -> None:
     assert dict(strategy_registry.get("btc_low_turnover_trend").descriptor.default_params) in grid
     assert all(row["fast_ma"] < row["slow_ma"] < row["trend_ma"] for row in grid)
     assert all(row["min_volatility"] < row["max_volatility"] for row in grid)
+
+
+def test_btc_new_strategy_families_have_optimizer_parameter_grids() -> None:
+    expected_keys = {
+        "btc_trend_pullback": {"fast_ma", "slow_ma", "trend_ma", "pullback_pct"},
+        "btc_vol_breakout": {"breakout_window", "vol_window", "max_volatility", "volume_mult"},
+        "btc_regime_trend": {"fast_ma", "slow_ma", "regime_ma", "momentum_threshold"},
+        "btc_low_turnover_breakout": {"entry_window", "exit_window", "trend_ma", "max_volatility"},
+    }
+
+    for strategy_id, keys in expected_keys.items():
+        grid = backtest_service_module._candidate_parameter_grid(strategy_id)
+
+        assert len(grid) > 1
+        assert dict(strategy_registry.get(strategy_id).descriptor.default_params) in grid
+        assert all(keys <= set(row) for row in grid)
+
+
+def test_btc_contextual_validation_signal_uses_train_warmup_and_resets_target_state() -> None:
+    start = datetime(2026, 1, 1, 0, 0, tzinfo=UTC)
+    rows = []
+    for offset in range(72):
+        price = 100.0 + offset * 0.6
+        rows.append(
+            {
+                "timestamp": start + timedelta(hours=offset),
+                "symbol": "BTCUSD",
+                "open": price,
+                "high": price + 1.0,
+                "low": price - 1.0,
+                "close": price,
+                "volume": 1_000_000.0,
+            }
+        )
+    frame = pd.DataFrame(rows).set_index("timestamp")
+    context_frame = frame.iloc[:56].copy()
+    target_frame = frame.iloc[56:].copy()
+    strategy_id = "btc_low_turnover_trend"
+    params = {
+        "regime_filter_enabled": 0.0,
+        "fast_ma": 4,
+        "slow_ma": 8,
+        "trend_ma": 24,
+        "vol_window": 3,
+        "min_volatility": 0.0,
+        "max_volatility": 1.0,
+        "trend_strength": 0.0,
+        "exit_buffer": 0.02,
+        "entry_confirm_bars": 1,
+        "exit_confirm_bars": 1,
+        "min_hold_bars": 1,
+        "cooldown_bars": 0,
+    }
+
+    standalone, _ = backtest_service_module._prepare_strategy_pack(
+        target_frame,
+        [strategy_id],
+        params_map={strategy_id: params},
+    )
+    contextual, _ = backtest_service_module._prepare_strategy_pack_for_target_window(
+        context_frame=context_frame,
+        target_frame=target_frame,
+        strategy_ids=[strategy_id],
+        params_map={strategy_id: params},
+    )
+
+    assert standalone[strategy_id].max() == 0.0
+    assert contextual[strategy_id].max() == 1.0
+    assert contextual[strategy_id].index.equals(target_frame.index)
+
+
+def test_optimize_strategy_event_ledger_screen_adjusts_top_candidates(monkeypatch) -> None:
+    frame = _frame()
+    strategy_id = "trend_macd"
+    default_params = dict(strategy_registry.get(strategy_id).descriptor.default_params)
+    hot_params = {**default_params, "fast_window": 10}
+
+    monkeypatch.setattr(backtest_service_module, "load_market_frame", lambda **_: frame.copy())
+    monkeypatch.setattr(
+        backtest_service_module,
+        "_split_train_validation",
+        lambda loaded_frame: (loaded_frame.iloc[:6].copy(), loaded_frame.iloc[6:].copy()),
+    )
+    monkeypatch.setattr(backtest_service_module, "_candidate_parameter_grid", lambda _: [hot_params, default_params])
+    monkeypatch.setattr(
+        backtest_service_module,
+        "_run_event_ledger_optimizer_screen",
+        lambda **kwargs: {
+            "summary": {
+                "total_return_pct": 8.0,
+                "sharpe_ratio": 1.2,
+                "profit_factor": 1.4,
+                "max_drawdown_pct": -3.0,
+                "trade_count": 3,
+            },
+            "diagnostics": {
+                "engine": "event_driven",
+                "pnl_source": "ledger_fills",
+                "orders": 3,
+                "fills": 3,
+                "ledger_equity_consistent": True,
+                "execution_config": {},
+            },
+            "metrics": {
+                "event_total_return_pct": 8.0,
+                "event_sharpe_ratio": 1.2,
+                "event_profit_factor": 1.4,
+                "event_max_drawdown_pct": -3.0,
+                "event_trade_count": 3,
+                "event_orders": 3,
+                "event_fills": 3,
+                "event_ledger_equity_consistent": True,
+                "event_pnl_source": "ledger_fills",
+            },
+        },
+    )
+
+    def fake_prepare_strategy_pack(loaded_frame: pd.DataFrame, strategy_ids: list[str], params_map=None):
+        return {strategy_id: pd.Series([1.0] * len(loaded_frame), index=loaded_frame.index)}, {}
+
+    monkeypatch.setattr(backtest_service_module, "_prepare_strategy_pack", fake_prepare_strategy_pack)
+
+    result = ResearchBacktestService().optimize_strategy(
+        {
+            "source": "sqlite",
+            "asset_class": "crypto",
+            "symbol": "BTCUSD",
+            "interval": "1h",
+            "start": frame.index[0].to_pydatetime(),
+            "end": frame.index[-1].to_pydatetime(),
+            "strategy_id": strategy_id,
+            "max_candidates": 2,
+            "event_ledger_screen": True,
+            "event_ledger_screen_top_n": 1,
+        }
+    )
+
+    screened = [row for row in result["candidates"] if row.get("event_ledger_validation")]
+    assert len(screened) == 1
+    assert screened[0]["event_ledger_metrics"]["event_ledger_equity_consistent"] is True
+    assert screened[0]["research_metadata"]["event_ledger_screen"]["enabled"] is True
 
 
 def test_vector_simulation_does_not_create_virtual_position_when_order_filtered() -> None:
@@ -217,6 +359,42 @@ def test_vector_simulation_allows_initial_entry_despite_min_holding_guard() -> N
     assert any(float(row["value"]) > 0.0 for row in result.chart["net_units"])
 
 
+def test_walk_forward_regime_failure_analysis_groups_failed_windows() -> None:
+    start = datetime(2026, 1, 1, tzinfo=UTC)
+    frame = pd.DataFrame(
+        [
+            {
+                "timestamp": start + timedelta(hours=idx),
+                "symbol": "BTCUSD",
+                "open": 100.0 + idx * 0.1,
+                "high": 101.0 + idx * 0.1,
+                "low": 99.0 + idx * 0.1,
+                "close": 100.0 + idx * 0.1,
+                "volume": 1000.0,
+            }
+            for idx in range(40)
+        ]
+    ).set_index("timestamp")
+    regime = backtest_service_module._window_regime_summary(
+        frame,
+        start=frame.index[10].to_pydatetime(),
+        end=frame.index[30].to_pydatetime(),
+    )
+    failed = {
+        "survives": False,
+        "status": "completed",
+        "regime": regime,
+        "failure_reasons": ["negative_oos_return", "drawdown_breach"],
+    }
+
+    analysis = backtest_service_module._build_regime_failure_analysis([failed], [])
+
+    assert analysis["failed_window_count"] == 1
+    assert analysis["by_trend_state"][regime["trend_state"]] == 1
+    assert analysis["by_volatility_state"][regime["volatility_state"]] == 1
+    assert analysis["by_reason"]["negative_oos_return"] == 1
+
+
 def test_vector_simulation_turnover_guard_does_not_block_initial_entry() -> None:
     frame = _frame()
     signal = pd.Series([1.0] * len(frame), index=frame.index)
@@ -246,3 +424,34 @@ def test_vector_simulation_turnover_guard_does_not_block_initial_entry() -> None
 
     assert result.summary["trade_count"] >= 1
     assert any(float(row["value"]) > 0.0 for row in result.chart["net_units"])
+
+
+def test_vector_simulation_turnover_guard_does_not_block_exit_to_flat() -> None:
+    frame = _frame()
+    signal = pd.Series([1.0, 1.0, 1.0] + [0.0] * (len(frame) - 3), index=frame.index)
+    config = backtest_service_module.SimulationConfig(
+        mode="unit",
+        source="sqlite",
+        symbol="BTCUSD",
+        interval="1h",
+        start=frame.index[0].to_pydatetime(),
+        end=frame.index[-1].to_pydatetime(),
+        capital=100_000.0,
+        commission_rate=0.0,
+        slippage=0.0,
+        leverage=1.0,
+        rebalance_buffer_pct=0.0,
+        min_holding_bars=999,
+        cost_aware_filter=False,
+        max_annual_turnover_pct=0.0,
+    )
+
+    result = backtest_service_module._simulate(
+        frame=frame,
+        config=config,
+        weights={"trend_macd": 1.0},
+        signals={"trend_macd": signal},
+    )
+
+    assert result.summary["trade_count"] == 2
+    assert float(result.chart["net_units"][-1]["value"]) == 0.0

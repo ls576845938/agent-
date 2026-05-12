@@ -341,6 +341,8 @@ def test_crypto_closure_propagates_audit_context_across_btc_pipeline() -> None:
     assert research_service.optimize_requests[0]["min_holding_bars"] == 24
     assert research_service.optimize_requests[0]["cost_aware_filter"] is True
     assert research_service.optimize_requests[0]["max_annual_turnover_pct"] == 1500.0
+    assert research_service.optimize_requests[0]["event_ledger_screen"] is True
+    assert research_service.optimize_requests[0]["event_ledger_screen_top_n"] == 1
     assert research_service.crypto_event_request is not None
     assert research_service.cost_request is not None
     assert research_service.walk_request is not None

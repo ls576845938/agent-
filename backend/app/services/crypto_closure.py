@@ -23,6 +23,10 @@ from quant_us.research.validation import summarize_candidate_validation
 DEFAULT_CRYPTO_TARGET_INTERVALS = ["5m", "15m", "1h", "4h", "1d"]
 DEFAULT_CRYPTO_STRATEGIES = [
     "btc_low_turnover_trend",
+    "btc_trend_pullback",
+    "btc_vol_breakout",
+    "btc_regime_trend",
+    "btc_low_turnover_breakout",
     "trend_macd",
     "donchian_breakout",
     "reversion_rsi",
@@ -324,6 +328,8 @@ class CryptoClosureService:
             "min_holding_bars": int(request.get("min_holding_bars", 24)),
             "cost_aware_filter": bool(request.get("cost_aware_filter", True)),
             "max_annual_turnover_pct": float(request.get("max_annual_turnover_pct", 1500.0)),
+            "event_ledger_screen": bool(request.get("event_ledger_screen", True)),
+            "event_ledger_screen_top_n": int(request.get("event_ledger_screen_top_n", 1)),
             "long_only": True,
             "data_db_path": str(request.get("data_db_path", "")),
         }
@@ -469,6 +475,8 @@ class CryptoClosureService:
                             "candidate_count": len(result.get("candidates", [])),
                             "optimizer_rank": optimizer_row.get("rank"),
                             "metrics": dict(optimizer_row.get("metrics") or {}),
+                            "event_ledger_metrics": dict(optimizer_row.get("event_ledger_metrics") or {}),
+                            "event_ledger_validation": dict(optimizer_row.get("event_ledger_validation") or {}),
                             "turnover": dict(optimizer_row.get("turnover") or {}),
                             "holding_period": dict(optimizer_row.get("holding_period") or {}),
                             "research_metadata": dict(optimizer_row.get("research_metadata") or {}),
@@ -491,6 +499,8 @@ class CryptoClosureService:
                             "candidate_count": len(result.get("candidates", [])),
                             "optimizer_rank": best.get("rank"),
                             "metrics": dict(best.get("metrics") or {}),
+                            "event_ledger_metrics": dict(best.get("event_ledger_metrics") or {}),
+                            "event_ledger_validation": dict(best.get("event_ledger_validation") or {}),
                             "turnover": dict(best.get("turnover") or {}),
                             "holding_period": dict(best.get("holding_period") or {}),
                             "research_metadata": dict(best.get("research_metadata") or {}),

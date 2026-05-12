@@ -13,6 +13,120 @@ def _flat_signal(index: pd.Index) -> pd.Series:
     return pd.Series(0.0, index=index, dtype=float)
 
 
+def _confirmed_stateful_long_signal(
+    index: pd.Index,
+    *,
+    entry_ready: pd.Series,
+    exit_ready: pd.Series,
+    entry_confirm_bars: int,
+    exit_confirm_bars: int,
+    min_hold_bars: int,
+    cooldown_bars: int,
+    max_hold_bars: int = 0,
+) -> pd.Series:
+    signal = _flat_signal(index)
+    in_position = 0.0
+    entry_streak = 0
+    exit_streak = 0
+    bars_held = 0
+    cooldown_remaining = 0
+    entry_confirm = max(1, int(entry_confirm_bars))
+    exit_confirm = max(1, int(exit_confirm_bars))
+    min_hold = max(0, int(min_hold_bars))
+    max_hold = max(0, int(max_hold_bars))
+    cooldown = max(0, int(cooldown_bars))
+
+    for idx in index:
+        if cooldown_remaining > 0:
+            cooldown_remaining -= 1
+        if bool(entry_ready.loc[idx]):
+            entry_streak += 1
+        else:
+            entry_streak = 0
+        if bool(exit_ready.loc[idx]):
+            exit_streak += 1
+        else:
+            exit_streak = 0
+        force_exit = in_position == 1.0 and max_hold > 0 and bars_held >= max_hold
+        if in_position == 0.0 and cooldown_remaining == 0 and entry_streak >= entry_confirm:
+            in_position = 1.0
+            bars_held = 0
+            exit_streak = 0
+        elif in_position == 1.0 and (force_exit or (bars_held >= min_hold and exit_streak >= exit_confirm)):
+            in_position = 0.0
+            cooldown_remaining = cooldown
+            bars_held = 0
+            entry_streak = 0
+        if in_position == 1.0:
+            bars_held += 1
+        signal.loc[idx] = in_position
+    return signal
+
+
+BTC_DOWNTREND_LOW_VOL_FILTER_DEFAULTS = {
+    "regime_filter_enabled": 1.0,
+    "regime_filter_window": 168,
+    "regime_filter_vol_window": 168,
+    "regime_filter_low_vol_quantile": 0.50,
+    "regime_filter_downtrend_threshold": 0.0,
+    "regime_filter_reentry_return_threshold": 0.01,
+    "max_hold_bars": 720,
+}
+
+
+def _btc_downtrend_low_volatility_filter(
+    frame: pd.DataFrame,
+    config: dict[str, float],
+) -> tuple[pd.Series, dict[str, pd.Series]]:
+    enabled = float(config.get("regime_filter_enabled", 1.0)) > 0.0
+    if not enabled or frame.empty:
+        risk_off = pd.Series(False, index=frame.index, dtype=bool)
+        return risk_off, {
+            "regime_return": pd.Series(0.0, index=frame.index, dtype=float),
+            "regime_volatility": pd.Series(0.0, index=frame.index, dtype=float),
+            "regime_low_vol_threshold": pd.Series(0.0, index=frame.index, dtype=float),
+            "regime_downtrend_state": pd.Series(0.0, index=frame.index, dtype=float),
+            "regime_low_volatility_state": pd.Series(0.0, index=frame.index, dtype=float),
+            "regime_reentry_state": pd.Series(0.0, index=frame.index, dtype=float),
+            "downtrend_low_vol_trigger": pd.Series(0.0, index=frame.index, dtype=float),
+            "downtrend_low_vol_risk_off": risk_off.astype(float),
+        }
+
+    close = frame["close"].astype(float)
+    returns = close.pct_change()
+    trend_window = max(2, int(config.get("regime_filter_window", 168)))
+    vol_window = max(2, int(config.get("regime_filter_vol_window", trend_window)))
+    low_vol_quantile = min(1.0, max(0.0, float(config.get("regime_filter_low_vol_quantile", 0.50))))
+    downtrend_threshold = float(config.get("regime_filter_downtrend_threshold", 0.0))
+    reentry_threshold = float(config.get("regime_filter_reentry_return_threshold", 0.01))
+    regime_return = close.pct_change(trend_window)
+    realized_vol = returns.rolling(vol_window, min_periods=vol_window).std(ddof=0)
+    low_vol_threshold = realized_vol.expanding(min_periods=vol_window).quantile(low_vol_quantile)
+    downtrend_state = regime_return <= downtrend_threshold
+    low_volatility_state = realized_vol <= low_vol_threshold
+    trigger = (downtrend_state & low_volatility_state).fillna(False)
+    reentry_state = (regime_return > reentry_threshold).fillna(False)
+    risk_off_values: list[bool] = []
+    active = False
+    for idx in frame.index:
+        if bool(trigger.loc[idx]):
+            active = True
+        elif active and bool(reentry_state.loc[idx]):
+            active = False
+        risk_off_values.append(active)
+    risk_off = pd.Series(risk_off_values, index=frame.index, dtype=bool)
+    return risk_off.astype(bool), {
+        "regime_return": regime_return.fillna(0.0),
+        "regime_volatility": realized_vol.fillna(0.0),
+        "regime_low_vol_threshold": low_vol_threshold.fillna(0.0),
+        "regime_downtrend_state": downtrend_state.fillna(False).astype(float),
+        "regime_low_volatility_state": low_volatility_state.fillna(False).astype(float),
+        "regime_reentry_state": reentry_state.astype(float),
+        "downtrend_low_vol_trigger": trigger.astype(float),
+        "downtrend_low_vol_risk_off": risk_off.astype(float),
+    }
+
+
 class TrendMacdStrategy(StrategyBase):
     descriptor = StrategyDescriptor(
         id="trend_macd",
@@ -364,6 +478,7 @@ class BtcLowTurnoverTrendStrategy(StrategyBase):
         category="trend",
         default_weight=0.12,
         default_params={
+            **BTC_DOWNTREND_LOW_VOL_FILTER_DEFAULTS,
             "fast_ma": 48,
             "slow_ma": 168,
             "trend_ma": 336,
@@ -389,55 +504,32 @@ class BtcLowTurnoverTrendStrategy(StrategyBase):
         volatility = returns.rolling(int(config["vol_window"]), min_periods=int(config["vol_window"])).std(ddof=0)
         trend_strength = (frame["close"] / trend_ma.replace(0, pd.NA)) - 1.0
 
+        risk_off, regime_diagnostics = _btc_downtrend_low_volatility_filter(frame, config)
         entry_ready = (
             (fast_ma > slow_ma)
             & (slow_ma > trend_ma)
             & (trend_strength >= float(config["trend_strength"]))
             & volatility.between(float(config["min_volatility"]), float(config["max_volatility"]))
+            & ~risk_off
         ).fillna(False)
         exit_ready = (
             (frame["close"] < exit_ma)
             | (fast_ma < slow_ma)
             | (frame["close"] < trend_ma * (1.0 - float(config["exit_buffer"])))
             | (volatility > float(config["max_volatility"]))
+            | risk_off
         ).fillna(False)
 
-        signal = _flat_signal(frame.index)
-        in_position = 0.0
-        entry_streak = 0
-        exit_streak = 0
-        bars_held = 0
-        cooldown_remaining = 0
-        entry_confirm_bars = max(1, int(config["entry_confirm_bars"]))
-        exit_confirm_bars = max(1, int(config["exit_confirm_bars"]))
-        min_hold_bars = max(0, int(config["min_hold_bars"]))
-        cooldown_bars = max(0, int(config["cooldown_bars"]))
-        for idx in frame.index:
-            if cooldown_remaining > 0:
-                cooldown_remaining -= 1
-
-            if bool(entry_ready.loc[idx]):
-                entry_streak += 1
-            else:
-                entry_streak = 0
-
-            if bool(exit_ready.loc[idx]):
-                exit_streak += 1
-            else:
-                exit_streak = 0
-
-            if in_position == 0.0 and cooldown_remaining == 0 and entry_streak >= entry_confirm_bars:
-                in_position = 1.0
-                bars_held = 0
-                exit_streak = 0
-            elif in_position == 1.0 and bars_held >= min_hold_bars and exit_streak >= exit_confirm_bars:
-                in_position = 0.0
-                cooldown_remaining = cooldown_bars
-                bars_held = 0
-                entry_streak = 0
-            if in_position == 1.0:
-                bars_held += 1
-            signal.loc[idx] = in_position
+        signal = _confirmed_stateful_long_signal(
+            frame.index,
+            entry_ready=entry_ready,
+            exit_ready=exit_ready,
+            entry_confirm_bars=int(config["entry_confirm_bars"]),
+            exit_confirm_bars=int(config["exit_confirm_bars"]),
+            min_hold_bars=int(config["min_hold_bars"]),
+            cooldown_bars=int(config["cooldown_bars"]),
+            max_hold_bars=int(config.get("max_hold_bars", 0)),
+        )
 
         return StrategySignalPack(
             signal=signal.fillna(0.0),
@@ -450,6 +542,287 @@ class BtcLowTurnoverTrendStrategy(StrategyBase):
                 "trend_strength": trend_strength.fillna(0.0),
                 "entry_ready": entry_ready.astype(float),
                 "exit_ready": exit_ready.astype(float),
+                **regime_diagnostics,
+            },
+        )
+
+
+class BtcTrendPullbackStrategy(StrategyBase):
+    descriptor = StrategyDescriptor(
+        id="btc_trend_pullback",
+        display_name="BTC Trend Pullback",
+        description="BTC 大趋势向上时等待回撤后重新站上均线，只做多，控制追高和换手。",
+        category="trend",
+        default_weight=0.10,
+        default_params={
+            **BTC_DOWNTREND_LOW_VOL_FILTER_DEFAULTS,
+            "fast_ma": 48,
+            "slow_ma": 168,
+            "trend_ma": 336,
+            "pullback_pct": 0.035,
+            "pullback_lookback": 36,
+            "pullback_rsi": 45,
+            "rsi_window": 14,
+            "trend_strength": 0.02,
+            "exit_buffer": 0.025,
+            "entry_confirm_bars": 2,
+            "exit_confirm_bars": 4,
+            "min_hold_bars": 48,
+            "cooldown_bars": 24,
+        },
+    )
+
+    def generate(self, frame: pd.DataFrame, params: dict[str, float] | None = None) -> StrategySignalPack:
+        config = {**self.descriptor.default_params, **(params or {})}
+        fast_ma = sma(frame["close"], int(config["fast_ma"]))
+        slow_ma = sma(frame["close"], int(config["slow_ma"]))
+        trend_ma = sma(frame["close"], int(config["trend_ma"]))
+        indicator = rsi(frame["close"], int(config["rsi_window"]))
+        trend_strength = (frame["close"] / trend_ma.replace(0, pd.NA)) - 1.0
+        trend_up = (fast_ma > slow_ma) & (slow_ma > trend_ma) & (trend_strength >= float(config["trend_strength"]))
+        pullback_now = (
+            (frame["close"] <= fast_ma * (1.0 - float(config["pullback_pct"])))
+            | (indicator <= float(config["pullback_rsi"]))
+        )
+        pullback_recent = (
+            pullback_now.astype(float)
+            .rolling(int(config["pullback_lookback"]), min_periods=1)
+            .max()
+            .astype(bool)
+        )
+        risk_off, regime_diagnostics = _btc_downtrend_low_volatility_filter(frame, config)
+        entry_ready = (trend_up & pullback_recent & (frame["close"] > fast_ma) & ~risk_off).fillna(False)
+        exit_ready = (
+            (frame["close"] < slow_ma * (1.0 - float(config["exit_buffer"])))
+            | (fast_ma < slow_ma)
+            | (frame["close"] < trend_ma)
+            | risk_off
+        ).fillna(False)
+        signal = _confirmed_stateful_long_signal(
+            frame.index,
+            entry_ready=entry_ready,
+            exit_ready=exit_ready,
+            entry_confirm_bars=int(config["entry_confirm_bars"]),
+            exit_confirm_bars=int(config["exit_confirm_bars"]),
+            min_hold_bars=int(config["min_hold_bars"]),
+            cooldown_bars=int(config["cooldown_bars"]),
+            max_hold_bars=int(config.get("max_hold_bars", 0)),
+        )
+        return StrategySignalPack(
+            signal=signal.fillna(0.0),
+            diagnostics={
+                "fast_ma": fast_ma,
+                "slow_ma": slow_ma,
+                "trend_ma": trend_ma,
+                "rsi": indicator.fillna(50.0),
+                "trend_strength": trend_strength.fillna(0.0),
+                "pullback_recent": pullback_recent.astype(float),
+                "entry_ready": entry_ready.astype(float),
+                "exit_ready": exit_ready.astype(float),
+                **regime_diagnostics,
+            },
+        )
+
+
+class BtcVolBreakoutStrategy(StrategyBase):
+    descriptor = StrategyDescriptor(
+        id="btc_vol_breakout",
+        display_name="BTC Volatility Breakout",
+        description="BTC 波动扩张 + 通道突破策略，只做多并过滤过低/过高波动。",
+        category="breakout",
+        default_weight=0.10,
+        default_params={
+            **BTC_DOWNTREND_LOW_VOL_FILTER_DEFAULTS,
+            "breakout_window": 72,
+            "vol_window": 48,
+            "min_volatility": 0.0025,
+            "max_volatility": 0.06,
+            "volume_window": 48,
+            "volume_mult": 1.05,
+            "exit_ma": 72,
+            "stop_pct": 0.06,
+            "entry_confirm_bars": 1,
+            "exit_confirm_bars": 3,
+            "min_hold_bars": 36,
+            "cooldown_bars": 18,
+        },
+    )
+
+    def generate(self, frame: pd.DataFrame, params: dict[str, float] | None = None) -> StrategySignalPack:
+        config = {**self.descriptor.default_params, **(params or {})}
+        breakout_level = frame["high"].shift(1).rolling(int(config["breakout_window"]), min_periods=int(config["breakout_window"])).max()
+        returns = frame["close"].pct_change()
+        volatility = returns.rolling(int(config["vol_window"]), min_periods=int(config["vol_window"])).std(ddof=0)
+        volume_ma = frame["volume"].rolling(int(config["volume_window"]), min_periods=1).mean()
+        exit_ma = sma(frame["close"], int(config["exit_ma"]))
+        risk_off, regime_diagnostics = _btc_downtrend_low_volatility_filter(frame, config)
+        entry_ready = (
+            (frame["close"] > breakout_level)
+            & volatility.between(float(config["min_volatility"]), float(config["max_volatility"]))
+            & (frame["volume"] >= volume_ma * float(config["volume_mult"]))
+            & ~risk_off
+        ).fillna(False)
+        exit_ready = (
+            (frame["close"] < exit_ma)
+            | (frame["close"] < breakout_level * (1.0 - float(config["stop_pct"])))
+            | (volatility > float(config["max_volatility"]) * 1.35)
+            | risk_off
+        ).fillna(False)
+        signal = _confirmed_stateful_long_signal(
+            frame.index,
+            entry_ready=entry_ready,
+            exit_ready=exit_ready,
+            entry_confirm_bars=int(config["entry_confirm_bars"]),
+            exit_confirm_bars=int(config["exit_confirm_bars"]),
+            min_hold_bars=int(config["min_hold_bars"]),
+            cooldown_bars=int(config["cooldown_bars"]),
+            max_hold_bars=int(config.get("max_hold_bars", 0)),
+        )
+        return StrategySignalPack(
+            signal=signal.fillna(0.0),
+            diagnostics={
+                "breakout_level": breakout_level.fillna(0.0),
+                "volatility": volatility.fillna(0.0),
+                "volume_ma": volume_ma,
+                "exit_ma": exit_ma,
+                "entry_ready": entry_ready.astype(float),
+                "exit_ready": exit_ready.astype(float),
+                **regime_diagnostics,
+            },
+        )
+
+
+class BtcRegimeTrendStrategy(StrategyBase):
+    descriptor = StrategyDescriptor(
+        id="btc_regime_trend",
+        display_name="BTC Regime Trend",
+        description="BTC regime filter + 趋势动量策略，避开震荡和极端波动，只做多。",
+        category="regime",
+        default_weight=0.10,
+        default_params={
+            **BTC_DOWNTREND_LOW_VOL_FILTER_DEFAULTS,
+            "fast_ma": 72,
+            "slow_ma": 240,
+            "regime_ma": 720,
+            "momentum_window": 168,
+            "momentum_threshold": 0.04,
+            "vol_window": 168,
+            "max_volatility": 0.045,
+            "min_trend_strength": 0.025,
+            "exit_buffer": 0.03,
+            "entry_confirm_bars": 3,
+            "exit_confirm_bars": 6,
+            "min_hold_bars": 120,
+            "cooldown_bars": 48,
+        },
+    )
+
+    def generate(self, frame: pd.DataFrame, params: dict[str, float] | None = None) -> StrategySignalPack:
+        config = {**self.descriptor.default_params, **(params or {})}
+        fast_ma = sma(frame["close"], int(config["fast_ma"]))
+        slow_ma = sma(frame["close"], int(config["slow_ma"]))
+        regime_ma = sma(frame["close"], int(config["regime_ma"]))
+        momentum = frame["close"].pct_change(int(config["momentum_window"]))
+        volatility = frame["close"].pct_change().rolling(int(config["vol_window"]), min_periods=int(config["vol_window"])).std(ddof=0)
+        trend_strength = (slow_ma / regime_ma.replace(0, pd.NA)) - 1.0
+        regime_ok = (
+            (fast_ma > slow_ma)
+            & (slow_ma > regime_ma)
+            & (trend_strength >= float(config["min_trend_strength"]))
+            & (volatility <= float(config["max_volatility"]))
+        )
+        risk_off, regime_diagnostics = _btc_downtrend_low_volatility_filter(frame, config)
+        entry_ready = (regime_ok & (momentum >= float(config["momentum_threshold"])) & ~risk_off).fillna(False)
+        exit_ready = (
+            (fast_ma < slow_ma)
+            | (frame["close"] < slow_ma * (1.0 - float(config["exit_buffer"])))
+            | (volatility > float(config["max_volatility"]) * 1.4)
+            | (momentum < 0.0)
+            | risk_off
+        ).fillna(False)
+        signal = _confirmed_stateful_long_signal(
+            frame.index,
+            entry_ready=entry_ready,
+            exit_ready=exit_ready,
+            entry_confirm_bars=int(config["entry_confirm_bars"]),
+            exit_confirm_bars=int(config["exit_confirm_bars"]),
+            min_hold_bars=int(config["min_hold_bars"]),
+            cooldown_bars=int(config["cooldown_bars"]),
+            max_hold_bars=int(config.get("max_hold_bars", 0)),
+        )
+        return StrategySignalPack(
+            signal=signal.fillna(0.0),
+            diagnostics={
+                "fast_ma": fast_ma,
+                "slow_ma": slow_ma,
+                "regime_ma": regime_ma,
+                "momentum": momentum.fillna(0.0),
+                "volatility": volatility.fillna(0.0),
+                "trend_strength": trend_strength.fillna(0.0),
+                "regime_ok": regime_ok.fillna(False).astype(float),
+                "entry_ready": entry_ready.astype(float),
+                "exit_ready": exit_ready.astype(float),
+                **regime_diagnostics,
+            },
+        )
+
+
+class BtcLowTurnoverBreakoutStrategy(StrategyBase):
+    descriptor = StrategyDescriptor(
+        id="btc_low_turnover_breakout",
+        display_name="BTC Low Turnover Breakout",
+        description="BTC 长通道突破 + 慢速退出策略，减少反复进出，只做多。",
+        category="breakout",
+        default_weight=0.10,
+        default_params={
+            **BTC_DOWNTREND_LOW_VOL_FILTER_DEFAULTS,
+            "entry_window": 240,
+            "exit_window": 96,
+            "trend_ma": 480,
+            "vol_window": 168,
+            "max_volatility": 0.055,
+            "breakout_buffer": 0.005,
+            "entry_confirm_bars": 2,
+            "exit_confirm_bars": 4,
+            "min_hold_bars": 168,
+            "cooldown_bars": 72,
+        },
+    )
+
+    def generate(self, frame: pd.DataFrame, params: dict[str, float] | None = None) -> StrategySignalPack:
+        config = {**self.descriptor.default_params, **(params or {})}
+        entry_level = frame["high"].shift(1).rolling(int(config["entry_window"]), min_periods=int(config["entry_window"])).max()
+        exit_level = frame["low"].shift(1).rolling(int(config["exit_window"]), min_periods=int(config["exit_window"])).min()
+        trend_ma = sma(frame["close"], int(config["trend_ma"]))
+        volatility = frame["close"].pct_change().rolling(int(config["vol_window"]), min_periods=int(config["vol_window"])).std(ddof=0)
+        risk_off, regime_diagnostics = _btc_downtrend_low_volatility_filter(frame, config)
+        entry_ready = (
+            (frame["close"] > entry_level * (1.0 + float(config["breakout_buffer"])))
+            & (frame["close"] > trend_ma)
+            & (volatility <= float(config["max_volatility"]))
+            & ~risk_off
+        ).fillna(False)
+        exit_ready = ((frame["close"] < exit_level) | (frame["close"] < trend_ma) | (volatility > float(config["max_volatility"]) * 1.5) | risk_off).fillna(False)
+        signal = _confirmed_stateful_long_signal(
+            frame.index,
+            entry_ready=entry_ready,
+            exit_ready=exit_ready,
+            entry_confirm_bars=int(config["entry_confirm_bars"]),
+            exit_confirm_bars=int(config["exit_confirm_bars"]),
+            min_hold_bars=int(config["min_hold_bars"]),
+            cooldown_bars=int(config["cooldown_bars"]),
+            max_hold_bars=int(config.get("max_hold_bars", 0)),
+        )
+        return StrategySignalPack(
+            signal=signal.fillna(0.0),
+            diagnostics={
+                "entry_level": entry_level.fillna(0.0),
+                "exit_level": exit_level.fillna(0.0),
+                "trend_ma": trend_ma,
+                "volatility": volatility.fillna(0.0),
+                "entry_ready": entry_ready.astype(float),
+                "exit_ready": exit_ready.astype(float),
+                **regime_diagnostics,
             },
         )
 
@@ -485,6 +858,10 @@ strategy_registry = StrategyRegistry(
             EarningsDriftStrategy(),
             ETFRotationStrategy(),
             BtcLowTurnoverTrendStrategy(),
+            BtcTrendPullbackStrategy(),
+            BtcVolBreakoutStrategy(),
+            BtcRegimeTrendStrategy(),
+            BtcLowTurnoverBreakoutStrategy(),
         ]
     }
 )

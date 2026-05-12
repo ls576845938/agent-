@@ -216,6 +216,10 @@ class CryptoClosureRequest(BaseBacktestRequest):
     strategy_ids: List[str] = Field(
         default_factory=lambda: [
             "btc_low_turnover_trend",
+            "btc_trend_pullback",
+            "btc_vol_breakout",
+            "btc_regime_trend",
+            "btc_low_turnover_breakout",
             "trend_macd",
             "donchian_breakout",
             "reversion_rsi",
@@ -243,6 +247,8 @@ class CryptoClosureRequest(BaseBacktestRequest):
     min_holding_bars: int = Field(default=24, ge=0, le=720)
     cost_aware_filter: bool = True
     max_annual_turnover_pct: float = Field(default=1500.0, ge=10.0, le=10000.0)
+    event_ledger_screen: bool = True
+    event_ledger_screen_top_n: int = Field(default=1, ge=0, le=6)
     min_bars_by_interval: Dict[str, int] = Field(default_factory=dict)
     persist_data_manifest: bool = True
     persist_closure_evidence: bool = True

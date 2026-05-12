@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from itertools import combinations
+import tempfile
 from dataclasses import dataclass, replace
 from datetime import datetime
 from math import sqrt
@@ -13,7 +14,7 @@ import pandas as pd
 from backend.app.core.config import settings
 from backend.app.domain.models import BacktestArtifacts, StrategyDescriptor, TradeMarker
 from backend.app.domain.risk import DrawdownCircuitBreaker, KellySizer, OrthogonalizationEngine, VolatilityScaler, clamp
-from backend.app.domain.strategy_registry import strategy_registry
+from backend.app.domain.strategy_registry import _confirmed_stateful_long_signal, strategy_registry
 from backend.app.services.market_data import load_market_frame
 from quant_us.core.enums import SignalDirection
 from quant_us.core.events import MarketEvent
@@ -559,6 +560,59 @@ def _prepare_strategy_pack(frame: pd.DataFrame, strategy_ids: list[str], params_
     return packs, descriptors
 
 
+def _indicator_bool(series: pd.Series, index: pd.Index) -> pd.Series:
+    return series.reindex(index).fillna(0.0).astype(float) > 0.0
+
+
+def _prepare_strategy_pack_for_target_window(
+    *,
+    context_frame: pd.DataFrame,
+    target_frame: pd.DataFrame,
+    strategy_ids: list[str],
+    params_map: dict[str, dict[str, float]] | None = None,
+) -> tuple[dict[str, pd.Series], dict[str, StrategyDescriptor]]:
+    """Generate target-window signals with pre-window indicator warmup.
+
+    BTC registry strategies use long rolling windows and a stateful risk-off
+    filter. Computing signals on the validation frame alone drops the train
+    tail and can miss downtrend/low-volatility state at the validation boundary.
+    This helper computes indicators on context+target, then resets the actual
+    position state at the target boundary when entry/exit diagnostics are
+    available.
+    """
+
+    if context_frame.empty:
+        return _prepare_strategy_pack(target_frame, strategy_ids, params_map=params_map)
+
+    combined = pd.concat([context_frame, target_frame], axis=0)
+    combined = combined.loc[~combined.index.duplicated(keep="first")].sort_index()
+    target_index = target_frame.index
+
+    packs: dict[str, pd.Series] = {}
+    descriptors: dict[str, StrategyDescriptor] = {}
+    for strategy_id in strategy_ids:
+        strategy = strategy_registry.get(strategy_id)
+        params = dict((params_map or {}).get(strategy_id) or {})
+        config = {**strategy.descriptor.default_params, **params}
+        pack = strategy.generate(combined, params=params)
+        signal = pack.signal.reindex(target_index).fillna(0.0).clip(-1.0, 1.0)
+        diagnostics = pack.diagnostics
+        if "entry_ready" in diagnostics and "exit_ready" in diagnostics:
+            signal = _confirmed_stateful_long_signal(
+                target_index,
+                entry_ready=_indicator_bool(diagnostics["entry_ready"], target_index),
+                exit_ready=_indicator_bool(diagnostics["exit_ready"], target_index),
+                entry_confirm_bars=int(config.get("entry_confirm_bars", 1)),
+                exit_confirm_bars=int(config.get("exit_confirm_bars", 1)),
+                min_hold_bars=int(config.get("min_hold_bars", 0)),
+                cooldown_bars=int(config.get("cooldown_bars", 0)),
+                max_hold_bars=int(config.get("max_hold_bars", 0)),
+            )
+        packs[strategy_id] = signal.fillna(0.0).clip(-1.0, 1.0)
+        descriptors[strategy_id] = strategy.descriptor
+    return packs, descriptors
+
+
 class RegistrySignalReplayStrategy(Strategy):
     """Replay registry-generated target signals through the event-driven engine."""
 
@@ -625,6 +679,99 @@ def _candidate_parameter_grid(strategy_id: str) -> list[dict[str, float]]:
             for strength in [0.03, 0.05]
             for exit_buffer in [0.02, 0.04]
             for entry_confirm, exit_confirm, min_hold, cooldown in [(3, 6, 72, 24), (6, 12, 168, 48)]
+        ],
+        "btc_trend_pullback": [
+            {
+                "fast_ma": fast,
+                "slow_ma": slow,
+                "trend_ma": trend,
+                "pullback_pct": pullback,
+                "pullback_lookback": lookback,
+                "pullback_rsi": pullback_rsi,
+                "rsi_window": 14,
+                "trend_strength": strength,
+                "exit_buffer": exit_buffer,
+                "entry_confirm_bars": entry_confirm,
+                "exit_confirm_bars": exit_confirm,
+                "min_hold_bars": min_hold,
+                "cooldown_bars": cooldown,
+            }
+            for fast, slow, trend in [(48, 168, 336), (72, 240, 480)]
+            for pullback in [0.025, 0.04]
+            for lookback in [24, 48]
+            for pullback_rsi in [42, 48]
+            for strength in [0.015, 0.03]
+            for exit_buffer in [0.02, 0.035]
+            for entry_confirm, exit_confirm, min_hold, cooldown in [(2, 4, 48, 24), (3, 6, 96, 48)]
+        ],
+        "btc_vol_breakout": [
+            {
+                "breakout_window": breakout,
+                "vol_window": vol_window,
+                "min_volatility": min_vol,
+                "max_volatility": max_vol,
+                "volume_window": 48,
+                "volume_mult": volume_mult,
+                "exit_ma": exit_ma,
+                "stop_pct": stop_pct,
+                "entry_confirm_bars": entry_confirm,
+                "exit_confirm_bars": exit_confirm,
+                "min_hold_bars": min_hold,
+                "cooldown_bars": cooldown,
+            }
+            for breakout in [48, 72, 120]
+            for vol_window in [48, 96]
+            for min_vol, max_vol in [(0.002, 0.05), (0.003, 0.06)]
+            for volume_mult in [1.0, 1.15]
+            for exit_ma in [48, 72]
+            for stop_pct in [0.05, 0.08]
+            for entry_confirm, exit_confirm, min_hold, cooldown in [(1, 3, 36, 18), (2, 4, 72, 24)]
+        ],
+        "btc_regime_trend": [
+            {
+                "fast_ma": fast,
+                "slow_ma": slow,
+                "regime_ma": regime,
+                "momentum_window": momentum,
+                "momentum_threshold": threshold,
+                "vol_window": vol_window,
+                "max_volatility": max_vol,
+                "min_trend_strength": strength,
+                "exit_buffer": exit_buffer,
+                "entry_confirm_bars": entry_confirm,
+                "exit_confirm_bars": exit_confirm,
+                "min_hold_bars": min_hold,
+                "cooldown_bars": cooldown,
+            }
+            for fast, slow, regime in [(48, 168, 480), (72, 240, 720), (96, 336, 720)]
+            for momentum in [96, 168]
+            for threshold in [0.025, 0.05]
+            for vol_window in [96, 168]
+            for max_vol in [0.04, 0.055]
+            for strength in [0.015, 0.03]
+            for exit_buffer in [0.025, 0.04]
+            for entry_confirm, exit_confirm, min_hold, cooldown in [(2, 4, 96, 36), (3, 6, 168, 72)]
+        ],
+        "btc_low_turnover_breakout": [
+            {
+                "entry_window": entry,
+                "exit_window": exit_window,
+                "trend_ma": trend_ma,
+                "vol_window": vol_window,
+                "max_volatility": max_vol,
+                "breakout_buffer": buffer,
+                "entry_confirm_bars": entry_confirm,
+                "exit_confirm_bars": exit_confirm,
+                "min_hold_bars": min_hold,
+                "cooldown_bars": cooldown,
+            }
+            for entry in [168, 240, 336]
+            for exit_window in [72, 96, 168]
+            for trend_ma in [336, 480, 720]
+            for vol_window in [96, 168]
+            for max_vol in [0.045, 0.06]
+            for buffer in [0.0, 0.0075]
+            for entry_confirm, exit_confirm, min_hold, cooldown in [(1, 4, 120, 48), (2, 6, 240, 96)]
         ],
         "reversion_rsi": [
             {"rsi_window": rsi_window, "boll_window": boll_window, "boll_dev": boll_dev, "rsi_long": 30, "rsi_short": 70, "rsi_exit_low": 45, "rsi_exit_high": 55}
@@ -745,6 +892,101 @@ def _runtime_penalized_optimization_score(
     holding_penalty = min(0.2, max(0.0, min_holding - avg_holding_bars) / min_holding * 0.15)
     cost_penalty = min(0.25, cost_sensitivity * 0.12)
     return round(base_score - turnover_penalty - holding_penalty - cost_penalty, 6)
+
+
+def _event_ledger_screen_score_adjustment(event_metrics: dict[str, Any]) -> float:
+    if not event_metrics:
+        return 0.0
+    adjustment = 0.0
+    if event_metrics.get("event_ledger_equity_consistent") is not True:
+        adjustment -= 1.0
+    event_return = float(event_metrics.get("event_total_return_pct", 0.0))
+    event_sharpe = float(event_metrics.get("event_sharpe_ratio", 0.0))
+    event_drawdown = abs(float(event_metrics.get("event_max_drawdown_pct", 0.0)))
+    event_profit_factor = float(event_metrics.get("event_profit_factor", 0.0))
+    event_trade_count = int(event_metrics.get("event_trade_count", 0))
+    adjustment += max(-0.75, min(0.75, event_sharpe * 0.25))
+    adjustment += max(-0.4, min(0.4, event_return / 100.0))
+    adjustment += max(-0.2, min(0.25, (event_profit_factor - 1.0) * 0.15))
+    adjustment -= min(0.4, max(0.0, event_drawdown - 15.0) / 50.0)
+    if event_trade_count <= 0:
+        adjustment -= 0.35
+    return _round(adjustment, 6)
+
+
+def _event_ledger_metrics_from_summary(payload: dict[str, Any]) -> dict[str, Any]:
+    summary = payload.get("summary", {}) if isinstance(payload, dict) else {}
+    diagnostics = payload.get("diagnostics", {}) if isinstance(payload, dict) else {}
+    return {
+        "event_total_return_pct": _round(float(summary.get("total_return_pct", 0.0)), 4),
+        "event_sharpe_ratio": _round(float(summary.get("sharpe_ratio", 0.0)), 4),
+        "event_profit_factor": _round(float(summary.get("profit_factor", 0.0)), 4),
+        "event_max_drawdown_pct": _round(float(summary.get("max_drawdown_pct", 0.0)), 4),
+        "event_trade_count": int(summary.get("trade_count", 0) or 0),
+        "event_orders": int(diagnostics.get("orders", 0) or 0),
+        "event_fills": int(diagnostics.get("fills", 0) or 0),
+        "event_ledger_equity_consistent": diagnostics.get("ledger_equity_consistent") is True,
+        "event_pnl_source": str(diagnostics.get("pnl_source", "")),
+    }
+
+
+def _run_event_ledger_optimizer_screen(
+    *,
+    frame: pd.DataFrame,
+    config: SimulationConfig,
+    strategy_id: str,
+    params: dict[str, Any],
+    request: dict[str, Any],
+    row_rank: int,
+    signal: pd.Series | None = None,
+) -> dict[str, Any]:
+    from quant_us.backtest.crypto_event import run_crypto_event_backtest
+
+    manifest_root = request.get("event_ledger_screen_manifest_root")
+    if manifest_root in (None, ""):
+        manifest_root = tempfile.mkdtemp(prefix="quantstation_event_screen_")
+    run_id = str(request.get("run_id_prefix", f"event_screen_{strategy_id}"))
+    signal_provider = None
+    if signal is not None:
+        replay_signal = signal.fillna(0.0).clip(-1.0, 1.0).copy()
+        replay_signal.index = pd.to_datetime(replay_signal.index, utc=True)
+
+        def signal_provider(loaded_frame: pd.DataFrame, _strategy_id: str, _params: dict[str, Any]) -> pd.Series:
+            loaded_index = pd.to_datetime(loaded_frame.index, utc=True)
+            return replay_signal.reindex(loaded_index).fillna(0.0).clip(-1.0, 1.0)
+
+    result = run_crypto_event_backtest(
+        source=config.source,
+        symbol=config.symbol,
+        interval=config.interval,
+        start=config.start,
+        end=config.end,
+        strategy_id=strategy_id,
+        params=params,
+        capital=config.capital,
+        commission_rate=config.commission_rate,
+        slippage_bps=config.slippage,
+        market_loader=lambda **_: frame.copy(),
+        signal_provider=signal_provider,
+        data_version=str(request.get("data_version", "")),
+        strategy_version=str(request.get("strategy_version", "") or f"{strategy_id}:registry_signal_replay_v1"),
+        manifest_root=manifest_root,
+        target_weight=min(0.98, max(0.0, float(request.get("target_weight", 0.90)))),
+        min_cash_buffer_pct=(
+            None if request.get("min_cash_buffer_pct") is None else float(request.get("min_cash_buffer_pct", 0.0))
+        ),
+        min_trade_notional=float(request.get("min_trade_notional", 25.0)),
+        rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", config.rebalance_buffer_pct)),
+        long_only=True,
+        run_id=f"{run_id}_{row_rank}",
+    )
+    return {
+        "summary": result.summary,
+        "diagnostics": result.diagnostics,
+        "metrics": _event_ledger_metrics_from_summary(
+            {"summary": result.summary, "diagnostics": result.diagnostics}
+        ),
+    }
 
 
 def _optimization_status(priority: int, selected_priority: int) -> str:
@@ -918,12 +1160,115 @@ def _market_regime_masks(frame: pd.DataFrame) -> list[tuple[str, str, pd.Series]
     fallback_volatility = float(returns.std(ddof=0)) if len(returns) > 1 else 0.0
     volatility = volatility.fillna(fallback_volatility)
     volatility_median = float(volatility.median()) if not volatility.empty else 0.0
+    trend_threshold = float(trend.abs().median()) if not trend.empty else 0.0
+    trend_threshold = max(trend_threshold, 0.01)
     return [
         ("uptrend", "上涨 / 趋势向上", trend > 0.0),
         ("downtrend", "下跌 / 趋势向下", trend <= 0.0),
+        ("rangebound", "震荡 / 趋势不明显", trend.abs() <= trend_threshold),
         ("high_volatility", "高波动", volatility >= volatility_median),
         ("low_volatility", "低波动", volatility < volatility_median),
     ]
+
+
+def _window_regime_summary(frame: pd.DataFrame, *, start: Any, end: Any) -> dict[str, Any]:
+    if frame.empty:
+        return {
+            "market_state": "unknown",
+            "trend_state": "unknown",
+            "volatility_state": "unknown",
+            "bar_count": 0,
+        }
+    index = pd.to_datetime(frame.index, utc=True)
+    start_ts = pd.Timestamp(start)
+    end_ts = pd.Timestamp(end)
+    if start_ts.tzinfo is None:
+        start_ts = start_ts.tz_localize("UTC")
+    else:
+        start_ts = start_ts.tz_convert("UTC")
+    if end_ts.tzinfo is None:
+        end_ts = end_ts.tz_localize("UTC")
+    else:
+        end_ts = end_ts.tz_convert("UTC")
+    window_frame = frame.loc[(index >= start_ts) & (index <= end_ts)]
+    if window_frame.empty:
+        window_frame = frame
+    close = window_frame["close"].astype(float)
+    returns = close.pct_change().fillna(0.0)
+    total_return = float(close.iloc[-1] / close.iloc[0] - 1.0) if len(close) > 1 and float(close.iloc[0]) != 0 else 0.0
+    realized_vol = float(returns.std(ddof=0)) if len(returns) > 1 else 0.0
+    full_returns = frame["close"].astype(float).pct_change().fillna(0.0)
+    full_vol = float(full_returns.std(ddof=0)) if len(full_returns) > 1 else realized_vol
+    range_threshold = max(0.01, realized_vol * max(2.0, len(close) ** 0.5 * 0.15))
+    if abs(total_return) <= range_threshold:
+        trend_state = "rangebound"
+    elif total_return > 0:
+        trend_state = "uptrend"
+    else:
+        trend_state = "downtrend"
+    volatility_state = "high_volatility" if realized_vol >= full_vol else "low_volatility"
+    return {
+        "market_state": f"{trend_state}:{volatility_state}",
+        "trend_state": trend_state,
+        "volatility_state": volatility_state,
+        "bar_count": int(len(window_frame)),
+        "window_return_pct": _round(total_return * 100.0, 4),
+        "realized_volatility_pct": _round(realized_vol * 100.0, 4),
+        "volatility_baseline_pct": _round(full_vol * 100.0, 4),
+    }
+
+
+def _walk_forward_failure_reasons(summary: dict[str, float | int]) -> list[str]:
+    reasons: list[str] = []
+    if float(summary.get("total_return_pct", 0.0)) < 0.0:
+        reasons.append("negative_oos_return")
+    if float(summary.get("sharpe_ratio", 0.0)) < 0.0:
+        reasons.append("negative_oos_sharpe")
+    if float(summary.get("max_drawdown_pct", 0.0)) <= -18.0:
+        reasons.append("drawdown_breach")
+    if int(summary.get("trade_count", 0) or 0) == 0:
+        reasons.append("no_trades")
+    return reasons or ["passed"]
+
+
+def _build_regime_failure_analysis(
+    windows: list[dict[str, Any]],
+    regimes: list[dict[str, Any]],
+) -> dict[str, Any]:
+    failed_windows = [row for row in windows if row.get("status") != "insufficient_data" and not row.get("survives", False)]
+    by_market_state: dict[str, int] = {}
+    by_trend_state: dict[str, int] = {}
+    by_volatility_state: dict[str, int] = {}
+    by_reason: dict[str, int] = {}
+    for row in failed_windows:
+        regime = row.get("regime") if isinstance(row.get("regime"), dict) else {}
+        market_state = str(regime.get("market_state", "unknown"))
+        trend_state = str(regime.get("trend_state", "unknown"))
+        volatility_state = str(regime.get("volatility_state", "unknown"))
+        by_market_state[market_state] = by_market_state.get(market_state, 0) + 1
+        by_trend_state[trend_state] = by_trend_state.get(trend_state, 0) + 1
+        by_volatility_state[volatility_state] = by_volatility_state.get(volatility_state, 0) + 1
+        for reason in row.get("failure_reasons", []) or []:
+            by_reason[str(reason)] = by_reason.get(str(reason), 0) + 1
+
+    failed_regimes = [
+        {
+            "name": str(row.get("name", "")),
+            "label": str(row.get("label", "")),
+            "bar_count": int(row.get("bar_count", 0) or 0),
+            "summary": row.get("summary", {}),
+        }
+        for row in regimes
+        if not row.get("survives", False)
+    ]
+    return {
+        "failed_window_count": len(failed_windows),
+        "by_market_state": dict(sorted(by_market_state.items(), key=lambda item: (-item[1], item[0]))),
+        "by_trend_state": dict(sorted(by_trend_state.items(), key=lambda item: (-item[1], item[0]))),
+        "by_volatility_state": dict(sorted(by_volatility_state.items(), key=lambda item: (-item[1], item[0]))),
+        "by_reason": dict(sorted(by_reason.items(), key=lambda item: (-item[1], item[0]))),
+        "failed_regimes": failed_regimes,
+    }
 
 
 def _build_regime_slices(
@@ -978,6 +1323,16 @@ def _build_walk_forward_recommendations(windows: list[dict[str, Any]], regimes: 
     failed_regimes = [row["label"] for row in regimes if not row["survives"]]
     if failed_regimes:
         recommendations.append(f"市场状态切片中 {', '.join(failed_regimes[:3])} 未通过，实盘前应加入对应 regime filter 或降低仓位。")
+
+    failure_analysis = _build_regime_failure_analysis(windows, regimes)
+    trend_failures = failure_analysis.get("by_trend_state", {})
+    volatility_failures = failure_analysis.get("by_volatility_state", {})
+    if isinstance(trend_failures, dict) and trend_failures:
+        top_trend = next(iter(trend_failures))
+        recommendations.append(f"walk-forward 失败最集中在 {top_trend} 窗口，下一轮优先针对该 regime 做过滤或退出规则。")
+    if isinstance(volatility_failures, dict) and volatility_failures:
+        top_vol = next(iter(volatility_failures))
+        recommendations.append(f"波动率失败归因集中在 {top_vol}，需要调整波动率上限、仓位或突破确认。")
 
     return recommendations
 
@@ -1285,16 +1640,22 @@ def _simulate(
 
         # --- Turnover reduction: rebalance buffer ---
         _max_position = total_exposure / previous_close if previous_close > 0 else 0.0
-        if _max_position > 0 and abs(delta_units) / _max_position < config.rebalance_buffer_pct:
+        _current_direction = 1.0 if current_units > 1e-9 else (-1.0 if current_units < -1e-9 else 0.0)
+        _new_direction = 1.0 if target_units > 0 else (-1.0 if target_units < 0 else 0.0)
+        _is_exit_to_flat = _new_direction == 0 and _current_direction != 0
+
+        if (
+            not _is_exit_to_flat
+            and _max_position > 0
+            and abs(delta_units) / _max_position < config.rebalance_buffer_pct
+        ):
             delta_units = 0.0
             current_order_notional = 0.0
 
         # --- Turnover reduction: minimum holding period ---
         # Only blocks DIRECTION REVERSALS (long->short or short->long).
         # Risk-forced liquidations (going flat, _new_direction==0) always allowed.
-        _new_direction = 1.0 if target_units > 0 else (-1.0 if target_units < 0 else 0.0)
-        _is_exit_to_flat = _new_direction == 0 and _last_trade_direction != 0
-        _is_reversal = _last_trade_direction != 0 and _new_direction != 0 and _new_direction != _last_trade_direction
+        _is_reversal = _current_direction != 0 and _new_direction != 0 and _new_direction != _current_direction
         if not _is_exit_to_flat and _is_reversal and _bars_since_entry < config.min_holding_bars:
             delta_units = 0.0
             current_order_notional = 0.0
@@ -1302,7 +1663,7 @@ def _simulate(
             _bars_since_entry += 1
 
         # --- Turnover reduction: cost-aware signal filter ---
-        if config.cost_aware_filter and current_order_notional > 0:
+        if config.cost_aware_filter and current_order_notional > 0 and not _is_exit_to_flat:
             _estimated_cost = current_order_notional * config.commission_rate + abs(delta_units) * config.slippage
             _expected_return = abs(delta_units) * previous_close * 0.01  # 1% expected move proxy
             if _expected_return < _estimated_cost:
@@ -1311,7 +1672,7 @@ def _simulate(
 
         # --- Turnover reduction: annual turnover guard ---
         _is_initial_entry = abs(current_units) <= 1e-9 and abs(target_units) > 1e-9
-        if current_order_notional > 0 and not _is_initial_entry:
+        if current_order_notional > 0 and not _is_initial_entry and not _is_exit_to_flat:
             _annual_turnover_est = (_cumulative_turnover + current_order_notional) / max(1.0, current_equity) / (index / max(1, n_bars)) * periods_per_year
             if _annual_turnover_est > config.max_annual_turnover_pct / 100.0:
                 delta_units = 0.0
@@ -1336,7 +1697,7 @@ def _simulate(
 
         # Update turnover reduction state
         if abs(delta_units) > 1e-9:
-            _last_trade_direction = _new_direction
+            _last_trade_direction = 1.0 if executed_units > 1e-9 else (-1.0 if executed_units < -1e-9 else 0.0)
             _bars_since_entry = 0
             _cumulative_turnover += current_order_notional
 
@@ -1567,11 +1928,25 @@ class ResearchBacktestService:
         }
 
         rows: list[dict[str, Any]] = []
+        validation_signal_by_key: dict[str, pd.Series] = {}
         for index, params in enumerate(candidates, start=1):
             train_signals, _ = _prepare_strategy_pack(train_frame, [strategy_id], params_map={strategy_id: params})
-            validation_signals, _ = _prepare_strategy_pack(validation_frame, [strategy_id], params_map={strategy_id: params})
+            if strategy_id.startswith("btc_"):
+                validation_signals, _ = _prepare_strategy_pack_for_target_window(
+                    context_frame=train_frame,
+                    target_frame=validation_frame,
+                    strategy_ids=[strategy_id],
+                    params_map={strategy_id: params},
+                )
+            else:
+                validation_signals, _ = _prepare_strategy_pack(
+                    validation_frame,
+                    [strategy_id],
+                    params_map={strategy_id: params},
+                )
             train_result = _simulate(frame=train_frame, config=config, weights={strategy_id: 1.0}, signals=train_signals)
             validation_result = _simulate(frame=validation_frame, config=config, weights={strategy_id: 1.0}, signals=validation_signals)
+            validation_signal_by_key[_stable_params_key(params)] = validation_signals[strategy_id]
             runtime_metrics = _candidate_runtime_metrics(validation_result)
             base_score = _robust_optimization_score(train_result.summary, validation_result.summary)
             score = _runtime_penalized_optimization_score(
@@ -1603,6 +1978,66 @@ class ResearchBacktestService:
         rows.sort(key=lambda item: item["score"], reverse=True)
         for rank, row in enumerate(rows, start=1):
             row["rank"] = rank
+
+        event_ledger_screen_default = _is_crypto_cost_stress_request(request, config.symbol)
+        event_ledger_screen = bool(request.get("event_ledger_screen", event_ledger_screen_default))
+        event_ledger_screen_top_n = max(0, min(int(request.get("event_ledger_screen_top_n", 2)), len(rows)))
+        if event_ledger_screen and event_ledger_screen_top_n > 0:
+            for row in rows[:event_ledger_screen_top_n]:
+                try:
+                    event_screen = _run_event_ledger_optimizer_screen(
+                        frame=validation_frame,
+                        config=config,
+                        strategy_id=strategy_id,
+                        params=dict(row.get("parameters") or {}),
+                        request=request,
+                        row_rank=int(row.get("rank", 0) or 0),
+                        signal=validation_signal_by_key.get(_stable_params_key(dict(row.get("parameters") or {}))),
+                    )
+                    event_metrics = dict(event_screen.get("metrics", {}) or {})
+                    row["event_ledger_validation"] = {
+                        "status": "completed",
+                        "summary": event_screen.get("summary", {}),
+                        "diagnostics": {
+                            key: event_screen.get("diagnostics", {}).get(key)
+                            for key in [
+                                "engine",
+                                "pnl_source",
+                                "orders",
+                                "fills",
+                                "ledger_equity_consistent",
+                                "execution_config",
+                            ]
+                        },
+                    }
+                    row["event_ledger_metrics"] = event_metrics
+                    row["score"] = _round(
+                        float(row["score"]) + _event_ledger_screen_score_adjustment(event_metrics),
+                        6,
+                    )
+                    row["research_metadata"] = {
+                        **dict(row.get("research_metadata") or {}),
+                        "event_ledger_screen": {
+                            "enabled": True,
+                            "scope": "validation_frame",
+                            "score_adjustment": _event_ledger_screen_score_adjustment(event_metrics),
+                        },
+                    }
+                except Exception as exc:
+                    row["event_ledger_validation"] = {"status": "failed", "error": str(exc)}
+                    row["event_ledger_metrics"] = {}
+                    row["score"] = _round(float(row["score"]) - 0.75, 6)
+                    row["research_metadata"] = {
+                        **dict(row.get("research_metadata") or {}),
+                        "event_ledger_screen": {
+                            "enabled": True,
+                            "scope": "validation_frame",
+                            "status": "failed",
+                        },
+                    }
+            rows.sort(key=lambda item: item["score"], reverse=True)
+            for rank, row in enumerate(rows, start=1):
+                row["rank"] = rank
 
         default_params = dict(strategy_registry.get(strategy_id).descriptor.default_params)
         baseline = next((row for row in rows if row["parameters"] == default_params), None)
@@ -1868,6 +2303,11 @@ class ResearchBacktestService:
                 w = result.window
                 val_summary = result.unified.summary
                 survives = _walk_forward_survives(val_summary)
+                regime_summary = _window_regime_summary(
+                    frame,
+                    start=w.test_start,
+                    end=w.test_end,
+                )
                 symbol_folds.append({
                     "fold": fold,
                     "symbol": symbol,
@@ -1882,6 +2322,8 @@ class ResearchBacktestService:
                     "train": {},
                     "validation": val_summary,
                     "survives": survives,
+                    "regime": regime_summary,
+                    "failure_reasons": [] if survives else _walk_forward_failure_reasons(val_summary),
                     "equity_consistent": result.unified.equity_consistent,
                 })
             all_windows.extend(symbol_folds)
@@ -1912,6 +2354,7 @@ class ResearchBacktestService:
 
         symbols_covered = [s for s in symbols if s not in insufficient_symbols]
         regime_passes = sum(1 for r in all_regimes if r.get("survives", False))
+        failure_analysis = _build_regime_failure_analysis(valid_folds, all_regimes)
 
         stability = {
             "total_folds": total_folds,
@@ -1931,6 +2374,7 @@ class ResearchBacktestService:
             "symbols_covered": len(symbols_covered),
             "symbols_insufficient": len(insufficient_symbols),
             "symbol_details": symbol_results,
+            "failure_analysis": failure_analysis,
         }
 
         # Determine insufficient-data WARN
@@ -2088,7 +2532,15 @@ class ResearchBacktestService:
             for config_index, params in enumerate(candidate_params, start=1):
                 config_id = f"{strategy_id}_cfg_{config_index:02d}"
                 train_signals, _ = _prepare_strategy_pack(train_frame, [strategy_id], params_map={strategy_id: params})
-                test_signals, _ = _prepare_strategy_pack(test_frame, [strategy_id], params_map={strategy_id: params})
+                if strategy_id.startswith("btc_"):
+                    test_signals, _ = _prepare_strategy_pack_for_target_window(
+                        context_frame=frame,
+                        target_frame=test_frame,
+                        strategy_ids=[strategy_id],
+                        params_map={strategy_id: params},
+                    )
+                else:
+                    test_signals, _ = _prepare_strategy_pack(test_frame, [strategy_id], params_map={strategy_id: params})
                 train_result = _simulate(frame=train_frame, config=config, weights={strategy_id: 1.0}, signals=train_signals)
                 test_result = _simulate(frame=test_frame, config=config, weights={strategy_id: 1.0}, signals=test_signals)
                 train_summary = train_result.summary
