@@ -206,6 +206,22 @@ class LiveRuntime:
             _logger.warning("Live order rejected: %s", reason)
             return results
 
+        # --- Safety: paper/shadow submission is opt-in only ---
+        if not self.config.paper_order_submission_enabled:
+            reason = "paper_order_submission_disabled"
+            for intent in intents:
+                results["rejected"].append({
+                    "intent_id": intent.client_order_id,
+                    "reason": reason,
+                })
+                results["audit_events"].append({
+                    "event": "paper_order_rejected_submission_disabled",
+                    "intent_id": intent.client_order_id,
+                    "timestamp_utc": _utc_now().isoformat(),
+                })
+            _logger.warning("Orders rejected: %s", reason)
+            return results
+
         # --- Safety: no OMS configured ---
         if self.oms is None:
             for intent in intents:

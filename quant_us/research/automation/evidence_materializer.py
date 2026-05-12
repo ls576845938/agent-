@@ -28,6 +28,7 @@ class CandidateEvidenceMaterializationResult:
     strategy_manifest_status: str = ""
     promotion_gate_decision: str = "NOT_RUN"
     promotion_gate_reasons: list[str] = field(default_factory=list)
+    blocker_details: list[dict[str, Any]] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     next_commands: list[str] = field(default_factory=list)
     paths_written: list[str] = field(default_factory=list)
@@ -315,6 +316,10 @@ class ResearchEvidenceMaterializer:
 
         result.promotion_gate_decision = gate_result.decision
         result.promotion_gate_reasons = list(gate_result.reasons)
+        result.blocker_details = list(
+            dict(gate_result.evidence or {}).get("machine_readable_blocker_details", [])
+            or []
+        )
         result.warnings.extend(gate_result.warnings)
         result.next_commands = list(gate_result.evidence.get("next_commands", []) or [])
 

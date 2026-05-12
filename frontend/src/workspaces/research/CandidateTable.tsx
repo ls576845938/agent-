@@ -46,7 +46,13 @@ const filterInputStyle = {
   outline: 'none' as const,
 };
 
-export default function CandidateTable({candidates}: {candidates: Candidate[]}) {
+export default function CandidateTable({
+  candidates,
+  onCreatePaperReview,
+}: {
+  candidates: Candidate[];
+  onCreatePaperReview?: (candidateId: string) => void;
+}) {
   const [filterFamily, setFilterFamily] = useState('');
   const [filterDecision, setFilterDecision] = useState('');
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
@@ -113,6 +119,7 @@ export default function CandidateTable({candidates}: {candidates: Candidate[]}) 
         <CandidateDetail
           candidate={selectedCandidate}
           onClose={() => setSelectedCandidate(null)}
+          onCreatePaperReview={onCreatePaperReview}
         />
       )}
     </div>

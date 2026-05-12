@@ -7065,6 +7065,13 @@ def _add_research_parser(subparsers: Any) -> None:
         "--evidence-pack-id",
         help="Evidence pack ID (typically the candidate ID directory under research/evidence_packs)",
     )
+    prc_group.add_argument("--candidate-id", help="Candidate ID with eligible strategy manifest evidence")
+    prc_group.add_argument("--strategy-manifest-id", help="Eligible strategy manifest ID")
+    prc_p.add_argument(
+        "--prepared-evidence-pack-id",
+        default="",
+        help="Optional deterministic portfolio evidence pack ID for candidate/manifest review creation",
+    )
     prc_p.add_argument("--data-root", default="data", help="Data root path")
     prc_p.set_defaults(func=cmd_research_paper_review_create)
 
@@ -8523,7 +8530,10 @@ def cmd_research_portfolio_sim_report(args: argparse.Namespace) -> None:
 
 
 def cmd_research_paper_review_create(args: argparse.Namespace) -> None:
-    """Create a paper review from a portfolio simulation."""
+    """Create a paper review from eligible evidence only.
+
+    This command never approves a review and never starts paper/live runtime.
+    """
     from quant_us.research.paper_review_bridge import PaperReviewManager
 
     mgr = PaperReviewManager(data_root=args.data_root)
@@ -8531,8 +8541,14 @@ def cmd_research_paper_review_create(args: argparse.Namespace) -> None:
     try:
         if getattr(args, "evidence_pack_id", ""):
             review = mgr.create_from_portfolio_evidence(args.evidence_pack_id)
-        else:
+        elif getattr(args, "portfolio_sim_id", ""):
             review = mgr.create_review(args.portfolio_sim_id)
+        else:
+            review = mgr.create_from_candidate_evidence(
+                candidate_id=getattr(args, "candidate_id", "") or "",
+                strategy_manifest_id=getattr(args, "strategy_manifest_id", "") or "",
+                portfolio_evidence_pack_id=getattr(args, "prepared_evidence_pack_id", "") or "",
+            )
         print(f"Created paper review: {review.paper_review_id}")
         print(f"  Status:             {review.status}")
         print(f"  Strategy Manifest:  {review.strategy_manifest_id}")

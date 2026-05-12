@@ -372,6 +372,52 @@ def ledger_state_at_time(
     return positions, cash, position_value, cash + position_value
 
 
+def ledger_states_at_times(
+    fills: list[Fill],
+    timestamps: list[datetime],
+    initial_cash: float,
+    market_prices_by_time: dict[datetime, dict[str, float]] | None = None,
+    adjustments: LedgerAdjustmentLog | None = None,
+) -> dict[datetime, tuple[dict[str, float], float, float, float]]:
+    """Return ledger state for multiple timestamps with one chronological replay."""
+    normalized_times = sorted({_normalize_timestamp(timestamp) for timestamp in timestamps})
+    if not normalized_times:
+        return {}
+
+    normalized_prices = {
+        _normalize_timestamp(timestamp): dict(prices)
+        for timestamp, prices in (market_prices_by_time or {}).items()
+    }
+    events = [
+        (_normalize_timestamp(timestamp), priority, index, item)
+        for timestamp, priority, index, item in _sorted_ledger_events(fills, adjustments)
+    ]
+    state = _LedgerReplayState(cash=initial_cash)
+    event_index = 0
+    results: dict[datetime, tuple[dict[str, float], float, float, float]] = {}
+
+    for at_time in normalized_times:
+        while event_index < len(events) and events[event_index][0] <= at_time:
+            _event_time, priority, _index, item = events[event_index]
+            if priority == 0:
+                adjustment = item
+                assert isinstance(adjustment, LedgerAdjustment)
+                _apply_adjustment_to_state(state, adjustment)
+            else:
+                fill = item
+                assert isinstance(fill, Fill)
+                _apply_fill_to_state(state, fill, {})
+            event_index += 1
+
+        positions = {symbol: qty for symbol, qty in state.positions.items() if abs(qty) > 1e-10}
+        prices = normalized_prices.get(at_time, {})
+        position_value = sum(qty * prices.get(symbol, 0.0) for symbol, qty in positions.items())
+        cash = float(state.cash)
+        results[at_time] = (dict(positions), cash, float(position_value), cash + float(position_value))
+
+    return results
+
+
 def derive_equity_from_fills(
     fills: list[Fill],
     initial_cash: float,
@@ -487,16 +533,23 @@ def build_reconciliation_report(
             )
         return report
 
+    snapshot_times = [_normalize_timestamp(snap.timestamp_utc) for snap in snapshots]
+    replay_states = (
+        ledger_states_at_times(
+            fills,
+            snapshot_times,
+            ledger_curve.initial_cash,
+            market_prices_by_time=market_prices_by_time,
+            adjustments=adjustments,
+        )
+        if fills and market_prices_by_time
+        else {}
+    )
+
     for snap in snapshots:
         snap_ts = _normalize_timestamp(snap.timestamp_utc)
-        if fills and market_prices_by_time:
-            _, ledger_cash, _, ledger_equity = ledger_state_at_time(
-                fills,
-                snap_ts,
-                ledger_curve.initial_cash,
-                market_prices=market_prices_by_time.get(snap_ts, {}),
-                adjustments=adjustments,
-            )
+        if replay_states:
+            _, ledger_cash, _, ledger_equity = replay_states[snap_ts]
         else:
             matched_point = _latest_curve_point_before(ledger_curve, snap_ts)
             ledger_cash = matched_point.cash

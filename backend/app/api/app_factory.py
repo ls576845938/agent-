@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 from dataclasses import asdict
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -122,11 +123,24 @@ def _as_bool(value: Any) -> bool:
     return bool(value)
 
 
+def _as_utc_datetime(value: Any) -> datetime | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, datetime):
+        parsed = value
+    else:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 def _system_overview_payload(
     data_root: str = "data",
     *,
     qlib_artifacts_root: str = "artifacts/qlib_runs",
     portfolio_artifacts_root: str = "artifacts/portfolio_runs",
+    minute_quality_as_of: Any | None = None,
 ) -> dict[str, Any]:
     root = Path(data_root or "data")
 
@@ -134,20 +148,33 @@ def _system_overview_payload(
     from quant_us.data.minute_quality_gate import inspect_minute_data_quality_overview
     from quant_us.reports.paper_validation import inspect_paper_validation_evidence
     from quant_us.reports.portfolio_observability import inspect_portfolio_observability
+    from backend.app.services.paper_review import summarize_paper_review_entry
 
     registry = _fast_saved_evidence_registry(root)
-    minute_quality = inspect_minute_data_quality_overview(root).to_dict()
+    minute_as_of = _as_utc_datetime(minute_quality_as_of)
+    if minute_as_of is None:
+        minute_quality = inspect_minute_data_quality_overview(root).to_dict()
+    else:
+        minute_quality = inspect_minute_data_quality_overview(root, as_of=minute_as_of).to_dict()
     paper_evidence = inspect_paper_validation_evidence(root)
     portfolio_observability = inspect_portfolio_observability(root).to_dict()
     paper_review = _fast_paper_review_status(root, registry)
     credentials = audit_apca_paper_credentials()
+    paper_state = str(paper_evidence.readiness_state)
+    paper_review_entry = summarize_paper_review_entry(
+        data_root=root,
+        registry=registry,
+        paper_review=paper_review,
+        paper_validation_state=paper_state,
+        credentials_present=bool(credentials.get("credentials_present")),
+        base_url_valid=bool(credentials.get("base_url_valid")),
+    )
     minute_coverage = _coverage_from_minute_quality(minute_quality)
     qlib_integration = _latest_integration_run(qlib_artifacts_root, "qlib")
     portfolio_integration = _latest_integration_run(portfolio_artifacts_root, "portfolio")
 
     registry_state = str(registry.get("registry_status", "missing"))
     registry_integrity = str(registry.get("registry_integrity_status", "MISSING"))
-    paper_state = str(paper_evidence.readiness_state)
     paper_review_status = str(paper_review.get("status", "UNKNOWN"))
     minute_quality_status = str(minute_quality.get("status", "MISSING"))
     minute_quality_evidence = minute_quality.get("evidence_summary", {})
@@ -192,6 +219,8 @@ def _system_overview_payload(
         next_actions.append("Set APCA_API_BASE_URL=https://paper-api.alpaca.markets for paper only.")
     if not bool(paper_review.get("entry_allowed", False)):
         next_actions.append("Create or approve paper-review evidence from a canonical promotion result.")
+    if paper_review_entry.get("next_command") and paper_review_entry.get("next_command") not in next_actions:
+        next_actions.append(str(paper_review_entry.get("next_command")))
     if not next_actions:
         next_actions.append("Paper-stage evidence is reviewable; keep live frozen and enable paper only through explicit gate.")
 
@@ -255,6 +284,7 @@ def _system_overview_payload(
             "review_path": str(paper_review.get("review_path", "")),
             "manifest_path": str(paper_review.get("manifest_path", "")),
             "evidence_pack_path": str(paper_review.get("evidence_pack_path", "")),
+            "creation": paper_review_entry,
             "diagnostics": {
                 "registry_state": registry_state,
                 "registry_integrity": registry_integrity,
@@ -2169,6 +2199,12 @@ def create_app():
             }
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.get("/research/paper-review/entry-state")
+    async def paper_review_entry_state(data_root: str = "data"):
+        """Inspect paper-review creation eligibility and the next operator command."""
+        payload = _system_overview_payload(data_root=data_root)
+        return payload.get("paper_review", {})
 
     @router.get("/research/paper-review/pending")
     async def list_pending_reviews(data_root: str = "data"):

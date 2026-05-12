@@ -42,10 +42,13 @@ export const researchApi = {
   runPortfolioSim: (manifestIds: string[], config: any = {}) =>
     apiPost<any>('/api/research/portfolio-sims/run', {manifest_ids: manifestIds, config}),
   listPendingReviews: (dataRoot = 'data') => apiGet<any[]>(`/api/research/paper-review/pending${query({data_root: dataRoot})}`),
+  getPaperReviewEntryState: (dataRoot = 'data') => apiGet<any>(`/api/research/paper-review/entry-state${query({data_root: dataRoot})}`),
   createPaperReview: (portfolioSimId: string, dataRoot = 'data') =>
     apiPost<any>('/api/research/paper-review/create', {portfolio_sim_id: portfolioSimId, data_root: dataRoot}),
   createPaperReviewFromManifest: (strategyManifestId: string, dataRoot = 'data') =>
     apiPost<any>('/api/research/paper-review/create', {strategy_manifest_id: strategyManifestId, data_root: dataRoot}),
+  createPaperReviewFromCandidate: (candidateId: string, dataRoot = 'data') =>
+    apiPost<any>('/api/research/paper-review/create', {candidate_id: candidateId, data_root: dataRoot}),
   approvePaperReview: (reviewId: string, reviewer: string, reason: string) =>
     apiPost<any>(`/api/research/paper-review/${reviewId}/approve`, {manual: true, reviewer, reason}),
   runRobustness: (candidateId: string, dataRoot = 'data', nSimulations = 500) =>

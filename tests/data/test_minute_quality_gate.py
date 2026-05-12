@@ -301,6 +301,72 @@ def test_minute_quality_overview_reports_placeholder_layout_without_silent_pass(
     assert coverage_actions[0]["recommended_commands"]
     assert "ingest_intraday.py" in coverage_actions[0]["recommended_commands"][0]
     assert "quant-us report minute-quality" in coverage_actions[0]["recommended_commands"][-1]
+    assert "--symbol SPY" in coverage_actions[0]["recommended_commands"][0]
+    assert "--end 2026-05-12T00:00:00Z" in coverage_actions[0]["recommended_commands"][0]
+
+
+def test_minute_quality_overview_resolves_project_root_to_nested_data_directory(tmp_path: Path) -> None:
+    data_root = tmp_path / "data"
+    calendar = USEquityCalendar.with_holidays()
+    trading_day = datetime(2026, 5, 8, tzinfo=UTC).date()
+    for bar_size in ("1m", "5m", "15m"):
+        interval = int(bar_size.removesuffix("m"))
+        timestamps = _expected_regular_timestamps(trading_day, interval, calendar)
+        for root_subdir in ("raw", "cleaned"):
+            _write_minute_partition(
+                data_root,
+                root_subdir=root_subdir,
+                symbol="SPY",
+                bar_size=bar_size,
+                trading_day=trading_day.isoformat(),
+                timestamps=timestamps,
+            )
+
+    report = inspect_minute_data_quality_overview(
+        tmp_path,
+        symbols=["SPY"],
+        lookback_trading_days=1,
+        as_of=datetime(2026, 5, 8, 21, 0, tzinfo=UTC),
+    )
+
+    assert report.status == "PASS"
+    assert report.data_root == str(data_root)
+    assert report.requested_data_root == str(tmp_path)
+    assert report.resolved_data_root == str(data_root)
+    assert report.data_root_resolution["resolution_mode"] == "project_root_data_subdir"
+    assert report.data_root_resolution["nested_data_subdir_used"] is True
+
+
+def test_minute_quality_remediation_uses_affected_symbol_and_inclusive_missing_day_window(tmp_path: Path) -> None:
+    calendar = USEquityCalendar.with_holidays()
+    trading_day = datetime(2026, 5, 8, tzinfo=UTC).date()
+    for bar_size in ("1m", "5m", "15m"):
+        interval = int(bar_size.removesuffix("m"))
+        timestamps = _expected_regular_timestamps(trading_day, interval, calendar)
+        _write_minute_partition(
+            tmp_path,
+            symbol="SPY",
+            bar_size=bar_size,
+            trading_day=trading_day.isoformat(),
+            timestamps=timestamps,
+        )
+
+    report = inspect_minute_data_quality(
+        tmp_path,
+        symbols=["SPY"],
+        lookback_trading_days=2,
+        as_of=datetime(2026, 5, 11, 22, 0, tzinfo=UTC),
+    )
+
+    coverage_actions = [
+        action for action in report.remediation_summary["actions"] if action["category"] == "coverage"
+    ]
+    assert coverage_actions
+    commands = coverage_actions[0]["recommended_commands"]
+    assert any("--symbol SPY --bar-size 1m" in command for command in commands)
+    assert any("--symbol SPY --bar-size 5m" in command for command in commands)
+    assert any("--symbol SPY --bar-size 15m" in command for command in commands)
+    assert any("--start 2026-05-11T00:00:00Z --end 2026-05-12T00:00:00Z" in command for command in commands)
 
 
 def test_minute_quality_classifies_timezone_session_and_early_close(tmp_path: Path) -> None:

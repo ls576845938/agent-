@@ -86,6 +86,7 @@ def test_us_quant_data_quality_report_supports_symbols_bar_sizes_and_lookback(tm
             "symbols": ["AAPL"],
             "bar_sizes": ["1m", "5m"],
             "lookback_trading_days": 1,
+            "as_of": "2026-05-08T21:00:00Z",
         }
     )
 

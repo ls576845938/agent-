@@ -185,6 +185,34 @@ def test_paper_runtime_kill_switch_blocks_before_oms(tmp_path: Path) -> None:
     assert not (tmp_path / "ledger" / ".idempotency.json").exists()
 
 
+def test_live_runtime_paper_mode_requires_explicit_submit_orders_before_oms(
+    tmp_path: Path,
+) -> None:
+    broker = CountingPaperBroker()
+    runtime = LiveRuntime(
+        LiveRuntimeConfig(
+            mode=RuntimeMode.PAPER,
+            submit_orders=False,
+            ledger_root=str(tmp_path / "ledger"),
+        )
+    )
+    runtime.bootstrap()
+    runtime.oms = _oms(broker, tmp_path / "ledger" / ".idempotency.json")
+
+    result = runtime.submit_orders(
+        [_intent("paper_submit_disabled_guard")],
+        account=_account(),
+        market_price=500.0,
+    )
+
+    assert result["submitted"] == []
+    assert result["rejected"][0]["reason"] == "paper_order_submission_disabled"
+    assert result["audit_events"][0]["event"] == "paper_order_rejected_submission_disabled"
+    assert broker.submit_calls == 0
+    assert broker.get_orders() == []
+    assert not (tmp_path / "ledger" / ".idempotency.json").exists()
+
+
 def test_runtime_restart_does_not_duplicate_previously_submitted_order(
     tmp_path: Path,
 ) -> None:

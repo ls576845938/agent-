@@ -177,7 +177,10 @@ class ApiSchemaDefaultTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             _write_portfolio_observability(root)
-            payload = _system_overview_payload(directory)
+            payload = _system_overview_payload(
+                directory,
+                minute_quality_as_of="2026-05-08T21:00:00Z",
+            )
             self.assertFalse((root / "research" / "evidence_registry.json").exists())
 
         self.assertEqual(payload["mode"], "pre_live")
@@ -266,7 +269,10 @@ class ApiSchemaDefaultTests(unittest.TestCase):
                         trading_day=current_day.isoformat(),
                         timestamps=full,
                     )
-            payload = _system_overview_payload(directory)
+            payload = _system_overview_payload(
+                directory,
+                minute_quality_as_of="2026-05-08T21:00:00Z",
+            )
 
         self.assertEqual(payload["status"], "blocked")
         self.assertEqual(payload["stage"], "registry_blocked")

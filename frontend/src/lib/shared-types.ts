@@ -105,6 +105,28 @@ export type SystemOverviewResponse = {
     review_path?: string;
     manifest_path?: string;
     evidence_pack_path?: string;
+    creation?: {
+      creation_allowed?: boolean;
+      why_blocked?: string[];
+      next_command?: string;
+      eligible_manifest_ids?: string[];
+      eligible_candidate_ids?: string[];
+      preferred_manifest_id?: string;
+      preferred_candidate_id?: string;
+      create_from_manifest_command?: string;
+      create_from_candidate_command?: string;
+      eligible_manifest_count?: number;
+      eligible_candidate_count?: number;
+      summary?: string;
+      eligible_manifest_rows?: Array<{
+        strategy_manifest_id?: string;
+        source_candidate_id?: string;
+        promotion_status?: string;
+        paper_review_candidate_status?: string;
+        paper_review_evidence_pack_path?: string;
+        paper_review_id?: string;
+      }>;
+    };
     diagnostics?: {
       registry_state?: string;
       registry_integrity?: string;

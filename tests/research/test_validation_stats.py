@@ -714,6 +714,14 @@ def test_promotion_gate_blocks_single_path_high_sharpe_candidate(tmp_path: Path)
     contract = result.evidence["validation_promotion_contract"]
     assert contract["checks"]["multi_path_validation"] is False
     assert contract["checks"]["pbo_available"] is False
+    blocker_details = {
+        item["code"]: item
+        for item in result.evidence["machine_readable_blocker_details"]
+    }
+    assert blocker_details["single_path_validation_not_allowed"]["observed"]["validation_paths"] == 1
+    assert blocker_details["single_path_validation_not_allowed"]["required"]["min_validation_paths"] == 2
+    assert "research walk-forward" in blocker_details["single_path_validation_not_allowed"]["cli_next_command"]
+    assert "materialize_candidate" in blocker_details["missing_pbo_evidence"]["materialization"]["command"]
 
 
 def test_promotion_gate_fail_closed_on_missing_manifest_key_stats(tmp_path: Path) -> None:
@@ -836,6 +844,21 @@ def test_promotion_gate_uses_missing_metric_blockers_when_validation_metrics_abs
     assert not any(reason.startswith("param_unstable:") for reason in result.reasons)
     assert not any(reason.startswith("stress_survival_low:") for reason in result.reasons)
     assert not any(warning.startswith("rapid_alpha_decay:") for warning in result.warnings)
+    blocker_details = {
+        item["code"]: item
+        for item in result.evidence["machine_readable_blocker_details"]
+    }
+    monte_carlo = blocker_details["missing_monte_carlo_survival_rate"]
+    assert monte_carlo["observed"]["trade_return_count"] == 0
+    assert monte_carlo["observed"]["daily_return_count"] == 20
+    assert monte_carlo["cli_next_command"]
+    assert "research robustness-run" in monte_carlo["diagnostic_cli_command"]
+    assert "synthetic returns" in monte_carlo["materialization"]["note"]
+    param_stability = blocker_details["missing_param_stability_score"]
+    assert param_stability["observed"]["param_grid_trial_count"] == 6
+    assert param_stability["cli_next_command"]
+    assert "research param-stability" in param_stability["diagnostic_cli_command"]
+    assert "real sweep evidence" in param_stability["materialization"]["note"]
 
 
 def test_blocked_strategy_manifest_persists_gate_blockers_and_next_commands(tmp_path: Path) -> None:
@@ -856,5 +879,7 @@ def test_blocked_strategy_manifest_persists_gate_blockers_and_next_commands(tmp_
     assert manifest_payload["promotion_status"] == "BLOCKED"
     assert manifest_payload["promotion_gate_decision"] == "BLOCKED"
     assert manifest_payload["promotion_gate_blocking_reasons"]
+    assert manifest_payload["promotion_gate_blocker_details"]
     assert manifest_payload["promotion_gate_next_commands"]
+    assert manifest_payload["evidence"]["promotion_gate"]["blocker_details"] == manifest_payload["promotion_gate_blocker_details"]
     assert manifest_payload["evidence"]["promotion_gate"]["next_commands"] == manifest_payload["promotion_gate_next_commands"]

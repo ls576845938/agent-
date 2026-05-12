@@ -310,7 +310,7 @@ class TestLiveRuntimeLiveOrders(unittest.TestCase):
             result["rejected"][0]["reason"],
         )
 
-    def test_paper_mode_unchanged(self) -> None:
+    def test_paper_mode_requires_explicit_submission_enable(self) -> None:
         runtime = LiveRuntime(
             LiveRuntimeConfig(
                 mode=RuntimeMode.PAPER,
@@ -328,7 +328,9 @@ class TestLiveRuntimeLiveOrders(unittest.TestCase):
             buying_power=100_000.0,
         )
         result = runtime.submit_orders([intent], account=account, market_price=100.0)
-        self.assertEqual(len(result["submitted"]), 1)
+        self.assertEqual(len(result["submitted"]), 0)
+        self.assertEqual(len(result["rejected"]), 1)
+        self.assertEqual(result["rejected"][0]["reason"], "paper_order_submission_disabled")
 
 
 class TestKillSwitchPublicApi(unittest.TestCase):

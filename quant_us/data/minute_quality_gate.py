@@ -188,6 +188,9 @@ class MinuteDataQualityReport:
     status: str
     as_of_utc: str
     data_root: str
+    requested_data_root: str
+    resolved_data_root: str
+    data_root_resolution: dict[str, Any]
     dataset_root: str
     root_subdir: str
     vendor: str
@@ -202,6 +205,9 @@ class MinuteDataQualityReport:
             "status": self.status,
             "as_of_utc": self.as_of_utc,
             "data_root": self.data_root,
+            "requested_data_root": self.requested_data_root,
+            "resolved_data_root": self.resolved_data_root,
+            "data_root_resolution": dict(self.data_root_resolution),
             "dataset_root": self.dataset_root,
             "root_subdir": self.root_subdir,
             "vendor": self.vendor,
@@ -256,6 +262,9 @@ class MinuteDataQualityOverviewReport:
     status: str
     as_of_utc: str
     data_root: str
+    requested_data_root: str
+    resolved_data_root: str
+    data_root_resolution: dict[str, Any]
     vendor: str
     asset_class: str
     lookback_trading_days: int
@@ -268,6 +277,9 @@ class MinuteDataQualityOverviewReport:
             "status": self.status,
             "as_of_utc": self.as_of_utc,
             "data_root": self.data_root,
+            "requested_data_root": self.requested_data_root,
+            "resolved_data_root": self.resolved_data_root,
+            "data_root_resolution": dict(self.data_root_resolution),
             "vendor": self.vendor,
             "asset_class": self.asset_class,
             "audit_scope": self.audit_scope,
@@ -328,7 +340,8 @@ def inspect_minute_data_quality(
     min_coverage_pct: float = 99.0,
     max_missing_samples: int = 8,
 ) -> MinuteDataQualityReport:
-    root = Path(data_root)
+    requested_root = Path(data_root)
+    root, data_root_resolution = _resolve_minute_data_root(requested_root)
     normalized_bar_sizes = _normalize_bar_sizes(bar_sizes)
     normalized_root_subdir = _normalize_root_subdir(root_subdir)
     as_of_utc = ensure_utc(as_of or utc_now())
@@ -366,6 +379,9 @@ def inspect_minute_data_quality(
         status=overall_status if symbol_summaries else "MISSING",
         as_of_utc=as_of_utc.isoformat(),
         data_root=str(root),
+        requested_data_root=str(requested_root),
+        resolved_data_root=str(root),
+        data_root_resolution=data_root_resolution,
         dataset_root=str(dataset_root),
         root_subdir=normalized_root_subdir,
         vendor=vendor,
@@ -390,7 +406,8 @@ def inspect_minute_data_quality_overview(
     min_coverage_pct: float = 99.0,
     max_missing_samples: int = 8,
 ) -> MinuteDataQualityOverviewReport:
-    root = Path(data_root)
+    requested_root = Path(data_root)
+    root, data_root_resolution = _resolve_minute_data_root(requested_root)
     normalized_bar_sizes = _normalize_bar_sizes(bar_sizes)
     normalized_root_subdirs = _normalize_root_subdirs(root_subdirs)
     as_of_utc = ensure_utc(as_of or utc_now())
@@ -425,6 +442,9 @@ def inspect_minute_data_quality_overview(
         status=overall_status,
         as_of_utc=as_of_utc.isoformat(),
         data_root=str(root),
+        requested_data_root=str(requested_root),
+        resolved_data_root=str(root),
+        data_root_resolution=data_root_resolution,
         vendor=vendor,
         asset_class=asset_class,
         lookback_trading_days=lookback_trading_days,
@@ -908,6 +928,36 @@ def _normalize_timestamps(
     return pd.Series(normalized, index=values.index), timezone_naive_count, timezone_non_utc_count, invalid_timestamp_count
 
 
+def _resolve_minute_data_root(data_root: Path) -> tuple[Path, dict[str, Any]]:
+    requested_root = Path(data_root)
+    nested_root = requested_root / "data"
+    if _looks_like_data_lake_root(requested_root):
+        return requested_root, {
+            "resolution_mode": "as_requested",
+            "requested_data_root": str(requested_root),
+            "resolved_data_root": str(requested_root),
+            "nested_data_subdir_used": False,
+        }
+    if _looks_like_data_lake_root(nested_root):
+        return nested_root, {
+            "resolution_mode": "project_root_data_subdir",
+            "requested_data_root": str(requested_root),
+            "resolved_data_root": str(nested_root),
+            "nested_data_subdir_used": True,
+            "note": "Resolved project root to nested data/ because raw|cleaned storage exists there.",
+        }
+    return requested_root, {
+        "resolution_mode": "as_requested_missing_layout",
+        "requested_data_root": str(requested_root),
+        "resolved_data_root": str(requested_root),
+        "nested_data_subdir_used": False,
+    }
+
+
+def _looks_like_data_lake_root(root: Path) -> bool:
+    return (root / "raw").exists() or (root / "cleaned").exists() or (root / "manifests").exists()
+
+
 def _session_metadata(
     trading_day: date,
     interval_minutes: int,
@@ -1272,6 +1322,7 @@ def _build_remediation_summary(
             "details": [],
             "evidence_paths": set(),
             "affected_interval_keys": set(),
+            "records": [],
         }
 
     for record in records:
@@ -1288,6 +1339,7 @@ def _build_remediation_summary(
             bucket["bar_sizes"].add(interval.bar_size)
             bucket["evidence_paths"].update(interval.evidence_paths)
             bucket["affected_interval_keys"].add(scope)
+            bucket["records"].append(record)
             if category == "coverage":
                 bucket["details"].append(
                     f"{scope} coverage={interval.coverage_pct:.2f}% missing_files={len(interval.missing_file_dates)} missing_bars={interval.missing_bar_count}"
@@ -1334,8 +1386,7 @@ def _build_remediation_summary(
                 "evidence_paths": sorted(bucket["evidence_paths"])[:12],
                 "recommended_commands": _recommended_sync_commands(
                     data_root=data_root,
-                    root_subdirs=root_subdirs,
-                    bar_sizes=bar_sizes,
+                    records=bucket["records"],
                 ),
             }
         )
@@ -1386,7 +1437,17 @@ def _build_remediation_summary(
                     "evidence_paths": sorted(coverage_layout_paths)[:12],
                     "recommended_commands": _recommended_sync_commands(
                         data_root=data_root,
-                        root_subdirs=normalized_root_subdirs,
+                        records=[],
+                        bootstrap_symbols=list(
+                            sorted(
+                                {
+                                    str(symbol).upper()
+                                    for layout in dataset_layouts
+                                    for symbol in layout.get("discovered_symbols", [])
+                                    if str(symbol).strip()
+                                }
+                            )
+                        ),
                         bar_sizes=normalized_bar_sizes,
                     ),
                 }
@@ -1488,21 +1549,75 @@ def _dataset_layout_summary(
 def _recommended_sync_commands(
     *,
     data_root: str,
-    root_subdirs: list[str],
-    bar_sizes: list[str],
+    records: list[dict[str, Any]],
+    bootstrap_symbols: list[str] | None = None,
+    bar_sizes: list[str] | None = None,
 ) -> list[str]:
-    normalized_bar_sizes = [bar_size for bar_size in bar_sizes if bar_size in SUPPORTED_MINUTE_BAR_SIZES]
-    target_bar_sizes = normalized_bar_sizes or list(SUPPORTED_MINUTE_BAR_SIZES)
-    return [
-        (
-            "python scripts/ingest_intraday.py "
-            f"--data-root {data_root} --symbol AAPL --bar-size {bar_size} "
-            "--start 2026-05-01T00:00:00Z --end 2026-05-11T00:00:00Z"
+    repair_windows: dict[tuple[str, str], tuple[date, date]] = {}
+    commands: list[str] = []
+
+    for record in records:
+        symbol = str(record["symbol"])
+        interval = record["interval"]
+        target_days = _repair_target_days(interval)
+        if not target_days:
+            continue
+        key = (symbol, interval.bar_size)
+        window = (min(target_days), max(target_days))
+        existing = repair_windows.get(key)
+        if existing is None:
+            repair_windows[key] = window
+            continue
+        repair_windows[key] = (min(existing[0], window[0]), max(existing[1], window[1]))
+
+    for symbol, bar_size in sorted(
+        repair_windows,
+        key=lambda item: (item[0], SUPPORTED_MINUTE_BAR_SIZES.index(item[1])),
+    ):
+        start_day, end_day = repair_windows[(symbol, bar_size)]
+        commands.append(
+            "python3 scripts/ingest_intraday.py "
+            f"--data-root {data_root} --symbol {symbol} --bar-size {bar_size} "
+            f"--start {start_day.isoformat()}T00:00:00Z "
+            f"--end {(end_day + timedelta(days=1)).isoformat()}T00:00:00Z"
         )
-        for bar_size in target_bar_sizes
-    ] + [
-        f"quant-us report minute-quality --data-root {data_root}"
-    ]
+
+    if not commands:
+        normalized_bar_sizes = [
+            bar_size
+            for bar_size in (bar_sizes or list(SUPPORTED_MINUTE_BAR_SIZES))
+            if bar_size in SUPPORTED_MINUTE_BAR_SIZES
+        ]
+        target_bar_sizes = normalized_bar_sizes or list(SUPPORTED_MINUTE_BAR_SIZES)
+        target_symbols = bootstrap_symbols or ["SPY"]
+        for symbol in target_symbols[:1]:
+            for bar_size in target_bar_sizes[:3]:
+                commands.append(
+                    "python3 scripts/ingest_intraday.py "
+                    f"--data-root {data_root} --symbol {symbol} --bar-size {bar_size} "
+                    "--start 2026-05-01T00:00:00Z --end 2026-05-12T00:00:00Z"
+                )
+
+    return commands[:6] + [f"quant-us report minute-quality --data-root {data_root}"]
+
+
+def _repair_target_days(interval: MinuteBarQualitySnapshot) -> list[date]:
+    target_days = sorted(
+        {
+            date.fromisoformat(str(item["date"]))
+            for item in interval.session_coverage
+            if isinstance(item, dict)
+            and item.get("date")
+            and int(item.get("missing_bars", 0) or 0) > 0
+        }
+    )
+    if target_days:
+        return target_days
+    if interval.missing_file_dates:
+        return sorted(date.fromisoformat(value) for value in interval.missing_file_dates)
+    if interval.expected_trading_days:
+        return sorted(date.fromisoformat(value) for value in interval.expected_trading_days)
+    return []
 
 
 def _normalize_symbols(values: Iterable[str]) -> list[str]:

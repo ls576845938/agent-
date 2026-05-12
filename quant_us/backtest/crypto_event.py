@@ -11,7 +11,7 @@ import pandas as pd
 
 from quant_us.backtest.data_bridge import SignalReplayStrategy
 from quant_us.backtest.engine import BacktestBroker
-from quant_us.backtest.ledger_pnl import ledger_state_at_time
+from quant_us.backtest.ledger_pnl import ledger_states_at_times
 from quant_us.backtest.unified_runner import UnifiedBacktestConfig, UnifiedBacktestResult, UnifiedBacktestRunner
 from quant_us.core.events import MarketEvent
 from quant_us.data.storage.data_manifest import DataManifestStore
@@ -255,6 +255,12 @@ def run_crypto_event_backtest(
         ),
         "risk": unified.evidence.get("risk", {}),
         "reconciliation": unified.evidence.get("reconciliation", {}).get("summary", {}),
+        "ledger_artifact_path": unified.evidence.get("ledger_artifact_path", ""),
+        "ledger_hash": unified.evidence.get("ledger_hash", ""),
+        "fills_hash": unified.evidence.get("fills_hash", ""),
+        "data_manifest": unified.evidence.get("data_manifest", {}),
+        "missing_data_manifest": bool(unified.evidence.get("missing_data_manifest", False)),
+        "determinism_verified": bool(unified.determinism_verified),
     }
 
     return CryptoEventBacktestArtifacts(
@@ -449,6 +455,8 @@ def qualify_crypto_candidates(
         row["qualification_blockers"] = blockers
         rows.append(row)
 
+    rows.sort(key=_crypto_candidate_selection_sort_key)
+
     selected_remaining = max(0, int(max_selected))
     for row in rows:
         if selected_remaining <= 0:
@@ -480,6 +488,21 @@ def _crypto_candidate_key(candidate: dict[str, Any]) -> str:
         return strategy_id
     parts = ",".join(f"{key}={params[key]}" for key in sorted(params))
     return f"{strategy_id}|{parts}"
+
+
+def _crypto_candidate_selection_sort_key(candidate: dict[str, Any]) -> tuple[Any, ...]:
+    rank = candidate.get("rank")
+    validation = candidate.get("validation") or {}
+    has_rank = isinstance(rank, (int, float))
+    return (
+        0 if has_rank else 1,
+        float(rank) if has_rank else 0.0,
+        -float(candidate.get("score", 0.0)),
+        -float(validation.get("sharpe_ratio", 0.0)),
+        -float(validation.get("total_return_pct", 0.0)),
+        abs(float(validation.get("max_drawdown_pct", 0.0))),
+        str(candidate.get("candidate_key", "")),
+    )
 
 
 def _crypto_candidate_blockers(
@@ -639,17 +662,27 @@ def _ledger_timeline(
     equity: dict[pd.Timestamp, float] = {}
     exposure: dict[pd.Timestamp, float] = {}
     net_units: dict[pd.Timestamp, float] = {}
+    timestamps: list[datetime] = []
+    market_prices_by_time: dict[datetime, dict[str, float]] = {}
 
     for timestamp, row in frame.iterrows():
         ts = pd.Timestamp(timestamp).tz_convert("UTC").to_pydatetime()
         symbol = str(row.get("symbol", "")).upper()
         close = float(row["close"])
-        positions, _cash, position_value, ledger_equity = ledger_state_at_time(
-            fills=unified.fills,
-            at_time=ts,
-            initial_cash=initial_cash,
-            market_prices={symbol: close},
-        )
+        timestamps.append(ts)
+        market_prices_by_time[ts] = {symbol: close}
+
+    ledger_states = ledger_states_at_times(
+        unified.fills,
+        timestamps,
+        initial_cash,
+        market_prices_by_time=market_prices_by_time,
+    )
+
+    for timestamp, row in frame.iterrows():
+        ts = pd.Timestamp(timestamp).tz_convert("UTC").to_pydatetime()
+        symbol = str(row.get("symbol", "")).upper()
+        positions, _cash, position_value, ledger_equity = ledger_states[ts]
         idx = pd.Timestamp(ts)
         equity[idx] = float(ledger_equity)
         exposure[idx] = abs(float(position_value))

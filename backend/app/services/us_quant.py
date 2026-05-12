@@ -243,6 +243,7 @@ class USQuantService:
             root_subdirs = [item.strip() for item in root_subdirs.split(",") if item.strip()]
         if not root_subdirs:
             raise ValueError("At least one root_subdir is required. Allowed values: ['raw', 'cleaned']")
+        as_of = self._optional_as_of(request.get("as_of"))
 
         report = inspect_minute_data_quality_overview(
             data_root=Path(data_root),
@@ -251,9 +252,21 @@ class USQuantService:
             asset_class=str(request.get("asset_class", "equity")),
             bar_sizes=bar_sizes,
             lookback_trading_days=lookback_trading_days,
+            as_of=as_of,
             root_subdirs=root_subdirs,
         )
         return report.to_dict()
+
+    def _optional_as_of(self, value: Any) -> datetime | None:
+        if value in (None, ""):
+            return None
+        if isinstance(value, datetime):
+            parsed = value
+        else:
+            parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
 
     def sync_data(self, request: dict[str, Any]) -> dict[str, Any]:
         data = DataLakeService(DataLakeConfig(data_root=Path(request.get("data_root") or "data")))

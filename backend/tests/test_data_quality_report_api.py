@@ -75,13 +75,14 @@ def test_us_data_quality_report_api_returns_strict_evidence_summary(tmp_path: Pa
     client = TestClient(create_app())
     response = client.post(
         "/api/us/data/quality-report",
-        json={
-            "data_root": str(tmp_path),
-            "symbols": ["AAPL"],
-            "bar_sizes": ["1m"],
-            "lookback_trading_days": 1,
-        },
-    )
+            json={
+                "data_root": str(tmp_path),
+                "symbols": ["AAPL"],
+                "bar_sizes": ["1m"],
+                "lookback_trading_days": 1,
+                "as_of": "2026-05-08T21:00:00Z",
+            },
+        )
 
     assert response.status_code == 200
     payload = response.json()

@@ -712,6 +712,7 @@ class MarketDataService:
             spec=spec,
             source_bounds=source_bounds,
             target_interval_ms=target_interval_ms,
+            source_interval_ms=source_interval_ms,
         )
         expected_target_rows = ((end_ms - start_ms) // target_interval_ms) + 1
         expected_source_rows = expected_target_rows * (target_interval_ms // source_interval_ms)
@@ -913,13 +914,19 @@ class MarketDataService:
         spec: CryptoResampleSpec,
         source_bounds: dict[str, int],
         target_interval_ms: int,
+        source_interval_ms: int,
     ) -> tuple[int, int]:
         source_start_ms = int(source_bounds["start_ms"])
         source_end_ms = int(source_bounds["end_ms"])
         start_ms = source_start_ms if spec.start is None else to_milliseconds(to_utc(spec.start))
         end_ms = source_end_ms if spec.end is None else to_milliseconds(to_utc(spec.end))
         aligned_start_ms = ((start_ms + target_interval_ms - 1) // target_interval_ms) * target_interval_ms
-        aligned_end_ms = (end_ms // target_interval_ms) * target_interval_ms
+        requested_end_ms = (end_ms // target_interval_ms) * target_interval_ms
+        latest_complete_source_end_ms = source_end_ms - (target_interval_ms - source_interval_ms)
+        aligned_end_ms = min(
+            requested_end_ms,
+            (latest_complete_source_end_ms // target_interval_ms) * target_interval_ms,
+        )
         if aligned_start_ms > aligned_end_ms:
             raise DataSyncError(
                 f"Requested range does not contain a full {spec.target_interval} bar after alignment: "

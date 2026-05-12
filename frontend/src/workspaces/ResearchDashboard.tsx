@@ -246,6 +246,7 @@ export default function ResearchDashboard() {
   const [portfolioIntegrationDetail, setPortfolioIntegrationDetail] = useState<LooseRecord | null>(null);
   const [registry, setRegistry] = useState<LooseRecord | null>(null);
   const [systemOverview, setSystemOverview] = useState<SystemOverviewResponse | null>(null);
+  const [paperReviewEntry, setPaperReviewEntry] = useState<LooseRecord | null>(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -322,7 +323,7 @@ export default function ResearchDashboard() {
 
   const refresh = async (root = dataRoot) => {
     setError('');
-    const [exps, cands, snaps, factorDefs, manifestRows, reviews, registryPayload, qlibPayload, portfolioPayload, overviewPayload] = await Promise.all([
+    const [exps, cands, snaps, factorDefs, manifestRows, reviews, registryPayload, qlibPayload, portfolioPayload, overviewPayload, paperReviewEntryPayload] = await Promise.all([
       researchApi.listExperiments(root).catch(() => []),
       researchApi.listCandidates(root).catch(() => []),
       researchApi.listFeatures().catch(() => []),
@@ -333,6 +334,7 @@ export default function ResearchDashboard() {
       researchApi.listQlibRuns(qlibForm.artifactsRoot).catch(() => null),
       researchApi.listPortfolioIntegrationRuns(pypfoptForm.artifactsRoot).catch(() => null),
       apiGet<SystemOverviewResponse>(`/api/system/overview?data_root=${encodeURIComponent(root)}`).catch(() => null),
+      researchApi.getPaperReviewEntryState(root).catch(() => null),
     ]);
     setExperiments(exps || []);
     setCandidates(cands || []);
@@ -346,6 +348,7 @@ export default function ResearchDashboard() {
     setPortfolioIntegrationStatus(portfolioPayload);
     setPortfolioIntegrationRuns(Array.isArray(portfolioPayload?.runs) ? portfolioPayload.runs : []);
     setSystemOverview(overviewPayload);
+    setPaperReviewEntry(paperReviewEntryPayload);
     setSelectedManifestIds(current => {
       const available = (manifestRows || []).map((row: LooseRecord) => String(row.strategy_candidate_id || '')).filter(Boolean);
       return current.filter(id => available.includes(id));
@@ -587,6 +590,13 @@ export default function ResearchDashboard() {
     const result = await researchApi.createPaperReviewFromManifest(manifestId, dataRoot);
     setPortfolioResult({strategy_manifest_id: manifestId, paper_review: result});
     setMessage(`已把 ${manifestId} 放入 paper review queue。`);
+    await refresh(dataRoot);
+  });
+
+  const handleCreateReviewFromCandidate = (candidateId: string) => runTask(`candidate-review-${candidateId}`, async () => {
+    const result = await researchApi.createPaperReviewFromCandidate(candidateId, dataRoot);
+    setPortfolioResult({candidate_id: candidateId, paper_review: result});
+    setMessage(`已从 candidate ${candidateId} 创建 paper review evidence。`);
     await refresh(dataRoot);
   });
 
@@ -917,17 +927,18 @@ export default function ResearchDashboard() {
                 <StatusPill value={systemOverview?.paper_review?.status || 'UNKNOWN'} />
               </div>
               <div style={{display: 'grid', gap: 8}}>
-                {(systemOverview?.next_actions || []).slice(0, 6).map(action => (
+                {(paperReviewEntry?.why_blocked || systemOverview?.next_actions || []).slice(0, 6).map((action: string) => (
                   <div key={action} style={{borderTop: '1px solid rgba(148,163,184,0.12)', paddingTop: 8, color: '#cbd5e1'}}>
                     {action}
                   </div>
                 ))}
-                {!(systemOverview?.next_actions || []).length ? <span style={{color: '#94a3b8'}}>暂无全局 blocker。</span> : null}
+                {!((paperReviewEntry?.why_blocked || systemOverview?.next_actions || []).length) ? <span style={{color: '#94a3b8'}}>暂无全局 blocker。</span> : null}
               </div>
               <div style={{marginTop: 14, fontSize: '0.8rem', color: '#94a3b8', display: 'grid', gap: 6}}>
                 <span>review summary: {systemOverview?.paper_review?.summary || '-'}</span>
                 <span>registry: {systemOverview?.registry?.integrity || registry?.registry_integrity_status || '-'}</span>
                 <span>manifest: {systemOverview?.paper_review?.manifest_path || '-'}</span>
+                <span>next command: {paperReviewEntry?.next_command || systemOverview?.paper_review?.creation?.next_command || '-'}</span>
               </div>
             </section>
           </div>
@@ -953,7 +964,7 @@ export default function ResearchDashboard() {
                         </div>
                       </div>
                       <StatusPill value={row.status} />
-                      <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handleCreateReviewFromManifest(row.id)}>送入 review queue</button>
+                      <button style={ghostButtonStyle} disabled={!!busy} onClick={() => handleCreateReviewFromManifest(row.id)}>创建 review evidence</button>
                     </div>
                     <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10, fontSize: '0.78rem'}}>
                       <div>
@@ -1374,6 +1385,7 @@ export default function ResearchDashboard() {
               <Field label="approval reason"><input style={inputStyle} value={portfolioForm.reviewReason} onChange={(e: any) => updatePortfolio('reviewReason', e.target.value)} /></Field>
             </div>
           </section>
+
           <div style={{display: 'grid', gap: 12}}>
             <section style={sectionStyle}>
               <h3 style={{margin: '0 0 10px'}}>Pending reviews</h3>
@@ -1391,7 +1403,9 @@ export default function ResearchDashboard() {
                 {!pendingReviews.length ? <span style={{color: '#94a3b8'}}>暂无待人工复核项</span> : null}
               </div>
             </section>
+
             <ResultBlock title="portfolio / review result" value={portfolioResult} />
+
             <section style={sectionStyle}>
               <h3 style={{margin: '0 0 10px'}}>Strategy manifests</h3>
               <div style={{display: 'grid', gap: 8}}>
@@ -1404,6 +1418,37 @@ export default function ResearchDashboard() {
                 {!manifests.length ? <span style={{color: '#94a3b8'}}>暂无 strategy manifest；先在候选证据里物化候选。</span> : null}
               </div>
             </section>
+
+            <section style={sectionStyle}>
+              <h3 style={{margin: '0 0 10px'}}>Paper review entry</h3>
+              <div style={{display: 'grid', gap: 8, fontSize: '0.82rem'}}>
+                <div><span style={{color: '#94a3b8'}}>status</span><br />{String(systemOverview?.paper_review?.creation?.creation_allowed ? 'READY' : 'BLOCKED')}</div>
+                <div><span style={{color: '#94a3b8'}}>why blocked</span><br />{(paperReviewEntry?.why_blocked || systemOverview?.paper_review?.creation?.why_blocked || []).join(' · ') || '-'}</div>
+                <div><span style={{color: '#94a3b8'}}>next command</span><br />{paperReviewEntry?.next_command || systemOverview?.paper_review?.creation?.next_command || '-'}</div>
+                <div><span style={{color: '#94a3b8'}}>eligible manifest</span><br />{paperReviewEntry?.preferred_manifest_id || systemOverview?.paper_review?.creation?.preferred_manifest_id || '-'}</div>
+              </div>
+              <div style={{display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap'}}>
+                <button
+                  style={buttonStyle}
+                  disabled={!!busy || !paperReviewEntry?.preferred_manifest_id}
+                  onClick={() => handleCreateReviewFromManifest(String(paperReviewEntry?.preferred_manifest_id || systemOverview?.paper_review?.creation?.preferred_manifest_id || ''))}
+                >
+                  从 manifest 创建
+                </button>
+                <button
+                  style={ghostButtonStyle}
+                  disabled={!!busy || !paperReviewEntry?.preferred_candidate_id}
+                  onClick={() => handleCreateReviewFromCandidate(String(paperReviewEntry?.preferred_candidate_id || systemOverview?.paper_review?.creation?.preferred_candidate_id || ''))}
+                >
+                  从 candidate 创建
+                </button>
+              </div>
+              {!paperReviewEntry?.creation_allowed ? (
+                <p style={{color: '#94a3b8', marginTop: 10}}>
+                  没有 eligible manifest 时，创建会被明确禁止。
+                </p>
+              ) : null}
+            </section>
           </div>
         </div>
       )}
@@ -1414,7 +1459,7 @@ export default function ResearchDashboard() {
             <ExperimentList experiments={experiments} onSelectExperiment={(exp) => { setSelectedExp(exp); setSelectedReportExp(exp.experiment_id); }} />
           </section>
           <section style={sectionStyle}>
-            <CandidateTable candidates={candidatesForExp} />
+            <CandidateTable candidates={candidatesForExp} onCreatePaperReview={handleCreateReviewFromCandidate} />
           </section>
           <section style={sectionStyle}>
             <ExperimentCompare />

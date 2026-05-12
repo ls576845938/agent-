@@ -96,6 +96,27 @@ class TestCliPortfolioResearchCommands:
         assert args.evidence_pack_id == "cand_001"
         assert args.portfolio_sim_id is None
 
+    def test_paper_review_create_accepts_candidate_id(self) -> None:
+        parser = self._make_parser()
+        args = parser.parse_args([
+            "research", "paper-review-create",
+            "--candidate-id", "cand_001",
+        ])
+        assert args.research_command == "paper-review-create"
+        assert args.candidate_id == "cand_001"
+        assert args.strategy_manifest_id is None
+
+    def test_paper_review_create_accepts_strategy_manifest_id(self) -> None:
+        parser = self._make_parser()
+        args = parser.parse_args([
+            "research", "paper-review-create",
+            "--strategy-manifest-id", "sm_001",
+            "--prepared-evidence-pack-id", "pending_review_sm_001",
+        ])
+        assert args.research_command == "paper-review-create"
+        assert args.strategy_manifest_id == "sm_001"
+        assert args.prepared_evidence_pack_id == "pending_review_sm_001"
+
     def test_portfolio_build_requires_manifests(self) -> None:
         parser = self._make_parser()
         with pytest.raises(SystemExit):

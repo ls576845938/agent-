@@ -633,6 +633,26 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
     }
   };
 
+  const handleUSCreatePaperReview = async (payload: {strategy_manifest_id?: string; candidate_id?: string}) => {
+    setUSLoading(true);
+    setUSMessage('');
+    try {
+      if (!payload.strategy_manifest_id && !payload.candidate_id) {
+        throw new Error('没有 eligible manifest 时不能创建 paper-review evidence');
+      }
+      const result = await apiPost<{paper_review_id: string; status: string; note: string}>('/api/research/paper-review/create', {
+        ...payload,
+        data_root: usForm.dataRoot,
+      });
+      setUSMessage(`Paper review evidence 创建完成: ${result.paper_review_id}.`);
+      void loadSystemOverview();
+    } catch (e: unknown) {
+      setUSMessage(e instanceof Error ? e.message : '创建 paper-review evidence 失败');
+    } finally {
+      setUSLoading(false);
+    }
+  };
+
   const handleUSPaperReset = async () => {
     setUSLoading(true);
     try {
@@ -745,6 +765,9 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
     {label: 'strategy_version', value: promotionGateResult?.strategy_version ?? selectedStrategy?.display_name ?? usForm.strategyId},
     {label: 'data_version', value: usQualityReport?.data_version ?? promotionGateResult?.experiment_record.data_version ?? '未生成', muted: !usQualityReport && !promotionGateResult?.experiment_record.data_version},
     {label: 'manifest', value: systemOverview?.paper_review.manifest_path ?? promotionGateResult?.manifest_path ?? '未出具', muted: !systemOverview?.paper_review.manifest_path && !promotionGateResult?.manifest_path},
+    {label: 'why_blocked', value: (systemOverview?.paper_review.creation?.why_blocked ?? []).join(' · ') || 'none', muted: !(systemOverview?.paper_review.creation?.why_blocked ?? []).length},
+    {label: 'next_command', value: systemOverview?.paper_review.creation?.next_command ?? 'none', muted: !systemOverview?.paper_review.creation?.next_command},
+    {label: 'eligible_manifest', value: systemOverview?.paper_review.creation?.preferred_manifest_id ?? 'none', muted: !systemOverview?.paper_review.creation?.preferred_manifest_id},
     {label: 'experiment', value: promotionGateResult?.experiment_record.experiment_id ?? '未记录', muted: !promotionGateResult?.experiment_record.experiment_id},
     {label: 'registry', value: systemOverview?.registry.path ?? `${usForm.dataRoot}/research/evidence_registry.json`},
     {label: 'paper_review', value: systemOverview?.paper_review.review_path ?? '未生成', muted: !systemOverview?.paper_review.review_path},
@@ -845,7 +868,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
         title: 'paper review',
         status: paperOutcome,
         tone: paperOutcome === 'PASS' ? 'good' : 'bad',
-        reason: systemOverview?.paper_review.summary ?? '未进入 paper review。',
+        reason: systemOverview?.paper_review.creation?.summary ?? systemOverview?.paper_review.summary ?? '未进入 paper review。',
         hint: 'manifest、evidence pack、人工 review 入口',
         meta: [
           {label: 'manifest', value: systemOverview?.paper_review.manifest_path ?? 'missing'},
@@ -856,6 +879,15 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
           onClick: () => { void handleUSPaperRunDay(); },
           disabled: usLoading,
           variant: 'primary',
+        }, {
+          label: '创建 review evidence',
+          onClick: () => {
+            void handleUSCreatePaperReview({
+              strategy_manifest_id: systemOverview?.paper_review.creation?.preferred_manifest_id,
+              candidate_id: systemOverview?.paper_review.creation?.preferred_candidate_id,
+            });
+          },
+          disabled: usLoading || !systemOverview?.paper_review.creation?.creation_allowed || !systemOverview?.paper_review.creation?.preferred_manifest_id,
         }],
       },
       {
@@ -876,7 +908,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
         }],
       },
     ] satisfies ModuleStateCardProps[];
-  }, [handleUSPaperRunDay, handleUSPaperStatus, handleUSPromotionGate, promotionGateResult, selectedStrategy?.display_name, systemOverview?.execution.live_block_reason, systemOverview?.execution.live_state, systemOverview?.execution.paper_network_submit_confirmation, systemOverview?.paper_review.evidence_pack_path, systemOverview?.paper_review.entry_allowed, systemOverview?.paper_review.manifest_path, systemOverview?.paper_review.summary, systemOverview?.stage, usForm.strategyId, usLoading]);
+  }, [handleUSCreatePaperReview, handleUSPaperRunDay, handleUSPaperStatus, handleUSPromotionGate, promotionGateResult, selectedStrategy?.display_name, systemOverview?.execution.live_block_reason, systemOverview?.execution.live_state, systemOverview?.execution.paper_network_submit_confirmation, systemOverview?.paper_review.creation?.creation_allowed, systemOverview?.paper_review.creation?.preferred_manifest_id, systemOverview?.paper_review.creation?.preferred_candidate_id, systemOverview?.paper_review.creation?.summary, systemOverview?.paper_review.evidence_pack_path, systemOverview?.paper_review.entry_allowed, systemOverview?.paper_review.manifest_path, systemOverview?.paper_review.summary, systemOverview?.stage, usForm.strategyId, usLoading]);
 
   const paperEquityCurve = paperBacktest?.daily_results.length
     ? paperBacktest.daily_results.map((day, index) => ({time: index + 1, value: day.ending_equity}))
@@ -1424,6 +1456,19 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
                   <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperRunDay}>运行 Paper 日</button>
                   <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperBacktest}>Paper 回放</button>
                   <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSReconcile}>运行对账</button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    disabled={usLoading || !systemOverview?.paper_review.creation?.creation_allowed || !systemOverview?.paper_review.creation?.preferred_manifest_id}
+                    onClick={() => {
+                      void handleUSCreatePaperReview({
+                        strategy_manifest_id: systemOverview?.paper_review.creation?.preferred_manifest_id,
+                        candidate_id: systemOverview?.paper_review.creation?.preferred_candidate_id,
+                      });
+                    }}
+                  >
+                    创建 review evidence
+                  </button>
                   <button type="button" className="secondary-button danger" disabled={usLoading} onClick={handleUSPaperReset}>重置 Paper</button>
                 </div>
               </div>

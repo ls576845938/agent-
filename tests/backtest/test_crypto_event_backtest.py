@@ -9,6 +9,7 @@ import pandas as pd
 from backend.app.services import backtests as backtest_service_module
 from backend.app.services.backtests import ResearchBacktestService
 from quant_us.backtest.crypto_event import (
+    CryptoEventBacktestArtifacts,
     CRYPTO_VALIDATION_INTERVALS,
     default_crypto_cost_stress_scenarios,
     qualify_crypto_candidates,
@@ -218,10 +219,15 @@ def test_btc_cost_stress_reuses_crypto_event_execution_config(monkeypatch) -> No
     )
 
     assert stress["asset_class"] == "crypto"
+    assert stress["data_version"] == ""
     assert stress["survival_rate_pct"] == 100.0
     assert stress["ledger_consistency_pct"] == 100.0
+    assert stress["scenario_names"] == ["base"]
+    assert stress["scenario_manifests_complete"] is True
     assert stress["baseline"]["summary"] == baseline.summary
     assert stress["baseline"]["execution"]["pnl_source"] == "ledger_fills"
+    assert stress["baseline"]["manifest_path"]
+    assert stress["baseline"]["run_id"].endswith("_base")
     assert stress["baseline"]["execution_config"] == {
         "target_weight": 0.9,
         "risk_limit": 0.9,
@@ -230,6 +236,47 @@ def test_btc_cost_stress_reuses_crypto_event_execution_config(monkeypatch) -> No
         "min_trade_notional": 25.0,
         "long_only": True,
     }
+
+
+def test_research_backtest_service_forwards_crypto_event_audit_fields(monkeypatch, tmp_path) -> None:
+    captured: dict[str, object] = {}
+    expected = CryptoEventBacktestArtifacts(
+        mode="crypto_event",
+        summary={"trade_count": 0},
+        chart={},
+        strategy_details=[],
+        latest_weights=[],
+        diagnostics={"manifest_path": str(tmp_path / "run_test.json")},
+        unified=object(),  # type: ignore[arg-type]
+    )
+
+    def fake_run_crypto_event_backtest(**kwargs):
+        captured.update(kwargs)
+        return expected
+
+    monkeypatch.setattr("quant_us.backtest.crypto_event.run_crypto_event_backtest", fake_run_crypto_event_backtest)
+
+    result = ResearchBacktestService().run_crypto_event(
+        {
+            "source": "sqlite",
+            "symbol": "BTCUSD",
+            "interval": "1h",
+            "start": datetime(2026, 5, 9, 0, 0, tzinfo=UTC),
+            "end": datetime(2026, 5, 9, 5, 0, tzinfo=UTC),
+            "strategy_id": "btc_replay",
+            "strategy_params": {"threshold": 1.0},
+            "data_version": "qs-sqlite-BTCUSD-1h-test",
+            "strategy_version": "btc_replay:registry_signal_replay_v1",
+            "manifest_root": str(tmp_path),
+            "run_id": "btc_closure_test_event",
+        }
+    )
+
+    assert captured["data_version"] == "qs-sqlite-BTCUSD-1h-test"
+    assert captured["strategy_version"] == "btc_replay:registry_signal_replay_v1"
+    assert captured["manifest_root"] == str(tmp_path)
+    assert captured["run_id"] == "btc_closure_test_event"
+    assert result.diagnostics["manifest_path"] == str(tmp_path / "run_test.json")
 
 
 def test_crypto_interval_validation_requires_all_btc_closure_timeframes_and_long_sample() -> None:
@@ -380,3 +427,52 @@ def test_qualify_crypto_candidates_selects_only_durable_gate_passes() -> None:
     assert any("cost survival_rate" in blocker for blocker in trend["qualification_blockers"])
     assert reversion["qualified"] is False
     assert any("event backtest is not event_driven" in blocker for blocker in reversion["qualification_blockers"])
+
+
+def test_qualify_crypto_candidates_selects_highest_ranked_qualified_candidate_stably() -> None:
+    candidates = [
+        {
+            "strategy_id": "lower_ranked",
+            "score": 1.0,
+            "rank": 2,
+            "validation": {
+                "total_return_pct": 5.0,
+                "sharpe_ratio": 1.2,
+                "profit_factor": 1.4,
+                "max_drawdown_pct": -6.0,
+                "trade_count": 15,
+            },
+        },
+        {
+            "strategy_id": "higher_ranked",
+            "score": 3.0,
+            "rank": 1,
+            "validation": {
+                "total_return_pct": 7.0,
+                "sharpe_ratio": 1.5,
+                "profit_factor": 1.7,
+                "max_drawdown_pct": -5.0,
+                "trade_count": 18,
+            },
+        },
+    ]
+    event_ok = {"diagnostics": {"engine": "event_driven", "pnl_source": "ledger_fills", "ledger_equity_consistent": True}}
+    cost_ok = {"engine": "event_driven", "survival_rate_pct": 100.0, "ledger_consistency_pct": 100.0}
+    walk_ok = {
+        "stability": {
+            "fold_pass_rate_pct": 100.0,
+            "ledger_consistency_pct": 100.0,
+            "regime_pass_rate_pct": 100.0,
+        }
+    }
+
+    result = qualify_crypto_candidates(
+        candidates,
+        cost_stress_by_candidate={"lower_ranked": cost_ok, "higher_ranked": cost_ok},
+        walk_forward_by_candidate={"lower_ranked": walk_ok, "higher_ranked": walk_ok},
+        event_backtest_by_candidate={"lower_ranked": event_ok, "higher_ranked": event_ok},
+        max_selected=1,
+    )
+
+    assert [row["strategy_id"] for row in result["candidates"]] == ["higher_ranked", "lower_ranked"]
+    assert result["selected_candidates"][0]["strategy_id"] == "higher_ranked"

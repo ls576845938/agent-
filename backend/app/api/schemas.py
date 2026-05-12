@@ -222,8 +222,9 @@ class CryptoClosureRequest(BaseBacktestRequest):
     )
     max_candidates_per_strategy: int = Field(default=4, ge=1, le=12)
     max_ranked_candidates: int = Field(default=8, ge=1, le=20)
-    max_scenarios: int = Field(default=2, ge=1, le=6)
+    max_scenarios: int = Field(default=8, ge=1, le=8)
     windows: int = Field(default=2, ge=1, le=8)
+    min_bars_by_interval: Dict[str, int] = Field(default_factory=dict)
     persist_data_manifest: bool = True
     persist_manifest: bool = True
     register_experiment: bool = True

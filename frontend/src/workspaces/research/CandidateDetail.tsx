@@ -51,9 +51,10 @@ const paramTdStyle = {
   borderBottom: '1px solid rgba(255,255,255,0.05)',
 };
 
-export default function CandidateDetail({candidate, onClose}: {
+export default function CandidateDetail({candidate, onClose, onCreatePaperReview}: {
   candidate: Candidate;
   onClose: () => void;
+  onCreatePaperReview?: (candidateId: string) => void;
 }) {
   const scoreComponents = [
     {label: 'Alpha', value: candidate.alpha_score ?? 0, color: '#6366f1'},
@@ -76,6 +77,9 @@ export default function CandidateDetail({candidate, onClose}: {
 
   const paramsEntries = candidate.parameters ? Object.entries(candidate.parameters) : [];
   const warnings = candidate.warnings || [];
+  const paperReviewEligible = ['READY_FOR_PORTFOLIO_SIM', 'PAPER_REVIEW_CANDIDATE', 'READY_FOR_PAPER_REVIEW'].includes(
+    String(candidate.promotion_status || '').toUpperCase(),
+  );
 
   return (
     <div style={overlayStyle} onClick={onClose}>
@@ -103,6 +107,33 @@ export default function CandidateDetail({candidate, onClose}: {
             {candidate.promotion_status}
           </span>
         </div>
+
+        {onCreatePaperReview ? (
+          <div style={{marginBottom: 16, padding: '10px 12px', borderRadius: 4, background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.18)'}}>
+            <div style={{fontSize: '0.78rem', color: '#94a3b8', marginBottom: 6}}>
+              paper review evidence entry
+            </div>
+            <button
+              type="button"
+              disabled={!paperReviewEligible}
+              onClick={() => onCreatePaperReview(candidate.candidate_id)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 4,
+                border: '1px solid rgba(37,99,235,0.28)',
+                background: paperReviewEligible ? 'rgba(37,99,235,0.14)' : 'rgba(148,163,184,0.14)',
+                color: paperReviewEligible ? '#1d4ed8' : '#64748b',
+                fontWeight: 650,
+                cursor: paperReviewEligible ? 'pointer' : 'not-allowed',
+              }}
+            >
+              创建 paper-review evidence
+            </button>
+            <div style={{fontSize: '0.76rem', color: '#94a3b8', marginTop: 6}}>
+              {paperReviewEligible ? 'eligible candidate' : 'candidate 仍未通过 promotion gate'}
+            </div>
+          </div>
+        ) : null}
 
         {/* Score breakdown bar */}
         <div style={{marginTop: 20}}>

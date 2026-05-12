@@ -68,6 +68,7 @@ class StrategyCandidateManifest:
     promotion_result_path: str = ""
     promotion_gate_decision: str = ""
     promotion_gate_blocking_reasons: list[str] = field(default_factory=list)
+    promotion_gate_blocker_details: list[dict[str, Any]] = field(default_factory=list)
     promotion_gate_warning_reasons: list[str] = field(default_factory=list)
     promotion_gate_needs_more_research: list[str] = field(default_factory=list)
     promotion_gate_next_commands: list[str] = field(default_factory=list)
@@ -428,6 +429,10 @@ class StrategyManifestManager:
         }
         manifest.promotion_gate_decision = str(gate_result.decision or "")
         manifest.promotion_gate_blocking_reasons = list(gate_result.reasons)
+        manifest.promotion_gate_blocker_details = list(
+            dict(gate_result.evidence or {}).get("machine_readable_blocker_details", [])
+            or []
+        )
         manifest.promotion_gate_warning_reasons = list(gate_result.warnings)
         manifest.promotion_gate_needs_more_research = list(
             getattr(gate_result, "needs_more_research", []) or []
@@ -442,6 +447,10 @@ class StrategyManifestManager:
             ),
             "decision": gate_result.decision,
             "reasons": list(gate_result.reasons),
+            "blocker_details": list(
+                dict(gate_result.evidence or {}).get("machine_readable_blocker_details", [])
+                or []
+            ),
             "warnings": list(gate_result.warnings),
             "needs_more_research": list(
                 getattr(gate_result, "needs_more_research", []) or []

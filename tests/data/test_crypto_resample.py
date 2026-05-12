@@ -186,6 +186,24 @@ def test_resample_crypto_klines_is_idempotent_and_overwrites_existing_target_row
     assert float(overwritten_rows[0]["low"]) == 100.0
 
 
+def test_resample_crypto_klines_ignores_incomplete_trailing_bucket(
+    tmp_path: Path,
+    isolated_repo_root: Path,
+) -> None:
+    db_path = tmp_path / "market_data.sqlite"
+    _seed_minute_klines(db_path, minute_count=65)
+    service = MarketDataService()
+
+    result = service.resample_crypto_klines(
+        CryptoResampleSpec(symbol="BTCUSDT", target_interval="1h", db_path=str(db_path), persist_manifest=False)
+    )
+
+    assert result.rows_written == 1
+    assert result.source_rows == 60
+    assert result.expected_source_rows == 60
+    assert result.end == datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
+
+
 def test_resample_crypto_klines_fails_when_source_1m_has_missing_rows(
     tmp_path: Path,
     isolated_repo_root: Path,

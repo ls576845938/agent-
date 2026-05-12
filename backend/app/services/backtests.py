@@ -684,17 +684,9 @@ def _optimization_framework(selected_priority: int = 1) -> list[dict[str, Any]]:
 
 
 def _cost_stress_scenarios(max_scenarios: int) -> list[dict[str, Any]]:
-    scenarios = [
-        {"name": "base", "label": "当前成本", "commission_multiplier": 1.0, "slippage_multiplier": 1.0},
-        {"name": "fees_2x", "label": "手续费 2x", "commission_multiplier": 2.0, "slippage_multiplier": 1.0},
-        {"name": "slippage_2x", "label": "滑点 2x", "commission_multiplier": 1.0, "slippage_multiplier": 2.0},
-        {"name": "costs_2x", "label": "手续费+滑点 2x", "commission_multiplier": 2.0, "slippage_multiplier": 2.0},
-        {"name": "fees_3x_slippage_5x", "label": "手续费 3x + 滑点 5x", "commission_multiplier": 3.0, "slippage_multiplier": 5.0},
-        {"name": "slippage_5x", "label": "滑点 5x", "commission_multiplier": 1.0, "slippage_multiplier": 5.0},
-        {"name": "costs_5x", "label": "手续费+滑点 5x", "commission_multiplier": 5.0, "slippage_multiplier": 5.0},
-        {"name": "tail_10x", "label": "尾部成本冲击 10x", "commission_multiplier": 10.0, "slippage_multiplier": 10.0},
-    ]
-    return scenarios[: max(1, min(max_scenarios, len(scenarios)))]
+    from quant_us.backtest.crypto_event import default_crypto_cost_stress_scenarios
+
+    return default_crypto_cost_stress_scenarios(max_scenarios=max_scenarios)
 
 
 def _cost_stress_survives(summary: dict[str, float | int]) -> bool:
@@ -1367,12 +1359,16 @@ class ResearchBacktestService:
             slippage_bps=float(request.get("slippage", settings.default_slippage)),
             sqlite_path=str(request.get("data_db_path", "")),
             db_path=str(request.get("data_db_path", "")),
+            data_version=str(request.get("data_version", "")),
+            strategy_version=str(request.get("strategy_version", "")),
+            manifest_root=request.get("manifest_root"),
             target_weight=min(0.98, max(0.0, float(request.get("target_weight", 0.90)))),
             min_cash_buffer_pct=(
                 None if request.get("min_cash_buffer_pct") is None else float(request.get("min_cash_buffer_pct"))
             ),
             min_trade_notional=float(request.get("min_trade_notional", 25.0)),
             long_only=True,
+            run_id=str(request.get("run_id", "")),
         )
         return BacktestArtifacts(
             mode=result.mode,
@@ -1605,6 +1601,8 @@ class ResearchBacktestService:
         strategy_id = request["strategy_id"]
         requested_params = dict(request.get("strategy_params", {}) or {})
         requested_windows = int(request.get("windows", 4))
+        data_version = str(request.get("data_version", ""))
+        run_id_prefix = str(request.get("run_id_prefix", "") or f"wf_{strategy_id}")
         symbols: list[str] = request.get("symbols", [])
         if not symbols:
             # Fall back to single-symbol mode
@@ -1706,7 +1704,7 @@ class ResearchBacktestService:
                 initial_cash=config.capital,
                 commission_rate=config.commission_rate,
                 slippage_bps=config.slippage,
-                run_id=f"wf_{strategy_id}_{symbol}",
+                run_id=f"{run_id_prefix}_{symbol}",
             )
             if _is_crypto_cost_stress_request({**request, "asset_class": request.get("asset_class", "")}, symbol):
                 execution_settings = _crypto_execution_settings(
@@ -1803,9 +1801,16 @@ class ResearchBacktestService:
         recommendations = _build_walk_forward_recommendations(valid_folds, all_regimes)
         if insufficient_symbols:
             recommendations.insert(0, f"数据不足: {', '.join(insufficient_symbols)} 少于 50 bar，无法做 walk-forward。")
+        fold_manifest_paths = [
+            str(result.unified.manifest_path)
+            for result in unified_window_results
+            if str(result.unified.manifest_path)
+        ]
+        missing_fold_manifest_count = max(0, len(unified_window_results) - len(fold_manifest_paths))
 
         # --- Persist walk-forward manifest ---
         manifest_root = Path(request.get("data_root", "data")) / "reports" / "walk_forward"
+        aggregate_manifest_path = ""
         try:
             from quant_us.backtest.walk_forward import save_walk_forward_manifest
             from quant_us.backtest.walk_forward import WalkForwardAggregate
@@ -1828,11 +1833,21 @@ class ResearchBacktestService:
                 manifest_dir=manifest_root,
                 strategy_id=strategy_id,
                 params=merged_params,
-                data_version=str(request.get("data_version", "")),
+                data_version=data_version,
             )
-            stability["manifest_path"] = str(manifest_path)
+            aggregate_manifest_path = str(manifest_path)
+            stability["manifest_path"] = aggregate_manifest_path
         except Exception:
             pass
+        audit = {
+            "data_version": data_version,
+            "run_id_prefix": run_id_prefix,
+            "strategy_version": str(request.get("strategy_version", "") or f"{strategy_id}:registry_signal_replay_v1"),
+            "aggregate_manifest_path": aggregate_manifest_path,
+            "fold_manifest_count": len(fold_manifest_paths),
+            "fold_manifest_paths": fold_manifest_paths,
+            "missing_fold_manifest_count": missing_fold_manifest_count,
+        }
 
         return {
             "status": "insufficient_data" if is_insufficient else "completed",
@@ -1844,6 +1859,7 @@ class ResearchBacktestService:
             "windows": all_windows,
             "regimes": all_regimes,
             "stability": stability,
+            "audit": audit,
             "recommendations": recommendations,
         }
 
@@ -2044,6 +2060,9 @@ class ResearchBacktestService:
         symbol = str(request.get("symbol", settings.default_symbol))
         interval = str(request.get("interval", settings.default_interval))
         initial_cash = float(request.get("capital", settings.default_capital))
+        data_version = str(request.get("data_version", ""))
+        strategy_version = str(request.get("strategy_version", "") or f"{strategy_id}:registry_signal_replay_v1")
+        run_id_prefix = str(request.get("run_id_prefix", "") or f"ed_cost_{strategy_id}")
         is_crypto = _is_crypto_cost_stress_request(request, symbol)
 
         frame = load_market_frame(
@@ -2092,15 +2111,15 @@ class ResearchBacktestService:
                     slippage_bps=base_slippage * float(scenario_def["slippage_multiplier"]),
                     sqlite_path=str(request.get("data_db_path", "")),
                     db_path=str(request.get("data_db_path", "")),
-                    data_version=str(request.get("data_version", "")),
-                    strategy_version=f"{strategy_id}:registry_signal_replay_v1",
+                    data_version=data_version,
+                    strategy_version=strategy_version,
                     market_loader=lambda **_kwargs: frame.copy(),
                     signal_provider=replay_signal_provider,
                     target_weight=target_weight,
                     min_cash_buffer_pct=None if min_cash_buffer_pct is None else float(min_cash_buffer_pct),
                     min_trade_notional=min_trade_notional,
                     long_only=long_only,
-                    run_id=f"ed_cost_{strategy_id}_{scenario_def['name']}",
+                    run_id=f"{run_id_prefix}_{scenario_def['name']}",
                 )
                 result = scenario_result.unified
                 summary = scenario_result.summary
@@ -2113,15 +2132,15 @@ class ResearchBacktestService:
                     initial_cash=initial_cash,
                     commission_rate=base_commission * float(scenario_def["commission_multiplier"]),
                     slippage_bps=base_slippage * float(scenario_def["slippage_multiplier"]),
-                    run_id=f"ed_cost_{strategy_id}_{scenario_def['name']}",
+                    run_id=f"{run_id_prefix}_{scenario_def['name']}",
                 )
                 runner = UnifiedBacktestRunner(config=scenario_config_obj)
                 connection_health = runner.connection_health()
                 result = runner.run(
                     strategies=[RegistrySignalReplayStrategy(strategy_id=strategy_id, signal=signal)],
                     frame=frame,
-                    data_version=str(request.get("data_version", "")),
-                    strategy_version=f"{strategy_id}:registry_signal_replay_v1",
+                    data_version=data_version,
+                    strategy_version=strategy_version,
                 )
                 event_summary = result.summary
                 summary = {
@@ -2171,6 +2190,11 @@ class ResearchBacktestService:
                     "ledger_final_equity": round(float(result.ledger_curve.final_equity), 6),
                     "ledger_total_fees": round(float(result.ledger_curve.total_fees), 6),
                     "ledger_curve_points": len(result.ledger_curve.points),
+                    "run_id": result.run_id,
+                    "manifest_id": result.manifest_id,
+                    "manifest_path": result.manifest_path,
+                    "data_version": data_version,
+                    "strategy_version": strategy_version,
                     "return_decay_pct": round(
                         float(summary["total_return_pct"]) - float(baseline_summary["total_return_pct"]),
                         4,
@@ -2185,6 +2209,7 @@ class ResearchBacktestService:
         survival_rate = sum(1 for r in results if r["survives"]) / max(1, len(results)) * 100
         ledger_consistency_pct = ledger_consistent_count / max(1, len(results)) * 100
         worst_case = min(results, key=lambda row: float(row["summary"]["total_return_pct"])) if results else None
+        missing_manifest_scenarios = [row["name"] for row in results if not str(row.get("manifest_path", ""))]
         return {
             "status": "completed",
             "engine": "event_driven",
@@ -2193,6 +2218,11 @@ class ResearchBacktestService:
             "symbol": symbol,
             "interval": interval,
             "asset_class": "crypto" if is_crypto else "equity",
+            "data_version": data_version,
+            "strategy_version": strategy_version,
+            "run_id_prefix": run_id_prefix,
+            "scenario_names": [row["name"] for row in results],
+            "scenario_count": len(results),
             "execution_config": results[0]["execution_config"] if results else {},
             "baseline": results[0] if results else None,
             "scenarios": results,
@@ -2203,6 +2233,8 @@ class ResearchBacktestService:
             "total_order_count": total_order_count,
             "baseline_fill_count": results[0]["fill_count"] if results else 0,
             "baseline_order_count": results[0]["order_count"] if results else 0,
+            "scenario_manifests_complete": not missing_manifest_scenarios,
+            "missing_manifest_scenarios": missing_manifest_scenarios,
             "worst_case": worst_case,
             "recommendations": _build_cost_stress_recommendations(results),
             "engine_note": "PnL derived from fills, orders go through OMS -> risk -> broker -> ledger",

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timezone
+import hashlib
+import json
+from pathlib import Path
 from typing import Any, Callable
 
 from backend.app.core.exceptions import QuantStationError
@@ -26,6 +29,16 @@ DEFAULT_CRYPTO_STRATEGIES = [
     "dynamic_grid",
     "time_window",
 ]
+
+
+def _as_utc_datetime(value: Any) -> datetime:
+    if isinstance(value, datetime):
+        parsed = value
+    else:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 class CryptoClosureService:
@@ -57,6 +70,7 @@ class CryptoClosureService:
             base_request=base_request,
             target_intervals=target_intervals,
         )
+        data_integrity["audit"] = self._data_integrity_audit(data_integrity, research_interval)
         blockers.extend(data_integrity["blockers"])
         if data_integrity["status"] != "pass":
             return self._blocked_result(
@@ -83,11 +97,24 @@ class CryptoClosureService:
                     "没有可用策略候选；先缩小策略列表或检查候选参数网格。",
                 ],
             )
+        audit_context = self._build_audit_context(
+            request=request,
+            base_request=base_request,
+            data_integrity=data_integrity,
+            candidate=preliminary_selected,
+        )
+        candidate_screen["audit"] = audit_context
 
         selected_request = {
             **base_request,
             "strategy_id": preliminary_selected["strategy_id"],
             "strategy_params": dict(preliminary_selected.get("parameters") or {}),
+            "data_version": audit_context["data_version"],
+            "strategy_version": audit_context["strategy_version"],
+            "manifest_root": audit_context["manifest_root"],
+            "run_id": audit_context["event_run_id"],
+            "run_id_prefix": audit_context["run_id_prefix"],
+            "data_root": audit_context["data_root"],
         }
         event_backtest = self.research_service.run_crypto_event(selected_request)
         event_payload = {
@@ -97,6 +124,14 @@ class CryptoClosureService:
             "strategy_details": event_backtest.strategy_details,
             "latest_weights": event_backtest.latest_weights,
             "diagnostics": event_backtest.diagnostics,
+            "audit": {
+                "run_id": event_backtest.diagnostics.get("run_id", audit_context["event_run_id"]),
+                "manifest_id": event_backtest.diagnostics.get("manifest_id", ""),
+                "manifest_path": event_backtest.diagnostics.get("manifest_path", ""),
+                "ledger_artifact_path": event_backtest.diagnostics.get("ledger_artifact_path", ""),
+                "data_version": event_backtest.diagnostics.get("data_version", audit_context["data_version"]),
+                "strategy_version": event_backtest.diagnostics.get("strategy_version", audit_context["strategy_version"]),
+            },
         }
         blockers.extend(self._event_backtest_blockers(event_payload))
 
@@ -120,6 +155,19 @@ class CryptoClosureService:
                 "symbols": [symbol],
             }
         )
+        cost_stress["audit"] = {
+            "data_version": cost_stress.get("data_version", audit_context["data_version"]),
+            "strategy_version": cost_stress.get("strategy_version", audit_context["strategy_version"]),
+            "run_id_prefix": cost_stress.get("run_id_prefix", audit_context["run_id_prefix"]),
+            "scenario_manifests_complete": bool(cost_stress.get("scenario_manifests_complete", False)),
+            "missing_manifest_scenarios": cost_stress.get("missing_manifest_scenarios", []),
+        }
+        walk_forward["audit"] = {
+            **dict(walk_forward.get("audit", {})),
+            "data_version": walk_forward.get("audit", {}).get("data_version", audit_context["data_version"]),
+            "strategy_version": walk_forward.get("audit", {}).get("strategy_version", audit_context["strategy_version"]),
+            "run_id_prefix": walk_forward.get("audit", {}).get("run_id_prefix", audit_context["run_id_prefix"]),
+        }
         qualification = qualify_crypto_candidates(
             [preliminary_selected],
             cost_stress_by_candidate={
@@ -168,8 +216,16 @@ class CryptoClosureService:
                 "symbols": [symbol],
             }
         )
+        promotion_gate["closure_audit"] = {
+            "data_version": audit_context["data_version"],
+            "strategy_version": audit_context["strategy_version"],
+            "run_id_prefix": audit_context["run_id_prefix"],
+            "event_run_id": audit_context["event_run_id"],
+            "selected_manifest_path": audit_context["data_manifest_path"],
+        }
 
         blockers.extend(self._validation_blockers(cost_stress, walk_forward, promotion_gate))
+        blockers = self._stable_unique_strings(blockers)
         gate_decision = str(promotion_gate.get("decision", "fail"))
         decision = "fail" if blockers else gate_decision
         next_stage = "blocked" if blockers else str(promotion_gate.get("next_stage", "blocked"))
@@ -178,6 +234,7 @@ class CryptoClosureService:
         else:
             recommendations.append("BTC 闭环无显式阻断；下一步仍需人工复核 evidence pack 后再考虑 paper review。")
         recommendations.extend(promotion_gate.get("recommendations", []))
+        recommendations = self._stable_unique_strings(recommendations)
 
         return {
             "status": "completed",
@@ -207,8 +264,8 @@ class CryptoClosureService:
             "asset_class": "crypto",
             "symbol": str(request.get("symbol") or "BTCUSDT").upper(),
             "interval": str(request.get("interval") or "1h"),
-            "start": request["start"],
-            "end": request["end"],
+            "start": _as_utc_datetime(request["start"]),
+            "end": _as_utc_datetime(request["end"]),
             "capital": float(request.get("capital", 100_000.0)),
             "commission_rate": float(request.get("commission_rate", 0.0004)),
             "slippage": float(request.get("slippage", 4.0)),
@@ -245,6 +302,7 @@ class CryptoClosureService:
         start = base_request["start"]
         end = base_request["end"]
         min_bars_by_interval = self._min_bars_by_interval(request)
+        resample_end_by_interval: dict[str, Any] = {}
 
         for interval in target_intervals:
             try:
@@ -262,6 +320,8 @@ class CryptoClosureService:
                 )
                 payload = asdict(result)
                 resample_results.append(payload)
+                if payload.get("end") is not None:
+                    resample_end_by_interval[interval] = payload["end"]
                 if float(payload.get("coverage_pct", 0.0)) < 99.0:
                     blockers.append(f"{interval} resample coverage {payload.get('coverage_pct')}% < 99%")
                 if float(payload.get("quality_score", 0.0)) < 95.0:
@@ -272,12 +332,13 @@ class CryptoClosureService:
 
         for interval in ["1m", *target_intervals]:
             try:
+                quality_end = _as_utc_datetime(resample_end_by_interval.get(interval, end))
                 quality = self.quality_inspector(
                     source="sqlite",
                     symbol=str(base_request["symbol"]),
                     interval=interval,
                     start=start,
-                    end=end,
+                    end=quality_end,
                     db_path=str(base_request.get("data_db_path", "")),
                 )
                 quality_results.append(quality)
@@ -407,8 +468,10 @@ class CryptoClosureService:
             blockers.append("event_backtest engine is not event_driven")
         if str(diagnostics.get("pnl_source", "")) != "ledger_fills":
             blockers.append("event_backtest PnL is not ledger_fills")
-        if diagnostics.get("ledger_equity_consistent") is False:
+        if diagnostics.get("ledger_equity_consistent") is not True:
             blockers.append(f"event_backtest ledger inconsistent: {diagnostics.get('ledger_consistency_msg', '')}")
+        if not str(diagnostics.get("manifest_path", "")).strip():
+            blockers.append("event_backtest manifest_path is missing")
         return blockers
 
     def _validation_blockers(
@@ -424,12 +487,24 @@ class CryptoClosureService:
             blockers.append(f"cost_stress survival_rate {cost_stress.get('survival_rate_pct')}% < 60%")
         if float(cost_stress.get("ledger_consistency_pct", 0.0)) < 100.0:
             blockers.append(f"cost_stress ledger consistency {cost_stress.get('ledger_consistency_pct')}% < 100%")
+        if not bool(cost_stress.get("scenario_manifests_complete", False)):
+            blockers.append(
+                f"cost_stress missing manifests: {', '.join(cost_stress.get('missing_manifest_scenarios', []))}"
+            )
+        baseline_execution = cost_stress.get("baseline", {}).get("execution", {})
+        if baseline_execution and str(baseline_execution.get("pnl_source", "")) != "ledger_fills":
+            blockers.append("cost_stress baseline PnL is not ledger_fills")
 
         stability = walk_forward.get("stability", {})
         if float(stability.get("fold_pass_rate_pct") or stability.get("pass_rate_pct", 0.0)) < 60.0:
             blockers.append(f"walk_forward pass_rate {stability.get('fold_pass_rate_pct', stability.get('pass_rate_pct', 0.0))}% < 60%")
         if float(stability.get("ledger_consistency_pct", 0.0)) < 100.0:
             blockers.append(f"walk_forward ledger consistency {stability.get('ledger_consistency_pct')}% < 100%")
+        aggregate_manifest_path = str(
+            (walk_forward.get("audit") or {}).get("aggregate_manifest_path") or stability.get("manifest_path", "")
+        )
+        if not aggregate_manifest_path.strip():
+            blockers.append("walk_forward manifest_path is missing")
 
         if promotion_gate.get("decision") != "pass":
             blockers.append(f"promotion_gate decision={promotion_gate.get('decision')} next_stage={promotion_gate.get('next_stage')}")
@@ -445,6 +520,8 @@ class CryptoClosureService:
         recommendations: list[str],
         candidate_screen: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        blockers = self._stable_unique_strings(blockers)
+        recommendations = self._stable_unique_strings(recommendations)
         return {
             "status": "blocked",
             "selected_priority": "BTC 数据 -> 策略 -> 回测 -> 风控 -> gate 闭环",
@@ -464,3 +541,81 @@ class CryptoClosureService:
             "blockers": blockers,
             "recommendations": recommendations,
         }
+
+    def _data_integrity_audit(self, data_integrity: dict[str, Any], research_interval: str) -> dict[str, Any]:
+        selected = self._select_interval_evidence(data_integrity, research_interval)
+        return {
+            "research_interval": research_interval,
+            "data_version": selected.get("data_version", ""),
+            "manifest_path": selected.get("manifest_path", ""),
+            "fingerprint": selected.get("fingerprint", ""),
+        }
+
+    def _build_audit_context(
+        self,
+        *,
+        request: dict[str, Any],
+        base_request: dict[str, Any],
+        data_integrity: dict[str, Any],
+        candidate: dict[str, Any],
+    ) -> dict[str, str]:
+        selected = self._select_interval_evidence(data_integrity, str(base_request["interval"]))
+        strategy_id = str(candidate.get("strategy_id", "unknown"))
+        params = dict(candidate.get("parameters") or {})
+        hash_payload = {
+            "symbol": str(base_request["symbol"]).upper(),
+            "interval": str(base_request["interval"]),
+            "start": base_request["start"].isoformat(),
+            "end": base_request["end"].isoformat(),
+            "strategy_id": strategy_id,
+            "params": params,
+            "data_version": selected.get("data_version", ""),
+        }
+        fingerprint = hashlib.sha1(
+            json.dumps(hash_payload, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+        ).hexdigest()[:12]
+        run_id_prefix = f"btc_closure_{str(base_request['symbol']).lower()}_{str(base_request['interval'])}_{fingerprint}"
+        data_root = Path(str(request.get("data_root", "data")))
+        return {
+            "data_version": str(selected.get("data_version", "")),
+            "data_manifest_path": str(selected.get("manifest_path", "")),
+            "data_fingerprint": str(selected.get("fingerprint", "")),
+            "strategy_version": str(request.get("strategy_version") or f"{strategy_id}:registry_signal_replay_v1"),
+            "run_id_prefix": run_id_prefix,
+            "event_run_id": f"{run_id_prefix}_event",
+            "manifest_root": str(data_root / "manifests"),
+            "data_root": str(data_root),
+        }
+
+    def _select_interval_evidence(self, data_integrity: dict[str, Any], interval: str) -> dict[str, Any]:
+        quality_map = {
+            str(row.get("interval") or row.get("target_interval")): row
+            for row in data_integrity.get("quality_results", [])
+        }
+        resample_map = {
+            str(row.get("target_interval") or row.get("interval")): row
+            for row in data_integrity.get("resample_results", [])
+        }
+        validation_map = {
+            str(row.get("interval")): row
+            for row in (data_integrity.get("validation_summary") or {}).get("intervals", [])
+        }
+        quality = dict(quality_map.get(interval, {}))
+        resample = dict(resample_map.get(interval, {}))
+        validation = dict(validation_map.get(interval, {}))
+        return {
+            "data_version": validation.get("data_version") or resample.get("data_version") or quality.get("data_version", ""),
+            "manifest_path": resample.get("manifest_path", ""),
+            "fingerprint": validation.get("fingerprint") or resample.get("fingerprint") or quality.get("fingerprint", ""),
+        }
+
+    def _stable_unique_strings(self, values: list[str]) -> list[str]:
+        seen: set[str] = set()
+        ordered: list[str] = []
+        for value in values:
+            text = str(value)
+            if text in seen:
+                continue
+            seen.add(text)
+            ordered.append(text)
+        return ordered

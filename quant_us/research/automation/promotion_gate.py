@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shlex
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Any
@@ -350,12 +351,20 @@ class ResearchPromotionGate:
             )
 
         evidence["machine_readable_blockers"] = list(reasons)
+        evidence["machine_readable_blocker_details"] = self._build_blocker_details(
+            candidate_id=candidate_id,
+            candidate_data=candidate_data,
+            experiment_data=experiment_data,
+            evidence=evidence,
+            reasons=reasons,
+        )
         evidence["machine_readable_warnings"] = list(warnings)
         evidence["machine_readable_needs_more_research"] = list(needs_more_research)
         evidence["next_commands"] = self._build_next_commands(
             candidate_id=candidate_id,
             candidate_data=candidate_data,
             experiment_data=experiment_data,
+            blocker_details=evidence["machine_readable_blocker_details"],
             reasons=reasons,
             warnings=warnings,
         )
@@ -1766,14 +1775,18 @@ class ResearchPromotionGate:
         candidate_id: str,
         candidate_data: dict[str, Any],
         experiment_data: dict[str, Any],
+        blocker_details: list[dict[str, Any]],
         reasons: list[str],
         warnings: list[str],
     ) -> list[str]:
-        commands: list[str] = [
-            "PYTHONPATH=. venv/bin/python -c "
-            f"\"from quant_us.research.automation.evidence_materializer import ResearchEvidenceMaterializer; "
-            f"ResearchEvidenceMaterializer('data').materialize_candidate('{candidate_id}')\""
-        ]
+        commands: list[str] = []
+        materialization_command = self._build_materialization_command(candidate_id)
+        if materialization_command:
+            commands.append(materialization_command)
+        for blocker in blocker_details:
+            cli_next_command = str(blocker.get("cli_next_command", "") or "")
+            if cli_next_command:
+                commands.append(cli_next_command)
         reason_text = " ".join([*reasons, *warnings])
 
         symbols = candidate_data.get("symbols") or experiment_data.get("symbols") or []
@@ -1797,6 +1810,20 @@ class ResearchPromotionGate:
         )
         experiment_id = str(experiment_data.get("experiment_id", "") or "")
 
+        walk_forward_cli = self._build_walk_forward_cli_command(experiment_id)
+        if walk_forward_cli and any(
+            token in reason_text
+            for token in (
+                "missing_deflated_sharpe_ratio",
+                "missing_pbo_evidence",
+                "validation_cv_",
+                "single_path_validation_not_allowed",
+                "insufficient_effective_trials",
+                "multiple_testing_missing",
+            )
+        ):
+            commands.append(walk_forward_cli)
+
         if symbol and start and end and any(
             token in reason_text
             for token in (
@@ -1809,20 +1836,576 @@ class ResearchPromotionGate:
             )
         ):
             commands.append(
-                "PYTHONPATH=. venv/bin/python scripts/run_walk_forward.py "
-                f"--symbol {symbol} --start {start} --end {end} --bar-size {timeframe} --data-root data"
+                self._shell_join(
+                    "PYTHONPATH=.",
+                    self._python_executable(),
+                    "scripts/run_walk_forward.py",
+                    "--symbol",
+                    symbol,
+                    "--start",
+                    start,
+                    "--end",
+                    end,
+                    "--bar-size",
+                    timeframe,
+                    "--data-root",
+                    str(self.data_root),
+                )
             )
 
-        if symbol and start and end and experiment_id:
-            commands.append(
-                "PYTHONPATH=. venv/bin/python scripts/run_research_experiment.py "
-                f"--experiment-name rerun-{experiment_id} "
-                f"--symbols {symbol} --start {start} --end {end} "
-                f"--strategy-id {strategy_id} "
-                f"--strategy-params-json '{json.dumps(params, sort_keys=True)}' "
-                f"--bar-size {timeframe} --data-root data --vendor {vendor}"
-            )
+        rerun_command = self._build_research_rerun_command(
+            symbol=symbol,
+            start=start,
+            end=end,
+            timeframe=timeframe,
+            strategy_id=strategy_id,
+            params=params,
+            vendor=vendor,
+            experiment_id=experiment_id,
+        )
+        if rerun_command:
+            commands.append(rerun_command)
         return list(dict.fromkeys(commands))
+
+    def _build_blocker_details(
+        self,
+        *,
+        candidate_id: str,
+        candidate_data: dict[str, Any],
+        experiment_data: dict[str, Any],
+        evidence: dict[str, Any],
+        reasons: list[str],
+    ) -> list[dict[str, Any]]:
+        validation_stats = dict(evidence.get("validation_stats", {}) or {})
+        cv_summary = dict(validation_stats.get("cv_summary", {}) or {})
+        trial_counting = dict(validation_stats.get("trial_counting", {}) or {})
+        dsr_summary = dict(validation_stats.get("deflated_sharpe_ratio", {}) or {})
+        pbo_summary = dict(validation_stats.get("pbo", {}) or {})
+        multiple_testing = dict(validation_stats.get("multiple_testing", {}) or {})
+        contract = dict(evidence.get("validation_promotion_contract", {}) or {})
+        required = dict(contract.get("required", {}) or {})
+        metrics = candidate_data.get("metrics", {}) or {}
+        if not isinstance(metrics, dict):
+            metrics = {}
+
+        catalog = self._build_command_catalog(
+            candidate_id=candidate_id,
+            candidate_data=candidate_data,
+            experiment_data=experiment_data,
+        )
+        materialization_note = (
+            "Materialization syncs canonical research artifacts from persisted candidate "
+            "evidence only; it does not fabricate missing validation or robustness metrics."
+        )
+        real_trade_returns = self._series_length(metrics.get("trade_returns"))
+        real_daily_returns = self._series_length(metrics.get("daily_returns"))
+        param_grid = experiment_data.get("param_grid", {})
+        param_grid_trial_count = 0
+        if isinstance(param_grid, dict):
+            for value in param_grid.values():
+                if isinstance(value, list):
+                    param_grid_trial_count = max(param_grid_trial_count, len(value))
+
+        details: list[dict[str, Any]] = []
+        seen_codes: set[str] = set()
+        for reason in reasons:
+            code = self._reason_code(reason)
+            if code in seen_codes:
+                continue
+            seen_codes.add(code)
+
+            detail: dict[str, Any] = {
+                "code": code,
+                "severity": "blocking",
+                "message": reason,
+                "category": "promotion_gate",
+                "materialization": {
+                    "supported": bool(catalog.get("materialize")),
+                    "command": catalog.get("materialize", ""),
+                    "note": materialization_note,
+                },
+                "cli_next_command": "",
+                "diagnostic_cli_command": "",
+                "observed": {},
+                "required": {},
+            }
+
+            if code == "missing_deflated_sharpe_ratio":
+                detail.update(
+                    {
+                        "category": "validation",
+                        "cli_next_command": catalog.get("walk_forward_cli")
+                        or catalog.get("walk_forward_script")
+                        or catalog.get("research_rerun", ""),
+                        "observed": {
+                            "validation_status": evidence.get("validation_status", ""),
+                            "observed_sharpe": dsr_summary.get("observed_sharpe"),
+                            "returns_count": dsr_summary.get("returns_count"),
+                            "trial_count": dsr_summary.get("trial_count"),
+                            "effective_trial_count": trial_counting.get("effective_trial_count"),
+                            "independent_trial_count": trial_counting.get("independent_trial_count"),
+                        },
+                        "required": {
+                            "min_dsr": required.get("min_dsr", 0.10),
+                            "min_effective_trial_count": required.get(
+                                "min_effective_trial_count", 2
+                            ),
+                            "min_independent_trial_count": required.get(
+                                "min_independent_trial_count", 2
+                            ),
+                            "requires_real_return_series": True,
+                        },
+                    }
+                )
+            elif code == "missing_pbo_evidence":
+                detail.update(
+                    {
+                        "category": "validation",
+                        "cli_next_command": catalog.get("walk_forward_cli")
+                        or catalog.get("walk_forward_script")
+                        or catalog.get("research_rerun", ""),
+                        "observed": {
+                            "cv_method": cv_summary.get("method"),
+                            "pbo_mode": pbo_summary.get("mode"),
+                            "group_count": pbo_summary.get("group_count"),
+                            "path_count": cv_summary.get("path_count"),
+                            "fold_count": cv_summary.get("fold_count"),
+                            "pbo_split_count": trial_counting.get("pbo_split_count"),
+                        },
+                        "required": {
+                            "max_pbo": required.get("max_pbo", 0.50),
+                            "min_validation_paths": required.get(
+                                "min_validation_paths", 2
+                            ),
+                            "requires_grouped_out_of_sample_trials": True,
+                        },
+                    }
+                )
+            elif code == "validation_cv_method_not_allowed":
+                detail.update(
+                    {
+                        "category": "validation",
+                        "cli_next_command": catalog.get("walk_forward_cli")
+                        or catalog.get("walk_forward_script")
+                        or catalog.get("research_rerun", ""),
+                        "observed": {
+                            "cv_method": evidence.get("validation_cv_method", "unknown"),
+                            "fold_count": cv_summary.get("fold_count"),
+                            "path_count": cv_summary.get("path_count"),
+                        },
+                        "required": {
+                            "allowed_cv_methods": required.get(
+                                "allowed_cv_methods",
+                                ["cpcv", "purged_kfold", "embargoed_walk_forward"],
+                            ),
+                        },
+                    }
+                )
+            elif code == "validation_purge_embargo_missing":
+                detail.update(
+                    {
+                        "category": "validation",
+                        "cli_next_command": catalog.get("walk_forward_cli")
+                        or catalog.get("walk_forward_script")
+                        or catalog.get("research_rerun", ""),
+                        "observed": {
+                            "cv_method": evidence.get("validation_cv_method", "unknown"),
+                            "purged": cv_summary.get("purged"),
+                            "embargoed": cv_summary.get("embargoed"),
+                            "embargo_steps": cv_summary.get("embargo_steps"),
+                        },
+                        "required": {
+                            "purged_or_embargoed": True,
+                            "allowed_cv_methods": required.get(
+                                "allowed_cv_methods",
+                                ["cpcv", "purged_kfold", "embargoed_walk_forward"],
+                            ),
+                        },
+                    }
+                )
+            elif code == "single_path_validation_not_allowed":
+                detail.update(
+                    {
+                        "category": "validation",
+                        "cli_next_command": catalog.get("walk_forward_cli")
+                        or catalog.get("walk_forward_script")
+                        or catalog.get("research_rerun", ""),
+                        "observed": {
+                            "validation_paths": max(
+                                int(cv_summary.get("path_count", 0) or 0),
+                                int(cv_summary.get("fold_count", 0) or 0),
+                            ),
+                            "fold_count": cv_summary.get("fold_count"),
+                            "path_count": cv_summary.get("path_count"),
+                        },
+                        "required": {
+                            "min_validation_paths": required.get(
+                                "min_validation_paths", 2
+                            ),
+                        },
+                    }
+                )
+            elif code == "insufficient_effective_trials":
+                detail.update(
+                    {
+                        "category": "validation",
+                        "cli_next_command": catalog.get("research_rerun")
+                        or catalog.get("walk_forward_cli")
+                        or catalog.get("walk_forward_script", ""),
+                        "observed": {
+                            "effective_trial_count": trial_counting.get("effective_trial_count"),
+                            "independent_trial_count": trial_counting.get(
+                                "independent_trial_count"
+                            ),
+                            "param_grid_trial_count": trial_counting.get(
+                                "param_grid_trial_count"
+                            ),
+                            "trial_sharpe_count": trial_counting.get("trial_sharpe_count"),
+                        },
+                        "required": {
+                            "min_effective_trial_count": required.get(
+                                "min_effective_trial_count", 2
+                            ),
+                            "min_independent_trial_count": required.get(
+                                "min_independent_trial_count", 2
+                            ),
+                        },
+                    }
+                )
+            elif code == "multiple_testing_missing":
+                detail.update(
+                    {
+                        "category": "validation",
+                        "cli_next_command": catalog.get("research_rerun")
+                        or catalog.get("walk_forward_cli")
+                        or catalog.get("walk_forward_script", ""),
+                        "observed": {
+                            "multiple_testing_mode": multiple_testing.get("mode"),
+                            "effective_trial_count": multiple_testing.get(
+                                "effective_trial_count"
+                            ),
+                            "independent_trial_count": multiple_testing.get(
+                                "independent_trial_count"
+                            ),
+                            "raw_p_value": multiple_testing.get("raw_p_value"),
+                        },
+                        "required": {
+                            "familywise_alpha": required.get("familywise_alpha", 0.05),
+                            "requires_familywise_error_control": True,
+                        },
+                    }
+                )
+            elif code == "missing_monte_carlo_survival_rate":
+                real_returns_ready = real_trade_returns >= 10 and real_daily_returns >= 10
+                detail.update(
+                    {
+                        "category": "robustness",
+                        "cli_next_command": (
+                            catalog.get("robustness_run")
+                            if real_returns_ready
+                            else (
+                                catalog.get("research_rerun")
+                                or catalog.get("walk_forward_cli")
+                                or catalog.get("promotion_gate_cli", "")
+                            )
+                        ),
+                        "diagnostic_cli_command": catalog.get("robustness_run", ""),
+                        "observed": {
+                            "metric_present": evidence.get(
+                                "monte_carlo_survival_rate_present", False
+                            ),
+                            "trade_return_count": real_trade_returns,
+                            "daily_return_count": real_daily_returns,
+                            "validation_status": evidence.get("validation_status", ""),
+                        },
+                        "required": {
+                            "min_survival_rate": 0.80,
+                            "requires_real_trade_returns": True,
+                            "requires_real_daily_returns": True,
+                        },
+                        "materialization": {
+                            "supported": bool(catalog.get("materialize")),
+                            "command": catalog.get("materialize", ""),
+                            "note": (
+                                materialization_note
+                                + " Current robustness CLI must not be used to pass the gate "
+                                "when it would fall back to synthetic returns."
+                            ),
+                        },
+                    }
+                )
+            elif code == "missing_param_stability_score":
+                has_real_grid = param_grid_trial_count >= 2
+                detail.update(
+                    {
+                        "category": "robustness",
+                        "cli_next_command": (
+                            (
+                                catalog.get("research_rerun")
+                                or catalog.get("param_stability_cli")
+                            )
+                            if has_real_grid
+                            else (
+                                catalog.get("param_stability_cli")
+                                or catalog.get("promotion_gate_cli", "")
+                            )
+                        ),
+                        "diagnostic_cli_command": catalog.get("param_stability_cli", ""),
+                        "observed": {
+                            "metric_present": evidence.get(
+                                "param_stability_score_present", False
+                            ),
+                            "param_grid_trial_count": trial_counting.get(
+                                "param_grid_trial_count"
+                            ),
+                            "base_param_count": len(
+                                experiment_data.get("params", {})
+                                if isinstance(experiment_data.get("params", {}), dict)
+                                else {}
+                            ),
+                        },
+                        "required": {
+                            "min_stability_score": 0.50,
+                            "requires_real_param_neighborhood": True,
+                        },
+                        "materialization": {
+                            "supported": bool(catalog.get("materialize")),
+                            "command": catalog.get("materialize", ""),
+                            "note": (
+                                materialization_note
+                                + " Diagnostic param-stability CLI perturbs stored params; it "
+                                "cannot by itself satisfy the promotion gate without real sweep evidence."
+                            ),
+                        },
+                    }
+                )
+            else:
+                detail["cli_next_command"] = (
+                    catalog.get("promotion_gate_cli")
+                    or catalog.get("research_rerun")
+                    or ""
+                )
+
+            details.append(detail)
+        return details
+
+    def _build_command_catalog(
+        self,
+        *,
+        candidate_id: str,
+        candidate_data: dict[str, Any],
+        experiment_data: dict[str, Any],
+    ) -> dict[str, str]:
+        symbols = candidate_data.get("symbols") or experiment_data.get("symbols") or []
+        symbol = str(symbols[0]) if symbols else ""
+        start = str(experiment_data.get("start_date", "") or "")
+        end = str(experiment_data.get("end_date", "") or "")
+        timeframe = str(experiment_data.get("timeframe", "1d") or "1d")
+        strategy_id = str(
+            experiment_data.get("strategy_id")
+            or candidate_data.get("strategy_id")
+            or "trend_momentum"
+        )
+        params = experiment_data.get("params", {})
+        if not isinstance(params, dict):
+            params = {}
+        vendor = str(
+            experiment_data.get("data_source")
+            or experiment_data.get("source")
+            or candidate_data.get("data_source")
+            or "yfinance"
+        )
+        experiment_id = str(experiment_data.get("experiment_id", "") or "")
+        return {
+            "materialize": self._build_materialization_command(candidate_id),
+            "promotion_gate_cli": self._build_promotion_gate_cli_command(candidate_id),
+            "walk_forward_cli": self._build_walk_forward_cli_command(experiment_id),
+            "walk_forward_script": self._build_walk_forward_script_command(
+                symbol=symbol,
+                start=start,
+                end=end,
+                timeframe=timeframe,
+            ),
+            "research_rerun": self._build_research_rerun_command(
+                symbol=symbol,
+                start=start,
+                end=end,
+                timeframe=timeframe,
+                strategy_id=strategy_id,
+                params=params,
+                vendor=vendor,
+                experiment_id=experiment_id,
+            )
+            or "",
+            "robustness_run": self._build_robustness_run_command(candidate_id),
+            "param_stability_cli": self._build_param_stability_command(candidate_id),
+        }
+
+    def _build_materialization_command(self, candidate_id: str) -> str:
+        python_snippet = (
+            "from quant_us.research.automation.evidence_materializer import "
+            "ResearchEvidenceMaterializer; "
+            f"ResearchEvidenceMaterializer({json.dumps(str(self.data_root))})."
+            f"materialize_candidate({json.dumps(candidate_id)})"
+        )
+        return self._shell_join(
+            "PYTHONPATH=.",
+            self._python_executable(),
+            "-c",
+            python_snippet,
+        )
+
+    def _build_promotion_gate_cli_command(self, candidate_id: str) -> str:
+        return self._shell_join(
+            "PYTHONPATH=.",
+            self._python_executable(),
+            "-m",
+            "quant_us.cli",
+            "research",
+            "promotion-gate",
+            "--candidate-id",
+            candidate_id,
+            "--data-root",
+            str(self.data_root),
+        )
+
+    def _build_walk_forward_cli_command(self, experiment_id: str) -> str:
+        if not experiment_id:
+            return ""
+        return self._shell_join(
+            "PYTHONPATH=.",
+            self._python_executable(),
+            "-m",
+            "quant_us.cli",
+            "research",
+            "walk-forward",
+            "--experiment-id",
+            experiment_id,
+            "--data-root",
+            str(self.data_root),
+        )
+
+    def _build_walk_forward_script_command(
+        self,
+        *,
+        symbol: str,
+        start: str,
+        end: str,
+        timeframe: str,
+    ) -> str:
+        if not all((symbol, start, end)):
+            return ""
+        return self._shell_join(
+            "PYTHONPATH=.",
+            self._python_executable(),
+            "scripts/run_walk_forward.py",
+            "--symbol",
+            symbol,
+            "--start",
+            start,
+            "--end",
+            end,
+            "--bar-size",
+            timeframe,
+            "--data-root",
+            str(self.data_root),
+        )
+
+    def _build_research_rerun_command(
+        self,
+        *,
+        symbol: str,
+        start: str,
+        end: str,
+        timeframe: str,
+        strategy_id: str,
+        params: dict[str, Any],
+        vendor: str,
+        experiment_id: str,
+    ) -> str:
+        if not all((symbol, start, end, experiment_id)):
+            return ""
+        return self._shell_join(
+            "PYTHONPATH=.",
+            self._python_executable(),
+            "scripts/run_research_experiment.py",
+            "--experiment-name",
+            f"rerun-{experiment_id}",
+            "--symbols",
+            symbol,
+            "--start",
+            start,
+            "--end",
+            end,
+            "--strategy-id",
+            strategy_id,
+            "--strategy-params-json",
+            json.dumps(params, sort_keys=True),
+            "--bar-size",
+            timeframe,
+            "--data-root",
+            str(self.data_root),
+            "--vendor",
+            vendor,
+        )
+
+    def _build_robustness_run_command(self, candidate_id: str) -> str:
+        return self._shell_join(
+            "PYTHONPATH=.",
+            self._python_executable(),
+            "-m",
+            "quant_us.cli",
+            "research",
+            "robustness-run",
+            "--strategy-manifest",
+            candidate_id,
+            "--n-simulations",
+            "500",
+            "--data-root",
+            str(self.data_root),
+        )
+
+    def _build_param_stability_command(self, candidate_id: str) -> str:
+        return self._shell_join(
+            "PYTHONPATH=.",
+            self._python_executable(),
+            "-m",
+            "quant_us.cli",
+            "research",
+            "param-stability",
+            "--strategy-manifest",
+            candidate_id,
+            "--data-root",
+            str(self.data_root),
+        )
+
+    @staticmethod
+    def _reason_code(reason: str) -> str:
+        return str(reason).split(":", 1)[0]
+
+    @staticmethod
+    def _series_length(raw: Any) -> int:
+        if not isinstance(raw, list):
+            return 0
+        return sum(1 for item in raw if isinstance(item, (int, float)))
+
+    @staticmethod
+    def _shell_join(*parts: str) -> str:
+        rendered: list[str] = []
+        for index, part in enumerate(parts):
+            text = str(part)
+            if not text:
+                continue
+            if index == 0 and "=" in text and " " not in text:
+                rendered.append(text)
+            else:
+                rendered.append(shlex.quote(text))
+        return " ".join(rendered)
+
+    @staticmethod
+    def _python_executable() -> str:
+        venv_python = Path("venv/bin/python")
+        return str(venv_python) if venv_python.exists() else "python"
 
     @staticmethod
     def _source_from_data_version(data_version: str) -> str:
