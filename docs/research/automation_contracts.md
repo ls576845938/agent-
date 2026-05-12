@@ -34,6 +34,20 @@ Current templates:
 
 These artifacts are research configs only. They are not executable broker instructions.
 
+BTC family-sweep candidate generation under `quant_us.research.automation.candidate_gen` now also supports conservative research-only candidate packs with:
+
+- `strategy_family = btc_conservative_family_sweep`
+- `strategy_family_variant` and `strategy_family_class`
+- `research_metadata.regime`
+- `research_metadata.filters`
+- `research_metadata.turnover_aware`
+- `research_metadata.runtime_hints`
+- `gate_requirements.requires_walk_forward`
+- `gate_requirements.requires_cost_stress`
+- `gate_requirements.requires_regime_evidence`
+
+These fields are candidate metadata only. They do not replace walk-forward, cost-stress, event-ledger, or promotion-gate evidence, and BTC/crypto candidates remain fail-closed without canonical persisted artifacts.
+
 Factor-mining outputs now also persist research evidence that is used to keep
 the candidate set small and interpretable:
 
@@ -55,15 +69,18 @@ rejected near-duplicate factors leave an auditable trail.
 
 Required checks:
 
-- CV method must be `cpcv`, `purged_kfold`, or `embargoed_walk_forward`
-- Validation must be purged or embargoed
+- CV method must be recorded as `cpcv` for promotion-statistics evidence
+- Validation must record purge and embargo parameters explicitly
+- No-lookahead feature/label timing controls must be recorded
 - At least 2 validation paths/folds
 - At least 2 effective trials and 2 independent trials
 - DSR must exist and be `>= 0.10`
 - PBO must exist and be `<= 0.50`
 - Family-wise multiple-testing control must be present and passed
 
-This blocks candidates that only look good on a single validation path, even when the raw Sharpe is high.
+This blocks candidates that only look good on a single validation path, candidates
+with inferred-but-unrecorded purge/embargo controls, and candidates whose raw
+Sharpe does not survive DSR/PBO/multiple-testing checks.
 
 ## Strategy Manifest Contract
 

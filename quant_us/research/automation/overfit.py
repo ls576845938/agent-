@@ -27,6 +27,8 @@ class OverfitReport:
     single_symbol_concentration: float = 0.0
     trade_count: int = 0
     cost_sensitivity: float = 0.0
+    lookahead_risk: bool = False
+    lookahead_description: str = ""
 
 
 class OverfitDetector:
@@ -56,7 +58,10 @@ class OverfitDetector:
         Raises:
             ValueError: If the candidate is not found.
         """
-        metrics = self._load_metrics(candidate_id)
+        candidate = self._load_candidate(candidate_id)
+        metrics = candidate.get("metrics", {})
+        if not isinstance(metrics, dict):
+            metrics = {}
         reasons: list[str] = []
 
         in_sample_sharpe = float(metrics.get("in_sample_sharpe", 0.0))
@@ -106,6 +111,16 @@ class OverfitDetector:
                 f"(cost_sensitivity={cost_sensitivity:.3f})"
             )
 
+        lookahead_risk = False
+        lookahead_description = ""
+        experiment_id = str(candidate.get("experiment_id", "") or "")
+        if experiment_id:
+            lookahead_risk, lookahead_description = LookaheadBiasChecker(
+                data_root=str(self.data_root)
+            ).check_experiment(experiment_id)
+            if lookahead_risk:
+                reasons.append(f"Lookahead risk: {lookahead_description}")
+
         return OverfitReport(
             candidate_id=candidate_id,
             is_overfit=len(reasons) > 0,
@@ -118,6 +133,8 @@ class OverfitDetector:
             single_symbol_concentration=single_symbol_concentration,
             trade_count=trade_count,
             cost_sensitivity=cost_sensitivity,
+            lookahead_risk=lookahead_risk,
+            lookahead_description=lookahead_description,
         )
 
     # ------------------------------------------------------------------
@@ -125,6 +142,10 @@ class OverfitDetector:
     # ------------------------------------------------------------------
 
     def _load_metrics(self, candidate_id: str) -> dict[str, Any]:
+        metrics = self._load_candidate(candidate_id).get("metrics", {})
+        return metrics if isinstance(metrics, dict) else {}
+
+    def _load_candidate(self, candidate_id: str) -> dict[str, Any]:
         path = (
             self.data_root
             / "research"
@@ -135,7 +156,9 @@ class OverfitDetector:
         if not path.exists():
             raise ValueError(f"Candidate {candidate_id} not found")
         data = json.loads(path.read_text(encoding="utf-8"))
-        return data.get("metrics", {})
+        if not isinstance(data, dict):
+            raise ValueError(f"Candidate {candidate_id} JSON is not an object")
+        return data
 
     @staticmethod
     def _compute_degradation(

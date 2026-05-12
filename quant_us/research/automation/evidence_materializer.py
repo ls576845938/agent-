@@ -82,6 +82,7 @@ class ResearchEvidenceMaterializer:
 
         walk_forward_path = self._materialize_walk_forward(
             candidate_id=candidate_id,
+            candidate=candidate,
             metrics=metrics,
             result=result,
         )
@@ -208,6 +209,7 @@ class ResearchEvidenceMaterializer:
         self,
         *,
         candidate_id: str,
+        candidate: dict[str, Any],
         metrics: dict[str, Any],
         result: CandidateEvidenceMaterializationResult,
     ) -> str:
@@ -215,21 +217,82 @@ class ResearchEvidenceMaterializer:
             result.warnings.append("walk_forward_metrics_missing")
             return ""
 
+        experiment = self._load_experiment(str(candidate.get("experiment_id", "") or ""))
         pass_rate = float(metrics.get("walk_forward_pass_rate", 0.0))
+        pbo_trials = list(metrics.get("pbo_trials", []) or [])
+        validation_method = (
+            metrics.get("validation_method")
+            or metrics.get("cv_method")
+            or experiment.get("validation_method")
+            or experiment.get("cv_method")
+            or ("cpcv" if pbo_trials else "walk_forward")
+        )
+        purge_bars = self._first_int(metrics, "purge_bars", "purge_steps", "purge_periods")
+        if purge_bars is None:
+            purge_bars = self._first_int(experiment, "purge_bars", "purge_steps", "purge_periods")
+        embargo_bars = self._first_int(metrics, "embargo_bars", "embargo_steps", "embargo_periods")
+        if embargo_bars is None:
+            embargo_bars = self._first_int(experiment, "embargo_bars", "embargo_steps", "embargo_periods")
+        purged = self._first_bool(metrics, "purged", "is_purged")
+        if purged is None:
+            purged = self._first_bool(experiment, "purged", "is_purged")
+        embargoed = self._first_bool(metrics, "embargoed", "is_embargoed")
+        if embargoed is None:
+            embargoed = self._first_bool(experiment, "embargoed", "is_embargoed")
+        if embargoed is None and embargo_bars is not None:
+            embargoed = embargo_bars > 0
+        lookahead_guard = (
+            metrics.get("lookahead_guard")
+            or candidate.get("lookahead_guard")
+            or experiment.get("lookahead_guard")
+        )
+        params = experiment.get("params", {})
+        if not lookahead_guard and isinstance(params, dict):
+            lookahead_guard = params.get("lookahead_guard")
+        if validation_method == "cpcv" and (purged is None or embargoed is None):
+            result.warnings.append(
+                "walk_forward_purge_embargo_metadata_missing: materialized CPCV evidence remains fail-closed"
+            )
+        if not lookahead_guard:
+            result.warnings.append(
+                "walk_forward_lookahead_guard_missing: materialized validation evidence remains fail-closed"
+            )
+
         payload = {
             "schema_version": "research_walk_forward_result_v1",
             "candidate_id": candidate_id,
             "status": "completed",
             "generated_at": utc_now().isoformat(),
+            "validation_method": validation_method,
             "walk_forward_pass_rate": pass_rate,
             "pass_rate": pass_rate,
             "fold_sharpes": list(metrics.get("wf_fold_sharpes", []) or []),
             "fold_drawdowns": list(metrics.get("wf_fold_drawdowns", []) or []),
+            "pbo_trials": pbo_trials,
             "metrics": {
                 "walk_forward_pass_rate": pass_rate,
                 "oos_degradation": float(metrics.get("oos_degradation", 0.0) or 0.0),
             },
         }
+        if purge_bars is not None:
+            payload["purge_bars"] = purge_bars
+        if embargo_bars is not None:
+            payload["embargo_bars"] = embargo_bars
+        if purged is not None:
+            payload["purged"] = purged
+        if embargoed is not None:
+            payload["embargoed"] = embargoed
+        if lookahead_guard:
+            payload["lookahead_guard"] = str(lookahead_guard)
+        n_splits = self._first_int(metrics, "n_splits", "fold_count", "n_folds")
+        if n_splits is not None:
+            payload["n_splits"] = n_splits
+        test_splits = self._first_int(metrics, "test_splits", "n_test_splits", "test_window_count")
+        if test_splits is not None:
+            payload["test_splits"] = test_splits
+        combination_count = self._first_int(metrics, "combination_count", "path_count", "cpcv_path_count")
+        if combination_count is not None:
+            payload["combination_count"] = combination_count
         path = self._canonical_research_artifact_path(candidate_id, "walk_forward")
         self._write_json(path, payload)
         result.paths_written.append(str(path))
@@ -403,6 +466,18 @@ class ResearchEvidenceMaterializer:
                 return payload
         return None
 
+    def _load_experiment(self, experiment_id: str) -> dict[str, Any]:
+        if not experiment_id:
+            return {}
+        path = self.data_root / "research" / "experiments" / experiment_id / "manifest.json"
+        if not path.exists():
+            return {}
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return {}
+        return payload if isinstance(payload, dict) else {}
+
     def _first_existing_path(self, candidates: list[str]) -> Path | None:
         for raw_path in candidates:
             path = self._resolve_path(raw_path)
@@ -467,3 +542,28 @@ class ResearchEvidenceMaterializer:
             json.dumps(payload, indent=2, sort_keys=True, default=str),
             encoding="utf-8",
         )
+
+    @staticmethod
+    def _first_int(payload: dict[str, Any], *keys: str) -> int | None:
+        for key in keys:
+            if key not in payload or payload.get(key) in (None, ""):
+                continue
+            try:
+                return int(payload[key])
+            except (TypeError, ValueError):
+                continue
+        return None
+
+    @staticmethod
+    def _first_bool(payload: dict[str, Any], *keys: str) -> bool | None:
+        for key in keys:
+            value = payload.get(key)
+            if isinstance(value, bool):
+                return value
+            if isinstance(value, str):
+                normalized = value.strip().lower()
+                if normalized in {"1", "true", "yes", "y", "pass", "passed"}:
+                    return True
+                if normalized in {"0", "false", "no", "n", "fail", "failed"}:
+                    return False
+        return None

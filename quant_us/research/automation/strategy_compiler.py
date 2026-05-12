@@ -165,6 +165,9 @@ class ResearchStrategyCompiler:
                 "params": dict(config.get("params", {}) or {}),
                 "candidate_rank": config.get("candidate_rank"),
                 "research_score": config.get("research_score"),
+                "candidate_quality_score": evidence.get("candidate_quality", {}).get(
+                    "quality_score"
+                ),
                 "generation_family": evidence.get("generation_family"),
                 "generation_families": dict(evidence.get("generation_families", {}) or {}),
                 "formula_signature": evidence.get("formula_signature"),
@@ -189,6 +192,7 @@ class ResearchStrategyCompiler:
                 "capacity": dict(evidence.get("capacity", {}) or {}),
                 "turnover": dict(evidence.get("turnover", {}) or {}),
                 "style_exposure": dict(evidence.get("style_exposure", {}) or {}),
+                "candidate_quality": dict(evidence.get("candidate_quality", {}) or {}),
             },
             "validation_summary": normalized_validation,
             "candidate_evidence": evidence,

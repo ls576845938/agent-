@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import json
 from pathlib import Path
@@ -412,6 +413,95 @@ def test_optimize_weights_uses_explicit_fallback_when_optimizer_cannot_produce_s
     assert bool(weights["fallback"].all())
     assert weights["target_weight"].sum() <= 0.95 + 1e-9
     assert (weights["target_weight"] >= -1e-12).all()
+
+
+def test_optimize_weights_without_explicit_fallback_fails_closed_when_pypfopt_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    artifacts_root = tmp_path / "artifacts"
+    portfolio_run_root = artifacts_root / "portfolio_runs" / "pf_no_implicit_fallback"
+    portfolio_run_root.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(
+        [
+            {
+                "portfolio_run_id": "pf_no_implicit_fallback",
+                "source_score_run_id": "score_unused",
+                "datetime": "2026-01-08T00:00:00+00:00",
+                "symbol": "AAPL",
+                "score": 0.60,
+                "rank": 1,
+                "expected_return": 0.06,
+                "created_at": "2026-05-11T00:00:00+00:00",
+            },
+            {
+                "portfolio_run_id": "pf_no_implicit_fallback",
+                "source_score_run_id": "score_unused",
+                "datetime": "2026-01-08T00:00:00+00:00",
+                "symbol": "MSFT",
+                "score": 0.30,
+                "rank": 2,
+                "expected_return": 0.03,
+                "created_at": "2026-05-11T00:00:00+00:00",
+            },
+        ]
+    ).to_parquet(portfolio_run_root / "expected_returns.parquet", index=False)
+    pd.DataFrame(
+        [
+            {
+                "portfolio_run_id": "pf_no_implicit_fallback",
+                "source_score_run_id": "score_unused",
+                "datetime": "2026-01-08T00:00:00+00:00",
+                "symbol": "AAPL",
+                "peer_symbol": "AAPL",
+                "covariance": 0.04,
+                "lookback_days": 3,
+                "observation_count": 3,
+                "returns_start": "2026-01-06T00:00:00+00:00",
+                "returns_end": "2026-01-08T00:00:00+00:00",
+                "created_at": "2026-05-11T00:00:00+00:00",
+            },
+            {
+                "portfolio_run_id": "pf_no_implicit_fallback",
+                "source_score_run_id": "score_unused",
+                "datetime": "2026-01-08T00:00:00+00:00",
+                "symbol": "MSFT",
+                "peer_symbol": "MSFT",
+                "covariance": 0.03,
+                "lookback_days": 3,
+                "observation_count": 3,
+                "returns_start": "2026-01-06T00:00:00+00:00",
+                "returns_end": "2026-01-08T00:00:00+00:00",
+                "created_at": "2026-05-11T00:00:00+00:00",
+            },
+        ]
+    ).to_parquet(portfolio_run_root / "covariance.parquet", index=False)
+    config_path = write_portfolio_config(
+        tmp_path / "configs" / "portfolio_no_fallback.yaml",
+        score_runs_root=artifacts_root / "qlib_runs",
+        portfolio_runs_root=artifacts_root / "portfolio_runs",
+        portfolio_run_id="pf_no_implicit_fallback",
+        fallback_optimizer="",
+    )
+
+    optimize_module = importlib.import_module("integrations.pypfopt_adapter.optimize_weights")
+    from integrations.pypfopt_adapter.schemas import MissingDependencyError
+
+    original_find_spec = importlib.util.find_spec
+    monkeypatch.setattr(
+        optimize_module.importlib.util,
+        "find_spec",
+        lambda name: None if name == "pypfopt" else original_find_spec(name),
+    )
+
+    with pytest.raises(MissingDependencyError, match="PyPortfolioOpt"):
+        optimize_module.optimize_weights(
+            score_run_id="score_unused",
+            config=load_portfolio_config(config_path),
+        )
+
+    assert not (portfolio_run_root / "target_weights.parquet").exists()
+    assert not (portfolio_run_root / "run_manifest.json").exists()
 
 
 def test_import_target_weights_stays_target_position_only(tmp_path: Path) -> None:

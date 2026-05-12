@@ -305,6 +305,24 @@ class RunStatusResponse(BaseModel):
     diagnostics: Dict[str, Any] = Field(default_factory=dict)
 
 
+class TaskStatusResponse(BaseModel):
+    task_id: str
+    kind: str
+    label: str
+    status: str
+    stage: str = ""
+    progress: int = Field(default=0, ge=0, le=100)
+    message: str = ""
+    request: Dict[str, Any] = Field(default_factory=dict)
+    result: Any = None
+    error: Optional[str] = None
+    blockers: List[str] = Field(default_factory=list)
+    created_at: datetime
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
 class HealthResponse(BaseModel):
     status: str
     service: str

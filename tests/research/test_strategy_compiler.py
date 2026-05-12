@@ -40,6 +40,7 @@ def test_strategy_compiler_builds_research_only_artifact_with_pending_validation
             "capacity": {"estimated_capacity_usd": 1_250_000.0},
             "turnover": {"annual_turnover_pct": 84.0},
             "style_exposure": {"betas": {"MKT": 0.95}},
+            "candidate_quality": {"quality_score": 0.82, "eligible": True},
         },
     )
 
@@ -52,7 +53,9 @@ def test_strategy_compiler_builds_research_only_artifact_with_pending_validation
 
     persisted = json.loads(path.read_text(encoding="utf-8"))
     assert persisted["reproducibility"]["formula_signature"] == "momentum_20d"
+    assert persisted["reproducibility"]["candidate_quality_score"] == 0.82
     assert persisted["safeguards"]["capacity"]["estimated_capacity_usd"] == 1_250_000.0
+    assert persisted["safeguards"]["candidate_quality"]["eligible"] is True
 
 
 def test_strategy_compiler_normalizes_real_validation_summary() -> None:

@@ -8,6 +8,7 @@ import pytest
 
 from quant_us.backtest.ledger_pnl import compute_ledger_reconciliation_artifact_hash
 from quant_us.data.storage.data_manifest import DataManifest, DataManifestStore
+from quant_us.research.automation.evidence_materializer import ResearchEvidenceMaterializer
 from quant_us.research.automation.promotion_gate import ResearchPromotionGate
 from quant_us.research.strategy_manifest import StrategyManifestManager
 from quant_us.research.validation import summarize_candidate_validation
@@ -26,6 +27,7 @@ def _validation_inputs(profile: str) -> tuple[dict, dict, dict, dict]:
         "symbols": ["AAPL"],
         "timeframe": "1d",
         "data_version": "qs-yfinance-AAPL-1d-validation",
+        "lookahead_guard": "features[t] generate orders for next-bar execution only",
         "param_grid": {
             "lookback": [10, 20, 40],
             "threshold": [0.1, 0.2],
@@ -135,6 +137,7 @@ def _validation_inputs(profile: str) -> tuple[dict, dict, dict, dict]:
             "data_source": "yfinance",
             "asset_class": "equity",
             "data_version": experiment_data["data_version"],
+            "lookahead_guard": experiment_data["lookahead_guard"],
         }
     else:
         metrics = {
@@ -177,6 +180,7 @@ def _validation_inputs(profile: str) -> tuple[dict, dict, dict, dict]:
             "data_source": "yfinance",
             "asset_class": "equity",
             "data_version": experiment_data["data_version"],
+            "lookahead_guard": experiment_data["lookahead_guard"],
         }
 
     walk_forward_artifact = {
@@ -184,7 +188,10 @@ def _validation_inputs(profile: str) -> tuple[dict, dict, dict, dict]:
         "status": "completed",
         "validation_method": "cpcv",
         "purged": True,
+        "purge_bars": 1,
         "embargo_bars": 2,
+        "embargoed": True,
+        "lookahead_guard": experiment_data["lookahead_guard"],
         "n_splits": 4,
         "test_splits": 2,
         "combination_count": 6,
@@ -503,7 +510,11 @@ def test_validation_summary_computes_cpcv_dsr_pbo_and_cost_drag() -> None:
     assert summary["status"] == "complete"
     assert summary["cv_summary"]["method"] == "cpcv"
     assert summary["cv_summary"]["purged"] is True
+    assert summary["cv_summary"]["purge_recorded"] is True
     assert summary["cv_summary"]["embargoed"] is True
+    assert summary["cv_summary"]["embargo_recorded"] is True
+    assert summary["lookahead_controls"]["recorded"] is True
+    assert summary["lookahead_controls"]["passed"] is True
     assert summary["trial_counting"]["param_grid_trial_count"] == 6
     assert summary["trial_counting"]["effective_trial_count"] >= 6
     assert summary["deflated_sharpe_ratio"]["dsr"] is not None
@@ -511,10 +522,67 @@ def test_validation_summary_computes_cpcv_dsr_pbo_and_cost_drag() -> None:
     assert summary["pbo"]["pbo"] == 0.0
     assert summary["multiple_testing"]["passed"] is True
     assert summary["promotion_gate_contract"]["status"] == "passed"
+    assert summary["promotion_gate_contract"]["checks"]["cpcv_available"] is True
+    assert summary["promotion_gate_contract"]["checks"]["purge_embargo_recorded"] is True
+    assert summary["promotion_gate_contract"]["checks"]["lookahead_guard_recorded"] is True
     assert summary["promotion_gate_contract"]["checks"]["multi_path_validation"] is True
     assert summary["net_return_distribution"]["count"] == 20
     assert summary["cost_before_after"]["mode"] == "gross_vs_net_plus_stress"
     assert summary["cost_before_after"]["cost_drag_return"] == 0.04
+
+
+def test_materializer_persists_cpcv_purge_embargo_and_lookahead_metadata(tmp_path: Path) -> None:
+    candidate_id = "cand_materializer_stats"
+    experiment_id = "exp_materializer_stats"
+    _write_json(
+        tmp_path / "research" / "experiments" / experiment_id / "manifest.json",
+        {
+            "experiment_id": experiment_id,
+            "validation_method": "cpcv",
+            "lookahead_guard": "features[t] generate next-bar orders only",
+            "params": {"lookback": 20},
+        },
+    )
+    pbo_trials = [
+        {"split_id": "s1", "config_id": "a", "train_sharpe": 1.2, "test_sharpe": 1.0},
+        {"split_id": "s1", "config_id": "b", "train_sharpe": 0.8, "test_sharpe": 0.4},
+    ]
+    _write_json(
+        tmp_path / "research" / "candidates" / candidate_id / "candidate.json",
+        {
+            "candidate_id": candidate_id,
+            "experiment_id": experiment_id,
+            "metrics": {
+                "walk_forward_pass_rate": 1.0,
+                "validation_method": "cpcv",
+                "purged": True,
+                "purge_bars": 1,
+                "embargoed": True,
+                "embargo_bars": 2,
+                "n_splits": 3,
+                "test_splits": 2,
+                "combination_count": 3,
+                "wf_fold_sharpes": [1.0, 0.9, 0.8],
+                "pbo_trials": pbo_trials,
+                "lookahead_guard": "features[t] generate next-bar orders only",
+            },
+        },
+    )
+
+    result = ResearchEvidenceMaterializer(data_root=str(tmp_path)).materialize_candidate(
+        candidate_id,
+        create_strategy_manifest=False,
+        run_promotion_gate=False,
+    )
+    payload = json.loads(Path(result.walk_forward_result_path).read_text(encoding="utf-8"))
+
+    assert payload["validation_method"] == "cpcv"
+    assert payload["purged"] is True
+    assert payload["purge_bars"] == 1
+    assert payload["embargoed"] is True
+    assert payload["embargo_bars"] == 2
+    assert payload["lookahead_guard"] == "features[t] generate next-bar orders only"
+    assert payload["pbo_trials"] == pbo_trials
 
 
 def test_promotion_gate_blocks_high_pbo_and_low_dsr(tmp_path: Path) -> None:
@@ -532,6 +600,72 @@ def test_promotion_gate_blocks_high_pbo_and_low_dsr(tmp_path: Path) -> None:
     assert any(reason.startswith("pbo_too_high:") for reason in result.reasons)
     assert result.evidence["validation_stats"]["pbo"]["pbo"] == 1.0
     assert result.evidence["validation_stats"]["deflated_sharpe_ratio"]["dsr"] < 0.10
+
+
+def test_promotion_gate_blocks_missing_cpcv_dsr_pbo_and_validation_controls(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_missing_stat_evidence",
+        profile="good",
+        include_strategy_manifest=True,
+    )
+    candidate_path = tmp_path / "research" / "candidates" / candidate_id / "candidate.json"
+    walk_forward_path = tmp_path / "research" / "walk_forward" / candidate_id / "result.json"
+
+    candidate_payload = json.loads(candidate_path.read_text(encoding="utf-8"))
+    candidate_payload["metrics"]["return_observation_count"] = 1
+    candidate_payload["metrics"].pop("pbo_trials", None)
+    candidate_payload["metrics"].pop("lookahead_guard", None)
+    _write_json(candidate_path, candidate_payload)
+
+    experiment_path = tmp_path / "research" / "experiments" / "exp_validation" / "manifest.json"
+    experiment_payload = json.loads(experiment_path.read_text(encoding="utf-8"))
+    experiment_payload.pop("lookahead_guard", None)
+    _write_json(experiment_path, experiment_payload)
+
+    walk_forward_payload = json.loads(walk_forward_path.read_text(encoding="utf-8"))
+    walk_forward_payload.update(
+        {
+            "validation_method": "walk_forward",
+            "pbo_trials": [],
+        }
+    )
+    for key in ("purged", "purge_bars", "embargoed", "embargo_bars", "lookahead_guard"):
+        walk_forward_payload.pop(key, None)
+    _write_json(walk_forward_path, walk_forward_payload)
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert any(reason.startswith("missing_deflated_sharpe_ratio:") for reason in result.reasons)
+    assert any(reason.startswith("missing_pbo_evidence:") for reason in result.reasons)
+    assert "missing_cpcv_evidence: promotion requires CPCV metadata with at least 2 persisted validation paths" in result.reasons
+    assert "validation_purge_embargo_missing: promotion requires recorded purge and embargo parameters for out-of-sample validation" in result.reasons
+    assert "lookahead_guard_missing: promotion requires recorded no-lookahead feature/label timing controls" in result.reasons
+    contract = result.evidence["validation_promotion_contract"]
+    assert contract["checks"]["cpcv_available"] is False
+    assert contract["checks"]["purge_embargo_recorded"] is False
+    assert contract["checks"]["lookahead_guard_recorded"] is False
+
+
+def test_fake_fixture_can_pass_statistics_but_is_still_blocked_by_data_gate(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_fixture_stats_pass_gate_blocked",
+        profile="good",
+        include_strategy_manifest=True,
+        source="fixture",
+        symbol="AAPL",
+        asset_class="equity",
+        data_version="qs-fixture-AAPL-1d-validation",
+    )
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert result.evidence["validation_contract_status"] == "passed"
+    assert result.evidence["validation_promotion_contract"]["checks"]["cpcv_available"] is True
+    assert any("fixture_data_not_allowed" in reason for reason in result.reasons)
 
 
 def test_crypto_sqlite_candidate_can_reach_paper_review_with_full_evidence(tmp_path: Path) -> None:
@@ -595,6 +729,42 @@ def test_crypto_yfinance_candidate_is_blocked_until_sqlite_evidence_exists(tmp_p
     assert any(reason.startswith("crypto_requires_sqlite_data_source:") for reason in result.reasons)
 
 
+def test_btc_new_strategy_family_cannot_bypass_walk_forward_or_cost_gate(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_btc_new_family_missing_gates",
+        profile="good",
+        include_strategy_manifest=True,
+        source="sqlite",
+        symbol="BTCUSD",
+        asset_class="crypto",
+        data_version="qs-sqlite-BTCUSD-1d-new-family",
+    )
+    candidate_path = tmp_path / "research" / "candidates" / candidate_id / "candidate.json"
+    experiment_path = tmp_path / "research" / "experiments" / "exp_validation" / "manifest.json"
+    candidate_payload = json.loads(candidate_path.read_text(encoding="utf-8"))
+    experiment_payload = json.loads(experiment_path.read_text(encoding="utf-8"))
+    candidate_payload["strategy_family"] = "btc_breakout_vnext"
+    candidate_payload["metrics"]["strategy_family"] = "btc_breakout_vnext"
+    experiment_payload["strategy_family"] = "btc_breakout_vnext"
+    _write_json(candidate_path, candidate_payload)
+    _write_json(experiment_path, experiment_payload)
+
+    (tmp_path / "research" / "walk_forward" / candidate_id / "result.json").unlink()
+    (tmp_path / "research" / "cost_stress" / candidate_id / "result.json").unlink()
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert result.evidence["asset_class"] == "crypto"
+    assert result.evidence["data_source"] == "sqlite"
+    assert result.evidence["walk_forward_artifact_exists"] is False
+    assert result.evidence["cost_stress_artifact_exists"] is False
+    assert any(reason.startswith("walk_forward_artifact_path_missing:") for reason in result.reasons)
+    assert any(reason.startswith("cost_stress_artifact_path_missing:") for reason in result.reasons)
+    assert result.evidence["validation_contract_status"] == "blocked"
+
+
 def test_crypto_trade_count_zero_fails_promotion(tmp_path: Path) -> None:
     candidate_id = _write_candidate_fixture(
         tmp_path,
@@ -615,6 +785,109 @@ def test_crypto_trade_count_zero_fails_promotion(tmp_path: Path) -> None:
 
     assert result.decision == "BLOCKED"
     assert "trade_count_zero: paper-review candidates must have at least one completed trade" in result.reasons
+
+
+def test_promotion_gate_fail_closed_when_dsr_evidence_missing(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_missing_dsr_evidence",
+        profile="good",
+        include_strategy_manifest=True,
+    )
+    candidate_path = tmp_path / "research" / "candidates" / candidate_id / "candidate.json"
+    cost_stress_path = tmp_path / "research" / "cost_stress" / candidate_id / "result.json"
+    candidate_payload = json.loads(candidate_path.read_text(encoding="utf-8"))
+    for key in (
+        "daily_returns",
+        "net_returns",
+        "return_series",
+        "net_return_series",
+        "returns",
+        "return_observation_count",
+        "n_observations",
+        "n_periods",
+        "bar_count",
+        "sample_count",
+    ):
+        candidate_payload["metrics"].pop(key, None)
+    _write_json(candidate_path, candidate_payload)
+
+    cost_stress_payload = json.loads(cost_stress_path.read_text(encoding="utf-8"))
+    cost_stress_payload["levels"] = []
+    _write_json(cost_stress_path, cost_stress_payload)
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert result.evidence["validation_stats"]["available_components"]["deflated_sharpe_ratio"] is False
+    assert "missing_deflated_sharpe_ratio: promotion requires DSR evidence after trial counting" in result.reasons
+
+
+def test_promotion_gate_fail_closed_when_pbo_path_trials_missing(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_missing_pbo_trials",
+        profile="good",
+        include_strategy_manifest=True,
+    )
+    candidate_path = tmp_path / "research" / "candidates" / candidate_id / "candidate.json"
+    walk_forward_path = tmp_path / "research" / "walk_forward" / candidate_id / "result.json"
+    candidate_payload = json.loads(candidate_path.read_text(encoding="utf-8"))
+    candidate_payload["metrics"].pop("pbo_trials", None)
+    _write_json(candidate_path, candidate_payload)
+
+    walk_forward_payload = json.loads(walk_forward_path.read_text(encoding="utf-8"))
+    walk_forward_payload["pbo_trials"] = []
+    _write_json(walk_forward_path, walk_forward_payload)
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert result.evidence["validation_stats"]["available_components"]["pbo"] is False
+    assert "missing_pbo_evidence: promotion requires CPCV/PBO path statistics, not a single best-path summary" in result.reasons
+
+
+def test_promotion_gate_fail_closed_when_trial_counting_missing(tmp_path: Path) -> None:
+    candidate_id = _write_candidate_fixture(
+        tmp_path,
+        candidate_id="cand_missing_trial_counting",
+        profile="good",
+        include_strategy_manifest=True,
+    )
+    candidate_path = tmp_path / "research" / "candidates" / candidate_id / "candidate.json"
+    experiment_path = tmp_path / "research" / "experiments" / "exp_validation" / "manifest.json"
+    walk_forward_path = tmp_path / "research" / "walk_forward" / candidate_id / "result.json"
+    cost_stress_path = tmp_path / "research" / "cost_stress" / candidate_id / "result.json"
+
+    candidate_payload = json.loads(candidate_path.read_text(encoding="utf-8"))
+    candidate_payload["metrics"].pop("trial_count", None)
+    candidate_payload["metrics"].pop("trial_sharpes", None)
+    candidate_payload["metrics"].pop("candidate_trial_sharpes", None)
+    candidate_payload["metrics"].pop("wf_fold_sharpes", None)
+    candidate_payload["metrics"].pop("pbo_trials", None)
+    candidate_payload["metrics"].pop("cost_stress_levels", None)
+    _write_json(candidate_path, candidate_payload)
+
+    experiment_payload = json.loads(experiment_path.read_text(encoding="utf-8"))
+    experiment_payload["param_grid"] = {}
+    _write_json(experiment_path, experiment_payload)
+
+    walk_forward_payload = json.loads(walk_forward_path.read_text(encoding="utf-8"))
+    walk_forward_payload["pbo_trials"] = []
+    walk_forward_payload["fold_sharpes"] = []
+    walk_forward_payload["folds"] = []
+    _write_json(walk_forward_path, walk_forward_payload)
+
+    cost_stress_payload = json.loads(cost_stress_path.read_text(encoding="utf-8"))
+    cost_stress_payload["levels"] = []
+    _write_json(cost_stress_path, cost_stress_payload)
+
+    result = ResearchPromotionGate(data_root=str(tmp_path)).evaluate(candidate_id)
+
+    assert result.decision == "BLOCKED"
+    assert result.evidence["validation_effective_trial_count"] == 0
+    assert result.evidence["validation_independent_trial_count"] == 0
+    assert "insufficient_effective_trials: promotion requires at least 2 effective and independent trials" in result.reasons
 
 
 def test_crypto_missing_event_driven_ledger_evidence_blocks_paper_candidate(tmp_path: Path) -> None:

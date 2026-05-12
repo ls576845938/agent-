@@ -25,6 +25,7 @@ from quant_us.research.automation.factor_evidence import (
     estimate_candidate_style_exposure,
 )
 from quant_us.research.automation.strategy_compiler import ResearchStrategyCompiler
+from quant_us.research.portfolio_research import assess_candidate_quality
 
 
 @dataclass(frozen=True)
@@ -49,6 +50,8 @@ class FactorMiningScore:
     generation_family: str = ""
     complexity_score: int = 0
     formula_signature: str = ""
+    quality_score: float = 0.0
+    quality_profile: dict[str, Any] = field(default_factory=dict)
     selected: bool = False
     reject_reason: str = ""
     max_abs_correlation_to_selected: float = 0.0
@@ -261,9 +264,11 @@ class FactorMiningEngine:
                 "factor_id": score.factor_id,
                 "bar_size": score.bar_size,
                 "score": round(score.score, 6),
+                "quality_score": round(score.quality_score, 6),
                 "stability_score": round(score.stability_score, 6),
                 "selected": score.selected,
                 "reject_reason": score.reject_reason,
+                "quality_warnings": list(score.quality_profile.get("warnings", []) or []),
                 "generation_family": score.generation_family,
                 "complexity_score": score.complexity_score,
             }
@@ -449,12 +454,28 @@ class FactorMiningEngine:
                     turnover=score.turnover,
                     bar_size=score.bar_size,
                 )
+            quality_profile = assess_candidate_quality(
+                style_exposure=style_exposure,
+                capacity_profile=capacity_profile,
+                turnover_profile=turnover_profile,
+            ).to_dict()
+            reject_reason = score.reject_reason
+            if not reject_reason and not quality_profile.get("eligible", True):
+                rejection_reasons = list(quality_profile.get("rejection_reasons", []) or [])
+                reject_reason = (
+                    f"quality_filter:{rejection_reasons[0]}"
+                    if rejection_reasons
+                    else "quality_filter"
+                )
             enriched.append(
                 _replace_score(
                     score,
                     style_exposure=style_exposure,
                     capacity_profile=capacity_profile,
                     turnover_profile=turnover_profile,
+                    quality_score=float(quality_profile.get("quality_score", 0.0) or 0.0),
+                    quality_profile=quality_profile,
+                    reject_reason=reject_reason,
                 )
             )
 
@@ -462,7 +483,8 @@ class FactorMiningEngine:
             enriched,
             key=lambda item: (
                 bool(item.reject_reason),
-                -item.score,
+                -(item.score + item.quality_score * 5.0),
+                -item.quality_score,
                 -item.stability_score,
                 item.complexity_score,
                 item.factor_id,
@@ -489,24 +511,32 @@ class FactorMiningEngine:
             configs.append(self._build_single_factor_strategy_config(run_id, score, symbols))
 
         for bar_size, bar_scores in grouped.items():
-            ranked = sorted(bar_scores, key=lambda item: item.score, reverse=True)
+            ranked = sorted(
+                bar_scores,
+                key=lambda item: (item.score + item.quality_score * 5.0, item.quality_score),
+                reverse=True,
+            )
             if len(ranked) >= 2:
-                configs.append(
-                    self._build_weighted_basket_strategy_config(
-                        run_id=run_id,
-                        bar_size=bar_size,
-                        scores=ranked[: min(3, len(ranked))],
-                        symbols=symbols,
-                    )
+                basket_config = self._build_weighted_basket_strategy_config(
+                    run_id=run_id,
+                    bar_size=bar_size,
+                    scores=ranked[: min(3, len(ranked))],
+                    symbols=symbols,
                 )
-                configs.append(
-                    self._build_consensus_strategy_config(
-                        run_id=run_id,
-                        bar_size=bar_size,
-                        scores=ranked[: min(3, len(ranked))],
-                        symbols=symbols,
-                    )
+                if basket_config["candidate_evidence"].get("candidate_quality", {}).get(
+                    "eligible", False
+                ):
+                    configs.append(basket_config)
+                consensus_config = self._build_consensus_strategy_config(
+                    run_id=run_id,
+                    bar_size=bar_size,
+                    scores=ranked[: min(3, len(ranked))],
+                    symbols=symbols,
                 )
+                if consensus_config["candidate_evidence"].get("candidate_quality", {}).get(
+                    "eligible", False
+                ):
+                    configs.append(consensus_config)
         return configs
 
     def _build_single_factor_strategy_config(
@@ -858,6 +888,26 @@ class FactorMiningEngine:
             "selected_count": len(selected),
             "selected_factor_ids": [score.factor_id for score in selected],
             "compiled_strategy_count": int(strategy_config_count),
+            "quality_filter": {
+                "eligible_candidates": sum(
+                    1
+                    for score in final_scores
+                    if score.quality_profile.get("eligible", False)
+                ),
+                "rejected_candidates": sum(
+                    1
+                    for score in final_scores
+                    if str(score.reject_reason).startswith("quality_filter:")
+                ),
+                "mean_quality_score": round(
+                    sum(score.quality_score for score in final_scores) / max(len(final_scores), 1),
+                    6,
+                ),
+                "selected_mean_quality_score": round(
+                    sum(score.quality_score for score in selected) / max(len(selected), 1),
+                    6,
+                ),
+            },
             "style_exposure_coverage": {
                 "covered_candidates": len(covered),
                 "missing_candidates": len(final_scores) - len(covered),
@@ -1078,6 +1128,8 @@ def _replace_score(
     style_exposure: dict[str, Any] | None = None,
     capacity_profile: dict[str, Any] | None = None,
     turnover_profile: dict[str, Any] | None = None,
+    quality_score: float | None = None,
+    quality_profile: dict[str, Any] | None = None,
     selected: bool | None = None,
     reject_reason: str | None = None,
     max_abs_correlation_to_selected: float | None = None,
@@ -1098,6 +1150,10 @@ def _replace_score(
         payload["capacity_profile"] = dict(capacity_profile)
     if turnover_profile is not None:
         payload["turnover_profile"] = dict(turnover_profile)
+    if quality_score is not None:
+        payload["quality_score"] = quality_score
+    if quality_profile is not None:
+        payload["quality_profile"] = dict(quality_profile)
     if selected is not None:
         payload["selected"] = selected
     if reject_reason is not None:
@@ -1121,6 +1177,7 @@ def _single_candidate_evidence(score: FactorMiningScore) -> dict[str, Any]:
         "style_exposure": dict(score.style_exposure),
         "capacity": dict(score.capacity_profile),
         "turnover": dict(score.turnover_profile),
+        "candidate_quality": dict(score.quality_profile),
         "generation_family": score.generation_family,
         "complexity_score": score.complexity_score,
         "formula_signature": score.formula_signature,
@@ -1140,10 +1197,21 @@ def _aggregate_candidate_evidence(
     style_exposure = _aggregate_style_exposure(scores, weights)
     capacity = _aggregate_capacity_profiles(scores, weights)
     turnover = _aggregate_turnover_profiles(scores, weights)
+    max_component_correlation = max(
+        (float(score.max_abs_correlation_to_selected or 0.0) for score in scores),
+        default=0.0,
+    )
+    quality = assess_candidate_quality(
+        style_exposure=style_exposure,
+        capacity_profile=capacity,
+        turnover_profile=turnover,
+        max_abs_correlation=max_component_correlation,
+    ).to_dict()
     return {
         "schema_version": "factor_mining_candidate_evidence_v1",
         "factor_ids": [score.factor_id for score in scores],
         "candidate_rank": min(score.candidate_rank for score in scores),
+        "candidate_quality": quality,
         "stability_score": round(
             sum(score.stability_score for score in scores) / len(scores),
             6,
@@ -1171,6 +1239,11 @@ def _aggregate_candidate_evidence(
             for score in scores
             if str(score.formula_signature).strip()
         },
+        "component_quality_scores": {
+            score.factor_id: round(float(score.quality_score or 0.0), 6)
+            for score in scores
+        },
+        "max_component_correlation": round(max_component_correlation, 6),
     }
 
 

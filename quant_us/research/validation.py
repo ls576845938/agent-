@@ -33,6 +33,11 @@ def summarize_candidate_validation(
     experiment_data = experiment_data or {}
 
     cv_summary = _summarize_cv(metrics, walk_forward_artifact)
+    lookahead_controls = _summarize_lookahead_controls(
+        metrics=metrics,
+        walk_forward_artifact=walk_forward_artifact,
+        experiment_data=experiment_data,
+    )
     trial_sharpes = _collect_trial_sharpes(metrics, walk_forward_artifact, cost_stress_artifact)
     pbo_trials = _collect_pbo_trials(metrics, walk_forward_artifact)
     cost_levels = _collect_cost_levels(metrics, cost_stress_artifact)
@@ -63,6 +68,7 @@ def summarize_candidate_validation(
     )
     promotion_gate_contract = _build_promotion_gate_contract(
         cv_summary=cv_summary,
+        lookahead_controls=lookahead_controls,
         trial_counting=trial_counting,
         dsr_summary=dsr_summary,
         pbo_summary=pbo_summary,
@@ -75,6 +81,7 @@ def summarize_candidate_validation(
         "deflated_sharpe_ratio": dsr_summary["dsr"] is not None,
         "pbo": pbo_summary["pbo"] is not None,
         "multiple_testing": multiple_testing["mode"] != "unavailable",
+        "lookahead_controls": lookahead_controls["recorded"] and lookahead_controls["passed"],
         "net_return_distribution": return_distribution["count"] > 0,
         "cost_before_after": cost_before_after["mode"] != "unavailable",
     }
@@ -85,6 +92,7 @@ def summarize_candidate_validation(
         "status": "complete" if complete else "partial",
         "available_components": available_components,
         "cv_summary": cv_summary,
+        "lookahead_controls": lookahead_controls,
         "trial_counting": trial_counting,
         "deflated_sharpe_ratio": dsr_summary,
         "pbo": pbo_summary,
@@ -131,22 +139,37 @@ def _summarize_cv(
         except ValueError:
             path_count = None
 
+    purge_steps = _first_int(
+        walk_forward_artifact,
+        ("purge_bars", "purge_steps", "purge_periods"),
+    )
+    if purge_steps is None:
+        purge_steps = _first_int(metrics, ("purge_bars", "purge_steps", "purge_periods"))
     embargo_steps = _first_int(
         walk_forward_artifact,
         ("embargo_bars", "embargo_steps", "embargo_periods"),
     )
-    purged = _coerce_bool(walk_forward_artifact.get("purged"))
+    if embargo_steps is None:
+        embargo_steps = _first_int(metrics, ("embargo_bars", "embargo_steps", "embargo_periods"))
+    purged = _first_bool(walk_forward_artifact, ("purged", "is_purged"))
     if purged is None:
-        purged = method in {"purged_kfold", "cpcv"}
-    embargoed = embargo_steps is not None and embargo_steps > 0
-    if not embargoed:
-        embargoed = method in {"embargoed_walk_forward", "cpcv"}
+        purged = _first_bool(metrics, ("purged", "is_purged"))
+    embargoed = _first_bool(walk_forward_artifact, ("embargoed", "is_embargoed"))
+    if embargoed is None:
+        embargoed = _first_bool(metrics, ("embargoed", "is_embargoed"))
+    if embargoed is None and embargo_steps is not None:
+        embargoed = embargo_steps > 0
+    purge_recorded = purged is not None or purge_steps is not None
+    embargo_recorded = embargoed is not None or embargo_steps is not None
 
     return {
         "method": method,
-        "purged": bool(purged),
-        "embargoed": bool(embargoed),
+        "purged": bool(purged) if purged is not None else False,
+        "purge_steps": purge_steps or 0,
+        "purge_recorded": purge_recorded,
+        "embargoed": bool(embargoed) if embargoed is not None else False,
         "embargo_steps": embargo_steps or 0,
+        "embargo_recorded": embargo_recorded,
         "fold_count": len(folds),
         "path_count": path_count or 0,
         "train_window_count": raw_n_splits or 0,
@@ -154,6 +177,50 @@ def _summarize_cv(
         "pass_rate": round(float(pass_rate), 6) if pass_rate is not None else None,
         "mean_oos_sharpe": round(_mean(oos_sharpes), 6) if oos_sharpes else None,
         "median_oos_sharpe": round(_median(oos_sharpes), 6) if oos_sharpes else None,
+    }
+
+
+def _summarize_lookahead_controls(
+    *,
+    metrics: Mapping[str, Any],
+    walk_forward_artifact: Mapping[str, Any],
+    experiment_data: Mapping[str, Any],
+) -> dict[str, Any]:
+    params = experiment_data.get("params", {})
+    if not isinstance(params, Mapping):
+        params = {}
+
+    guard = _first_string(
+        walk_forward_artifact,
+        ("lookahead_guard", "lookahead_policy", "feature_timing_guard"),
+    )
+    if guard is None:
+        guard = _first_string(metrics, ("lookahead_guard", "lookahead_policy", "feature_timing_guard"))
+    if guard is None:
+        guard = _first_string(experiment_data, ("lookahead_guard", "lookahead_policy", "feature_timing_guard"))
+    if guard is None:
+        guard = _first_string(params, ("lookahead_guard", "lookahead_policy", "feature_timing_guard"))
+
+    violations: list[str] = []
+    for key in ("bfill_features", "shift_minus_one", "uses_future_returns", "same_bar_label"):
+        value = _first_bool(params, (key,))
+        if value is True:
+            violations.append(key)
+    for key in ("lookahead_detected", "has_lookahead", "future_leak_detected"):
+        value = _first_bool(metrics, (key,))
+        if value is True:
+            violations.append(key)
+        value = _first_bool(walk_forward_artifact, (key,))
+        if value is True:
+            violations.append(key)
+
+    recorded = guard is not None
+    passed = recorded and not violations
+    return {
+        "recorded": recorded,
+        "guard": guard,
+        "violations": violations,
+        "passed": passed,
     }
 
 
@@ -187,8 +254,6 @@ def _summarize_trial_counting(
     )
     components = [
         declared or 0,
-        int(cv_summary.get("path_count", 0) or 0),
-        int(cv_summary.get("fold_count", 0) or 0),
         param_grid_trials,
         len(trial_sharpes),
         len(cost_levels),
@@ -396,6 +461,7 @@ def _summarize_multiple_testing(
 def _build_promotion_gate_contract(
     *,
     cv_summary: Mapping[str, Any],
+    lookahead_controls: Mapping[str, Any],
     trial_counting: Mapping[str, Any],
     dsr_summary: Mapping[str, Any],
     pbo_summary: Mapping[str, Any],
@@ -412,7 +478,9 @@ def _build_promotion_gate_contract(
     pbo = _first_float(pbo_summary, ("pbo",))
     checks = {
         "cv_method_allowed": method in {"cpcv", "purged_kfold", "embargoed_walk_forward"},
-        "purged_or_embargoed": bool(cv_summary.get("purged")) or bool(cv_summary.get("embargoed")) or method == "cpcv",
+        "cpcv_available": method == "cpcv" and validation_paths >= 2,
+        "purged_or_embargoed": bool(cv_summary.get("purged")) or bool(cv_summary.get("embargoed")),
+        "purge_embargo_recorded": bool(cv_summary.get("purge_recorded")) and bool(cv_summary.get("embargo_recorded")),
         "multi_path_validation": validation_paths >= 2,
         "trial_count_sufficient": effective_trials >= 2 and independent_trials >= 2,
         "dsr_available": dsr is not None,
@@ -421,10 +489,14 @@ def _build_promotion_gate_contract(
         "pbo_passed": pbo is not None and pbo <= 0.50,
         "multiple_testing_complete": multiple_testing.get("passed") is not None,
         "multiple_testing_passed": multiple_testing.get("passed") is True,
+        "lookahead_guard_recorded": bool(lookahead_controls.get("recorded")),
+        "lookahead_guard_passed": lookahead_controls.get("passed") is True,
     }
     blocking_checks = (
         "cv_method_allowed",
+        "cpcv_available",
         "purged_or_embargoed",
+        "purge_embargo_recorded",
         "multi_path_validation",
         "trial_count_sufficient",
         "dsr_available",
@@ -433,27 +505,37 @@ def _build_promotion_gate_contract(
         "pbo_passed",
         "multiple_testing_complete",
         "multiple_testing_passed",
+        "lookahead_guard_recorded",
+        "lookahead_guard_passed",
     )
     status = "passed" if all(checks[name] for name in blocking_checks) else "blocked"
     return {
         "status": status,
         "required": {
             "allowed_cv_methods": ["cpcv", "purged_kfold", "embargoed_walk_forward"],
+            "required_cv_method": "cpcv",
             "min_validation_paths": 2,
             "min_effective_trial_count": 2,
             "min_independent_trial_count": 2,
             "min_dsr": 0.10,
             "max_pbo": 0.50,
             "familywise_alpha": 0.05,
+            "lookahead_guard_recorded": True,
         },
         "observed": {
             "cv_method": method,
             "validation_paths": validation_paths,
+            "purged": bool(cv_summary.get("purged")),
+            "purge_recorded": bool(cv_summary.get("purge_recorded")),
+            "embargoed": bool(cv_summary.get("embargoed")),
+            "embargo_recorded": bool(cv_summary.get("embargo_recorded")),
             "effective_trial_count": effective_trials,
             "independent_trial_count": independent_trials,
             "dsr": dsr,
             "pbo": pbo,
             "multiple_testing_mode": str(multiple_testing.get("mode", "unavailable")),
+            "lookahead_guard_recorded": bool(lookahead_controls.get("recorded")),
+            "lookahead_violations": list(lookahead_controls.get("violations", []) or []),
         },
         "checks": checks,
     }
@@ -869,6 +951,14 @@ def _first_float(payload: Mapping[str, Any], keys: Sequence[str]) -> float | Non
     return None
 
 
+def _first_string(payload: Mapping[str, Any], keys: Sequence[str]) -> str | None:
+    for key in keys:
+        if key not in payload or payload.get(key) in (None, ""):
+            continue
+        return str(payload[key])
+    return None
+
+
 def _first_int(payload: Mapping[str, Any], keys: Sequence[str]) -> int | None:
     for key in keys:
         if key not in payload or payload.get(key) is None:
@@ -877,6 +967,16 @@ def _first_int(payload: Mapping[str, Any], keys: Sequence[str]) -> int | None:
             return int(payload[key])
         except (TypeError, ValueError):
             continue
+    return None
+
+
+def _first_bool(payload: Mapping[str, Any], keys: Sequence[str]) -> bool | None:
+    for key in keys:
+        if key not in payload or payload.get(key) is None:
+            continue
+        value = _coerce_bool(payload[key])
+        if value is not None:
+            return value
     return None
 
 

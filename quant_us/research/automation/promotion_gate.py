@@ -191,6 +191,8 @@ class ResearchPromotionGate:
                 "is_overfit": report.is_overfit,
                 "degradation_pct": report.degradation_pct,
                 "reason_count": len(report.reasons),
+                "lookahead_risk": report.lookahead_risk,
+                "lookahead_description": report.lookahead_description,
             }
             if report.is_overfit:
                 reasons.append("overfit_risk_high: " + "; ".join(report.reasons))
@@ -701,6 +703,9 @@ class ResearchPromotionGate:
         multiple_testing = summary.get("multiple_testing", {})
         if not isinstance(multiple_testing, dict):
             multiple_testing = {}
+        lookahead_controls = summary.get("lookahead_controls", {})
+        if not isinstance(lookahead_controls, dict):
+            lookahead_controls = {}
         cost_before_after = summary.get("cost_before_after", {})
         if not isinstance(cost_before_after, dict):
             cost_before_after = {}
@@ -722,6 +727,7 @@ class ResearchPromotionGate:
         evidence["probability_of_backtest_overfitting"] = pbo_summary.get("pbo")
         evidence["validation_cost_mode"] = str(cost_before_after.get("mode", "unavailable"))
         evidence["validation_multiple_testing"] = multiple_testing
+        evidence["validation_lookahead_controls"] = lookahead_controls
         evidence["validation_contract_status"] = str(promotion_contract.get("status", "unknown"))
         evidence["validation_promotion_contract"] = promotion_contract
 
@@ -765,9 +771,16 @@ class ResearchPromotionGate:
                 f"validation_cv_method_not_allowed: method={evidence['validation_cv_method']} "
                 "(need cpcv, purged_kfold, or embargoed_walk_forward)"
             )
-        if not contract_checks.get("purged_or_embargoed", False):
+        if not contract_checks.get("cpcv_available", False):
             reasons.append(
-                "validation_purge_embargo_missing: promotion requires purged or embargoed out-of-sample validation"
+                "missing_cpcv_evidence: promotion requires CPCV metadata with at least 2 persisted validation paths"
+            )
+        if (
+            not contract_checks.get("purged_or_embargoed", False)
+            or not contract_checks.get("purge_embargo_recorded", False)
+        ):
+            reasons.append(
+                "validation_purge_embargo_missing: promotion requires recorded purge and embargo parameters for out-of-sample validation"
             )
         if not contract_checks.get("multi_path_validation", False):
             reasons.append(
@@ -784,6 +797,14 @@ class ResearchPromotionGate:
         elif not contract_checks.get("multiple_testing_passed", False):
             reasons.append(
                 "multiple_testing_rejected: observed Sharpe does not survive family-wise multiple-testing control"
+            )
+        if not contract_checks.get("lookahead_guard_recorded", False):
+            reasons.append(
+                "lookahead_guard_missing: promotion requires recorded no-lookahead feature/label timing controls"
+            )
+        elif not contract_checks.get("lookahead_guard_passed", False):
+            reasons.append(
+                "lookahead_guard_failed: validation evidence reports possible future-data leakage"
             )
 
     @staticmethod
@@ -1816,6 +1837,8 @@ class ResearchPromotionGate:
             for token in (
                 "missing_deflated_sharpe_ratio",
                 "missing_pbo_evidence",
+                "missing_cpcv_evidence",
+                "lookahead_guard_",
                 "validation_cv_",
                 "single_path_validation_not_allowed",
                 "insufficient_effective_trials",
@@ -1829,6 +1852,8 @@ class ResearchPromotionGate:
             for token in (
                 "missing_deflated_sharpe_ratio",
                 "missing_pbo_evidence",
+                "missing_cpcv_evidence",
+                "lookahead_guard_",
                 "validation_cv_",
                 "single_path_validation_not_allowed",
                 "insufficient_effective_trials",
@@ -2011,14 +2036,39 @@ class ResearchPromotionGate:
                         "observed": {
                             "cv_method": evidence.get("validation_cv_method", "unknown"),
                             "purged": cv_summary.get("purged"),
+                            "purge_recorded": cv_summary.get("purge_recorded"),
+                            "purge_steps": cv_summary.get("purge_steps"),
                             "embargoed": cv_summary.get("embargoed"),
+                            "embargo_recorded": cv_summary.get("embargo_recorded"),
                             "embargo_steps": cv_summary.get("embargo_steps"),
                         },
                         "required": {
-                            "purged_or_embargoed": True,
+                            "purged": True,
+                            "embargoed": True,
+                            "purge_embargo_recorded": True,
                             "allowed_cv_methods": required.get(
                                 "allowed_cv_methods",
                                 ["cpcv", "purged_kfold", "embargoed_walk_forward"],
+                            ),
+                        },
+                    }
+                )
+            elif code == "missing_cpcv_evidence":
+                detail.update(
+                    {
+                        "category": "validation",
+                        "cli_next_command": catalog.get("walk_forward_cli")
+                        or catalog.get("walk_forward_script")
+                        or catalog.get("research_rerun", ""),
+                        "observed": {
+                            "cv_method": evidence.get("validation_cv_method", "unknown"),
+                            "fold_count": cv_summary.get("fold_count"),
+                            "path_count": cv_summary.get("path_count"),
+                        },
+                        "required": {
+                            "required_cv_method": required.get("required_cv_method", "cpcv"),
+                            "min_validation_paths": required.get(
+                                "min_validation_paths", 2
                             ),
                         },
                     }
@@ -2092,6 +2142,27 @@ class ResearchPromotionGate:
                         "required": {
                             "familywise_alpha": required.get("familywise_alpha", 0.05),
                             "requires_familywise_error_control": True,
+                        },
+                    }
+                )
+            elif code in {"lookahead_guard_missing", "lookahead_guard_failed"}:
+                lookahead_controls = dict(
+                    validation_stats.get("lookahead_controls", {}) or {}
+                )
+                detail.update(
+                    {
+                        "category": "validation",
+                        "cli_next_command": catalog.get("research_rerun")
+                        or catalog.get("walk_forward_cli")
+                        or catalog.get("promotion_gate_cli", ""),
+                        "observed": {
+                            "recorded": lookahead_controls.get("recorded"),
+                            "guard": lookahead_controls.get("guard"),
+                            "violations": lookahead_controls.get("violations"),
+                        },
+                        "required": {
+                            "lookahead_guard_recorded": True,
+                            "violations": [],
                         },
                     }
                 )

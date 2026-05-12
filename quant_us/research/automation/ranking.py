@@ -82,6 +82,7 @@ class CandidateRankingEngine:
         regime = self._score_regime_robustness(metrics)
         simplicity = self._score_simplicity(metrics)
         turnover = self._score_turnover(metrics)
+        candidate_quality = self._score_candidate_quality(metrics, candidate_id)
         overfit = self._score_overfit_penalty(scorecard.overfit_risk)
 
         return {
@@ -92,6 +93,7 @@ class CandidateRankingEngine:
             "regime_robustness": round(regime, 2),
             "simplicity_bonus": round(simplicity, 2),
             "turnover_penalty": round(turnover, 2),
+            "candidate_quality_overlay": round(candidate_quality, 2),
             "overfit_penalty": round(overfit, 2),
         }
 
@@ -191,6 +193,22 @@ class CandidateRankingEngine:
             return -5.0
         return 0.0
 
+    def _score_candidate_quality(self, metrics: dict[str, Any], candidate_id: str) -> float:
+        payload = self._load_candidate_quality(candidate_id)
+        quality_score = float(
+            payload.get("quality_score", metrics.get("candidate_quality_score", 0.0)) or 0.0
+        )
+        eligible = payload.get("eligible", metrics.get("candidate_quality_eligible"))
+        warnings = list(payload.get("warnings", []) or [])
+        rejection_reasons = list(payload.get("rejection_reasons", []) or [])
+
+        score = quality_score * 5.0
+        if eligible is False:
+            score -= 3.0
+        score -= min(len(warnings), 3) * 0.5
+        score -= min(len(rejection_reasons), 2) * 1.0
+        return score
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
@@ -208,3 +226,17 @@ class CandidateRankingEngine:
             raise ValueError(f"Candidate {candidate_id} not found")
         data = json.loads(path.read_text(encoding="utf-8"))
         return data.get("metrics", {})
+
+    def _load_candidate_quality(self, candidate_id: str) -> dict[str, Any]:
+        path = (
+            self.data_root
+            / "research"
+            / "candidates"
+            / candidate_id
+            / "candidate.json"
+        )
+        if not path.exists():
+            raise ValueError(f"Candidate {candidate_id} not found")
+        data = json.loads(path.read_text(encoding="utf-8"))
+        payload = data.get("candidate_quality", {})
+        return payload if isinstance(payload, dict) else {}

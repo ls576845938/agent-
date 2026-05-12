@@ -49,6 +49,9 @@ export default function OptimizationPanel({
   onOptimize, onCostStress, onWalkForward, onPortfolioOptimize,
   onDataQuality, onPromotionGate, onApplyWeights,
 }: OptimizationPanelProps) {
+  const promotionGates = promotionGate?.gates ?? [];
+  const promotionRecommendations = promotionGate?.recommendations ?? [];
+  const promotionSummary = promotionGate?.backtest_summary;
   const btcOutcome = cryptoClosure
     ? cryptoClosure.blockers.length > 0 ? 'BLOCKED' : cryptoClosure.decision === 'pass' ? 'PASS' : 'BLOCKED'
     : promotionGate
@@ -60,11 +63,11 @@ export default function OptimizationPanel({
       ? cryptoClosure.blockers[0]
       : cryptoClosure.recommendations[0] ?? `${cryptoClosure.next_stage} ready`
     : promotionGate
-      ? promotionGate.gates.find((gate) => gate.status !== 'pass')?.message ?? promotionGate.recommendations[0] ?? '等待闭环评估'
+      ? promotionGates.find((gate) => gate.status !== 'pass')?.message ?? promotionRecommendations[0] ?? '等待闭环评估'
       : dataQuality?.issues?.[0]?.message ?? '等待数据质量与闭环结果';
   const btcMeta = [
     {label: '数据完整性', value: cryptoClosure ? String(cryptoClosure.data_integrity.status ?? '-').toUpperCase() : dataQuality ? (dataQuality.is_usable ? 'PASS' : 'BLOCKED') : 'WAITING'},
-    {label: '候选数', value: cryptoClosure ? String(cryptoClosure.candidate_screen.candidate_count ?? 0) : promotionGate ? String(promotionGate.gates.length) : '0'},
+    {label: '候选数', value: cryptoClosure ? String(cryptoClosure.candidate_screen.candidate_count ?? 0) : promotionGate ? String(promotionGates.length) : '0'},
     {label: '下一阶段', value: cryptoClosure?.next_stage ?? promotionGate?.next_stage ?? 'research'},
     {label: '覆盖 interval', value: cryptoClosure?.target_intervals.join(' / ') ?? '1m / 5m / 15m / 1h / 4h / 1d'},
   ];
@@ -186,12 +189,12 @@ export default function OptimizationPanel({
             <div className="optimization-best"><span>参数稳定性</span><strong>{Number(walkForward.stability.parameter_stability_pct ?? 0).toFixed(0)}%</strong><p>Worst MDD {Number(walkForward.stability.worst_oos_drawdown_pct ?? 0).toFixed(2)}%</p></div>
           </div>
           <div className="walk-table">
-            {walkForward.windows.map((w) => (
+            {(walkForward.windows ?? []).map((w) => (
               <div key={w.fold} className={`walk-row ${w.survives ? 'stress-pass' : 'stress-fail'}`}><span>W{w.fold}</span><span>{w.survives ? 'PASS' : 'FAIL'}</span><span>{formatTimestamp(w.validation_start)} - {formatTimestamp(w.validation_end)}</span><span>{w.validation.total_return_pct.toFixed(2)}%</span><span>{w.validation.sharpe_ratio.toFixed(2)} Sharpe</span><span>{w.validation.max_drawdown_pct.toFixed(2)}% MDD</span><span>{formatParams(w.selected_params)}</span></div>
             ))}
           </div>
           <div className="regime-grid">
-            {walkForward.regimes.map((r) => (
+            {(walkForward.regimes ?? []).map((r) => (
               <div key={r.name} className={`regime-card ${r.survives ? 'stress-pass' : 'stress-fail'}`}><span>{r.survives ? 'PASS' : 'FAIL'}</span><strong>{r.label}</strong><p>{r.coverage_pct.toFixed(0)}% bars · Return {r.summary.total_return_pct.toFixed(2)}% · MDD {r.summary.max_drawdown_pct.toFixed(2)}%</p></div>
             ))}
           </div>
@@ -250,17 +253,17 @@ export default function OptimizationPanel({
         <div className="promotion-panel" data-testid="crypto-promotion-blockers">
           <div className="stress-summary-grid">
             <div className="optimization-best"><span>晋级决策</span><strong>{promotionGate.decision.toUpperCase()}</strong><p>{promotionGate.next_stage}</p></div>
-            <div className="optimization-best"><span>核心 Sharpe</span><strong>{promotionGate.backtest_summary.sharpe_ratio.toFixed(2)}</strong><p>MDD {promotionGate.backtest_summary.max_drawdown_pct.toFixed(2)}%</p></div>
-            <div className="optimization-best"><span>Manifest</span><strong>{promotionGate.manifest_id.slice(0, 8)}</strong><p>{promotionGate.manifest_path || 'not persisted'}</p></div>
-            <div className="optimization-best"><span>实验</span><strong>{promotionGate.experiment_record.experiment_name ?? '-'}</strong></div>
+            <div className="optimization-best"><span>核心 Sharpe</span><strong>{Number(promotionSummary?.sharpe_ratio ?? 0).toFixed(2)}</strong><p>MDD {Number(promotionSummary?.max_drawdown_pct ?? 0).toFixed(2)}%</p></div>
+            <div className="optimization-best"><span>Manifest</span><strong>{String(promotionGate.manifest_id ?? '-').slice(0, 8)}</strong><p>{promotionGate.manifest_path || 'not persisted'}</p></div>
+            <div className="optimization-best"><span>实验</span><strong>{promotionGate.experiment_record?.experiment_name ?? '-'}</strong></div>
           </div>
-          <div className="promotion-gate-list">{promotionGate.gates.map((g) => <div key={g.name} className={gateClass(g.status)}><span>{g.status.toUpperCase()}</span><strong>{g.name}</strong><p>{g.message}</p></div>)}</div>
+          <div className="promotion-gate-list">{promotionGates.map((g) => <div key={g.name} className={gateClass(g.status)}><span>{g.status.toUpperCase()}</span><strong>{g.name}</strong><p>{g.message}</p></div>)}</div>
           <div className="optimization-recommendations">
-            {promotionGate.gates.filter((g) => g.status !== 'pass').map((g) => (
+            {promotionGates.filter((g) => g.status !== 'pass').map((g) => (
               <p key={`promotion-blocker-${g.name}`}>阻断: {g.name} - {g.message}</p>
             ))}
           </div>
-          <div className="optimization-recommendations">{promotionGate.recommendations.map((r, i) => <p key={i}>{r}</p>)}</div>
+          <div className="optimization-recommendations">{promotionRecommendations.map((r, i) => <p key={i}>{r}</p>)}</div>
         </div>
       ) : null}
     </>

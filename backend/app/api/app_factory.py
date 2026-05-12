@@ -49,6 +49,7 @@ from backend.app.api.schemas import (
     StrategyOptimizationRequest,
     StrategyOptimizationResponse,
     StrategyInfo,
+    TaskStatusResponse,
     SystemOverviewResponse,
     USDataSyncRequest,
     USDataSyncResponse,
@@ -66,7 +67,7 @@ from backend.app.api.schemas import (
     WalkForwardResponse,
 )
 from backend.app.core.config import settings
-from backend.app.core.deps import crypto_closure_service, data_update_scheduler, market_data_service, promotion_gate_service, research_service, run_registry, us_quant_service
+from backend.app.core.deps import crypto_closure_service, data_update_scheduler, market_data_service, promotion_gate_service, research_service, run_registry, task_queue_service, us_quant_service
 from backend.app.core.exceptions import QuantStationError, RunNotFoundError
 
 
@@ -107,6 +108,12 @@ def _serialize_data_sync_result(result: Any):
         completed_at=result.completed_at,
         error=result.error,
     )
+
+
+def _serialize_task(task: dict[str, Any]) -> TaskStatusResponse:
+    payload = dict(task)
+    payload.setdefault("blockers", [])
+    return TaskStatusResponse.model_validate(payload)
 
 
 def _as_bool(value: Any) -> bool:
@@ -744,6 +751,16 @@ def create_app():
 
     router = APIRouter(prefix="/api")
 
+    def _submit_background_task(
+        *,
+        kind: str,
+        label: str,
+        request: dict[str, Any],
+        job,
+    ) -> TaskStatusResponse:
+        task = task_queue_service.submit(kind=kind, label=label, request=request, job=job)
+        return _serialize_task(task)
+
     @app.get("/metrics")
     async def metrics() -> Response:
         from quant_us.monitoring.metrics import MetricsCollector
@@ -1169,6 +1186,143 @@ def create_app():
             return WalkForwardResponse.model_validate(research_service.run_walk_forward(request.model_dump()))
         except (QuantStationError, ValueError) as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @router.get("/tasks", response_model=list[TaskStatusResponse], dependencies=[Depends(verify_api_key)])
+    async def list_background_tasks(kind: str = "", limit: int = 20) -> list[TaskStatusResponse]:
+        tasks = task_queue_service.list(kind=kind, limit=limit)
+        return [_serialize_task(task) for task in tasks]
+
+    @router.get("/tasks/{task_id}", response_model=TaskStatusResponse, dependencies=[Depends(verify_api_key)])
+    async def get_background_task(task_id: str) -> TaskStatusResponse:
+        try:
+            return _serialize_task(task_queue_service.get(task_id))
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=f"Unknown task id: {task_id}") from exc
+
+    @router.post("/tasks/crypto/closure", response_model=TaskStatusResponse, dependencies=[Depends(verify_api_key)])
+    async def submit_crypto_closure_task(request: CryptoClosureRequest) -> TaskStatusResponse:
+        payload = request.model_dump()
+        return _submit_background_task(
+            kind="crypto_closure",
+            label=f"BTC closure {request.symbol} {request.interval}",
+            request=payload,
+            job=lambda ctx: crypto_closure_service.run(payload),
+        )
+
+    @router.post("/tasks/research/promotion-gate", response_model=TaskStatusResponse, dependencies=[Depends(verify_api_key)])
+    async def submit_research_promotion_gate_task(request: ResearchPromotionGateRequest) -> TaskStatusResponse:
+        payload = request.model_dump()
+        return _submit_background_task(
+            kind="promotion_gate",
+            label=f"promotion gate {request.symbol} {request.mode}",
+            request=payload,
+            job=lambda ctx: promotion_gate_service.evaluate(payload),
+        )
+
+    @router.post("/tasks/integrations/qlib/build-dataset", response_model=TaskStatusResponse, dependencies=[Depends(verify_api_key)])
+    async def submit_qlib_build_dataset_task(request: dict) -> TaskStatusResponse:
+        payload = dict(request)
+
+        def job(ctx) -> dict[str, Any]:
+            from integrations.qlib_adapter.build_qlib_dataset import build_qlib_dataset
+
+            ctx.update(stage="build_dataset", message="building qlib dataset", progress=20)
+            result = build_qlib_dataset(
+                universe_path=payload.get("universe") or payload.get("universe_path") or "configs/universe/us_core_liquid.yaml",
+                start_date=str(payload.get("start_date") or "2020-01-01"),
+                end_date=str(payload.get("end_date") or "2025-12-31"),
+                data_version=str(payload.get("data_version") or "latest"),
+                run_id=str(payload.get("run_id") or "") or None,
+                data_root=str(payload.get("data_root") or "data"),
+                artifacts_root=str(payload.get("artifacts_root") or "artifacts/qlib_runs"),
+                source=str(payload.get("source") or "") or None,
+                asset_class=str(payload.get("asset_class") or "equity"),
+                bar_size=str(payload.get("bar_size") or "1d"),
+                dry_run=bool(payload.get("dry_run", False)),
+            )
+            ctx.update(stage="completed", message="qlib dataset built", progress=100)
+            result_payload = _result_dict(result)
+            result_payload["research_only"] = True
+            result_payload["live_enabled"] = False
+            return result_payload
+
+        return _submit_background_task(
+            kind="qlib_dataset",
+            label=f"Qlib dataset {payload.get('data_version') or 'latest'}",
+            request=payload,
+            job=job,
+        )
+
+    @router.post("/tasks/integrations/qlib/run-workflow", response_model=TaskStatusResponse, dependencies=[Depends(verify_api_key)])
+    async def submit_qlib_workflow_task(request: dict) -> TaskStatusResponse:
+        payload = dict(request)
+
+        def job(ctx) -> dict[str, Any]:
+            from integrations.qlib_adapter.run_qlib_workflow import run_qlib_workflow
+
+            ctx.update(stage="run_workflow", message="running qlib workflow", progress=30)
+            result = run_qlib_workflow(
+                config_path=payload.get("config") or payload.get("config_path") or "configs/qlib/us_lgbm_alpha158_daily.yaml",
+                run_id=str(payload.get("run_id") or "") or None,
+                artifacts_root=str(payload.get("artifacts_root") or "artifacts/qlib_runs"),
+                dry_run=bool(payload.get("dry_run", False)),
+            )
+            ctx.update(stage="completed", message="qlib workflow completed", progress=100)
+            result_payload = _result_dict(result)
+            result_payload["research_only"] = True
+            result_payload["live_enabled"] = False
+            return result_payload
+
+        return _submit_background_task(
+            kind="qlib_workflow",
+            label=f"Qlib workflow {payload.get('run_id') or 'latest'}",
+            request=payload,
+            job=job,
+        )
+
+    @router.post("/tasks/integrations/portfolio/optimize-weights", response_model=TaskStatusResponse, dependencies=[Depends(verify_api_key)])
+    async def submit_portfolio_optimize_weights_task(request: dict) -> TaskStatusResponse:
+        payload = dict(request)
+
+        def job(ctx) -> dict[str, Any]:
+            from integrations.pypfopt_adapter.optimize_weights import optimize_weights
+            from integrations.pypfopt_adapter.schemas import load_portfolio_config
+
+            ctx.update(stage="optimize_weights", message="optimizing portfolio weights", progress=40)
+            config = load_portfolio_config(payload.get("config") or payload.get("config_path") or "configs/portfolio/pypfopt_long_only_max_sharpe.yaml")
+            fallback_optimizer = str(payload.get("fallback_optimizer") or "")
+            if fallback_optimizer:
+                config = config.with_overrides(fallback_optimizer=fallback_optimizer)
+            frame, path, fallback_used = optimize_weights(
+                score_run_id=str(payload.get("score_run_id") or payload.get("run_id") or ""),
+                config=config,
+                portfolio_run_id=str(payload.get("portfolio_run_id") or "") or None,
+            )
+            latest_sum = None
+            if not frame.empty and "datetime" in frame.columns:
+                latest_date = frame["datetime"].max()
+                latest = frame[frame["datetime"] == latest_date]
+                latest_sum = float(latest["target_weight"].sum()) if "target_weight" in latest.columns else None
+            ctx.update(stage="completed", message="portfolio optimization completed", progress=100)
+            return {
+                "status": "completed",
+                "portfolio_run_id": path.parent.name,
+                "path": str(path),
+                "rows": int(len(frame)),
+                "fallback_used": bool(fallback_used),
+                "latest_weight_sum": latest_sum,
+                "preview": json.loads(frame.head(20).to_json(orient="records", date_format="iso")) if not frame.empty else [],
+                "research_only": True,
+                "live_enabled": False,
+                "order_generation": "disabled",
+            }
+
+        return _submit_background_task(
+            kind="portfolio_optimize_weights",
+            label=f"PyPortfolioOpt optimize {payload.get('portfolio_run_id') or payload.get('score_run_id') or 'latest'}",
+            request=payload,
+            job=job,
+        )
 
     @router.get("/runs/{run_id}", response_model=RunStatusResponse, dependencies=[Depends(verify_api_key)])
     async def get_run(run_id: str) -> RunStatusResponse:

@@ -4,11 +4,13 @@ import {LoadingSpinner} from '../components/LoadingSpinner';
 import {ModuleStateCard, type ModuleStateCardProps} from '../components/ModuleStateCard';
 import {apiGet} from '../lib/api';
 import {researchApi} from '../lib/research-api';
-import type {SystemOverviewResponse} from '../lib/shared-types';
+import {taskApi} from '../lib/task-api';
+import type {SystemOverviewResponse, TaskResponse} from '../lib/shared-types';
 import ExperimentList from './research/ExperimentList';
 import CandidateTable from './research/CandidateTable';
 import ExperimentReport from './research/ExperimentReport';
 import ExperimentCompare from './research/ExperimentCompare';
+import TaskQueuePanel from '../components/TaskQueuePanel';
 
 type LooseRecord = Record<string, any>;
 
@@ -117,6 +119,14 @@ function parseJsonObject(value: string, fallback: LooseRecord = {}): LooseRecord
     throw new Error('JSON 必须是对象');
   }
   return parsed;
+}
+
+function isActiveTask(task: TaskResponse | null): boolean {
+  return !!task && (task.status === 'queued' || task.status === 'running');
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => { setTimeout(resolve, ms); });
 }
 
 function fmt(value: unknown, digits = 2): string {
@@ -251,6 +261,7 @@ export default function ResearchDashboard() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState('');
+  const [taskQueue, setTaskQueue] = useState<TaskResponse[]>([]);
   const [tab, setTab] = useState('workflow');
   const [selectedExp, setSelectedExp] = useState<Experiment | null>(null);
   const [selectedReportExp, setSelectedReportExp] = useState('');
@@ -363,7 +374,7 @@ export default function ResearchDashboard() {
     let cancelled = false;
     (async () => {
       try {
-        await refresh(dataRoot);
+        await Promise.all([refresh(dataRoot), refreshTaskQueue()]);
       } catch (e: unknown) {
         if (!cancelled) setError(e instanceof Error ? e.message : '加载研究数据失败');
       } finally {
@@ -439,6 +450,53 @@ export default function ResearchDashboard() {
       await task();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy('');
+    }
+  };
+
+  const upsertTask = (task: TaskResponse) => {
+    setTaskQueue((current) => [task, ...current.filter((item) => item.task_id !== task.task_id)].slice(0, 8));
+  };
+
+  const refreshTaskQueue = async () => {
+    try {
+      const tasks = await taskApi.listTasks('', 8);
+      setTaskQueue(tasks);
+    } catch {
+      // Task queue is best-effort. A transient failure should not block the page.
+    }
+  };
+
+  const trackTask = async (taskId: string, onComplete?: (task: TaskResponse) => Promise<void> | void) => {
+    let current = await taskApi.getTask(taskId);
+    upsertTask(current);
+    while (isActiveTask(current)) {
+      await sleep(800);
+      current = await taskApi.getTask(taskId);
+      upsertTask(current);
+    }
+    if (onComplete) {
+      await onComplete(current);
+    }
+    return current;
+  };
+
+  const submitTrackedTask = async (
+    label: string,
+    submit: () => Promise<TaskResponse>,
+    onComplete?: (task: TaskResponse) => Promise<void> | void,
+  ) => {
+    setBusy(label);
+    setError('');
+    setMessage('');
+    try {
+      const task = await submit();
+      upsertTask(task);
+      void trackTask(task.task_id, onComplete).catch((e) => {
+        setError(e instanceof Error ? e.message : String(e));
+      });
+      return task;
     } finally {
       setBusy('');
     }
@@ -641,30 +699,47 @@ export default function ResearchDashboard() {
     strategy_id: pypfoptForm.strategyId.trim() || undefined,
   });
 
-  const handleQlibAction = (action: string) => runTask(`qlib-${action}`, async () => {
-    let result: LooseRecord;
-    if (action === 'build') {
-      result = await researchApi.buildQlibDataset(qlibPayload());
-    } else if (action === 'workflow') {
-      result = await researchApi.runQlibWorkflow(qlibPayload());
-    } else if (action === 'scores') {
-      if (!selectedQlibRunId) throw new Error('先填写或选择 run_id');
-      result = await researchApi.importQlibPredScore({...qlibPayload(), run_id: selectedQlibRunId});
-    } else if (action === 'metrics') {
-      if (!selectedQlibRunId) throw new Error('先填写或选择 run_id');
-      result = await researchApi.importQlibRecorderMetrics({...qlibPayload(), run_id: selectedQlibRunId});
-    } else {
-      if (!selectedQlibRunId) throw new Error('先填写或选择 run_id');
-      result = await researchApi.compileQlibStrategyManifest({...qlibPayload(), run_id: selectedQlibRunId});
+  const handleQlibAction = (action: string) => {
+    if (action === 'build' || action === 'workflow') {
+      void submitTrackedTask(`qlib-${action}`, async () => (
+        action === 'build'
+          ? taskApi.submitQlibBuildDatasetTask(qlibPayload())
+          : taskApi.submitQlibWorkflowTask(qlibPayload())
+      ), async (task) => {
+        const result = (task.result ?? {}) as LooseRecord;
+        setQlibActionResult({action, task_id: task.task_id, ...result});
+        await refreshIntegrationPanels();
+        const runId = String(result.run_id || selectedQlibRunId || '');
+        if (runId) {
+          setQlibRunDetail(await researchApi.getQlibRun(runId, qlibForm.artifactsRoot).catch(() => null));
+          setPypfoptForm(current => ({...current, scoreRunId: current.scoreRunId || runId}));
+        }
+        setMessage(`Qlib task ${task.status.toUpperCase()}: ${task.label}`);
+      });
+      return;
     }
-    setQlibActionResult({action, ...result});
-    await refreshIntegrationPanels();
-    const runId = String(result.run_id || selectedQlibRunId || '');
-    if (runId) {
-      setQlibRunDetail(await researchApi.getQlibRun(runId, qlibForm.artifactsRoot).catch(() => null));
-      setPypfoptForm(current => ({...current, scoreRunId: current.scoreRunId || runId}));
-    }
-  });
+
+    void runTask(`qlib-${action}`, async () => {
+      let result: LooseRecord;
+      if (action === 'scores') {
+        if (!selectedQlibRunId) throw new Error('先填写或选择 run_id');
+        result = await researchApi.importQlibPredScore({...qlibPayload(), run_id: selectedQlibRunId});
+      } else if (action === 'metrics') {
+        if (!selectedQlibRunId) throw new Error('先填写或选择 run_id');
+        result = await researchApi.importQlibRecorderMetrics({...qlibPayload(), run_id: selectedQlibRunId});
+      } else {
+        if (!selectedQlibRunId) throw new Error('先填写或选择 run_id');
+        result = await researchApi.compileQlibStrategyManifest({...qlibPayload(), run_id: selectedQlibRunId});
+      }
+      setQlibActionResult({action, ...result});
+      await refreshIntegrationPanels();
+      const runId = String(result.run_id || selectedQlibRunId || '');
+      if (runId) {
+        setQlibRunDetail(await researchApi.getQlibRun(runId, qlibForm.artifactsRoot).catch(() => null));
+        setPypfoptForm(current => ({...current, scoreRunId: current.scoreRunId || runId}));
+      }
+    });
+  };
 
   const loadQlibRunDetail = (runId: string) => runTask(`qlib-detail-${runId}`, async () => {
     setQlibRunDetail(await researchApi.getQlibRun(runId, qlibForm.artifactsRoot));
@@ -672,28 +747,43 @@ export default function ResearchDashboard() {
     setPypfoptForm(current => ({...current, scoreRunId: current.scoreRunId || runId}));
   });
 
-  const handlePypfoptAction = (action: string) => runTask(`pypfopt-${action}`, async () => {
-    const payload = pypfoptPayload();
-    if (action !== 'import' && !payload.score_run_id) throw new Error('先填写 score_run_id 或选择 Qlib run');
-    if (action === 'import' && !selectedPortfolioRunId) throw new Error('先填写或选择 portfolio_run_id');
-    let result: LooseRecord;
-    if (action === 'expected') {
-      result = await researchApi.buildPortfolioExpectedReturns(payload);
-    } else if (action === 'covariance') {
-      result = await researchApi.buildPortfolioCovariance(payload);
-    } else if (action === 'optimize') {
-      result = await researchApi.optimizePortfolioWeights(payload);
-    } else {
-      result = await researchApi.importPortfolioTargetWeights({...payload, portfolio_run_id: selectedPortfolioRunId});
+  const handlePypfoptAction = (action: string) => {
+    if (action === 'optimize') {
+      void submitTrackedTask('pypfopt-optimize', async () => taskApi.submitPortfolioOptimizeWeightsTask(pypfoptPayload()), async (task) => {
+        const result = (task.result ?? {}) as LooseRecord;
+        setPypfoptActionResult({action, task_id: task.task_id, ...result});
+        await refreshIntegrationPanels();
+        const portfolioRunId = String(result.portfolio_run_id || pypfoptPayload().portfolio_run_id || selectedPortfolioRunId || portfolioIntegrationRuns[0]?.portfolio_run_id || '');
+        if (portfolioRunId) {
+          setPypfoptForm(current => ({...current, portfolioRunId: current.portfolioRunId || portfolioRunId}));
+          setPortfolioIntegrationDetail(await researchApi.getPortfolioIntegrationRun(portfolioRunId, pypfoptForm.artifactsRoot).catch(() => null));
+        }
+        setMessage(`PyPortfolioOpt task ${task.status.toUpperCase()}: ${task.label}`);
+      });
+      return;
     }
-    setPypfoptActionResult({action, ...result});
-    await refreshIntegrationPanels();
-    const portfolioRunId = String(result.portfolio_run_id || payload.portfolio_run_id || selectedPortfolioRunId || portfolioIntegrationRuns[0]?.portfolio_run_id || '');
-    if (portfolioRunId) {
-      setPypfoptForm(current => ({...current, portfolioRunId: current.portfolioRunId || portfolioRunId}));
-      setPortfolioIntegrationDetail(await researchApi.getPortfolioIntegrationRun(portfolioRunId, pypfoptForm.artifactsRoot).catch(() => null));
-    }
-  });
+
+    void runTask(`pypfopt-${action}`, async () => {
+      const payload = pypfoptPayload();
+      if (action !== 'import' && !payload.score_run_id) throw new Error('先填写 score_run_id 或选择 Qlib run');
+      if (action === 'import' && !selectedPortfolioRunId) throw new Error('先填写或选择 portfolio_run_id');
+      let result: LooseRecord;
+      if (action === 'expected') {
+        result = await researchApi.buildPortfolioExpectedReturns(payload);
+      } else if (action === 'covariance') {
+        result = await researchApi.buildPortfolioCovariance(payload);
+      } else {
+        result = await researchApi.importPortfolioTargetWeights({...payload, portfolio_run_id: selectedPortfolioRunId});
+      }
+      setPypfoptActionResult({action, ...result});
+      await refreshIntegrationPanels();
+      const portfolioRunId = String(result.portfolio_run_id || payload.portfolio_run_id || selectedPortfolioRunId || portfolioIntegrationRuns[0]?.portfolio_run_id || '');
+      if (portfolioRunId) {
+        setPypfoptForm(current => ({...current, portfolioRunId: current.portfolioRunId || portfolioRunId}));
+        setPortfolioIntegrationDetail(await researchApi.getPortfolioIntegrationRun(portfolioRunId, pypfoptForm.artifactsRoot).catch(() => null));
+      }
+    });
+  };
 
   const loadPortfolioRunDetail = (portfolioRunId: string) => runTask(`portfolio-detail-${portfolioRunId}`, async () => {
     setPortfolioIntegrationDetail(await researchApi.getPortfolioIntegrationRun(portfolioRunId, pypfoptForm.artifactsRoot));
@@ -787,6 +877,11 @@ export default function ResearchDashboard() {
       },
     ] satisfies ModuleStateCardProps[];
   }, [busy, handlePypfoptAction, handleQlibAction, portfolioIntegrationRuns, portfolioIntegrationStatus, qlibRuns, qlibStatus, targetWeightDetail, targetWeightReady]);
+
+  const integrationTasks = useMemo(
+    () => taskQueue.filter((task) => ['qlib_dataset', 'qlib_workflow', 'portfolio_optimize_weights'].includes(task.kind)),
+    [taskQueue],
+  );
 
   if (loading) return <LoadingSpinner text="加载研究数据..." />;
 
@@ -1218,6 +1313,8 @@ export default function ResearchDashboard() {
               <strong>daily research only</strong>
             </div>
           </section>
+
+          <TaskQueuePanel title="Qlib / PyPortfolioOpt tasks" tasks={integrationTasks} onRefresh={refreshTaskQueue} emptyText="暂无 Qlib 或 PyPortfolioOpt 后台任务" />
 
           <div style={{display: 'grid', gridTemplateColumns: 'minmax(380px, 0.95fr) minmax(520px, 1.05fr)', gap: 16}}>
             <section style={sectionStyle}>

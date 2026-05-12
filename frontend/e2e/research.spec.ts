@@ -16,6 +16,11 @@ test('Research page shows unified Qlib and PyPortfolioOpt state cards', async ({
       return;
     }
 
+    if (method === 'GET' && pathname === '/api/tasks') {
+      await route.fulfill({json: []});
+      return;
+    }
+
     if (method === 'GET' && pathname === '/api/research/experiments') {
       await route.fulfill({json: []});
       return;
@@ -92,6 +97,84 @@ test('Research page shows unified Qlib and PyPortfolioOpt state cards', async ({
       return;
     }
 
+    if (method === 'POST' && pathname === '/api/tasks/integrations/qlib/run-workflow') {
+      await route.fulfill({
+        json: {
+          task_id: 'task-qlib-workflow',
+          kind: 'qlib_workflow',
+          label: 'Qlib workflow latest',
+          status: 'queued',
+          stage: 'run_workflow',
+          progress: 30,
+          message: 'running qlib workflow',
+          request: {},
+          result: null,
+          blockers: [],
+          created_at: '2026-05-12T00:00:00Z',
+        },
+      });
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/api/tasks/integrations/portfolio/optimize-weights') {
+      await route.fulfill({
+        json: {
+          task_id: 'task-pypfopt-optimize',
+          kind: 'portfolio_optimize_weights',
+          label: 'PyPortfolioOpt optimize qlib-001',
+          status: 'queued',
+          stage: 'optimize_weights',
+          progress: 40,
+          message: 'optimizing portfolio weights',
+          request: {},
+          result: null,
+          blockers: [],
+          created_at: '2026-05-12T00:00:00Z',
+        },
+      });
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/api/tasks/task-qlib-workflow') {
+      await route.fulfill({
+        json: {
+          task_id: 'task-qlib-workflow',
+          kind: 'qlib_workflow',
+          label: 'Qlib workflow latest',
+          status: 'completed',
+          stage: 'completed',
+          progress: 100,
+          message: 'qlib workflow completed',
+          request: {},
+          result: {status: 'completed', run_id: 'qlib-001', research_only: true, live_enabled: false},
+          blockers: [],
+          created_at: '2026-05-12T00:00:00Z',
+          completed_at: '2026-05-12T00:00:05Z',
+        },
+      });
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/api/tasks/task-pypfopt-optimize') {
+      await route.fulfill({
+        json: {
+          task_id: 'task-pypfopt-optimize',
+          kind: 'portfolio_optimize_weights',
+          label: 'PyPortfolioOpt optimize qlib-001',
+          status: 'completed',
+          stage: 'completed',
+          progress: 100,
+          message: 'portfolio optimization completed',
+          request: {},
+          result: {status: 'completed', portfolio_run_id: 'portfolio-001', latest_weight_sum: 1, research_only: true, live_enabled: false},
+          blockers: [],
+          created_at: '2026-05-12T00:00:00Z',
+          completed_at: '2026-05-12T00:00:05Z',
+        },
+      });
+      return;
+    }
+
     if (method === 'GET' && pathname === '/api/system/overview') {
       await route.fulfill({
         json: {
@@ -127,6 +210,12 @@ test('Research page shows unified Qlib and PyPortfolioOpt state cards', async ({
   await page.waitForSelector('[data-testid="research-content"]', {timeout: 10000});
   await expect(page.locator('[data-testid="module-state-qlib"]')).toContainText('PASS');
   await expect(page.locator('[data-testid="module-state-pypfopt"]')).toContainText('PASS');
+  await page.getByRole('button', {name: 'Qlib组合'}).click();
+  await page.locator('[data-testid="module-state-qlib"]').getByRole('button', {name: '运行 workflow'}).click();
+  await page.getByRole('button', {name: '优化 target weights'}).click();
+  await expect(page.locator('.task-queue-panel')).toContainText('Qlib / PyPortfolioOpt tasks');
+  await expect(page.locator('.task-queue-panel')).toContainText('COMPLETED');
+  await expect(page.locator('.task-queue-panel')).toContainText('portfolio-001');
 });
 
 test('Portfolio page loads and shows summary', async ({ page }) => {

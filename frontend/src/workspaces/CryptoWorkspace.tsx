@@ -4,7 +4,9 @@ import type {ChartSeriesPayload, CryptoResampleResponse, DataSyncRunResponse, Da
 import {buildCryptoResamplePlan, buildPortfolioRequest, buildSingleRequest, collectCryptoBlockers, createRunViewModel, humanizeError, summarizeCryptoCoverage, summarizeMetrics, cryptoIntervalOrder} from '../lib/view-model';
 import {buildDateBoundary, diagnosticsList} from '../lib/utils';
 import {apiGet, apiPost} from '../lib/api';
+import {taskApi} from '../lib/task-api';
 import type {CostStressResponse, CryptoClosureResponse, DataQualityResponse, DrawdownPeriod, FormState, MvpStep, OptimizationHint, PeriodReturn, PortfolioOptimizationResponse, PromotionGateResponse, ReportSection, StrategyOptimizationResponse, WalkForwardResponse} from '../lib/shared-types';
+import type {TaskResponse} from '../lib/shared-types';
 import {defaultOptimizationFramework} from '../lib/shared-types';
 
 import BacktestForm from './crypto/BacktestForm';
@@ -12,6 +14,7 @@ import DataManager from './crypto/DataManager';
 import type {DataFormState} from './crypto/DataManager';
 import OptimizationPanel from './crypto/OptimizationPanel';
 import ResultsPanel from './crypto/ResultsPanel';
+import TaskQueuePanel from '../components/TaskQueuePanel';
 
 type Mode = 'single' | 'portfolio';
 
@@ -26,6 +29,14 @@ const defaultDataForm: DataFormState = {
   symbol: 'BTCUSDT', interval: '1m',
   startDate: '2024-01-01', endDate: '2024-01-03', dbPath: '',
 };
+
+function isActiveTask(task: TaskResponse | null): boolean {
+  return !!task && (task.status === 'queued' || task.status === 'running');
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => { setTimeout(resolve, ms); });
+}
 
 export type CryptoWorkspaceProps = {
   health: {service: string; data_source_default: string} | null;
@@ -67,6 +78,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   const [cryptoClosure, setCryptoClosure] = useState<CryptoClosureResponse | null>(null);
   const [cryptoClosureLoading, setCryptoClosureLoading] = useState(false);
   const [cryptoClosureMessage, setCryptoClosureMessage] = useState('');
+  const [taskQueue, setTaskQueue] = useState<TaskResponse[]>([]);
   const [mvpLoading, setMvpLoading] = useState(false);
   const [mvpMessage, setMvpMessage] = useState('');
   const [error, setError] = useState<string>('');
@@ -94,7 +106,10 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     setDatabase(db); setKlinePreview(preview); setSyncRuns(runs); setScheduler(sched);
   };
 
-  useEffect(() => { void refreshDataPanel(defaultDataForm); }, []);
+  useEffect(() => {
+    void refreshDataPanel(defaultDataForm);
+    void refreshTaskQueue();
+  }, []);
 
   const metricCards = useMemo(() => summarizeMetrics(run?.summary), [run]);
   const viewModel = useMemo(() => createRunViewModel(run, chart), [run, chart]);
@@ -119,11 +134,57 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
       {id: 'backtest', label: '回测执行', status: loading || (mvpLoading && !run) ? 'active' : completedSummary ? 'done' : run?.status === 'failed' ? 'fail' : 'pending', detail: completedSummary ? `Return ${completedSummary.total_return_pct.toFixed(2)}% · Sharpe ${completedSummary.sharpe_ratio.toFixed(2)}` : '等待生成'},
       {id: 'visual_report', label: '图表报告', status: chart ? 'done' : run?.status === 'completed' ? 'warn' : 'pending', detail: chart ? `${chart.candles.length} 根K线 · ${chart.markers.length} 个标记` : '等待生成'},
       {id: 'promotion_gate', label: '准入门', status: promotionGateLoading || (mvpLoading && !promotionGate) ? 'active' : promotionGate ? (promotionGate.decision === 'fail' ? 'fail' : promotionGate.decision === 'warn' ? 'warn' : 'done') : 'pending', detail: promotionGate ? `Decision ${promotionGate.decision.toUpperCase()} · ${gateWarns}w · ${gateFails}f` : '等待综合评估'},
-      {id: 'experiment_registry', label: '实验登记', status: promotionGate?.experiment_record.registry_path ? 'done' : promotionGate ? 'warn' : 'pending', detail: promotionGate?.experiment_record.registry_path ?? '等待登记'},
+      {id: 'experiment_registry', label: '实验登记', status: promotionGate?.experiment_record?.registry_path ? 'done' : promotionGate ? 'warn' : 'pending', detail: promotionGate?.experiment_record?.registry_path ?? '等待登记'},
     ];
   }, [chart, dataQuality, dataQualityLoading, loading, mvpLoading, promotionGate, promotionGateLoading, run]);
 
   const mvpDoneCount = mvpSteps.filter((s) => s.status === 'done').length;
+
+  const upsertTask = (task: TaskResponse) => {
+    setTaskQueue((current) => [task, ...current.filter((item) => item.task_id !== task.task_id)].slice(0, 8));
+  };
+
+  const refreshTaskQueue = async () => {
+    try {
+      const tasks = await taskApi.listTasks('', 8);
+      setTaskQueue(tasks);
+    } catch {
+      // best effort
+    }
+  };
+
+  const trackTask = async (taskId: string, onComplete?: (task: TaskResponse) => Promise<void> | void) => {
+    let current = await taskApi.getTask(taskId);
+    upsertTask(current);
+    while (isActiveTask(current)) {
+      await sleep(800);
+      current = await taskApi.getTask(taskId);
+      upsertTask(current);
+    }
+    if (onComplete) {
+      await onComplete(current);
+    }
+    return current;
+  };
+
+  const submitTrackedTask = async (
+    label: string,
+    submit: () => Promise<TaskResponse>,
+    onComplete?: (task: TaskResponse) => Promise<void> | void,
+  ) => {
+    setError('');
+    try {
+      const task = await submit();
+      upsertTask(task);
+      void trackTask(task.task_id, onComplete).catch((e) => {
+        setError(e instanceof Error ? e.message : String(e));
+      });
+      return task;
+    } finally {
+      // no-op; caller-specific loading state is cleared immediately
+      void label;
+    }
+  };
 
   const syncCryptoInterval = async (
     interval: FormState['interval'],
@@ -274,23 +335,26 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   };
 
   const handleCryptoClosure = async () => {
-    setCryptoClosureLoading(true); setCryptoClosureMessage('BTC 闭环运行中：数据 -> 候选 -> event-driven -> cost/walk-forward -> gate'); setError('');
+    setCryptoClosureLoading(true); setCryptoClosureMessage('BTC 闭环任务已提交，后台会继续运行。'); setError('');
     try {
-      const result = await apiPost<CryptoClosureResponse>('/api/crypto/research/closure', buildCryptoClosureRequest());
-      setCryptoClosure(result);
-      if (result.selected_candidate?.parameters) {
-        setOptimizedStrategyParams(result.selected_candidate.parameters);
-        setForm((current) => ({...current, strategyId: result.selected_candidate?.strategy_id ?? current.strategyId, interval: (result.interval as FormState['interval']) || current.interval}));
-      }
-      if (result.promotion_gate?.decision) {
-        setPromotionGate(result.promotion_gate as PromotionGateResponse);
-        setPromotionGateMessage(`准入门 Decision ${String(result.promotion_gate.decision).toUpperCase()}，下一阶段 ${result.promotion_gate.next_stage ?? result.next_stage}`);
-      }
-      if (result.walk_forward?.stability) {
-        setWalkForward(result.walk_forward as WalkForwardResponse);
-        setWalkForwardMessage(`Walk-forward: OOS pass rate ${Number(result.walk_forward.stability.fold_pass_rate_pct ?? result.walk_forward.stability.pass_rate_pct ?? 0).toFixed(0)}%`);
-      }
-      setCryptoClosureMessage(`BTC 闭环完成：${result.decision.toUpperCase()}，blockers ${result.blockers.length}`);
+      const task = await submitTrackedTask('crypto-closure', () => taskApi.submitCryptoClosureTask(buildCryptoClosureRequest()), async (finishedTask) => {
+        const result = (finishedTask.result ?? {}) as CryptoClosureResponse;
+        setCryptoClosure(result);
+        if (result.selected_candidate?.parameters) {
+          setOptimizedStrategyParams(result.selected_candidate.parameters);
+          setForm((current) => ({...current, strategyId: result.selected_candidate?.strategy_id ?? current.strategyId, interval: (result.interval as FormState['interval']) || current.interval}));
+        }
+        if (result.promotion_gate?.decision) {
+          setPromotionGate(result.promotion_gate as PromotionGateResponse);
+          setPromotionGateMessage(`准入门 Decision ${String(result.promotion_gate.decision).toUpperCase()}，下一阶段 ${result.promotion_gate.next_stage ?? result.next_stage}`);
+        }
+        if (result.walk_forward?.stability) {
+          setWalkForward(result.walk_forward as WalkForwardResponse);
+          setWalkForwardMessage(`Walk-forward: OOS pass rate ${Number(result.walk_forward.stability.fold_pass_rate_pct ?? result.walk_forward.stability.pass_rate_pct ?? 0).toFixed(0)}%`);
+        }
+        setCryptoClosureMessage(`BTC 闭环 ${finishedTask.status.toUpperCase()}：${String(result.decision || finishedTask.status).toUpperCase()}，blockers ${result.blockers?.length ?? finishedTask.blockers.length}`);
+      });
+      setCryptoClosureMessage(`BTC 闭环任务已提交：${task.task_id}`);
     } catch (e) {
       const message = humanizeError(e);
       setCryptoClosureMessage(message);
@@ -372,11 +436,14 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   };
 
   const handlePromotionGate = async () => {
-    setPromotionGateLoading(true); setPromotionGateMessage(''); setError('');
+    setPromotionGateLoading(true); setPromotionGateMessage('晋级门任务已提交，后台会继续运行。'); setError('');
     try {
-      const result = await apiPost<PromotionGateResponse>('/api/research/promotion-gate', buildPromotionGateRequest());
-      setPromotionGate(result);
-      setPromotionGateMessage(`准入门 Decision ${result.decision.toUpperCase()}，下一阶段 ${result.next_stage}`);
+      const task = await submitTrackedTask('promotion-gate', () => taskApi.submitResearchPromotionGateTask(buildPromotionGateRequest()), async (finishedTask) => {
+        const result = (finishedTask.result ?? {}) as PromotionGateResponse;
+        setPromotionGate(result);
+        setPromotionGateMessage(`准入门 Decision ${String(result.decision || finishedTask.status).toUpperCase()}，下一阶段 ${result.next_stage ?? '-'}`);
+      });
+      setPromotionGateMessage(`晋级门任务已提交：${task.task_id}`);
     } catch (e) { setPromotionGateMessage(humanizeError(e)); }
     finally { setPromotionGateLoading(false); }
   };
@@ -605,6 +672,12 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
               onApplyWeights={handleApplyPortfolioWeights}
             />
           </section>
+          <TaskQueuePanel
+            title="BTC 后台任务"
+            tasks={taskQueue.filter((task) => ['crypto_closure', 'promotion_gate'].includes(task.kind))}
+            onRefresh={refreshTaskQueue}
+            emptyText="暂无 BTC 闭环或 promotion gate 后台任务"
+          />
         </ResultsPanel>
       </section>
     </main>

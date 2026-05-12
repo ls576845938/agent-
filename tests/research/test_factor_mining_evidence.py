@@ -129,9 +129,11 @@ def test_factor_mining_style_exposure_enters_candidate_and_manifest_evidence(
     assert evidence["capacity"]["capacity_warning"] in {"OK", "MEDIUM", "LOW"}
     assert evidence["turnover"]["annual_turnover_pct"] > 0.0
     assert evidence["turnover"]["turnover_band"] in {"low", "medium", "high"}
+    assert evidence["candidate_quality"]["quality_score"] > 0.0
     assert result.manifest_evidence["style_exposure_coverage"]["covered_candidates"] >= 1
     assert result.manifest_evidence["capacity_coverage"]["covered_candidates"] >= 1
     assert result.manifest_evidence["turnover_coverage"]["covered_candidates"] >= 1
+    assert result.manifest_evidence["quality_filter"]["eligible_candidates"] >= 1
     assert result.manifest_evidence["correlation_report_path"] == result.correlation_report_path
 
 

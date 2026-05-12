@@ -23,6 +23,11 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
       return;
     }
 
+    if (method === 'GET' && pathname === '/api/tasks') {
+      await route.fulfill({json: []});
+      return;
+    }
+
     if (method === 'GET' && pathname === '/api/data/database') {
       await route.fulfill({
         json: {
@@ -145,6 +150,126 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
             {severity: 'high', code: 'missing_bars', message: 'coverage below threshold'},
             {severity: 'medium', code: 'invalid_ohlc', message: 'bad candle'},
           ],
+        },
+      });
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/api/tasks/crypto/closure') {
+      await route.fulfill({
+        json: {
+          task_id: 'task-crypto-closure',
+          kind: 'crypto_closure',
+          label: 'BTC closure BTCUSDT 1h',
+          status: 'queued',
+          stage: 'running',
+          progress: 5,
+          message: 'BTC closure task queued',
+          request: {},
+          result: null,
+          blockers: [],
+          created_at: '2026-05-12T00:00:00Z',
+        },
+      });
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/api/tasks/task-crypto-closure') {
+      await route.fulfill({
+        json: {
+          task_id: 'task-crypto-closure',
+          kind: 'crypto_closure',
+          label: 'BTC closure BTCUSDT 1h',
+          status: 'completed',
+          stage: 'completed',
+          progress: 100,
+          message: 'BTC closure completed',
+          request: {},
+          result: {
+            status: 'completed',
+            decision: 'fail',
+            next_stage: 'blocked',
+            blockers: ['coverage below threshold'],
+            recommendations: ['BTC closure completed but blocked.'],
+            symbol: 'BTCUSDT',
+            target_intervals: ['5m', '15m', '1h', '4h', '1d'],
+            data_integrity: {status: 'pass'},
+            candidate_screen: {candidate_count: 2},
+            event_backtest: {summary: {sharpe_ratio: 1.4, total_return_pct: 5.6, trade_count: 3}},
+            cost_stress: {survival_rate_pct: 88, ledger_consistency_pct: 100},
+            walk_forward: {stability: {fold_pass_rate_pct: 75, ledger_consistency_pct: 100}},
+            promotion_gate: {decision: 'fail', next_stage: 'blocked', gates: [{name: 'data_quality', status: 'fail', message: 'coverage below threshold'}]},
+          },
+          blockers: ['coverage below threshold'],
+          created_at: '2026-05-12T00:00:00Z',
+          completed_at: '2026-05-12T00:00:05Z',
+        },
+      });
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/api/tasks/research/promotion-gate') {
+      await route.fulfill({
+        json: {
+          task_id: 'task-promotion-gate',
+          kind: 'promotion_gate',
+          label: 'promotion gate BTCUSDT single',
+          status: 'queued',
+          stage: 'running',
+          progress: 5,
+          message: 'promotion gate task queued',
+          request: {},
+          result: null,
+          blockers: [],
+          created_at: '2026-05-12T00:00:00Z',
+        },
+      });
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/api/tasks/task-promotion-gate') {
+      await route.fulfill({
+        json: {
+          task_id: 'task-promotion-gate',
+          kind: 'promotion_gate',
+          label: 'promotion gate BTCUSDT single',
+          status: 'completed',
+          stage: 'completed',
+          progress: 100,
+          message: 'promotion gate completed',
+          request: {},
+          result: {
+            status: 'FAIL',
+            selected_priority: 'promotion_gate',
+            framework: [],
+            decision: 'fail',
+            next_stage: 'research_ready',
+            manifest_id: 'manifest-123',
+            manifest_path: 'manifests/manifest-123.json',
+            strategy_version: 'btc-v1',
+            experiment_record: {experiment_name: 'btc_event_driven', data_version: 'btc-demo'},
+            data_quality: {},
+            backtest_summary: {
+              total_return_pct: 0,
+              annual_return_pct: 0,
+              annual_volatility_pct: 0,
+              sharpe_ratio: 0.4,
+              sortino_ratio: 0.5,
+              max_drawdown_pct: -9.1,
+              calmar_ratio: 0.1,
+              win_rate_pct: 42,
+              profit_factor: 0.8,
+              trade_count: 3,
+            },
+            gates: [
+              {name: 'data_quality', status: 'fail', message: 'coverage below threshold', metrics: {}, threshold: 'coverage >= 95%'},
+              {name: 'walk_forward', status: 'warn', message: 'insufficient oos robustness', metrics: {}, threshold: 'pass_rate >= 60%'},
+            ],
+            recommendations: ['Fill SQLite gaps before promotion.'],
+          },
+          blockers: ['coverage below threshold'],
+          created_at: '2026-05-12T00:00:00Z',
+          completed_at: '2026-05-12T00:00:05Z',
         },
       });
       return;
@@ -315,7 +440,7 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
   await expect(page.locator('[data-testid="crypto-blockers"]')).toContainText('promotion');
 
   await page.locator('[data-testid="module-state-btc"]').getByRole('button', {name: '一键 BTC 闭环'}).click();
-  await expect(page.locator('[data-testid="crypto-closure-panel"]')).toContainText('trend_macd');
-  await expect(page.locator('[data-testid="crypto-closure-panel"]')).toContainText('cost_stress survival_rate');
-  await expect(page.locator('[data-testid="module-state-btc"]')).toContainText('PASS');
+  await expect(page.locator('.task-queue-panel')).toContainText('BTC 后台任务');
+  await expect(page.locator('.task-queue-panel')).toContainText('COMPLETED');
+  await expect(page.locator('.task-queue-panel')).toContainText('coverage below threshold');
 });

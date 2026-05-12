@@ -449,6 +449,26 @@ export type EventDrivenCostStressResponse = {
   engine_note: string;
 };
 
+export type TaskStatus = 'queued' | 'running' | 'completed' | 'failed';
+
+export type TaskResponse = {
+  task_id: string;
+  kind: string;
+  label: string;
+  status: TaskStatus;
+  stage: string;
+  progress: number;
+  message: string;
+  request: Record<string, unknown>;
+  result: Record<string, unknown> | null;
+  error?: string | null;
+  blockers: string[];
+  created_at: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  updated_at?: string | null;
+};
+
 export const defaultOptimizationFramework: OptimizationFrameworkItem[] = [
   {priority: 1, title: '参数稳健性 + 样本外验证', status: 'selected', reason: '当前系统已有回测报告，下一步先做参数筛选和样本外检验，防止把单次回测优化成过拟合。'},
   {priority: 2, title: '交易成本压力测试', status: 'next', reason: '放大手续费、滑点和执行误差，确认收益不会被真实交易吞噬。'},
