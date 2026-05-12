@@ -133,6 +133,7 @@ def run_crypto_event_backtest(
     target_weight: float = 0.90,
     min_cash_buffer_pct: float | None = None,
     min_trade_notional: float = 25.0,
+    rebalance_buffer_pct: float = 0.05,
     long_only: bool = True,
     broker_factory: Callable[[UnifiedBacktestConfig], BacktestBroker] | None = None,
     run_id: str = "",
@@ -169,6 +170,7 @@ def run_crypto_event_backtest(
         target_weight=target_weight,
         min_cash_buffer_pct=min_cash_buffer_pct,
         min_trade_notional=min_trade_notional,
+        rebalance_buffer_pct=rebalance_buffer_pct,
         long_only=long_only,
     )
 
@@ -193,6 +195,7 @@ def run_crypto_event_backtest(
         signal=signal,
         horizon="crypto_event_replay",
         params=requested_params,
+        emit_on_change_only=True,
     )
 
     if market_events is None:
@@ -296,6 +299,7 @@ def _with_crypto_execution_config(
     risk_limit = float(execution_settings["risk_limit"])
     cash_reserve = float(execution_settings["cash_reserve_weight"])
     min_trade_notional = float(execution_settings["min_trade_notional"])
+    rebalance_buffer_pct = float(execution_settings["rebalance_buffer_pct"])
     long_only = bool(execution_settings["long_only"])
     config.sizing = PositionSizerConfig(
         default_strategy_weight=target_weight,
@@ -307,7 +311,7 @@ def _with_crypto_execution_config(
         cash_reserve_weight=cash_reserve,
         max_gross_exposure=risk_limit,
     )
-    config.rebalance = RebalanceConfig(min_trade_notional=min_trade_notional, min_weight_change=0.01)
+    config.rebalance = RebalanceConfig(min_trade_notional=min_trade_notional, min_weight_change=rebalance_buffer_pct)
     config.risk = PreTradeRiskConfig(
         max_symbol_weight=risk_limit,
         max_gross_exposure=risk_limit,
@@ -324,6 +328,7 @@ def _crypto_execution_settings(
     target_weight: float,
     min_cash_buffer_pct: float | None,
     min_trade_notional: float,
+    rebalance_buffer_pct: float,
     long_only: bool,
 ) -> dict[str, float | bool]:
     effective_target_weight = max(0.0, min(float(target_weight), 0.98))
@@ -332,10 +337,11 @@ def _crypto_execution_settings(
     cash_reserve = max(implied_cash_buffer, requested_cash_buffer)
     return {
         "target_weight": effective_target_weight,
-        "risk_limit": max(effective_target_weight, 0.10),
+        "risk_limit": min(1.0, max(effective_target_weight + 0.10, 0.10)),
         "cash_reserve_weight": cash_reserve,
         "min_cash_buffer_pct": cash_reserve,
         "min_trade_notional": max(0.0, float(min_trade_notional)),
+        "rebalance_buffer_pct": max(0.0, float(rebalance_buffer_pct)),
         "long_only": bool(long_only),
     }
 

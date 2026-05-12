@@ -356,6 +356,104 @@ class ETFRotationStrategy(StrategyBase):
         )
 
 
+class BtcLowTurnoverTrendStrategy(StrategyBase):
+    descriptor = StrategyDescriptor(
+        id="btc_low_turnover_trend",
+        display_name="BTC Low Turnover Trend",
+        description="BTC 长周期趋势确认 + 波动率过滤的低换手 long-only 策略。",
+        category="trend",
+        default_weight=0.12,
+        default_params={
+            "fast_ma": 48,
+            "slow_ma": 168,
+            "trend_ma": 336,
+            "vol_window": 72,
+            "min_volatility": 0.003,
+            "max_volatility": 0.06,
+            "trend_strength": 0.04,
+            "exit_buffer": 0.02,
+            "entry_confirm_bars": 3,
+            "exit_confirm_bars": 6,
+            "min_hold_bars": 72,
+            "cooldown_bars": 24,
+        },
+    )
+
+    def generate(self, frame: pd.DataFrame, params: dict[str, float] | None = None) -> StrategySignalPack:
+        config = {**self.descriptor.default_params, **(params or {})}
+        fast_ma = sma(frame["close"], int(config["fast_ma"]))
+        slow_ma = sma(frame["close"], int(config["slow_ma"]))
+        trend_ma = sma(frame["close"], int(config["trend_ma"]))
+        exit_ma = sma(frame["close"], max(2, int(config["fast_ma"] // 2)))
+        returns = frame["close"].pct_change()
+        volatility = returns.rolling(int(config["vol_window"]), min_periods=int(config["vol_window"])).std(ddof=0)
+        trend_strength = (frame["close"] / trend_ma.replace(0, pd.NA)) - 1.0
+
+        entry_ready = (
+            (fast_ma > slow_ma)
+            & (slow_ma > trend_ma)
+            & (trend_strength >= float(config["trend_strength"]))
+            & volatility.between(float(config["min_volatility"]), float(config["max_volatility"]))
+        ).fillna(False)
+        exit_ready = (
+            (frame["close"] < exit_ma)
+            | (fast_ma < slow_ma)
+            | (frame["close"] < trend_ma * (1.0 - float(config["exit_buffer"])))
+            | (volatility > float(config["max_volatility"]))
+        ).fillna(False)
+
+        signal = _flat_signal(frame.index)
+        in_position = 0.0
+        entry_streak = 0
+        exit_streak = 0
+        bars_held = 0
+        cooldown_remaining = 0
+        entry_confirm_bars = max(1, int(config["entry_confirm_bars"]))
+        exit_confirm_bars = max(1, int(config["exit_confirm_bars"]))
+        min_hold_bars = max(0, int(config["min_hold_bars"]))
+        cooldown_bars = max(0, int(config["cooldown_bars"]))
+        for idx in frame.index:
+            if cooldown_remaining > 0:
+                cooldown_remaining -= 1
+
+            if bool(entry_ready.loc[idx]):
+                entry_streak += 1
+            else:
+                entry_streak = 0
+
+            if bool(exit_ready.loc[idx]):
+                exit_streak += 1
+            else:
+                exit_streak = 0
+
+            if in_position == 0.0 and cooldown_remaining == 0 and entry_streak >= entry_confirm_bars:
+                in_position = 1.0
+                bars_held = 0
+                exit_streak = 0
+            elif in_position == 1.0 and bars_held >= min_hold_bars and exit_streak >= exit_confirm_bars:
+                in_position = 0.0
+                cooldown_remaining = cooldown_bars
+                bars_held = 0
+                entry_streak = 0
+            if in_position == 1.0:
+                bars_held += 1
+            signal.loc[idx] = in_position
+
+        return StrategySignalPack(
+            signal=signal.fillna(0.0),
+            diagnostics={
+                "fast_ma": fast_ma,
+                "slow_ma": slow_ma,
+                "trend_ma": trend_ma,
+                "exit_ma": exit_ma,
+                "volatility": volatility.fillna(0.0),
+                "trend_strength": trend_strength.fillna(0.0),
+                "entry_ready": entry_ready.astype(float),
+                "exit_ready": exit_ready.astype(float),
+            },
+        )
+
+
 @dataclass
 class StrategyRegistry:
     strategies: dict[str, StrategyBase]
@@ -386,6 +484,7 @@ strategy_registry = StrategyRegistry(
             FactorRankStrategy(),
             EarningsDriftStrategy(),
             ETFRotationStrategy(),
+            BtcLowTurnoverTrendStrategy(),
         ]
     }
 )

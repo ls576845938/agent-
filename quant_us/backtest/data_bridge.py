@@ -75,10 +75,13 @@ class SignalReplayStrategy(Strategy):
         signal: pd.Series,
         horizon: str = "replay",
         params: dict | None = None,
+        emit_on_change_only: bool = False,
     ) -> None:
         self.strategy_id = strategy_id
         self.horizon = horizon
         self.params = dict(params or {})
+        self.emit_on_change_only = bool(emit_on_change_only)
+        self._last_emitted_signal: float | None = None
         normalized = signal.fillna(0.0).clip(-1.0, 1.0).copy()
         normalized.index = pd.to_datetime(normalized.index, utc=True)
         self._signals = {
@@ -88,6 +91,9 @@ class SignalReplayStrategy(Strategy):
 
     def on_bar(self, event: MarketEvent, context: StrategyContext):
         raw_signal = float(self._signals.get(pd.Timestamp(event.timestamp_utc).to_pydatetime(), 0.0))
+        if self.emit_on_change_only and self._last_emitted_signal is not None and raw_signal == self._last_emitted_signal:
+            return []
+        self._last_emitted_signal = raw_signal
         if raw_signal > 0:
             direction = SignalDirection.LONG
             strength = min(1.0, abs(raw_signal))
@@ -107,7 +113,7 @@ class SignalReplayStrategy(Strategy):
                 strength=strength,
                 horizon=self.horizon,
                 reason="signal_replay",
-                metadata={"raw_signal": raw_signal},
+                metadata={"raw_signal": raw_signal, "emit_on_change_only": self.emit_on_change_only},
             )
         ]
 

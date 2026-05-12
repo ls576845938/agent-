@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import ast
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
 
@@ -145,6 +147,8 @@ def test_crypto_event_backtest_does_not_use_same_bar_signal_price(tmp_path) -> N
         capital=100_000.0,
         cost=0.0,
         slippage=0.0,
+        target_weight=0.80,
+        min_cash_buffer_pct=0.10,
         manifest_root=tmp_path,
         market_events=[MarketEvent.from_bar(bar) for bar in bars],
         signal_provider=signal,
@@ -156,6 +160,121 @@ def test_crypto_event_backtest_does_not_use_same_bar_signal_price(tmp_path) -> N
     assert result.unified.fills[0].price == 90.0
     assert result.unified.orders[0].metadata["signal_timestamp_utc"] == bars[0].timestamp_utc.isoformat()
     assert result.unified.event_driven.metadata["execution_semantics"] == "signal_at_bar_close_order_next_bar"
+
+
+def test_crypto_event_backtest_does_not_fill_terminal_bar_signal_same_bar(tmp_path) -> None:
+    start = datetime(2026, 5, 9, 0, 0, tzinfo=UTC)
+    bars = [
+        Bar(
+            timestamp_utc=start,
+            symbol="BTCUSD",
+            open=100.0,
+            high=101.0,
+            low=99.0,
+            close=100.0,
+            volume=10_000.0,
+        ),
+        Bar(
+            timestamp_utc=start + timedelta(hours=1),
+            symbol="BTCUSD",
+            open=50.0,
+            high=150.0,
+            low=45.0,
+            close=140.0,
+            volume=10_000.0,
+        ),
+    ]
+
+    def terminal_signal(frame: pd.DataFrame, strategy_id: str, params: dict) -> pd.Series:
+        return pd.Series([0.0, 1.0], index=frame.index)
+
+    result = run_crypto_event_backtest(
+        source="sqlite",
+        sqlite_path="/tmp/btc.sqlite",
+        symbol="BTCUSD",
+        interval="1h",
+        start=start,
+        end=start + timedelta(hours=2),
+        strategy_id="btc_replay",
+        capital=100_000.0,
+        cost=0.0,
+        slippage=0.0,
+        target_weight=0.85,
+        min_cash_buffer_pct=0.10,
+        manifest_root=tmp_path,
+        market_events=[MarketEvent.from_bar(bar) for bar in bars],
+        signal_provider=terminal_signal,
+        run_id="crypto_event_terminal_signal_no_same_bar",
+    )
+
+    assert result.unified.fills == []
+    assert result.unified.orders == []
+    assert result.unified.event_driven.metadata["execution_semantics"] == "signal_at_bar_close_order_next_bar"
+
+
+def test_crypto_event_replay_does_not_rebalance_repeated_same_direction_signal(tmp_path) -> None:
+    start = datetime(2026, 5, 9, 0, 0, tzinfo=UTC)
+    bars = [
+        Bar(
+            timestamp_utc=start + timedelta(hours=offset),
+            symbol="BTCUSD",
+            open=100.0,
+            high=101.0,
+            low=99.0,
+            close=100.0,
+            volume=10_000.0,
+        )
+        for offset in range(6)
+    ]
+
+    def persistent_long(frame: pd.DataFrame, strategy_id: str, params: dict) -> pd.Series:
+        return pd.Series([1.0] * len(frame), index=frame.index)
+
+    result = run_crypto_event_backtest(
+        source="sqlite",
+        sqlite_path="/tmp/btc.sqlite",
+        symbol="BTCUSD",
+        interval="1h",
+        start=start,
+        end=start + timedelta(hours=6),
+        strategy_id="btc_replay",
+        capital=100_000.0,
+        cost=0.0,
+        slippage=0.0,
+        target_weight=0.80,
+        min_cash_buffer_pct=0.10,
+        manifest_root=tmp_path,
+        market_events=[MarketEvent.from_bar(bar) for bar in bars],
+        signal_provider=persistent_long,
+        run_id="crypto_event_persistent_long_no_rebalance",
+    )
+
+    assert len(result.unified.fills) == 1
+    assert len(result.unified.orders) == 1
+    assert result.diagnostics["execution_config"]["rebalance_buffer_pct"] == 0.05
+
+
+def test_btc_strategy_registry_does_not_import_live_execution_or_submit_orders() -> None:
+    strategy_source = Path("backend/app/domain/strategy_registry.py")
+    tree = ast.parse(strategy_source.read_text(encoding="utf-8"), filename=str(strategy_source))
+    forbidden_imports = ("quant_us.execution", "quant_us.live")
+    forbidden_order_calls = {
+        "handle_intent",
+        "place_order",
+        "submit_order",
+        "submit_orders",
+        "cancel_order",
+    }
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported = [alias.name for alias in node.names]
+            assert not any(name.startswith(forbidden_imports) for name in imported)
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            assert not module.startswith(forbidden_imports)
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            assert node.func.attr not in forbidden_order_calls
 
 
 def test_btc_cost_stress_reuses_crypto_event_execution_config(monkeypatch) -> None:
@@ -230,10 +349,11 @@ def test_btc_cost_stress_reuses_crypto_event_execution_config(monkeypatch) -> No
     assert stress["baseline"]["run_id"].endswith("_base")
     assert stress["baseline"]["execution_config"] == {
         "target_weight": 0.9,
-        "risk_limit": 0.9,
+        "risk_limit": 1.0,
         "cash_reserve_weight": 0.1,
         "min_cash_buffer_pct": 0.1,
         "min_trade_notional": 25.0,
+        "rebalance_buffer_pct": 0.05,
         "long_only": True,
     }
 
@@ -277,6 +397,84 @@ def test_research_backtest_service_forwards_crypto_event_audit_fields(monkeypatc
     assert captured["manifest_root"] == str(tmp_path)
     assert captured["run_id"] == "btc_closure_test_event"
     assert result.diagnostics["manifest_path"] == str(tmp_path / "run_test.json")
+
+
+def test_crypto_walk_forward_forwards_rebalance_buffer_to_execution_config(monkeypatch, tmp_path) -> None:
+    captured: dict[str, object] = {}
+    start = datetime(2026, 5, 1, 0, 0, tzinfo=UTC)
+    frame = pd.DataFrame(
+        [
+            {
+                "timestamp": start + timedelta(hours=offset),
+                "symbol": "BTCUSDT",
+                "open": 100.0 + offset * 0.1,
+                "high": 101.0 + offset * 0.1,
+                "low": 99.0 + offset * 0.1,
+                "close": 100.5 + offset * 0.1,
+                "volume": 1_000_000.0,
+            }
+            for offset in range(80)
+        ]
+    ).set_index("timestamp")
+
+    def fake_run_walk_forward_unified(*, bars, strategy_factory, wf_config, unified_config):
+        captured["min_weight_change"] = unified_config.rebalance.min_weight_change
+        captured["min_trade_notional"] = unified_config.rebalance.min_trade_notional
+        captured["cash_reserve"] = round(float(unified_config.risk.min_cash_buffer_pct), 8)
+        window = SimpleNamespace(
+            train_start=bars[0].timestamp_utc,
+            train_end=bars[50].timestamp_utc,
+            test_start=bars[51].timestamp_utc,
+            test_end=bars[-1].timestamp_utc,
+        )
+        unified = SimpleNamespace(
+            summary={
+                "total_return_pct": 1.0,
+                "sharpe_ratio": 0.5,
+                "max_drawdown_pct": -2.0,
+            },
+            equity_consistent=True,
+            manifest_path=str(tmp_path / "fold.json"),
+        )
+        return [SimpleNamespace(window=window, unified=unified)]
+
+    monkeypatch.setattr(backtest_service_module, "load_market_frame", lambda **kwargs: frame)
+    monkeypatch.setattr(backtest_service_module, "_build_regime_slices", lambda **kwargs: [])
+
+    import quant_us.backtest.walk_forward as walk_forward_module
+
+    monkeypatch.setattr(walk_forward_module, "run_walk_forward_unified", fake_run_walk_forward_unified)
+
+    result = ResearchBacktestService().run_walk_forward(
+        {
+            "source": "sqlite",
+            "asset_class": "crypto",
+            "symbol": "BTCUSDT",
+            "symbols": ["BTCUSDT"],
+            "interval": "1h",
+            "start": start,
+            "end": start + timedelta(hours=80),
+            "strategy_id": "trend_macd",
+            "strategy_params": {},
+            "capital": 100_000.0,
+            "commission_rate": 0.0004,
+            "slippage": 4.0,
+            "leverage": 1.0,
+            "target_weight": 0.85,
+            "min_cash_buffer_pct": 0.15,
+            "min_trade_notional": 50.0,
+            "rebalance_buffer_pct": 0.07,
+            "windows": 2,
+            "data_root": str(tmp_path),
+        }
+    )
+
+    assert result["status"] == "completed"
+    assert captured == {
+        "min_weight_change": 0.07,
+        "min_trade_notional": 50.0,
+        "cash_reserve": 0.15,
+    }
 
 
 def test_crypto_interval_validation_requires_all_btc_closure_timeframes_and_long_sample() -> None:

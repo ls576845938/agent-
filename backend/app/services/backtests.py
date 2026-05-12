@@ -339,6 +339,73 @@ def _compute_exposure_diagnostics(equity: pd.Series, exposure: pd.Series, net_un
     }
 
 
+def _average_holding_bars(net_units: pd.Series) -> float:
+    if net_units.empty:
+        return 0.0
+
+    holding_runs: list[int] = []
+    current_run = 0
+    previous_sign = 0
+
+    for value in net_units.fillna(0.0):
+        sign = 1 if value > 1e-12 else (-1 if value < -1e-12 else 0)
+        if sign == 0:
+            if current_run > 0:
+                holding_runs.append(current_run)
+                current_run = 0
+            previous_sign = 0
+            continue
+        if sign != previous_sign and current_run > 0:
+            holding_runs.append(current_run)
+            current_run = 0
+        current_run += 1
+        previous_sign = sign
+
+    if current_run > 0:
+        holding_runs.append(current_run)
+
+    if not holding_runs:
+        return 0.0
+    return _round(sum(holding_runs) / len(holding_runs), 4)
+
+
+def _cost_sensitivity_from_metrics(
+    *,
+    total_return_pct: float | int | None,
+    cost_drag_pct: float | int | None,
+    annual_turnover_pct: float | int | None = None,
+) -> float:
+    return_abs = abs(float(total_return_pct or 0.0))
+    cost_drag = max(0.0, float(cost_drag_pct or 0.0))
+    turnover = max(0.0, float(annual_turnover_pct or 0.0))
+    efficiency_floor = max(return_abs, 0.25)
+    direct_cost_pressure = cost_drag / efficiency_floor
+    turnover_pressure = turnover / 5000.0
+    return _round(direct_cost_pressure + turnover_pressure * 0.1, 6)
+
+
+def _candidate_runtime_metrics(result: BacktestArtifacts) -> dict[str, float]:
+    execution = result.diagnostics.get("execution", {}) if isinstance(result.diagnostics, dict) else {}
+    return {
+        "annual_turnover_pct": _round(float(execution.get("annual_turnover_pct", 0.0)), 4),
+        "avg_holding_bars": _average_holding_bars(
+            pd.Series(
+                [
+                    float(item.get("value", 0.0))
+                    for item in result.chart.get("net_units", [])
+                    if isinstance(item, dict)
+                ],
+                dtype=float,
+            )
+        ),
+        "cost_sensitivity": _cost_sensitivity_from_metrics(
+            total_return_pct=result.summary.get("total_return_pct", 0.0),
+            cost_drag_pct=execution.get("cost_drag_pct", 0.0),
+            annual_turnover_pct=execution.get("annual_turnover_pct", 0.0),
+        ),
+    }
+
+
 def _build_optimization_hints(
     summary: dict[str, float | int],
     return_stats: dict[str, Any],
@@ -537,6 +604,28 @@ def _candidate_parameter_grid(strategy_id: str) -> list[dict[str, float]]:
             for signal in [9, 12]
             if fast < slow
         ],
+        "btc_low_turnover_trend": [
+            {
+                "fast_ma": fast,
+                "slow_ma": slow,
+                "trend_ma": trend,
+                "vol_window": vol_window,
+                "min_volatility": min_vol,
+                "max_volatility": max_vol,
+                "trend_strength": strength,
+                "exit_buffer": exit_buffer,
+                "entry_confirm_bars": entry_confirm,
+                "exit_confirm_bars": exit_confirm,
+                "min_hold_bars": min_hold,
+                "cooldown_bars": cooldown,
+            }
+            for fast, slow, trend in [(48, 168, 336), (72, 240, 480), (96, 336, 672)]
+            for vol_window in [72, 168]
+            for min_vol, max_vol in [(0.002, 0.05), (0.003, 0.06)]
+            for strength in [0.03, 0.05]
+            for exit_buffer in [0.02, 0.04]
+            for entry_confirm, exit_confirm, min_hold, cooldown in [(3, 6, 72, 24), (6, 12, 168, 48)]
+        ],
         "reversion_rsi": [
             {"rsi_window": rsi_window, "boll_window": boll_window, "boll_dev": boll_dev, "rsi_long": 30, "rsi_short": 70, "rsi_exit_low": 45, "rsi_exit_high": 55}
             for rsi_window in [10, 14, 21]
@@ -638,6 +727,24 @@ def _robust_optimization_score(train_summary: dict[str, float | int], validation
         - overfit_gap * 0.35,
         6,
     )
+
+
+def _runtime_penalized_optimization_score(
+    *,
+    base_score: float,
+    runtime_metrics: dict[str, float],
+    runtime_hints: dict[str, Any],
+) -> float:
+    turnover = max(0.0, float(runtime_metrics.get("annual_turnover_pct", 0.0)))
+    avg_holding_bars = max(0.0, float(runtime_metrics.get("avg_holding_bars", 0.0)))
+    cost_sensitivity = max(0.0, float(runtime_metrics.get("cost_sensitivity", 0.0)))
+    max_turnover = max(1.0, float(runtime_hints.get("max_annual_turnover_pct", 5000.0) or 5000.0))
+    min_holding = max(1.0, float(runtime_hints.get("min_holding_bars", 5) or 5.0))
+
+    turnover_penalty = min(0.3, max(0.0, turnover / max_turnover - 1.0) * 0.2)
+    holding_penalty = min(0.2, max(0.0, min_holding - avg_holding_bars) / min_holding * 0.15)
+    cost_penalty = min(0.25, cost_sensitivity * 0.12)
+    return round(base_score - turnover_penalty - holding_penalty - cost_penalty, 6)
 
 
 def _optimization_status(priority: int, selected_priority: int) -> str:
@@ -1185,9 +1292,10 @@ def _simulate(
         # --- Turnover reduction: minimum holding period ---
         # Only blocks DIRECTION REVERSALS (long->short or short->long).
         # Risk-forced liquidations (going flat, _new_direction==0) always allowed.
-        _new_direction = 1.0 if delta_units > 0 else (-1.0 if delta_units < 0 else 0.0)
+        _new_direction = 1.0 if target_units > 0 else (-1.0 if target_units < 0 else 0.0)
         _is_exit_to_flat = _new_direction == 0 and _last_trade_direction != 0
-        if not _is_exit_to_flat and _new_direction != 0 and _new_direction != _last_trade_direction and _bars_since_entry < config.min_holding_bars:
+        _is_reversal = _last_trade_direction != 0 and _new_direction != 0 and _new_direction != _last_trade_direction
+        if not _is_exit_to_flat and _is_reversal and _bars_since_entry < config.min_holding_bars:
             delta_units = 0.0
             current_order_notional = 0.0
         else:
@@ -1202,7 +1310,8 @@ def _simulate(
                 current_order_notional = 0.0
 
         # --- Turnover reduction: annual turnover guard ---
-        if current_order_notional > 0:
+        _is_initial_entry = abs(current_units) <= 1e-9 and abs(target_units) > 1e-9
+        if current_order_notional > 0 and not _is_initial_entry:
             _annual_turnover_est = (_cumulative_turnover + current_order_notional) / max(1.0, current_equity) / (index / max(1, n_bars)) * periods_per_year
             if _annual_turnover_est > config.max_annual_turnover_pct / 100.0:
                 delta_units = 0.0
@@ -1221,8 +1330,9 @@ def _simulate(
         transaction_cost = current_order_notional * config.commission_rate
         slippage_cost = abs(delta_units) * config.slippage
         pnl = current_units * (current_close - previous_close) - transaction_cost - slippage_cost
+        executed_units = current_units + delta_units
         current_equity = max(1.0, current_equity + pnl)
-        current_units = target_units
+        current_units = executed_units
 
         # Update turnover reduction state
         if abs(delta_units) > 1e-9:
@@ -1233,7 +1343,7 @@ def _simulate(
         current_return = pnl / max(1.0, equity.iloc[index - 1])
         portfolio_returns.iloc[index] = current_return
         equity.iloc[index] = current_equity
-        exposure.iloc[index] = abs(target_units * current_close)
+        exposure.iloc[index] = abs(current_units * current_close)
         net_units.iloc[index] = current_units
         order_notional.iloc[index] = current_order_notional
         volume_capped.iloc[index] = capped_notional
@@ -1245,7 +1355,7 @@ def _simulate(
         drawdown.iloc[index] = current_equity / hwm - 1.0
 
         if abs(delta_units) > 1e-9:
-            position, color, shape, text = _signal_trade_text(delta_units=delta_units, target_units=target_units)
+            position, color, shape, text = _signal_trade_text(delta_units=delta_units, target_units=current_units)
             markers.append(
                 TradeMarker(
                     time=_to_epoch(timestamp),
@@ -1372,6 +1482,7 @@ class ResearchBacktestService:
                 None if request.get("min_cash_buffer_pct") is None else float(request.get("min_cash_buffer_pct"))
             ),
             min_trade_notional=float(request.get("min_trade_notional", 25.0)),
+            rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", 0.05)),
             long_only=True,
             run_id=str(request.get("run_id", "")),
         )
@@ -1449,6 +1560,11 @@ class ResearchBacktestService:
         candidates = _candidate_parameter_grid(strategy_id)
         max_candidates = max(1, min(int(request.get("max_candidates", 18)), 64))
         candidates = candidates[:max_candidates]
+        runtime_hints = {
+            "max_annual_turnover_pct": _round(config.max_annual_turnover_pct, 4),
+            "min_holding_bars": int(config.min_holding_bars),
+            "cost_aware_filter": bool(config.cost_aware_filter),
+        }
 
         rows: list[dict[str, Any]] = []
         for index, params in enumerate(candidates, start=1):
@@ -1456,16 +1572,31 @@ class ResearchBacktestService:
             validation_signals, _ = _prepare_strategy_pack(validation_frame, [strategy_id], params_map={strategy_id: params})
             train_result = _simulate(frame=train_frame, config=config, weights={strategy_id: 1.0}, signals=train_signals)
             validation_result = _simulate(frame=validation_frame, config=config, weights={strategy_id: 1.0}, signals=validation_signals)
-            score = _robust_optimization_score(train_result.summary, validation_result.summary)
+            runtime_metrics = _candidate_runtime_metrics(validation_result)
+            base_score = _robust_optimization_score(train_result.summary, validation_result.summary)
+            score = _runtime_penalized_optimization_score(
+                base_score=base_score,
+                runtime_metrics=runtime_metrics,
+                runtime_hints=runtime_hints,
+            )
+            validation_summary = {
+                **validation_result.summary,
+                **runtime_metrics,
+            }
             rows.append(
                 {
                     "rank": index,
                     "strategy_id": strategy_id,
                     "parameters": params,
                     "score": score,
+                    "base_score": base_score,
                     "train": train_result.summary,
-                    "validation": validation_result.summary,
+                    "validation": validation_summary,
+                    "metrics": runtime_metrics,
                     "overfit_gap": round(float(train_result.summary["sharpe_ratio"]) - float(validation_result.summary["sharpe_ratio"]), 6),
+                    "research_metadata": {
+                        "runtime_hints": runtime_hints,
+                    },
                 }
             )
 
@@ -1716,6 +1847,7 @@ class ResearchBacktestService:
                     target_weight=min(0.98, max(0.0, float(request.get("target_weight", 0.90)))),
                     min_cash_buffer_pct=float(request.get("min_cash_buffer_pct", 0.0)),
                     min_trade_notional=float(request.get("min_trade_notional", 25.0)),
+                    rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", 0.05)),
                     long_only=True,
                 )
                 unified_config = _with_crypto_execution_config(

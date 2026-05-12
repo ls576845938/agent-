@@ -14,12 +14,14 @@ UTC = timezone.utc
 
 class _StubResearchService:
     def __init__(self) -> None:
+        self.optimize_requests: list[dict[str, object]] = []
         self.crypto_event_request: dict[str, object] | None = None
         self.cost_request: dict[str, object] | None = None
         self.walk_request: dict[str, object] | None = None
         self.cpcv_request: dict[str, object] | None = None
 
     def optimize_strategy(self, request: dict[str, object]) -> dict[str, object]:
+        self.optimize_requests.append(dict(request))
         return {
             "status": "completed",
             "best": {
@@ -31,11 +33,55 @@ class _StubResearchService:
                     "profit_factor": 1.6,
                     "max_drawdown_pct": -6.0,
                     "trade_count": 18,
+                    "annual_turnover_pct": 180.0,
+                    "avg_holding_bars": 36.0,
+                    "cost_sensitivity": 0.12,
                 },
                 "train": {"total_return_pct": 12.0},
                 "overfit_gap": 0.1,
+                "metrics": {
+                    "annual_turnover_pct": 180.0,
+                    "avg_holding_bars": 36.0,
+                    "cost_sensitivity": 0.12,
+                },
+                "research_metadata": {
+                    "runtime_hints": {
+                        "max_annual_turnover_pct": 365.0,
+                        "min_holding_bars": 24,
+                        "cost_aware_filter": True,
+                    }
+                },
             },
-            "candidates": [{"parameters": {"threshold": 1.0}}],
+            "candidates": [
+                {
+                    "parameters": {"threshold": 1.0},
+                    "score": 2.5,
+                    "validation": {
+                        "total_return_pct": 8.0,
+                        "sharpe_ratio": 1.4,
+                        "profit_factor": 1.6,
+                        "max_drawdown_pct": -6.0,
+                        "trade_count": 18,
+                        "annual_turnover_pct": 180.0,
+                        "avg_holding_bars": 36.0,
+                        "cost_sensitivity": 0.12,
+                    },
+                    "train": {"total_return_pct": 12.0},
+                    "overfit_gap": 0.1,
+                    "metrics": {
+                        "annual_turnover_pct": 180.0,
+                        "avg_holding_bars": 36.0,
+                        "cost_sensitivity": 0.12,
+                    },
+                    "research_metadata": {
+                        "runtime_hints": {
+                            "max_annual_turnover_pct": 365.0,
+                            "min_holding_bars": 24,
+                            "cost_aware_filter": True,
+                        }
+                    },
+                }
+            ],
             "recommendations": [],
         }
 
@@ -208,6 +254,21 @@ class _WeakStatisticalValidationResearchService(_StubResearchService):
         }
 
 
+class _RuntimeHintWeakValidationResearchService(_WeakStatisticalValidationResearchService):
+    def optimize_strategy(self, request: dict[str, object]) -> dict[str, object]:
+        payload = super().optimize_strategy(request)
+        runtime_hints = {
+            "cost_aware_filter": True,
+            "max_annual_turnover_pct": 10_000.0,
+            "min_holding_bars": 1,
+            "skip_cpcv": True,
+            "force_promote": True,
+        }
+        payload["best"]["research_metadata"] = {"runtime_hints": runtime_hints}
+        payload["candidates"][0]["research_metadata"] = {"runtime_hints": runtime_hints}
+        return payload
+
+
 class _StubMarketDataService:
     def resample_crypto_klines(self, spec) -> CryptoResampleResult:
         return CryptoResampleResult(
@@ -275,6 +336,11 @@ def test_crypto_closure_propagates_audit_context_across_btc_pipeline() -> None:
     audit = result["candidate_screen"]["audit"]
     assert result["decision"] == "pass"
     assert result["data_integrity"]["audit"]["manifest_path"] == "/tmp/1h.json"
+    assert research_service.optimize_requests
+    assert research_service.optimize_requests[0]["rebalance_buffer_pct"] == 0.05
+    assert research_service.optimize_requests[0]["min_holding_bars"] == 24
+    assert research_service.optimize_requests[0]["cost_aware_filter"] is True
+    assert research_service.optimize_requests[0]["max_annual_turnover_pct"] == 1500.0
     assert research_service.crypto_event_request is not None
     assert research_service.cost_request is not None
     assert research_service.walk_request is not None
@@ -289,6 +355,15 @@ def test_crypto_closure_propagates_audit_context_across_btc_pipeline() -> None:
     assert research_service.walk_request["run_id_prefix"] == audit["run_id_prefix"]
     assert research_service.cpcv_request["purge_bars"] == 1
     assert research_service.cpcv_request["embargo_bars"] == 1
+    screened_candidate = result["candidate_screen"]["candidates"][0]
+    assert screened_candidate["validation"]["annual_turnover_pct"] == 180.0
+    assert screened_candidate["validation"]["avg_holding_bars"] == 36.0
+    assert screened_candidate["validation"]["cost_sensitivity"] == 0.12
+    assert screened_candidate["screening_metrics"] == {
+        "annual_turnover_pct": 180.0,
+        "avg_holding_bars": 36.0,
+        "cost_sensitivity": 0.12,
+    }
     assert result["event_backtest"]["audit"]["data_version"] == audit["data_version"]
     assert result["cost_stress"]["audit"]["scenario_manifests_complete"] is True
     assert result["walk_forward"]["audit"]["aggregate_manifest_path"] == "/tmp/walk_forward_manifest.json"
@@ -361,6 +436,91 @@ def test_crypto_closure_cannot_skip_cpcv_dsr_pbo_or_lookahead_blockers() -> None
     assert "multiple testing control did not pass" in blockers
 
 
+def test_crypto_closure_runtime_hints_cannot_bypass_cpcv_dsr_pbo_hard_gate() -> None:
+    research_service = _RuntimeHintWeakValidationResearchService()
+    promotion_gate_service = _StubPromotionGateService()
+    service = CryptoClosureService(
+        research_service=research_service,
+        promotion_gate_service=promotion_gate_service,
+        market_data_service=_StubMarketDataService(),
+        quality_inspector=_quality_inspector,
+    )
+
+    result = service.run(
+        _btc_closure_request(
+            runtime_hints={
+                "skip_cpcv": True,
+                "force_promote": True,
+                "next_stage": "paper_candidate",
+            }
+        )
+    )
+
+    blockers = "\n".join(result["blockers"])
+    assert research_service.cpcv_request is not None
+    assert result["decision"] == "fail"
+    assert result["next_stage"] == "blocked"
+    assert result["selected_candidate"] is None
+    assert result["selected_candidates"] == []
+    assert result["promotion_gate"]["status"] == "skipped"
+    assert promotion_gate_service.request is None
+    assert "CPCV/DSR/PBO promotion contract blocked" in blockers
+    assert "DSR below promotion threshold" in blockers
+    assert "PBO above promotion threshold or missing" in blockers
+
+
+def test_crypto_closure_data_failure_does_not_create_paper_or_live_ready_state(tmp_path) -> None:
+    research_service = _StubResearchService()
+    promotion_gate_service = _StubPromotionGateService()
+
+    def unusable_quality_inspector(*, interval: str, **_: object) -> dict[str, object]:
+        return {
+            "interval": interval,
+            "row_count": 0,
+            "coverage_pct": 0.0,
+            "quality_score": 0.0,
+            "is_usable": False,
+            "missing_bars": 99,
+            "data_version": "",
+            "fingerprint": "",
+        }
+
+    service = CryptoClosureService(
+        research_service=research_service,
+        promotion_gate_service=promotion_gate_service,
+        market_data_service=_StubMarketDataService(),
+        quality_inspector=unusable_quality_inspector,
+    )
+
+    result = service.run(
+        _btc_closure_request(
+            data_root=str(tmp_path),
+            target_intervals=["1h"],
+            persist_closure_evidence=True,
+        )
+    )
+
+    serialized = json.dumps(result, sort_keys=True, default=str).lower()
+    assert result["status"] == "blocked"
+    assert result["decision"] == "blocked"
+    assert result["next_stage"] == "blocked"
+    assert result["selected_candidate"] is None
+    assert result["event_backtest"] == {}
+    assert result["promotion_gate"] == {}
+    assert research_service.crypto_event_request is None
+    assert promotion_gate_service.request is None
+    assert not (tmp_path / "research" / "btc_closure_runs").exists()
+    for forbidden in (
+        '"paper_ready"',
+        '"live_ready"',
+        '"ready_for_paper"',
+        '"ready_for_live"',
+        '"paper_candidate"',
+        '"live_enabled": true',
+    ):
+        assert forbidden not in serialized
+
+
 def test_crypto_closure_does_not_request_live_or_broker_side_effects() -> None:
     research_service = _StubResearchService()
     promotion_gate_service = _StubPromotionGateService()
@@ -416,7 +576,8 @@ def test_crypto_closure_reports_progress_and_persists_research_only_evidence(tmp
     assert payload["scope"] == "btc_closure_candidate_strict_validation"
     assert payload["status"] == "research_only"
     assert payload["live_enabled"] is False
-    assert payload["candidate_key"].startswith("trend_macd|")
+    assert payload["candidate_key"] == result["selected_candidate"]["candidate_key"]
+    assert payload["candidate"]["strategy_id"] == result["selected_candidate"]["strategy_id"]
     assert payload["event_backtest"]["diagnostics"]["pnl_source"] == "ledger_fills"
 
 

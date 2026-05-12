@@ -215,6 +215,7 @@ class CryptoClosureRequest(BaseBacktestRequest):
     target_intervals: List[str] = Field(default_factory=lambda: ["5m", "15m", "1h", "4h", "1d"])
     strategy_ids: List[str] = Field(
         default_factory=lambda: [
+            "btc_low_turnover_trend",
             "trend_macd",
             "donchian_breakout",
             "reversion_rsi",
@@ -238,6 +239,10 @@ class CryptoClosureRequest(BaseBacktestRequest):
     cpcv_max_configs: int = Field(default=3, ge=1, le=12)
     purge_bars: int = Field(default=1, ge=0, le=100)
     embargo_bars: int = Field(default=1, ge=0, le=100)
+    rebalance_buffer_pct: float = Field(default=0.05, ge=0.0, le=0.25)
+    min_holding_bars: int = Field(default=24, ge=0, le=720)
+    cost_aware_filter: bool = True
+    max_annual_turnover_pct: float = Field(default=1500.0, ge=10.0, le=10000.0)
     min_bars_by_interval: Dict[str, int] = Field(default_factory=dict)
     persist_data_manifest: bool = True
     persist_closure_evidence: bool = True

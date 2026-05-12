@@ -3,6 +3,7 @@ from __future__ import annotations
 from time import sleep
 
 from fastapi.testclient import TestClient
+import pytest
 
 
 def _wait_for_task(client: TestClient, task_id: str, timeout_s: float = 5.0) -> dict:
@@ -17,6 +18,25 @@ def _wait_for_task(client: TestClient, task_id: str, timeout_s: float = 5.0) -> 
         sleep(0.05)
         deadline -= 0.05
     return last
+
+
+def _crypto_closure_payload(**overrides: object) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "source": "sqlite",
+        "symbol": "BTCUSDT",
+        "interval": "1h",
+        "start": "2024-01-01T00:00:00Z",
+        "end": "2024-01-02T00:00:00Z",
+        "capital": 100000,
+        "commission_rate": 0.0004,
+        "slippage": 4,
+        "leverage": 1,
+        "position_basis": "equity",
+        "data_db_path": "data/market_data.sqlite",
+        "target_intervals": ["5m", "15m", "1h"],
+    }
+    payload.update(overrides)
+    return payload
 
 
 def test_task_queue_service_tracks_status_and_blockers() -> None:
@@ -213,6 +233,49 @@ def test_crypto_closure_task_endpoint_rejects_live_submit_flags(monkeypatch) -> 
             "live_submit": True,
         },
     )
+    assert response.status_code == 422
+    assert "extra_forbidden" in response.text
+
+
+@pytest.mark.parametrize(
+    ("path", "extra_field", "extra_value"),
+    [
+        ("/api/crypto/research/closure", "live_submit", True),
+        ("/api/crypto/research/closure", "submit_orders", True),
+        ("/api/crypto/research/closure", "allow_live_orders", True),
+        ("/api/crypto/research/closure", "runtime_mode", "live"),
+        ("/api/crypto/research/closure", "broker", "alpaca"),
+        ("/api/crypto/research/closure", "paper_ready", True),
+        ("/api/crypto/research/closure", "live_ready", True),
+        ("/api/tasks/crypto/closure", "live_submit", True),
+        ("/api/tasks/crypto/closure", "submit_orders", True),
+        ("/api/tasks/crypto/closure", "allow_live_orders", True),
+        ("/api/tasks/crypto/closure", "runtime_mode", "live"),
+        ("/api/tasks/crypto/closure", "broker", "alpaca"),
+        ("/api/tasks/crypto/closure", "paper_ready", True),
+        ("/api/tasks/crypto/closure", "live_ready", True),
+    ],
+)
+def test_crypto_closure_api_and_task_reject_live_runtime_extra_fields(
+    monkeypatch,
+    path: str,
+    extra_field: str,
+    extra_value: object,
+) -> None:
+    from backend.app.api import app_factory as app_module
+    from backend.app.api.app_factory import create_app
+    from backend.app.services.task_queue import TaskQueueService
+
+    monkeypatch.setattr(app_module, "task_queue_service", TaskQueueService(max_workers=1))
+
+    def fail_if_called(payload):
+        raise AssertionError(f"closure service should not receive forbidden field payload: {payload}")
+
+    monkeypatch.setattr(app_module.crypto_closure_service, "run", fail_if_called)
+
+    client = TestClient(create_app())
+    response = client.post(path, json=_crypto_closure_payload(**{extra_field: extra_value}))
+
     assert response.status_code == 422
     assert "extra_forbidden" in response.text
 
