@@ -92,6 +92,40 @@ class _StubResearchService:
             "recommendations": [],
         }
 
+    def run_cpcv_validation(self, request: dict[str, object]) -> dict[str, object]:
+        pbo_trials = [
+            {"split_id": "p1", "config_id": "a", "train_sharpe": 1.4, "test_sharpe": 1.3},
+            {"split_id": "p1", "config_id": "b", "train_sharpe": 0.7, "test_sharpe": 0.5},
+            {"split_id": "p2", "config_id": "a", "train_sharpe": 1.2, "test_sharpe": 1.1},
+            {"split_id": "p2", "config_id": "b", "train_sharpe": 0.6, "test_sharpe": 0.4},
+        ]
+        return {
+            "status": "completed",
+            "validation_method": "cpcv",
+            "cv_method": "cpcv",
+            "n_splits": 3,
+            "test_splits": 1,
+            "combination_count": 3,
+            "path_count": 3,
+            "purged": True,
+            "purge_bars": 1,
+            "embargoed": True,
+            "embargo_bars": 1,
+            "lookahead_guard": "event_driven_signal_replay_no_future_features",
+            "config_count": 2,
+            "trial_count": len(pbo_trials),
+            "folds": [
+                {"split_id": "p1", "oos_sharpe": 1.3, "max_drawdown_pct": -2.0, "passed": True},
+                {"split_id": "p2", "oos_sharpe": 1.1, "max_drawdown_pct": -3.0, "passed": True},
+            ],
+            "fold_sharpes": [1.3, 1.1],
+            "fold_drawdowns": [-2.0, -3.0],
+            "fold_returns": [3.0, 2.5, 2.0, 1.8],
+            "pbo_trials": pbo_trials,
+            "bar_count": 1000,
+            "return_observation_count": 4,
+        }
+
 
 class _StubPromotionGateService:
     def __init__(self) -> None:
@@ -181,6 +215,7 @@ def test_crypto_closure_propagates_audit_context_across_btc_pipeline() -> None:
             "data_root": "/tmp/crypto-closure",
             "max_scenarios": 1,
             "windows": 2,
+            "validation_candidate_count": 1,
         }
     )
 
@@ -223,6 +258,7 @@ def test_crypto_closure_blocks_when_cost_or_walk_forward_manifests_are_missing()
             "data_root": "/tmp/crypto-closure",
             "max_scenarios": 1,
             "windows": 2,
+            "validation_candidate_count": 1,
         }
     )
 

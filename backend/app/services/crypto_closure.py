@@ -17,6 +17,7 @@ from quant_us.backtest.crypto_event import (
     qualify_crypto_candidates,
     summarize_crypto_interval_validation,
 )
+from quant_us.research.validation import summarize_candidate_validation
 
 
 DEFAULT_CRYPTO_TARGET_INTERVALS = ["5m", "15m", "1h", "4h", "1d"]
@@ -85,8 +86,8 @@ class CryptoClosureService:
 
         candidate_screen = self._screen_candidates(request=request, base_request=base_request)
         blockers.extend(candidate_screen["blockers"])
-        preliminary_selected = candidate_screen.get("selected_candidate")
-        if not preliminary_selected:
+        preliminary_candidates = list(candidate_screen.get("candidates", []) or [])
+        if not preliminary_candidates:
             return self._blocked_result(
                 base_request=base_request,
                 target_intervals=target_intervals,
@@ -97,43 +98,6 @@ class CryptoClosureService:
                     "没有可用策略候选；先缩小策略列表或检查候选参数网格。",
                 ],
             )
-        audit_context = self._build_audit_context(
-            request=request,
-            base_request=base_request,
-            data_integrity=data_integrity,
-            candidate=preliminary_selected,
-        )
-        candidate_screen["audit"] = audit_context
-
-        selected_request = {
-            **base_request,
-            "strategy_id": preliminary_selected["strategy_id"],
-            "strategy_params": dict(preliminary_selected.get("parameters") or {}),
-            "data_version": audit_context["data_version"],
-            "strategy_version": audit_context["strategy_version"],
-            "manifest_root": audit_context["manifest_root"],
-            "run_id": audit_context["event_run_id"],
-            "run_id_prefix": audit_context["run_id_prefix"],
-            "data_root": audit_context["data_root"],
-        }
-        event_backtest = self.research_service.run_crypto_event(selected_request)
-        event_payload = {
-            "status": "completed",
-            "mode": event_backtest.mode,
-            "summary": event_backtest.summary,
-            "strategy_details": event_backtest.strategy_details,
-            "latest_weights": event_backtest.latest_weights,
-            "diagnostics": event_backtest.diagnostics,
-            "audit": {
-                "run_id": event_backtest.diagnostics.get("run_id", audit_context["event_run_id"]),
-                "manifest_id": event_backtest.diagnostics.get("manifest_id", ""),
-                "manifest_path": event_backtest.diagnostics.get("manifest_path", ""),
-                "ledger_artifact_path": event_backtest.diagnostics.get("ledger_artifact_path", ""),
-                "data_version": event_backtest.diagnostics.get("data_version", audit_context["data_version"]),
-                "strategy_version": event_backtest.diagnostics.get("strategy_version", audit_context["strategy_version"]),
-            },
-        }
-        blockers.extend(self._event_backtest_blockers(event_payload))
 
         requested_scenarios = request.get("max_scenarios")
         scenario_count = (
@@ -141,90 +105,115 @@ class CryptoClosureService:
             if requested_scenarios in (None, "")
             else int(requested_scenarios)
         )
-        cost_stress = self.research_service.run_event_driven_cost_stress(
-            {
-                **selected_request,
-                "max_scenarios": min(max(1, scenario_count), len(default_crypto_cost_stress_scenarios())),
-            }
+        validation_count = max(
+            1,
+            min(
+                int(request.get("validation_candidate_count", request.get("max_validation_candidates", 3))),
+                len(preliminary_candidates),
+            ),
         )
-        walk_forward = self.research_service.run_walk_forward(
-            {
-                **selected_request,
-                "windows": min(int(request.get("windows", 2)), 8),
-                "max_candidates": 1,
-                "symbols": [symbol],
-            }
-        )
-        cost_stress["audit"] = {
-            "data_version": cost_stress.get("data_version", audit_context["data_version"]),
-            "strategy_version": cost_stress.get("strategy_version", audit_context["strategy_version"]),
-            "run_id_prefix": cost_stress.get("run_id_prefix", audit_context["run_id_prefix"]),
-            "scenario_manifests_complete": bool(cost_stress.get("scenario_manifests_complete", False)),
-            "missing_manifest_scenarios": cost_stress.get("missing_manifest_scenarios", []),
-        }
-        walk_forward["audit"] = {
-            **dict(walk_forward.get("audit", {})),
-            "data_version": walk_forward.get("audit", {}).get("data_version", audit_context["data_version"]),
-            "strategy_version": walk_forward.get("audit", {}).get("strategy_version", audit_context["strategy_version"]),
-            "run_id_prefix": walk_forward.get("audit", {}).get("run_id_prefix", audit_context["run_id_prefix"]),
-        }
+        candidates_to_validate = preliminary_candidates[:validation_count]
+        validated_candidates: list[dict[str, Any]] = []
+        event_by_candidate: dict[str, dict[str, Any]] = {}
+        cost_by_candidate: dict[str, dict[str, Any]] = {}
+        walk_by_candidate: dict[str, dict[str, Any]] = {}
+        selected_request_by_candidate: dict[str, dict[str, Any]] = {}
+
+        for candidate in candidates_to_validate:
+            evaluated = self._evaluate_candidate(
+                request=request,
+                base_request=base_request,
+                data_integrity=data_integrity,
+                candidate=candidate,
+                strategy_candidates=[
+                    row for row in preliminary_candidates
+                    if row.get("strategy_id") == candidate.get("strategy_id")
+                ],
+                scenario_count=scenario_count,
+                symbol=symbol,
+            )
+            validated_candidates.append(evaluated["candidate"])
+            key = self._candidate_key(evaluated["candidate"])
+            selected_request_by_candidate[key] = evaluated["selected_request"]
+            event_by_candidate[key] = evaluated["event_backtest"]
+            cost_by_candidate[key] = evaluated["cost_stress"]
+            walk_by_candidate[key] = evaluated["walk_forward"]
+            blockers.extend(self._event_backtest_blockers(evaluated["event_backtest"]))
+
         qualification = qualify_crypto_candidates(
-            [preliminary_selected],
-            cost_stress_by_candidate={
-                str(preliminary_selected["strategy_id"]): cost_stress,
-                self._candidate_key(preliminary_selected): cost_stress,
-            },
-            walk_forward_by_candidate={
-                str(preliminary_selected["strategy_id"]): walk_forward,
-                self._candidate_key(preliminary_selected): walk_forward,
-            },
-            event_backtest_by_candidate={
-                str(preliminary_selected["strategy_id"]): event_payload,
-                self._candidate_key(preliminary_selected): event_payload,
-            },
-            max_selected=1,
+            validated_candidates,
+            cost_stress_by_candidate=cost_by_candidate,
+            walk_forward_by_candidate=walk_by_candidate,
+            event_backtest_by_candidate=event_by_candidate,
+            max_selected=max(1, min(int(request.get("max_selected_candidates", 3)), 3)),
+        )
+        qualification = self._apply_statistical_validation_gate(
+            qualification,
+            max_selected=max(1, min(int(request.get("max_selected_candidates", 3)), 3)),
         )
         candidate_screen["qualification"] = qualification
-        if qualification.get("candidates"):
-            qualified_row = dict(qualification["candidates"][0])
-            candidate_screen["evaluated_candidate"] = qualified_row
-            candidate_screen["candidates"] = [
-                qualified_row if row.get("rank") == preliminary_selected.get("rank") else row
-                for row in candidate_screen.get("candidates", [])
-            ]
+        candidate_screen["validated_candidate_count"] = len(validated_candidates)
+        candidate_screen["validated_candidates"] = validated_candidates
+        candidate_screen["candidates"] = qualification.get("candidates", validated_candidates)
+        strict_selected_candidates = [
+            dict(row)
+            for row in qualification.get("selected_candidates", [])
+        ]
         strict_selected = (
-            dict(qualification["selected_candidates"][0])
+            strict_selected_candidates[0]
             if qualification.get("selected_candidates")
             else None
         )
         candidate_screen["selected_candidate"] = strict_selected
+        candidate_screen["selected_candidates"] = strict_selected_candidates
         if not strict_selected:
+            blockers.append("no BTC candidate passed cost stress, walk-forward, CPCV/DSR/PBO gates")
             blockers.extend(str(item) for item in qualification.get("blockers", []))
 
-        promotion_gate = self.promotion_gate_service.evaluate(
-            {
-                **selected_request,
-                "mode": "single",
-                "skip_deep_checks": False,
-                "persist_manifest": bool(request.get("persist_manifest", True)),
-                "register_experiment": bool(request.get("register_experiment", True)),
-                "experiment_name": str(request.get("experiment_name") or f"{symbol.lower()}_closure_gate"),
-                "notes": str(request.get("notes") or "Generated by BTC closure pipeline."),
-                "max_scenarios": min(max(1, scenario_count), len(default_crypto_cost_stress_scenarios())),
-                "windows": min(int(request.get("windows", 2)), 8),
-                "max_candidates": 1,
-                "symbols": [symbol],
-            }
-        )
+        representative = strict_selected or (validated_candidates[0] if validated_candidates else preliminary_candidates[0])
+        representative_key = self._candidate_key(representative)
+        selected_request = selected_request_by_candidate.get(representative_key, {})
+        event_payload = event_by_candidate.get(representative_key, {})
+        cost_stress = cost_by_candidate.get(representative_key, {})
+        walk_forward = walk_by_candidate.get(representative_key, {})
+        audit_context = dict(representative.get("audit", {}))
+        candidate_screen["audit"] = audit_context
+        promotion_gate = {
+            "status": "skipped",
+            "decision": "fail",
+            "next_stage": "blocked",
+            "gates": [],
+            "recommendations": [
+                "No service-layer promotion gate was run because no BTC candidate passed strict cost, walk-forward, and CPCV/DSR/PBO validation."
+            ],
+        }
+        if strict_selected and selected_request:
+            promotion_gate = self.promotion_gate_service.evaluate(
+                {
+                    **selected_request,
+                    "mode": "single",
+                    "skip_deep_checks": False,
+                    "persist_manifest": bool(request.get("persist_manifest", True)),
+                    "register_experiment": bool(request.get("register_experiment", True)),
+                    "experiment_name": str(request.get("experiment_name") or f"{symbol.lower()}_closure_gate"),
+                    "notes": str(request.get("notes") or "Generated by BTC closure pipeline."),
+                    "max_scenarios": min(max(1, scenario_count), len(default_crypto_cost_stress_scenarios())),
+                    "windows": min(int(request.get("windows", 2)), 8),
+                    "max_candidates": 1,
+                    "symbols": [symbol],
+                }
+            )
         promotion_gate["closure_audit"] = {
-            "data_version": audit_context["data_version"],
-            "strategy_version": audit_context["strategy_version"],
-            "run_id_prefix": audit_context["run_id_prefix"],
-            "event_run_id": audit_context["event_run_id"],
-            "selected_manifest_path": audit_context["data_manifest_path"],
+            "data_version": audit_context.get("data_version", ""),
+            "strategy_version": audit_context.get("strategy_version", ""),
+            "run_id_prefix": audit_context.get("run_id_prefix", ""),
+            "event_run_id": audit_context.get("event_run_id", ""),
+            "selected_manifest_path": audit_context.get("data_manifest_path", ""),
+            "candidate_key": representative_key,
         }
 
-        blockers.extend(self._validation_blockers(cost_stress, walk_forward, promotion_gate))
+        if promotion_gate:
+            blockers.extend(self._validation_blockers(cost_stress, walk_forward, promotion_gate))
         blockers = self._stable_unique_strings(blockers)
         gate_decision = str(promotion_gate.get("decision", "fail"))
         decision = "fail" if blockers else gate_decision
@@ -246,6 +235,7 @@ class CryptoClosureService:
             "data_integrity": data_integrity,
             "candidate_screen": candidate_screen,
             "selected_candidate": strict_selected,
+            "selected_candidates": strict_selected_candidates,
             "event_backtest": event_payload,
             "cost_stress": cost_stress,
             "walk_forward": walk_forward,
@@ -397,22 +387,48 @@ class CryptoClosureService:
                 if str(result.get("status", "completed")) != "completed" or not isinstance(best, dict) or not best:
                     errors.append({"strategy_id": strategy_id, "error": "optimizer returned no best candidate"})
                     continue
-                validation = best.get("validation")
-                if not isinstance(validation, dict) or not validation:
-                    errors.append({"strategy_id": strategy_id, "error": "optimizer best candidate missing validation"})
-                    continue
-                candidates.append(
-                    {
-                        "strategy_id": strategy_id,
-                        "parameters": dict(best.get("parameters") or {}),
-                        "score": float(best.get("score", 0.0)),
-                        "validation": validation,
-                        "train": best.get("train") or {},
-                        "overfit_gap": float(best.get("overfit_gap", 0.0)),
-                        "candidate_count": len(result.get("candidates", [])),
-                        "recommendations": result.get("recommendations", []),
-                    }
-                )
+                optimizer_rows = result.get("candidates", [])
+                if not isinstance(optimizer_rows, list) or not optimizer_rows:
+                    optimizer_rows = [best]
+                appended_before = len(candidates)
+                for optimizer_row in optimizer_rows[:max_candidates]:
+                    if not isinstance(optimizer_row, dict):
+                        continue
+                    validation = optimizer_row.get("validation")
+                    if not isinstance(validation, dict) or not validation:
+                        errors.append({"strategy_id": strategy_id, "error": "optimizer candidate missing validation"})
+                        continue
+                    candidates.append(
+                        {
+                            "strategy_id": strategy_id,
+                            "parameters": dict(optimizer_row.get("parameters") or {}),
+                            "score": float(optimizer_row.get("score", 0.0)),
+                            "validation": validation,
+                            "train": optimizer_row.get("train") or {},
+                            "overfit_gap": float(optimizer_row.get("overfit_gap", 0.0)),
+                            "candidate_count": len(result.get("candidates", [])),
+                            "optimizer_rank": optimizer_row.get("rank"),
+                            "recommendations": result.get("recommendations", []),
+                        }
+                    )
+                if len(candidates) == appended_before:
+                    validation = best.get("validation")
+                    if not isinstance(validation, dict) or not validation:
+                        errors.append({"strategy_id": strategy_id, "error": "optimizer best candidate missing validation"})
+                        continue
+                    candidates.append(
+                        {
+                            "strategy_id": strategy_id,
+                            "parameters": dict(best.get("parameters") or {}),
+                            "score": float(best.get("score", 0.0)),
+                            "validation": validation,
+                            "train": best.get("train") or {},
+                            "overfit_gap": float(best.get("overfit_gap", 0.0)),
+                            "candidate_count": len(result.get("candidates", [])),
+                            "optimizer_rank": best.get("rank"),
+                            "recommendations": result.get("recommendations", []),
+                        }
+                    )
             except Exception as exc:
                 errors.append({"strategy_id": strategy_id, "error": str(exc)})
 
@@ -446,6 +462,229 @@ class CryptoClosureService:
             return strategy_id
         parts = ",".join(f"{key}={params[key]}" for key in sorted(params))
         return f"{strategy_id}|{parts}"
+
+    def _evaluate_candidate(
+        self,
+        *,
+        request: dict[str, Any],
+        base_request: dict[str, Any],
+        data_integrity: dict[str, Any],
+        candidate: dict[str, Any],
+        strategy_candidates: list[dict[str, Any]],
+        scenario_count: int,
+        symbol: str,
+    ) -> dict[str, Any]:
+        candidate = dict(candidate)
+        audit_context = self._build_audit_context(
+            request=request,
+            base_request=base_request,
+            data_integrity=data_integrity,
+            candidate=candidate,
+        )
+        selected_request = {
+            **base_request,
+            "strategy_id": candidate["strategy_id"],
+            "strategy_params": dict(candidate.get("parameters") or {}),
+            "data_version": audit_context["data_version"],
+            "strategy_version": audit_context["strategy_version"],
+            "manifest_root": audit_context["manifest_root"],
+            "run_id": audit_context["event_run_id"],
+            "run_id_prefix": audit_context["run_id_prefix"],
+            "data_root": audit_context["data_root"],
+        }
+        event_backtest = self.research_service.run_crypto_event(selected_request)
+        event_payload = {
+            "status": "completed",
+            "mode": event_backtest.mode,
+            "summary": event_backtest.summary,
+            "strategy_details": event_backtest.strategy_details,
+            "latest_weights": event_backtest.latest_weights,
+            "diagnostics": event_backtest.diagnostics,
+            "audit": {
+                "run_id": event_backtest.diagnostics.get("run_id", audit_context["event_run_id"]),
+                "manifest_id": event_backtest.diagnostics.get("manifest_id", ""),
+                "manifest_path": event_backtest.diagnostics.get("manifest_path", ""),
+                "ledger_artifact_path": event_backtest.diagnostics.get("ledger_artifact_path", ""),
+                "data_version": event_backtest.diagnostics.get("data_version", audit_context["data_version"]),
+                "strategy_version": event_backtest.diagnostics.get("strategy_version", audit_context["strategy_version"]),
+            },
+        }
+        max_scenarios = min(max(1, scenario_count), len(default_crypto_cost_stress_scenarios()))
+        cost_stress = self.research_service.run_event_driven_cost_stress(
+            {
+                **selected_request,
+                "max_scenarios": max_scenarios,
+            }
+        )
+        walk_forward = self.research_service.run_walk_forward(
+            {
+                **selected_request,
+                "windows": min(int(request.get("windows", 4)), 8),
+                "max_candidates": 1,
+                "symbols": [symbol],
+            }
+        )
+        cpcv = self.research_service.run_cpcv_validation(
+            {
+                **selected_request,
+                "candidate_params": [
+                    dict(row.get("parameters") or {})
+                    for row in strategy_candidates
+                    if row.get("strategy_id") == candidate.get("strategy_id")
+                ],
+                "cpcv_splits": int(request.get("cpcv_splits", 5)),
+                "cpcv_test_splits": int(request.get("cpcv_test_splits", 2)),
+                "cpcv_max_paths": int(request.get("cpcv_max_paths", 10)),
+                "cpcv_max_configs": int(request.get("cpcv_max_configs", 6)),
+                "purge_bars": int(request.get("purge_bars", 1)),
+                "embargo_bars": int(request.get("embargo_bars", 1)),
+            }
+        )
+        cost_stress["audit"] = {
+            "data_version": cost_stress.get("data_version", audit_context["data_version"]),
+            "strategy_version": cost_stress.get("strategy_version", audit_context["strategy_version"]),
+            "run_id_prefix": cost_stress.get("run_id_prefix", audit_context["run_id_prefix"]),
+            "scenario_manifests_complete": bool(cost_stress.get("scenario_manifests_complete", False)),
+            "missing_manifest_scenarios": cost_stress.get("missing_manifest_scenarios", []),
+        }
+        walk_forward["audit"] = {
+            **dict(walk_forward.get("audit", {})),
+            "data_version": walk_forward.get("audit", {}).get("data_version", audit_context["data_version"]),
+            "strategy_version": walk_forward.get("audit", {}).get("strategy_version", audit_context["strategy_version"]),
+            "run_id_prefix": walk_forward.get("audit", {}).get("run_id_prefix", audit_context["run_id_prefix"]),
+        }
+        metrics = {
+            **dict(candidate.get("validation", {}) or {}),
+            "bar_count": int(cpcv.get("bar_count", 0) or 0),
+            "return_observation_count": int(cpcv.get("return_observation_count", 0) or 0),
+            "validation_method": "cpcv",
+            "cv_method": "cpcv",
+            "purged": True,
+            "purge_bars": int(cpcv.get("purge_bars", 1) or 1),
+            "embargoed": True,
+            "embargo_bars": int(cpcv.get("embargo_bars", 1) or 1),
+            "n_splits": int(cpcv.get("n_splits", 0) or 0),
+            "test_splits": int(cpcv.get("test_splits", 0) or 0),
+            "combination_count": int(cpcv.get("combination_count", 0) or 0),
+            "trial_count": int(cpcv.get("trial_count", 0) or 0),
+            "independent_trial_count": int(cpcv.get("trial_count", 0) or 0),
+            "lookahead_guard": str(cpcv.get("lookahead_guard", "")),
+            "wf_fold_sharpes": list(cpcv.get("fold_sharpes", []) or []),
+            "wf_fold_drawdowns": list(cpcv.get("fold_drawdowns", []) or []),
+            "pbo_trials": list(cpcv.get("pbo_trials", []) or []),
+            "return_series": list(cpcv.get("fold_returns", []) or []),
+            "cost_stress_levels": self._cost_stress_levels(cost_stress),
+        }
+        validation_statistics = summarize_candidate_validation(
+            candidate_id=self._candidate_key(candidate),
+            metrics=metrics,
+            walk_forward_artifact=cpcv,
+            cost_stress_artifact={"levels": metrics["cost_stress_levels"]},
+            experiment_data={
+                "validation_method": "cpcv",
+                "lookahead_guard": str(cpcv.get("lookahead_guard", "")),
+                "param_grid": {"candidate_configs": list(range(max(1, int(cpcv.get("config_count", 0) or 0))))},
+            },
+        )
+        candidate["audit"] = audit_context
+        candidate["event_backtest_summary"] = event_payload.get("summary", {})
+        candidate["cost_stress_summary"] = {
+            "survival_rate_pct": cost_stress.get("survival_rate_pct", 0.0),
+            "ledger_consistency_pct": cost_stress.get("ledger_consistency_pct", 0.0),
+            "scenario_count": cost_stress.get("scenario_count", 0),
+        }
+        candidate["walk_forward_summary"] = walk_forward.get("stability", {})
+        candidate["cpcv_summary"] = {
+            "status": cpcv.get("status"),
+            "path_count": cpcv.get("path_count", 0),
+            "trial_count": cpcv.get("trial_count", 0),
+            "fold_sharpes": cpcv.get("fold_sharpes", []),
+        }
+        candidate["validation_statistics"] = validation_statistics
+        candidate["statistical_validation_blockers"] = self._statistical_validation_blockers(candidate)
+        return {
+            "candidate": candidate,
+            "selected_request": selected_request,
+            "event_backtest": event_payload,
+            "cost_stress": cost_stress,
+            "walk_forward": walk_forward,
+            "cpcv": cpcv,
+        }
+
+    def _apply_statistical_validation_gate(
+        self,
+        qualification: dict[str, Any],
+        *,
+        max_selected: int,
+    ) -> dict[str, Any]:
+        rows: list[dict[str, Any]] = []
+        for raw_row in qualification.get("candidates", []) or []:
+            row = dict(raw_row)
+            blockers = list(row.get("qualification_blockers", []) or [])
+            blockers.extend(self._statistical_validation_blockers(row))
+            row["qualification_blockers"] = self._stable_unique_strings(blockers)
+            row["qualified"] = not row["qualification_blockers"]
+            row["selected"] = False
+            rows.append(row)
+        selected_remaining = max(0, int(max_selected))
+        for row in rows:
+            if selected_remaining <= 0:
+                break
+            if row["qualified"]:
+                row["selected"] = True
+                selected_remaining -= 1
+        return {
+            **qualification,
+            "qualified_count": sum(1 for row in rows if row["qualified"]),
+            "selected_count": sum(1 for row in rows if row["selected"]),
+            "candidates": rows,
+            "selected_candidates": [row for row in rows if row["selected"]],
+            "blockers": [
+                f"{row['candidate_key']}: {blocker}"
+                for row in rows
+                for blocker in row.get("qualification_blockers", [])
+            ],
+        }
+
+    def _statistical_validation_blockers(self, candidate: dict[str, Any]) -> list[str]:
+        stats = candidate.get("validation_statistics") or {}
+        if not isinstance(stats, dict) or not stats:
+            return ["missing CPCV/DSR/PBO validation statistics"]
+        contract = stats.get("promotion_gate_contract") or {}
+        blockers: list[str] = []
+        if contract.get("status") != "passed":
+            blockers.append("CPCV/DSR/PBO promotion contract blocked")
+        dsr = (stats.get("deflated_sharpe_ratio") or {}).get("dsr")
+        if dsr is None or float(dsr) < 0.10:
+            blockers.append("DSR below promotion threshold")
+        pbo = (stats.get("pbo") or {}).get("pbo")
+        if pbo is None or float(pbo) > 0.50:
+            blockers.append("PBO above promotion threshold or missing")
+        multiple = stats.get("multiple_testing") or {}
+        if multiple.get("passed") is not True:
+            blockers.append("multiple testing control did not pass")
+        return self._stable_unique_strings(blockers)
+
+    def _cost_stress_levels(self, cost_stress: dict[str, Any]) -> list[dict[str, Any]]:
+        levels: list[dict[str, Any]] = []
+        for scenario in cost_stress.get("scenarios", []) or []:
+            if not isinstance(scenario, dict):
+                continue
+            summary = scenario.get("summary", {}) if isinstance(scenario.get("summary"), dict) else {}
+            levels.append(
+                {
+                    "name": scenario.get("name", ""),
+                    "cost_multiplier": max(
+                        float(scenario.get("commission_multiplier", 1.0) or 1.0),
+                        float(scenario.get("slippage_multiplier", 1.0) or 1.0),
+                    ),
+                    "total_return_pct": summary.get("total_return_pct", 0.0),
+                    "sharpe_ratio": summary.get("sharpe_ratio", 0.0),
+                    "max_drawdown_pct": summary.get("max_drawdown_pct", 0.0),
+                    "survives": bool(scenario.get("survives", False)),
+                }
+            )
+        return levels
 
     def _min_bars_by_interval(self, request: dict[str, Any]) -> dict[str, int] | None:
         raw = request.get("min_bars_by_interval") or request.get("long_sample_min_bars_by_interval")

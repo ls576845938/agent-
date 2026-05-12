@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from itertools import combinations
 from dataclasses import dataclass, replace
 from datetime import datetime
 from math import sqrt
@@ -602,6 +603,10 @@ def _candidate_parameter_grid(strategy_id: str) -> list[dict[str, float]]:
         if merged not in candidates:
             candidates.append(merged)
     return candidates
+
+
+def _stable_params_key(params: dict[str, Any]) -> str:
+    return "|".join(f"{key}={params[key]}" for key in sorted(params))
 
 
 def _split_train_validation(frame: pd.DataFrame, train_ratio: float = 0.65) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -1861,6 +1866,161 @@ class ResearchBacktestService:
             "stability": stability,
             "audit": audit,
             "recommendations": recommendations,
+        }
+
+    def run_cpcv_validation(self, request: dict[str, Any]) -> dict[str, Any]:
+        """Run a compact combinatorial purged CV grid for BTC candidate evidence.
+
+        This is research-only evidence. It does not replace the event-driven
+        backtest or promotion gate; it supplies CPCV/PBO/DSR inputs so candidates
+        cannot advance on a single train/validation path.
+        """
+
+        strategy_id = str(request["strategy_id"])
+        selected_params = dict(request.get("strategy_params", {}) or {})
+        raw_candidates = request.get("candidate_params") or [selected_params]
+        candidate_params: list[dict[str, Any]] = []
+        for params in raw_candidates:
+            if not isinstance(params, dict):
+                continue
+            merged = {**strategy_registry.get(strategy_id).descriptor.default_params, **params}
+            if merged not in candidate_params:
+                candidate_params.append(merged)
+        selected_params = {**strategy_registry.get(strategy_id).descriptor.default_params, **selected_params}
+        if selected_params not in candidate_params:
+            candidate_params.insert(0, selected_params)
+
+        max_configs = max(2, min(int(request.get("cpcv_max_configs", 3)), 12))
+        candidate_params = candidate_params[:max_configs]
+        config = SimulationConfig(
+            mode="cpcv_validation",
+            source=request.get("source", settings.default_data_source),
+            symbol=request.get("symbol", settings.default_symbol),
+            interval=request.get("interval", settings.default_interval),
+            start=request["start"],
+            end=request["end"],
+            capital=float(request.get("capital", settings.default_capital)),
+            commission_rate=float(request.get("commission_rate", settings.default_commission_rate)),
+            slippage=float(request.get("slippage", settings.default_slippage)),
+            leverage=float(request.get("leverage", settings.default_leverage)),
+            position_basis=str(request.get("position_basis", "equity")),
+            db_path=str(request.get("data_db_path", "")),
+            rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", 0.01)),
+            min_holding_bars=int(request.get("min_holding_bars", 5)),
+            cost_aware_filter=bool(request.get("cost_aware_filter", True)),
+            max_annual_turnover_pct=float(request.get("max_annual_turnover_pct", 5000.0)),
+        )
+        frame = load_market_frame(
+            source=config.source,
+            symbol=config.symbol,
+            interval=config.interval,
+            start=config.start,
+            end=config.end,
+            db_path=config.db_path,
+        )
+        n_splits = max(3, min(int(request.get("cpcv_splits", 5)), 8))
+        test_splits = max(1, min(int(request.get("cpcv_test_splits", 2)), n_splits - 1))
+        split_indices = [list(chunk) for chunk in np.array_split(np.arange(len(frame)), n_splits)]
+        purge_bars = max(1, int(request.get("purge_bars", 1)))
+        embargo_bars = max(1, int(request.get("embargo_bars", 1)))
+        max_paths = max(1, min(int(request.get("cpcv_max_paths", 6)), 32))
+        path_combinations = list(combinations(range(n_splits), test_splits))[:max_paths]
+
+        pbo_trials: list[dict[str, Any]] = []
+        selected_folds: list[dict[str, Any]] = []
+        fold_returns: list[float] = []
+        selected_key = _stable_params_key(selected_params)
+
+        for path_index, test_group_ids in enumerate(path_combinations, start=1):
+            test_positions = sorted(
+                position
+                for group_id in test_group_ids
+                for position in split_indices[group_id]
+            )
+            if not test_positions:
+                continue
+            train_mask = np.ones(len(frame), dtype=bool)
+            for position in test_positions:
+                lo = max(0, position - purge_bars)
+                hi = min(len(frame), position + embargo_bars + 1)
+                train_mask[lo:hi] = False
+            train_mask[test_positions] = False
+            train_positions = np.where(train_mask)[0].tolist()
+            if len(train_positions) < 50 or len(test_positions) < 10:
+                continue
+
+            train_frame = frame.iloc[train_positions].copy()
+            test_frame = frame.iloc[test_positions].copy()
+            split_id = f"path_{path_index:02d}_{'-'.join(str(item) for item in test_group_ids)}"
+
+            for config_index, params in enumerate(candidate_params, start=1):
+                config_id = f"{strategy_id}_cfg_{config_index:02d}"
+                train_signals, _ = _prepare_strategy_pack(train_frame, [strategy_id], params_map={strategy_id: params})
+                test_signals, _ = _prepare_strategy_pack(test_frame, [strategy_id], params_map={strategy_id: params})
+                train_result = _simulate(frame=train_frame, config=config, weights={strategy_id: 1.0}, signals=train_signals)
+                test_result = _simulate(frame=test_frame, config=config, weights={strategy_id: 1.0}, signals=test_signals)
+                train_summary = train_result.summary
+                test_summary = test_result.summary
+                pbo_trials.append(
+                    {
+                        "split_id": split_id,
+                        "config_id": config_id,
+                        "strategy_id": strategy_id,
+                        "params": params,
+                        "train_sharpe": float(train_summary.get("sharpe_ratio", 0.0)),
+                        "test_sharpe": float(test_summary.get("sharpe_ratio", 0.0)),
+                        "train_return_pct": float(train_summary.get("total_return_pct", 0.0)),
+                        "test_return_pct": float(test_summary.get("total_return_pct", 0.0)),
+                    }
+                )
+                if _stable_params_key(params) == selected_key:
+                    fold_returns.append(float(test_summary.get("total_return_pct", 0.0)))
+                    selected_folds.append(
+                        {
+                            "split_id": split_id,
+                            "path_index": path_index,
+                            "test_groups": list(test_group_ids),
+                            "train_rows": len(train_frame),
+                            "test_rows": len(test_frame),
+                            "oos_sharpe": float(test_summary.get("sharpe_ratio", 0.0)),
+                            "total_return_pct": float(test_summary.get("total_return_pct", 0.0)),
+                            "max_drawdown_pct": float(test_summary.get("max_drawdown_pct", 0.0)),
+                            "trade_count": int(test_summary.get("trade_count", 0)),
+                            "passed": _walk_forward_survives(test_summary),
+                        }
+                    )
+
+        fold_sharpes = [float(row["oos_sharpe"]) for row in selected_folds]
+        fold_drawdowns = [float(row["max_drawdown_pct"]) for row in selected_folds]
+        pass_rate = (
+            sum(1 for row in selected_folds if row.get("passed")) / max(1, len(selected_folds)) * 100.0
+        )
+        return {
+            "status": "completed" if selected_folds and pbo_trials else "insufficient_evidence",
+            "validation_method": "cpcv",
+            "cv_method": "cpcv",
+            "n_splits": n_splits,
+            "test_splits": test_splits,
+            "combination_count": len(path_combinations),
+            "path_count": len(path_combinations),
+            "purged": True,
+            "purge_bars": purge_bars,
+            "embargoed": True,
+            "embargo_bars": embargo_bars,
+            "lookahead_guard": "event_driven_signal_replay_no_future_features",
+            "strategy_id": strategy_id,
+            "strategy_params": selected_params,
+            "config_count": len(candidate_params),
+            "trial_count": len(pbo_trials),
+            "folds": selected_folds,
+            "fold_sharpes": fold_sharpes,
+            "fold_drawdowns": fold_drawdowns,
+            "fold_returns": fold_returns,
+            "pbo_trials": pbo_trials,
+            "walk_forward_pass_rate": round(pass_rate / 100.0, 6),
+            "pass_rate": round(pass_rate / 100.0, 6),
+            "bar_count": len(frame),
+            "return_observation_count": len(fold_returns),
         }
 
     def optimize_portfolio(self, request: dict[str, Any]) -> dict[str, Any]:
