@@ -21,6 +21,8 @@ def test_ci_has_research_evidence_gate_job() -> None:
     assert "test_liquidation_shock_recovery_artifacts.py" in job_text
     assert "test_liquidation_shock_recovery_no_lookahead.py" in job_text
     assert "test_liquidation_shock_recovery_html_generation.py" in job_text
+    assert "test_liquidation_shock_event_ledger_validation.py" in job_text
+    assert "test_liquidation_shock_eventledger_html_generation.py" in job_text
     assert "test_ci_evidence_gate_workflow.py" in job_text
 
 

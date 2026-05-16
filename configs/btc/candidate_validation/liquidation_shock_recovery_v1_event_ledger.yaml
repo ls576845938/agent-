@@ -1,0 +1,36 @@
+schema_version: btc_candidate_event_ledger_validation_v1
+strategy_id: btc_liquidation_shock_recovery_v1
+source_hypothesis_id: liquidation_shock_recovery_v0
+source_skeleton: configs/btc/hypotheses/liquidation_shock_recovery_v1_skeleton.yaml
+mode: event_ledger_candidate_validation
+promotion_status: research_candidate
+paper_ready: false
+live_ready: false
+live_enabled: false
+paper_auto_start: false
+live_frozen: true
+event_ledger_required: true
+pnl_source: ledger_fills
+side: long_only
+selected_direction: long_recovery_after_liquidation_shock
+params:
+  time_exit_bars: 24
+  cooldown_bars: 6
+  signal_scale: 0.20
+  min_reentry_delay_bars: 6
+  no_orderflow_entry: true
+  no_short: true
+gates:
+  profit_factor: 1.15
+  event_profit_factor: 1.15
+  annual_turnover: 10.0
+  walk_forward_pass_rate: 0.80
+  regime_pass_rate: 0.75
+  max_drawdown_pct_floor: -15.0
+  dsr: 0.10
+  pbo: 0.50
+safety:
+  paper_queue: LOCKED
+  live: FROZEN
+  real_broker_api_allowed: false
+  real_orders_allowed: false
