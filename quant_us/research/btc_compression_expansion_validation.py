@@ -27,6 +27,7 @@ from quant_us.research.btc_canonical import (
     summarize_trade_attribution,
     write_json,
 )
+from quant_us.research.btc_alpha_hardening import classify_btc_regimes
 from quant_us.research.btc_eventpf_wf import load_btc_1h_frame
 from quant_us.research.btc_hypothesis_lab import DEFAULT_CONFIG_PATH, build_event_table, load_hypothesis_config
 
@@ -440,3 +441,269 @@ def _pbo_dsr_warnings(metrics: Mapping[str, Any]) -> list[str]:
 
 def read_json(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def build_event_ledger_attribution(
+    *,
+    run_dir: Path,
+    frame: pd.DataFrame | None = None,
+) -> dict[str, Any]:
+    report = read_json(run_dir / "canonical_backtest_report.json")
+    validation = read_json(run_dir / "candidate_validation_result.json")
+    walk_forward = read_json(run_dir / "walk_forward_report.json")
+    regime_report = read_json(run_dir / "regime_report.json")
+    pbo_dsr = read_json(run_dir / "pbo_dsr_report.json")
+    safety = read_json(run_dir / "paper_live_safety_status.json")
+    trades = pd.read_csv(run_dir / "trade_ledger.csv")
+    local_frame = load_btc_1h_frame() if frame is None else frame.copy()
+    local_frame.index = pd.to_datetime(local_frame.index, utc=True)
+    equity = _ledger_equity_curve(Path(report["event_ledger_status"]["manifest_path"]))
+    table = _event_return_table(
+        frame=local_frame,
+        equity=equity,
+        trades=trades,
+        walk_forward=walk_forward,
+    )
+    table_path = run_dir / "event_ledger_attribution_table.csv"
+    table.to_csv(table_path, index=False)
+    active = table.loc[table["active_exposure"].astype(bool)].copy()
+    failed_folds = [row for row in walk_forward.get("windows", []) if not bool(row.get("passed", False))]
+    payload = {
+        "schema_version": "btc_compression_expansion_event_ledger_attribution_v1",
+        "run_id": report["run_id"],
+        "strategy_id": report["strategy_id"],
+        "source": "event_ledger_equity_snapshots",
+        "event_ledger_attribution_table": str(table_path),
+        "ordinary_pf": report["metrics"]["profit_factor"],
+        "event_pf": report["metrics"]["event_profit_factor"],
+        "gate_status": validation["status"],
+        "gate_fail_reasons": validation["gate_fail_reasons"],
+        "paper_queue": safety["paper_queue"],
+        "live": safety["live"],
+        "overall_event_distribution": _event_stats(table, "event_return"),
+        "active_exposure_distribution": _event_stats(active, "event_return"),
+        "by_fold": _group_event_stats(active, "fold_id"),
+        "by_regime": _group_event_stats(active, "regime"),
+        "by_regime_fold": _worst_group_event_stats(active, ["fold_id", "regime"], limit=12),
+        "by_segment_age_bucket": _group_event_stats(active, "segment_age_bucket"),
+        "failed_fold_autopsy": _failed_fold_autopsy(table, failed_folds),
+        "trade_segment_attribution": {
+            "trade_count": int(len(trades)),
+            "top_loss_segments": trades.sort_values("net_pnl", ascending=True).head(10).to_dict(orient="records"),
+            "top_profit_segments": trades.sort_values("net_pnl", ascending=False).head(10).to_dict(orient="records"),
+            "regime_report": regime_report,
+        },
+        "pbo_dsr": {
+            "pbo": pbo_dsr.get("pbo"),
+            "dsr": pbo_dsr.get("dsr"),
+            "warnings": pbo_dsr.get("warnings", []),
+        },
+        "root_cause_summary": _root_cause_summary(report, walk_forward, regime_report),
+        "recommended_next_actions": [
+            "Do not create paper_review_pending until event_PF, walk_forward, and regime gates pass together.",
+            "Keep long-only upside breakout, but test regime keep-outs for trending_down, high_vol_trend, mean_reverting_chop, compression, and expansion.",
+            "Autopsy fold 3 and fold 4 before changing parameters; both are event-ledger failures, not cost failures.",
+            "Use event_PF and ledger equity snapshots as gate evidence; ordinary PF remains diagnostic.",
+        ],
+    }
+    write_json(run_dir / "event_ledger_attribution_report.json", payload)
+    write_json(run_dir / "fold_regime_diagnostics_cleanup.json", _fold_regime_cleanup(payload))
+    return payload
+
+
+def _event_return_table(
+    *,
+    frame: pd.DataFrame,
+    equity: pd.Series,
+    trades: pd.DataFrame,
+    walk_forward: Mapping[str, Any],
+) -> pd.DataFrame:
+    index = pd.to_datetime(frame.index, utc=True)
+    aligned_equity = equity.reindex(index).ffill().bfill()
+    regimes = classify_btc_regimes(frame).reindex(index).ffill().fillna("unknown")
+    returns = frame["close"].astype(float).pct_change().fillna(0.0)
+    volatility = returns.rolling(168, min_periods=24).std(ddof=0).fillna(0.0)
+    trend = frame["close"].astype(float).pct_change(168).fillna(0.0)
+    exposure = pd.Series(0.0, index=index, dtype=float)
+    segment_ids = pd.Series("", index=index, dtype=object)
+    segment_age = pd.Series(0, index=index, dtype=int)
+    for _, trade in trades.iterrows():
+        entry = pd.Timestamp(trade["entry_time"])
+        exit_ts = pd.Timestamp(trade["exit_time"])
+        entry = entry.tz_localize("UTC") if entry.tzinfo is None else entry.tz_convert("UTC")
+        exit_ts = exit_ts.tz_localize("UTC") if exit_ts.tzinfo is None else exit_ts.tz_convert("UTC")
+        mask = (index >= entry) & (index < exit_ts)
+        exposure.loc[mask] = float(trade.get("size", 0.0))
+        segment_ids.loc[mask] = str(trade.get("trade_id", ""))
+        segment_age.loc[mask] = range(int(mask.sum()))
+    table = pd.DataFrame(
+        {
+            "timestamp": index,
+            "equity_before": aligned_equity.shift(1).fillna(aligned_equity.iloc[0]).values,
+            "equity_after": aligned_equity.values,
+            "event_return": aligned_equity.pct_change().fillna(0.0).values,
+            "signed_event_pnl": aligned_equity.diff().fillna(0.0).values,
+            "active_exposure": (exposure > 0.0).values,
+            "exposure": exposure.values,
+            "segment_id": segment_ids.values,
+            "segment_age_bars": segment_age.values,
+            "segment_age_bucket": [_age_bucket(int(value)) for value in segment_age.values],
+            "fold_id": _fold_ids_from_report(index, walk_forward),
+            "regime": regimes.astype(str).values,
+            "volatility_bucket": _historical_bucket(volatility, labels=("low_vol", "mid_vol", "high_vol")).values,
+            "trend_strength_bucket": pd.cut(
+                trend,
+                bins=[-float("inf"), -0.03, 0.03, float("inf")],
+                labels=["downtrend", "neutral", "uptrend"],
+            ).astype(str).values,
+        }
+    )
+    table["is_positive_event"] = table["event_return"] > 0.0
+    table["is_negative_event"] = table["event_return"] < 0.0
+    return table
+
+
+def _event_stats(frame: pd.DataFrame, column: str) -> dict[str, Any]:
+    values = pd.to_numeric(frame[column], errors="coerce").dropna() if column in frame else pd.Series(dtype=float)
+    positive = values[values > 0.0]
+    negative = values[values < 0.0]
+    if values.empty:
+        return {
+            "event_count": 0,
+            "positive_event_rate": 0.0,
+            "positive_sum": 0.0,
+            "negative_sum": 0.0,
+            "event_pf": 0.0,
+            "mean_return": 0.0,
+            "median_return": 0.0,
+            "downside_tail_5pct": 0.0,
+            "max_adverse_event": 0.0,
+            "max_favorable_event": 0.0,
+        }
+    negative_abs = abs(float(negative.sum()))
+    event_pf = float(positive.sum()) / negative_abs if negative_abs > 0 else (999.0 if float(positive.sum()) > 0 else 0.0)
+    return {
+        "event_count": int(len(values)),
+        "positive_event_rate": round(float((values > 0.0).mean()), 6),
+        "positive_sum": round(float(positive.sum()), 10),
+        "negative_sum": round(float(negative.sum()), 10),
+        "event_pf": round(event_pf, 6),
+        "mean_return": round(float(values.mean()), 10),
+        "median_return": round(float(values.median()), 10),
+        "downside_tail_5pct": round(float(values.quantile(0.05)), 10),
+        "max_adverse_event": round(float(values.min()), 10),
+        "max_favorable_event": round(float(values.max()), 10),
+    }
+
+
+def _group_event_stats(frame: pd.DataFrame, group_col: str) -> list[dict[str, Any]]:
+    rows = []
+    if frame.empty:
+        return rows
+    for key, subset in frame.groupby(group_col, dropna=False):
+        stats = _event_stats(subset, "event_return")
+        stats[group_col] = str(key)
+        rows.append(stats)
+    return sorted(rows, key=lambda row: row["event_pf"])
+
+
+def _worst_group_event_stats(frame: pd.DataFrame, group_cols: list[str], *, limit: int) -> list[dict[str, Any]]:
+    rows = []
+    if frame.empty:
+        return rows
+    for keys, subset in frame.groupby(group_cols, dropna=False):
+        if not isinstance(keys, tuple):
+            keys = (keys,)
+        stats = _event_stats(subset, "event_return")
+        for column, key in zip(group_cols, keys):
+            stats[column] = str(key)
+        rows.append(stats)
+    return sorted(rows, key=lambda row: row["event_pf"])[:limit]
+
+
+def _failed_fold_autopsy(table: pd.DataFrame, failed_folds: list[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    rows = []
+    for fold in failed_folds:
+        fold_id = str(fold.get("fold"))
+        subset = table.loc[(table["fold_id"].astype(str) == fold_id) & table["active_exposure"].astype(bool)]
+        by_regime = _group_event_stats(subset, "regime")
+        negative_events = subset.sort_values("event_return", ascending=True).head(10)
+        rows.append(
+            {
+                "fold_id": fold_id,
+                "validation_start": fold.get("validation_start"),
+                "validation_end": fold.get("validation_end"),
+                "event_summary": fold.get("summary", {}),
+                "active_event_distribution": _event_stats(subset, "event_return"),
+                "worst_regimes": by_regime[:5],
+                "largest_negative_events": negative_events[
+                    ["timestamp", "event_return", "signed_event_pnl", "regime", "segment_id", "segment_age_bucket"]
+                ].to_dict(orient="records"),
+                "recommended_action": "block_or_reduce_regime_exposure_before_parameter_search",
+            }
+        )
+    return rows
+
+
+def _root_cause_summary(report: Mapping[str, Any], walk_forward: Mapping[str, Any], regime_report: Mapping[str, Any]) -> list[str]:
+    metrics = report["metrics"]
+    failed_folds = [str(row.get("fold")) for row in walk_forward.get("windows", []) if not bool(row.get("passed", False))]
+    dragging = list(regime_report.get("dragging_regimes", []))
+    return [
+        f"ordinary PF {float(metrics['profit_factor']):.4f} passes, but event_PF {float(metrics['event_profit_factor']):.4f} fails the 1.15 gate.",
+        f"walk-forward pass rate is {float(metrics['walk_forward_pass_rate']):.2f}; failed folds are {', '.join(failed_folds) if failed_folds else 'none'}.",
+        f"regime pass rate is {float(metrics['regime_pass_rate']):.4f}; dragging regimes are {', '.join(dragging) if dragging else 'none'}.",
+        "cost stress passes base and harsh scenarios, so the blocker is alpha stability rather than transaction cost survival.",
+    ]
+
+
+def _fold_regime_cleanup(report: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": "btc_fold_regime_diagnostics_cleanup_v1",
+        "run_id": report["run_id"],
+        "strategy_id": report["strategy_id"],
+        "failed_folds": [row["fold_id"] for row in report["failed_fold_autopsy"]],
+        "worst_regime_fold_pairs": report["by_regime_fold"][:8],
+        "dragging_regimes": report["trade_segment_attribution"]["regime_report"].get("dragging_regimes", []),
+        "cleanup_actions": [
+            "Use ledger equity segments for trade/regime diagnostics.",
+            "Keep fill aggregation as diagnostic only for this candidate.",
+            "Do not promote based on ordinary PF while event_PF is below threshold.",
+            "Require fold/regime gates before paper_review_pending.",
+        ],
+    }
+
+
+def _fold_ids_from_report(index: pd.DatetimeIndex, walk_forward: Mapping[str, Any]) -> list[str]:
+    labels = ["pre_wf"] * len(index)
+    for window in walk_forward.get("windows", []):
+        start = pd.Timestamp(window.get("validation_start"))
+        end = pd.Timestamp(window.get("validation_end"))
+        start = start.tz_localize("UTC") if start.tzinfo is None else start.tz_convert("UTC")
+        end = end.tz_localize("UTC") if end.tzinfo is None else end.tz_convert("UTC")
+        fold_id = str(window.get("fold"))
+        mask = (index >= start) & (index <= end)
+        for pos in mask.nonzero()[0]:
+            labels[pos] = fold_id
+    return labels
+
+
+def _historical_bucket(series: pd.Series, *, labels: tuple[str, str, str]) -> pd.Series:
+    low = series.expanding(min_periods=48).quantile(0.33).fillna(series)
+    high = series.expanding(min_periods=48).quantile(0.66).fillna(series)
+    return pd.Series(
+        ["low_vol" if value <= lo else "high_vol" if value >= hi else "mid_vol" for value, lo, hi in zip(series, low, high)],
+        index=series.index,
+    ).replace({"low_vol": labels[0], "mid_vol": labels[1], "high_vol": labels[2]})
+
+
+def _age_bucket(age: int) -> str:
+    if age <= 6:
+        return "0_6h"
+    if age <= 12:
+        return "7_12h"
+    if age <= 24:
+        return "13_24h"
+    if age <= 36:
+        return "25_36h"
+    return "37_48h"

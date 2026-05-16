@@ -1,0 +1,136 @@
+{
+  "cleanup_actions": [
+    "Use ledger equity segments for trade/regime diagnostics.",
+    "Keep fill aggregation as diagnostic only for this candidate.",
+    "Do not promote based on ordinary PF while event_PF is below threshold.",
+    "Require fold/regime gates before paper_review_pending."
+  ],
+  "dragging_regimes": [
+    "compression",
+    "expansion",
+    "high_vol_trend",
+    "mean_reverting_chop",
+    "trending_down"
+  ],
+  "failed_folds": [
+    "3",
+    "4"
+  ],
+  "run_id": "20260516T133000Z_compression_expansion_eventledger",
+  "schema_version": "btc_fold_regime_diagnostics_cleanup_v1",
+  "strategy_id": "btc_compression_expansion_breakout_v1",
+  "worst_regime_fold_pairs": [
+    {
+      "downside_tail_5pct": -0.0042230985,
+      "event_count": 4,
+      "event_pf": 0.0,
+      "fold_id": "1",
+      "max_adverse_event": -0.0042715487,
+      "max_favorable_event": -0.0025273016,
+      "mean_return": -0.0036724016,
+      "median_return": -0.003945378,
+      "negative_sum": -0.0146896064,
+      "positive_event_rate": 0.0,
+      "positive_sum": 0.0,
+      "regime": "liquidation_shock"
+    },
+    {
+      "downside_tail_5pct": -0.0020858582,
+      "event_count": 1,
+      "event_pf": 0.0,
+      "fold_id": "3",
+      "max_adverse_event": -0.0020858582,
+      "max_favorable_event": -0.0020858582,
+      "mean_return": -0.0020858582,
+      "median_return": -0.0020858582,
+      "negative_sum": -0.0020858582,
+      "positive_event_rate": 0.0,
+      "positive_sum": 0.0,
+      "regime": "liquidation_shock"
+    },
+    {
+      "downside_tail_5pct": -0.0032109758,
+      "event_count": 1,
+      "event_pf": 0.0,
+      "fold_id": "4",
+      "max_adverse_event": -0.0032109758,
+      "max_favorable_event": -0.0032109758,
+      "mean_return": -0.0032109758,
+      "median_return": -0.0032109758,
+      "negative_sum": -0.0032109758,
+      "positive_event_rate": 0.0,
+      "positive_sum": 0.0,
+      "regime": "liquidation_shock"
+    },
+    {
+      "downside_tail_5pct": -0.0042504345,
+      "event_count": 33,
+      "event_pf": 0.0,
+      "fold_id": "pre_wf",
+      "max_adverse_event": -0.0047603634,
+      "max_favorable_event": -5.67558e-05,
+      "mean_return": -0.0013205713,
+      "median_return": -0.0006944592,
+      "negative_sum": -0.0435788527,
+      "positive_event_rate": 0.0,
+      "positive_sum": 0.0,
+      "regime": "liquidation_shock"
+    },
+    {
+      "downside_tail_5pct": -0.0012471088,
+      "event_count": 83,
+      "event_pf": 0.638561,
+      "fold_id": "4",
+      "max_adverse_event": -0.0017400631,
+      "max_favorable_event": 0.001886708,
+      "mean_return": -0.0001026434,
+      "median_return": -1.66362e-05,
+      "negative_sum": -0.0235707875,
+      "positive_event_rate": 0.493976,
+      "positive_sum": 0.0150513891,
+      "regime": "trending_down"
+    },
+    {
+      "downside_tail_5pct": -0.0012632955,
+      "event_count": 47,
+      "event_pf": 0.669051,
+      "fold_id": "1",
+      "max_adverse_event": -0.0017496634,
+      "max_favorable_event": 0.001627262,
+      "mean_return": -9.41258e-05,
+      "median_return": -3.913e-07,
+      "negative_sum": -0.0133673511,
+      "positive_event_rate": 0.489362,
+      "positive_sum": 0.0089434372,
+      "regime": "trending_down"
+    },
+    {
+      "downside_tail_5pct": -0.0012470821,
+      "event_count": 142,
+      "event_pf": 0.708074,
+      "fold_id": "pre_wf",
+      "max_adverse_event": -0.0019574039,
+      "max_favorable_event": 0.0034680471,
+      "mean_return": -8.21722e-05,
+      "median_return": -1.11733e-05,
+      "negative_sum": -0.0399705663,
+      "positive_event_rate": 0.492958,
+      "positive_sum": 0.028302118,
+      "regime": "trending_down"
+    },
+    {
+      "downside_tail_5pct": -0.000935467,
+      "event_count": 12,
+      "event_pf": 0.834799,
+      "fold_id": "3",
+      "max_adverse_event": -0.00093869,
+      "max_favorable_event": 0.0011589542,
+      "mean_return": -5.03467e-05,
+      "median_return": -9.963e-07,
+      "negative_sum": -0.0036571246,
+      "positive_event_rate": 0.5,
+      "positive_sum": 0.0030529646,
+      "regime": "high_vol_trend"
+    }
+  ]
+}

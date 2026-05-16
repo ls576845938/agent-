@@ -1,8 +1,16 @@
 {
   "schema_version": "btc_compression_expansion_event_ledger_validation_test_results_v1",
   "run_id": "20260516T133000Z_compression_expansion_eventledger",
-  "command": "PYTHONPATH=. pytest tests/research/test_compression_expansion_event_ledger_validation.py tests/research/test_btc_hypothesis_lab_config_schema.py tests/research/test_btc_hypothesis_lab_no_lookahead.py tests/research/test_compression_expansion_feature_profile.py tests/research/test_compression_expansion_distribution_report.py tests/research/test_compression_expansion_hypothesis_gate.py tests/research/test_compression_expansion_tail_dependency.py tests/research/test_compression_expansion_strategy_skeleton_guard.py tests/research/test_hypothesis_lab_safety_status.py tests/reports/test_hypothesis_lab_html_generation.py -q",
-  "result": "25 passed in 2.69s",
+  "commands": [
+    {
+      "command": "PYTHONPATH=. pytest tests/research/test_compression_expansion_event_ledger_artifacts.py tests/research/test_compression_expansion_event_ledger_attribution_artifact.py tests/research/test_ci_evidence_gate_workflow.py tests/research/test_btc_hypothesis_lab_config_schema.py tests/research/test_compression_expansion_distribution_report.py tests/reports/test_hypothesis_lab_html_generation.py -q",
+      "result": "15 passed in 1.14s"
+    },
+    {
+      "command": "PYTHONPATH=. pytest tests/research/test_compression_expansion_event_ledger_validation.py -q",
+      "result": "8 passed in 1.75s"
+    }
+  ],
   "full_suite": {
     "run": false,
     "reason": "Sprint scope is event-ledger candidate validation for the compression-expansion skeleton; the focused validation and existing hypothesis lab tests were run."
