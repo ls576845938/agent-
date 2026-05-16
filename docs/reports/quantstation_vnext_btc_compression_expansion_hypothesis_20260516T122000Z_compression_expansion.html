@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT - BTC Compression-to-Expansion Event Breakout Research Report</title>
+  <style>
+    :root { --bg:#f6f8fb; --panel:#fff; --ink:#17202a; --muted:#596775; --line:#d7dee8; --navy:#14233b; --bad:#9b1c1c; --warn:#8a5a00; --ok:#126b45; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:Arial, Helvetica, sans-serif; line-height:1.5; }
+    header { background:var(--navy); color:#fff; padding:24px 28px; }
+    main { max-width:1180px; margin:0 auto; padding:22px; }
+    section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:18px; margin-bottom:18px; }
+    h1 { margin:0 0 8px; font-size:26px; }
+    h2 { margin:0 0 12px; font-size:20px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px; }
+    .metric { border:1px solid var(--line); border-radius:6px; padding:10px; background:#fbfcfe; }
+    .metric strong { display:block; color:var(--muted); font-size:13px; }
+    .metric span { display:block; margin-top:4px; font-size:20px; font-weight:700; }
+    .bad { color:var(--bad); } .warn { color:var(--warn); } .ok { color:var(--ok); }
+    table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+    th, td { border:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top; }
+    th { background:#edf2f7; }
+    code { background:#eef2f7; border-radius:4px; padding:1px 4px; }
+    li { margin:4px 0; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>QuantStation VNEXT - BTC Compression-to-Expansion Event Breakout Research Report</h1>
+  <div>Run ID: 20260516T122000Z_compression_expansion</div>
+</header>
+<main>
+  <section>
+    <h2>Safety Status</h2>
+    <div class="grid">
+      <div class="metric"><strong>PAPER QUEUE</strong><span class="warn">LOCKED</span></div>
+      <div class="metric"><strong>LIVE</strong><span class="bad">FROZEN</span></div>
+      <div class="metric"><strong>candidate_passed_internal_gate</strong><span>0</span></div>
+      <div class="metric"><strong>Hypothesis Decision</strong><span>hypothesis_passed_for_strategy_skeleton</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Executive Summary</h2>
+    <p><strong>hypothesis passed; strategy skeleton generated; paper queue remains LOCKED; live remains FROZEN.</strong></p>
+    <ul>
+      <li>This is research-only evidence generation; no paper candidate was created.</li>
+      <li>perp_dual_trend remains archived and low-vol uptrend remains rejected.</li>
+      <li>Order-flow is not used.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Previous Sprint Recap</h2>
+    <ul>
+      <li>perp_dual_trend archived after event_PF stayed near 1.01-1.02.</li>
+      <li>low-vol uptrend was rejected with event_PF_proxy 0.979469 and fold pass rate 25%.</li>
+      <li>compression-to-expansion was selected as the next hypothesis because it tests a different event-return state transition.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Hypothesis Lab Design</h2>
+    <ul>
+      <li>Config-driven hypothesis definition.</li>
+      <li>Reusable feature profile, event table, distribution, gate, safety, and HTML contracts.</li>
+      <li>Event-return objective with forward returns used only as labels.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Feature Definition</h2>
+    <table><thead><tr><th>field</th><th>definition</th></tr></thead><tbody><tr><td>compression</td><td>low realized volatility, range, ATR, and band width percentiles using current and historical bars only</td></tr><tr><td>downside_breakout</td><td>closed bar close &lt; prior compression box low</td></tr><tr><td>future_return_usage</td><td>labels_only</td></tr><tr><td>orderflow_entry_trigger</td><td>False</td></tr><tr><td>pre_breakout_box</td><td>prior box high/low from shifted historical bars; current breakout bar is excluded from box construction</td></tr><tr><td>range_expansion</td><td>current bar range exceeds recent median range multiple</td></tr><tr><td>upside_breakout</td><td>closed bar close &gt; prior compression box high</td></tr><tr><td>volatility_expansion</td><td>current realized volatility exceeds recent median volatility</td></tr></tbody></table>
+    <p>No-lookahead status: <code>pass</code></p>
+  </section>
+
+  <section>
+    <h2>Event-Return Distribution</h2>
+    <div class="grid">
+      <div class="metric"><strong>Active events</strong><span>459</span></div>
+      <div class="metric"><strong>Selected direction</strong><span>upside_breakout</span></div>
+      <div class="metric"><strong>event_PF_proxy</strong><span>1.359072</span></div>
+      <div class="metric"><strong>Fold pass rate</strong><span>0.750000</span></div>
+    </div>
+    <table><thead><tr><th>active_event_count</th><th>positive_event_rate</th><th>mean_return</th><th>median_return</th><th>positive_sum</th><th>negative_sum</th><th>event_PF_proxy</th><th>downside_tail_5pct</th></tr></thead><tbody><tr><td>264</td><td>0.5</td><td>0.0006678849</td><td>4.0803e-06</td><td>0.6673695157</td><td>-0.4910478965</td><td>1.359072</td><td>-0.0069750063</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Direction Breakdown</h2>
+    <table><thead><tr><th>direction</th><th>active_event_count</th><th>event_PF_proxy</th><th>positive_event_rate</th><th>mean_return</th><th>median_return</th><th>downside_tail_5pct</th></tr></thead><tbody><tr><td>combined</td><td>459</td><td>1.216748</td><td>0.509804</td><td>0.00043935</td><td>0.000129781</td><td>-0.0080320973</td></tr><tr><td>combined_directional</td><td>459</td><td>1.157974</td><td>0.490196</td><td>0.0003289359</td><td>-0.0001615204</td><td>-0.0078229587</td></tr><tr><td>downside_breakout</td><td>195</td><td>1.057676</td><td>0.523077</td><td>0.0001299488</td><td>0.0003889389</td><td>-0.0091646856</td></tr><tr><td>long_label_proxy</td><td>264</td><td>1.359072</td><td>0.5</td><td>0.0006678849</td><td>4.0803e-06</td><td>-0.0069750063</td></tr><tr><td>short_label_proxy</td><td>195</td><td>0.945469</td><td>0.476923</td><td>-0.0001299488</td><td>-0.0003889389</td><td>-0.0098199503</td></tr><tr><td>upside_breakout</td><td>264</td><td>1.359072</td><td>0.5</td><td>0.0006678849</td><td>4.0803e-06</td><td>-0.0069750063</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Fold Stability</h2>
+    <table><thead><tr><th>fold_id</th><th>active_event_count</th><th>event_PF_proxy</th><th>median_return</th><th>positive_event_rate</th><th>downside_tail_5pct</th><th>passed</th></tr></thead><tbody><tr><td>1</td><td>38</td><td>0.843625</td><td>-0.000969978</td><td>0.342105</td><td>-0.0094172619</td><td>False</td></tr><tr><td>2</td><td>62</td><td>1.638562</td><td>0.0008841705</td><td>0.596774</td><td>-0.0069804719</td><td>True</td></tr><tr><td>3</td><td>21</td><td>1.244436</td><td>1.59127e-05</td><td>0.52381</td><td>-0.0048937353</td><td>True</td></tr><tr><td>4</td><td>51</td><td>1.40926</td><td>1.28227e-05</td><td>0.509804</td><td>-0.0062557242</td><td>True</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Horizon Analysis</h2>
+    <table><thead><tr><th>horizon</th><th>active_event_count</th><th>event_PF_proxy</th><th>positive_event_rate</th><th>mean_return</th><th>median_return</th><th>downside_tail_5pct</th></tr></thead><tbody><tr><td>12h</td><td>264</td><td>1.417329</td><td>0.481061</td><td>0.0022034565</td><td>-0.0008092401</td><td>-0.0223419734</td></tr><tr><td>1h</td><td>264</td><td>1.359072</td><td>0.5</td><td>0.0006678849</td><td>4.0803e-06</td><td>-0.0069750063</td></tr><tr><td>24h</td><td>264</td><td>1.399551</td><td>0.481061</td><td>0.0028972472</td><td>-0.000607684</td><td>-0.0278221091</td></tr><tr><td>48h</td><td>264</td><td>1.779023</td><td>0.55303</td><td>0.0076906296</td><td>0.004041986</td><td>-0.0429551874</td></tr><tr><td>4h</td><td>264</td><td>1.145689</td><td>0.488636</td><td>0.0004775554</td><td>-0.0002113925</td><td>-0.0149939603</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Tail Dependency</h2>
+    <table><thead><tr><th>top5_positive_contribution</th><th>top10_positive_contribution</th><th>top5_negative_contribution</th><th>edge_depends_on_extreme_events</th></tr></thead><tbody><tr><td>0.173244</td><td>0.288602</td><td>0.171898</td><td>False</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Hypothesis Decision</h2>
+    <p>Decision: <strong>hypothesis_passed_for_strategy_skeleton</strong></p>
+    <p>Strategy skeleton generated: <strong>True</strong></p>
+    <ul><li>all_hypothesis_gates_passed</li></ul>
+  </section>
+
+  <section>
+    <h2>Strategy Skeleton</h2>
+    <p>Generated at <code>configs/btc/hypotheses/compression_expansion_breakout_v1_skeleton.yaml</code></p>
+  </section>
+
+  <section>
+    <h2>Tests</h2>
+    <p><strong>Command:</strong> <code>PYTHONPATH=. pytest tests/research/test_btc_hypothesis_lab_config_schema.py tests/research/test_btc_hypothesis_lab_no_lookahead.py tests/research/test_compression_expansion_feature_profile.py tests/research/test_compression_expansion_distribution_report.py tests/research/test_compression_expansion_hypothesis_gate.py tests/research/test_compression_expansion_tail_dependency.py tests/research/test_compression_expansion_strategy_skeleton_guard.py tests/research/test_hypothesis_lab_safety_status.py tests/reports/test_hypothesis_lab_html_generation.py -q</code></p>
+    <p><strong>Result:</strong> <code>17 passed in 1.67s</code></p>
+  </section>
+
+  <section>
+    <h2>Final Decision</h2>
+    <p><strong>hypothesis passed; strategy skeleton generated; paper queue remains LOCKED; live remains FROZEN.</strong></p>
+  </section>
+</main>
+</body>
+</html>

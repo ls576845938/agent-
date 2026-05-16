@@ -1,0 +1,37 @@
+{
+  "active_event_count": 459,
+  "data_range": {
+    "end": "2026-05-12T00:00:00+00:00",
+    "rows": 20689,
+    "start": "2024-01-01T00:00:00+00:00"
+  },
+  "downside_event_count": 195,
+  "feature_definitions": {
+    "compression": "low realized volatility, range, ATR, and band width percentiles using current and historical bars only",
+    "downside_breakout": "closed bar close < prior compression box low",
+    "future_return_usage": "labels_only",
+    "orderflow_entry_trigger": false,
+    "pre_breakout_box": "prior box high/low from shifted historical bars; current breakout bar is excluded from box construction",
+    "range_expansion": "current bar range exceeds recent median range multiple",
+    "upside_breakout": "closed bar close > prior compression box high",
+    "volatility_expansion": "current realized volatility exceeds recent median volatility"
+  },
+  "fold_active_counts": {
+    "1": 80,
+    "2": 86,
+    "3": 54,
+    "4": 75,
+    "pre_wf": 164
+  },
+  "hypothesis_id": "compression_expansion_breakout_v0",
+  "mode": "research_only",
+  "no_lookahead": {
+    "feature_basis": "rolling/expanding current-and-past OHLCV; prior box uses shift(1)",
+    "future_return_usage": "labels_only",
+    "status": "pass"
+  },
+  "row_count": 20641,
+  "run_id": "20260516T122000Z_compression_expansion",
+  "schema_version": "btc_hypothesis_lab_feature_profile_v1",
+  "upside_event_count": 264
+}
