@@ -1,0 +1,276 @@
+{
+  "comparison": [
+    {
+      "DSR": 1.0,
+      "MDD": -6.084,
+      "PBO": 0.25,
+      "PF": 1.261744,
+      "Sharpe": 0.3363,
+      "WF_pass": 0.75,
+      "annual_turnover": 3.0842,
+      "cost_stress": "pass",
+      "event_PF": 1.0141,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate"
+      ],
+      "fill_count": 158,
+      "gate_status": "candidate_gate_failed",
+      "regime_pass": 0.5,
+      "strategy": "btc_perp_dual_trend",
+      "trade_count": 102
+    },
+    {
+      "DSR": 1.0,
+      "MDD": -7.9128,
+      "PBO": 0.0,
+      "PF": 1.599256,
+      "Sharpe": 0.4901,
+      "WF_pass": 1.0,
+      "annual_turnover": 1.856494,
+      "cost_stress": "pass",
+      "event_PF": 1.0189,
+      "fail_reasons": [
+        "event_profit_factor",
+        "regime_pass_rate"
+      ],
+      "fill_count": 58,
+      "gate_status": "candidate_gate_failed",
+      "regime_pass": 0.5,
+      "strategy": "btc_perp_dual_trend_v2",
+      "trade_count": 42
+    },
+    {
+      "DSR": 1.0,
+      "MDD": -8.5324,
+      "PBO": 0.5,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "WF_pass": 0.5,
+      "annual_turnover": 1.051634,
+      "cost_stress": "pass",
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "regime_pass": 1.0,
+      "strategy": "btc_perp_dual_trend_v3",
+      "trade_count": 21
+    },
+    {
+      "DSR": 1.0,
+      "MDD": -7.835,
+      "PBO": 0.5,
+      "PF": 1.631439,
+      "Sharpe": 0.5146,
+      "WF_pass": 0.5,
+      "annual_turnover": 1.215925,
+      "cost_stress": "pass",
+      "event_PF": 1.0205,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 49,
+      "gate_status": "candidate_gate_failed",
+      "regime_pass": 1.0,
+      "strategy": "btc_perp_dual_trend_v4_eventpf_wf",
+      "trade_count": 24
+    }
+  ],
+  "fail_reasons": [
+    "event_profit_factor",
+    "walk_forward_pass_rate"
+  ],
+  "gate_status": "candidate_gate_failed",
+  "long_event_PF": 1.631439,
+  "run_id": "20260516T080000Z_eventpf_wf",
+  "schema_version": "btc_v4_eventpf_wf_results_v1",
+  "short_event_PF": 0.0,
+  "signal_flip_exit_count": 0,
+  "strategy_id": "btc_perp_dual_trend_v4_eventpf_wf",
+  "v4_report": {
+    "DSR": 1.0,
+    "MDD": -7.835,
+    "PBO": 0.5,
+    "PF": 1.631439,
+    "Sharpe": 0.5146,
+    "Sortino": 0.5873,
+    "annual_turnover": 1.215925,
+    "artifact_hash": "4f0984e1708fce5a06e7fbb3f090112e3d7fa6cdcfcf712c66a6c1a8d511bf9b",
+    "avg_holding_bars": 4826.041667,
+    "avg_loss": -654.114261,
+    "avg_win": 902.970838,
+    "benchmark": null,
+    "code_commit": "85c810df11865620a0747b0e8b823fb93a99d6e6",
+    "config_hash": "a8e23c3e14b53707c1176672d594400ea0db19549839a531ed3d0761d43a4729",
+    "cost_model_id": "crypto_commission_4bps_slippage_4bps",
+    "cost_stress_base": {
+      "label": "Current costs",
+      "manifest_path": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_cost_base.json",
+      "name": "base",
+      "passed": true,
+      "summary": {
+        "annual_return_pct": 2.0203,
+        "annual_volatility_pct": 4.0463,
+        "calmar_ratio": 0.2579,
+        "max_drawdown_pct": -7.835,
+        "profit_factor": 1.0205,
+        "sharpe_ratio": 0.5146,
+        "sortino_ratio": 0.5873,
+        "total_return_pct": 4.8373,
+        "trade_count": 49,
+        "win_rate_pct": 50.792
+      },
+      "survives": true
+    },
+    "cost_stress_harsh": {
+      "label": "Fees and slippage 2x",
+      "manifest_path": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_cost_costs_2x.json",
+      "name": "costs_2x",
+      "passed": true,
+      "summary": {
+        "annual_return_pct": 1.9288,
+        "annual_volatility_pct": 4.0466,
+        "calmar_ratio": 0.246,
+        "max_drawdown_pct": -7.8393,
+        "profit_factor": 1.0196,
+        "sharpe_ratio": 0.4923,
+        "sortino_ratio": 0.574,
+        "total_return_pct": 4.6154,
+        "trade_count": 49,
+        "win_rate_pct": 50.9113
+      },
+      "survives": true
+    },
+    "data_range": {
+      "end": "2026-05-12T00:00:00+00:00",
+      "start": "2024-01-01T00:00:00+00:00"
+    },
+    "data_version": "qs-sqlite-BTCUSDT-1h-66968bfbabf2",
+    "diagnostics": {
+      "diagnostic_columns": [
+        "buy_pressure",
+        "buy_ratio",
+        "fast_ma",
+        "momentum",
+        "orderflow_sizing_multiplier",
+        "orderflow_veto_long",
+        "orderflow_veto_short",
+        "raw_signal",
+        "regime",
+        "regime_ma",
+        "short_signal_scale",
+        "slow_ma",
+        "target_signal",
+        "trend_long",
+        "trend_short",
+        "trend_strength",
+        "volatility"
+      ],
+      "signal_changed_bars": 56,
+      "signal_equity_diagnostic_only": true,
+      "signal_nonzero_bars": 3942
+    },
+    "event_PF": 1.0205,
+    "event_ledger_status": {
+      "ledger_equity_consistent": true,
+      "manifest_path": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_base.json",
+      "pnl_source": "ledger_fills",
+      "status": "pass"
+    },
+    "evidence_source": "canonical_event_ledger",
+    "exposure": 0.038107,
+    "fail_reasons": [
+      "event_profit_factor",
+      "walk_forward_pass_rate"
+    ],
+    "fees": 148.755193,
+    "gate_decision": {
+      "checks": {
+        "annual_turnover": true,
+        "canonical_source": true,
+        "cost_stress_base": true,
+        "cost_stress_harsh": true,
+        "dsr": true,
+        "event_ledger": true,
+        "event_profit_factor": false,
+        "max_drawdown": true,
+        "no_lookahead": true,
+        "pbo": true,
+        "profit_factor": true,
+        "regime_pass_rate": true,
+        "signal_equity_diagnostic_only": true,
+        "walk_forward_pass_rate": false
+      },
+      "evidence_source": "canonical_backtest_report",
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "passed": false,
+      "status": "candidate_gate_failed",
+      "strategy_id": "btc_perp_dual_trend_v4_eventpf_wf",
+      "thresholds": {
+        "annual_turnover": 10.0,
+        "dsr": 0.1,
+        "event_profit_factor": 1.15,
+        "max_drawdown_pct_floor": -15.0,
+        "pbo": 0.5,
+        "profit_factor": 1.15,
+        "regime_pass_rate": 0.75,
+        "walk_forward_pass_rate": 0.8
+      }
+    },
+    "gross_pnl": 4692.119211,
+    "ledger_engine_version": "quant_us.crypto_event.event_ledger_v1",
+    "median_holding_bars": 3853.5,
+    "metrics": {
+      "annual_turnover": 1.215925,
+      "avg_holding_bars": 4826.041667,
+      "avg_loss": -654.114261,
+      "avg_win": 902.970838,
+      "cost_stress_base_pass": true,
+      "cost_stress_harsh_survives": true,
+      "dsr": 1.0,
+      "event_profit_factor": 1.0205,
+      "exposure": 0.038107,
+      "fees": 148.755193,
+      "fill_count": 49,
+      "gross_pnl": 4692.119211,
+      "max_drawdown": -7.835,
+      "median_holding_bars": 3853.5,
+      "net_pnl": 4543.364018,
+      "pbo": 0.5,
+      "profit_factor": 1.631439,
+      "regime_pass_rate": 1.0,
+      "sharpe": 0.5146,
+      "slippage": 148.755193,
+      "sortino": 0.5873,
+      "total_return_pct": 4.8373,
+      "trade_count": 24,
+      "walk_forward_pass_rate": 0.5,
+      "win_rate": 0.541667
+    },
+    "net_pnl": 4543.364018,
+    "no_lookahead_status": {
+      "basis": "event_engine_next_bar_execution_and_past_only_features",
+      "status": "pass"
+    },
+    "promotion_gate_status": "candidate_gate_failed",
+    "regime_pass_rate": 1.0,
+    "run_id": "20260516T080000Z_eventpf_wf",
+    "schema_version": "btc_canonical_backtest_report_v1",
+    "slippage": 148.755193,
+    "strategy_id": "btc_perp_dual_trend_v4_eventpf_wf",
+    "strategy_version": "btc_perp_dual_trend_v4_eventpf_wf:eventpf_wf_v1",
+    "timeframe": "1h",
+    "trade_count": 24,
+    "walk_forward_pass_rate": 0.5,
+    "win_rate": 0.541667
+  }
+}

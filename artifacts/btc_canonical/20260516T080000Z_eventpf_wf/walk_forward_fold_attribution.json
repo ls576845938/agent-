@@ -1,0 +1,284 @@
+{
+  "answers": {
+    "failure_sources": {
+      "event_profit_factor": 2,
+      "regime_pass_rate": 1,
+      "total_return": 2
+    },
+    "high_vol_or_trending_down_concentrated": false,
+    "short_side_concentrated": false,
+    "signal_flip_exit_concentrated": false,
+    "stable_rules": [
+      "long side remains the most defensible side under v3/v4 evidence",
+      "signal_flip_exit is not the v3 fold-level failure source"
+    ],
+    "unstable_or_overfit_rules": [
+      "event_PF varies by time fold; full-period closed-trade PF is not stable enough for promotion",
+      "some folds lose money after event-ledger costs and mark-to-market"
+    ],
+    "which_folds_failed": [
+      3,
+      4
+    ]
+  },
+  "failed_folds": [
+    3,
+    4
+  ],
+  "folds": [
+    {
+      "MDD": -1.7841,
+      "PF": 67.466333,
+      "Sharpe": 2.2952,
+      "cost_bucket_attribution": [
+        {
+          "cost_bucket": "low_cost_ratio",
+          "net_pnl": 3402.845496,
+          "profit_factor": 999.0,
+          "trade_count": 3,
+          "win_rate": 1.0
+        },
+        {
+          "cost_bucket": "mid_cost_ratio",
+          "net_pnl": -50.437683,
+          "profit_factor": 0.0,
+          "trade_count": 1,
+          "win_rate": 0.0
+        }
+      ],
+      "cost_stress": {
+        "base_return_pct": 2.7383,
+        "status": "fold_event_only"
+      },
+      "event_PF": 1.0966,
+      "expansion_PF": 0.0,
+      "fail_reasons": [],
+      "fill_count": 11,
+      "fold_id": 1,
+      "high_vol_trend_PF": 0.0,
+      "long_trades_PF": 67.466333,
+      "manifest_path": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/manifests/run_btc_perp_dual_trend_v3_wf_attr1.json",
+      "orderflow_mode": "veto_only",
+      "passed": true,
+      "regime_pass": true,
+      "regime_pass_rate": 1.0,
+      "short_trades_PF": 0.0,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_net_pnl": 0.0,
+      "strategy_config_hash": "4e98a5f79f37fb2f24d638c9ff3c062022a231c4ebb48830df1dcdf476633315",
+      "test_end": "2025-03-07T00:00:00+00:00",
+      "test_start": "2024-10-14T09:00:00+00:00",
+      "top_loss_entry_condition": {
+        "entry_condition": "trend_long",
+        "net_pnl": 3352.407813,
+        "profit_factor": 67.466333,
+        "trade_count": 4,
+        "win_rate": 0.75
+      },
+      "top_loss_exit_reason": {
+        "exit_reason": "signal_flat_exit",
+        "net_pnl": 3352.407813,
+        "profit_factor": 67.466333,
+        "trade_count": 4,
+        "win_rate": 0.75
+      },
+      "trade_count": 4,
+      "train_end": "2024-10-14T08:00:00+00:00",
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "trending_down_PF": 0.0,
+      "trending_up_PF": 999.0,
+      "turnover": 1.592995,
+      "win_rate": 0.75
+    },
+    {
+      "MDD": -0.2349,
+      "PF": 999.0,
+      "Sharpe": 2.5374,
+      "cost_bucket_attribution": [
+        {
+          "cost_bucket": "low_cost_ratio",
+          "net_pnl": 529.567176,
+          "profit_factor": 999.0,
+          "trade_count": 1,
+          "win_rate": 1.0
+        }
+      ],
+      "cost_stress": {
+        "base_return_pct": 0.7107,
+        "status": "fold_event_only"
+      },
+      "event_PF": 1.1173,
+      "expansion_PF": 0.0,
+      "fail_reasons": [],
+      "fill_count": 6,
+      "fold_id": 2,
+      "high_vol_trend_PF": 0.0,
+      "long_trades_PF": 999.0,
+      "manifest_path": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/manifests/run_btc_perp_dual_trend_v3_wf_attr2.json",
+      "orderflow_mode": "veto_only",
+      "passed": true,
+      "regime_pass": true,
+      "regime_pass_rate": 1.0,
+      "short_trades_PF": 0.0,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_net_pnl": 0.0,
+      "strategy_config_hash": "4e98a5f79f37fb2f24d638c9ff3c062022a231c4ebb48830df1dcdf476633315",
+      "test_end": "2025-07-28T16:00:00+00:00",
+      "test_start": "2025-03-07T01:00:00+00:00",
+      "top_loss_entry_condition": {
+        "entry_condition": "trend_long",
+        "net_pnl": 529.567176,
+        "profit_factor": 999.0,
+        "trade_count": 1,
+        "win_rate": 1.0
+      },
+      "top_loss_exit_reason": {
+        "exit_reason": "signal_flat_exit",
+        "net_pnl": 529.567176,
+        "profit_factor": 999.0,
+        "trade_count": 1,
+        "win_rate": 1.0
+      },
+      "trade_count": 1,
+      "train_end": "2025-03-07T00:00:00+00:00",
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "trending_down_PF": 0.0,
+      "trending_up_PF": 999.0,
+      "turnover": 0.303002,
+      "win_rate": 1.0
+    },
+    {
+      "MDD": -6.3769,
+      "PF": 999.0,
+      "Sharpe": -2.0733,
+      "cost_bucket_attribution": [
+        {
+          "cost_bucket": "low_cost_ratio",
+          "net_pnl": 12.966692,
+          "profit_factor": 999.0,
+          "trade_count": 1,
+          "win_rate": 1.0
+        }
+      ],
+      "cost_stress": {
+        "base_return_pct": -4.5352,
+        "status": "fold_event_only"
+      },
+      "event_PF": 0.9181,
+      "expansion_PF": 0.0,
+      "fail_reasons": [
+        "total_return",
+        "event_profit_factor"
+      ],
+      "fill_count": 3,
+      "fold_id": 3,
+      "high_vol_trend_PF": 0.0,
+      "long_trades_PF": 999.0,
+      "manifest_path": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/manifests/run_btc_perp_dual_trend_v3_wf_attr3.json",
+      "orderflow_mode": "veto_only",
+      "passed": false,
+      "regime_pass": true,
+      "regime_pass_rate": 1.0,
+      "short_trades_PF": 0.0,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_net_pnl": 0.0,
+      "strategy_config_hash": "4e98a5f79f37fb2f24d638c9ff3c062022a231c4ebb48830df1dcdf476633315",
+      "test_end": "2025-12-19T08:00:00+00:00",
+      "test_start": "2025-07-28T17:00:00+00:00",
+      "top_loss_entry_condition": {
+        "entry_condition": "trend_long",
+        "net_pnl": 12.966692,
+        "profit_factor": 999.0,
+        "trade_count": 1,
+        "win_rate": 1.0
+      },
+      "top_loss_exit_reason": {
+        "exit_reason": "signal_flat_exit",
+        "net_pnl": 12.966692,
+        "profit_factor": 999.0,
+        "trade_count": 1,
+        "win_rate": 1.0
+      },
+      "trade_count": 1,
+      "train_end": "2025-07-28T16:00:00+00:00",
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "trending_down_PF": 0.0,
+      "trending_up_PF": 999.0,
+      "turnover": 0.470787,
+      "win_rate": 1.0
+    },
+    {
+      "MDD": -3.659,
+      "PF": 0.0,
+      "Sharpe": -0.9897,
+      "cost_bucket_attribution": [
+        {
+          "cost_bucket": "mid_cost_ratio",
+          "net_pnl": -10.048311,
+          "profit_factor": 0.0,
+          "trade_count": 1,
+          "win_rate": 0.0
+        },
+        {
+          "cost_bucket": "low_cost_ratio",
+          "net_pnl": -1446.292796,
+          "profit_factor": 0.0,
+          "trade_count": 4,
+          "win_rate": 0.0
+        }
+      ],
+      "cost_stress": {
+        "base_return_pct": -1.5024,
+        "status": "fold_event_only"
+      },
+      "event_PF": 0.9668,
+      "expansion_PF": 0.0,
+      "fail_reasons": [
+        "total_return",
+        "event_profit_factor",
+        "regime_pass_rate"
+      ],
+      "fill_count": 11,
+      "fold_id": 4,
+      "high_vol_trend_PF": 0.0,
+      "long_trades_PF": 0.0,
+      "manifest_path": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/manifests/run_btc_perp_dual_trend_v3_wf_attr4.json",
+      "orderflow_mode": "veto_only",
+      "passed": false,
+      "regime_pass": false,
+      "regime_pass_rate": 0.0,
+      "short_trades_PF": 0.0,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_net_pnl": 0.0,
+      "strategy_config_hash": "4e98a5f79f37fb2f24d638c9ff3c062022a231c4ebb48830df1dcdf476633315",
+      "test_end": "2026-05-12T00:00:00+00:00",
+      "test_start": "2025-12-19T09:00:00+00:00",
+      "top_loss_entry_condition": {
+        "entry_condition": "trend_long",
+        "net_pnl": -1456.341108,
+        "profit_factor": 0.0,
+        "trade_count": 5,
+        "win_rate": 0.0
+      },
+      "top_loss_exit_reason": {
+        "exit_reason": "signal_flat_exit",
+        "net_pnl": -1456.341108,
+        "profit_factor": 0.0,
+        "trade_count": 5,
+        "win_rate": 0.0
+      },
+      "trade_count": 5,
+      "train_end": "2025-12-19T08:00:00+00:00",
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "trending_down_PF": 0.0,
+      "trending_up_PF": 0.0,
+      "turnover": 0.91081,
+      "win_rate": 0.0
+    }
+  ],
+  "method": "rolling_event_ledger_fixed_params_with_fold_attribution",
+  "pass_rate": 0.5,
+  "run_id": "20260516T080000Z_eventpf_wf",
+  "schema_version": "btc_walk_forward_fold_attribution_v1",
+  "strategy_id": "btc_perp_dual_trend_v3"
+}

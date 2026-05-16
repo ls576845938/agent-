@@ -1,0 +1,136 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT - BTC Event-PF Bridge and Walk-Forward Stabilization Report</title>
+  <style>
+    :root { color-scheme: light; --ink:#17202a; --muted:#52616b; --line:#d7dee6; --bg:#f7f9fb; --panel:#ffffff; --bad:#9b1c1c; --ok:#126b45; --warn:#8a5a00; }
+    body { margin:0; font-family: Arial, Helvetica, sans-serif; color:var(--ink); background:var(--bg); line-height:1.45; }
+    header { padding:24px 28px; background:#152238; color:white; }
+    main { max-width:1180px; margin:0 auto; padding:22px; }
+    section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:18px; margin:0 0 18px; }
+    h1 { margin:0 0 8px; font-size:26px; }
+    h2 { margin:0 0 12px; font-size:20px; }
+    h3 { margin:16px 0 8px; font-size:16px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px; }
+    .metric { border:1px solid var(--line); border-radius:6px; padding:10px; background:#fbfcfd; }
+    .metric strong { display:block; font-size:13px; color:var(--muted); }
+    .metric span { display:block; font-size:20px; margin-top:4px; }
+    .bad { color:var(--bad); font-weight:700; }
+    .ok { color:var(--ok); font-weight:700; }
+    .warn { color:var(--warn); font-weight:700; }
+    table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+    th, td { border:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top; }
+    th { background:#edf2f7; }
+    code { background:#eef2f6; padding:1px 4px; border-radius:4px; }
+    ul { padding-left:20px; }
+    .small { color:var(--muted); font-size:13px; }
+    .paths li { overflow-wrap:anywhere; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>QuantStation VNEXT - BTC Event-PF Bridge and Walk-Forward Stabilization Report</h1>
+  <div>Run ID: 20260516T080000Z_eventpf_wf</div>
+</header>
+<main>
+  <section>
+    <h2>Safety Status</h2>
+    <div class="grid">
+      <div class="metric"><strong>candidate_passed_internal_gate count</strong><span>0</span></div>
+      <div class="metric"><strong>PAPER QUEUE</strong><span class="warn">LOCKED</span></div>
+      <div class="metric"><strong>LIVE</strong><span class="bad">FROZEN</span></div>
+      <div class="metric"><strong>Final Decision</strong><span>candidate_gate_failed</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Executive Summary</h2>
+    <p>v4 failed internal gate; paper queue remains LOCKED; live remains FROZEN.</p>
+    <ul>
+      <li>Engineering evidence remains canonical/event-ledger based.</li>
+      <li>Ordinary trade PF is diagnostic only; gate uses <code>event_PF</code>.</li>
+      <li>Paper queue stays locked unless canonical gate passes with evidence consistency.</li>
+      <li>Live remains frozen and no real broker API or order path was used.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Event-PF Bridge</h2>
+    <div class="grid">
+      <div class="metric"><strong>ordinary PF</strong><span>2.0498</span></div>
+      <div class="metric"><strong>event PF</strong><span>1.0176</span></div>
+      <div class="metric"><strong>trade-level PF</strong><span>2.0498</span></div>
+      <div class="metric"><strong>cashflow-level PF</strong><span>1.0162</span></div>
+    </div>
+    <h3>Root Causes</h3>
+    <ul><li>ordinary PF is computed from closed trade_ledger rows, while event_PF is computed from hourly ledger equity returns generated from fills</li><li>v3 keeps an open BTC position at the end of the run, so closed-trade PF excludes final mark-to-market exposure that event_PF includes</li><li>trade aggregation merges same-direction fills and partial exits into position-level rows, which can inflate closed-trade PF relative to bar-level ledger returns</li><li>event-ledger pricing includes slippage through fill prices and ledger cashflow; closed trade diagnostics expose slippage but ordinary PF does not use that diagnostic column as a separate loss stream</li><li>partial-filled orders are common in the manifest and create more fill events than closed trade rows</li></ul>
+    <h3>Metric Contract</h3>
+    <p>event_PF is the only promotion PF source. Ordinary PF remains diagnostic-only.</p>
+  </section>
+
+  <section>
+    <h2>Walk-Forward Fold Attribution</h2>
+    <p>Pass rate: 0.5000; failed folds: [3, 4]</p>
+    <table><thead><tr><th>fold_id</th><th>event_PF</th><th>PF</th><th>Sharpe</th><th>MDD</th><th>turnover</th><th>trade_count</th><th>passed</th><th>fail_reasons</th><th>signal_flip_exit_count</th><th>long_trades_PF</th><th>short_trades_PF</th><th>top_loss_exit_reason</th></tr></thead><tbody><tr><td>1</td><td>1.0966</td><td>67.466333</td><td>2.2952</td><td>-1.7841</td><td>1.592995</td><td>4</td><td>True</td><td>[]</td><td>0</td><td>67.466333</td><td>0.0</td><td>{&quot;exit_reason&quot;: &quot;signal_flat_exit&quot;, &quot;net_pnl&quot;: 3352.407813, &quot;profit_factor&quot;: 67.466333, &quot;trade_count&quot;: 4, &quot;win_rate&quot;: 0.75}</td></tr><tr><td>2</td><td>1.1173</td><td>999.0</td><td>2.5374</td><td>-0.2349</td><td>0.303002</td><td>1</td><td>True</td><td>[]</td><td>0</td><td>999.0</td><td>0.0</td><td>{&quot;exit_reason&quot;: &quot;signal_flat_exit&quot;, &quot;net_pnl&quot;: 529.567176, &quot;profit_factor&quot;: 999.0, &quot;trade_count&quot;: 1, &quot;win_rate&quot;: 1.0}</td></tr><tr><td>3</td><td>0.9181</td><td>999.0</td><td>-2.0733</td><td>-6.3769</td><td>0.470787</td><td>1</td><td>False</td><td>[&#x27;total_return&#x27;, &#x27;event_profit_factor&#x27;]</td><td>0</td><td>999.0</td><td>0.0</td><td>{&quot;exit_reason&quot;: &quot;signal_flat_exit&quot;, &quot;net_pnl&quot;: 12.966692, &quot;profit_factor&quot;: 999.0, &quot;trade_count&quot;: 1, &quot;win_rate&quot;: 1.0}</td></tr><tr><td>4</td><td>0.9668</td><td>0.0</td><td>-0.9897</td><td>-3.659</td><td>0.91081</td><td>5</td><td>False</td><td>[&#x27;total_return&#x27;, &#x27;event_profit_factor&#x27;, &#x27;regime_pass_rate&#x27;]</td><td>0</td><td>0.0</td><td>0.0</td><td>{&quot;exit_reason&quot;: &quot;signal_flat_exit&quot;, &quot;net_pnl&quot;: -1456.341108, &quot;profit_factor&quot;: 0.0, &quot;trade_count&quot;: 5, &quot;win_rate&quot;: 0.0}</td></tr></tbody></table>
+    <h3>Fold Findings</h3>
+    <ul><li>failure_sources: {&#x27;event_profit_factor&#x27;: 2, &#x27;regime_pass_rate&#x27;: 1, &#x27;total_return&#x27;: 2}</li><li>high_vol_or_trending_down_concentrated: False</li><li>short_side_concentrated: False</li><li>signal_flip_exit_concentrated: False</li><li>stable_rules: [&#x27;long side remains the most defensible side under v3/v4 evidence&#x27;, &#x27;signal_flip_exit is not the v3 fold-level failure source&#x27;]</li><li>unstable_or_overfit_rules: [&#x27;event_PF varies by time fold; full-period closed-trade PF is not stable enough for promotion&#x27;, &#x27;some folds lose money after event-ledger costs and mark-to-market&#x27;]</li><li>which_folds_failed: [3, 4]</li></ul>
+  </section>
+
+  <section>
+    <h2>Exit Surgery Ablation</h2>
+    <table><thead><tr><th>mode</th><th>event_PF</th><th>PF</th><th>Sharpe</th><th>MDD</th><th>turnover</th><th>walk_forward_pass_rate</th><th>regime_pass_rate</th><th>signal_flip_exit_count</th><th>signal_flip_exit_pnl</th><th>gate_status</th><th>fail_reasons</th><th>note</th></tr></thead><tbody><tr><td>baseline_v3</td><td>1.0176</td><td>2.049816</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>0</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>reference_v3</td></tr><tr><td>no_same_bar_flip</td><td>1.0176</td><td>2.049816</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>0</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>policy_noop_for_v3_long_only</td></tr><tr><td>flat_then_confirm_reverse</td><td>1.0176</td><td>2.049816</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>0</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>policy_noop_for_v3_long_only</td></tr><tr><td>flip_cooldown_3</td><td>1.0176</td><td>2.049816</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>0</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>policy_noop_for_v3_long_only</td></tr><tr><td>flip_cooldown_6</td><td>1.0176</td><td>2.049816</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>0</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>policy_noop_for_v3_long_only</td></tr><tr><td>reverse_requires_regime_alignment</td><td>1.0176</td><td>2.049816</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>0</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>policy_noop_for_v3_long_only</td></tr><tr><td>exit_hysteresis_only</td><td>1.022</td><td>1.669929</td><td>0.5321</td><td>-7.6359</td><td>0.998638</td><td>0.5</td><td>1.0</td><td>0</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>changes_exit_confirmation</td></tr><tr><td>combined_exit_surgery</td><td>1.0205</td><td>1.631439</td><td>0.5146</td><td>-7.835</td><td>1.215925</td><td>0.5</td><td>1.0</td><td>0</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>v4_exit_policy_candidate</td></tr></tbody></table>
+    <p class="small">Adopted rules: [&#x27;exit_hysteresis_only&#x27;, &#x27;combined_exit_surgery&#x27;]</p>
+  </section>
+
+  <section>
+    <h2>Side / Regime Ablation</h2>
+    <table><thead><tr><th>mode</th><th>event_PF</th><th>PF</th><th>Sharpe</th><th>MDD</th><th>turnover</th><th>walk_forward_pass_rate</th><th>regime_pass_rate</th><th>long_event_PF</th><th>short_event_PF</th><th>gate_status</th><th>fail_reasons</th><th>note</th></tr></thead><tbody><tr><td>baseline_v3</td><td>1.0176</td><td>2.049816</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>2.049816</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>reference_v3</td></tr><tr><td>long_only</td><td>1.0176</td><td>2.049816</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>2.049816</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>current_v3_shape</td></tr><tr><td>long_biased_reduce_short_size</td><td>1.0339</td><td>1.595145</td><td>0.6824</td><td>-4.773</td><td>1.355746</td><td>0.25</td><td>0.666667</td><td>1.794427</td><td>0.599883</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;, &#x27;regime_pass_rate&#x27;]</td><td>limited_expansion_short_probe</td></tr><tr><td>block_short_in_trending_down</td><td>0.9837</td><td>0.706966</td><td>-0.3569</td><td>-10.0334</td><td>1.493695</td><td>0.25</td><td>0.4</td><td>1.608307</td><td>0.15851</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;, &#x27;regime_pass_rate&#x27;, &#x27;cost_stress_base&#x27;]</td><td>shorts_not_allowed_in_trending_down</td></tr><tr><td>block_short_in_high_vol_trend</td><td>1.0122</td><td>1.235614</td><td>0.2783</td><td>-5.7546</td><td>1.883056</td><td>0.5</td><td>0.6</td><td>3.585225</td><td>0.431625</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;, &#x27;regime_pass_rate&#x27;]</td><td>shorts_not_allowed_in_high_vol_trend</td></tr><tr><td>allow_short_only_in_expansion_confirmed</td><td>1.0262</td><td>1.393038</td><td>0.5153</td><td>-4.8798</td><td>1.387662</td><td>0.25</td><td>0.4</td><td>1.636461</td><td>0.546535</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;, &#x27;regime_pass_rate&#x27;]</td><td>narrow_short_condition</td></tr><tr><td>block_trending_down_and_high_vol_trend</td><td>1.0176</td><td>2.049816</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>2.049816</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>block_known_loss_regimes</td></tr><tr><td>combined_side_regime_surgery</td><td>1.0205</td><td>1.631439</td><td>0.5146</td><td>-7.835</td><td>1.215925</td><td>0.5</td><td>1.0</td><td>1.631439</td><td>0.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td><td>v4_side_regime_candidate</td></tr></tbody></table>
+    <p class="small">Adopted rules: [&#x27;long_only&#x27;, &#x27;block_trending_down_and_high_vol_trend&#x27;]</p>
+  </section>
+
+  <section>
+    <h2>Order-flow Decision</h2>
+    <p><strong>do_not_force_orderflow</strong>. v4 order-flow mode: <code>diagnostic_only</code>.</p>
+    <ul><li>previous ablation conclusion was do_not_force_orderflow</li><li>sizing modes increased fill activity and signal changes without solving event_PF</li><li>v4 keeps order-flow diagnostic-only unless both event_PF and WF improve</li></ul>
+  </section>
+
+  <section>
+    <h2>v4 Final Decision</h2>
+    <table><thead><tr><th>strategy</th><th>PF</th><th>event_PF</th><th>Sharpe</th><th>MDD</th><th>annual_turnover</th><th>WF_pass</th><th>regime_pass</th><th>cost_stress</th><th>PBO</th><th>DSR</th><th>trade_count</th><th>fill_count</th><th>gate_status</th><th>fail_reasons</th></tr></thead><tbody><tr><td>btc_perp_dual_trend</td><td>1.261744</td><td>1.0141</td><td>0.3363</td><td>-6.084</td><td>3.0842</td><td>0.75</td><td>0.5</td><td>pass</td><td>0.25</td><td>1.0</td><td>102</td><td>158</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;, &#x27;regime_pass_rate&#x27;]</td></tr><tr><td>btc_perp_dual_trend_v2</td><td>1.599256</td><td>1.0189</td><td>0.4901</td><td>-7.9128</td><td>1.856494</td><td>1.0</td><td>0.5</td><td>pass</td><td>0.0</td><td>1.0</td><td>42</td><td>58</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;regime_pass_rate&#x27;]</td></tr><tr><td>btc_perp_dual_trend_v3</td><td>2.049816</td><td>1.0176</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>pass</td><td>0.5</td><td>1.0</td><td>21</td><td>47</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td></tr><tr><td>btc_perp_dual_trend_v4_eventpf_wf</td><td>1.631439</td><td>1.0205</td><td>0.5146</td><td>-7.835</td><td>1.215925</td><td>0.5</td><td>1.0</td><td>pass</td><td>0.5</td><td>1.0</td><td>24</td><td>49</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td></tr></tbody></table>
+    <p><strong>Gate status:</strong> candidate_gate_failed; <strong>Fail reasons:</strong> [&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</p>
+  </section>
+
+  <section>
+    <h2>Runtime Boundary Audit</h2>
+    <ul>
+      <li>Active research entrypoints: <code>scripts/research/run_btc_eventpf_wf_stabilization.py</code>, <code>scripts/research/build_btc_event_pf_bridge.py</code>, <code>scripts/research/build_btc_wf_fold_attribution.py</code>.</li>
+      <li>Review-only runtime boundaries: canonical promotion and paper queue artifacts.</li>
+      <li>Inactive in this sprint: broker adapters, paper runtime, live runtime.</li>
+      <li>Safety conclusion: paper queue LOCKED; live FROZEN.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Tests</h2>
+    <p><strong>Command:</strong> <code>PYTHONPATH=. pytest tests/research/test_event_pf_bridge_report_schema.py tests/research/test_event_pf_gate_uses_event_pf.py tests/research/test_pf_metric_definition_no_confusion.py tests/research/test_walk_forward_fold_attribution_schema.py tests/research/test_signal_flip_exit_surgery.py tests/research/test_side_regime_ablation_no_lookahead.py tests/research/test_orderflow_not_forced.py tests/research/test_v4_gate_thresholds.py tests/research/test_paper_queue_locked_v4_failed.py tests/research/test_live_frozen_no_side_effects.py tests/reports/test_html_eventpf_wf_report_generation.py -q</code></p>
+    <p><strong>Result:</strong> 22 passed in 2.11s</p>
+    <p><strong>Skipped full suite reason:</strong> Full suite was not run in this sprint turn because the requested acceptance path was the focused BTC event-PF/WF core test set; existing broader suite was not modified.</p>
+  </section>
+
+  <section>
+    <h2>Artifacts</h2>
+    <ul class="paths">
+      <li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/btc_perp_dual_trend_v4_eventpf_wf</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/btc_perp_dual_trend_v4_eventpf_wf_decision.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/btc_perp_dual_trend_v4_eventpf_wf_gate_input.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/btc_perp_dual_trend_v4_eventpf_wf_results.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/event_pf_bridge_report.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/event_pf_bridge_table.csv</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/event_pf_bridge_table.parquet</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/exit_surgery_ablation_report.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/manifests</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/orderflow_keepout_confirmation.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/paper_live_safety_status.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/promotion_decision.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/run_manifest.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/side_regime_ablation_report.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/test_results.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/walk_forward_fold_attribution.json</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/walk_forward_fold_table.csv</code></li><li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/walk_forward_fold_table.parquet</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Next Sprint Recommendation</h2>
+    <p>If v4 does not clear event_PF and WF together, continue event-ledger attribution and do not enter paper. Keep live frozen until a paper-review candidate survives a stable paper period.</p>
+  </section>
+</main>
+</body>
+</html>
