@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT - BTC Event-Return Alpha Renewal Final Delivery Summary</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #596775;
+      --line: #d7dee8;
+      --navy: #14233b;
+      --bad: #9b1c1c;
+      --warn: #8a5a00;
+      --ok: #126b45;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+    header {
+      background: var(--navy);
+      color: #fff;
+      padding: 24px 28px;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-bottom: 18px;
+      padding: 18px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: #fbfcfe;
+    }
+    .metric strong {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .metric span {
+      display: block;
+      margin-top: 4px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .bad { color: var(--bad); }
+    .warn { color: var(--warn); }
+    .ok { color: var(--ok); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #edf2f7; }
+    code {
+      background: #eef2f7;
+      border-radius: 4px;
+      padding: 1px 4px;
+    }
+    li { margin: 4px 0; }
+    .paths li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>QuantStation VNEXT - BTC Event-Return Alpha Renewal Final Delivery Summary</h1>
+    <div>Run ID: 20260516T100000Z_eventreturn_alpha | Branch: main | Commit: dea430f</div>
+  </header>
+  <main>
+    <section>
+      <h2>Final Decision</h2>
+      <div class="grid">
+        <div class="metric"><strong>Decision</strong><span class="bad">archive_perp_dual_trend</span></div>
+        <div class="metric"><strong>candidate_passed_internal_gate</strong><span>0</span></div>
+        <div class="metric"><strong>PAPER QUEUE</strong><span class="warn">LOCKED</span></div>
+        <div class="metric"><strong>LIVE</strong><span class="bad">FROZEN</span></div>
+      </div>
+      <p><strong>perp_dual_trend archived; paper queue remains LOCKED; live remains FROZEN.</strong></p>
+    </section>
+
+    <section>
+      <h2>Repository State</h2>
+      <ul>
+        <li>Run ID: <code>20260516T100000Z_eventreturn_alpha</code></li>
+        <li>Branch: <code>main</code></li>
+        <li>Commit: <code>dea430f</code></li>
+        <li>Dirty files: none at delivery time</li>
+        <li>Previous pending summary: committed in <code>147f689</code></li>
+        <li><code>docs/alpha-radar-mvp-3-9-6-delivery-report.html</code>: not present and not tracked by git</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Core Artifacts</h2>
+      <ul class="paths">
+        <li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/event_return_attribution.json</code></li>
+        <li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/event_return_table.csv</code></li>
+        <li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/terminal_exposure_audit.json</code></li>
+        <li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/failed_fold_autopsy.json</code></li>
+        <li><code>docs/research/BTC_ALPHA_RENEWAL_DECISION.md</code></li>
+        <li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/promotion_decision.json</code></li>
+        <li><code>reports/quantstation_vnext_btc_event_return_alpha_renewal_20260516T100000Z_eventreturn_alpha.html</code></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>New Code And Scripts</h2>
+      <ul>
+        <li><code>quant_us/research/btc_eventreturn_alpha.py</code></li>
+        <li><code>scripts/research/build_btc_event_return_attribution.py</code></li>
+        <li><code>scripts/research/audit_btc_terminal_exposure.py</code></li>
+        <li><code>scripts/research/autopsy_btc_failed_wf_folds.py</code></li>
+        <li><code>scripts/research/run_btc_eventreturn_alpha_renewal.py</code></li>
+        <li><code>scripts/reports/generate_btc_event_return_alpha_renewal_html.py</code></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>v1-v4 Metrics</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>PF</th>
+            <th>event_PF</th>
+            <th>WF</th>
+            <th>Regime</th>
+            <th>Gate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>btc_perp_dual_trend</td><td>1.2617</td><td>1.0141</td><td>75%</td><td>50%</td><td>failed</td></tr>
+          <tr><td>btc_perp_dual_trend_v2</td><td>1.5993</td><td>1.0189</td><td>100%</td><td>50%</td><td>failed</td></tr>
+          <tr><td>btc_perp_dual_trend_v3</td><td>2.0498</td><td>1.0176</td><td>50%</td><td>100%</td><td>failed</td></tr>
+          <tr><td>btc_perp_dual_trend_v4_eventpf_wf</td><td>1.6314</td><td>1.0205</td><td>50%</td><td>100%</td><td>failed</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Event-PF Root Cause</h2>
+      <ul>
+        <li>event_PF recomputed from hourly ledger returns: <code>1.020511</code>; source: <code>1.0205</code>.</li>
+        <li>Positive hourly event-return sum: <code>2.446523</code>.</li>
+        <li>Negative hourly event-return sum: <code>-2.397350</code>.</li>
+        <li>The sums almost cancel, so event_PF stays near <code>1.01-1.02</code>.</li>
+        <li><code>8618 / 8947</code> negative events occurred with non-flat exposure.</li>
+        <li>Fees/slippage were about <code>297.51</code> versus negative event PnL <code>254813.66</code>, so costs were not the main blocker.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Failed Fold Autopsy</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Fold</th>
+            <th>event_PF</th>
+            <th>Total Return</th>
+            <th>Root Cause</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>3</td><td>0.945725</td><td>-3.4466%</td><td>long mark-to-market weakness; worst regime high_vol_trend</td><td>archive_alpha</td></tr>
+          <tr><td>4</td><td>0.965699</td><td>-1.6810%</td><td>long mark-to-market weakness; worst regime trending_down</td><td>archive_alpha</td></tr>
+        </tbody>
+      </table>
+      <p>Fold 3 and fold 4 share long exposure weakness, but not a sufficiently identical regime or holding-age pattern. A single rule patch would be fold-specific overfitting.</p>
+    </section>
+
+    <section>
+      <h2>v5 Decision</h2>
+      <ul>
+        <li>v5 generated: <strong>false</strong></li>
+        <li>v5 config: none</li>
+        <li>v5 result: none</li>
+        <li>Reason: no cross-fold stable event-return failure pattern was found.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Alpha Hypothesis Backlog</h2>
+      <ol>
+        <li>BTC long-only event continuation after low-vol uptrend confirmation</li>
+        <li>BTC compression-to-expansion breakout with event-return objective</li>
+        <li>BTC liquidation-shock recovery continuation</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Safety</h2>
+      <ul>
+        <li>PAPER QUEUE: <code>LOCKED</code></li>
+        <li>LIVE: <code>FROZEN</code></li>
+        <li>candidate_passed_internal_gate: <code>0</code></li>
+        <li>real broker API called: <code>false</code></li>
+        <li>real orders created: <code>false</code></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Tests</h2>
+      <p><strong>Command:</strong></p>
+      <p><code>PYTHONPATH=. pytest tests/research/test_event_return_attribution_schema.py tests/research/test_event_pf_from_event_returns.py tests/research/test_terminal_exposure_audit.py tests/research/test_failed_fold_autopsy_schema.py tests/research/test_alpha_renewal_decision.py tests/research/test_v5_optional_generation_guard.py tests/research/test_v5_gate_thresholds.py tests/research/test_paper_queue_locked_eventreturn.py tests/research/test_live_frozen_eventreturn_no_side_effects.py tests/reports/test_event_return_html_generation.py -q</code></p>
+      <p><strong>Result:</strong> <code>19 passed, 2 warnings in 1.57s</code></p>
+      <p><strong>未完成项:</strong> 未跑全量测试；本轮只跑用户指定的 BTC event-return 核心测试集。</p>
+    </section>
+
+    <section>
+      <h2>Next Sprint Recommendation</h2>
+      <p>不要继续调 <code>perp_dual_trend</code>。从 backlog 的 3 个假设里选 1 个，先做 event-return distribution profile，再决定是否实现策略候选。</p>
+    </section>
+  </main>
+</body>
+</html>
