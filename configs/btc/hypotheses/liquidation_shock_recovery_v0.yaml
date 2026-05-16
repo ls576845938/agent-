@@ -1,0 +1,39 @@
+hypothesis_id: liquidation_shock_recovery_v0
+mode: research_only
+timeframes:
+  base: 1h
+horizons:
+  - 1h
+  - 4h
+  - 12h
+  - 24h
+  - 48h
+fold_config:
+  method: existing_walk_forward_or_time_split
+  fold_count: 4
+feature_config:
+  no_lookahead: true
+shock_config:
+  return_threshold: -0.025
+  volume_window: 168
+  volume_ratio_threshold: 1.10
+  recent_shock_window: 6
+  recovery_confirmation: positive_close
+  primary_horizon: 24h
+regime_exclusions:
+  - liquidation_shock
+sample_thresholds:
+  min_active_events: 80
+acceptance_gate:
+  min_event_pf_proxy: 1.15
+  min_fold_pass_rate: 0.75
+  min_fold_event_pf_proxy: 1.05
+  min_median_return: 0.0
+  max_top5_positive_contribution: 0.35
+  min_multi_horizon_pass_count: 2
+  min_horizon_event_pf_proxy: 1.10
+safety:
+  paper_queue: LOCKED
+  live: FROZEN
+  real_broker_api_allowed: false
+  real_orders_allowed: false

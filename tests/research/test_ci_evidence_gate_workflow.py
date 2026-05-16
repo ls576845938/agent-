@@ -18,6 +18,9 @@ def test_ci_has_research_evidence_gate_job() -> None:
     assert "test_btc_fold_regime_contract_audit.py" in job_text
     assert "test_btc_data_fold_regime_status_report.py" in job_text
     assert "test_compression_expansion_eventledger_attribution_html.py" in job_text
+    assert "test_liquidation_shock_recovery_artifacts.py" in job_text
+    assert "test_liquidation_shock_recovery_no_lookahead.py" in job_text
+    assert "test_liquidation_shock_recovery_html_generation.py" in job_text
     assert "test_ci_evidence_gate_workflow.py" in job_text
 
 

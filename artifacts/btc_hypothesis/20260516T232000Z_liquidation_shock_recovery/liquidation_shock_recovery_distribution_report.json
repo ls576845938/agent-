@@ -1,0 +1,327 @@
+{
+  "failure_analysis": {
+    "failed_folds": [
+      "3"
+    ],
+    "fold_pass_rate": 0.75,
+    "no_lookahead_pass": true,
+    "notes": [
+      "future returns are labels only",
+      "recent shock state uses shift(1)",
+      "paper/live/broker paths are not imported"
+    ],
+    "sample_warning": false
+  },
+  "fold_stability": {
+    "fold_count": 4,
+    "folds": [
+      {
+        "active_event_count": 28,
+        "downside_tail_5pct": -0.0520595179,
+        "event_PF_proxy": 3.389609,
+        "fold_id": "1",
+        "max_adverse_event": -0.0843394019,
+        "max_favorable_event": 0.0754119179,
+        "mean_return": 0.0151086732,
+        "median_return": 0.0148919335,
+        "negative_sum": -0.1770343135,
+        "passed": true,
+        "positive_event_rate": 0.857143,
+        "positive_sum": 0.6000771621
+      },
+      {
+        "active_event_count": 18,
+        "downside_tail_5pct": -0.0215467719,
+        "event_PF_proxy": 3.893924,
+        "fold_id": "2",
+        "max_adverse_event": -0.0232464059,
+        "max_favorable_event": 0.0567947697,
+        "mean_return": 0.0166785394,
+        "median_return": 0.0180888447,
+        "negative_sum": -0.1037393072,
+        "passed": true,
+        "positive_event_rate": 0.611111,
+        "positive_sum": 0.4039530173
+      },
+      {
+        "active_event_count": 9,
+        "downside_tail_5pct": -0.0297520633,
+        "event_PF_proxy": 0.20916,
+        "fold_id": "3",
+        "max_adverse_event": -0.0331628585,
+        "max_favorable_event": 0.0071726646,
+        "mean_return": -0.0065061415,
+        "median_return": -0.0021166742,
+        "negative_sum": -0.0740418997,
+        "passed": false,
+        "positive_event_rate": 0.444444,
+        "positive_sum": 0.0154866259
+      },
+      {
+        "active_event_count": 15,
+        "downside_tail_5pct": -0.0419190093,
+        "event_PF_proxy": 2.547817,
+        "fold_id": "4",
+        "max_adverse_event": -0.0440212046,
+        "max_favorable_event": 0.1141352769,
+        "mean_return": 0.0157146382,
+        "median_return": 0.0198755218,
+        "negative_sum": -0.1522916621,
+        "passed": true,
+        "positive_event_rate": 0.6,
+        "positive_sum": 0.3880112349
+      }
+    ],
+    "pass_rate": 0.75
+  },
+  "holding_horizon_analysis": {
+    "12h": {
+      "active_event_count": 118,
+      "downside_tail_5pct": -0.0264173596,
+      "event_PF_proxy": 2.667598,
+      "max_adverse_event": -0.073557996,
+      "max_favorable_event": 0.0785468675,
+      "mean_return": 0.0099743451,
+      "median_return": 0.0076827778,
+      "negative_sum": -0.705789189,
+      "positive_event_rate": 0.661017,
+      "positive_sum": 1.8827619124
+    },
+    "1h": {
+      "active_event_count": 118,
+      "downside_tail_5pct": -0.0136323012,
+      "event_PF_proxy": 0.909917,
+      "max_adverse_event": -0.0299655359,
+      "max_favorable_event": 0.0397474207,
+      "mean_return": -0.0003275736,
+      "median_return": 0.000264517,
+      "negative_sum": -0.429089388,
+      "positive_event_rate": 0.508475,
+      "positive_sum": 0.3904357058
+    },
+    "24h": {
+      "active_event_count": 118,
+      "downside_tail_5pct": -0.0572730893,
+      "event_PF_proxy": 2.713368,
+      "max_adverse_event": -0.0843394019,
+      "max_favorable_event": 0.1141352769,
+      "mean_return": 0.0133206086,
+      "median_return": 0.0143095386,
+      "negative_sum": -0.917392954,
+      "positive_event_rate": 0.728814,
+      "positive_sum": 2.4892247655
+    },
+    "48h": {
+      "active_event_count": 118,
+      "downside_tail_5pct": -0.0459676259,
+      "event_PF_proxy": 3.3476,
+      "max_adverse_event": -0.0823828099,
+      "max_favorable_event": 0.0971802243,
+      "mean_return": 0.0182994202,
+      "median_return": 0.0142248659,
+      "negative_sum": -0.9198040092,
+      "positive_event_rate": 0.652542,
+      "positive_sum": 3.0791355883
+    },
+    "4h": {
+      "active_event_count": 118,
+      "downside_tail_5pct": -0.0337569477,
+      "event_PF_proxy": 1.057102,
+      "max_adverse_event": -0.0670713823,
+      "max_favorable_event": 0.0564228163,
+      "mean_return": 0.0004329491,
+      "median_return": 0.0017676687,
+      "negative_sum": -0.8946840023,
+      "positive_event_rate": 0.533898,
+      "positive_sum": 0.9457719998
+    }
+  },
+  "hypothesis_id": "liquidation_shock_recovery_v0",
+  "no_lookahead": {
+    "future_return_usage": "labels_only",
+    "recent_shock_rule": "uses shift(1) before rolling recent shock state",
+    "status": "pass"
+  },
+  "overall_distribution": {
+    "active_event_count": 118,
+    "downside_tail_5pct": -0.0572730893,
+    "event_PF_proxy": 2.713368,
+    "max_adverse_event": -0.0843394019,
+    "max_favorable_event": 0.1141352769,
+    "mean_return": 0.0133206086,
+    "median_return": 0.0143095386,
+    "negative_sum": -0.917392954,
+    "positive_event_rate": 0.728814,
+    "positive_sum": 2.4892247655
+  },
+  "primary_horizon": "24h",
+  "regime_breakdown": [
+    {
+      "active_event_count": 9,
+      "downside_tail_5pct": -0.0079292552,
+      "event_PF_proxy": 12.571106,
+      "max_adverse_event": -0.0113932828,
+      "max_favorable_event": 0.0801011278,
+      "mean_return": 0.0181621321,
+      "median_return": 0.004087352,
+      "negative_sum": -0.0141264966,
+      "positive_event_rate": 0.777778,
+      "positive_sum": 0.1775856855,
+      "regime": "expansion"
+    },
+    {
+      "active_event_count": 54,
+      "downside_tail_5pct": -0.0602337116,
+      "event_PF_proxy": 5.203843,
+      "max_adverse_event": -0.0843394019,
+      "max_favorable_event": 0.1141352769,
+      "mean_return": 0.0246061779,
+      "median_return": 0.0290822735,
+      "negative_sum": -0.316075958,
+      "positive_event_rate": 0.87037,
+      "positive_sum": 1.6448095636,
+      "regime": "high_vol_trend"
+    },
+    {
+      "active_event_count": 11,
+      "downside_tail_5pct": -0.0222466212,
+      "event_PF_proxy": 1.378127,
+      "max_adverse_event": -0.0232464059,
+      "max_favorable_event": 0.0244638279,
+      "mean_return": 0.0022943002,
+      "median_return": 0.0036227912,
+      "negative_sum": -0.066742927,
+      "positive_event_rate": 0.636364,
+      "positive_sum": 0.0919802292,
+      "regime": "trending_up"
+    },
+    {
+      "active_event_count": 28,
+      "downside_tail_5pct": -0.0429701069,
+      "event_PF_proxy": 1.215852,
+      "max_adverse_event": -0.073428414,
+      "max_favorable_event": 0.0567947697,
+      "mean_return": 0.002748726,
+      "median_return": 0.0110033933,
+      "negative_sum": -0.3565612767,
+      "positive_event_rate": 0.607143,
+      "positive_sum": 0.4335256041,
+      "regime": "trending_down"
+    },
+    {
+      "active_event_count": 16,
+      "downside_tail_5pct": -0.0592424366,
+      "event_PF_proxy": 0.862328,
+      "max_adverse_event": -0.0641015162,
+      "max_favorable_event": 0.0535858797,
+      "mean_return": -0.0014101633,
+      "median_return": -0.0001120968,
+      "negative_sum": -0.1638862958,
+      "positive_event_rate": 0.5,
+      "positive_sum": 0.1413236831,
+      "regime": "mean_reverting_chop"
+    }
+  ],
+  "run_id": "20260516T232000Z_liquidation_shock_recovery",
+  "schema_version": "btc_liquidation_shock_recovery_distribution_report_v1",
+  "shock_bar_distribution": {
+    "active_event_count": 42,
+    "downside_tail_5pct": -0.0343705836,
+    "event_PF_proxy": 3.733209,
+    "max_adverse_event": -0.0663548786,
+    "max_favorable_event": 0.1127428333,
+    "mean_return": 0.0184569042,
+    "median_return": 0.0145573239,
+    "negative_sum": -0.2836189895,
+    "positive_event_rate": 0.619048,
+    "positive_sum": 1.0588089667
+  },
+  "tail_dependency": {
+    "edge_depends_on_extreme_events": false,
+    "top10_positive_contribution": 0.27698,
+    "top5_negative_contribution": 0.385897,
+    "top5_positive_contribution": 0.163041
+  },
+  "trend_breakdown": [
+    {
+      "active_event_count": 21,
+      "downside_tail_5pct": -0.0102182391,
+      "event_PF_proxy": 6.208269,
+      "max_adverse_event": -0.0113932828,
+      "max_favorable_event": 0.0535858797,
+      "mean_return": 0.0099000162,
+      "median_return": 0.0056991968,
+      "negative_sum": -0.0399173596,
+      "positive_event_rate": 0.714286,
+      "positive_sum": 0.2478177007,
+      "trend_strength_bucket": "neutral"
+    },
+    {
+      "active_event_count": 72,
+      "downside_tail_5pct": -0.050141897,
+      "event_PF_proxy": 3.195389,
+      "max_adverse_event": -0.0843394019,
+      "max_favorable_event": 0.1141352769,
+      "mean_return": 0.0179528862,
+      "median_return": 0.0249769707,
+      "negative_sum": -0.5887830225,
+      "positive_event_rate": 0.763889,
+      "positive_sum": 1.8813908258,
+      "trend_strength_bucket": "downtrend"
+    },
+    {
+      "active_event_count": 25,
+      "downside_tail_5pct": -0.0641195593,
+      "event_PF_proxy": 1.247058,
+      "max_adverse_event": -0.0663029677,
+      "max_favorable_event": 0.0801011278,
+      "mean_return": 0.0028529467,
+      "median_return": 0.0082805335,
+      "negative_sum": -0.2886925718,
+      "positive_event_rate": 0.64,
+      "positive_sum": 0.360016239,
+      "trend_strength_bucket": "uptrend"
+    }
+  ],
+  "volatility_breakdown": [
+    {
+      "active_event_count": 2,
+      "downside_tail_5pct": 0.0027315702,
+      "event_PF_proxy": 999.0,
+      "max_adverse_event": 0.0026846638,
+      "max_favorable_event": 0.0036227912,
+      "mean_return": 0.0031537275,
+      "median_return": 0.0031537275,
+      "negative_sum": 0.0,
+      "positive_event_rate": 1.0,
+      "positive_sum": 0.006307455,
+      "volatility_bucket": "low_vol"
+    },
+    {
+      "active_event_count": 89,
+      "downside_tail_5pct": -0.0519353132,
+      "event_PF_proxy": 3.636779,
+      "max_adverse_event": -0.0843394019,
+      "max_favorable_event": 0.1141352769,
+      "mean_return": 0.0188714459,
+      "median_return": 0.0254507901,
+      "negative_sum": -0.6369737023,
+      "positive_event_rate": 0.775281,
+      "positive_sum": 2.3165323906,
+      "volatility_bucket": "high_vol"
+    },
+    {
+      "active_event_count": 27,
+      "downside_tail_5pct": -0.0517868572,
+      "event_PF_proxy": 0.593343,
+      "max_adverse_event": -0.0641015162,
+      "max_favorable_event": 0.0244638279,
+      "mean_return": -0.0042234938,
+      "median_return": 0.0024754475,
+      "negative_sum": -0.2804192517,
+      "positive_event_rate": 0.555556,
+      "positive_sum": 0.16638492,
+      "volatility_bucket": "mid_vol"
+    }
+  ]
+}
