@@ -19,6 +19,7 @@ from quant_us.research.btc_canonical import (
     evaluate_canonical_gate,
     fills_to_trade_ledger,
     registry_signal_builder,
+    orderflow_ablation_report,
     regime_report_from_trades,
     rolling_walk_forward_for_signal,
     run_event_with_signal,
@@ -225,6 +226,18 @@ def main() -> None:
         "paper_auto_start": False,
         "evidence_source": "canonical_gate_inputs",
     })
+    if "btc_perp_dual_trend_v3" in selected:
+        _, v3_params, _ = STRATEGIES["btc_perp_dual_trend_v3"]
+        write_json(
+            run_dir / "orderflow_ablation_report.json",
+            orderflow_ablation_report(
+                frame=frame,
+                base_params=v3_params,
+                start=start,
+                end=end,
+                run_dir=run_dir,
+            ),
+        )
     if all_attribution_rows:
         import pandas as pd
 

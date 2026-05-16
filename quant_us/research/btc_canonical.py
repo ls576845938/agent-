@@ -21,7 +21,7 @@ import pandas as pd
 
 from backend.app.domain.strategy_registry import strategy_registry
 from quant_us.backtest.crypto_event import CRYPTO_COST_STRESS_SCENARIOS, run_crypto_event_backtest
-from quant_us.research.btc_alpha_hardening import classify_btc_regimes
+from quant_us.research.btc_alpha_hardening import apply_directional_state_machine, classify_btc_regimes
 
 
 SignalBuilder = Callable[[pd.DataFrame, dict[str, Any]], tuple[pd.Series, dict[str, pd.Series]]]
@@ -109,6 +109,7 @@ def btc_perp_dual_trend_v3_signal(
         "vol_window": 168,
         "max_volatility": 0.055,
         "orderflow_window": 144,
+        "orderflow_mode": "veto_only",
         "orderflow_veto_threshold": 0.012,
         "allowed_long_regimes": ("trending_up", "expansion"),
         "allowed_short_regimes": (),
@@ -147,14 +148,16 @@ def btc_perp_dual_trend_v3_signal(
         & (momentum <= -float(cfg["momentum_threshold"]))
         & (volatility <= float(cfg["max_volatility"]))
     ).fillna(False)
+    orderflow_mode = str(cfg.get("orderflow_mode", "veto_only"))
     long_veto = buy_pressure < -float(cfg["orderflow_veto_threshold"])
     short_veto = buy_pressure > float(cfg["orderflow_veto_threshold"])
+    veto_enabled = orderflow_mode in {"veto_only", "veto_plus_sizing"}
     allowed_long = regimes.isin([str(item) for item in cfg.get("allowed_long_regimes", ())])
     allowed_short = regimes.isin([str(item) for item in cfg.get("allowed_short_regimes", ())])
     target = pd.Series(0.0, index=frame.index, dtype=float)
-    target.loc[trend_long & allowed_long & ~long_veto] = 1.0
-    target.loc[trend_short & allowed_short & ~short_veto] = -1.0
-    signal = _directional_state_machine(
+    target.loc[trend_long & allowed_long & (~long_veto | ~veto_enabled)] = 1.0
+    target.loc[trend_short & allowed_short & (~short_veto | ~veto_enabled)] = -1.0
+    signal = apply_directional_state_machine(
         target,
         min_holding_bars=int(cfg["min_hold_bars"]),
         cooldown_bars=int(cfg["cooldown_bars"]),
@@ -162,6 +165,14 @@ def btc_perp_dual_trend_v3_signal(
         max_holding_bars=int(cfg["max_hold_bars"]),
     )
     signal_scale = min(1.0, max(0.0, float(cfg["signal_scale"])))
+    sizing_multiplier = pd.Series(1.0, index=frame.index, dtype=float)
+    if orderflow_mode in {"sizing_only", "veto_plus_sizing"}:
+        favorable = ((signal > 0) & (buy_pressure > float(cfg["orderflow_veto_threshold"]))) | (
+            (signal < 0) & (buy_pressure < -float(cfg["orderflow_veto_threshold"]))
+        )
+        conflict = ((signal > 0) & long_veto) | ((signal < 0) & short_veto)
+        sizing_multiplier.loc[favorable] = 1.15
+        sizing_multiplier.loc[conflict] = 0.65
     diagnostics = {
         "fast_ma": fast_ma,
         "slow_ma": slow_ma,
@@ -173,13 +184,14 @@ def btc_perp_dual_trend_v3_signal(
         "trend_short": trend_short.astype(float),
         "orderflow_veto_long": long_veto.astype(float),
         "orderflow_veto_short": short_veto.astype(float),
+        "orderflow_sizing_multiplier": sizing_multiplier,
         "buy_ratio": buy_ratio,
         "buy_pressure": buy_pressure,
         "target_signal": target,
         "raw_signal": signal,
         "regime": regimes,
     }
-    return (signal * signal_scale).clip(-1.0, 1.0).fillna(0.0), diagnostics
+    return (signal * signal_scale * sizing_multiplier).clip(-1.0, 1.0).fillna(0.0), diagnostics
 
 
 def evaluate_canonical_gate(
@@ -535,6 +547,68 @@ def cost_stress_for_signal(
         "base": rows[0] if rows else {},
         "harsh": harsh,
         "scenarios": rows,
+    }
+
+
+def orderflow_ablation_report(
+    *,
+    frame: pd.DataFrame,
+    base_params: Mapping[str, Any],
+    start: datetime,
+    end: datetime,
+    run_dir: Path,
+) -> dict[str, Any]:
+    rows = []
+    for mode in ["no_orderflow", "veto_only", "sizing_only", "veto_plus_sizing"]:
+        params = {**dict(base_params), "orderflow_mode": mode}
+        signal, diagnostics = btc_perp_dual_trend_v3_signal(frame, params)
+        event = run_event_with_signal(
+            frame=frame,
+            signal=signal,
+            strategy_id=f"btc_perp_dual_trend_v3_{mode}",
+            params=params,
+            start=start,
+            end=end,
+            run_dir=run_dir,
+            scenario_name="orderflow_ablation",
+        )
+        summary = event["summary"]
+        rows.append(
+            {
+                "mode": mode,
+                "orderflow_entry_trigger_allowed": False,
+                "profit_factor": float(summary.get("profit_factor", 0.0)),
+                "sharpe": float(summary.get("sharpe_ratio", 0.0)),
+                "max_drawdown_pct": float(summary.get("max_drawdown_pct", 0.0)),
+                "total_return_pct": float(summary.get("total_return_pct", 0.0)),
+                "trade_count": int(summary.get("trade_count", 0)),
+                "signal_changed_bars": int((signal.diff().fillna(signal) != 0).sum()),
+                "signal_nonzero_bars": int((signal != 0).sum()),
+                "veto_count": int(
+                    diagnostics.get("orderflow_veto_long", pd.Series(dtype=float)).sum()
+                    + diagnostics.get("orderflow_veto_short", pd.Series(dtype=float)).sum()
+                ),
+                "manifest_path": event["manifest_path"],
+            }
+        )
+    no_orderflow = next(row for row in rows if row["mode"] == "no_orderflow")
+    best_pf = max(rows, key=lambda row: row["profit_factor"])
+    conclusion = (
+        "use_veto_only"
+        if best_pf["mode"] == "veto_only" and best_pf["profit_factor"] >= no_orderflow["profit_factor"]
+        else "do_not_force_orderflow"
+    )
+    return {
+        "schema_version": "btc_orderflow_ablation_report_v1",
+        "strategy_id": "btc_perp_dual_trend_v3",
+        "orderflow_entry_trigger_allowed": False,
+        "rows": rows,
+        "best_by_profit_factor": best_pf,
+        "conclusion": conclusion,
+        "notes": [
+            "orderflow is evaluated only as veto/sizing/diagnostic",
+            "standalone orderflow entries are not permitted",
+        ],
     }
 
 

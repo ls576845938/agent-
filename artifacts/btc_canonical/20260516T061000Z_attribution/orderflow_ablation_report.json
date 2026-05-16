@@ -1,0 +1,77 @@
+{
+  "best_by_profit_factor": {
+    "manifest_path": "artifacts/btc_canonical/20260516T061000Z_attribution/manifests/run_btc_perp_dual_trend_v3_sizing_only_orderflow_ablation.json",
+    "max_drawdown_pct": -8.5566,
+    "mode": "sizing_only",
+    "orderflow_entry_trigger_allowed": false,
+    "profit_factor": 1.0219,
+    "sharpe": 0.6198,
+    "signal_changed_bars": 1959,
+    "signal_nonzero_bars": 3970,
+    "total_return_pct": 8.3285,
+    "trade_count": 448,
+    "veto_count": 20034
+  },
+  "conclusion": "do_not_force_orderflow",
+  "notes": [
+    "orderflow is evaluated only as veto/sizing/diagnostic",
+    "standalone orderflow entries are not permitted"
+  ],
+  "orderflow_entry_trigger_allowed": false,
+  "rows": [
+    {
+      "manifest_path": "artifacts/btc_canonical/20260516T061000Z_attribution/manifests/run_btc_perp_dual_trend_v3_no_orderflow_orderflow_ablation.json",
+      "max_drawdown_pct": -8.5324,
+      "mode": "no_orderflow",
+      "orderflow_entry_trigger_allowed": false,
+      "profit_factor": 1.0176,
+      "sharpe": 0.4216,
+      "signal_changed_bars": 58,
+      "signal_nonzero_bars": 3970,
+      "total_return_pct": 3.848,
+      "trade_count": 47,
+      "veto_count": 20034
+    },
+    {
+      "manifest_path": "artifacts/btc_canonical/20260516T061000Z_attribution/manifests/run_btc_perp_dual_trend_v3_veto_only_orderflow_ablation.json",
+      "max_drawdown_pct": -8.5324,
+      "mode": "veto_only",
+      "orderflow_entry_trigger_allowed": false,
+      "profit_factor": 1.0176,
+      "sharpe": 0.4216,
+      "signal_changed_bars": 58,
+      "signal_nonzero_bars": 3970,
+      "total_return_pct": 3.848,
+      "trade_count": 47,
+      "veto_count": 20034
+    },
+    {
+      "manifest_path": "artifacts/btc_canonical/20260516T061000Z_attribution/manifests/run_btc_perp_dual_trend_v3_sizing_only_orderflow_ablation.json",
+      "max_drawdown_pct": -8.5566,
+      "mode": "sizing_only",
+      "orderflow_entry_trigger_allowed": false,
+      "profit_factor": 1.0219,
+      "sharpe": 0.6198,
+      "signal_changed_bars": 1959,
+      "signal_nonzero_bars": 3970,
+      "total_return_pct": 8.3285,
+      "trade_count": 448,
+      "veto_count": 20034
+    },
+    {
+      "manifest_path": "artifacts/btc_canonical/20260516T061000Z_attribution/manifests/run_btc_perp_dual_trend_v3_veto_plus_sizing_orderflow_ablation.json",
+      "max_drawdown_pct": -8.5566,
+      "mode": "veto_plus_sizing",
+      "orderflow_entry_trigger_allowed": false,
+      "profit_factor": 1.0219,
+      "sharpe": 0.6198,
+      "signal_changed_bars": 1959,
+      "signal_nonzero_bars": 3970,
+      "total_return_pct": 8.3285,
+      "trade_count": 448,
+      "veto_count": 20034
+    }
+  ],
+  "schema_version": "btc_orderflow_ablation_report_v1",
+  "strategy_id": "btc_perp_dual_trend_v3"
+}
