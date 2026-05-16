@@ -11,6 +11,7 @@ from typing import Any
 from backend.app.services.market_data import load_market_frame
 from quant_us.research.btc_alpha_hardening import btc_dual_trend_v2_signal
 from quant_us.research.btc_canonical import (
+    build_trade_attribution,
     build_canonical_report,
     cost_stress_for_signal,
     decide_paper_queue_from_canonical,
@@ -21,6 +22,7 @@ from quant_us.research.btc_canonical import (
     rolling_walk_forward_for_signal,
     run_event_with_signal,
     stable_hash,
+    summarize_trade_attribution,
     write_json,
 )
 
@@ -84,6 +86,7 @@ def main() -> None:
     reports = []
     gate_inputs = []
     all_trade_rows = []
+    all_attribution_rows = []
     selected = [item.strip() for item in args.strategies.split(",") if item.strip()]
     for strategy_id in selected:
         if strategy_id not in STRATEGIES:
@@ -126,6 +129,15 @@ def main() -> None:
             windows=4,
         )
         regime = regime_report_from_trades(frame, trades)
+        attribution = build_trade_attribution(
+            run_id=args.run_id,
+            strategy_id=strategy_id,
+            frame=frame,
+            trades=trades,
+            signal=signal,
+            diagnostics=diagnostics,
+        )
+        attribution_summary = summarize_trade_attribution(attribution)
         report = build_canonical_report(
             run_id=args.run_id,
             strategy_id=strategy_id,
@@ -146,6 +158,9 @@ def main() -> None:
         strategy_dir.mkdir(parents=True, exist_ok=True)
         trades.to_csv(strategy_dir / "trade_ledger.csv", index=False)
         trades.to_parquet(strategy_dir / "trade_ledger.parquet", index=False)
+        attribution.to_csv(strategy_dir / "trade_attribution.csv", index=False)
+        attribution.to_parquet(strategy_dir / "trade_attribution.parquet", index=False)
+        write_json(strategy_dir / "trade_attribution_summary.json", attribution_summary)
         write_json(strategy_dir / "canonical_backtest_report.json", report)
         write_json(strategy_dir / "canonical_metrics.json", report["metrics"])
         write_json(strategy_dir / "gate_inputs.json", {"strategy_id": strategy_id, "report": report, "gate": decision.to_dict()})
@@ -162,6 +177,8 @@ def main() -> None:
         gate_inputs.append(decision.to_dict())
         if not trades.empty:
             all_trade_rows.append(trades)
+        if not attribution.empty:
+            all_attribution_rows.append(attribution)
 
     aggregate = {
         "schema_version": "btc_canonical_aggregate_v1",
@@ -183,6 +200,19 @@ def main() -> None:
         "paper_auto_start": False,
         "evidence_source": "canonical_gate_inputs",
     })
+    if all_attribution_rows:
+        import pandas as pd
+
+        combined_attribution = pd.concat(all_attribution_rows, ignore_index=True)
+        combined_attribution.to_csv(run_dir / "trade_attribution.csv", index=False)
+        combined_attribution.to_parquet(run_dir / "trade_attribution.parquet", index=False)
+        write_json(run_dir / "trade_attribution_summary.json", summarize_trade_attribution(combined_attribution))
+    if all_trade_rows:
+        import pandas as pd
+
+        combined_trades = pd.concat(all_trade_rows, ignore_index=True)
+        combined_trades.to_csv(run_dir / "trade_ledger.csv", index=False)
+        combined_trades.to_parquet(run_dir / "trade_ledger.parquet", index=False)
     print(f"wrote {run_dir}")
 
 
