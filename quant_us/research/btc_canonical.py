@@ -129,6 +129,20 @@ def evaluate_canonical_gate(
     )
 
 
+def load_single_canonical_report(path: Path | str) -> dict[str, Any]:
+    report_path = Path(path)
+    payload = json.loads(report_path.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != "btc_canonical_backtest_report_v1":
+        raise ValueError(f"not a single BTC canonical report: {report_path}")
+    if payload.get("evidence_source") != "canonical_event_ledger":
+        raise ValueError(f"BTC canonical gate rejects non-canonical evidence: {report_path}")
+    return payload
+
+
+def evaluate_canonical_gate_file(path: Path | str) -> CanonicalGateDecision:
+    return evaluate_canonical_gate(load_single_canonical_report(path))
+
+
 def decide_paper_queue_from_canonical(decisions: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     passed = [
         str(row.get("strategy_id", ""))
