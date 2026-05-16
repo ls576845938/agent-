@@ -1,0 +1,173 @@
+{
+  "DSR": 1.0,
+  "MDD": -6.44,
+  "PBO": 0.5,
+  "PF": 1.564877,
+  "Sharpe": 0.6765,
+  "Sortino": 0.8462,
+  "annual_turnover": 2.520337,
+  "artifact_hash": "fa540f5e672d67be0cfc79bbb31eaf968e9ef08c4ca6d8db40b77352ef8eb4c7",
+  "avg_holding_bars": 47.8125,
+  "avg_loss": -332.319544,
+  "avg_win": 447.47551,
+  "benchmark": null,
+  "code_commit": "8f6cc2636475a18c5507ddc6b9039165d5ede0eb",
+  "config_hash": "4626844631e58f380c0b9a51d78514c3aa02dca92d135e51bd9f5d07a72ee3f4",
+  "cost_model_id": "crypto_commission_4bps_slippage_4bps",
+  "cost_stress_base": {
+    "label": "Current costs",
+    "manifest_path": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/manifests/run_btc_compression_expansion_breakout_v1_cost_base.json",
+    "name": "base",
+    "passed": true,
+    "summary": {
+      "annual_return_pct": 3.5738,
+      "annual_volatility_pct": 5.4068,
+      "calmar_ratio": 0.5549,
+      "max_drawdown_pct": -6.44,
+      "profit_factor": 1.0241,
+      "sharpe_ratio": 0.6765,
+      "sortino_ratio": 0.8462,
+      "total_return_pct": 8.6466,
+      "trade_count": 122,
+      "win_rate_pct": 50.918
+    },
+    "survives": true
+  },
+  "cost_stress_harsh": {
+    "label": "Fees and slippage 2x",
+    "manifest_path": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/manifests/run_btc_compression_expansion_breakout_v1_cost_costs_2x.json",
+    "name": "costs_2x",
+    "passed": true,
+    "summary": {
+      "annual_return_pct": 3.3721,
+      "annual_volatility_pct": 5.4028,
+      "calmar_ratio": 0.5178,
+      "max_drawdown_pct": -6.5123,
+      "profit_factor": 1.0228,
+      "sharpe_ratio": 0.6409,
+      "sortino_ratio": 0.7942,
+      "total_return_pct": 8.1478,
+      "trade_count": 122,
+      "win_rate_pct": 50.8193
+    },
+    "survives": true
+  },
+  "data_range": {
+    "end": "2026-05-12T00:00:00+00:00",
+    "start": "2024-01-01T00:00:00+00:00"
+  },
+  "data_version": "qs-sqlite-BTCUSDT-1h-66968bfbabf2",
+  "diagnostics": {
+    "diagnostic_columns": [
+      "compression_score",
+      "downside_breakout",
+      "expansion_score",
+      "range_expansion",
+      "raw_signal",
+      "target_signal",
+      "upside_breakout",
+      "volatility_expansion"
+    ],
+    "signal_changed_bars": 159,
+    "signal_equity_diagnostic_only": true,
+    "signal_nonzero_bars": 3826
+  },
+  "event_PF": 1.0241,
+  "event_ledger_status": {
+    "ledger_equity_consistent": true,
+    "manifest_path": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/manifests/run_btc_compression_expansion_breakout_v1_base.json",
+    "pnl_source": "ledger_fills",
+    "status": "pass"
+  },
+  "evidence_source": "canonical_event_ledger",
+  "exposure": 0.036986,
+  "fail_reasons": [
+    "event_profit_factor",
+    "walk_forward_pass_rate",
+    "regime_pass_rate"
+  ],
+  "fees": 0.0,
+  "gate_decision": {
+    "checks": {
+      "annual_turnover": true,
+      "canonical_source": true,
+      "cost_stress_base": true,
+      "cost_stress_harsh": true,
+      "dsr": true,
+      "event_ledger": true,
+      "event_profit_factor": false,
+      "max_drawdown": true,
+      "no_lookahead": true,
+      "pbo": true,
+      "profit_factor": true,
+      "regime_pass_rate": false,
+      "signal_equity_diagnostic_only": true,
+      "walk_forward_pass_rate": false
+    },
+    "evidence_source": "canonical_backtest_report",
+    "fail_reasons": [
+      "event_profit_factor",
+      "walk_forward_pass_rate",
+      "regime_pass_rate"
+    ],
+    "passed": false,
+    "status": "candidate_gate_failed",
+    "strategy_id": "btc_compression_expansion_breakout_v1",
+    "thresholds": {
+      "annual_turnover": 10.0,
+      "dsr": 0.1,
+      "event_profit_factor": 1.15,
+      "max_drawdown_pct_floor": -15.0,
+      "pbo": 0.5,
+      "profit_factor": 1.15,
+      "regime_pass_rate": 0.75,
+      "walk_forward_pass_rate": 0.8
+    }
+  },
+  "gross_pnl": 6945.6238,
+  "ledger_engine_version": "quant_us.crypto_event.event_ledger_v1",
+  "median_holding_bars": 48.0,
+  "metrics": {
+    "annual_turnover": 2.520337,
+    "avg_holding_bars": 47.8125,
+    "avg_loss": -332.319544,
+    "avg_win": 447.47551,
+    "cost_stress_base_pass": true,
+    "cost_stress_harsh_survives": true,
+    "dsr": 1.0,
+    "event_profit_factor": 1.0241,
+    "exposure": 0.036986,
+    "fees": 0.0,
+    "fill_count": 122,
+    "gross_pnl": 6945.6238,
+    "max_drawdown": -6.44,
+    "median_holding_bars": 48.0,
+    "net_pnl": 6945.6238,
+    "pbo": 0.5,
+    "profit_factor": 1.564877,
+    "regime_pass_rate": 0.285714,
+    "sharpe": 0.6765,
+    "slippage": 0.0,
+    "sortino": 0.8462,
+    "total_return_pct": 8.6466,
+    "trade_count": 80,
+    "walk_forward_pass_rate": 0.5,
+    "win_rate": 0.5375
+  },
+  "net_pnl": 6945.6238,
+  "no_lookahead_status": {
+    "basis": "event_engine_next_bar_execution_and_past_only_features",
+    "status": "pass"
+  },
+  "promotion_gate_status": "candidate_gate_failed",
+  "regime_pass_rate": 0.285714,
+  "run_id": "20260516T133000Z_compression_expansion_eventledger",
+  "schema_version": "btc_canonical_backtest_report_v1",
+  "slippage": 0.0,
+  "strategy_id": "btc_compression_expansion_breakout_v1",
+  "strategy_version": "btc_compression_expansion_breakout_v1:event_ledger_candidate_validation_v1",
+  "timeframe": "1h",
+  "trade_count": 80,
+  "walk_forward_pass_rate": 0.5,
+  "win_rate": 0.5375
+}
