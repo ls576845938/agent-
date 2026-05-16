@@ -1,0 +1,50 @@
+schema_version: btc_alpha_hardening_candidate_v1
+strategy_id: btc_perp_dual_trend_v2
+base_strategy_id: btc_perp_dual_trend
+asset_class: crypto
+symbol: BTCUSDT
+timeframe: 1h
+pnl_source: ledger_fills
+paper_auto_start: false
+live_enabled: false
+live_frozen: true
+params:
+  fast_ma: 96
+  slow_ma: 336
+  regime_ma: 720
+  momentum_window: 168
+  momentum_threshold: 0.025
+  vol_window: 168
+  max_volatility: 0.05
+  buy_ratio_threshold: 0.54
+  sell_ratio_threshold: 0.46
+  pressure_threshold: 0.0075
+  orderflow_window: 144
+  activity_window: 144
+  min_quote_intensity: 0.75
+  min_trade_intensity: 0.70
+  signal_persistence_bars: 3
+  exit_hysteresis_bars: 4
+  min_hold_bars: 120
+  cooldown_bars: 72
+  max_hold_bars: 720
+  signal_scale: 0.20
+  blocked_regimes:
+    - low_vol_chop
+    - mean_reverting_chop
+    - liquidation_shock
+objective:
+  normalized_profit_factor: 0.30
+  normalized_walk_forward_pass_rate: 0.25
+  normalized_regime_stability: 0.20
+  normalized_cost_adjusted_return: 0.15
+  normalized_turnover_penalty: -0.10
+gates:
+  profit_factor: 1.15
+  event_profit_factor: 1.15
+  walk_forward_pass_rate: 0.80
+  regime_pass_rate: 0.75
+  annual_turnover: 15.0
+  max_drawdown_pct_floor: -15.0
+  dsr: 0.10
+  pbo: 0.50

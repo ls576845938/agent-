@@ -1,0 +1,103 @@
+{
+  "candidate_gate_results": [
+    {
+      "checks": {
+        "annual_turnover": true,
+        "cost_stress_base": true,
+        "cost_stress_harsh": true,
+        "dsr": true,
+        "event_ledger": true,
+        "event_profit_factor": false,
+        "max_drawdown": true,
+        "no_lookahead": true,
+        "pbo": true,
+        "profit_factor": false,
+        "regime_pass_rate": true,
+        "walk_forward_pass_rate": true
+      },
+      "fail_reasons": [
+        "profit_factor",
+        "event_profit_factor"
+      ],
+      "passed": false,
+      "status": "candidate_gate_failed",
+      "strategy_id": "btc_perp_dual_trend_v2",
+      "thresholds": {
+        "annual_turnover": 15.0,
+        "dsr": 0.1,
+        "event_profit_factor": 1.15,
+        "max_drawdown_pct_floor": -15.0,
+        "pbo": 0.5,
+        "profit_factor": 1.15,
+        "regime_pass_rate": 0.75,
+        "walk_forward_pass_rate": 0.8
+      }
+    },
+    {
+      "checks": {
+        "annual_turnover": true,
+        "cost_stress_base": true,
+        "cost_stress_harsh": true,
+        "dsr": true,
+        "event_ledger": true,
+        "event_profit_factor": false,
+        "max_drawdown": true,
+        "no_lookahead": true,
+        "pbo": true,
+        "profit_factor": false,
+        "regime_pass_rate": true,
+        "walk_forward_pass_rate": false
+      },
+      "fail_reasons": [
+        "profit_factor",
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "passed": false,
+      "status": "candidate_gate_failed",
+      "strategy_id": "btc_orderflow_confirmed_trend_v1",
+      "thresholds": {
+        "annual_turnover": 15.0,
+        "dsr": 0.1,
+        "event_profit_factor": 1.15,
+        "max_drawdown_pct_floor": -15.0,
+        "pbo": 0.5,
+        "profit_factor": 1.15,
+        "regime_pass_rate": 0.75,
+        "walk_forward_pass_rate": 0.8
+      }
+    }
+  ],
+  "commit_hash": "f88f90bfb813374e2b071f22da9de6d509df5fb7",
+  "forbidden_states": [
+    "paper_ready",
+    "live_ready",
+    "live_enabled"
+  ],
+  "live_frozen": true,
+  "paper_auto_start": false,
+  "paper_review": {
+    "forbidden_states": [
+      "live_enabled",
+      "live_ready",
+      "paper_ready"
+    ],
+    "live_frozen": true,
+    "max_state": "candidate_gate_failed",
+    "paper_auto_start": false,
+    "paper_review_pending": [],
+    "paper_review_queue_locked": true,
+    "reason": "requires_1_to_3_internal_gate_passes"
+  },
+  "run_id": "20260516T000000Z",
+  "thresholds": {
+    "annual_turnover": 15.0,
+    "dsr": 0.1,
+    "event_profit_factor": 1.15,
+    "max_drawdown_pct_floor": -15.0,
+    "pbo": 0.5,
+    "profit_factor": 1.15,
+    "regime_pass_rate": 0.75,
+    "walk_forward_pass_rate": 0.8
+  }
+}

@@ -1,0 +1,689 @@
+{
+  "cost_stress": {
+    "base": {
+      "label": "Current costs",
+      "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_base.json",
+      "name": "base",
+      "summary": {
+        "annual_return_pct": 0.2367,
+        "annual_volatility_pct": 4.4013,
+        "calmar_ratio": 0.0262,
+        "max_drawdown_pct": -9.0322,
+        "profit_factor": 1.003,
+        "sharpe_ratio": 0.0757,
+        "sortino_ratio": 0.0856,
+        "total_return_pct": 0.56,
+        "trade_count": 34,
+        "win_rate_pct": 49.9058
+      },
+      "survives": true
+    },
+    "engine": "event_driven",
+    "harsh": {
+      "label": "Fees and slippage 2x",
+      "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_costs_2x.json",
+      "name": "costs_2x",
+      "summary": {
+        "annual_return_pct": 0.1628,
+        "annual_volatility_pct": 4.4026,
+        "calmar_ratio": 0.0179,
+        "max_drawdown_pct": -9.0886,
+        "profit_factor": 1.0024,
+        "sharpe_ratio": 0.059,
+        "sortino_ratio": 0.0658,
+        "total_return_pct": 0.385,
+        "trade_count": 34,
+        "win_rate_pct": 49.9578
+      },
+      "survives": true
+    },
+    "ledger_consistency_pct": 100.0,
+    "scenario_count": 4,
+    "scenarios": [
+      {
+        "label": "Current costs",
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_base.json",
+        "name": "base",
+        "summary": {
+          "annual_return_pct": 0.2367,
+          "annual_volatility_pct": 4.4013,
+          "calmar_ratio": 0.0262,
+          "max_drawdown_pct": -9.0322,
+          "profit_factor": 1.003,
+          "sharpe_ratio": 0.0757,
+          "sortino_ratio": 0.0856,
+          "total_return_pct": 0.56,
+          "trade_count": 34,
+          "win_rate_pct": 49.9058
+        },
+        "survives": true
+      },
+      {
+        "label": "Fees 2x",
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_fees_2x.json",
+        "name": "fees_2x",
+        "summary": {
+          "annual_return_pct": 0.1998,
+          "annual_volatility_pct": 4.4019,
+          "calmar_ratio": 0.0221,
+          "max_drawdown_pct": -9.0604,
+          "profit_factor": 1.0027,
+          "sharpe_ratio": 0.0674,
+          "sortino_ratio": 0.0751,
+          "total_return_pct": 0.4725,
+          "trade_count": 34,
+          "win_rate_pct": 49.9638
+        },
+        "survives": true
+      },
+      {
+        "label": "Slippage 2x",
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_slippage_2x.json",
+        "name": "slippage_2x",
+        "summary": {
+          "annual_return_pct": 0.1998,
+          "annual_volatility_pct": 4.4019,
+          "calmar_ratio": 0.0221,
+          "max_drawdown_pct": -9.0604,
+          "profit_factor": 1.0027,
+          "sharpe_ratio": 0.0674,
+          "sortino_ratio": 0.0751,
+          "total_return_pct": 0.4725,
+          "trade_count": 34,
+          "win_rate_pct": 49.9638
+        },
+        "survives": true
+      },
+      {
+        "label": "Fees and slippage 2x",
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_costs_2x.json",
+        "name": "costs_2x",
+        "summary": {
+          "annual_return_pct": 0.1628,
+          "annual_volatility_pct": 4.4026,
+          "calmar_ratio": 0.0179,
+          "max_drawdown_pct": -9.0886,
+          "profit_factor": 1.0024,
+          "sharpe_ratio": 0.059,
+          "sortino_ratio": 0.0658,
+          "total_return_pct": 0.385,
+          "trade_count": 34,
+          "win_rate_pct": 49.9578
+        },
+        "survives": true
+      }
+    ],
+    "survival_rate_pct": 100.0
+  },
+  "diagnostic_columns": [
+    "buy_pressure",
+    "buy_ratio",
+    "fast_ma",
+    "momentum",
+    "orderflow_conflict",
+    "orderflow_long_confirm",
+    "orderflow_short_confirm",
+    "quote_intensity",
+    "regime",
+    "regime_ma",
+    "slow_ma",
+    "target_signal",
+    "trade_intensity",
+    "trend_long",
+    "trend_short",
+    "volatility"
+  ],
+  "diagnostics": {
+    "engine": "event_driven",
+    "fills": 34,
+    "ledger_equity_consistent": true,
+    "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_base.json",
+    "orders": 34,
+    "pnl_source": "ledger_fills"
+  },
+  "gate": {
+    "checks": {
+      "annual_turnover": true,
+      "cost_stress_base": true,
+      "cost_stress_harsh": true,
+      "dsr": true,
+      "event_ledger": true,
+      "event_profit_factor": false,
+      "max_drawdown": true,
+      "no_lookahead": true,
+      "pbo": true,
+      "profit_factor": false,
+      "regime_pass_rate": true,
+      "walk_forward_pass_rate": false
+    },
+    "fail_reasons": [
+      "profit_factor",
+      "event_profit_factor",
+      "walk_forward_pass_rate"
+    ],
+    "passed": false,
+    "status": "candidate_gate_failed",
+    "strategy_id": "btc_orderflow_confirmed_trend_v1",
+    "thresholds": {
+      "annual_turnover": 15.0,
+      "dsr": 0.1,
+      "event_profit_factor": 1.15,
+      "max_drawdown_pct_floor": -15.0,
+      "pbo": 0.5,
+      "profit_factor": 1.15,
+      "regime_pass_rate": 0.75,
+      "walk_forward_pass_rate": 0.8
+    }
+  },
+  "metrics_for_gate": {
+    "annual_turnover": 3.3873072647300497,
+    "cost_adjusted_return_pct": 0.56,
+    "cost_stress_base_pass": true,
+    "cost_stress_harsh_survives": true,
+    "dsr": 1.0,
+    "event_ledger_pass": true,
+    "event_profit_factor": 1.003,
+    "hardening_objective_score": 0.544718,
+    "max_drawdown_pct": -9.0322,
+    "no_lookahead_pass": true,
+    "pbo": 0.0,
+    "profit_factor": 1.003,
+    "regime_pass_rate": 0.875,
+    "walk_forward_pass_rate": 0.75
+  },
+  "params": {
+    "activity_window": 144,
+    "blocked_regimes": [
+      "low_vol_chop",
+      "mean_reverting_chop",
+      "liquidation_shock"
+    ],
+    "buy_ratio_threshold": 0.535,
+    "cooldown_bars": 72,
+    "exit_hysteresis_bars": 4,
+    "fast_ma": 96,
+    "max_hold_bars": 720,
+    "max_volatility": 0.055,
+    "min_hold_bars": 120,
+    "min_quote_intensity": 0.8,
+    "min_trade_intensity": 0.7,
+    "momentum_threshold": 0.025,
+    "momentum_window": 168,
+    "orderflow_window": 144,
+    "pressure_threshold": 0.01,
+    "regime_ma": 720,
+    "sell_ratio_threshold": 0.465,
+    "signal_persistence_bars": 4,
+    "signal_scale": 0.2,
+    "slow_ma": 336,
+    "vol_window": 168
+  },
+  "pbo_dsr": {
+    "dsr": 1.0,
+    "pbo": 0.0,
+    "pbo_trials": [
+      {
+        "split_id": "wf_1",
+        "test_sharpe": -0.2591,
+        "train_sharpe": 0.0757
+      },
+      {
+        "split_id": "wf_2",
+        "test_sharpe": 2.0321,
+        "train_sharpe": 0.0757
+      },
+      {
+        "split_id": "wf_3",
+        "test_sharpe": 1.7427,
+        "train_sharpe": 0.0757
+      },
+      {
+        "split_id": "wf_4",
+        "test_sharpe": 1.684,
+        "train_sharpe": 0.0757
+      }
+    ]
+  },
+  "regime": {
+    "dragging_regimes": [
+      "trending_down"
+    ],
+    "regime_classifier": "past_only_rolling_v1",
+    "regime_pass_rate": 0.875,
+    "regimes": [
+      {
+        "avg_holding_bars": 3192.5,
+        "passed": true,
+        "pnl_contribution": 2613.049293,
+        "profit_factor": 2.4387,
+        "regime": "trending_up",
+        "sharpe": 0.8695,
+        "trade_count": 10,
+        "turnover": 10,
+        "win_rate": 0.5
+      },
+      {
+        "avg_holding_bars": 2527.1429,
+        "passed": false,
+        "pnl_contribution": -2962.866339,
+        "profit_factor": 0.3707,
+        "regime": "trending_down",
+        "sharpe": -1.1734,
+        "trade_count": 14,
+        "turnover": 14,
+        "win_rate": 0.285714
+      },
+      {
+        "avg_holding_bars": 0.0,
+        "passed": true,
+        "pnl_contribution": 0,
+        "profit_factor": 0.0,
+        "regime": "high_vol_trend",
+        "sharpe": 0.0,
+        "trade_count": 0,
+        "turnover": 0,
+        "win_rate": 0.0
+      },
+      {
+        "avg_holding_bars": 0.0,
+        "passed": true,
+        "pnl_contribution": 0,
+        "profit_factor": 0.0,
+        "regime": "low_vol_chop",
+        "sharpe": 0.0,
+        "trade_count": 0,
+        "turnover": 0,
+        "win_rate": 0.0
+      },
+      {
+        "avg_holding_bars": 0.0,
+        "passed": true,
+        "pnl_contribution": 0,
+        "profit_factor": 0.0,
+        "regime": "mean_reverting_chop",
+        "sharpe": 0.0,
+        "trade_count": 0,
+        "turnover": 0,
+        "win_rate": 0.0
+      },
+      {
+        "avg_holding_bars": 0.0,
+        "passed": true,
+        "pnl_contribution": 0,
+        "profit_factor": 0.0,
+        "regime": "liquidation_shock",
+        "sharpe": 0.0,
+        "trade_count": 0,
+        "turnover": 0,
+        "win_rate": 0.0
+      },
+      {
+        "avg_holding_bars": 0.0,
+        "passed": true,
+        "pnl_contribution": 0,
+        "profit_factor": 0.0,
+        "regime": "compression",
+        "sharpe": 0.0,
+        "trade_count": 0,
+        "turnover": 0,
+        "win_rate": 0.0
+      },
+      {
+        "avg_holding_bars": 120.0,
+        "passed": true,
+        "pnl_contribution": 535.59336,
+        "profit_factor": 999.0,
+        "regime": "expansion",
+        "sharpe": 0.0,
+        "trade_count": 1,
+        "turnover": 1,
+        "win_rate": 1.0
+      }
+    ],
+    "strategy_id": "btc_orderflow_confirmed_trend_v1",
+    "trade_count": 25,
+    "trades": [
+      {
+        "entry_time": "2024-02-09T19:00:00+00:00",
+        "exit_time": "2024-02-14T19:00:00+00:00",
+        "holding_bars": 120,
+        "pnl": 870.046941,
+        "quantity": 0.2282025,
+        "regime": "trending_up",
+        "side": "long"
+      },
+      {
+        "entry_time": "2024-03-28T16:00:00+00:00",
+        "exit_time": "2024-04-02T16:00:00+00:00",
+        "holding_bars": 120,
+        "pnl": -843.01773,
+        "quantity": 0.1300585,
+        "regime": "trending_up",
+        "side": "long"
+      },
+      {
+        "entry_time": "2024-04-30T12:00:00+00:00",
+        "exit_time": "2024-05-05T12:00:00+00:00",
+        "holding_bars": 120,
+        "pnl": -26.936079,
+        "quantity": 0.009992,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2024-04-30T12:00:00+00:00",
+        "exit_time": "2024-05-20T22:00:00+00:00",
+        "holding_bars": 490,
+        "pnl": -934.417123,
+        "quantity": 0.109103,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2024-04-30T12:00:00+00:00",
+        "exit_time": "2024-06-29T17:00:00+00:00",
+        "holding_bars": 1445,
+        "pnl": -10.461501,
+        "quantity": 0.0167015,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2024-04-30T12:00:00+00:00",
+        "exit_time": "2024-09-23T05:00:00+00:00",
+        "holding_bars": 3497,
+        "pnl": -80.641955,
+        "quantity": 0.0227115,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2024-04-30T12:00:00+00:00",
+        "exit_time": "2024-09-28T05:00:00+00:00",
+        "holding_bars": 3617,
+        "pnl": -14.482119,
+        "quantity": 0.002554,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2024-04-30T12:00:00+00:00",
+        "exit_time": "2024-10-29T22:00:00+00:00",
+        "holding_bars": 4378,
+        "pnl": -246.518524,
+        "quantity": 0.0206805,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2024-04-30T12:00:00+00:00",
+        "exit_time": "2024-11-03T22:00:00+00:00",
+        "holding_bars": 4498,
+        "pnl": -492.646073,
+        "quantity": 0.0559955,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2024-04-30T12:00:00+00:00",
+        "exit_time": "2024-11-06T22:00:00+00:00",
+        "holding_bars": 4570,
+        "pnl": -1425.833133,
+        "quantity": 0.092595,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2024-04-30T12:00:00+00:00",
+        "exit_time": "2024-11-19T16:00:00+00:00",
+        "holding_bars": 4876,
+        "pnl": -1437.678176,
+        "quantity": 0.044874,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2024-11-19T16:00:00+00:00",
+        "exit_time": "2024-11-24T16:00:00+00:00",
+        "holding_bars": 120,
+        "pnl": 535.59336,
+        "quantity": 0.1520435,
+        "regime": "expansion",
+        "side": "long"
+      },
+      {
+        "entry_time": "2024-12-16T03:00:00+00:00",
+        "exit_time": "2025-01-22T16:00:00+00:00",
+        "holding_bars": 901,
+        "pnl": 5.60539,
+        "quantity": 0.037358,
+        "regime": "trending_up",
+        "side": "long"
+      },
+      {
+        "entry_time": "2024-12-16T03:00:00+00:00",
+        "exit_time": "2025-02-28T05:00:00+00:00",
+        "holding_bars": 1778,
+        "pnl": -806.184003,
+        "quantity": 0.034366,
+        "regime": "trending_up",
+        "side": "long"
+      },
+      {
+        "entry_time": "2024-12-16T03:00:00+00:00",
+        "exit_time": "2025-03-05T05:00:00+00:00",
+        "holding_bars": 1898,
+        "pnl": -97.799791,
+        "quantity": 0.005782,
+        "regime": "trending_up",
+        "side": "long"
+      },
+      {
+        "entry_time": "2024-12-16T03:00:00+00:00",
+        "exit_time": "2025-04-30T15:00:00+00:00",
+        "holding_bars": 3252,
+        "pnl": -69.30032,
+        "quantity": 0.0113345,
+        "regime": "trending_up",
+        "side": "long"
+      },
+      {
+        "entry_time": "2024-12-16T03:00:00+00:00",
+        "exit_time": "2025-05-13T04:00:00+00:00",
+        "holding_bars": 3553,
+        "pnl": 38.980103,
+        "quantity": 0.0240425,
+        "regime": "trending_up",
+        "side": "long"
+      },
+      {
+        "entry_time": "2024-12-16T03:00:00+00:00",
+        "exit_time": "2025-07-21T06:00:00+00:00",
+        "holding_bars": 5211,
+        "pnl": 919.535987,
+        "quantity": 0.04987,
+        "regime": "trending_up",
+        "side": "long"
+      },
+      {
+        "entry_time": "2024-12-16T03:00:00+00:00",
+        "exit_time": "2025-10-07T05:00:00+00:00",
+        "holding_bars": 7082,
+        "pnl": 2595.182753,
+        "quantity": 0.14737709,
+        "regime": "trending_up",
+        "side": "long"
+      },
+      {
+        "entry_time": "2024-12-16T03:00:00+00:00",
+        "exit_time": "2025-11-14T21:00:00+00:00",
+        "holding_bars": 8010,
+        "pnl": -3.7e-05,
+        "quantity": 0.0,
+        "regime": "trending_up",
+        "side": "long"
+      },
+      {
+        "entry_time": "2025-11-14T21:00:00+00:00",
+        "exit_time": "2025-11-19T21:00:00+00:00",
+        "holding_bars": 120,
+        "pnl": 105.781457,
+        "quantity": 0.023302,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2025-11-14T21:00:00+00:00",
+        "exit_time": "2026-01-14T20:00:00+00:00",
+        "holding_bars": 1463,
+        "pnl": -38.894606,
+        "quantity": 0.011486,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2025-11-14T21:00:00+00:00",
+        "exit_time": "2026-01-19T20:00:00+00:00",
+        "holding_bars": 1583,
+        "pnl": 2.483425,
+        "quantity": 0.0025505,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2025-11-14T21:00:00+00:00",
+        "exit_time": "2026-02-03T21:00:00+00:00",
+        "holding_bars": 1944,
+        "pnl": 391.382471,
+        "quantity": 0.031015,
+        "regime": "trending_down",
+        "side": "short"
+      },
+      {
+        "entry_time": "2025-11-14T21:00:00+00:00",
+        "exit_time": "2026-03-10T16:00:00+00:00",
+        "holding_bars": 2779,
+        "pnl": 1245.995597,
+        "quantity": 0.0698645,
+        "regime": "trending_down",
+        "side": "short"
+      }
+    ]
+  },
+  "signal": {
+    "annual_turnover": 3.387307,
+    "changed_bars": 40,
+    "nonzero_bars": 2400
+  },
+  "strategy_id": "btc_orderflow_confirmed_trend_v1",
+  "summary": {
+    "annual_return_pct": 0.2367,
+    "annual_volatility_pct": 4.4013,
+    "calmar_ratio": 0.0262,
+    "max_drawdown_pct": -9.0322,
+    "profit_factor": 1.003,
+    "sharpe_ratio": 0.0757,
+    "sortino_ratio": 0.0856,
+    "total_return_pct": 0.56,
+    "trade_count": 34,
+    "win_rate_pct": 49.9058
+  },
+  "walk_forward": {
+    "method": "rolling_event_ledger_fixed_params",
+    "stability": {
+      "fold_pass_rate_pct": 75.0,
+      "ledger_consistency_pct": 100.0,
+      "pass_rate": 0.75,
+      "passing_folds": 3,
+      "total_folds": 4,
+      "valid_folds": 4
+    },
+    "status": "completed",
+    "windows": [
+      {
+        "equity_consistent": true,
+        "fold": 1,
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_wf1.json",
+        "survives": false,
+        "validation": {
+          "annual_return_pct": -1.3813,
+          "annual_volatility_pct": 4.9044,
+          "calmar_ratio": -0.3525,
+          "max_drawdown_pct": -3.919,
+          "profit_factor": 0.988,
+          "sharpe_ratio": -0.2591,
+          "sortino_ratio": -0.248,
+          "total_return_pct": -0.546,
+          "trade_count": 10,
+          "win_rate_pct": 51.9579
+        },
+        "validation_end": "2025-03-07T00:00:00+00:00",
+        "validation_rows": 3448,
+        "validation_start": "2024-10-14T09:00:00+00:00"
+      },
+      {
+        "equity_consistent": true,
+        "fold": 2,
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_wf2.json",
+        "survives": true,
+        "validation": {
+          "annual_return_pct": 7.5145,
+          "annual_volatility_pct": 3.5975,
+          "calmar_ratio": 4.8014,
+          "max_drawdown_pct": -1.565,
+          "profit_factor": 1.0806,
+          "sharpe_ratio": 2.0321,
+          "sortino_ratio": 2.307,
+          "total_return_pct": 2.8929,
+          "trade_count": 4,
+          "win_rate_pct": 50.8197
+        },
+        "validation_end": "2025-07-28T16:00:00+00:00",
+        "validation_rows": 3448,
+        "validation_start": "2025-03-07T01:00:00+00:00"
+      },
+      {
+        "equity_consistent": true,
+        "fold": 3,
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_wf3.json",
+        "survives": true,
+        "validation": {
+          "annual_return_pct": 3.4976,
+          "annual_volatility_pct": 1.984,
+          "calmar_ratio": 4.6687,
+          "max_drawdown_pct": -0.7491,
+          "profit_factor": 1.1121,
+          "sharpe_ratio": 1.7427,
+          "sortino_ratio": 1.3979,
+          "total_return_pct": 1.3623,
+          "trade_count": 4,
+          "win_rate_pct": 49.3671
+        },
+        "validation_end": "2025-12-19T08:00:00+00:00",
+        "validation_rows": 3448,
+        "validation_start": "2025-07-28T17:00:00+00:00"
+      },
+      {
+        "equity_consistent": true,
+        "fold": 4,
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_wf4.json",
+        "survives": true,
+        "validation": {
+          "annual_return_pct": 2.6983,
+          "annual_volatility_pct": 1.5886,
+          "calmar_ratio": 3.6784,
+          "max_drawdown_pct": -0.7336,
+          "profit_factor": 1.0617,
+          "sharpe_ratio": 1.684,
+          "sortino_ratio": 2.1115,
+          "total_return_pct": 1.0535,
+          "trade_count": 4,
+          "win_rate_pct": 50.5866
+        },
+        "validation_end": "2026-05-12T00:00:00+00:00",
+        "validation_rows": 3448,
+        "validation_start": "2025-12-19T09:00:00+00:00"
+      }
+    ]
+  }
+}

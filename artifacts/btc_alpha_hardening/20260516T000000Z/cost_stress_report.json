@@ -1,0 +1,237 @@
+{
+  "run_id": "20260516T000000Z",
+  "strategies": {
+    "btc_orderflow_confirmed_trend_v1": {
+      "base": {
+        "label": "Current costs",
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_base.json",
+        "name": "base",
+        "summary": {
+          "annual_return_pct": 0.2367,
+          "annual_volatility_pct": 4.4013,
+          "calmar_ratio": 0.0262,
+          "max_drawdown_pct": -9.0322,
+          "profit_factor": 1.003,
+          "sharpe_ratio": 0.0757,
+          "sortino_ratio": 0.0856,
+          "total_return_pct": 0.56,
+          "trade_count": 34,
+          "win_rate_pct": 49.9058
+        },
+        "survives": true
+      },
+      "engine": "event_driven",
+      "harsh": {
+        "label": "Fees and slippage 2x",
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_costs_2x.json",
+        "name": "costs_2x",
+        "summary": {
+          "annual_return_pct": 0.1628,
+          "annual_volatility_pct": 4.4026,
+          "calmar_ratio": 0.0179,
+          "max_drawdown_pct": -9.0886,
+          "profit_factor": 1.0024,
+          "sharpe_ratio": 0.059,
+          "sortino_ratio": 0.0658,
+          "total_return_pct": 0.385,
+          "trade_count": 34,
+          "win_rate_pct": 49.9578
+        },
+        "survives": true
+      },
+      "ledger_consistency_pct": 100.0,
+      "scenario_count": 4,
+      "scenarios": [
+        {
+          "label": "Current costs",
+          "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_base.json",
+          "name": "base",
+          "summary": {
+            "annual_return_pct": 0.2367,
+            "annual_volatility_pct": 4.4013,
+            "calmar_ratio": 0.0262,
+            "max_drawdown_pct": -9.0322,
+            "profit_factor": 1.003,
+            "sharpe_ratio": 0.0757,
+            "sortino_ratio": 0.0856,
+            "total_return_pct": 0.56,
+            "trade_count": 34,
+            "win_rate_pct": 49.9058
+          },
+          "survives": true
+        },
+        {
+          "label": "Fees 2x",
+          "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_fees_2x.json",
+          "name": "fees_2x",
+          "summary": {
+            "annual_return_pct": 0.1998,
+            "annual_volatility_pct": 4.4019,
+            "calmar_ratio": 0.0221,
+            "max_drawdown_pct": -9.0604,
+            "profit_factor": 1.0027,
+            "sharpe_ratio": 0.0674,
+            "sortino_ratio": 0.0751,
+            "total_return_pct": 0.4725,
+            "trade_count": 34,
+            "win_rate_pct": 49.9638
+          },
+          "survives": true
+        },
+        {
+          "label": "Slippage 2x",
+          "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_slippage_2x.json",
+          "name": "slippage_2x",
+          "summary": {
+            "annual_return_pct": 0.1998,
+            "annual_volatility_pct": 4.4019,
+            "calmar_ratio": 0.0221,
+            "max_drawdown_pct": -9.0604,
+            "profit_factor": 1.0027,
+            "sharpe_ratio": 0.0674,
+            "sortino_ratio": 0.0751,
+            "total_return_pct": 0.4725,
+            "trade_count": 34,
+            "win_rate_pct": 49.9638
+          },
+          "survives": true
+        },
+        {
+          "label": "Fees and slippage 2x",
+          "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_orderflow_confirmed_trend_v1_costs_2x.json",
+          "name": "costs_2x",
+          "summary": {
+            "annual_return_pct": 0.1628,
+            "annual_volatility_pct": 4.4026,
+            "calmar_ratio": 0.0179,
+            "max_drawdown_pct": -9.0886,
+            "profit_factor": 1.0024,
+            "sharpe_ratio": 0.059,
+            "sortino_ratio": 0.0658,
+            "total_return_pct": 0.385,
+            "trade_count": 34,
+            "win_rate_pct": 49.9578
+          },
+          "survives": true
+        }
+      ],
+      "survival_rate_pct": 100.0
+    },
+    "btc_perp_dual_trend_v2": {
+      "base": {
+        "label": "Current costs",
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_perp_dual_trend_v2_base.json",
+        "name": "base",
+        "summary": {
+          "annual_return_pct": 2.5879,
+          "annual_volatility_pct": 5.5243,
+          "calmar_ratio": 0.3271,
+          "max_drawdown_pct": -7.9128,
+          "profit_factor": 1.0189,
+          "sharpe_ratio": 0.4901,
+          "sortino_ratio": 0.5813,
+          "total_return_pct": 6.22,
+          "trade_count": 58,
+          "win_rate_pct": 50.4327
+        },
+        "survives": true
+      },
+      "engine": "event_driven",
+      "harsh": {
+        "label": "Fees and slippage 2x",
+        "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_perp_dual_trend_v2_costs_2x.json",
+        "name": "costs_2x",
+        "summary": {
+          "annual_return_pct": 2.4338,
+          "annual_volatility_pct": 5.5278,
+          "calmar_ratio": 0.3046,
+          "max_drawdown_pct": -7.9895,
+          "profit_factor": 1.0178,
+          "sharpe_ratio": 0.4626,
+          "sortino_ratio": 0.5438,
+          "total_return_pct": 5.8435,
+          "trade_count": 58,
+          "win_rate_pct": 50.4458
+        },
+        "survives": true
+      },
+      "ledger_consistency_pct": 100.0,
+      "scenario_count": 4,
+      "scenarios": [
+        {
+          "label": "Current costs",
+          "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_perp_dual_trend_v2_base.json",
+          "name": "base",
+          "summary": {
+            "annual_return_pct": 2.5879,
+            "annual_volatility_pct": 5.5243,
+            "calmar_ratio": 0.3271,
+            "max_drawdown_pct": -7.9128,
+            "profit_factor": 1.0189,
+            "sharpe_ratio": 0.4901,
+            "sortino_ratio": 0.5813,
+            "total_return_pct": 6.22,
+            "trade_count": 58,
+            "win_rate_pct": 50.4327
+          },
+          "survives": true
+        },
+        {
+          "label": "Fees 2x",
+          "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_perp_dual_trend_v2_fees_2x.json",
+          "name": "fees_2x",
+          "summary": {
+            "annual_return_pct": 2.5108,
+            "annual_volatility_pct": 5.526,
+            "calmar_ratio": 0.3158,
+            "max_drawdown_pct": -7.9511,
+            "profit_factor": 1.0184,
+            "sharpe_ratio": 0.4764,
+            "sortino_ratio": 0.5601,
+            "total_return_pct": 6.0317,
+            "trade_count": 58,
+            "win_rate_pct": 50.4676
+          },
+          "survives": true
+        },
+        {
+          "label": "Slippage 2x",
+          "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_perp_dual_trend_v2_slippage_2x.json",
+          "name": "slippage_2x",
+          "summary": {
+            "annual_return_pct": 2.5108,
+            "annual_volatility_pct": 5.526,
+            "calmar_ratio": 0.3158,
+            "max_drawdown_pct": -7.9511,
+            "profit_factor": 1.0184,
+            "sharpe_ratio": 0.4764,
+            "sortino_ratio": 0.5601,
+            "total_return_pct": 6.0317,
+            "trade_count": 58,
+            "win_rate_pct": 50.4676
+          },
+          "survives": true
+        },
+        {
+          "label": "Fees and slippage 2x",
+          "manifest_path": "artifacts/btc_alpha_hardening/20260516T000000Z/manifests/run_btc_perp_dual_trend_v2_costs_2x.json",
+          "name": "costs_2x",
+          "summary": {
+            "annual_return_pct": 2.4338,
+            "annual_volatility_pct": 5.5278,
+            "calmar_ratio": 0.3046,
+            "max_drawdown_pct": -7.9895,
+            "profit_factor": 1.0178,
+            "sharpe_ratio": 0.4626,
+            "sortino_ratio": 0.5438,
+            "total_return_pct": 5.8435,
+            "trade_count": 58,
+            "win_rate_pct": 50.4458
+          },
+          "survives": true
+        }
+      ],
+      "survival_rate_pct": 100.0
+    }
+  }
+}

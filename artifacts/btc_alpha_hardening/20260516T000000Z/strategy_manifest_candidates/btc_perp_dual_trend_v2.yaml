@@ -1,0 +1,37 @@
+schema_version: strategy_manifest_candidate_v1
+strategy_id: btc_perp_dual_trend_v2
+asset_class: crypto
+symbol: BTCUSDT
+timeframe: 1h
+promotion_status: candidate_gate_failed
+paper_auto_start: false
+live_enabled: false
+live_frozen: true
+pnl_source: ledger_fills
+params:
+  fast_ma: 96
+  slow_ma: 336
+  regime_ma: 720
+  momentum_window: 168
+  momentum_threshold: 0.025
+  vol_window: 168
+  max_volatility: 0.05
+  buy_ratio_threshold: 0.54
+  sell_ratio_threshold: 0.46
+  pressure_threshold: 0.0075
+  orderflow_window: 144
+  activity_window: 144
+  min_quote_intensity: 0.75
+  min_trade_intensity: 0.7
+  signal_persistence_bars: 3
+  exit_hysteresis_bars: 4
+  min_hold_bars: 120
+  cooldown_bars: 72
+  max_hold_bars: 720
+  signal_scale: 0.2
+  blocked_regimes: [low_vol_chop, mean_reverting_chop, liquidation_shock]
+gate:
+  passed: false
+  fail_reasons:
+    - profit_factor
+    - event_profit_factor

@@ -2,6 +2,68 @@ import type {StrategyOptimizationResponse, CostStressResponse, WalkForwardRespon
 import {formatOptimizationScore, formatParams, formatTimestamp, formatPrice, scenarioClass, gateClass} from '../../lib/utils';
 import {ModuleStateCard} from '../../components/ModuleStateCard';
 
+const btcAlphaHardening = {
+  runId: '20260516T000000Z',
+  paperReviewQueueLocked: true,
+  liveFrozen: true,
+  baselines: [
+    {
+      strategyId: 'btc_perp_dual_trend',
+      profitFactor: 1.0996,
+      sharpe: 1.5938,
+      maxDrawdown: -6.8768,
+      annualTurnover: 14.1611,
+      walkForwardPassRate: 0.50,
+      regimePassRate: 0.40,
+      costStress: '100%',
+      pboDsr: 'PBO 0.400 / DSR 0.345',
+      gateStatus: 'candidate_gate_failed',
+      failReasons: ['profit_factor', 'event_profit_factor', 'walk_forward_pass_rate', 'regime_pass_rate'],
+    },
+    {
+      strategyId: 'btc_orderflow_pressure',
+      profitFactor: 1.1053,
+      sharpe: 1.6522,
+      maxDrawdown: -5.7667,
+      annualTurnover: 25.5021,
+      walkForwardPassRate: 0.75,
+      regimePassRate: 0.80,
+      costStress: '100%',
+      pboDsr: 'PBO 0.100 / DSR 0.065',
+      gateStatus: 'candidate_gate_failed',
+      failReasons: ['profit_factor', 'event_profit_factor', 'walk_forward_pass_rate', 'annual_turnover', 'dsr'],
+    },
+  ],
+  candidates: [
+    {
+      strategyId: 'btc_perp_dual_trend_v2',
+      profitFactor: 1.0189,
+      sharpe: 0.4901,
+      maxDrawdown: -7.9128,
+      annualTurnover: 6.0125,
+      walkForwardPassRate: 1.00,
+      regimePassRate: 0.75,
+      costStress: '100%',
+      pboDsr: 'PBO 0.000 / DSR 1.000',
+      gateStatus: 'candidate_gate_failed',
+      failReasons: ['profit_factor', 'event_profit_factor'],
+    },
+    {
+      strategyId: 'btc_orderflow_confirmed_trend_v1',
+      profitFactor: 1.0030,
+      sharpe: 0.0757,
+      maxDrawdown: -9.0322,
+      annualTurnover: 3.3873,
+      walkForwardPassRate: 0.75,
+      regimePassRate: 0.875,
+      costStress: '100%',
+      pboDsr: 'PBO 0.000 / DSR 1.000',
+      gateStatus: 'candidate_gate_failed',
+      failReasons: ['profit_factor', 'event_profit_factor', 'walk_forward_pass_rate'],
+    },
+  ],
+};
+
 interface OptimizationPanelProps {
   optimization: StrategyOptimizationResponse | null;
   optimizationLoading: boolean;
@@ -101,6 +163,31 @@ export default function OptimizationPanel({
           variant: 'primary',
         }]}
       />
+
+      <div className="promotion-panel" data-testid="btc-alpha-hardening-panel">
+        <div className="panel-header"><h2>BTC Alpha Hardening</h2><span>{btcAlphaHardening.runId}</span></div>
+        <div className="stress-summary-grid">
+          <div className="optimization-best"><span>Paper review queue</span><strong>{btcAlphaHardening.paperReviewQueueLocked ? 'LOCKED' : 'PENDING'}</strong><p>paper_auto_start false</p></div>
+          <div className="optimization-best"><span>Live state</span><strong>{btcAlphaHardening.liveFrozen ? 'FROZEN' : 'OPEN'}</strong><p>live_enabled false</p></div>
+          <div className="optimization-best"><span>Internal gate</span><strong>0 / {btcAlphaHardening.candidates.length}</strong><p>PF and ledger PF remain below threshold</p></div>
+        </div>
+        <div className="walk-table">
+          {[...btcAlphaHardening.baselines, ...btcAlphaHardening.candidates].map((row) => (
+            <div key={row.strategyId} className={`walk-row ${row.gateStatus === 'candidate_gate_failed' ? 'stress-fail' : 'stress-pass'}`}>
+              <span>{row.strategyId}</span>
+              <span>PF {row.profitFactor.toFixed(4)}</span>
+              <span>Sharpe {row.sharpe.toFixed(2)}</span>
+              <span>MDD {row.maxDrawdown.toFixed(2)}%</span>
+              <span>Turnover {(row.annualTurnover * 100).toFixed(0)}%</span>
+              <span>WF {(row.walkForwardPassRate * 100).toFixed(0)}%</span>
+              <span>Regime {(row.regimePassRate * 100).toFixed(0)}%</span>
+              <span>Cost {row.costStress}</span>
+              <span>{row.pboDsr}</span>
+              <span>{row.failReasons.join(', ')}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="panel-header"><h2>下一步优化框架</h2><span>{optimizationFramework[0]?.title ?? ''}</span></div>
       <div className="optimization-framework">

@@ -1,0 +1,147 @@
+{
+  "baselines": [
+    {
+      "annual_turnover": 14.161071999999999,
+      "annual_turnover_pct": 1416.1072,
+      "avg_holding_bars": 113.2581,
+      "cost_stress_result": {
+        "ledger_consistency_pct": 100.0,
+        "scenario_count": 1,
+        "survival_rate_pct": 100.0
+      },
+      "data_range": {
+        "end": "2026-04-29 00:00:00+00:00",
+        "start": "2024-01-01 00:00:00+00:00"
+      },
+      "dsr": 0.345013,
+      "event_ledger": {
+        "diagnostics": {
+          "engine": "event_driven",
+          "ledger_equity_consistent": true,
+          "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_9e2ec8206064_event.json",
+          "pnl_source": "ledger_fills"
+        },
+        "summary": {
+          "annual_return_pct": 4.0759,
+          "annual_volatility_pct": 3.8708,
+          "calmar_ratio": 0.8954,
+          "max_drawdown_pct": -4.5522,
+          "profit_factor": 1.0642,
+          "sharpe_ratio": 1.0515,
+          "sortino_ratio": 0.8306,
+          "total_return_pct": 9.7385,
+          "trade_count": 84,
+          "win_rate_pct": 50.5025
+        }
+      },
+      "gate_fail_reasons": [
+        "profit_factor",
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate"
+      ],
+      "gate_status": "candidate_gate_failed",
+      "max_drawdown": -6.8768,
+      "params": {
+        "cooldown_bars": 24,
+        "fast_ma": 72,
+        "max_hold_bars": 720,
+        "max_volatility": 0.055,
+        "min_hold_bars": 72,
+        "momentum_threshold": 0.02,
+        "momentum_window": 168,
+        "regime_ma": 720,
+        "short_enabled": 1.0,
+        "signal_scale": 0.2,
+        "slow_ma": 240,
+        "vol_window": 168
+      },
+      "pbo": 0.4,
+      "profit_factor": 1.0996,
+      "regime_pass_rate": 0.4,
+      "sharpe": 1.5938,
+      "source_evidence_path": "data/research/btc_closure_runs/btc_closure_btcusdt_1h_9e2ec8206064_strict_evidence.json",
+      "strategy_id": "btc_perp_dual_trend",
+      "timeframe": "1h",
+      "trade_count": 115,
+      "walk_forward_pass_rate": 0.5,
+      "win_rate": 48.8556
+    },
+    {
+      "annual_turnover": 25.502118999999997,
+      "annual_turnover_pct": 2550.2119,
+      "avg_holding_bars": 73.0,
+      "cost_stress_result": {
+        "ledger_consistency_pct": 100.0,
+        "scenario_count": 1,
+        "survival_rate_pct": 100.0
+      },
+      "data_range": {
+        "end": "2026-04-29 00:00:00+00:00",
+        "start": "2024-01-01 00:00:00+00:00"
+      },
+      "dsr": 0.064879,
+      "event_ledger": {
+        "diagnostics": {
+          "engine": "event_driven",
+          "ledger_equity_consistent": true,
+          "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_e9b3502a9b57_event.json",
+          "pnl_source": "ledger_fills"
+        },
+        "summary": {
+          "annual_return_pct": 6.954,
+          "annual_volatility_pct": 3.4963,
+          "calmar_ratio": 2.9903,
+          "max_drawdown_pct": -2.3255,
+          "profit_factor": 1.136,
+          "sharpe_ratio": 1.9404,
+          "sortino_ratio": 1.7856,
+          "total_return_pct": 16.9274,
+          "trade_count": 105,
+          "win_rate_pct": 50.5453
+        }
+      },
+      "gate_fail_reasons": [
+        "profit_factor",
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "annual_turnover",
+        "dsr"
+      ],
+      "gate_status": "candidate_gate_failed",
+      "max_drawdown": -5.7667,
+      "params": {
+        "activity_window": 72,
+        "buy_ratio_threshold": 0.535,
+        "cooldown_bars": 24,
+        "fast_ma": 72,
+        "max_hold_bars": 720,
+        "max_volatility": 0.055,
+        "min_hold_bars": 72,
+        "min_quote_intensity": 0.7,
+        "min_trade_intensity": 0.7,
+        "momentum_threshold": 0.02,
+        "momentum_window": 168,
+        "pressure_threshold": 0.005,
+        "pressure_window": 72,
+        "regime_ma": 720,
+        "sell_ratio_threshold": 0.465,
+        "short_enabled": 1.0,
+        "signal_scale": 0.2,
+        "slow_ma": 336,
+        "vol_window": 168
+      },
+      "pbo": 0.1,
+      "profit_factor": 1.1053,
+      "regime_pass_rate": 0.8,
+      "sharpe": 1.6522,
+      "source_evidence_path": "data/research/btc_closure_runs/btc_closure_btcusdt_1h_e9b3502a9b57_strict_evidence.json",
+      "strategy_id": "btc_orderflow_pressure",
+      "timeframe": "1h",
+      "trade_count": 108,
+      "walk_forward_pass_rate": 0.75,
+      "win_rate": 49.4262
+    }
+  ],
+  "run_id": "20260516T000000Z"
+}
