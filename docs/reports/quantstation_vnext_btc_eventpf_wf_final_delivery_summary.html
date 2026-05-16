@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT - BTC Event-PF/WF Sprint Final Delivery Summary</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #596775;
+      --line: #d7dee8;
+      --navy: #14233b;
+      --bad: #9b1c1c;
+      --warn: #8a5a00;
+      --ok: #126b45;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+    header {
+      background: var(--navy);
+      color: #fff;
+      padding: 24px 28px;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-bottom: 18px;
+      padding: 18px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: #fbfcfe;
+    }
+    .metric strong {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .metric span {
+      display: block;
+      margin-top: 4px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .bad { color: var(--bad); }
+    .warn { color: var(--warn); }
+    .ok { color: var(--ok); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #edf2f7; }
+    code {
+      background: #eef2f7;
+      border-radius: 4px;
+      padding: 1px 4px;
+    }
+    li { margin: 4px 0; }
+    .paths li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>QuantStation VNEXT - BTC Event-PF/WF Sprint Final Delivery Summary</h1>
+    <div>Run ID: 20260516T080000Z_eventpf_wf | Branch: main | Commit: 7c46d07</div>
+  </header>
+  <main>
+    <section>
+      <h2>Final Decision</h2>
+      <div class="grid">
+        <div class="metric"><strong>v4 Gate</strong><span class="bad">candidate_gate_failed</span></div>
+        <div class="metric"><strong>candidate_passed_internal_gate</strong><span>0</span></div>
+        <div class="metric"><strong>PAPER QUEUE</strong><span class="warn">LOCKED</span></div>
+        <div class="metric"><strong>LIVE</strong><span class="bad">FROZEN</span></div>
+      </div>
+      <p><strong>v4 failed internal gate; paper queue remains LOCKED; live remains FROZEN.</strong></p>
+    </section>
+
+    <section>
+      <h2>What Changed</h2>
+      <ul>
+        <li>新增 research-only helper: <code>quant_us/research/btc_eventpf_wf.py</code></li>
+        <li>新增 Event-PF bridge 脚本: <code>scripts/research/build_btc_event_pf_bridge.py</code></li>
+        <li>新增 Walk-forward fold attribution 脚本: <code>scripts/research/build_btc_wf_fold_attribution.py</code></li>
+        <li>新增 Sprint runner: <code>scripts/research/run_btc_eventpf_wf_stabilization.py</code></li>
+        <li>新增 HTML generator: <code>scripts/reports/generate_btc_eventpf_wf_stabilization_html.py</code></li>
+        <li>新增 v4 配置: <code>configs/btc/alpha_stabilization/btc_perp_dual_trend_v4_eventpf_wf.yaml</code></li>
+        <li>新增核心测试 11 组，覆盖 bridge、gate、WF attribution、exit surgery、order-flow keep-out、paper/live safety 和 HTML。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Metrics</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>PF</th>
+            <th>event_PF</th>
+            <th>Sharpe</th>
+            <th>MDD</th>
+            <th>Turnover</th>
+            <th>WF</th>
+            <th>Regime</th>
+            <th>Gate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>btc_perp_dual_trend</td><td>1.2617</td><td>1.0141</td><td>0.3363</td><td>-6.084%</td><td>308%</td><td>75%</td><td>50%</td><td>failed</td></tr>
+          <tr><td>btc_perp_dual_trend_v2</td><td>1.5993</td><td>1.0189</td><td>0.4901</td><td>-7.9128%</td><td>186%</td><td>100%</td><td>50%</td><td>failed</td></tr>
+          <tr><td>btc_perp_dual_trend_v3</td><td>2.0498</td><td>1.0176</td><td>0.4216</td><td>-8.5324%</td><td>105%</td><td>50%</td><td>100%</td><td>failed</td></tr>
+          <tr><td>btc_perp_dual_trend_v4_eventpf_wf</td><td>1.6314</td><td>1.0205</td><td>0.5146</td><td>-7.8350%</td><td>122%</td><td>50%</td><td>100%</td><td>failed</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Event-PF Root Cause</h2>
+      <ul>
+        <li>ordinary PF 来自 closed trade ledger 的 <code>net_pnl</code>，是 diagnostic-only。</li>
+        <li>event_PF 来自 event-ledger hourly equity returns，是 promotion gate 的唯一 PF 口径。</li>
+        <li>v3 closed-trade net PnL: <code>5486.75</code>；ledger net PnL: <code>3847.98</code>；差额 <code>1638.77</code>。</li>
+        <li>v3 期末仍有 BTC open exposure，position value: <code>12823.36</code>。</li>
+        <li>v3 closed trade count: <code>21</code>；fill count: <code>47</code>；partial order count: <code>40</code>。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Walk-Forward Findings</h2>
+      <ul>
+        <li>WF pass rate: <code>0.50</code>，失败 fold: <code>3</code> 和 <code>4</code>。</li>
+        <li>失败源: <code>event_profit_factor</code> 和 <code>total_return</code> 跨时间窗不稳定。</li>
+        <li>v3 单体没有 signal_flip_exit 集中亏损；上一轮 45 笔 flip 亏损来自 baseline/v2/v3 合并归因。</li>
+        <li>long side 仍是当前最可辩护的方向；short side 没有足够 fold-level 证据支持重新放开。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>v4 Rules</h2>
+      <p><strong>采纳:</strong></p>
+      <ul>
+        <li>exit hysteresis / flat-before-reverse safety</li>
+        <li>long-only / high-vol and downtrend short keep-out</li>
+        <li>order-flow diagnostic-only / no_orderflow</li>
+      </ul>
+      <p><strong>拒绝:</strong></p>
+      <ul>
+        <li>强行 order-flow sizing/veto</li>
+        <li>broad short reintroduction</li>
+        <li>short in high_vol_trend without fold support</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Artifacts</h2>
+      <ul class="paths">
+        <li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/event_pf_bridge_report.json</code></li>
+        <li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/walk_forward_fold_attribution.json</code></li>
+        <li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/exit_surgery_ablation_report.json</code></li>
+        <li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/side_regime_ablation_report.json</code></li>
+        <li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/orderflow_keepout_confirmation.json</code></li>
+        <li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/btc_perp_dual_trend_v4_eventpf_wf_results.json</code></li>
+        <li><code>artifacts/btc_canonical/20260516T080000Z_eventpf_wf/promotion_decision.json</code></li>
+        <li><code>reports/quantstation_vnext_btc_eventpf_wf_stabilization_20260516T080000Z_eventpf_wf.html</code></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Tests</h2>
+      <p><strong>Command:</strong></p>
+      <p><code>PYTHONPATH=. pytest tests/research/test_event_pf_bridge_report_schema.py tests/research/test_event_pf_gate_uses_event_pf.py tests/research/test_pf_metric_definition_no_confusion.py tests/research/test_walk_forward_fold_attribution_schema.py tests/research/test_signal_flip_exit_surgery.py tests/research/test_side_regime_ablation_no_lookahead.py tests/research/test_orderflow_not_forced.py tests/research/test_v4_gate_thresholds.py tests/research/test_paper_queue_locked_v4_failed.py tests/research/test_live_frozen_no_side_effects.py tests/reports/test_html_eventpf_wf_report_generation.py -q</code></p>
+      <p><strong>Result:</strong> <code>22 passed in 2.11s</code></p>
+    </section>
+
+    <section>
+      <h2>Repository State</h2>
+      <ul>
+        <li>Plan commit: <code>85c810d</code></li>
+        <li>Sprint commit: <code>7c46d07</code></li>
+        <li>本次 HTML summary commit: pending at generation time</li>
+        <li>删除了无关 untracked 文件: <code>docs/alpha-radar-mvp-3-9-6-delivery-report.html</code></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
