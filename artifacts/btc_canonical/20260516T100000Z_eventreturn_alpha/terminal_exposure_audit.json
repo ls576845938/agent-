@@ -1,0 +1,55 @@
+{
+  "policies": [
+    {
+      "MDD": -7.834999,
+      "PF": 1.631439,
+      "Sharpe": 0.514558,
+      "event_PF": 1.020511,
+      "gate_eligible": true,
+      "liquidation_or_flatten_cost_estimate": 0.0,
+      "net_pnl": 4837.307077,
+      "notes": "Current canonical event-ledger policy.",
+      "open_pnl_included": true,
+      "policy": "mark_to_market_at_end",
+      "terminal_position_value": 7947.858642,
+      "total_return": 0.04837307
+    },
+    {
+      "MDD": -7.834999,
+      "PF": 1.631439,
+      "Sharpe": 0.513911,
+      "event_PF": 1.020486,
+      "gate_eligible": false,
+      "liquidation_or_flatten_cost_estimate": 6.358287,
+      "net_pnl": 4830.94879,
+      "notes": "Diagnostic estimate only because the strategy did not predeclare a force-flat-at-end execution policy.",
+      "open_pnl_included": true,
+      "policy": "force_flat_at_end",
+      "terminal_position_value": 0.0,
+      "total_return": 0.04830949
+    },
+    {
+      "MDD": null,
+      "PF": 1.631439,
+      "Sharpe": null,
+      "event_PF": null,
+      "gate_eligible": false,
+      "liquidation_or_flatten_cost_estimate": 0.0,
+      "net_pnl": 4543.364018,
+      "notes": "Closed-trade PF remains diagnostic-only and cannot be used for promotion.",
+      "open_pnl_included": false,
+      "policy": "closed_trades_only_diagnostic",
+      "terminal_position_value": 0.0,
+      "total_return": 0.04543364
+    }
+  ],
+  "recommended_terminal_policy": {
+    "do_not_select_best_metric": true,
+    "future_experiment_requirement": "If a strategy depends on terminal flattening, the force-flat rule must be declared before the run and executed through event-ledger fills.",
+    "policy": "mark_to_market_at_end_for_current_gate"
+  },
+  "run_id": "20260516T100000Z_eventreturn_alpha",
+  "schema_version": "btc_terminal_exposure_audit_v1",
+  "source_run_id": "20260516T080000Z_eventpf_wf",
+  "strategy_id": "btc_perp_dual_trend_v4_eventpf_wf"
+}

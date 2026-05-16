@@ -1,0 +1,161 @@
+{
+  "alpha_hypothesis_backlog": [
+    {
+      "expected_event_level_edge": "fewer adverse hourly mark-to-market events during confirmed continuation windows",
+      "first_experiment_plan": "rank low-vol uptrend continuations by event-return PF and hold-age decay before creating a strategy candidate",
+      "hypothesis": "BTC long-only event continuation after low-vol uptrend confirmation",
+      "no_lookahead_requirements": "trend and volatility confirmation must use only current and historical bars",
+      "rationale": "Prior attribution showed long exposure in trending_up and low-vol uptrend contexts carries the cleanest positive contribution.",
+      "required_data": [
+        "BTCUSDT 1h OHLCV",
+        "multi-timeframe trend state",
+        "event-ledger fills"
+      ],
+      "stop_condition": "archive if event_PF < 1.10 or failed folds remain concentrated after first pass"
+    },
+    {
+      "expected_event_level_edge": "large positive event-return clusters after expansion onset, with explicit adverse-event stop",
+      "first_experiment_plan": "build a diagnostic breakout label-free signal and evaluate event-return distribution by expansion age",
+      "hypothesis": "BTC compression-to-expansion breakout with event-return objective",
+      "no_lookahead_requirements": "compression thresholds must be expanding or rolling historical quantiles only",
+      "rationale": "Expansion regimes showed high payoff in trade attribution, but must be optimized directly on event returns.",
+      "required_data": [
+        "BTCUSDT OHLCV",
+        "volume/quote volume",
+        "range compression features"
+      ],
+      "stop_condition": "archive if positive event sums are not at least 1.15x negative sums after costs"
+    },
+    {
+      "expected_event_level_edge": "asymmetric positive event-return rebounds after capitulation without broad short exposure",
+      "first_experiment_plan": "profile event returns for post-shock windows before any strategy implementation",
+      "hypothesis": "BTC liquidation-shock recovery continuation",
+      "no_lookahead_requirements": "shock detection must be bar-close only and recovery confirmation must wait for subsequent historical bars",
+      "rationale": "Current trend line avoids shocks, but post-shock continuation may offer a different event-return source.",
+      "required_data": [
+        "BTCUSDT OHLCV",
+        "volume shock state",
+        "liquidation proxy from candle/volume"
+      ],
+      "stop_condition": "archive if rebound edge is single-window only or max drawdown worsens above gate limits"
+    }
+  ],
+  "archive_manifest": {
+    "archive_status": "research_failed",
+    "archived": true,
+    "artifacts_retained": true,
+    "code_retained": true,
+    "reason": "event-return edge too thin for internal gate",
+    "strategy_line": "perp_dual_trend"
+  },
+  "decision": "archive_perp_dual_trend",
+  "evidence_consistency": {
+    "consistent": true,
+    "event_pf_recomputed": 1.020511,
+    "source_event_pf": 1.0205
+  },
+  "failed_fold_action": "archive_alpha",
+  "live_status": "FROZEN",
+  "paper_queue_status": "LOCKED",
+  "previous_v1_v4_metrics": [
+    {
+      "DSR": 1.0,
+      "MDD": -6.084,
+      "PBO": 0.25,
+      "PF": 1.261744,
+      "Sharpe": 0.3363,
+      "WF_pass": 0.75,
+      "annual_turnover": 3.0842,
+      "cost_stress": "pass",
+      "event_PF": 1.0141,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate"
+      ],
+      "fill_count": 158,
+      "gate_status": "candidate_gate_failed",
+      "regime_pass": 0.5,
+      "strategy": "btc_perp_dual_trend",
+      "trade_count": 102
+    },
+    {
+      "DSR": 1.0,
+      "MDD": -7.9128,
+      "PBO": 0.0,
+      "PF": 1.599256,
+      "Sharpe": 0.4901,
+      "WF_pass": 1.0,
+      "annual_turnover": 1.856494,
+      "cost_stress": "pass",
+      "event_PF": 1.0189,
+      "fail_reasons": [
+        "event_profit_factor",
+        "regime_pass_rate"
+      ],
+      "fill_count": 58,
+      "gate_status": "candidate_gate_failed",
+      "regime_pass": 0.5,
+      "strategy": "btc_perp_dual_trend_v2",
+      "trade_count": 42
+    },
+    {
+      "DSR": 1.0,
+      "MDD": -8.5324,
+      "PBO": 0.5,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "WF_pass": 0.5,
+      "annual_turnover": 1.051634,
+      "cost_stress": "pass",
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "regime_pass": 1.0,
+      "strategy": "btc_perp_dual_trend_v3",
+      "trade_count": 21
+    },
+    {
+      "DSR": 1.0,
+      "MDD": -7.835,
+      "PBO": 0.5,
+      "PF": 1.631439,
+      "Sharpe": 0.5146,
+      "WF_pass": 0.5,
+      "annual_turnover": 1.215925,
+      "cost_stress": "pass",
+      "event_PF": 1.0205,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 49,
+      "gate_status": "candidate_gate_failed",
+      "regime_pass": 1.0,
+      "strategy": "btc_perp_dual_trend_v4_eventpf_wf",
+      "trade_count": 24
+    }
+  ],
+  "reasons": [
+    "event_PF is constrained by near-balanced positive and negative hourly event returns rather than by ordinary closed-trade aggregation alone",
+    "terminal exposure explains part of PF/event_PF divergence but does not create a gate-passing candidate",
+    "failed folds 3 and 4 do not expose one robust, no-lookahead rule that would plausibly lift event_PF to 1.15",
+    "order-flow and exit surgery had already failed to solve event_PF in the previous sprint"
+  ],
+  "run_id": "20260516T100000Z_eventreturn_alpha",
+  "schema_version": "btc_alpha_renewal_decision_v1",
+  "source_run_id": "20260516T080000Z_eventpf_wf",
+  "status": "research_failed",
+  "strategy_line": "perp_dual_trend",
+  "terminal_policy": {
+    "do_not_select_best_metric": true,
+    "future_experiment_requirement": "If a strategy depends on terminal flattening, the force-flat rule must be declared before the run and executed through event-ledger fills.",
+    "policy": "mark_to_market_at_end_for_current_gate"
+  },
+  "v5_generated": false,
+  "v5_generation_blocked_reason": "No cross-fold stable event-return failure pattern was found. Event_PF remains near 1.02 after v4, and fold 3/4 failures are mark-to-market alpha absence rather than a clean rule defect."
+}

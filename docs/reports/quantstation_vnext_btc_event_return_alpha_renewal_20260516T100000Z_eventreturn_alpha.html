@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT - BTC Event-Return Attribution and Alpha Renewal Report</title>
+  <style>
+    :root { --bg:#f6f8fb; --panel:#fff; --ink:#17202a; --muted:#596775; --line:#d7dee8; --navy:#14233b; --bad:#9b1c1c; --warn:#8a5a00; --ok:#126b45; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:Arial, Helvetica, sans-serif; line-height:1.5; }
+    header { background:var(--navy); color:#fff; padding:24px 28px; }
+    main { max-width:1180px; margin:0 auto; padding:22px; }
+    section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:18px; margin-bottom:18px; }
+    h1 { margin:0 0 8px; font-size:26px; }
+    h2 { margin:0 0 12px; font-size:20px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px; }
+    .metric { border:1px solid var(--line); border-radius:6px; padding:10px; background:#fbfcfe; }
+    .metric strong { display:block; color:var(--muted); font-size:13px; }
+    .metric span { display:block; margin-top:4px; font-size:20px; font-weight:700; }
+    .bad { color:var(--bad); } .warn { color:var(--warn); } .ok { color:var(--ok); }
+    table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+    th, td { border:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top; }
+    th { background:#edf2f7; }
+    code { background:#eef2f7; border-radius:4px; padding:1px 4px; }
+    li { margin:4px 0; }
+    .paths li { overflow-wrap:anywhere; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>QuantStation VNEXT - BTC Event-Return Attribution and Alpha Renewal Report</h1>
+  <div>Run ID: 20260516T100000Z_eventreturn_alpha</div>
+</header>
+<main>
+  <section>
+    <h2>Safety Status</h2>
+    <div class="grid">
+      <div class="metric"><strong>candidate_passed_internal_gate count</strong><span>0</span></div>
+      <div class="metric"><strong>PAPER QUEUE</strong><span class="warn">LOCKED</span></div>
+      <div class="metric"><strong>LIVE</strong><span class="bad">FROZEN</span></div>
+      <div class="metric"><strong>Alpha Renewal Decision</strong><span>archive_perp_dual_trend</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Executive Summary</h2>
+    <p><strong>perp_dual_trend archived; paper queue remains LOCKED; live remains FROZEN.</strong></p>
+    <ul>
+      <li>event_PF was not solved; it remains near 1.0205 from hourly ledger returns.</li>
+      <li>perp_dual_trend is archived as research_failed.</li>
+      <li>No v5 was generated because no stable, rule-fixable event-return pattern was found.</li>
+      <li>Paper remains locked and live remains frozen.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Previous Sprint Recap</h2>
+    <table><thead><tr><th>strategy</th><th>PF</th><th>event_PF</th><th>Sharpe</th><th>MDD</th><th>annual_turnover</th><th>WF_pass</th><th>regime_pass</th><th>gate_status</th><th>fail_reasons</th></tr></thead><tbody><tr><td>btc_perp_dual_trend</td><td>1.261744</td><td>1.0141</td><td>0.3363</td><td>-6.084</td><td>3.0842</td><td>0.75</td><td>0.5</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;, &#x27;regime_pass_rate&#x27;]</td></tr><tr><td>btc_perp_dual_trend_v2</td><td>1.599256</td><td>1.0189</td><td>0.4901</td><td>-7.9128</td><td>1.856494</td><td>1.0</td><td>0.5</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;regime_pass_rate&#x27;]</td></tr><tr><td>btc_perp_dual_trend_v3</td><td>2.049816</td><td>1.0176</td><td>0.4216</td><td>-8.5324</td><td>1.051634</td><td>0.5</td><td>1.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td></tr><tr><td>btc_perp_dual_trend_v4_eventpf_wf</td><td>1.631439</td><td>1.0205</td><td>0.5146</td><td>-7.835</td><td>1.215925</td><td>0.5</td><td>1.0</td><td>candidate_gate_failed</td><td>[&#x27;event_profit_factor&#x27;, &#x27;walk_forward_pass_rate&#x27;]</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Event-Return Attribution</h2>
+    <div class="grid">
+      <div class="metric"><strong>event_PF recomputed</strong><span>1.0205</span></div>
+      <div class="metric"><strong>source event_PF</strong><span>1.0205</span></div>
+      <div class="metric"><strong>positive events</strong><span>9235</span></div>
+      <div class="metric"><strong>negative events</strong><span>8947</span></div>
+    </div>
+    <h3>Root Cause Summary</h3>
+    <ul><li>event_PF stays near 1.0205 because positive event-return sum (2.446523) barely exceeds negative event-return sum (2.397350).</li><li>negative events are primarily mark-to-market while exposed: 8618 of 8947 negative events occur with non-flat exposure.</li><li>fees and estimated slippage in the event-return table are small relative to negative event PnL (297.51 vs 254813.66), so costs are not the main blocker.</li><li>closed-trade PF is high because trades aggregate long holding campaigns; event_PF penalizes the adverse hourly path inside those campaigns.</li></ul>
+    <h3>By Fold</h3>
+    <table><thead><tr><th>fold_id</th><th>event_count</th><th>event_PF</th><th>signed_event_pnl</th><th>positive_event_sum</th><th>negative_event_sum</th></tr></thead><tbody><tr><td>1</td><td>3448</td><td>1.161409</td><td>5166.941005</td><td>0.3560943743</td><td>-0.3066053797</td></tr><tr><td>2</td><td>3448</td><td>1.064637</td><td>2808.163778</td><td>0.4286710631</td><td>-0.4026452469</td></tr><tr><td>out_of_wf</td><td>6896</td><td>1.043724</td><td>2460.944978</td><td>0.5923924928</td><td>-0.5675760282</td></tr><tr><td>4</td><td>3448</td><td>0.965699</td><td>-1792.487319</td><td>0.4669230502</td><td>-0.4835076222</td></tr><tr><td>3</td><td>3448</td><td>0.945725</td><td>-3806.255365</td><td>0.6024415236</td><td>-0.6370152786</td></tr></tbody></table>
+    <h3>By Regime</h3>
+    <table><thead><tr><th>regime</th><th>event_count</th><th>event_PF</th><th>signed_event_pnl</th></tr></thead><tbody><tr><td>trending_up</td><td>5040</td><td>1.270606</td><td>14613.0246</td></tr><tr><td>compression</td><td>2788</td><td>1.267928</td><td>4447.914646</td></tr><tr><td>high_vol_trend</td><td>1263</td><td>1.101979</td><td>2976.10587</td></tr><tr><td>expansion</td><td>857</td><td>1.13688</td><td>1925.805705</td></tr><tr><td>nan</td><td>1</td><td>0.0</td><td>-21.221242</td></tr><tr><td>liquidation_shock</td><td>160</td><td>0.639844</td><td>-1485.541258</td></tr><tr><td>mean_reverting_chop</td><td>4710</td><td>0.960432</td><td>-2264.170852</td></tr><tr><td>low_vol_chop</td><td>2199</td><td>0.845937</td><td>-4473.601301</td></tr></tbody></table>
+    <h3>By Side</h3>
+    <table><thead><tr><th>position_side</th><th>event_count</th><th>event_PF</th><th>signed_event_pnl</th></tr></thead><tbody><tr><td>long</td><td>17547</td><td>1.020787</td><td>4904.421623</td></tr><tr><td>flat</td><td>3141</td><td>0.27919</td><td>-67.114546</td></tr></tbody></table>
+    <h3>Top Negative Events</h3>
+    <table><thead><tr><th>timestamp</th><th>event_return</th><th>signed_event_pnl</th><th>position_side</th><th>exposure</th><th>regime</th><th>fold_id</th><th>holding_age_bucket</th></tr></thead><tbody><tr><td>2024-03-15 02:00:00+00:00</td><td>-0.006962555757050182</td><td>-732.215544000006</td><td>long</td><td>0.17982311492198233</td><td>mean_reverting_chop</td><td>out_of_wf</td><td>over_1m</td></tr><tr><td>2024-11-13 19:00:00+00:00</td><td>-0.004818826571337587</td><td>-522.1242619999975</td><td>long</td><td>0.19727321840935655</td><td>high_vol_trend</td><td>1</td><td>over_1m</td></tr><tr><td>2024-11-01 15:00:00+00:00</td><td>-0.004452246648712799</td><td>-459.98974100001215</td><td>long</td><td>0.16022263703853898</td><td>trending_up</td><td>1</td><td>over_1m</td></tr><tr><td>2024-02-29 17:00:00+00:00</td><td>-0.004291557357065989</td><td>-441.18388300000515</td><td>long</td><td>0.19695252552546563</td><td>high_vol_trend</td><td>out_of_wf</td><td>1w_to_1m</td></tr><tr><td>2025-05-21 17:00:00+00:00</td><td>-0.004229851493845582</td><td>-460.97686700000486</td><td>long</td><td>0.1768413598837094</td><td>mean_reverting_chop</td><td>2</td><td>over_1m</td></tr><tr><td>2025-12-01 00:00:00+00:00</td><td>-0.004212060368144144</td><td>-450.4820749999926</td><td>long</td><td>0.10690656264670079</td><td>expansion</td><td>3</td><td>over_1m</td></tr><tr><td>2024-04-13 20:00:00+00:00</td><td>-0.004042498686604334</td><td>-417.5593780000054</td><td>long</td><td>0.08481867178660579</td><td>high_vol_trend</td><td>out_of_wf</td><td>3d_to_7d</td></tr><tr><td>2026-01-21 16:00:00+00:00</td><td>-0.0038771874816133645</td><td>-414.09581599998637</td><td>long</td><td>0.12956368816297326</td><td>trending_down</td><td>4</td><td>over_1m</td></tr><tr><td>2025-10-10 20:00:00+00:00</td><td>-0.003803219713648498</td><td>-420.12826399999904</td><td>long</td><td>0.1356869503006181</td><td>trending_down</td><td>3</td><td>over_1m</td></tr><tr><td>2024-02-29 00:00:00+00:00</td><td>-0.003514898791790788</td><td>-361.5312430000049</td><td>long</td><td>0.19800011152179126</td><td>high_vol_trend</td><td>out_of_wf</td><td>1w_to_1m</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Terminal Exposure Audit</h2>
+    <table><thead><tr><th>policy</th><th>net_pnl</th><th>event_PF</th><th>PF</th><th>Sharpe</th><th>MDD</th><th>total_return</th><th>terminal_position_value</th><th>open_pnl_included</th><th>liquidation_or_flatten_cost_estimate</th><th>gate_eligible</th></tr></thead><tbody><tr><td>mark_to_market_at_end</td><td>4837.307077</td><td>1.020511</td><td>1.631439</td><td>0.514558</td><td>-7.834999</td><td>0.04837307</td><td>7947.858642</td><td>True</td><td>0.0</td><td>True</td></tr><tr><td>force_flat_at_end</td><td>4830.94879</td><td>1.020486</td><td>1.631439</td><td>0.513911</td><td>-7.834999</td><td>0.04830949</td><td>0.0</td><td>True</td><td>6.358287</td><td>False</td></tr><tr><td>closed_trades_only_diagnostic</td><td>4543.364018</td><td>None</td><td>1.631439</td><td>None</td><td>None</td><td>0.04543364</td><td>0.0</td><td>False</td><td>0.0</td><td>False</td></tr></tbody></table>
+    <p>Recommended terminal policy: <code>mark_to_market_at_end_for_current_gate</code></p>
+  </section>
+
+  <section>
+    <h2>Failed Fold Autopsy</h2>
+    <table><thead><tr><th>fold_id</th><th>start_date</th><th>end_date</th><th>event_PF</th><th>total_return</th><th>max_drawdown</th><th>event_count</th><th>negative_event_count</th><th>whether_failure_is_rule_fixable</th><th>recommended_action</th></tr></thead><tbody><tr><td>3</td><td>2025-07-28 17:00:00+00:00</td><td>2025-12-19 08:00:00+00:00</td><td>0.945725</td><td>-0.0344657</td><td>-5.235909</td><td>3448</td><td>1709</td><td>False</td><td>archive_alpha</td></tr><tr><td>4</td><td>2025-12-19 09:00:00+00:00</td><td>2026-05-12 00:00:00+00:00</td><td>0.965699</td><td>-0.01681038</td><td>-4.635047</td><td>3448</td><td>1723</td><td>False</td><td>archive_alpha</td></tr></tbody></table>
+    <h3>Root Causes</h3>
+    <ul><li>Fold 3 and fold 4 both fail through event-return mark-to-market losses while carrying long exposure.</li><li>The losses are not explained primarily by fees, slippage, funding, signal flips, or broad short exposure.</li><li>The failure pattern is time-window dependent and too weakly concentrated to justify a single stable rule patch.</li></ul>
+  </section>
+
+  <section>
+    <h2>Alpha Renewal Decision</h2>
+    <p>Decision: <strong>archive_perp_dual_trend</strong></p>
+    <p>v5 generated: <strong>False</strong></p>
+    <ul><li>event_PF is constrained by near-balanced positive and negative hourly event returns rather than by ordinary closed-trade aggregation alone</li><li>terminal exposure explains part of PF/event_PF divergence but does not create a gate-passing candidate</li><li>failed folds 3 and 4 do not expose one robust, no-lookahead rule that would plausibly lift event_PF to 1.15</li><li>order-flow and exit surgery had already failed to solve event_PF in the previous sprint</li></ul>
+  </section>
+
+  <section>
+    <h2>Optional v5 Result</h2>
+    <p>No v5 config or result was generated. Block reason: No cross-fold stable event-return failure pattern was found. Event_PF remains near 1.02 after v4, and fold 3/4 failures are mark-to-market alpha absence rather than a clean rule defect.</p>
+  </section>
+
+  <section>
+    <h2>Alpha Hypothesis Backlog</h2>
+    <table><thead><tr><th>hypothesis</th><th>rationale</th><th>expected_event_level_edge</th><th>first_experiment_plan</th><th>stop_condition</th></tr></thead><tbody><tr><td>BTC long-only event continuation after low-vol uptrend confirmation</td><td>Prior attribution showed long exposure in trending_up and low-vol uptrend contexts carries the cleanest positive contribution.</td><td>fewer adverse hourly mark-to-market events during confirmed continuation windows</td><td>rank low-vol uptrend continuations by event-return PF and hold-age decay before creating a strategy candidate</td><td>archive if event_PF &lt; 1.10 or failed folds remain concentrated after first pass</td></tr><tr><td>BTC compression-to-expansion breakout with event-return objective</td><td>Expansion regimes showed high payoff in trade attribution, but must be optimized directly on event returns.</td><td>large positive event-return clusters after expansion onset, with explicit adverse-event stop</td><td>build a diagnostic breakout label-free signal and evaluate event-return distribution by expansion age</td><td>archive if positive event sums are not at least 1.15x negative sums after costs</td></tr><tr><td>BTC liquidation-shock recovery continuation</td><td>Current trend line avoids shocks, but post-shock continuation may offer a different event-return source.</td><td>asymmetric positive event-return rebounds after capitulation without broad short exposure</td><td>profile event returns for post-shock windows before any strategy implementation</td><td>archive if rebound edge is single-window only or max drawdown worsens above gate limits</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Tests</h2>
+    <p><strong>Command:</strong> <code>PYTHONPATH=. pytest tests/research/test_event_return_attribution_schema.py tests/research/test_event_pf_from_event_returns.py tests/research/test_terminal_exposure_audit.py tests/research/test_failed_fold_autopsy_schema.py tests/research/test_alpha_renewal_decision.py tests/research/test_v5_optional_generation_guard.py tests/research/test_v5_gate_thresholds.py tests/research/test_paper_queue_locked_eventreturn.py tests/research/test_live_frozen_eventreturn_no_side_effects.py tests/reports/test_event_return_html_generation.py -q</code></p>
+    <p><strong>Result:</strong> <code>19 passed, 2 warnings in 1.57s</code></p>
+    <p><strong>Skipped full suite reason:</strong> Full suite was not run in this sprint turn because the requested acceptance path was the focused BTC event-return alpha-renewal test set; broader tests were not modified.</p>
+  </section>
+
+  <section>
+    <h2>Artifacts</h2>
+    <ul class="paths">
+      <li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/alpha_renewal_decision.json</code></li><li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/event_return_attribution.json</code></li><li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/event_return_table.csv</code></li><li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/event_return_table.parquet</code></li><li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/failed_fold_autopsy.json</code></li><li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/paper_live_safety_status.json</code></li><li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/perp_dual_trend_archive_manifest.json</code></li><li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/promotion_decision.json</code></li><li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/run_manifest.json</code></li><li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/terminal_exposure_audit.json</code></li><li><code>artifacts/btc_canonical/20260516T100000Z_eventreturn_alpha/test_results.json</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Final Decision</h2>
+    <p><strong>perp_dual_trend archived; paper queue remains LOCKED; live remains FROZEN.</strong></p>
+  </section>
+</main>
+</body>
+</html>
