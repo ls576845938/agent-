@@ -354,7 +354,7 @@ def test_btc_cost_stress_reuses_crypto_event_execution_config(monkeypatch) -> No
         "min_cash_buffer_pct": 0.1,
         "min_trade_notional": 25.0,
         "rebalance_buffer_pct": 0.05,
-        "long_only": True,
+        "long_only": False,
     }
 
 
@@ -674,6 +674,56 @@ def test_qualify_crypto_candidates_selects_highest_ranked_qualified_candidate_st
 
     assert [row["strategy_id"] for row in result["candidates"]] == ["higher_ranked", "lower_ranked"]
     assert result["selected_candidates"][0]["strategy_id"] == "higher_ranked"
+
+
+def test_qualify_crypto_candidates_requires_event_ledger_summary_edge() -> None:
+    candidate = {
+        "strategy_id": "btc_orderflow_pressure",
+        "score": 3.0,
+        "validation": {
+            "total_return_pct": 9.0,
+            "sharpe_ratio": 1.4,
+            "profit_factor": 1.5,
+            "max_drawdown_pct": -5.0,
+            "trade_count": 20,
+        },
+    }
+    event_weak = {
+        "summary": {
+            "total_return_pct": 8.0,
+            "sharpe_ratio": 1.1,
+            "profit_factor": 1.04,
+            "max_drawdown_pct": -4.0,
+            "trade_count": 18,
+        },
+        "diagnostics": {
+            "engine": "event_driven",
+            "pnl_source": "ledger_fills",
+            "ledger_equity_consistent": True,
+        },
+    }
+    cost_ok = {"engine": "event_driven", "survival_rate_pct": 100.0, "ledger_consistency_pct": 100.0}
+    walk_ok = {
+        "stability": {
+            "fold_pass_rate_pct": 100.0,
+            "ledger_consistency_pct": 100.0,
+            "regime_pass_rate_pct": 100.0,
+        }
+    }
+
+    result = qualify_crypto_candidates(
+        [candidate],
+        cost_stress_by_candidate={"btc_orderflow_pressure": cost_ok},
+        walk_forward_by_candidate={"btc_orderflow_pressure": walk_ok},
+        event_backtest_by_candidate={"btc_orderflow_pressure": event_weak},
+        max_selected=1,
+    )
+
+    row = result["candidates"][0]
+    assert row["qualified"] is False
+    assert row["selected"] is False
+    assert result["selected_count"] == 0
+    assert "event backtest profit_factor < 1.15" in row["qualification_blockers"]
 
 
 def test_qualify_crypto_candidates_applies_runtime_turnover_holding_and_cost_filters() -> None:

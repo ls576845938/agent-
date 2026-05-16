@@ -89,7 +89,7 @@ class _StubResearchService:
         self.crypto_event_request = dict(request)
         return BacktestArtifacts(
             mode="crypto_event",
-            summary={"trade_count": 2, "total_return_pct": 4.0, "profit_factor": 1.5, "sharpe_ratio": 1.2, "max_drawdown_pct": -4.0},
+            summary={"trade_count": 12, "total_return_pct": 4.0, "profit_factor": 1.5, "sharpe_ratio": 1.2, "max_drawdown_pct": -4.0},
             chart={},
             strategy_details=[],
             latest_weights=[],

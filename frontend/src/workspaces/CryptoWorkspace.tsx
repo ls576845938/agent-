@@ -256,7 +256,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
       position_basis: form.positionBasis,
       data_db_path: form.dataDbPath,
       target_intervals: cryptoIntervalOrder.slice(1),
-      strategy_ids: ['btc_low_turnover_trend', 'btc_trend_pullback', 'btc_vol_breakout', 'btc_regime_trend', 'btc_low_turnover_breakout', 'trend_macd', 'donchian_breakout', 'reversion_rsi', 'volatility_squeeze', 'funding_sentiment', 'macro_trend', 'dynamic_grid', 'time_window'],
+      strategy_ids: ['btc_low_turnover_trend', 'btc_trend_pullback', 'btc_vol_breakout', 'btc_regime_trend', 'btc_low_turnover_breakout', 'btc_compression_breakout', 'btc_capitulation_rebound', 'btc_perp_dual_trend', 'btc_orderflow_pressure', 'trend_macd', 'donchian_breakout', 'reversion_rsi', 'volatility_squeeze', 'funding_sentiment', 'macro_trend', 'dynamic_grid', 'time_window'],
       max_candidates_per_strategy: 4,
       max_ranked_candidates: 12,
       validation_candidate_count: 4,

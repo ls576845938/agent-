@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
 
 import pandas as pd
 
@@ -161,6 +162,19 @@ def test_btc_new_strategy_families_have_optimizer_parameter_grids() -> None:
         "btc_vol_breakout": {"breakout_window", "vol_window", "max_volatility", "volume_mult"},
         "btc_regime_trend": {"fast_ma", "slow_ma", "regime_ma", "momentum_threshold"},
         "btc_low_turnover_breakout": {"entry_window", "exit_window", "trend_ma", "max_volatility"},
+        "btc_compression_breakout": {"breakout_window", "compression_window", "compression_recent_bars", "volume_mult"},
+        "btc_capitulation_rebound": {"drawdown_window", "pullback_pct", "entry_rsi", "recovery_ma"},
+        "btc_perp_dual_trend": {"fast_ma", "slow_ma", "regime_ma", "orderflow_pressure_threshold", "bad_regime_cooldown_bars"},
+        "btc_orderflow_pressure": {
+            "fast_ma",
+            "slow_ma",
+            "buy_ratio_threshold",
+            "pressure_threshold",
+            "downtrend_low_vol_filter_enabled",
+            "low_volatility_risk_off_enabled",
+            "downtrend_risk_off_enabled",
+            "rangebound_risk_off_enabled",
+        },
     }
 
     for strategy_id, keys in expected_keys.items():
@@ -393,6 +407,111 @@ def test_walk_forward_regime_failure_analysis_groups_failed_windows() -> None:
     assert analysis["by_trend_state"][regime["trend_state"]] == 1
     assert analysis["by_volatility_state"][regime["volatility_state"]] == 1
     assert analysis["by_reason"]["negative_oos_return"] == 1
+
+
+def test_crypto_walk_forward_respects_request_long_only_and_keeps_default_true(monkeypatch, tmp_path) -> None:
+    start = datetime(2026, 5, 1, 0, 0, tzinfo=UTC)
+    frame = pd.DataFrame(
+        [
+            {
+                "timestamp": start + timedelta(hours=offset),
+                "symbol": "BTCUSDT",
+                "open": 100.0 + offset * 0.2,
+                "high": 101.0 + offset * 0.2,
+                "low": 99.0 + offset * 0.2,
+                "close": 100.5 + offset * 0.2,
+                "volume": 1_000_000.0,
+            }
+            for offset in range(80)
+        ]
+    ).set_index("timestamp")
+    captured_long_only: list[bool] = []
+
+    monkeypatch.setattr(backtest_service_module, "load_market_frame", lambda **kwargs: frame.copy())
+    monkeypatch.setattr(backtest_service_module, "_build_regime_slices", lambda **kwargs: [])
+
+    import quant_us.backtest.crypto_event as crypto_event_module
+    import quant_us.backtest.walk_forward as walk_forward_module
+
+    def fake_crypto_execution_settings(**kwargs):
+        captured_long_only.append(bool(kwargs["long_only"]))
+        return SimpleNamespace(**kwargs)
+
+    def fake_with_crypto_execution_config(unified_config, execution_settings):
+        return unified_config
+
+    def fake_run_walk_forward_unified(*, bars, strategy_factory, wf_config, unified_config):
+        window = SimpleNamespace(
+            train_start=bars[0].timestamp_utc,
+            train_end=bars[50].timestamp_utc,
+            test_start=bars[51].timestamp_utc,
+            test_end=bars[-1].timestamp_utc,
+        )
+        unified = SimpleNamespace(
+            summary={
+                "total_return_pct": 1.0,
+                "sharpe_ratio": 0.5,
+                "max_drawdown_pct": -2.0,
+            },
+            equity_consistent=True,
+            manifest_path=str(tmp_path / "fold.json"),
+        )
+        return [SimpleNamespace(window=window, unified=unified)]
+
+    monkeypatch.setattr(crypto_event_module, "_crypto_execution_settings", fake_crypto_execution_settings)
+    monkeypatch.setattr(crypto_event_module, "_with_crypto_execution_config", fake_with_crypto_execution_config)
+    monkeypatch.setattr(walk_forward_module, "run_walk_forward_unified", fake_run_walk_forward_unified)
+
+    service = ResearchBacktestService()
+    default_result = service.run_walk_forward(
+        {
+            "source": "sqlite",
+            "asset_class": "crypto",
+            "symbol": "BTCUSDT",
+            "symbols": ["BTCUSDT"],
+            "interval": "1h",
+            "start": start,
+            "end": start + timedelta(hours=80),
+            "strategy_id": "btc_perp_dual_trend",
+            "strategy_params": {"signal_scale": 0.0},
+            "capital": 100_000.0,
+            "commission_rate": 0.0004,
+            "slippage": 4.0,
+            "target_weight": 0.85,
+            "min_cash_buffer_pct": 0.10,
+            "min_trade_notional": 50.0,
+            "rebalance_buffer_pct": 0.07,
+            "windows": 2,
+            "data_root": str(tmp_path),
+        }
+    )
+    short_enabled_result = service.run_walk_forward(
+        {
+            "source": "sqlite",
+            "asset_class": "crypto",
+            "symbol": "BTCUSDT",
+            "symbols": ["BTCUSDT"],
+            "interval": "1h",
+            "start": start,
+            "end": start + timedelta(hours=80),
+            "strategy_id": "btc_perp_dual_trend",
+            "strategy_params": {"signal_scale": 0.0},
+            "capital": 100_000.0,
+            "commission_rate": 0.0004,
+            "slippage": 4.0,
+            "target_weight": 0.85,
+            "min_cash_buffer_pct": 0.10,
+            "min_trade_notional": 50.0,
+            "rebalance_buffer_pct": 0.07,
+            "long_only": False,
+            "windows": 2,
+            "data_root": str(tmp_path),
+        }
+    )
+
+    assert default_result["status"] == "completed"
+    assert short_enabled_result["status"] == "completed"
+    assert captured_long_only == [True, False]
 
 
 def test_vector_simulation_turnover_guard_does_not_block_initial_entry() -> None:

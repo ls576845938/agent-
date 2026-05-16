@@ -31,7 +31,7 @@ def interval_to_frequency(interval: str) -> str:
     return mapping[interval]
 
 
-def _normalize_frame(frame: pd.DataFrame) -> pd.DataFrame:
+def _normalize_frame(frame: pd.DataFrame, *, include_optional: bool = False) -> pd.DataFrame:
     required = ["timestamp", "open", "high", "low", "close", "volume"]
     missing = [column for column in required if column not in frame.columns]
     if missing:
@@ -43,7 +43,16 @@ def _normalize_frame(frame: pd.DataFrame) -> pd.DataFrame:
     data = data[(data["open"] > 0) & (data["high"] > 0) & (data["low"] > 0) & (data["close"] > 0)]
     data = data[data["high"] >= data["low"]]
     data = data.set_index("timestamp")
-    return data[["open", "high", "low", "close", "volume"]]
+    columns = ["open", "high", "low", "close", "volume"]
+    if include_optional:
+        optional = [
+            "quote_volume",
+            "trade_count",
+            "taker_buy_base_volume",
+            "taker_buy_quote_volume",
+        ]
+        columns += [column for column in optional if column in data.columns]
+    return data[columns]
 
 
 def load_from_sqlite(
@@ -70,7 +79,8 @@ def load_from_sqlite(
         ).fetchone()
         if table_row:
             query = (
-                "SELECT open_time AS timestamp, open, high, low, close, volume "
+                "SELECT open_time AS timestamp, open, high, low, close, volume, "
+                "quote_volume, trade_count, taker_buy_base_volume, taker_buy_quote_volume "
                 "FROM market_klines "
                 "WHERE exchange = ? AND symbol = ? AND interval = ? "
                 "AND open_time_ms >= ? AND open_time_ms <= ? "
@@ -98,7 +108,7 @@ def load_from_sqlite(
                 params=(target.strftime("%Y-%m-%d %H:%M:%S"), cutoff.strftime("%Y-%m-%d %H:%M:%S")),
             )
 
-    data = _normalize_frame(frame)
+    data = _normalize_frame(frame, include_optional=True)
     if data.empty:
         raise DataNotAvailableError("No market data found in the requested SQLite range.")
     return data

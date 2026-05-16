@@ -27,6 +27,10 @@ DEFAULT_CRYPTO_STRATEGIES = [
     "btc_vol_breakout",
     "btc_regime_trend",
     "btc_low_turnover_breakout",
+    "btc_compression_breakout",
+    "btc_capitulation_rebound",
+    "btc_perp_dual_trend",
+    "btc_orderflow_pressure",
     "trend_macd",
     "donchian_breakout",
     "reversion_rsi",
@@ -330,7 +334,7 @@ class CryptoClosureService:
             "max_annual_turnover_pct": float(request.get("max_annual_turnover_pct", 1500.0)),
             "event_ledger_screen": bool(request.get("event_ledger_screen", True)),
             "event_ledger_screen_top_n": int(request.get("event_ledger_screen_top_n", 1)),
-            "long_only": True,
+            "long_only": bool(request.get("long_only", True)),
             "data_db_path": str(request.get("data_db_path", "")),
         }
 
@@ -631,6 +635,18 @@ class CryptoClosureService:
             "strategy_version": walk_forward.get("audit", {}).get("strategy_version", audit_context["strategy_version"]),
             "run_id_prefix": walk_forward.get("audit", {}).get("run_id_prefix", audit_context["run_id_prefix"]),
         }
+        cpcv_config_count = int(cpcv.get("config_count", 0) or 0)
+        if cpcv_config_count <= 0:
+            cpcv_config_count = max(
+                1,
+                len(
+                    {
+                        str(item.get("config_id", ""))
+                        for item in cpcv.get("pbo_trials", []) or []
+                        if isinstance(item, dict) and str(item.get("config_id", ""))
+                    }
+                ),
+            )
         metrics = {
             **dict(candidate.get("validation", {}) or {}),
             "bar_count": int(cpcv.get("bar_count", 0) or 0),
@@ -644,8 +660,9 @@ class CryptoClosureService:
             "n_splits": int(cpcv.get("n_splits", 0) or 0),
             "test_splits": int(cpcv.get("test_splits", 0) or 0),
             "combination_count": int(cpcv.get("combination_count", 0) or 0),
-            "trial_count": int(cpcv.get("trial_count", 0) or 0),
-            "independent_trial_count": int(cpcv.get("trial_count", 0) or 0),
+            "trial_count": cpcv_config_count,
+            "independent_trial_count": cpcv_config_count,
+            "pbo_trial_count": int(cpcv.get("trial_count", 0) or 0),
             "lookahead_guard": str(cpcv.get("lookahead_guard", "")),
             "wf_fold_sharpes": list(cpcv.get("fold_sharpes", []) or []),
             "wf_fold_drawdowns": list(cpcv.get("fold_drawdowns", []) or []),

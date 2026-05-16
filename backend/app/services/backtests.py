@@ -14,7 +14,11 @@ import pandas as pd
 from backend.app.core.config import settings
 from backend.app.domain.models import BacktestArtifacts, StrategyDescriptor, TradeMarker
 from backend.app.domain.risk import DrawdownCircuitBreaker, KellySizer, OrthogonalizationEngine, VolatilityScaler, clamp
-from backend.app.domain.strategy_registry import _confirmed_stateful_long_signal, strategy_registry
+from backend.app.domain.strategy_registry import (
+    _confirmed_stateful_directional_signal,
+    _confirmed_stateful_long_signal,
+    strategy_registry,
+)
 from backend.app.services.market_data import load_market_frame
 from quant_us.core.enums import SignalDirection
 from quant_us.core.events import MarketEvent
@@ -608,6 +612,16 @@ def _prepare_strategy_pack_for_target_window(
                 cooldown_bars=int(config.get("cooldown_bars", 0)),
                 max_hold_bars=int(config.get("max_hold_bars", 0)),
             )
+        elif "target_signal" in diagnostics:
+            signal = _confirmed_stateful_directional_signal(
+                target_index,
+                target_signal=diagnostics["target_signal"].reindex(target_index).fillna(0.0),
+                min_hold_bars=int(config.get("min_hold_bars", 0)),
+                cooldown_bars=int(config.get("cooldown_bars", 0)),
+                max_hold_bars=int(config.get("max_hold_bars", 0)),
+            )
+            signal_scale = min(1.0, max(0.0, float(config.get("signal_scale", 1.0))))
+            signal = (signal * signal_scale).clip(-1.0, 1.0)
         packs[strategy_id] = signal.fillna(0.0).clip(-1.0, 1.0)
         descriptors[strategy_id] = strategy.descriptor
     return packs, descriptors
@@ -773,6 +787,352 @@ def _candidate_parameter_grid(strategy_id: str) -> list[dict[str, float]]:
             for buffer in [0.0, 0.0075]
             for entry_confirm, exit_confirm, min_hold, cooldown in [(1, 4, 120, 48), (2, 6, 240, 96)]
         ],
+        "btc_compression_breakout": [
+            {
+                "breakout_window": 72,
+                "compression_window": 168,
+                "compression_quantile": 0.50,
+                "compression_recent_bars": 96,
+                "vol_expansion_window": 24,
+                "vol_expansion_mult": 0.75,
+                "range_expansion_mult": 0.85,
+                "trend_ma": 240,
+                "trend_strength": 0.0,
+                "momentum_window": 48,
+                "momentum_threshold": 0.005,
+                "volume_window": 48,
+                "volume_mult": 0.80,
+                "exit_window": 72,
+                "exit_ma": 72,
+                "exit_momentum_floor": -0.02,
+                "max_volatility": 0.07,
+                "entry_confirm_bars": 1,
+                "exit_confirm_bars": 3,
+                "min_hold_bars": 48,
+                "cooldown_bars": 24,
+            },
+            {
+                "breakout_window": 96,
+                "compression_window": 168,
+                "compression_quantile": 0.35,
+                "compression_recent_bars": 72,
+                "vol_expansion_window": 24,
+                "vol_expansion_mult": 0.90,
+                "range_expansion_mult": 0.95,
+                "trend_ma": 336,
+                "trend_strength": 0.01,
+                "momentum_window": 48,
+                "momentum_threshold": 0.01,
+                "volume_window": 48,
+                "volume_mult": 0.90,
+                "exit_window": 96,
+                "exit_ma": 96,
+                "exit_momentum_floor": -0.015,
+                "max_volatility": 0.06,
+                "entry_confirm_bars": 1,
+                "exit_confirm_bars": 4,
+                "min_hold_bars": 72,
+                "cooldown_bars": 36,
+            },
+            {
+                "breakout_window": 168,
+                "compression_window": 240,
+                "compression_quantile": 0.50,
+                "compression_recent_bars": 120,
+                "vol_expansion_window": 48,
+                "vol_expansion_mult": 0.80,
+                "range_expansion_mult": 0.90,
+                "trend_ma": 480,
+                "trend_strength": 0.015,
+                "momentum_window": 96,
+                "momentum_threshold": 0.015,
+                "volume_window": 72,
+                "volume_mult": 0.80,
+                "exit_window": 120,
+                "exit_ma": 120,
+                "exit_momentum_floor": -0.02,
+                "max_volatility": 0.055,
+                "entry_confirm_bars": 2,
+                "exit_confirm_bars": 4,
+                "min_hold_bars": 96,
+                "cooldown_bars": 48,
+            },
+            {
+                "breakout_window": 72,
+                "compression_window": 96,
+                "compression_quantile": 0.60,
+                "compression_recent_bars": 48,
+                "vol_expansion_window": 12,
+                "vol_expansion_mult": 0.70,
+                "range_expansion_mult": 0.80,
+                "trend_ma": 168,
+                "trend_strength": 0.0,
+                "momentum_window": 24,
+                "momentum_threshold": 0.003,
+                "volume_window": 24,
+                "volume_mult": 0.75,
+                "exit_window": 48,
+                "exit_ma": 48,
+                "exit_momentum_floor": -0.025,
+                "max_volatility": 0.08,
+                "entry_confirm_bars": 1,
+                "exit_confirm_bars": 3,
+                "min_hold_bars": 36,
+                "cooldown_bars": 18,
+            },
+        ],
+        "btc_capitulation_rebound": [
+            {
+                "drawdown_window": 48,
+                "pullback_pct": 0.025,
+                "rsi_window": 10,
+                "entry_rsi": 30,
+                "rebound_window": 1,
+                "rebound_threshold": -0.003,
+                "volume_window": 24,
+                "volume_mult": 0.50,
+                "regime_window": 336,
+                "min_regime_return": 0.0,
+                "recovery_ma": 72,
+                "exit_rsi": 60,
+                "intrabar_recovery": 0.55,
+                "close_recovery_threshold": -0.002,
+                "stop_drawdown": 0.15,
+                "entry_confirm_bars": 1,
+                "exit_confirm_bars": 2,
+                "min_hold_bars": 3,
+                "cooldown_bars": 6,
+                "max_hold_bars": 96,
+            },
+            {
+                "drawdown_window": 72,
+                "pullback_pct": 0.04,
+                "rsi_window": 14,
+                "entry_rsi": 35,
+                "rebound_window": 3,
+                "rebound_threshold": 0.0,
+                "volume_window": 48,
+                "volume_mult": 0.70,
+                "regime_window": 336,
+                "min_regime_return": -0.10,
+                "recovery_ma": 48,
+                "exit_rsi": 55,
+                "intrabar_recovery": 0.60,
+                "close_recovery_threshold": 0.0,
+                "stop_drawdown": 0.18,
+                "entry_confirm_bars": 1,
+                "exit_confirm_bars": 2,
+                "min_hold_bars": 6,
+                "cooldown_bars": 12,
+                "max_hold_bars": 72,
+            },
+            {
+                "drawdown_window": 120,
+                "pullback_pct": 0.06,
+                "rsi_window": 14,
+                "entry_rsi": 38,
+                "rebound_window": 6,
+                "rebound_threshold": 0.003,
+                "volume_window": 48,
+                "volume_mult": 0.80,
+                "regime_window": 720,
+                "min_regime_return": -0.20,
+                "recovery_ma": 72,
+                "exit_rsi": 58,
+                "intrabar_recovery": 0.55,
+                "close_recovery_threshold": -0.001,
+                "stop_drawdown": 0.22,
+                "entry_confirm_bars": 1,
+                "exit_confirm_bars": 3,
+                "min_hold_bars": 12,
+                "cooldown_bars": 24,
+                "max_hold_bars": 120,
+            },
+        ],
+        "btc_perp_dual_trend": [
+            {
+                "short_enabled": 1.0,
+                "fast_ma": 72,
+                "slow_ma": 336,
+                "regime_ma": 720,
+                "momentum_window": 168,
+                "momentum_threshold": 0.025,
+                "vol_window": 168,
+                "max_volatility": 0.055,
+                "orderflow_filter_enabled": 1.0,
+                "orderflow_pressure_window": 72,
+                "orderflow_buy_ratio_threshold": 0.535,
+                "orderflow_sell_ratio_threshold": 0.465,
+                "orderflow_pressure_threshold": 0.005,
+                "orderflow_activity_window": 72,
+                "orderflow_min_quote_intensity": 0.70,
+                "orderflow_min_trade_intensity": 0.70,
+                "bad_regime_filter_enabled": 1.0,
+                "bad_regime_spread_floor": 0.004,
+                "bad_regime_momentum_floor": 0.01,
+                "bad_regime_volatility_multiplier": 1.25,
+                "bad_regime_reentry_spread": 0.0075,
+                "bad_regime_reentry_momentum": 0.015,
+                "bad_regime_reentry_volatility_multiplier": 0.90,
+                "bad_regime_cooldown_bars": 48,
+                "signal_scale": 0.20,
+                "min_hold_bars": 72,
+                "cooldown_bars": 24,
+                "max_hold_bars": 720,
+            },
+            {
+                "short_enabled": 1.0,
+                "fast_ma": 96,
+                "slow_ma": 336,
+                "regime_ma": 720,
+                "momentum_window": 168,
+                "momentum_threshold": 0.025,
+                "vol_window": 168,
+                "max_volatility": 0.05,
+                "orderflow_filter_enabled": 1.0,
+                "orderflow_pressure_window": 72,
+                "orderflow_buy_ratio_threshold": 0.54,
+                "orderflow_sell_ratio_threshold": 0.46,
+                "orderflow_pressure_threshold": 0.0075,
+                "orderflow_activity_window": 72,
+                "orderflow_min_quote_intensity": 0.75,
+                "orderflow_min_trade_intensity": 0.70,
+                "bad_regime_filter_enabled": 1.0,
+                "bad_regime_spread_floor": 0.005,
+                "bad_regime_momentum_floor": 0.012,
+                "bad_regime_volatility_multiplier": 1.15,
+                "bad_regime_reentry_spread": 0.009,
+                "bad_regime_reentry_momentum": 0.02,
+                "bad_regime_reentry_volatility_multiplier": 0.85,
+                "bad_regime_cooldown_bars": 72,
+                "signal_scale": 0.20,
+                "min_hold_bars": 96,
+                "cooldown_bars": 24,
+                "max_hold_bars": 480,
+            },
+            {
+                "short_enabled": 1.0,
+                "fast_ma": 72,
+                "slow_ma": 168,
+                "regime_ma": 480,
+                "momentum_window": 48,
+                "momentum_threshold": 0.0,
+                "vol_window": 96,
+                "max_volatility": 0.07,
+                "orderflow_filter_enabled": 1.0,
+                "orderflow_pressure_window": 48,
+                "orderflow_buy_ratio_threshold": 0.525,
+                "orderflow_sell_ratio_threshold": 0.475,
+                "orderflow_pressure_threshold": 0.0025,
+                "orderflow_activity_window": 48,
+                "orderflow_min_quote_intensity": 0.65,
+                "orderflow_min_trade_intensity": 0.65,
+                "bad_regime_filter_enabled": 1.0,
+                "bad_regime_spread_floor": 0.003,
+                "bad_regime_momentum_floor": 0.0075,
+                "bad_regime_volatility_multiplier": 1.35,
+                "bad_regime_reentry_spread": 0.006,
+                "bad_regime_reentry_momentum": 0.01,
+                "bad_regime_reentry_volatility_multiplier": 0.95,
+                "bad_regime_cooldown_bars": 24,
+                "signal_scale": 0.25,
+                "min_hold_bars": 48,
+                "cooldown_bars": 24,
+                "max_hold_bars": 336,
+            },
+            {
+                "short_enabled": 1.0,
+                "fast_ma": 120,
+                "slow_ma": 336,
+                "regime_ma": 720,
+                "momentum_window": 240,
+                "momentum_threshold": 0.03,
+                "vol_window": 240,
+                "max_volatility": 0.05,
+                "orderflow_filter_enabled": 1.0,
+                "orderflow_pressure_window": 96,
+                "orderflow_buy_ratio_threshold": 0.545,
+                "orderflow_sell_ratio_threshold": 0.455,
+                "orderflow_pressure_threshold": 0.0075,
+                "orderflow_activity_window": 96,
+                "orderflow_min_quote_intensity": 0.80,
+                "orderflow_min_trade_intensity": 0.75,
+                "bad_regime_filter_enabled": 1.0,
+                "bad_regime_spread_floor": 0.006,
+                "bad_regime_momentum_floor": 0.015,
+                "bad_regime_volatility_multiplier": 1.10,
+                "bad_regime_reentry_spread": 0.01,
+                "bad_regime_reentry_momentum": 0.025,
+                "bad_regime_reentry_volatility_multiplier": 0.85,
+                "bad_regime_cooldown_bars": 96,
+                "signal_scale": 0.20,
+                "min_hold_bars": 72,
+                "cooldown_bars": 24,
+                "max_hold_bars": 720,
+            },
+        ],
+        "btc_orderflow_pressure": [
+            {
+                "short_enabled": 1.0,
+                "fast_ma": 72,
+                "slow_ma": 336,
+                "regime_ma": 720,
+                "momentum_window": 168,
+                "momentum_threshold": 0.02,
+                "pressure_window": 72,
+                "buy_ratio_threshold": 0.525,
+                "sell_ratio_threshold": 0.475,
+                "pressure_threshold": 0.005,
+                "activity_window": 72,
+                "min_quote_intensity": 0.70,
+                "min_trade_intensity": 0.70,
+                "vol_window": 168,
+                "max_volatility": 0.055,
+                "downtrend_low_vol_filter_enabled": 1.0,
+                "low_vol_baseline_window": 720,
+                "downtrend_low_vol_ratio": 0.80,
+                "downtrend_low_vol_momentum_ceiling": 0.0,
+                "low_volatility_risk_off_enabled": 1.0,
+                "low_volatility_risk_off_ratio": 0.85,
+                "downtrend_risk_off_enabled": 1.0,
+                "rangebound_risk_off_enabled": 0.0,
+                "rangebound_trend_strength_floor": 0.01,
+                "signal_scale": 0.20,
+                "min_hold_bars": 72,
+                "cooldown_bars": 24,
+                "max_hold_bars": 720,
+            },
+            {
+                "short_enabled": 1.0,
+                "fast_ma": 72,
+                "slow_ma": 336,
+                "regime_ma": 720,
+                "momentum_window": 168,
+                "momentum_threshold": 0.025,
+                "pressure_window": 72,
+                "buy_ratio_threshold": 0.525,
+                "sell_ratio_threshold": 0.475,
+                "pressure_threshold": 0.010,
+                "activity_window": 72,
+                "min_quote_intensity": 0.80,
+                "min_trade_intensity": 0.70,
+                "vol_window": 168,
+                "max_volatility": 0.055,
+                "downtrend_low_vol_filter_enabled": 1.0,
+                "low_vol_baseline_window": 720,
+                "downtrend_low_vol_ratio": 0.80,
+                "downtrend_low_vol_momentum_ceiling": 0.0,
+                "low_volatility_risk_off_enabled": 1.0,
+                "low_volatility_risk_off_ratio": 0.80,
+                "downtrend_risk_off_enabled": 1.0,
+                "rangebound_risk_off_enabled": 0.0,
+                "rangebound_trend_strength_floor": 0.01,
+                "signal_scale": 0.20,
+                "min_hold_bars": 72,
+                "cooldown_bars": 24,
+                "max_hold_bars": 720,
+            },
+        ],
         "reversion_rsi": [
             {"rsi_window": rsi_window, "boll_window": boll_window, "boll_dev": boll_dev, "rsi_long": 30, "rsi_short": 70, "rsi_exit_low": 45, "rsi_exit_high": 55}
             for rsi_window in [10, 14, 21]
@@ -888,7 +1248,7 @@ def _runtime_penalized_optimization_score(
     max_turnover = max(1.0, float(runtime_hints.get("max_annual_turnover_pct", 5000.0) or 5000.0))
     min_holding = max(1.0, float(runtime_hints.get("min_holding_bars", 5) or 5.0))
 
-    turnover_penalty = min(0.3, max(0.0, turnover / max_turnover - 1.0) * 0.2)
+    turnover_penalty = min(1.5, max(0.0, turnover / max_turnover - 1.0) * 0.9)
     holding_penalty = min(0.2, max(0.0, min_holding - avg_holding_bars) / min_holding * 0.15)
     cost_penalty = min(0.25, cost_sensitivity * 0.12)
     return round(base_score - turnover_penalty - holding_penalty - cost_penalty, 6)
@@ -977,7 +1337,7 @@ def _run_event_ledger_optimizer_screen(
         ),
         min_trade_notional=float(request.get("min_trade_notional", 25.0)),
         rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", config.rebalance_buffer_pct)),
-        long_only=True,
+        long_only=bool(request.get("long_only", True)),
         run_id=f"{run_id}_{row_rank}",
     )
     return {
@@ -1280,11 +1640,13 @@ def _build_regime_slices(
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     min_rows = max(20, int(len(frame) * 0.05))
+    full_signals, _ = _prepare_strategy_pack(frame, [strategy_id], params_map={strategy_id: strategy_params})
+    full_signal = full_signals[strategy_id]
     for name, label, mask in _market_regime_masks(frame):
         regime_frame = frame.loc[mask].copy()
         if len(regime_frame) < min_rows:
             continue
-        signals, _ = _prepare_strategy_pack(regime_frame, [strategy_id], params_map={strategy_id: strategy_params})
+        signals = {strategy_id: full_signal.reindex(regime_frame.index).fillna(0.0)}
         result = _simulate(frame=regime_frame, config=config, weights={strategy_id: 1.0}, signals=signals)
         rows.append(
             {
@@ -2170,6 +2532,7 @@ class ResearchBacktestService:
         from quant_us.strategies.base import Strategy, StrategyContext
 
         strategy_id = request["strategy_id"]
+        long_only = bool(request.get("long_only", True))
         requested_params = dict(request.get("strategy_params", {}) or {})
         requested_windows = int(request.get("windows", 4))
         data_version = str(request.get("data_version", ""))
@@ -2283,7 +2646,7 @@ class ResearchBacktestService:
                     min_cash_buffer_pct=float(request.get("min_cash_buffer_pct", 0.0)),
                     min_trade_notional=float(request.get("min_trade_notional", 25.0)),
                     rebalance_buffer_pct=float(request.get("rebalance_buffer_pct", 0.05)),
-                    long_only=True,
+                    long_only=long_only,
                 )
                 unified_config = _with_crypto_execution_config(
                     unified_config,
@@ -2506,6 +2869,11 @@ class ResearchBacktestService:
         selected_folds: list[dict[str, Any]] = []
         fold_returns: list[float] = []
         selected_key = _stable_params_key(selected_params)
+        full_signal_by_key: dict[str, pd.Series] = {}
+        for params in candidate_params:
+            params_key = _stable_params_key(params)
+            signals, _ = _prepare_strategy_pack(frame, [strategy_id], params_map={strategy_id: params})
+            full_signal_by_key[params_key] = signals[strategy_id]
 
         for path_index, test_group_ids in enumerate(path_combinations, start=1):
             test_positions = sorted(
@@ -2531,16 +2899,9 @@ class ResearchBacktestService:
 
             for config_index, params in enumerate(candidate_params, start=1):
                 config_id = f"{strategy_id}_cfg_{config_index:02d}"
-                train_signals, _ = _prepare_strategy_pack(train_frame, [strategy_id], params_map={strategy_id: params})
-                if strategy_id.startswith("btc_"):
-                    test_signals, _ = _prepare_strategy_pack_for_target_window(
-                        context_frame=frame,
-                        target_frame=test_frame,
-                        strategy_ids=[strategy_id],
-                        params_map={strategy_id: params},
-                    )
-                else:
-                    test_signals, _ = _prepare_strategy_pack(test_frame, [strategy_id], params_map={strategy_id: params})
+                full_signal = full_signal_by_key[_stable_params_key(params)]
+                train_signals = {strategy_id: full_signal.reindex(train_frame.index).fillna(0.0)}
+                test_signals = {strategy_id: full_signal.reindex(test_frame.index).fillna(0.0)}
                 train_result = _simulate(frame=train_frame, config=config, weights={strategy_id: 1.0}, signals=train_signals)
                 test_result = _simulate(frame=test_frame, config=config, weights={strategy_id: 1.0}, signals=test_signals)
                 train_summary = train_result.summary
@@ -2825,7 +3186,7 @@ class ResearchBacktestService:
         target_weight = min(0.98, max(0.0, float(request.get("target_weight", 0.90 if is_crypto else 0.10))))
         min_cash_buffer_pct = request.get("min_cash_buffer_pct")
         min_trade_notional = float(request.get("min_trade_notional", 25.0))
-        long_only = True if is_crypto else bool(request.get("long_only", True))
+        long_only = bool(request.get("long_only", True))
 
         scenarios = _cost_stress_scenarios(int(request.get("max_scenarios", 5)))
         results: list[dict[str, Any]] = []

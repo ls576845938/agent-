@@ -481,6 +481,7 @@ class TestResearchAutomationPipeline(unittest.TestCase):
                 "total_return_pct": 0.24,
                 "gross_total_return_pct": 0.28,
                 "trial_count": 6,
+                "lookahead_guard": "passed_next_bar_execution",
                 "daily_returns": [
                     0.012,
                     0.008,
@@ -693,6 +694,7 @@ class TestResearchAutomationPipeline(unittest.TestCase):
                     "schema_version": "research_walk_forward_result_v2",
                     "status": "completed",
                     "validation_method": "cpcv",
+                    "lookahead_guard": "passed_next_bar_execution",
                     "purged": True,
                     "embargo_bars": 2,
                     "n_splits": 4,

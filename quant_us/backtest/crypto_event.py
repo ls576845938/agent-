@@ -556,6 +556,18 @@ def _crypto_candidate_blockers(
             blockers.append("event backtest PnL is not ledger_fills")
         if event_diagnostics.get("ledger_equity_consistent") is not True:
             blockers.append("event backtest ledger consistency was not proven")
+    event_summary = event_backtest.get("summary")
+    if isinstance(event_summary, dict) and event_summary:
+        if float(event_summary.get("total_return_pct", 0.0)) <= thresholds.min_total_return_pct:
+            blockers.append("event backtest total_return is not positive")
+        if float(event_summary.get("sharpe_ratio", 0.0)) < thresholds.min_validation_sharpe:
+            blockers.append(f"event backtest sharpe < {thresholds.min_validation_sharpe}")
+        if float(event_summary.get("profit_factor", 0.0)) < thresholds.min_profit_factor:
+            blockers.append(f"event backtest profit_factor < {thresholds.min_profit_factor}")
+        if float(event_summary.get("max_drawdown_pct", -100.0)) < thresholds.max_drawdown_pct_floor:
+            blockers.append(f"event backtest max_drawdown < {thresholds.max_drawdown_pct_floor}%")
+        if int(event_summary.get("trade_count", 0)) < thresholds.min_trade_count:
+            blockers.append(f"event backtest trade_count < {thresholds.min_trade_count}")
 
     if not cost_stress:
         blockers.append("missing cost stress result")

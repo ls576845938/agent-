@@ -32,6 +32,18 @@ def _frame_from_closes(closes: list[float]) -> pd.DataFrame:
     return pd.DataFrame(rows).set_index("timestamp")
 
 
+def _with_order_flow(frame: pd.DataFrame, buy_ratios: list[float] | None = None) -> pd.DataFrame:
+    enriched = frame.copy()
+    if buy_ratios is None:
+        buy_ratios = [0.5 for _ in range(len(enriched))]
+    ratios = pd.Series(buy_ratios, index=enriched.index, dtype=float).clip(0.0, 1.0)
+    enriched["quote_volume"] = enriched["close"] * enriched["volume"]
+    enriched["trade_count"] = 1_000
+    enriched["taker_buy_base_volume"] = enriched["volume"] * ratios
+    enriched["taker_buy_quote_volume"] = enriched["quote_volume"] * ratios
+    return enriched
+
+
 def _turnover(signal: pd.Series) -> float:
     return signal.diff().abs().fillna(signal.abs()).sum()
 
@@ -342,6 +354,52 @@ def test_btc_new_strategy_families_are_registered_and_long_only() -> None:
             "min_hold_bars": 1,
             "cooldown_bars": 0,
         },
+        "btc_compression_breakout": {
+            "breakout_window": 4,
+            "compression_window": 4,
+            "compression_quantile": 1.0,
+            "compression_recent_bars": 8,
+            "vol_expansion_window": 2,
+            "vol_expansion_mult": 0.10,
+            "range_expansion_mult": 0.10,
+            "trend_ma": 4,
+            "trend_strength": 0.0,
+            "momentum_window": 2,
+            "momentum_threshold": 0.0,
+            "volume_window": 3,
+            "volume_mult": 0.5,
+            "exit_window": 3,
+            "exit_ma": 4,
+            "exit_momentum_floor": -0.20,
+            "max_volatility": 1.0,
+            "entry_confirm_bars": 1,
+            "exit_confirm_bars": 1,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+        },
+        "btc_capitulation_rebound": {
+            "regime_filter_enabled": 0.0,
+            "drawdown_window": 4,
+            "pullback_pct": -1.0,
+            "rsi_window": 3,
+            "entry_rsi": 100,
+            "rebound_window": 1,
+            "rebound_threshold": -1.0,
+            "volume_window": 3,
+            "volume_mult": 0.0,
+            "regime_window": 4,
+            "min_regime_return": -1.0,
+            "recovery_ma": 6,
+            "exit_rsi": 100,
+            "intrabar_recovery": 0.0,
+            "close_recovery_threshold": -1.0,
+            "stop_drawdown": 1.0,
+            "entry_confirm_bars": 1,
+            "exit_confirm_bars": 1,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+            "max_hold_bars": 4,
+        },
     }
     closes = [
         100.0,
@@ -433,6 +491,52 @@ def test_btc_new_strategy_families_do_not_use_future_data() -> None:
             "min_hold_bars": 1,
             "cooldown_bars": 0,
         },
+        "btc_compression_breakout": {
+            "breakout_window": 5,
+            "compression_window": 4,
+            "compression_quantile": 1.0,
+            "compression_recent_bars": 8,
+            "vol_expansion_window": 3,
+            "vol_expansion_mult": 0.10,
+            "range_expansion_mult": 0.10,
+            "trend_ma": 8,
+            "trend_strength": 0.0,
+            "momentum_window": 3,
+            "momentum_threshold": 0.0,
+            "volume_window": 3,
+            "volume_mult": 0.5,
+            "exit_window": 3,
+            "exit_ma": 5,
+            "exit_momentum_floor": -0.20,
+            "max_volatility": 1.0,
+            "entry_confirm_bars": 1,
+            "exit_confirm_bars": 1,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+        },
+        "btc_capitulation_rebound": {
+            "regime_filter_enabled": 0.0,
+            "drawdown_window": 5,
+            "pullback_pct": -1.0,
+            "rsi_window": 3,
+            "entry_rsi": 100,
+            "rebound_window": 1,
+            "rebound_threshold": -1.0,
+            "volume_window": 3,
+            "volume_mult": 0.0,
+            "regime_window": 5,
+            "min_regime_return": -1.0,
+            "recovery_ma": 5,
+            "exit_rsi": 100,
+            "intrabar_recovery": 0.0,
+            "close_recovery_threshold": -1.0,
+            "stop_drawdown": 1.0,
+            "entry_confirm_bars": 1,
+            "exit_confirm_bars": 1,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+            "max_hold_bars": 4,
+        },
     }
     base = _frame_from_closes([100.0 + idx for idx in range(24)])
     mutated = base.copy()
@@ -447,3 +551,397 @@ def test_btc_new_strategy_families_do_not_use_future_data() -> None:
         mutated_signal = strategy.generate(mutated, params=params).signal
 
         pd.testing.assert_series_equal(base_signal.iloc[:16], mutated_signal.iloc[:16])
+
+
+def test_btc_compression_breakout_waits_for_compression_then_breakout() -> None:
+    strategy = strategy_registry.get("btc_compression_breakout")
+    frame = _frame_from_closes(
+        [
+            100.00,
+            100.02,
+            100.01,
+            100.03,
+            100.02,
+            100.04,
+            100.03,
+            100.05,
+            100.04,
+            100.06,
+            104.00,
+            106.50,
+            108.00,
+            107.50,
+            109.00,
+        ]
+    )
+    pack = strategy.generate(
+        frame,
+        params={
+            "regime_filter_enabled": 0.0,
+            "breakout_window": 4,
+            "compression_window": 4,
+            "compression_quantile": 1.0,
+            "compression_recent_bars": 8,
+            "vol_expansion_window": 2,
+            "vol_expansion_mult": 0.10,
+            "range_expansion_mult": 0.10,
+            "trend_ma": 4,
+            "trend_strength": 0.0,
+            "momentum_window": 2,
+            "momentum_threshold": 0.0,
+            "volume_window": 3,
+            "volume_mult": 0.5,
+            "exit_window": 3,
+            "exit_ma": 4,
+            "exit_momentum_floor": -0.20,
+            "max_volatility": 1.0,
+            "entry_confirm_bars": 1,
+            "exit_confirm_bars": 1,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+        },
+    )
+
+    assert set(pack.signal.unique()) <= {0.0, 1.0}
+    assert pack.signal.iloc[:10].sum() == 0.0
+    assert pack.signal.max() == 1.0
+    assert pack.diagnostics["compression_recent"].iloc[8] == 1.0
+    assert pack.diagnostics["entry_ready"].max() == 1.0
+
+
+def test_btc_capitulation_rebound_requires_drawdown_and_recovery() -> None:
+    strategy = strategy_registry.get("btc_capitulation_rebound")
+    frame = _frame_from_closes(
+        [
+            100.0,
+            103.0,
+            106.0,
+            110.0,
+            108.0,
+            104.0,
+            99.0,
+            101.5,
+            103.0,
+            105.0,
+        ]
+    )
+    pack = strategy.generate(
+        frame,
+        params={
+            "regime_filter_enabled": 0.0,
+            "drawdown_window": 4,
+            "pullback_pct": 0.05,
+            "rsi_window": 3,
+            "entry_rsi": 60,
+            "rebound_window": 1,
+            "rebound_threshold": 0.0,
+            "volume_window": 3,
+            "volume_mult": 0.5,
+            "regime_window": 4,
+            "min_regime_return": -1.0,
+            "recovery_ma": 4,
+            "exit_rsi": 80,
+            "intrabar_recovery": 0.40,
+            "close_recovery_threshold": -0.001,
+            "stop_drawdown": 0.20,
+            "entry_confirm_bars": 1,
+            "exit_confirm_bars": 1,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+            "max_hold_bars": 4,
+        },
+    )
+
+    assert set(pack.signal.unique()) <= {0.0, 1.0}
+    assert pack.signal.iloc[:7].sum() == 0.0
+    assert pack.signal.max() == 1.0
+    assert pack.diagnostics["drawdown"].iloc[7] < -0.05
+    assert pack.diagnostics["entry_ready"].max() == 1.0
+
+
+def test_btc_perp_dual_trend_can_emit_long_and_short_research_signals() -> None:
+    strategy = strategy_registry.get("btc_perp_dual_trend")
+    closes = [100.0 + 2.0 * idx for idx in range(12)] + [124.0 - 2.5 * idx for idx in range(1, 18)]
+    buy_ratios = [0.70 for _ in range(12)] + [0.30 for _ in range(17)]
+    frame = _with_order_flow(_frame_from_closes(closes), buy_ratios)
+    pack = strategy.generate(
+        frame,
+        params={
+            "short_enabled": 1.0,
+            "fast_ma": 2,
+            "slow_ma": 4,
+            "regime_ma": 6,
+            "momentum_window": 2,
+            "momentum_threshold": 0.0,
+            "vol_window": 2,
+            "max_volatility": 1.0,
+            "orderflow_filter_enabled": 1.0,
+            "orderflow_pressure_window": 2,
+            "orderflow_buy_ratio_threshold": 0.60,
+            "orderflow_sell_ratio_threshold": 0.40,
+            "orderflow_pressure_threshold": 0.0,
+            "orderflow_activity_window": 2,
+            "orderflow_min_quote_intensity": 0.0,
+            "orderflow_min_trade_intensity": 0.0,
+            "bad_regime_filter_enabled": 0.0,
+            "signal_scale": 1.0,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+            "max_hold_bars": 0,
+        },
+    )
+
+    assert set(pack.signal.unique()) <= {-1.0, 0.0, 1.0}
+    assert pack.signal.max() == 1.0
+    assert pack.signal.min() == -1.0
+    assert pack.diagnostics["orderflow_filter_active"].iloc[-1] == 1.0
+    assert pack.diagnostics["orderflow_buy_ratio"].iloc[6] == 0.70
+    assert pack.diagnostics["long_ready"].max() == 1.0
+    assert pack.diagnostics["short_ready"].max() == 1.0
+
+
+def test_btc_perp_dual_trend_does_not_use_future_data() -> None:
+    strategy = strategy_registry.get("btc_perp_dual_trend")
+    base = _with_order_flow(_frame_from_closes([100.0 + idx for idx in range(30)]), [0.65 for _ in range(30)])
+    mutated = base.copy()
+    mutated.loc[mutated.index[20]:, "close"] = [150.0 - idx * 4.0 for idx in range(10)]
+    mutated.loc[:, "open"] = mutated["close"]
+    mutated.loc[:, "high"] = mutated["close"] * 1.01
+    mutated.loc[:, "low"] = mutated["close"] * 0.99
+    mutated.loc[mutated.index[20]:, "taker_buy_base_volume"] = mutated.loc[mutated.index[20]:, "volume"] * 0.30
+    mutated.loc[:, "quote_volume"] = mutated["close"] * mutated["volume"]
+    params = {
+        "short_enabled": 1.0,
+        "fast_ma": 3,
+        "slow_ma": 5,
+        "regime_ma": 8,
+        "momentum_window": 3,
+        "momentum_threshold": 0.0,
+        "vol_window": 3,
+        "max_volatility": 0.30,
+        "orderflow_filter_enabled": 1.0,
+        "orderflow_pressure_window": 3,
+        "orderflow_buy_ratio_threshold": 0.60,
+        "orderflow_sell_ratio_threshold": 0.40,
+        "orderflow_pressure_threshold": 0.0,
+        "orderflow_activity_window": 3,
+        "orderflow_min_quote_intensity": 0.0,
+        "orderflow_min_trade_intensity": 0.0,
+        "bad_regime_filter_enabled": 1.0,
+        "bad_regime_spread_floor": 0.005,
+        "bad_regime_momentum_floor": 0.01,
+        "bad_regime_volatility_multiplier": 1.0,
+        "bad_regime_reentry_spread": 0.01,
+        "bad_regime_reentry_momentum": 0.02,
+        "bad_regime_reentry_volatility_multiplier": 0.90,
+        "bad_regime_cooldown_bars": 2,
+        "signal_scale": 1.0,
+        "min_hold_bars": 1,
+        "cooldown_bars": 0,
+        "max_hold_bars": 0,
+    }
+    base_signal = strategy.generate(base, params=params).signal
+    mutated_signal = strategy.generate(mutated, params=params).signal
+
+    pd.testing.assert_series_equal(base_signal.iloc[:20], mutated_signal.iloc[:20])
+
+
+def test_btc_perp_dual_trend_bad_regime_forces_flat_and_reentry_cooldown() -> None:
+    strategy = strategy_registry.get("btc_perp_dual_trend")
+    frame = _with_order_flow(
+        _frame_from_closes(
+            [
+                100.0,
+                102.0,
+                104.0,
+                106.0,
+                108.0,
+                110.0,
+                110.10,
+                110.15,
+                110.12,
+                110.14,
+                112.0,
+                114.0,
+                116.0,
+            ]
+        ),
+        [0.70 for _ in range(13)],
+    )
+    pack = strategy.generate(
+        frame,
+        params={
+            "short_enabled": 0.0,
+            "fast_ma": 2,
+            "slow_ma": 4,
+            "regime_ma": 6,
+            "momentum_window": 2,
+            "momentum_threshold": 0.0,
+            "vol_window": 2,
+            "max_volatility": 1.0,
+            "orderflow_filter_enabled": 1.0,
+            "orderflow_pressure_window": 2,
+            "orderflow_buy_ratio_threshold": 0.55,
+            "orderflow_sell_ratio_threshold": 0.45,
+            "orderflow_pressure_threshold": 0.0,
+            "orderflow_activity_window": 2,
+            "orderflow_min_quote_intensity": 0.0,
+            "orderflow_min_trade_intensity": 0.0,
+            "bad_regime_filter_enabled": 1.0,
+            "bad_regime_spread_floor": 0.01,
+            "bad_regime_momentum_floor": 0.01,
+            "bad_regime_volatility_multiplier": 10.0,
+            "bad_regime_reentry_spread": 0.015,
+            "bad_regime_reentry_momentum": 0.01,
+            "bad_regime_reentry_volatility_multiplier": 1.0,
+            "bad_regime_cooldown_bars": 2,
+            "signal_scale": 1.0,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+            "max_hold_bars": 0,
+        },
+    )
+
+    assert pack.diagnostics["bad_regime_trigger"].iloc[8] == 1.0
+    assert pack.diagnostics["bad_regime_risk_off"].iloc[8] == 1.0
+    assert pack.signal.iloc[8] == 0.0
+    assert pack.signal.iloc[10] == 0.0
+    assert pack.diagnostics["bad_regime_risk_off"].iloc[-1] == 0.0
+    assert pack.signal.iloc[-1] == 1.0
+
+
+def test_btc_perp_dual_trend_defaults_to_scaled_research_exposure() -> None:
+    strategy = strategy_registry.get("btc_perp_dual_trend")
+    frame = _frame_from_closes([100.0 + 2.0 * idx for idx in range(20)])
+    pack = strategy.generate(
+        frame,
+        params={
+            "fast_ma": 2,
+            "slow_ma": 4,
+            "regime_ma": 6,
+            "momentum_window": 2,
+            "momentum_threshold": 0.0,
+            "vol_window": 2,
+            "max_volatility": 1.0,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+            "max_hold_bars": 0,
+        },
+    )
+
+    assert pack.diagnostics["raw_signal"].max() == 1.0
+    assert pack.signal.max() == strategy.descriptor.default_params["signal_scale"]
+    assert pack.diagnostics["signal_scale"].iloc[-1] == strategy.descriptor.default_params["signal_scale"]
+
+
+def test_btc_orderflow_pressure_can_emit_long_and_short_research_signals() -> None:
+    strategy = strategy_registry.get("btc_orderflow_pressure")
+    closes = [100.0 + 2.0 * idx for idx in range(12)] + [124.0 - 2.5 * idx for idx in range(1, 18)]
+    buy_ratios = [0.70 for _ in range(12)] + [0.30 for _ in range(17)]
+    frame = _with_order_flow(_frame_from_closes(closes), buy_ratios)
+    pack = strategy.generate(
+        frame,
+        params={
+            "short_enabled": 1.0,
+            "fast_ma": 2,
+            "slow_ma": 4,
+            "regime_ma": 6,
+            "momentum_window": 2,
+            "momentum_threshold": 0.0,
+            "pressure_window": 2,
+            "buy_ratio_threshold": 0.60,
+            "sell_ratio_threshold": 0.40,
+            "pressure_threshold": 0.0,
+            "activity_window": 2,
+            "min_quote_intensity": 0.0,
+            "min_trade_intensity": 0.0,
+            "vol_window": 2,
+            "max_volatility": 1.0,
+            "downtrend_low_vol_filter_enabled": 0.0,
+            "low_volatility_risk_off_enabled": 0.0,
+            "downtrend_risk_off_enabled": 0.0,
+            "rangebound_risk_off_enabled": 0.0,
+            "signal_scale": 1.0,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+            "max_hold_bars": 0,
+        },
+    )
+
+    assert set(pack.signal.unique()) <= {-1.0, 0.0, 1.0}
+    assert pack.signal.max() == 1.0
+    assert pack.signal.min() == -1.0
+    assert pack.diagnostics["buy_ratio"].iloc[6] == 0.70
+    assert pack.diagnostics["long_ready"].max() == 1.0
+    assert pack.diagnostics["short_ready"].max() == 1.0
+
+
+def test_btc_orderflow_pressure_does_not_use_future_data() -> None:
+    strategy = strategy_registry.get("btc_orderflow_pressure")
+    base = _with_order_flow(_frame_from_closes([100.0 + idx for idx in range(30)]), [0.65 for _ in range(30)])
+    mutated = base.copy()
+    mutated.loc[mutated.index[20]:, "close"] = [150.0 - idx * 4.0 for idx in range(10)]
+    mutated.loc[:, "open"] = mutated["close"]
+    mutated.loc[:, "high"] = mutated["close"] * 1.01
+    mutated.loc[:, "low"] = mutated["close"] * 0.99
+    mutated.loc[mutated.index[20]:, "taker_buy_base_volume"] = mutated.loc[mutated.index[20]:, "volume"] * 0.30
+    mutated.loc[:, "quote_volume"] = mutated["close"] * mutated["volume"]
+    mutated.loc[:, "taker_buy_quote_volume"] = mutated["quote_volume"] * (
+        mutated["taker_buy_base_volume"] / mutated["volume"]
+    )
+    params = {
+        "short_enabled": 1.0,
+        "fast_ma": 3,
+        "slow_ma": 5,
+        "regime_ma": 8,
+        "momentum_window": 3,
+        "momentum_threshold": 0.0,
+        "pressure_window": 3,
+        "buy_ratio_threshold": 0.60,
+        "sell_ratio_threshold": 0.40,
+        "pressure_threshold": 0.0,
+        "activity_window": 3,
+        "min_quote_intensity": 0.0,
+        "min_trade_intensity": 0.0,
+        "vol_window": 3,
+        "max_volatility": 1.0,
+        "signal_scale": 1.0,
+        "min_hold_bars": 1,
+        "cooldown_bars": 0,
+        "max_hold_bars": 0,
+    }
+    base_signal = strategy.generate(base, params=params).signal
+    mutated_signal = strategy.generate(mutated, params=params).signal
+
+    pd.testing.assert_series_equal(base_signal.iloc[:20], mutated_signal.iloc[:20])
+
+
+def test_btc_orderflow_pressure_defaults_to_scaled_research_exposure() -> None:
+    strategy = strategy_registry.get("btc_orderflow_pressure")
+    frame = _with_order_flow(_frame_from_closes([100.0 + 2.0 * idx for idx in range(20)]), [0.70 for _ in range(20)])
+    pack = strategy.generate(
+        frame,
+        params={
+            "fast_ma": 2,
+            "slow_ma": 4,
+            "regime_ma": 6,
+            "momentum_window": 2,
+            "momentum_threshold": 0.0,
+            "pressure_window": 2,
+            "buy_ratio_threshold": 0.60,
+            "sell_ratio_threshold": 0.40,
+            "pressure_threshold": 0.0,
+            "activity_window": 2,
+            "min_quote_intensity": 0.0,
+            "min_trade_intensity": 0.0,
+            "vol_window": 2,
+            "max_volatility": 1.0,
+            "min_hold_bars": 1,
+            "cooldown_bars": 0,
+            "max_hold_bars": 0,
+        },
+    )
+
+    assert pack.diagnostics["raw_signal"].max() == 1.0
+    assert pack.signal.max() == strategy.descriptor.default_params["signal_scale"]
+    assert pack.diagnostics["signal_scale"].iloc[-1] == strategy.descriptor.default_params["signal_scale"]

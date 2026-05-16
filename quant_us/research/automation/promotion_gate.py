@@ -191,8 +191,8 @@ class ResearchPromotionGate:
                 "is_overfit": report.is_overfit,
                 "degradation_pct": report.degradation_pct,
                 "reason_count": len(report.reasons),
-                "lookahead_risk": report.lookahead_risk,
-                "lookahead_description": report.lookahead_description,
+                "lookahead_risk": bool(getattr(report, "lookahead_risk", False)),
+                "lookahead_description": str(getattr(report, "lookahead_description", "")),
             }
             if report.is_overfit:
                 reasons.append("overfit_risk_high: " + "; ".join(report.reasons))

@@ -146,6 +146,35 @@ class FakeResearchService:
             "recommendations": [],
         }
 
+    def run_cpcv_validation(self, request: dict):
+        return {
+            "status": "completed",
+            "validation_method": "cpcv",
+            "cv_method": "cpcv",
+            "bar_count": 120,
+            "return_observation_count": 120,
+            "n_splits": 4,
+            "test_splits": 2,
+            "combination_count": 6,
+            "path_count": 6,
+            "trial_count": 4,
+            "config_count": 2,
+            "purged": True,
+            "purge_bars": 1,
+            "embargoed": True,
+            "embargo_bars": 1,
+            "lookahead_guard": "passed_next_bar_execution",
+            "fold_sharpes": [1.2, 1.1, 1.3],
+            "fold_drawdowns": [-0.03, -0.04, -0.02],
+            "fold_returns": [0.01, 0.012, 0.009, 0.011, 0.013],
+            "pbo_trials": [
+                {"split_id": "s1", "config_id": "a", "train_sharpe": 1.2, "test_sharpe": 1.1},
+                {"split_id": "s1", "config_id": "b", "train_sharpe": 0.8, "test_sharpe": 0.6},
+                {"split_id": "s2", "config_id": "a", "train_sharpe": 1.1, "test_sharpe": 1.0},
+                {"split_id": "s2", "config_id": "b", "train_sharpe": 0.7, "test_sharpe": 0.5},
+            ],
+        }
+
 
 class FakePromotionGateService:
     def evaluate(self, request: dict):

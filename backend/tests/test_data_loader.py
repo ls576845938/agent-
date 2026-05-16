@@ -91,6 +91,10 @@ class DataLoaderTests(unittest.TestCase):
 
         self.assertEqual(len(frame), 1)
         self.assertEqual(float(frame.iloc[0]["close"]), 42050.0)
+        self.assertEqual(float(frame.iloc[0]["quote_volume"]), 525000.0)
+        self.assertEqual(int(frame.iloc[0]["trade_count"]), 42)
+        self.assertEqual(float(frame.iloc[0]["taker_buy_base_volume"]), 6.0)
+        self.assertEqual(float(frame.iloc[0]["taker_buy_quote_volume"]), 252000.0)
 
     def test_fixture_quality_report_has_stable_version(self) -> None:
         result = inspect_market_data_quality(
