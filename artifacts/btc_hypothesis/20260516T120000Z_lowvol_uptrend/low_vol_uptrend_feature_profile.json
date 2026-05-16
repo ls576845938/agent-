@@ -1,0 +1,52 @@
+{
+  "active_event_count": 3724,
+  "active_rate": 0.180418,
+  "data_range": {
+    "end": "2026-05-12T00:00:00+00:00",
+    "rows": 20689,
+    "start": "2024-01-01T00:00:00+00:00"
+  },
+  "feature_definitions": {
+    "continuation_state": "shallow pullback, not overextended, no recent liquidation shock, and excluded regimes absent",
+    "low_vol": "realized volatility <= rolling historical quantile threshold; current and past bars only",
+    "orderflow_entry_trigger": false,
+    "regime_exclusions": [
+      "trending_down",
+      "high_vol_trend",
+      "liquidation_shock"
+    ],
+    "side": "long_only",
+    "uptrend_confirmation": "close > slow MA, fast MA > slow MA, slow MA slope positive, trend strength above threshold"
+  },
+  "fold_active_counts": {
+    "1": 378,
+    "2": 829,
+    "3": 343,
+    "4": 793,
+    "pre_wf": 1381
+  },
+  "hypothesis": "BTC long-only event continuation after low-vol uptrend confirmation",
+  "no_lookahead": {
+    "feature_basis": "features use rolling/expanding current-and-past OHLCV only",
+    "future_return_usage": "labels_only",
+    "status": "pass"
+  },
+  "params": {
+    "continuation_score_min": 4,
+    "fast_ma": 96,
+    "max_extension": 0.12,
+    "max_pullback_depth": 0.055,
+    "pullback_window": 72,
+    "shock_lookback": 72,
+    "shock_return_threshold": -0.035,
+    "slope_window": 72,
+    "slow_ma": 336,
+    "trend_strength_min": 0.005,
+    "vol_quantile_lookback": 720,
+    "vol_quantile_threshold": 0.35,
+    "vol_window": 168
+  },
+  "row_count": 20641,
+  "run_id": "20260516T120000Z_lowvol_uptrend",
+  "schema_version": "btc_low_vol_uptrend_feature_profile_v1"
+}

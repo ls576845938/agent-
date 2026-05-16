@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT - BTC Low-Vol Uptrend Event-Continuation Research Report</title>
+  <style>
+    :root { --bg:#f6f8fb; --panel:#fff; --ink:#17202a; --muted:#596775; --line:#d7dee8; --navy:#14233b; --bad:#9b1c1c; --warn:#8a5a00; --ok:#126b45; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:Arial, Helvetica, sans-serif; line-height:1.5; }
+    header { background:var(--navy); color:#fff; padding:24px 28px; }
+    main { max-width:1180px; margin:0 auto; padding:22px; }
+    section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:18px; margin-bottom:18px; }
+    h1 { margin:0 0 8px; font-size:26px; }
+    h2 { margin:0 0 12px; font-size:20px; }
+    h3 { margin:16px 0 8px; font-size:16px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px; }
+    .metric { border:1px solid var(--line); border-radius:6px; padding:10px; background:#fbfcfe; }
+    .metric strong { display:block; color:var(--muted); font-size:13px; }
+    .metric span { display:block; margin-top:4px; font-size:20px; font-weight:700; }
+    .bad { color:var(--bad); } .warn { color:var(--warn); } .ok { color:var(--ok); }
+    table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+    th, td { border:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top; }
+    th { background:#edf2f7; }
+    code { background:#eef2f7; border-radius:4px; padding:1px 4px; }
+    li { margin:4px 0; }
+    .paths li { overflow-wrap:anywhere; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>QuantStation VNEXT - BTC Low-Vol Uptrend Event-Continuation Research Report</h1>
+  <div>Run ID: 20260516T120000Z_lowvol_uptrend</div>
+</header>
+<main>
+  <section>
+    <h2>Safety Status</h2>
+    <div class="grid">
+      <div class="metric"><strong>PAPER QUEUE</strong><span class="warn">LOCKED</span></div>
+      <div class="metric"><strong>LIVE</strong><span class="bad">FROZEN</span></div>
+      <div class="metric"><strong>candidate_passed_internal_gate</strong><span>0</span></div>
+      <div class="metric"><strong>Hypothesis Decision</strong><span>hypothesis_rejected</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Executive Summary</h2>
+    <p><strong>hypothesis rejected; no strategy generated; paper queue remains LOCKED; live remains FROZEN.</strong></p>
+    <ul>
+      <li>perp_dual_trend remains archived and was not restored.</li>
+      <li>This sprint is research-only distribution profiling, not a paper candidate.</li>
+      <li>Order-flow is not used as an entry trigger.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Previous Sprint Recap</h2>
+    <ul>
+      <li>perp_dual_trend archived after event-return evidence showed event_PF stuck near 1.01-1.02.</li>
+      <li>Low-vol uptrend was selected from the alpha backlog because prior attribution favored long continuation contexts.</li>
+      <li>Paper queue and live remain locked/frozen.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Feature Definition</h2>
+    <table><thead><tr><th>field</th><th>definition</th></tr></thead><tbody><tr><td>continuation_state</td><td>shallow pullback, not overextended, no recent liquidation shock, and excluded regimes absent</td></tr><tr><td>low_vol</td><td>realized volatility &lt;= rolling historical quantile threshold; current and past bars only</td></tr><tr><td>orderflow_entry_trigger</td><td>False</td></tr><tr><td>regime_exclusions</td><td>[&#x27;trending_down&#x27;, &#x27;high_vol_trend&#x27;, &#x27;liquidation_shock&#x27;]</td></tr><tr><td>side</td><td>long_only</td></tr><tr><td>uptrend_confirmation</td><td>close &gt; slow MA, fast MA &gt; slow MA, slow MA slope positive, trend strength above threshold</td></tr></tbody></table>
+    <p>No-lookahead guarantee: <code>pass</code>; future returns are labels only.</p>
+  </section>
+
+  <section>
+    <h2>Event-Return Distribution</h2>
+    <div class="grid">
+      <div class="metric"><strong>Active events</strong><span>3724</span></div>
+      <div class="metric"><strong>event_PF_proxy</strong><span>0.979469</span></div>
+      <div class="metric"><strong>Median return</strong><span>-0.000003</span></div>
+      <div class="metric"><strong>Downside tail 5%</strong><span>-0.006082</span></div>
+    </div>
+    <table><thead><tr><th>active_event_count</th><th>positive_event_rate</th><th>mean_return</th><th>median_return</th><th>positive_sum</th><th>negative_sum</th><th>event_PF_proxy</th><th>max_adverse_event</th><th>max_favorable_event</th></tr></thead><tbody><tr><td>3724</td><td>0.49812</td><td>-2.77093e-05</td><td>-3.2227e-06</td><td>4.9229362363</td><td>-5.0261257479</td><td>0.979469</td><td>-0.0332956876</td><td>0.0255871055</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Fold Stability</h2>
+    <table><thead><tr><th>fold_id</th><th>active_event_count</th><th>event_PF_proxy</th><th>mean_return</th><th>median_return</th><th>positive_event_rate</th><th>downside_tail_5pct</th><th>passed</th></tr></thead><tbody><tr><td>1</td><td>378</td><td>0.674983</td><td>-0.0006202783</td><td>-0.0004547094</td><td>0.449735</td><td>-0.0080286939</td><td>False</td></tr><tr><td>2</td><td>829</td><td>1.138341</td><td>0.0001582414</td><td>5.24e-07</td><td>0.500603</td><td>-0.0049196137</td><td>True</td></tr><tr><td>3</td><td>343</td><td>0.837405</td><td>-0.0002069985</td><td>-7.26782e-05</td><td>0.48105</td><td>-0.005665919</td><td>False</td></tr><tr><td>4</td><td>793</td><td>1.006453</td><td>8.1548e-06</td><td>5.07855e-05</td><td>0.513241</td><td>-0.0058783166</td><td>False</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Horizon Analysis</h2>
+    <table><thead><tr><th>horizon</th><th>active_event_count</th><th>event_PF_proxy</th><th>positive_event_rate</th><th>mean_return</th><th>median_return</th><th>downside_tail_5pct</th></tr></thead><tbody><tr><td>12h</td><td>3724</td><td>0.977294</td><td>0.49812</td><td>-0.0001139539</td><td>-3.15101e-05</td><td>-0.024349362</td></tr><tr><td>1h</td><td>3724</td><td>0.979469</td><td>0.49812</td><td>-2.77093e-05</td><td>-3.2227e-06</td><td>-0.0060817786</td></tr><tr><td>24h</td><td>3724</td><td>0.974347</td><td>0.500806</td><td>-0.0001961256</td><td>3.59901e-05</td><td>-0.035022676</td></tr><tr><td>48h</td><td>3724</td><td>0.984427</td><td>0.501074</td><td>-0.0001812262</td><td>6.45805e-05</td><td>-0.0529773092</td></tr><tr><td>4h</td><td>3724</td><td>0.999988</td><td>0.500537</td><td>-3.24e-08</td><td>6.1592e-06</td><td>-0.0126909231</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Hypothesis Decision</h2>
+    <p>Decision: <strong>hypothesis_rejected</strong></p>
+    <p>Strategy skeleton generated: <strong>False</strong></p>
+    <ul><li>event_PF_proxy_below_1_15</li><li>fold_pass_rate_below_75pct</li><li>median_return_negative</li><li>multi_horizon_edge_not_stable</li></ul>
+  </section>
+
+  <section>
+    <h2>Strategy Skeleton</h2>
+    <p>No strategy skeleton generated. The sprint remains research-only.</p>
+  </section>
+
+  <section>
+    <h2>Tests</h2>
+    <p><strong>Command:</strong> <code>PYTHONPATH=. pytest tests/research/test_low_vol_uptrend_feature_profile_schema.py tests/research/test_low_vol_uptrend_no_lookahead.py tests/research/test_low_vol_uptrend_distribution_report.py tests/research/test_low_vol_uptrend_hypothesis_gate.py tests/research/test_low_vol_uptrend_strategy_skeleton_guard.py tests/research/test_low_vol_uptrend_safety_status.py tests/reports/test_low_vol_uptrend_html_generation.py -q</code></p>
+    <p><strong>Result:</strong> <code>14 passed in 2.90s</code></p>
+  </section>
+
+  <section>
+    <h2>Artifacts</h2>
+    <ul class="paths">
+      <li><code>artifacts/btc_hypothesis/20260516T120000Z_lowvol_uptrend/low_vol_uptrend_distribution_report.json</code></li><li><code>artifacts/btc_hypothesis/20260516T120000Z_lowvol_uptrend/low_vol_uptrend_event_table.csv</code></li><li><code>artifacts/btc_hypothesis/20260516T120000Z_lowvol_uptrend/low_vol_uptrend_event_table.parquet</code></li><li><code>artifacts/btc_hypothesis/20260516T120000Z_lowvol_uptrend/low_vol_uptrend_feature_profile.json</code></li><li><code>artifacts/btc_hypothesis/20260516T120000Z_lowvol_uptrend/low_vol_uptrend_hypothesis_decision.json</code></li><li><code>artifacts/btc_hypothesis/20260516T120000Z_lowvol_uptrend/paper_live_safety_status.json</code></li><li><code>artifacts/btc_hypothesis/20260516T120000Z_lowvol_uptrend/run_manifest.json</code></li><li><code>artifacts/btc_hypothesis/20260516T120000Z_lowvol_uptrend/test_results.json</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Final Decision</h2>
+    <p><strong>hypothesis rejected; no strategy generated; paper queue remains LOCKED; live remains FROZEN.</strong></p>
+  </section>
+</main>
+</body>
+</html>
