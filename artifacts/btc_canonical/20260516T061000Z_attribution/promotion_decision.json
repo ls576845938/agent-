@@ -72,6 +72,42 @@
         "regime_pass_rate": 0.75,
         "walk_forward_pass_rate": 0.8
       }
+    },
+    {
+      "checks": {
+        "annual_turnover": true,
+        "canonical_source": true,
+        "cost_stress_base": true,
+        "cost_stress_harsh": true,
+        "dsr": true,
+        "event_ledger": true,
+        "event_profit_factor": false,
+        "max_drawdown": true,
+        "no_lookahead": true,
+        "pbo": true,
+        "profit_factor": true,
+        "regime_pass_rate": true,
+        "signal_equity_diagnostic_only": true,
+        "walk_forward_pass_rate": false
+      },
+      "evidence_source": "canonical_backtest_report",
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "passed": false,
+      "status": "candidate_gate_failed",
+      "strategy_id": "btc_perp_dual_trend_v3",
+      "thresholds": {
+        "annual_turnover": 10.0,
+        "dsr": 0.1,
+        "event_profit_factor": 1.15,
+        "max_drawdown_pct_floor": -15.0,
+        "pbo": 0.5,
+        "profit_factor": 1.15,
+        "regime_pass_rate": 0.75,
+        "walk_forward_pass_rate": 0.8
+      }
     }
   ],
   "evidence_source": "canonical_gate_inputs",

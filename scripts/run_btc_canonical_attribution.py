@@ -11,6 +11,7 @@ from typing import Any
 from backend.app.services.market_data import load_market_frame
 from quant_us.research.btc_alpha_hardening import btc_dual_trend_v2_signal
 from quant_us.research.btc_canonical import (
+    btc_perp_dual_trend_v3_signal,
     build_trade_attribution,
     build_canonical_report,
     cost_stress_for_signal,
@@ -60,6 +61,28 @@ STRATEGIES: dict[str, tuple[str, dict[str, Any], Any]] = {
         },
         btc_dual_trend_v2_signal,
     ),
+    "btc_perp_dual_trend_v3": (
+        "btc_perp_dual_trend_v3:attribution_v1",
+        {
+            "fast_ma": 96,
+            "slow_ma": 336,
+            "regime_ma": 720,
+            "momentum_window": 168,
+            "momentum_threshold": 0.025,
+            "vol_window": 168,
+            "max_volatility": 0.055,
+            "orderflow_window": 144,
+            "orderflow_veto_threshold": 0.012,
+            "allowed_long_regimes": ["trending_up", "expansion"],
+            "allowed_short_regimes": [],
+            "min_hold_bars": 120,
+            "cooldown_bars": 72,
+            "exit_hysteresis_bars": 4,
+            "max_hold_bars": 720,
+            "signal_scale": 0.20,
+        },
+        btc_perp_dual_trend_v3_signal,
+    ),
 }
 
 
@@ -67,7 +90,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", default=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
     parser.add_argument("--output-root", default="artifacts/btc_canonical")
-    parser.add_argument("--strategies", default="btc_perp_dual_trend,btc_perp_dual_trend_v2")
+    parser.add_argument("--strategies", default="btc_perp_dual_trend,btc_perp_dual_trend_v2,btc_perp_dual_trend_v3")
     args = parser.parse_args()
 
     run_dir = Path(args.output_root) / args.run_id
@@ -164,6 +187,8 @@ def main() -> None:
         write_json(strategy_dir / "canonical_backtest_report.json", report)
         write_json(strategy_dir / "canonical_metrics.json", report["metrics"])
         write_json(strategy_dir / "gate_inputs.json", {"strategy_id": strategy_id, "report": report, "gate": decision.to_dict()})
+        write_json(run_dir / f"{strategy_id}_results.json", report)
+        write_json(run_dir / f"{strategy_id}_gate_decision.json", decision.to_dict())
         write_json(strategy_dir / "run_manifest.json", {
             "run_id": args.run_id,
             "strategy_id": strategy_id,

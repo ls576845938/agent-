@@ -90,6 +90,98 @@ def registry_signal_builder(strategy_id: str) -> SignalBuilder:
     return build
 
 
+def btc_perp_dual_trend_v3_signal(
+    frame: pd.DataFrame,
+    params: Mapping[str, Any] | None = None,
+) -> tuple[pd.Series, dict[str, pd.Series]]:
+    """Attribution-driven BTC dual trend v3.
+
+    Order-flow is a veto only: it can block conflicting trend entries, but it
+    cannot create a standalone entry.
+    """
+
+    cfg = {
+        "fast_ma": 96,
+        "slow_ma": 336,
+        "regime_ma": 720,
+        "momentum_window": 168,
+        "momentum_threshold": 0.025,
+        "vol_window": 168,
+        "max_volatility": 0.055,
+        "orderflow_window": 144,
+        "orderflow_veto_threshold": 0.012,
+        "allowed_long_regimes": ("trending_up", "expansion"),
+        "allowed_short_regimes": (),
+        "min_hold_bars": 120,
+        "cooldown_bars": 72,
+        "exit_hysteresis_bars": 4,
+        "max_hold_bars": 720,
+        "signal_scale": 0.20,
+    }
+    cfg.update(dict(params or {}))
+    close = frame["close"].astype(float)
+    fast_ma = close.rolling(int(cfg["fast_ma"]), min_periods=int(cfg["fast_ma"])).mean()
+    slow_ma = close.rolling(int(cfg["slow_ma"]), min_periods=int(cfg["slow_ma"])).mean()
+    regime_ma = close.rolling(int(cfg["regime_ma"]), min_periods=int(cfg["regime_ma"])).mean()
+    momentum = close.pct_change(int(cfg["momentum_window"])).fillna(0.0)
+    volatility = close.pct_change().rolling(
+        int(cfg["vol_window"]),
+        min_periods=max(2, int(cfg["vol_window"]) // 2),
+    ).std(ddof=0).fillna(0.0)
+    regimes = classify_btc_regimes(frame)
+    volume = frame["volume"].astype(float)
+    taker_buy = pd.to_numeric(frame.get("taker_buy_base_volume", volume * 0.5), errors="coerce").astype(float)
+    buy_ratio = (taker_buy / volume.replace(0, pd.NA)).clip(0.0, 1.0).fillna(0.5)
+    orderflow_window = max(2, int(cfg["orderflow_window"]))
+    buy_pressure = (buy_ratio - buy_ratio.rolling(orderflow_window, min_periods=max(2, orderflow_window // 2)).mean()).fillna(0.0)
+    trend_strength = (slow_ma / regime_ma.replace(0, pd.NA) - 1.0).fillna(0.0)
+    trend_long = (
+        (fast_ma > slow_ma)
+        & (slow_ma > regime_ma)
+        & (momentum >= float(cfg["momentum_threshold"]))
+        & (volatility <= float(cfg["max_volatility"]))
+    ).fillna(False)
+    trend_short = (
+        (fast_ma < slow_ma)
+        & (slow_ma < regime_ma)
+        & (momentum <= -float(cfg["momentum_threshold"]))
+        & (volatility <= float(cfg["max_volatility"]))
+    ).fillna(False)
+    long_veto = buy_pressure < -float(cfg["orderflow_veto_threshold"])
+    short_veto = buy_pressure > float(cfg["orderflow_veto_threshold"])
+    allowed_long = regimes.isin([str(item) for item in cfg.get("allowed_long_regimes", ())])
+    allowed_short = regimes.isin([str(item) for item in cfg.get("allowed_short_regimes", ())])
+    target = pd.Series(0.0, index=frame.index, dtype=float)
+    target.loc[trend_long & allowed_long & ~long_veto] = 1.0
+    target.loc[trend_short & allowed_short & ~short_veto] = -1.0
+    signal = _directional_state_machine(
+        target,
+        min_holding_bars=int(cfg["min_hold_bars"]),
+        cooldown_bars=int(cfg["cooldown_bars"]),
+        exit_hysteresis_bars=int(cfg["exit_hysteresis_bars"]),
+        max_holding_bars=int(cfg["max_hold_bars"]),
+    )
+    signal_scale = min(1.0, max(0.0, float(cfg["signal_scale"])))
+    diagnostics = {
+        "fast_ma": fast_ma,
+        "slow_ma": slow_ma,
+        "regime_ma": regime_ma,
+        "momentum": momentum,
+        "volatility": volatility,
+        "trend_strength": trend_strength,
+        "trend_long": trend_long.astype(float),
+        "trend_short": trend_short.astype(float),
+        "orderflow_veto_long": long_veto.astype(float),
+        "orderflow_veto_short": short_veto.astype(float),
+        "buy_ratio": buy_ratio,
+        "buy_pressure": buy_pressure,
+        "target_signal": target,
+        "raw_signal": signal,
+        "regime": regimes,
+    }
+    return (signal * signal_scale).clip(-1.0, 1.0).fillna(0.0), diagnostics
+
+
 def evaluate_canonical_gate(
     canonical_report: Mapping[str, Any],
     *,
@@ -311,6 +403,46 @@ def fills_to_trade_ledger(
             entry_notional = residual * price
             entry_fill_id = str(getattr(fill, "fill_id", ""))
     return pd.DataFrame(rows)
+
+
+def _directional_state_machine(
+    target_signal: pd.Series,
+    *,
+    min_holding_bars: int,
+    cooldown_bars: int,
+    exit_hysteresis_bars: int,
+    max_holding_bars: int,
+) -> pd.Series:
+    signal = pd.Series(0.0, index=target_signal.index, dtype=float)
+    position = 0.0
+    bars_held = 0
+    flat_streak = 0
+    cooldown_remaining = 0
+    for timestamp, raw in target_signal.fillna(0.0).items():
+        if cooldown_remaining > 0:
+            cooldown_remaining -= 1
+        target = 1.0 if raw > 0 else -1.0 if raw < 0 else 0.0
+        if position == 0.0:
+            if cooldown_remaining == 0 and target != 0.0:
+                position = target
+                bars_held = 0
+                flat_streak = 0
+        else:
+            if target == 0.0 or target != position:
+                flat_streak += 1
+            else:
+                flat_streak = 0
+            can_exit = bars_held >= max(0, min_holding_bars)
+            force_exit = max_holding_bars > 0 and bars_held >= max_holding_bars
+            if force_exit or (can_exit and flat_streak >= max(1, exit_hysteresis_bars)):
+                position = 0.0
+                bars_held = 0
+                flat_streak = 0
+                cooldown_remaining = max(0, cooldown_bars)
+        if position != 0.0:
+            bars_held += 1
+        signal.loc[timestamp] = position
+    return signal
 
 
 def canonical_metrics_from_event(
