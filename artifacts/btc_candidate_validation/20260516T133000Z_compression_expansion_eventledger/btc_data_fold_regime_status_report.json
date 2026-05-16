@@ -1,0 +1,197 @@
+{
+  "code_commit": "d9d2ecb64d92cffc3cb4f95e979b717563112714",
+  "fold_status": {
+    "event_table_fold_counts": {
+      "1": 3448,
+      "2": 3448,
+      "3": 3448,
+      "4": 3448,
+      "pre_wf": 6897
+    },
+    "fold_count": 4,
+    "folds": [
+      {
+        "fold_id": "1",
+        "passed": true,
+        "validation_end": "2025-03-07T00:00:00+00:00",
+        "validation_rows": 3448,
+        "validation_start": "2024-10-14T09:00:00+00:00"
+      },
+      {
+        "fold_id": "2",
+        "passed": true,
+        "validation_end": "2025-07-28T16:00:00+00:00",
+        "validation_rows": 3448,
+        "validation_start": "2025-03-07T01:00:00+00:00"
+      },
+      {
+        "fold_id": "3",
+        "passed": false,
+        "validation_end": "2025-12-19T08:00:00+00:00",
+        "validation_rows": 3448,
+        "validation_start": "2025-07-28T17:00:00+00:00"
+      },
+      {
+        "fold_id": "4",
+        "passed": false,
+        "validation_end": "2026-05-12T00:00:00+00:00",
+        "validation_rows": 3448,
+        "validation_start": "2025-12-19T09:00:00+00:00"
+      }
+    ],
+    "gate_source": "walk_forward_report.json",
+    "hypothesis_label_fold_counts": {
+      "1": 3448,
+      "2": 3448,
+      "3": 3448,
+      "4": 3400,
+      "pre_wf": 6897
+    },
+    "label_trimmed_rows_due_to_forward_horizon": 48,
+    "method": "rolling_event_ledger_fixed_params",
+    "status": "pass"
+  },
+  "generated_at": "2026-05-16T23:16:12.824862+00:00",
+  "intervals": [
+    {
+      "data_version": "qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5",
+      "end": "2026-05-12T00:00:00+00:00",
+      "expected_rows": 248257,
+      "interval": "5m",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5.json",
+      "manifest_coverage_pct": 100.0,
+      "manifest_quality_score": 100.0,
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 248257,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    },
+    {
+      "data_version": "qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4",
+      "end": "2026-05-12T00:00:00+00:00",
+      "expected_rows": 82753,
+      "interval": "15m",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4.json",
+      "manifest_coverage_pct": 100.0,
+      "manifest_quality_score": 100.0,
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 82753,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    },
+    {
+      "data_version": "qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31",
+      "end": "2026-05-12T00:00:00+00:00",
+      "expected_rows": 20689,
+      "interval": "1h",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+      "manifest_coverage_pct": 100.0,
+      "manifest_quality_score": 100.0,
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 20689,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    },
+    {
+      "data_version": "qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d",
+      "end": "2026-05-11T20:00:00+00:00",
+      "expected_rows": 5172,
+      "interval": "4h",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d.json",
+      "manifest_coverage_pct": 100.0,
+      "manifest_quality_score": 100.0,
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 5172,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    },
+    {
+      "data_version": "qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4",
+      "end": "2026-05-11T00:00:00+00:00",
+      "expected_rows": 862,
+      "interval": "1d",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4.json",
+      "manifest_coverage_pct": 100.0,
+      "manifest_quality_score": 100.0,
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 862,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    }
+  ],
+  "manifest_lineage": {
+    "latest_manifests": [
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5",
+        "interval": "5m",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5.json",
+        "quality_score": 100.0
+      },
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4",
+        "interval": "15m",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4.json",
+        "quality_score": 100.0
+      },
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31",
+        "interval": "1h",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+        "quality_score": 100.0
+      },
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d",
+        "interval": "4h",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d.json",
+        "quality_score": 100.0
+      },
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4",
+        "interval": "1d",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4.json",
+        "quality_score": 100.0
+      }
+    ],
+    "status": "pass"
+  },
+  "regime_status": {
+    "bar_counts": {
+      "compression": 2790,
+      "expansion": 857,
+      "high_vol_trend": 1263,
+      "liquidation_shock": 160,
+      "low_vol_chop": 2199,
+      "mean_reverting_chop": 4710,
+      "trending_down": 3670,
+      "trending_up": 5040
+    },
+    "classifier": "classify_btc_regimes",
+    "dragging_regimes": [
+      "compression",
+      "expansion",
+      "high_vol_trend",
+      "mean_reverting_chop",
+      "trending_down"
+    ],
+    "gate_pass_rate": 0.285714,
+    "status": "fail"
+  },
+  "run_id": "20260516T133000Z_compression_expansion_eventledger",
+  "schema_version": "btc_data_fold_regime_status_report_v1",
+  "sqlite": {
+    "db_path": "data/market_data.sqlite",
+    "exchange": "binance_spot",
+    "status": "pass",
+    "symbol": "BTCUSDT"
+  }
+}

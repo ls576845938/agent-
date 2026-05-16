@@ -14,6 +14,10 @@ def test_ci_has_research_evidence_gate_job() -> None:
     job_text = str(jobs["research-evidence-gate"])
     assert "test_compression_expansion_event_ledger_artifacts.py" in job_text
     assert "test_compression_expansion_event_ledger_attribution_artifact.py" in job_text
+    assert "test_compression_expansion_failure_mode_report.py" in job_text
+    assert "test_btc_fold_regime_contract_audit.py" in job_text
+    assert "test_btc_data_fold_regime_status_report.py" in job_text
+    assert "test_compression_expansion_eventledger_attribution_html.py" in job_text
     assert "test_ci_evidence_gate_workflow.py" in job_text
 
 

@@ -49,9 +49,13 @@ jobs:
       - run: |
           python -m pytest \
             tests/research/test_btc_hypothesis_lab_config_schema.py \
+            tests/research/test_btc_data_fold_regime_status_report.py \
+            tests/research/test_btc_fold_regime_contract_audit.py \
             tests/research/test_compression_expansion_distribution_report.py \
             tests/research/test_compression_expansion_event_ledger_artifacts.py \
             tests/research/test_compression_expansion_event_ledger_attribution_artifact.py \
+            tests/research/test_compression_expansion_failure_mode_report.py \
             tests/research/test_ci_evidence_gate_workflow.py \
+            tests/reports/test_compression_expansion_eventledger_attribution_html.py \
             tests/reports/test_hypothesis_lab_html_generation.py \
             -q --tb=short
