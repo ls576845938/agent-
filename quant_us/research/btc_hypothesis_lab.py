@@ -133,7 +133,12 @@ def build_feature_profile(
     return {"profile": profile, "table": table}
 
 
-def build_event_table(frame: pd.DataFrame, config: Mapping[str, Any]) -> pd.DataFrame:
+def build_event_table(
+    frame: pd.DataFrame,
+    config: Mapping[str, Any],
+    *,
+    drop_incomplete_labels: bool = True,
+) -> pd.DataFrame:
     compression_cfg = config.get("compression_config", {})
     expansion_cfg = config.get("expansion_config", {})
     horizons = _horizons_to_bars(config.get("horizons", ["1h", "4h", "12h", "24h", "48h"]))
@@ -234,7 +239,9 @@ def build_event_table(frame: pd.DataFrame, config: Mapping[str, Any]) -> pd.Data
     for horizon in horizons:
         table[f"event_return_forward_{horizon}h"] = close.shift(-horizon) / close - 1.0
     max_horizon = max(horizons)
-    return table.dropna(subset=[f"event_return_forward_{max_horizon}h"]).reset_index(drop=True)
+    if drop_incomplete_labels:
+        table = table.dropna(subset=[f"event_return_forward_{max_horizon}h"])
+    return table.reset_index(drop=True)
 
 
 def analyze_distribution(
