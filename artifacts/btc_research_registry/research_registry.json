@@ -1,0 +1,32 @@
+{
+  "generated_at": "2026-05-17T22:34:05.040422+00:00",
+  "items": {
+    "compression_expansion_breakout": {
+      "last_run_id": "20260516T133000Z_compression_expansion_eventledger",
+      "next_action": "evaluate_with_lifecycle_aware_gate_v2",
+      "reason": "hypothesis layer passed but event-ledger candidate failed: event_profit_factor, walk_forward_pass_rate, regime_pass_rate",
+      "status": "candidate_gate_failed"
+    },
+    "liquidation_shock_recovery": {
+      "last_run_id": "20260517T010000Z_liquidation_shock_attribution",
+      "next_action": "do_not_generate_v2_or_v3",
+      "reason": "full-ledger event_PF 0.998; lifecycle drag; no ablation passed",
+      "status": "archived"
+    },
+    "low_vol_uptrend": {
+      "last_run_id": "20260516T120000Z_lowvol_uptrend",
+      "next_action": "do_not_optimize_rejected_hypothesis",
+      "reason": "event_PF_proxy 0.979469; fold stability failed",
+      "status": "hypothesis_rejected"
+    },
+    "perp_dual_trend": {
+      "last_run_id": "20260516T100000Z_eventreturn_alpha",
+      "next_action": "do_not_resurrect_without_new_hypothesis",
+      "reason": "event_PF stuck near 1.01-1.02; no stable repair pattern",
+      "status": "archived"
+    }
+  },
+  "live": "FROZEN",
+  "paper_queue": "LOCKED",
+  "schema_version": "btc_research_registry_v1"
+}
