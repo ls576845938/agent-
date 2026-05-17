@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT - BTC Liquidation-Shock Event-Return Attribution and Skeleton Decision Report</title>
+  <style>
+    :root { --bg:#f6f8fb; --panel:#fff; --ink:#17202a; --muted:#596775; --line:#d7dee8; --navy:#14233b; --bad:#9b1c1c; --warn:#8a5a00; --ok:#126b45; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; line-height:1.55; }
+    header { background:var(--navy); color:#fff; padding:24px 20px; }
+    main { max-width:1180px; margin:0 auto; padding:16px; }
+    section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:14px; }
+    h1 { margin:0 0 8px; font-size:23px; line-height:1.25; }
+    h2 { margin:0 0 12px; font-size:19px; }
+    h3 { margin:14px 0 8px; font-size:16px; }
+    .meta { color:#d8e2ef; font-size:14px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px; }
+    .metric { border:1px solid var(--line); border-radius:6px; padding:10px; background:#fbfcfe; min-height:74px; }
+    .metric strong { display:block; color:var(--muted); font-size:13px; }
+    .metric span { display:block; margin-top:5px; font-size:18px; font-weight:700; overflow-wrap:anywhere; }
+    .bad { color:var(--bad); } .warn { color:var(--warn); } .ok { color:var(--ok); }
+    table { width:100%; border-collapse:collapse; font-size:13px; display:block; overflow-x:auto; white-space:nowrap; margin-top:8px; }
+    th, td { border:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top; }
+    th { background:#edf2f7; }
+    code { background:#eef2f7; border-radius:4px; padding:1px 4px; overflow-wrap:anywhere; }
+    li { margin:5px 0; }
+    .decision { border-left:4px solid var(--bad); background:#fff8f8; padding:10px 12px; border-radius:6px; }
+    .paths li { overflow-wrap:anywhere; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>QuantStation VNEXT - BTC Liquidation-Shock Event-Return Attribution and Skeleton Decision Report</h1>
+  <div class="meta">Run ID: 20260517T010000Z_liquidation_shock_attribution | Source: 20260516T234000Z_liquidation_shock_eventledger</div>
+</header>
+<main>
+  <section>
+    <h2>1. Safety Status</h2>
+    <div class="grid">
+      <div class="metric"><strong>PAPER QUEUE</strong><span class="warn">LOCKED</span></div>
+      <div class="metric"><strong>LIVE</strong><span class="bad">FROZEN</span></div>
+      <div class="metric"><strong>candidate_passed_internal_gate</strong><span>0</span></div>
+      <div class="metric"><strong>Skeleton Decision</strong><span class="bad">archive_liquidation_shock_recovery</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Executive Summary</h2>
+    <div class="decision"><strong>liquidation-shock recovery archived; paper queue remains LOCKED; live remains FROZEN.</strong></div>
+    <ul>
+      <li>v1 event-ledger gate failed; this sprint did attribution instead of parameter chasing.</li>
+      <li>No v2 config was generated because no ablation simultaneously improved event_PF, fold stability, and cost stress enough.</li>
+      <li>Ordinary PF remains diagnostic-only; full ledger event_PF remains the gate metric.</li>
+      <li>Paper queue remains locked and live remains frozen.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>3. Previous Sprint Recap</h2>
+    <div class="grid">
+      <div class="metric"><strong>PF</strong><span>1.560750</span></div>
+      <div class="metric"><strong>event_PF</strong><span class="bad">0.998000</span></div>
+      <div class="metric"><strong>WF Pass</strong><span class="bad">0.750000</span></div>
+      <div class="metric"><strong>Regime Pass</strong><span class="ok">0.800000</span></div>
+      <div class="metric"><strong>Cost Base</strong><span class="bad">False</span></div>
+      <div class="metric"><strong>DSR</strong><span class="bad">0.000000</span></div>
+    </div>
+    <p>Fail reasons: <code>event_profit_factor, walk_forward_pass_rate, cost_stress_base, cost_stress_harsh, dsr</code></p>
+  </section>
+
+  <section>
+    <h2>4. Event-Return Attribution</h2>
+    <div class="grid">
+      <div class="metric"><strong>Full Ledger event_PF</strong><span class="bad">0.997965</span></div>
+      <div class="metric"><strong>Target-Active event_PF</strong><span>1.173196</span></div>
+      <div class="metric"><strong>Flat/Lifecycle event_PF</strong><span class="bad">0.977003</span></div>
+      <div class="metric"><strong>Active Event Count</strong><span>696</span></div>
+    </div>
+    <h3>Root Cause</h3>
+    <ul><li>Event_PF recomputes to 0.9980, matching canonical event_PF 0.9980.</li><li>Target-active exposure event_PF is 1.1732, but full-ledger event_PF is only 0.9980.</li><li>Ledger equity changes outside target-active windows have event_PF 0.9770; promotion must use full ledger, not target-active diagnostic slices.</li><li>Active exposure positive event sum 0.337951 versus negative event sum -0.288060 is not enough to overcome full ledger lifecycle drag.</li><li>Worst active fold by event attribution is fold 3; rolling WF pass remains 0.75.</li><li>Dragging trade-entry regime is mean_reverting_chop; bar-level attribution shows the worst active regime is liquidation_shock itself.</li><li>Cost stress base passed=False; harsh survives=False.</li><li>PBO=0.25, DSR=0.0; DSR remains a promotion blocker.</li></ul>
+    <h3>By Fold</h3>
+    <table><thead><tr><th>fold_id</th><th>event_count</th><th>event_PF</th><th>positive_sum</th><th>negative_sum</th><th>signed_pnl_sum</th></tr></thead><tbody><tr><td>3</td><td>72</td><td>0.687298</td><td>0.0154681246</td><td>-0.0225056874</td><td>-0.0070375627</td></tr><tr><td>pre_wf</td><td>288</td><td>1.070829</td><td>0.143168101</td><td>-0.13369838</td><td>0.009469721</td></tr><tr><td>4</td><td>96</td><td>1.152429</td><td>0.0424478312</td><td>-0.0368333527</td><td>0.0056144784</td></tr><tr><td>1</td><td>144</td><td>1.362994</td><td>0.0805174447</td><td>-0.0590739583</td><td>0.0214434863</td></tr><tr><td>2</td><td>96</td><td>1.567494</td><td>0.0563493992</td><td>-0.0359487066</td><td>0.0204006926</td></tr></tbody></table>
+    <h3>By Regime</h3>
+    <table><thead><tr><th>regime</th><th>event_count</th><th>event_PF</th><th>positive_sum</th><th>negative_sum</th><th>signed_pnl_sum</th></tr></thead><tbody><tr><td>liquidation_shock</td><td>23</td><td>0.0</td><td>0.0</td><td>-0.0708153944</td><td>-0.0708153944</td></tr><tr><td>expansion</td><td>82</td><td>1.307101</td><td>0.0510661436</td><td>-0.0390682361</td><td>0.0119979075</td></tr><tr><td>trending_down</td><td>193</td><td>1.34671</td><td>0.0618070484</td><td>-0.0458948333</td><td>0.0159122151</td></tr><tr><td>trending_up</td><td>83</td><td>1.600264</td><td>0.0314387663</td><td>-0.019645983</td><td>0.0117927833</td></tr><tr><td>high_vol_trend</td><td>175</td><td>1.616763</td><td>0.1441268983</td><td>-0.0891453251</td><td>0.0549815732</td></tr><tr><td>mean_reverting_chop</td><td>133</td><td>1.9624</td><td>0.0460973981</td><td>-0.0234903132</td><td>0.0226070849</td></tr><tr><td>compression</td><td>7</td><td>999.0</td><td>0.0034146461</td><td>0.0</td><td>0.0034146461</td></tr></tbody></table>
+    <h3>By Recovery Age</h3>
+    <table><thead><tr><th>recovery_age_bucket</th><th>event_count</th><th>event_PF</th><th>signed_pnl_sum</th></tr></thead><tbody><tr><td>19_24</td><td>145</td><td>0.811064</td><td>-0.0110835148</td></tr><tr><td>13_18</td><td>174</td><td>1.158796</td><td>0.0106722927</td></tr><tr><td>0_6</td><td>203</td><td>1.199272</td><td>0.0194248493</td></tr><tr><td>7_12</td><td>174</td><td>1.477156</td><td>0.0308771885</td></tr></tbody></table>
+    <h3>By Time-To-Exit</h3>
+    <table><thead><tr><th>time_to_exit_bucket</th><th>event_count</th><th>event_PF</th><th>signed_pnl_sum</th></tr></thead><tbody><tr><td>0_3</td><td>87</td><td>0.862354</td><td>-0.0052199214</td></tr><tr><td>4_6</td><td>87</td><td>0.960089</td><td>-0.0010895906</td></tr><tr><td>13_24</td><td>348</td><td>1.180396</td><td>0.028356121</td></tr><tr><td>7_12</td><td>174</td><td>1.424139</td><td>0.0278442067</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>5. Fold 3 Autopsy</h2>
+    <div class="grid">
+      <div class="metric"><strong>Fold 3 event_PF</strong><span class="bad">0.687298</span></div>
+      <div class="metric"><strong>Total Return</strong><span class="bad">-0.007038</span></div>
+      <div class="metric"><strong>Worst Regime</strong><span>liquidation_shock</span></div>
+      <div class="metric"><strong>Fixable?</strong><span class="bad">False</span></div>
+    </div>
+    <ul><li>Fold 3 active event_PF is 0.6873; positive and negative event sums do not support a stable recovery edge.</li><li>Fold 3 is the only rolling WF failure, but other folds only pass with event PF close to 1.0.</li><li>The worst pattern appears in other folds and can be tested as a rule.</li><li>A v2 rule requires ablation evidence across folds, not a hardcoded fold-3 fix.</li></ul>
+  </section>
+
+  <section>
+    <h2>6. Mean-Reverting-Chop Failure</h2>
+    <p>Trade-level mean_reverting_chop was a failure in the previous sprint, but bar-level active attribution does not support it as a standalone v2 rule.</p>
+    <div class="grid">
+      <div class="metric"><strong>Bar-Level event_PF</strong><span>1.962400</span></div>
+      <div class="metric"><strong>Keep-Out Suitable</strong><span class="bad">False</span></div>
+      <div class="metric"><strong>Sample-In Only Fix</strong><span class="bad">True</span></div>
+    </div>
+    <table><thead><tr><th>variant</th><th>event_PF</th><th>PF</th><th>WF_pass</th><th>regime_pass</th><th>cost_stress_base_pass</th><th>cost_stress_harsh_survives</th><th>trade_count</th><th>fail_reasons</th></tr></thead><tbody><tr><td>baseline_v1</td><td>0.998</td><td>1.56075</td><td>0.75</td><td>0.857143</td><td>False</td><td>False</td><td>29</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;, &quot;cost_stress_base&quot;, &quot;cost_stress_harsh&quot;, &quot;dsr&quot;]</td></tr><tr><td>mean_reverting_chop_keepout</td><td>1.0022</td><td>1.799078</td><td>0.75</td><td>0.857143</td><td>True</td><td>True</td><td>26</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;, &quot;dsr&quot;]</td></tr><tr><td>mean_reverting_chop_reduce_size_50pct</td><td>1.0049</td><td>1.471247</td><td>0.75</td><td>0.857143</td><td>True</td><td>True</td><td>29</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;, &quot;dsr&quot;]</td></tr><tr><td>mean_reverting_chop_faster_exit</td><td>1.0081</td><td>2.186026</td><td>0.75</td><td>0.857143</td><td>True</td><td>True</td><td>32</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;]</td></tr><tr><td>mean_reverting_chop_require_second_confirmation</td><td>1.0089</td><td>3.269028</td><td>1.0</td><td>0.666667</td><td>True</td><td>True</td><td>6</td><td>[&quot;event_profit_factor&quot;, &quot;regime_pass_rate&quot;]</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>7. Time Exit / Exposure Lifecycle</h2>
+    <p>Best diagnostic variant by event_PF: <code>trailing_recovery_exit</code>. It still failed hard event_PF and/or WF gate, so it was not promoted into v2.</p>
+    <table><thead><tr><th>variant</th><th>event_PF</th><th>PF</th><th>Sharpe</th><th>MDD</th><th>WF_pass</th><th>regime_pass</th><th>cost_stress_base_pass</th><th>cost_stress_harsh_survives</th><th>trade_count</th><th>avg_holding_bars</th><th>fail_reasons</th></tr></thead><tbody><tr><td>baseline_v1_time_exit_24</td><td>0.998</td><td>1.56075</td><td>-0.045</td><td>-9.2744</td><td>0.75</td><td>0.857143</td><td>False</td><td>False</td><td>29</td><td>24.0</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;, &quot;cost_stress_base&quot;, &quot;cost_stress_harsh&quot;, &quot;dsr&quot;]</td></tr><tr><td>time_exit_6</td><td>1.0027</td><td>1.100476</td><td>0.0572</td><td>-8.269</td><td>0.5</td><td>0.833333</td><td>True</td><td>True</td><td>34</td><td>6.0</td><td>[&quot;event_profit_factor&quot;, &quot;profit_factor&quot;, &quot;walk_forward_pass_rate&quot;, &quot;dsr&quot;]</td></tr><tr><td>time_exit_12</td><td>1.0081</td><td>2.186026</td><td>0.2018</td><td>-9.711</td><td>0.75</td><td>0.857143</td><td>True</td><td>True</td><td>32</td><td>12.0</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;]</td></tr><tr><td>time_exit_18</td><td>1.0129</td><td>2.383608</td><td>0.3434</td><td>-8.7713</td><td>0.75</td><td>0.857143</td><td>True</td><td>True</td><td>30</td><td>18.0</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;]</td></tr><tr><td>time_exit_24</td><td>0.998</td><td>1.56075</td><td>-0.045</td><td>-9.2744</td><td>0.75</td><td>0.857143</td><td>False</td><td>False</td><td>29</td><td>24.0</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;, &quot;cost_stress_base&quot;, &quot;cost_stress_harsh&quot;, &quot;dsr&quot;]</td></tr><tr><td>time_exit_36</td><td>1.0113</td><td>1.777466</td><td>0.3057</td><td>-10.4927</td><td>0.75</td><td>0.857143</td><td>True</td><td>True</td><td>29</td><td>36.0</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;]</td></tr><tr><td>trailing_recovery_exit</td><td>1.0377</td><td>1.300637</td><td>0.7294</td><td>-3.464</td><td>0.75</td><td>0.833333</td><td>True</td><td>True</td><td>35</td><td>9.028571</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;]</td></tr><tr><td>event_return_deterioration_exit</td><td>1.0321</td><td>1.645873</td><td>0.6646</td><td>-6.3648</td><td>0.75</td><td>0.833333</td><td>True</td><td>True</td><td>32</td><td>14.0</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;]</td></tr><tr><td>second_confirmation_required</td><td>1.0089</td><td>3.269028</td><td>0.256</td><td>-10.033</td><td>1.0</td><td>0.666667</td><td>True</td><td>True</td><td>6</td><td>24.0</td><td>[&quot;event_profit_factor&quot;, &quot;regime_pass_rate&quot;]</td></tr><tr><td>second_confirmation_plus_time_exit_12</td><td>1.0111</td><td>3.364221</td><td>0.2902</td><td>-8.2219</td><td>1.0</td><td>0.8</td><td>True</td><td>True</td><td>6</td><td>12.0</td><td>[&quot;event_profit_factor&quot;]</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>8. Recovery Confirmation</h2>
+    <p>Second confirmation required/adoptable: <strong>False</strong>. Best confirmation was diagnostic only and did not clear event_PF gate.</p>
+    <table><thead><tr><th>variant</th><th>event_PF</th><th>PF</th><th>WF_pass</th><th>regime_pass</th><th>cost_stress_base_pass</th><th>cost_stress_harsh_survives</th><th>trade_count</th><th>fail_reasons</th></tr></thead><tbody><tr><td>baseline_v1</td><td>0.998</td><td>1.56075</td><td>0.75</td><td>0.857143</td><td>False</td><td>False</td><td>29</td><td>[&quot;event_profit_factor&quot;, &quot;walk_forward_pass_rate&quot;, &quot;cost_stress_base&quot;, &quot;cost_stress_harsh&quot;, &quot;dsr&quot;]</td></tr><tr><td>price_reclaims_pre_shock_level</td><td>1.0097</td><td>2.274755</td><td>1.0</td><td>0.833333</td><td>True</td><td>True</td><td>10</td><td>[&quot;event_profit_factor&quot;]</td></tr><tr><td>close_above_fast_ma</td><td>1.0176</td><td>6.984339</td><td>1.0</td><td>0.833333</td><td>True</td><td>True</td><td>10</td><td>[&quot;event_profit_factor&quot;]</td></tr><tr><td>fast_ma_slope_positive</td><td>1.0126</td><td>0.79299</td><td>1.0</td><td>0.666667</td><td>True</td><td>True</td><td>9</td><td>[&quot;event_profit_factor&quot;, &quot;profit_factor&quot;, &quot;regime_pass_rate&quot;]</td></tr><tr><td>two_bar_recovery_confirmation</td><td>0.9968</td><td>1.635785</td><td>1.0</td><td>0.857143</td><td>False</td><td>False</td><td>23</td><td>[&quot;event_profit_factor&quot;, &quot;cost_stress_base&quot;, &quot;cost_stress_harsh&quot;, &quot;dsr&quot;]</td></tr><tr><td>volatility_cools_after_shock</td><td>1.0015</td><td>999.0</td><td>1.0</td><td>0.75</td><td>True</td><td>True</td><td>1</td><td>[&quot;event_profit_factor&quot;, &quot;dsr&quot;]</td></tr><tr><td>no_immediate_reversal</td><td>1.0056</td><td>2.088477</td><td>1.0</td><td>0.857143</td><td>True</td><td>True</td><td>28</td><td>[&quot;event_profit_factor&quot;, &quot;dsr&quot;]</td></tr><tr><td>combined_recovery_confirmation</td><td>1.0089</td><td>3.269028</td><td>1.0</td><td>0.666667</td><td>True</td><td>True</td><td>6</td><td>[&quot;event_profit_factor&quot;, &quot;regime_pass_rate&quot;]</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>9. Skeleton Decision</h2>
+    <div class="decision"><strong>archive_liquidation_shock_recovery</strong></div>
+    <ul><li>no_ablation_simultaneously_passed_event_PF_WF_and_cost_stress_base</li><li>fold3_failure_not_reproducible_enough_for_single_rule_fix</li><li>mean_reverting_chop_drag_visible_but_not_sufficient_as_standalone_v2_rule</li><li>ordinary_PF_remains_diagnostic_only</li></ul>
+    <p>v2 generated: <strong>False</strong></p>
+  </section>
+
+  <section>
+    <h2>10. Tests</h2>
+    <table><thead><tr><th>command</th><th>result</th></tr></thead><tbody><tr><td>PYTHONPATH=. pytest tests/research/test_liquidation_shock_event_return_attribution_schema.py tests/research/test_liquidation_shock_event_pf_recompute.py tests/research/test_liquidation_shock_fold3_autopsy.py tests/research/test_liquidation_shock_mean_reverting_chop_analysis.py tests/research/test_liquidation_shock_exit_lifecycle_ablation.py tests/research/test_liquidation_shock_recovery_confirmation_no_lookahead.py tests/research/test_liquidation_shock_v2_generation_guard.py tests/research/test_liquidation_shock_v2_gate_thresholds.py tests/research/test_liquidation_shock_paper_live_safety.py tests/reports/test_liquidation_shock_attribution_html_generation.py -q</td><td>12 passed, 2 warnings in 1.96s</td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>11. Artifacts</h2>
+    <ul class="paths">
+      <li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/liquidation_shock_event_return_attribution.json</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/liquidation_shock_event_return_table.csv</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/liquidation_shock_event_return_table.parquet</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/liquidation_shock_exit_lifecycle_ablation.json</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/liquidation_shock_fold3_autopsy.json</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/liquidation_shock_mean_reverting_chop_report.json</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/liquidation_shock_recovery_confirmation_report.json</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/liquidation_shock_skeleton_decision.json</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/paper_live_safety_status.json</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/promotion_decision.json</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/run_manifest.json</code></li><li><code>artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/test_results.json</code></li>
+      <li><code>docs/research/BTC_LIQUIDATION_SHOCK_SKELETON_DECISION.md</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>12. Final Decision</h2>
+    <div class="decision"><strong>liquidation-shock recovery archived; paper queue remains LOCKED; live remains FROZEN.</strong></div>
+  </section>
+</main>
+</body>
+</html>

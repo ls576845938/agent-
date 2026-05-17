@@ -1,0 +1,37 @@
+{
+  "decision": "archive_liquidation_shock_recovery",
+  "event_PF_root_cause": [
+    "Event_PF recomputes to 0.9980, matching canonical event_PF 0.9980.",
+    "Target-active exposure event_PF is 1.1732, but full-ledger event_PF is only 0.9980.",
+    "Ledger equity changes outside target-active windows have event_PF 0.9770; promotion must use full ledger, not target-active diagnostic slices.",
+    "Active exposure positive event sum 0.337951 versus negative event sum -0.288060 is not enough to overcome full ledger lifecycle drag.",
+    "Worst active fold by event attribution is fold 3; rolling WF pass remains 0.75.",
+    "Dragging trade-entry regime is mean_reverting_chop; bar-level attribution shows the worst active regime is liquidation_shock itself.",
+    "Cost stress base passed=False; harsh survives=False.",
+    "PBO=0.25, DSR=0.0; DSR remains a promotion blocker."
+  ],
+  "evidence_supported_rules": [],
+  "final_decision": "liquidation-shock recovery archived; paper queue remains LOCKED; live remains FROZEN.",
+  "fold3_root_cause": [
+    "Fold 3 active event_PF is 0.6873; positive and negative event sums do not support a stable recovery edge.",
+    "Fold 3 is the only rolling WF failure, but other folds only pass with event PF close to 1.0.",
+    "The worst pattern appears in other folds and can be tested as a rule.",
+    "A v2 rule requires ablation evidence across folds, not a hardcoded fold-3 fix."
+  ],
+  "live": "FROZEN",
+  "mean_reverting_chop_fixable": false,
+  "paper_queue": "LOCKED",
+  "reasons": [
+    "no_ablation_simultaneously_passed_event_PF_WF_and_cost_stress_base",
+    "fold3_failure_not_reproducible_enough_for_single_rule_fix",
+    "mean_reverting_chop_drag_visible_but_not_sufficient_as_standalone_v2_rule",
+    "ordinary_PF_remains_diagnostic_only"
+  ],
+  "run_id": "20260517T010000Z_liquidation_shock_attribution",
+  "schema_version": "btc_liquidation_shock_skeleton_decision_v1",
+  "second_confirmation_required": false,
+  "status": "research_failed",
+  "time_exit_should_shorten": false,
+  "v2_config_path": "",
+  "v2_generated": false
+}
