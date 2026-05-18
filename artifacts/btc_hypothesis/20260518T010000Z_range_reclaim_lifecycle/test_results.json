@@ -1,0 +1,16 @@
+{
+  "commands": [
+    {
+      "command": "PYTHONPATH=. pytest tests/research/test_range_reclaim_lifecycle_schema.py tests/research/test_range_reclaim_lifecycle_gate.py tests/research/test_range_reclaim_no_lookahead.py tests/research/test_range_reclaim_safety_status.py tests/reports/test_range_reclaim_lifecycle_html_generation.py -q",
+      "result": "8 passed in 1.40s"
+    },
+    {
+      "command": "PYTHONPATH=. pytest tests/research/test_btc_research_registry.py tests/research/test_hypothesis_lab_v2_lifecycle_schema.py tests/research/test_hypothesis_lab_v2_gate.py tests/research/test_hypothesis_lab_v2_no_lookahead.py tests/research/test_compression_expansion_lifecycle_report.py tests/research/test_hypothesis_lab_v2_skeleton_guard.py tests/research/test_hypothesis_lab_v2_safety_status.py tests/reports/test_hypothesis_lab_v2_html_generation.py tests/research/test_range_reclaim_lifecycle_schema.py tests/research/test_range_reclaim_lifecycle_gate.py tests/research/test_range_reclaim_no_lookahead.py tests/research/test_range_reclaim_safety_status.py tests/reports/test_range_reclaim_lifecycle_html_generation.py -q",
+      "result": "18 passed in 1.49s"
+    }
+  ],
+  "full_suite": {
+    "reason": "Focused evidence-contract and lifecycle hypothesis tests only; full suite is broader than this research-only sprint.",
+    "run": false
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "checks": {
+    "active_event_count": true,
+    "cost_stress_proxy_base": false,
+    "fold_pass_rate_lifecycle": false,
+    "full_lifecycle_event_PF_proxy": false,
+    "lifecycle_drag_pct": true,
+    "no_lookahead": true,
+    "raw_event_PF_proxy": false,
+    "target_active_event_PF_proxy": false,
+    "top5_positive_contribution": true
+  },
+  "decision": "hypothesis_rejected",
+  "final_decision": "hypothesis rejected; no strategy generated; paper queue remains LOCKED; live remains FROZEN.",
+  "hypothesis_id": "range_reclaim_momentum_v0",
+  "live": "FROZEN",
+  "paper_queue": "LOCKED",
+  "reasons": [
+    "raw_event_PF_proxy",
+    "target_active_event_PF_proxy",
+    "full_lifecycle_event_PF_proxy",
+    "fold_pass_rate_lifecycle",
+    "cost_stress_proxy_base"
+  ],
+  "run_id": "20260518T010000Z_range_reclaim_lifecycle",
+  "schema_version": "btc_hypothesis_lab_v2_decision_v1",
+  "skeleton_checks": {
+    "downside_tail_not_catastrophic": true,
+    "fold_pass_rate_lifecycle": false,
+    "full_lifecycle_event_PF_proxy": false,
+    "multi_horizon": true
+  },
+  "skeleton_guard_decision": "do_not_generate_skeleton",
+  "skeleton_reasons": [
+    "full_lifecycle_event_PF_proxy",
+    "fold_pass_rate_lifecycle"
+  ],
+  "strategy_skeleton_generated": false,
+  "strategy_skeleton_path": ""
+}

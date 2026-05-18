@@ -1,0 +1,59 @@
+hypothesis_id: range_reclaim_momentum_v0
+mode: research_only
+timeframes:
+  base: 1h
+horizons:
+  - 1h
+  - 4h
+  - 12h
+  - 24h
+  - 48h
+fold_config:
+  method: fixed_time_split
+  fold_count: 4
+feature_config:
+  no_lookahead: true
+  side: long_only
+  range_window: 48
+  fast_ma: 72
+  slow_ma: 240
+  slope_window: 48
+  max_extension_pct: 0.08
+  reclaim_buffer_bps: 0.0
+  volatility_window: 96
+  volatility_quantile_lookback: 720
+  max_volatility_quantile: 0.80
+regime_exclusions:
+  - trending_down
+  - high_vol_trend
+  - liquidation_shock
+lifecycle_config:
+  hold_bars: 18
+  target_active_bars: 6
+  cooldown_bars: 6
+  cost_bps: 4.0
+  harsh_cost_bps: 8.0
+sample_thresholds:
+  min_active_events: 200
+acceptance_gate:
+  min_raw_event_pf_proxy: 1.15
+  min_target_active_event_pf_proxy: 1.15
+  min_full_lifecycle_event_pf_proxy: 1.10
+  max_lifecycle_drag_pct: 0.20
+  min_fold_pass_rate_lifecycle: 0.75
+  min_fold_event_pf_proxy: 1.05
+  min_median_return: 0.0
+  max_top5_positive_contribution: 0.35
+  min_multi_horizon_pass_count: 2
+  min_horizon_event_pf_proxy: 1.10
+  harsh_cost_survival_event_pf_proxy: 1.00
+skeleton_gate:
+  min_full_lifecycle_event_pf_proxy: 1.15
+  min_fold_pass_rate_lifecycle: 0.75
+  min_multi_horizon_pass_count: 2
+  min_downside_tail_5pct: -0.05
+safety:
+  paper_queue: LOCKED
+  live: FROZEN
+  real_broker_api_allowed: false
+  real_orders_allowed: false

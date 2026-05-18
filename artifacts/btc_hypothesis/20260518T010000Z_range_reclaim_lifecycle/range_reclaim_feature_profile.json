@@ -1,0 +1,40 @@
+{
+  "active_event_count": 262,
+  "active_rate": 0.012693,
+  "data_range": {
+    "end": "2026-05-12T00:00:00+00:00",
+    "rows": 20689,
+    "start": "2024-01-01T00:00:00+00:00"
+  },
+  "feature_definitions": {
+    "future_return_usage": "labels_only",
+    "orderflow_entry_trigger": false,
+    "prior_range_high": "rolling high shifted by one bar; current bar is excluded",
+    "range_reclaim": "closed bar close reclaims prior range high after prior close was inside/below the prior range",
+    "regime_exclusions": [
+      "trending_down",
+      "high_vol_trend",
+      "liquidation_shock"
+    ],
+    "side": "long_only",
+    "trend_confirmation": "fast MA above slow MA, close above slow MA, slow MA slope positive",
+    "volatility_filter": "current realized volatility <= rolling historical quantile threshold"
+  },
+  "fold_active_counts": {
+    "1": 47,
+    "2": 69,
+    "3": 20,
+    "4": 36,
+    "pre_wf": 90
+  },
+  "hypothesis_id": "range_reclaim_momentum_v0",
+  "mode": "research_only",
+  "no_lookahead": {
+    "feature_basis": "rolling current-and-past OHLCV; prior range uses shift(1)",
+    "future_return_usage": "labels_only",
+    "status": "pass"
+  },
+  "row_count": 20641,
+  "run_id": "20260518T010000Z_range_reclaim_lifecycle",
+  "schema_version": "btc_range_reclaim_feature_profile_v1"
+}
