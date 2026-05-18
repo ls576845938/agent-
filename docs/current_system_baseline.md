@@ -68,7 +68,8 @@ not a trading authorization.
 
 ## Known Gaps
 
-- No single global registry source of truth exists yet.
+- A global registry builder/schema exists, but frontends and research services do
+  not yet consume it as the single source of truth.
 - `tests/contracts/` did not exist at audit time.
 - BTC registry and `data/research/evidence_registry.json` are separate systems.
 - Frontend reads status from multiple APIs, not one global registry.
@@ -91,3 +92,18 @@ not a trading authorization.
 - Qlib and PyPortfolioOpt remain research inputs/adapters only.
 - Signal equity, target-active return, and plain PF remain diagnostics only.
 - Global registry artifacts are read-only summaries, not trading approval.
+
+## Phase 2 US Equity Evidence Registry Boundary
+
+- US equity remains `mainline` in the global registry.
+- Qlib outputs are normalized to `evidence_candidate` only.
+- Qlib / factor / portfolio research artifacts are not paper candidates.
+- The only allowed next action for US evidence candidates is
+  `internal_event_backtest_required`.
+- US data lineage now excludes BTC SQLite manifests from the US equity registry
+  node.
+- Missing universe manifests, corporate action reports, factor evidence packs,
+  portfolio canonical reports, and event-ledger portfolio backtests are reported
+  as blockers instead of being silently ignored.
+- Paper queue remains `locked`; live remains `frozen`; candidate passed count
+  remains `0`.

@@ -48,6 +48,11 @@
             "latest_data_status",
             "latest_factor_evidence",
             "latest_portfolio_report",
+            "data_lineage",
+            "factor_evidence",
+            "portfolio_evidence",
+            "blockers",
+            "allowed_next_actions",
             "current_candidates"
           ],
           "properties": {
@@ -63,8 +68,169 @@
             "latest_portfolio_report": {
               "type": ["string", "null"]
             },
+            "data_lineage": {
+              "type": "object",
+              "required": [
+                "status",
+                "latest_data_manifest",
+                "manifest_count",
+                "data_versions",
+                "symbols",
+                "universe_manifest",
+                "corporate_action_report",
+                "survivorship_status",
+                "adjustment_policies",
+                "blockers"
+              ],
+              "properties": {
+                "status": {
+                  "enum": ["missing", "partial", "complete"]
+                },
+                "latest_data_manifest": {
+                  "type": ["string", "null"]
+                },
+                "manifest_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "data_versions": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "symbols": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "universe_manifest": {
+                  "type": ["string", "null"]
+                },
+                "corporate_action_report": {
+                  "type": ["string", "null"]
+                },
+                "survivorship_status": {
+                  "type": "string"
+                },
+                "adjustment_policies": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "blockers": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              },
+              "additionalProperties": false
+            },
+            "factor_evidence": {
+              "type": "object",
+              "required": [
+                "status",
+                "latest_factor_mining_report",
+                "generated_factors_path",
+                "generated_strategy_count",
+                "blockers"
+              ],
+              "properties": {
+                "status": {
+                  "enum": ["missing", "partial", "complete"]
+                },
+                "latest_factor_mining_report": {
+                  "type": ["string", "null"]
+                },
+                "generated_factors_path": {
+                  "type": ["string", "null"]
+                },
+                "generated_strategy_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "blockers": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              },
+              "additionalProperties": false
+            },
+            "portfolio_evidence": {
+              "type": "object",
+              "required": [
+                "status",
+                "latest_portfolio_run_manifest",
+                "portfolio_run_count",
+                "blockers"
+              ],
+              "properties": {
+                "status": {
+                  "enum": ["missing", "research_only", "complete"]
+                },
+                "latest_portfolio_run_manifest": {
+                  "type": ["string", "null"]
+                },
+                "portfolio_run_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "blockers": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              },
+              "additionalProperties": false
+            },
+            "blockers": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "allowed_next_actions": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "build_us_equity_data_status_report",
+                  "standardize_factor_evidence_pack",
+                  "internal_event_backtest_required"
+                ]
+              }
+            },
             "current_candidates": {
-              "type": "array"
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "source",
+                  "status",
+                  "evidence_path",
+                  "data_versions",
+                  "blockers",
+                  "allowed_next_action"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "enum": ["evidence_candidate", "factor_evidence_candidate", "portfolio_research_artifact"]
+                  },
+                  "evidence_path": {
+                    "type": "string"
+                  },
+                  "data_versions": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                  },
+                  "blockers": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                  },
+                  "allowed_next_action": {
+                    "const": "internal_event_backtest_required"
+                  }
+                },
+                "additionalProperties": false
+              }
             }
           },
           "additionalProperties": false
