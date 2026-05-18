@@ -107,3 +107,17 @@ not a trading authorization.
   as blockers instead of being silently ignored.
 - Paper queue remains `locked`; live remains `frozen`; candidate passed count
   remains `0`.
+
+## Phase 3 US Equity Data Status Contract
+
+- Added a read-only US equity data status builder contract.
+- Default generated artifact paths:
+  - `artifacts/us_equity_data_status/latest/data_status_report.json`
+  - `artifacts/us_equity_data_status/latest/universe_manifest.json`
+  - `artifacts/us_equity_data_status/latest/corporate_action_report.json`
+- The universe manifest is manifest-derived only; it is not yet a full
+  point-in-time constituent history.
+- The corporate action report is manifest-derived only; a dedicated split /
+  dividend event source remains a blocker.
+- Global registry surfaces these artifact paths when they exist, but still keeps
+  US equity candidates as evidence-only until internal event-ledger validation.

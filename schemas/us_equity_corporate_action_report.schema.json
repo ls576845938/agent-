@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_corporate_action_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Corporate Action Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "symbol_count",
+    "symbols",
+    "adjustment_policies",
+    "promotion_ready",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_corporate_action_report_v1"},
+    "generated_at": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["missing", "manifest_derived_only", "complete"]},
+    "symbol_count": {"type": "integer", "minimum": 0},
+    "symbols": {"type": "array", "items": {"type": "string"}},
+    "adjustment_policies": {"type": "array", "items": {"type": "string"}},
+    "promotion_ready": {"const": false},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

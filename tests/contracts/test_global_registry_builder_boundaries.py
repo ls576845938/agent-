@@ -4,6 +4,7 @@ from pathlib import Path
 
 
 REGISTRY_BUILDER = Path("scripts/build_global_research_registry.py")
+US_EQUITY_STATUS_BUILDER = Path("scripts/build_us_equity_data_status_report.py")
 
 
 def test_global_registry_builder_has_no_runtime_or_broker_imports() -> None:
@@ -33,4 +34,33 @@ def test_global_registry_builder_does_not_call_order_submission_surfaces() -> No
         "create_order(",
     ]
     for forbidden in forbidden_runtime_tokens:
+        assert forbidden not in source
+
+
+def test_us_equity_data_status_builder_has_no_runtime_or_broker_imports() -> None:
+    source = US_EQUITY_STATUS_BUILDER.read_text(encoding="utf-8")
+
+    forbidden_imports = [
+        "from quant_us.live",
+        "import quant_us.live",
+        "from quant_us.execution",
+        "import quant_us.execution",
+        "from backend.app.services.us_quant",
+        "import backend.app.services.us_quant",
+    ]
+    for forbidden in forbidden_imports:
+        assert forbidden not in source
+
+
+def test_us_equity_data_status_builder_does_not_call_order_submission_surfaces() -> None:
+    source = US_EQUITY_STATUS_BUILDER.read_text(encoding="utf-8")
+
+    for forbidden in [
+        "AlpacaBroker(",
+        "LiveRuntime(",
+        "PaperRuntime(",
+        "submit_order(",
+        "place_order(",
+        "create_order(",
+    ]:
         assert forbidden not in source

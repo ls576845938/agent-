@@ -49,6 +49,7 @@ def test_build_global_registry_minimum_structure_matches_policy() -> None:
     assert registry["candidate_passed_internal_gate"] == 0
     assert registry["assets"]["us_equity"]["status"] == "mainline"
     assert registry["assets"]["us_equity"]["data_lineage"]["status"] in {"missing", "partial", "complete"}
+    assert "data_status_report" in registry["assets"]["us_equity"]["data_lineage"]
     assert registry["assets"]["us_equity"]["factor_evidence"]["status"] in {"missing", "partial", "complete"}
     assert registry["assets"]["us_equity"]["portfolio_evidence"]["status"] in {"missing", "research_only", "complete"}
     assert "internal_event_backtest_required" in registry["assets"]["us_equity"]["allowed_next_actions"]

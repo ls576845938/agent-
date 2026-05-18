@@ -23,6 +23,9 @@ PORTFOLIO_RUNS_ROOT = Path("artifacts/portfolio_runs")
 GENERATED_FACTORS_PATH = Path("data/research/generated_factors/factors.json")
 GENERATED_STRATEGIES_ROOT = Path("data/research/generated_strategies")
 FACTOR_MINING_ROOT = Path("data/research/factor_mining")
+US_EQUITY_DATA_STATUS_REPORT = Path("artifacts/us_equity_data_status/latest/data_status_report.json")
+US_EQUITY_UNIVERSE_MANIFEST = Path("artifacts/us_equity_data_status/latest/universe_manifest.json")
+US_EQUITY_CORPORATE_ACTION_REPORT = Path("artifacts/us_equity_data_status/latest/corporate_action_report.json")
 
 
 def build_global_registry(
@@ -113,7 +116,8 @@ def _build_us_equity_summary(root: Path) -> dict[str, Any]:
     )
     return {
         "status": "mainline",
-        "latest_data_status": data_lineage.get("latest_data_manifest"),
+        "latest_data_status": data_lineage.get("data_status_report")
+        or data_lineage.get("latest_data_manifest"),
         "latest_factor_evidence": factor_evidence.get("latest_factor_mining_report"),
         "latest_portfolio_report": portfolio_evidence.get("latest_portfolio_run_manifest"),
         "data_lineage": data_lineage,
@@ -130,6 +134,12 @@ def _build_us_equity_summary(root: Path) -> dict[str, Any]:
 
 
 def _us_data_lineage(root: Path) -> dict[str, Any]:
+    data_status_path = root / US_EQUITY_DATA_STATUS_REPORT
+    universe_manifest_path = root / US_EQUITY_UNIVERSE_MANIFEST
+    corporate_action_report_path = root / US_EQUITY_CORPORATE_ACTION_REPORT
+    data_status = _read_json(data_status_path)
+    universe_manifest = _read_json(universe_manifest_path)
+    corporate_action_report = _read_json(corporate_action_report_path)
     manifest_paths = [
         path
         for path in sorted((root / DATA_MANIFEST_ROOT).glob("*.json"))
@@ -161,16 +171,34 @@ def _us_data_lineage(root: Path) -> dict[str, Any]:
         }
     )
     blockers: list[str] = []
+    if not data_status_path.exists():
+        blockers.append("us_equity_data_status_report_missing")
     if not manifests:
         blockers.append("us_equity_data_manifest_missing")
-    if not (root / "artifacts/us_equity_data_status/latest/universe_manifest.json").exists():
+    if not universe_manifest_path.exists():
         blockers.append("us_equity_universe_manifest_missing")
-    if not (root / "artifacts/us_equity_data_status/latest/corporate_action_report.json").exists():
+    elif isinstance(universe_manifest.get("blockers"), list):
+        blockers.extend(str(item) for item in universe_manifest["blockers"])
+    if not corporate_action_report_path.exists():
         blockers.append("us_equity_corporate_action_report_missing")
+    elif isinstance(corporate_action_report.get("blockers"), list):
+        blockers.extend(str(item) for item in corporate_action_report["blockers"])
+    if isinstance(data_status.get("blockers"), list):
+        blockers.extend(str(item) for item in data_status["blockers"])
     if not survivorship_values or "unknown" in survivorship_values:
         blockers.append("us_equity_survivorship_status_unconfirmed")
+    blockers = _merge_blockers(blockers)
+    data_status_report = _relpath(data_status_path, root) if data_status_path.exists() else None
+    universe_manifest_report = _relpath(universe_manifest_path, root) if universe_manifest_path.exists() else None
+    corporate_action_report_ref = (
+        _relpath(corporate_action_report_path, root)
+        if corporate_action_report_path.exists()
+        else None
+    )
+    status = "missing" if not manifests else ("complete" if not blockers else "partial")
     return {
-        "status": "partial" if manifests else "missing",
+        "status": status,
+        "data_status_report": data_status_report,
         "latest_data_manifest": _relpath(latest_path, root) if latest_path else None,
         "manifest_count": len(manifests),
         "data_versions": [
@@ -179,8 +207,8 @@ def _us_data_lineage(root: Path) -> dict[str, Any]:
             if item.get("data_version")
         ][:50],
         "symbols": sorted({str(item.get("symbol", "")) for item in manifests if item.get("symbol")})[:100],
-        "universe_manifest": None,
-        "corporate_action_report": None,
+        "universe_manifest": universe_manifest_report,
+        "corporate_action_report": corporate_action_report_ref,
         "survivorship_status": "mixed" if len(survivorship_values) > 1 else (survivorship_values[0] if survivorship_values else "unknown"),
         "adjustment_policies": adjustment_policies,
         "blockers": blockers,
