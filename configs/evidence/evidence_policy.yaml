@@ -1,0 +1,35 @@
+global:
+  require_event_ledger: true
+  require_fills: true
+  require_ledger_pnl: true
+  require_cost_stress: true
+  require_walk_forward: true
+  require_regime_report: true
+  require_registry_status: true
+  forbid_signal_equity_promotion: true
+  forbid_target_active_promotion: true
+  forbid_plain_pf_promotion: true
+
+promotion:
+  paper_queue_locked_by_default: true
+  live_frozen_by_default: true
+  candidate_passed_internal_gate_required: true
+
+us_equity:
+  require_data_manifest: true
+  require_universe_manifest: true
+  require_corporate_action_status: true
+  require_survivorship_status: true
+  require_factor_evidence_pack: true
+  require_portfolio_canonical_report: true
+  require_exposure_report: true
+  require_turnover_report: true
+  require_capacity_proxy: true
+
+btc:
+  require_sqlite_completeness_report: true
+  require_fold_definition_version: true
+  require_regime_classifier_version: true
+  require_funding_cost_model: true
+  require_fee_model: true
+  require_tail_dependency_report: true

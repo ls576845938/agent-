@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/global_research_registry.schema.json",
+  "title": "QuantStation VNEXT Global Research Registry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "paper_queue_status",
+    "live_status",
+    "candidate_passed_internal_gate",
+    "assets"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "global_research_registry_v1"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "commit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "paper_queue_status": {
+      "const": "locked"
+    },
+    "live_status": {
+      "const": "frozen"
+    },
+    "candidate_passed_internal_gate": {
+      "const": 0
+    },
+    "assets": {
+      "type": "object",
+      "required": ["us_equity", "btc"],
+      "properties": {
+        "us_equity": {
+          "type": "object",
+          "required": [
+            "status",
+            "latest_data_status",
+            "latest_factor_evidence",
+            "latest_portfolio_report",
+            "current_candidates"
+          ],
+          "properties": {
+            "status": {
+              "const": "mainline"
+            },
+            "latest_data_status": {
+              "type": ["string", "null"]
+            },
+            "latest_factor_evidence": {
+              "type": ["string", "null"]
+            },
+            "latest_portfolio_report": {
+              "type": ["string", "null"]
+            },
+            "current_candidates": {
+              "type": "array"
+            }
+          },
+          "additionalProperties": false
+        },
+        "btc": {
+          "type": "object",
+          "required": [
+            "status",
+            "latest_registry",
+            "current_candidates",
+            "archived_or_rejected"
+          ],
+          "properties": {
+            "status": {
+              "const": "research_sandbox"
+            },
+            "latest_registry": {
+              "type": "string"
+            },
+            "current_candidates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "status", "allowed_next_action"],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "allowed_next_action": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "archived_or_rejected": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
