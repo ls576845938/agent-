@@ -36,6 +36,19 @@ function decisionColor(status: string): string {
   return '#94a3b8';
 }
 
+function decisionLabel(status: string): string {
+  const labels: Record<string, string> = {
+    PROMOTE_TO_REVIEW: '晋升审查',
+    REJECT: '拒绝',
+    KEEP_WATCHING: '持续观察',
+    READY_FOR_PAPER_REVIEW: '可进入纸交易复核',
+    PAPER_ELIGIBLE: '纸交易合格',
+    READY_FOR_PORTFOLIO_SIM: '可进入组合模拟',
+    PAPER_REVIEW_CANDIDATE: '纸交易复核候选',
+  };
+  return labels[status?.toUpperCase()] ?? status;
+}
+
 const filterInputStyle = {
   padding: '6px 10px',
   fontSize: '0.8rem',
@@ -78,7 +91,7 @@ export default function CandidateTable({
     {key: 'turnover_score', label: '换手率', sortable: true, render: (v) => v != null ? ((v as number) * 100).toFixed(1) + '%' : '-'},
     {key: 'promotion_status', label: '决策', sortable: true, render: (v, row) => {
       const status = (v ?? row.promotion_status) as string;
-      return <span style={{color: decisionColor(status), fontWeight: 600}}>{status || '-'}</span>;
+      return <span style={{color: decisionColor(status), fontWeight: 600}}>{decisionLabel(status) || '-'}</span>;
     }},
   ];
 

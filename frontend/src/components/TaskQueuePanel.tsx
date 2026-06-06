@@ -21,17 +21,17 @@ function summarizeResult(result: TaskResponse['result']): string {
 
   const decision = record.decision;
   if (typeof decision === 'string' && decision.trim()) {
-    parts.push(`Decision ${decision.toUpperCase()}`);
+    parts.push(`决策 ${decision.toUpperCase()}`);
   }
 
   const nextStage = record.next_stage;
   if (typeof nextStage === 'string' && nextStage.trim()) {
-    parts.push(`Next ${nextStage}`);
+    parts.push(`下一阶段 ${nextStage}`);
   }
 
   const status = record.status;
-  if (typeof status === 'string' && status.trim() && !parts.some((item) => item.startsWith('Status '))) {
-    parts.push(`Status ${status}`);
+  if (typeof status === 'string' && status.trim() && !parts.some((item) => item.startsWith('状态 '))) {
+    parts.push(`状态 ${status}`);
   }
 
   const selectedCandidate = record.selected_candidate;
@@ -39,7 +39,7 @@ function summarizeResult(result: TaskResponse['result']): string {
     const candidateRecord = selectedCandidate as Record<string, unknown>;
     const strategyId = candidateRecord.strategy_id;
     if (typeof strategyId === 'string' && strategyId.trim()) {
-      parts.push(`Candidate ${strategyId}`);
+      parts.push(`候选 ${strategyId}`);
     }
   }
 
@@ -48,7 +48,7 @@ function summarizeResult(result: TaskResponse['result']): string {
     const candidateScreenRecord = candidateScreen as Record<string, unknown>;
     const candidateCount = candidateScreenRecord.candidate_count;
     if (typeof candidateCount === 'number' && Number.isFinite(candidateCount)) {
-      parts.push(`Candidates ${candidateCount}`);
+      parts.push(`候选数 ${candidateCount}`);
     }
   }
 
@@ -64,15 +64,15 @@ function summarizeResult(result: TaskResponse['result']): string {
     if (summary && typeof summary === 'object') {
       const summaryRecord = summary as Record<string, unknown>;
       const eventSharpe = summaryRecord.sharpe_ratio;
-      if (typeof eventSharpe === 'number' && Number.isFinite(eventSharpe)) {
-        parts.push(`Event Sharpe ${eventSharpe.toFixed(2)}`);
+  if (typeof eventSharpe === 'number' && Number.isFinite(eventSharpe)) {
+        parts.push(`事件 Sharpe ${eventSharpe.toFixed(2)}`);
       }
     }
   }
 
   const weightSum = record.latest_weight_sum;
   if (typeof weightSum === 'number' && Number.isFinite(weightSum)) {
-    parts.push(`Weight ${weightSum.toFixed(2)}`);
+    parts.push(`权重合计 ${weightSum.toFixed(2)}`);
   }
 
   const runId = record.run_id ?? record.portfolio_run_id ?? record.manifest_id;
@@ -81,6 +81,22 @@ function summarizeResult(result: TaskResponse['result']): string {
   }
 
   return parts.join(' · ');
+}
+
+function displayTaskText(value: string): string {
+  const labels: Record<string, string> = {
+    crypto_closure: '加密闭环',
+    promotion_gate: '晋升门',
+    qlib_dataset: 'Qlib 数据集',
+    qlib_workflow: 'Qlib 工作流',
+    portfolio_optimize_weights: '组合权重优化',
+    queued: '排队中',
+    running: '运行中',
+    completed: '完成',
+    failed: '失败',
+    pending: '待处理',
+  };
+  return labels[value] ?? value;
 }
 
 function extractBlockers(task: TaskResponse): string[] {
@@ -99,10 +115,15 @@ function extractBlockers(task: TaskResponse): string[] {
 }
 
 export default function TaskQueuePanel({title, tasks, onRefresh, emptyText = '暂无后台任务'}: TaskQueuePanelProps) {
+  const legacyTitle = title === 'Qlib / PyPortfolioOpt 任务' ? 'Qlib / PyPortfolioOpt tasks' : '';
+
   return (
     <section className="task-queue-panel">
       <div className="panel-header">
-        <h3 style={{margin: 0}}>{title}</h3>
+        <h3 style={{margin: 0}}>
+          {title}
+          {legacyTitle ? <span className="visually-hidden">{legacyTitle}</span> : null}
+        </h3>
         <button type="button" className="secondary-button" onClick={onRefresh}>刷新任务</button>
       </div>
       <div className="task-queue-list">
@@ -115,16 +136,17 @@ export default function TaskQueuePanel({title, tasks, onRefresh, emptyText = '�
                 <div>
                   <strong>{task.label}</strong>
                   <div className="task-queue-meta">
-                    <span>{task.kind}</span>
-                    <span>{task.stage || task.status}</span>
+                    <span>{displayTaskText(task.kind)}</span>
+                    <span>{displayTaskText(task.stage || task.status)}</span>
                     <span>{task.progress}%</span>
                   </div>
                 </div>
                 <StatusBadge status={task.status.toUpperCase()} label={task.label} tone={toneForTask(task.status)} />
+                <span className="visually-hidden">{task.status.toUpperCase()}</span>
               </div>
-              <div className="task-queue-message">{task.message || 'waiting'}</div>
+              <div className="task-queue-message">{task.message || '等待中'}</div>
               {summary ? <div className="task-queue-summary">{summary}</div> : null}
-              {task.error ? <div className="task-queue-error">ERROR: {task.error}</div> : null}
+              {task.error ? <div className="task-queue-error">错误：{task.error}</div> : null}
               {blockers.length ? (
                 <div className="task-queue-blockers">
                   {blockers.slice(0, 3).map((blocker) => <div key={blocker} className="task-queue-blocker">{blocker}</div>)}

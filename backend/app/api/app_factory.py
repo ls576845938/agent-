@@ -793,7 +793,7 @@ def create_app():
         )
 
     @router.get("/system/overview", response_model=SystemOverviewResponse, dependencies=[Depends(verify_api_key)])
-    async def system_overview(
+    def system_overview(
         data_root: str = "data",
         qlib_artifacts_root: str = "artifacts/qlib_runs",
         portfolio_artifacts_root: str = "artifacts/portfolio_runs",
@@ -1115,8 +1115,11 @@ def create_app():
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @router.get("/strategies", response_model=list[StrategyInfo], dependencies=[Depends(verify_api_key)])
-    async def list_strategies() -> list[StrategyInfo]:
-        return [StrategyInfo.model_validate(descriptor.__dict__) for descriptor in research_service.list_strategies()]
+    def list_strategies() -> list[StrategyInfo]:
+        try:
+            return [StrategyInfo.model_validate(descriptor.__dict__) for descriptor in research_service.list_strategies()]
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail=f"strategy registry unavailable: {exc}") from exc
 
     @router.post("/backtests/single", response_model=RunStatusResponse, dependencies=[Depends(verify_api_key)])
     async def run_single_backtest(request: SingleBacktestRequest) -> RunStatusResponse:
@@ -1358,7 +1361,7 @@ def create_app():
     # ------------------------------------------------------------------
 
     @router.get("/research/experiments")
-    async def list_research_experiments(data_root: str = "data"):
+    def list_research_experiments(data_root: str = "data"):
         """List research experiments from the lab."""
         try:
             from quant_us.research.lab.manifest import ExperimentManager
@@ -1368,7 +1371,7 @@ def create_app():
             return []
 
     @router.get("/research/candidates")
-    async def list_research_candidates(data_root: str = "data"):
+    def list_research_candidates(data_root: str = "data"):
         """List strategy candidates from the lab."""
         try:
             from quant_us.research.lab.manifest import ExperimentManager
@@ -1516,7 +1519,7 @@ def create_app():
         }
 
     @router.get("/research/strategy-manifests")
-    async def list_strategy_manifests(status: str = "", data_root: str = "data"):
+    def list_strategy_manifests(status: str = "", data_root: str = "data"):
         """List frozen strategy manifests produced from research candidates."""
         from quant_us.research.strategy_manifest import StrategyManifestManager
 
@@ -1524,7 +1527,7 @@ def create_app():
         return [asdict(manifest) for manifest in manager.list_manifests(status=status)]
 
     @router.get("/research/evidence-registry")
-    async def get_research_evidence_registry(data_root: str = "data", rebuild: bool = False):
+    def get_research_evidence_registry(data_root: str = "data", rebuild: bool = False):
         """Inspect the research evidence registry."""
         from quant_us.research.evidence_registry import inspect_evidence_registry
 
@@ -1533,6 +1536,13 @@ def create_app():
             use_saved=not rebuild,
             rebuild_if_missing=True,
         )
+
+    @router.get("/research/global-registry")
+    def get_global_research_registry():
+        """Return the read-only global research registry summary."""
+        from scripts.build_global_research_registry import build_global_registry
+
+        return build_global_registry(repo_root=settings.repo_root)
 
     @router.post("/research/evidence-registry/rebuild")
     async def rebuild_research_evidence_registry(request: dict | None = None):
@@ -1543,7 +1553,7 @@ def create_app():
         return rebuild_evidence_registry(str(payload.get("data_root") or "data"), write=True)
 
     @router.get("/research/factors")
-    async def list_research_factors(data_root: str = "data"):
+    def list_research_factors(data_root: str = "data"):
         """List registered research factors."""
         from quant_us.factors.definition import FactorLibrary
         from quant_us.factors.formula import GeneratedFactorLibrary
@@ -1766,19 +1776,20 @@ def create_app():
             raise HTTPException(status_code=503, detail="research orchestration unavailable")
 
     @router.get("/portfolio/status")
-    async def portfolio_status():
+    def portfolio_status():
         """Return current portfolio construction status."""
         try:
-            from quant_us.portfolio.construction.engine import PortfolioConstructionEngine
-            engine = PortfolioConstructionEngine()
-            # Return a summary - look for saved portfolio targets
             import json
             from pathlib import Path
+
+            # Keep the dashboard status endpoint read-only and cheap. Portfolio
+            # construction may import heavier research dependencies; status only
+            # needs the latest persisted target artifact.
             target_dir = Path("data/portfolio/targets")
             if target_dir.exists():
                 targets = sorted(target_dir.glob("*.json"))
                 if targets:
-                    latest = json.loads(targets[-1].read_text())
+                    latest = json.loads(targets[-1].read_text(encoding="utf-8"))
                     return {
                         "status": "ok",
                         "portfolio_count": len(targets),
@@ -1899,7 +1910,7 @@ def create_app():
         }
 
     @router.get("/integrations/qlib/runs", dependencies=[Depends(verify_api_key)])
-    async def list_qlib_integration_runs(artifacts_root: str = "artifacts/qlib_runs", limit: int = 20):
+    def list_qlib_integration_runs(artifacts_root: str = "artifacts/qlib_runs", limit: int = 20):
         import importlib.util
 
         root = Path(artifacts_root)
@@ -2030,7 +2041,7 @@ def create_app():
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @router.get("/integrations/portfolio/runs", dependencies=[Depends(verify_api_key)])
-    async def list_portfolio_integration_runs(artifacts_root: str = "artifacts/portfolio_runs", limit: int = 20):
+    def list_portfolio_integration_runs(artifacts_root: str = "artifacts/portfolio_runs", limit: int = 20):
         import importlib.util
 
         root = Path(artifacts_root)
@@ -2237,7 +2248,7 @@ def create_app():
     # ------------------------------------------------------------------
 
     @router.get("/research/features", response_model=list[FeatureSnapshotResponse])
-    async def list_feature_snapshots():
+    def list_feature_snapshots():
         """List all feature snapshots."""
         from quant_us.research.features.snapshot import FeatureSnapshotManager
 
@@ -2367,13 +2378,13 @@ def create_app():
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @router.get("/research/paper-review/entry-state")
-    async def paper_review_entry_state(data_root: str = "data"):
+    def paper_review_entry_state(data_root: str = "data"):
         """Inspect paper-review creation eligibility and the next operator command."""
         payload = _system_overview_payload(data_root=data_root)
         return payload.get("paper_review", {})
 
     @router.get("/research/paper-review/pending")
-    async def list_pending_reviews(data_root: str = "data"):
+    def list_pending_reviews(data_root: str = "data"):
         """List pending paper reviews."""
         from quant_us.research.paper_review_bridge import PaperReviewManager
 

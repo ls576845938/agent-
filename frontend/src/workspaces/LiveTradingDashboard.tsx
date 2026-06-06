@@ -42,7 +42,7 @@ export default function LiveTradingDashboard() {
       setLastUpdate(new Date().toLocaleTimeString('zh-CN'));
       setError('');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Connection failed');
+      setError(e instanceof Error ? e.message : '连接失败');
     }
   };
 
@@ -56,7 +56,7 @@ export default function LiveTradingDashboard() {
   const totalOrders = dailyResults.reduce((sum, d) => sum + d.orders_submitted, 0);
   const totalFilled = dailyResults.reduce((sum, d) => sum + d.orders_filled, 0);
   const reconPassCount = dailyResults.filter(d => d.reconciliation_passed).length;
-  const liveFreezeOutcome = overview?.execution.live_state === 'frozen' ? 'PASS' : 'BLOCKED';
+  const liveFreezeOutcome = overview?.execution.live_state === 'frozen' ? '通过' : '阻塞';
   const liveFreezeReason = overview?.execution.live_block_reason ?? (status?.healthy ? '当前保持冻结，等待人工审批' : '系统健康异常，保持冻结');
 
   return (
@@ -74,19 +74,19 @@ export default function LiveTradingDashboard() {
       <section className="panel" style={{marginBottom: 16}}>
         <div className="panel-header">
           <h3>状态卡</h3>
-          <span>live freeze</span>
+          <span>实盘冻结</span>
         </div>
         <ModuleStateCard
           id="live-freeze"
-          title="live freeze"
+          title="实盘冻结"
           status={liveFreezeOutcome}
-          tone={liveFreezeOutcome === 'PASS' ? 'good' : 'bad'}
+          tone={liveFreezeOutcome === '通过' ? 'good' : 'bad'}
           reason={liveFreezeReason}
-          hint="实盘默认冻结，只有对账与审批完成后才允许进入 live"
+          hint="实盘默认冻结，只有对账与审批完成后才允许进入实盘"
           meta={[
-            {label: '健康', value: status?.healthy ? 'PASS' : 'BLOCKED'},
-            {label: '对账', value: status?.last_reconciliation_passed === null ? 'UNKNOWN' : status?.last_reconciliation_passed ? 'PASS' : 'BLOCKED'},
-            {label: 'live state', value: overview?.execution.live_state ?? 'UNKNOWN'},
+            {label: '健康', value: status?.healthy ? '通过' : '阻塞'},
+            {label: '对账', value: status?.last_reconciliation_passed === null ? '未知' : status?.last_reconciliation_passed ? '通过' : '阻塞'},
+            {label: '实盘状态', value: overview?.execution.live_state ?? '未知'},
             {label: '交易日', value: String(status?.days_traded ?? '—')},
           ]}
           actions={[{
@@ -97,7 +97,7 @@ export default function LiveTradingDashboard() {
         />
       </section>
 
-      {/* Account overview */}
+      {/* 账户概览 */}
       <section className="metrics-grid">
         <MetricCard label="当前权益" value={status ? formatPrice(status.equity) : '—'} />
         <MetricCard label="可用现金" value={status ? formatPrice(status.cash) : '—'} />
@@ -107,7 +107,7 @@ export default function LiveTradingDashboard() {
         <MetricCard label="交易日" value={String(status?.days_traded ?? '—')} />
       </section>
 
-      {/* Safety indicators */}
+      {/* 安全指标 */}
       <section className="panel safety-panel">
         <div className="panel-header"><h3>安全状态</h3></div>
         <div className="safety-grid">
@@ -150,7 +150,7 @@ export default function LiveTradingDashboard() {
         </div>
       </section>
 
-      {/* Daily results table */}
+      {/* 每日结果表 */}
       <section className="panel">
         <div className="panel-header"><h3>每日交易记录</h3><span>最近 {dailyResults.length} 天</span></div>
         {dailyResults.length > 0 ? (
@@ -174,12 +174,12 @@ export default function LiveTradingDashboard() {
         )}
       </section>
 
-      {/* PnL summary */}
+      {/* 盈亏摘要 */}
       {dailyResults.length > 0 ? (
         <section className="panel">
-          <div className="panel-header"><h3>PnL 概览</h3></div>
+          <div className="panel-header"><h3>盈亏概览</h3></div>
           <div className="metrics-grid">
-            <MetricCard label="日均 PnL" value={`$${(totalPnL / dailyResults.length).toFixed(2)}`} tone={totalPnL / dailyResults.length >= 0 ? 'good' : 'bad'} />
+            <MetricCard label="日均盈亏" value={`$${(totalPnL / dailyResults.length).toFixed(2)}`} tone={totalPnL / dailyResults.length >= 0 ? 'good' : 'bad'} />
             <MetricCard label="盈利天数" value={String(dailyResults.filter(d => d.daily_pnl > 0).length)} tone="good" />
             <MetricCard label="亏损天数" value={String(dailyResults.filter(d => d.daily_pnl < 0).length)} tone="bad" />
             <MetricCard label="胜率" value={`${(dailyResults.filter(d => d.daily_pnl > 0).length / dailyResults.length * 100).toFixed(1)}%`} tone={dailyResults.filter(d => d.daily_pnl > 0).length / dailyResults.length >= 0.5 ? 'good' : 'bad'} />

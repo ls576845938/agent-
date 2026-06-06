@@ -154,6 +154,7 @@ export function buildCryptoResamplePlan(
   coverage: DataCoverageItem[],
   symbol?: string,
   dbPath?: string,
+  exchange?: string,
 ): CryptoResamplePlanItem[];
 export function collectCryptoBlockers(
   dataQuality: import('./shared-types').DataQualityResponse | null | undefined,

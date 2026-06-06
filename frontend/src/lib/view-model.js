@@ -52,14 +52,14 @@ export function summarizeCryptoCoverage(coverage) {
   };
 }
 
-export function buildCryptoResamplePlan(coverage, symbol = 'BTCUSDT', dbPath = '') {
+export function buildCryptoResamplePlan(coverage, symbol = 'BTCUSDT', dbPath = '', exchange = 'binance_spot') {
   const coverageByInterval = new Map(coverage.map((item) => [item.interval, item]));
   return cryptoIntervalOrder.map((interval) => {
     const item = coverageByInterval.get(interval);
     const sourceInterval = interval === '1m' ? '1m' : '1m';
     const status = item ? 'ready' : interval === '1m' ? 'seed' : 'missing';
     return {
-      exchange: item?.exchange ?? 'binance_spot',
+      exchange: item?.exchange ?? exchange,
       symbol: item?.symbol ?? symbol,
       source_interval: sourceInterval,
       target_interval: interval,

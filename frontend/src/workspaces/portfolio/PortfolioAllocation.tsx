@@ -26,7 +26,12 @@ const rebalanceBtnStyle = {
   marginLeft: 'auto' as const,
 };
 
-const methods = ['equal_weight', 'risk_parity', 'mean_variance', 'min_volatility'];
+const methods = [
+  {value: 'equal_weight', label: '等权'},
+  {value: 'risk_parity', label: '风险平价'},
+  {value: 'mean_variance', label: '均值方差'},
+  {value: 'min_volatility', label: '最小波动'},
+];
 
 export default function PortfolioAllocation({pf}: {pf: LatestPortfolio}) {
   const pct = (v: number) => (v * 100).toFixed(1) + '%';
@@ -60,16 +65,16 @@ export default function PortfolioAllocation({pf}: {pf: LatestPortfolio}) {
         marginBottom: 16, padding: 16, background: 'rgba(255,255,255,0.05)', borderRadius: 8,
       }}>
         <label style={{fontSize: '0.85rem', color: '#94a3b8'}}>配置方法</label>
-        <select style={selectStyle} defaultValue={methods[0]}>
+        <select style={selectStyle} defaultValue={methods[0].value}>
           {methods.map(m => (
-            <option key={m} value={m}>{m}</option>
+            <option key={m.value} value={m.value}>{m.label}</option>
           ))}
         </select>
         <button
           style={rebalanceBtnStyle}
           onClick={() => {/* rebalance placeholder */}}
         >
-          Rebalance
+          再平衡
         </button>
       </div>
 

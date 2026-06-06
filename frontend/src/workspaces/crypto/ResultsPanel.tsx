@@ -46,7 +46,7 @@ export default function ResultsPanel({
       <section className="panel mvp-panel" data-testid="crypto-results">
         <div className="panel-header"><h2>MVP 交付闭环</h2><span>已完成 {mvpDoneCount}/{mvpSteps.length}</span></div>
         <div className="mvp-command-row">
-          <div><strong>{promotionGate ? promotionGate.next_stage : run?.status === 'completed' ? 'ready_for_gate' : 'research_ready'}</strong><p>{promotionGate?.manifest_id ? `Manifest ${promotionGate.manifest_id}` : '事件驱动回测结果待验收'}</p></div>
+          <div><strong>{promotionGate ? promotionGate.next_stage : run?.status === 'completed' ? '可进入门禁' : '研究就绪'}</strong><p>{promotionGate?.manifest_id ? `Manifest ${promotionGate.manifest_id}` : '事件驱动回测结果待验收'}</p></div>
           <button type="button" className="primary-button" disabled={disableMvp} onClick={onMvpAcceptance}>{mvpLoading ? '验收中...' : '一键 MVP 验收'}</button>
         </div>
         <div className="mvp-step-grid">
@@ -60,12 +60,12 @@ export default function ResultsPanel({
       {error ? <div className="panel error-panel"><div className="panel-header"><h2>运行错误</h2></div><p>{error}</p></div> : null}
 
       <section className="panel insight-panel" data-testid="crypto-blockers">
-        <div className="panel-header"><h3>Data quality / promotion blockers</h3><span>{blockers.blockers.length} 项</span></div>
+        <div className="panel-header"><h3>数据质量 / 晋升阻塞项</h3><span>{blockers.blockers.length} 项</span></div>
         <div className="hint-list">
-          {blockers.coverageBlockers.map((item) => <div key={item} className="hint-row hint-medium"><span>coverage</span><p>{item}</p></div>)}
-          {blockers.dataQualityBlockers.map((item) => <div key={item} className="hint-row hint-high"><span>quality</span><p>{item}</p></div>)}
-          {blockers.promotionBlockers.map((item) => <div key={item} className="hint-row hint-medium"><span>promotion</span><p>{item}</p></div>)}
-          {!blockers.blockers.length ? <div className="hint-row"><span>ready</span><p>SQLite 覆盖、event-driven 回测和准入门都没有显式 blocker。</p></div> : null}
+          {blockers.coverageBlockers.map((item) => <div key={item} className="hint-row hint-medium"><span>覆盖</span><p>{item}</p></div>)}
+          {blockers.dataQualityBlockers.map((item) => <div key={item} className="hint-row hint-high"><span>质量</span><p>{item}</p></div>)}
+          {blockers.promotionBlockers.map((item) => <div key={item} className="hint-row hint-medium"><span>晋升</span><p>{item}</p></div>)}
+          {!blockers.blockers.length ? <div className="hint-row"><span>就绪</span><p>SQLite 覆盖、事件驱动回测和准入门都没有显式阻塞项。</p></div> : null}
         </div>
       </section>
 
@@ -110,7 +110,7 @@ export default function ResultsPanel({
         <section className="analysis-grid">
           <article className="panel table-panel">
             <div className="panel-header"><h3>Top 回撤区间</h3><span>按深度排序</span></div>
-            <div className="detail-table">{drawdownPeriods.map((item, i) => <div key={`${item.start_time}-${i}`} className="detail-row drawdown-row"><span>{formatTimestamp(item.start_time)} - {formatTimestamp(item.end_time)}</span><span>{item.depth_pct.toFixed(2)}% · {item.duration_bars} bars</span></div>)}</div>
+            <div className="detail-table">{drawdownPeriods.map((item, i) => <div key={`${item.start_time}-${i}`} className="detail-row drawdown-row"><span>{formatTimestamp(item.start_time)} - {formatTimestamp(item.end_time)}</span><span>{item.depth_pct.toFixed(2)}% · {item.duration_bars} 根</span></div>)}</div>
           </article>
           <article className="panel table-panel">
             <div className="panel-header"><h3>月度收益</h3><span>最近 {monthlyReturns.length} 月</span></div>
@@ -120,7 +120,7 @@ export default function ResultsPanel({
       ) : null}
 
       <section className="panel detail-panel">
-        <div className="panel-header"><h3>运行详情</h3><span className={`status-tag ${viewModel.statusTone}`}>{run?.status ?? 'idle'}</span></div>
+        <div className="panel-header"><h3>运行详情</h3><span className={`status-tag ${viewModel.statusTone}`}>{run?.status ?? '空闲'}</span></div>
         <div className="detail-grid">
           <div><h4>策略表现</h4><div className="detail-table">{(run?.strategy_details ?? []).map((item) => <div key={String(item.strategy_id)} className="detail-row"><span>{String(item.display_name)}</span><span>{Number(item.total_return_pct ?? 0).toFixed(2)}%</span></div>)}</div></div>
           <div><h4>最新组合权重</h4><div className="detail-table">{(run?.latest_weights ?? []).map((item) => <div key={String(item.strategy_id)} className="detail-row"><span>{String(item.display_name)}</span><span>{(Number(item.weight ?? 0) * 100).toFixed(2)}%</span></div>)}</div></div>

@@ -409,8 +409,9 @@ class DataSyncRequest(BaseModel):
     @field_validator("exchange")
     @classmethod
     def validate_exchange(cls, value: str) -> str:
-        if value != "binance_spot":
-            raise ValueError("only binance_spot is supported by the built-in downloader")
+        allowed = {"binance", "binance_spot", "coinbase_spot", "kraken_spot"}
+        if value not in allowed:
+            raise ValueError(f"exchange must be one of {sorted(allowed)}")
         return value
 
     @field_validator("end")
@@ -505,8 +506,9 @@ class LatestDataUpdateRequest(BaseModel):
     @field_validator("exchange")
     @classmethod
     def validate_update_exchange(cls, value: str) -> str:
-        if value != "binance_spot":
-            raise ValueError("only binance_spot is supported by the built-in updater")
+        allowed = {"binance", "binance_spot", "coinbase_spot", "kraken_spot"}
+        if value not in allowed:
+            raise ValueError(f"exchange must be one of {sorted(allowed)}")
         return value
 
 
@@ -523,8 +525,9 @@ class CryptoResampleRequest(BaseModel):
     @field_validator("exchange")
     @classmethod
     def validate_resample_exchange(cls, value: str) -> str:
-        if value != "binance_spot":
-            raise ValueError("only binance_spot is supported by the built-in resampler")
+        allowed = {"binance", "binance_spot", "coinbase_spot", "kraken_spot"}
+        if value not in allowed:
+            raise ValueError(f"exchange must be one of {sorted(allowed)}")
         return value
 
     @field_validator("source_interval")

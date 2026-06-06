@@ -39,7 +39,7 @@ export default function ExperimentCompare() {
         const exps = await researchApi.listExperiments();
         if (!cancelled) setExperiments(exps || []);
       } catch (e: unknown) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load experiments');
+        if (!cancelled) setError(e instanceof Error ? e.message : '加载实验失败');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -61,7 +61,7 @@ export default function ExperimentCompare() {
       const result = await researchApi.compareExperiments(selected);
       setCompareData(result);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Compare failed');
+      setError(e instanceof Error ? e.message : '对比失败');
     } finally {
       setComparing(false);
     }

@@ -29,6 +29,26 @@ INTERVAL_MILLISECONDS = {
     "1d": 24 * 60 * 60_000,
 }
 DEFAULT_EXCHANGE = "binance_spot"
+EXCHANGE_ALIASES = {"binance": DEFAULT_EXCHANGE}
+SUPPORTED_SYNC_EXCHANGES = {DEFAULT_EXCHANGE, "coinbase_spot", "kraken_spot"}
+BTC_PERPETUAL_COVERAGE_EXCHANGES = {"", "binance_usdm", "binance_futures", "binance_perpetual"}
+BTC_DATA_STATUS_REPORT = Path("artifacts/btc_data_status/latest/btc_data_status_report.json")
+COINBASE_GRANULARITY_SECONDS = {
+    "1m": 60,
+    "5m": 300,
+    "15m": 900,
+    "1h": 3600,
+    "4h": 21600,
+    "1d": 86400,
+}
+KRAKEN_INTERVAL_MINUTES = {
+    "1m": 1,
+    "5m": 5,
+    "15m": 15,
+    "1h": 60,
+    "4h": 240,
+    "1d": 1440,
+}
 
 
 def utc_now() -> datetime:
@@ -52,6 +72,29 @@ def normalize_interval(interval: str) -> str:
     if interval not in SUPPORTED_INTERVALS:
         raise DataNotAvailableError(f"Unsupported interval: {interval}")
     return interval
+
+
+def normalize_exchange(exchange: str) -> str:
+    value = exchange.strip().lower() if exchange else ""
+    return EXCHANGE_ALIASES.get(value, exchange)
+
+
+def _coinbase_product_id(symbol: str) -> str:
+    value = symbol.upper().replace("_", "-").replace("/", "-")
+    if value in {"BTCUSDT", "BTCUSD", "XBTUSD"}:
+        return "BTC-USD"
+    if "-" not in value and len(value) > 3:
+        return f"{value[:-3]}-{value[-3:]}"
+    return value
+
+
+def _kraken_pair_id(symbol: str) -> str:
+    value = symbol.upper().replace("_", "").replace("/", "").replace("-", "")
+    if value in {"BTCUSD", "XBTUSD"}:
+        return "XBTUSD"
+    if value in {"BTCUSDT", "XBTUSDT"}:
+        return "XBTUSDT"
+    return value
 
 
 def interval_to_milliseconds(interval: str) -> int:
@@ -649,9 +692,131 @@ class BinanceKlineClient:
         return self._has_next_endpoint(index) and status_code in retriable_statuses
 
 
+class CoinbaseKlineClient:
+    def __init__(
+        self,
+        base_url: str = "https://api.exchange.coinbase.com",
+        timeout_seconds: float | None = None,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.timeout_seconds = float(timeout_seconds or settings.http_timeout_seconds)
+
+    def fetch_klines(
+        self,
+        symbol: str,
+        interval: str,
+        start_time_ms: int,
+        end_time_ms: int,
+        limit: int = 300,
+    ) -> list[list[Any]]:
+        granularity = COINBASE_GRANULARITY_SECONDS[normalize_interval(interval)]
+        product_id = _coinbase_product_id(symbol)
+        start = from_milliseconds(start_time_ms).isoformat().replace("+00:00", "Z")
+        end = from_milliseconds(end_time_ms).isoformat().replace("+00:00", "Z")
+        query = urllib.parse.urlencode({"granularity": granularity, "start": start, "end": end})
+        url = f"{self.base_url}/products/{product_id}/candles?{query}"
+        request = urllib.request.Request(
+            url,
+            headers={"User-Agent": "QuantStation-vNext/0.1"},
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
+                payload = response.read().decode("utf-8")
+                data = json.loads(payload)
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            raise DataSyncError(f"Coinbase candle request failed HTTP {exc.code}: {detail}") from exc
+        except urllib.error.URLError as exc:
+            raise DataSyncError(f"Coinbase candle request failed: {exc.reason}") from exc
+        except json.JSONDecodeError as exc:
+            raise DataSyncError("Coinbase candle request returned invalid JSON") from exc
+
+        if not isinstance(data, list):
+            raise DataSyncError(f"Coinbase candle request returned unexpected payload: {data}")
+        return sorted(data[: max(1, min(int(limit), 300))], key=lambda row: int(row[0]) if isinstance(row, list) and row else 0)
+
+
+class KrakenKlineClient:
+    def __init__(
+        self,
+        base_url: str = "https://api.kraken.com",
+        timeout_seconds: float | None = None,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.timeout_seconds = float(timeout_seconds or settings.http_timeout_seconds)
+
+    def fetch_klines(
+        self,
+        symbol: str,
+        interval: str,
+        start_time_ms: int,
+        end_time_ms: int,
+        limit: int = 720,
+    ) -> list[list[Any]]:
+        interval_minutes = KRAKEN_INTERVAL_MINUTES[normalize_interval(interval)]
+        pair = _kraken_pair_id(symbol)
+        query = urllib.parse.urlencode(
+            {
+                "pair": pair,
+                "interval": interval_minutes,
+                "since": int(start_time_ms // 1000),
+            }
+        )
+        url = f"{self.base_url}/0/public/OHLC?{query}"
+        request = urllib.request.Request(
+            url,
+            headers={"User-Agent": "QuantStation-vNext/0.1"},
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
+                payload = response.read().decode("utf-8")
+                data = json.loads(payload)
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            raise DataSyncError(f"Kraken OHLC request failed HTTP {exc.code}: {detail}") from exc
+        except urllib.error.URLError as exc:
+            raise DataSyncError(f"Kraken OHLC request failed: {exc.reason}") from exc
+        except json.JSONDecodeError as exc:
+            raise DataSyncError("Kraken OHLC request returned invalid JSON") from exc
+
+        if not isinstance(data, dict):
+            raise DataSyncError(f"Kraken OHLC request returned unexpected payload: {data}")
+        errors = data.get("error") or []
+        if errors:
+            raise DataSyncError(f"Kraken OHLC request returned errors: {errors}")
+        result = data.get("result")
+        if not isinstance(result, dict):
+            raise DataSyncError(f"Kraken OHLC request missing result: {data}")
+        rows: list[Any] = []
+        for key, value in result.items():
+            if key == "last":
+                continue
+            if isinstance(value, list):
+                rows = value
+                break
+        end_seconds = int(end_time_ms // 1000)
+        filtered = [
+            row
+            for row in rows
+            if isinstance(row, list) and row and int(row[0]) <= end_seconds
+        ]
+        return sorted(filtered[: max(1, min(int(limit), 720))], key=lambda row: int(row[0]))
+
+
 class MarketDataService:
-    def __init__(self, client: BinanceKlineClient | None = None) -> None:
+    def __init__(
+        self,
+        client: BinanceKlineClient | None = None,
+        coinbase_client: CoinbaseKlineClient | None = None,
+        kraken_client: KrakenKlineClient | None = None,
+        repo_root: Path | str | None = None,
+    ) -> None:
         self.client = client or BinanceKlineClient()
+        self.coinbase_client = coinbase_client or CoinbaseKlineClient()
+        self.kraken_client = kraken_client or KrakenKlineClient()
+        self.repo_root = Path(repo_root) if repo_root is not None else settings.repo_root
 
     def repository(self, db_path: str = "") -> MarketDataRepository:
         return MarketDataRepository(db_path=db_path)
@@ -660,11 +825,68 @@ class MarketDataService:
         repository = self.repository(db_path)
         repository.ensure_schema()
         status = repository.database_status()
-        status["coverage"] = repository.coverage() if status["initialized"] else []
+        status["coverage"] = self.coverage(db_path=db_path) if status["initialized"] else []
         return status
 
     def coverage(self, db_path: str = "", exchange: str = "", symbol: str = "", interval: str = "") -> list[dict[str, Any]]:
-        return self.repository(db_path).coverage(exchange=exchange, symbol=symbol, interval=interval)
+        normalized_exchange = normalize_exchange(exchange)
+        rows = self.repository(db_path).coverage(exchange=normalized_exchange, symbol=symbol, interval=interval)
+        if rows:
+            return rows
+        return self._btc_artifact_coverage(exchange=normalized_exchange, symbol=symbol, interval=interval)
+
+    def _btc_artifact_coverage(self, *, exchange: str = "", symbol: str = "", interval: str = "") -> list[dict[str, Any]]:
+        normalized_symbol = symbol.upper().strip() if symbol else ""
+        normalized_exchange = exchange.lower().strip() if exchange else ""
+        if normalized_symbol and normalized_symbol != "BTCUSDT":
+            return []
+        if normalized_exchange not in BTC_PERPETUAL_COVERAGE_EXCHANGES:
+            return []
+
+        report_path = self.repo_root / BTC_DATA_STATUS_REPORT
+        try:
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return []
+        except json.JSONDecodeError as exc:
+            logger.warning("BTC data status report is not valid JSON: %s", exc)
+            return []
+
+        if str(payload.get("symbol", "BTCUSDT")).upper() != "BTCUSDT":
+            return []
+        coverage = payload.get("coverage")
+        if not isinstance(coverage, dict):
+            return []
+
+        intervals = coverage.get("intervals_available") or []
+        bar_counts = coverage.get("bar_count_by_interval") or {}
+        if not isinstance(intervals, list) or not isinstance(bar_counts, dict):
+            return []
+
+        requested_interval = interval.strip() if interval else ""
+        sample_start = coverage.get("sample_start")
+        sample_end = coverage.get("sample_end")
+        updated_at = payload.get("generated_at")
+        rows: list[dict[str, Any]] = []
+        for item in intervals:
+            item_interval = str(item)
+            if requested_interval and item_interval != requested_interval:
+                continue
+            row_count = bar_counts.get(item_interval)
+            if not isinstance(row_count, (int, float)):
+                continue
+            rows.append(
+                {
+                    "exchange": "binance_usdm",
+                    "symbol": "BTCUSDT",
+                    "interval": item_interval,
+                    "rows": int(row_count),
+                    "start": sample_start,
+                    "end": sample_end,
+                    "updated_at": updated_at,
+                }
+            )
+        return rows
 
     def preview_klines(
         self,
@@ -677,7 +899,7 @@ class MarketDataService:
         limit: int = 100,
     ) -> list[dict[str, Any]]:
         return self.repository(db_path).preview_klines(
-            exchange=exchange,
+            exchange=normalize_exchange(exchange),
             symbol=symbol,
             interval=interval,
             start=start,
@@ -690,7 +912,9 @@ class MarketDataService:
 
     def resample_crypto_klines(self, spec: CryptoResampleSpec) -> CryptoResampleResult:
         symbol = spec.symbol.upper()
-        exchange = spec.exchange or DEFAULT_EXCHANGE
+        exchange = normalize_exchange(spec.exchange or DEFAULT_EXCHANGE)
+        if exchange not in SUPPORTED_SYNC_EXCHANGES:
+            raise DataSyncError(f"Unsupported crypto data exchange for resampling: {exchange}")
         source_interval = normalize_interval(spec.source_interval)
         target_interval = normalize_interval(spec.target_interval)
         if source_interval != "1m":
@@ -783,13 +1007,16 @@ class MarketDataService:
         return result
 
     def sync_binance_klines(self, spec: DataSyncSpec) -> DataSyncResult:
+        exchange = normalize_exchange(spec.exchange or DEFAULT_EXCHANGE)
+        if exchange not in SUPPORTED_SYNC_EXCHANGES:
+            raise DataSyncError(f"Unsupported crypto data exchange: {exchange}")
         spec = DataSyncSpec(
             symbol=spec.symbol.upper(),
             interval=normalize_interval(spec.interval),
             start=to_utc(spec.start),
             end=to_utc(spec.end),
             db_path=spec.db_path,
-            exchange=spec.exchange or DEFAULT_EXCHANGE,
+            exchange=exchange,
             limit=max(1, min(int(spec.limit), 1000)),
             closed_only=spec.closed_only,
         )
@@ -800,6 +1027,30 @@ class MarketDataService:
             end_ms = min(end_ms, self._latest_closed_open_time_ms(interval_ms))
         if end_ms < start_ms:
             raise DataSyncError("No closed kline exists in the requested time range.")
+        if spec.exchange == "coinbase_spot":
+            spec = DataSyncSpec(
+                symbol=spec.symbol,
+                interval=spec.interval,
+                start=spec.start,
+                end=from_milliseconds(end_ms),
+                db_path=spec.db_path,
+                exchange=spec.exchange,
+                limit=min(spec.limit, 300),
+                closed_only=spec.closed_only,
+            )
+            return self._sync_coinbase_klines(spec=spec, start_ms=start_ms, end_ms=end_ms, interval_ms=interval_ms)
+        if spec.exchange == "kraken_spot":
+            spec = DataSyncSpec(
+                symbol=spec.symbol,
+                interval=spec.interval,
+                start=spec.start,
+                end=from_milliseconds(end_ms),
+                db_path=spec.db_path,
+                exchange=spec.exchange,
+                limit=min(spec.limit, 720),
+                closed_only=spec.closed_only,
+            )
+            return self._sync_kraken_klines(spec=spec, start_ms=start_ms, end_ms=end_ms, interval_ms=interval_ms)
         spec = DataSyncSpec(
             symbol=spec.symbol,
             interval=spec.interval,
@@ -861,10 +1112,122 @@ class MarketDataService:
                 raise
             raise DataSyncError(message) from exc
 
+    def _sync_kraken_klines(
+        self,
+        *,
+        spec: DataSyncSpec,
+        start_ms: int,
+        end_ms: int,
+        interval_ms: int,
+    ) -> DataSyncResult:
+        repository = self.repository(spec.db_path)
+        result = repository.create_sync_run(spec)
+        cursor = start_ms
+        request_limit = max(1, min(int(spec.limit), 720))
+
+        try:
+            while cursor <= end_ms:
+                request_end = min(end_ms, cursor + (request_limit - 1) * interval_ms)
+                raw_rows = self.kraken_client.fetch_klines(
+                    symbol=spec.symbol,
+                    interval=spec.interval,
+                    start_time_ms=cursor,
+                    end_time_ms=request_end,
+                    limit=request_limit,
+                )
+                result.requests += 1
+                if not raw_rows:
+                    break
+
+                records = [
+                    self._parse_kraken_kline(spec.exchange, spec.symbol, spec.interval, row)
+                    for row in raw_rows
+                ]
+                records = [
+                    record
+                    for record in records
+                    if start_ms <= record.open_time_ms <= end_ms
+                ]
+                if not records:
+                    break
+
+                result.rows_received += len(records)
+                result.rows_written += repository.upsert_klines(records)
+                last_open_time = records[-1].open_time_ms
+                next_cursor = last_open_time + interval_ms
+                if next_cursor <= cursor:
+                    raise DataSyncError("Kraken kline pagination did not advance.")
+                cursor = next_cursor
+
+            return repository.finish_sync_run(result, status="completed")
+        except Exception as exc:
+            message = str(exc)
+            repository.finish_sync_run(result, status="failed", error=message)
+            if isinstance(exc, DataSyncError):
+                raise
+            raise DataSyncError(message) from exc
+
+    def _sync_coinbase_klines(
+        self,
+        *,
+        spec: DataSyncSpec,
+        start_ms: int,
+        end_ms: int,
+        interval_ms: int,
+    ) -> DataSyncResult:
+        repository = self.repository(spec.db_path)
+        result = repository.create_sync_run(spec)
+        cursor = start_ms
+        request_limit = max(1, min(int(spec.limit), 300))
+
+        try:
+            while cursor <= end_ms:
+                request_end = min(end_ms, cursor + (request_limit - 1) * interval_ms)
+                raw_rows = self.coinbase_client.fetch_klines(
+                    symbol=spec.symbol,
+                    interval=spec.interval,
+                    start_time_ms=cursor,
+                    end_time_ms=request_end,
+                    limit=request_limit,
+                )
+                result.requests += 1
+                if not raw_rows:
+                    break
+
+                records = [
+                    self._parse_coinbase_kline(spec.exchange, spec.symbol, spec.interval, row)
+                    for row in raw_rows
+                ]
+                records = [
+                    record
+                    for record in records
+                    if start_ms <= record.open_time_ms <= end_ms
+                ]
+                if not records:
+                    break
+
+                result.rows_received += len(records)
+                result.rows_written += repository.upsert_klines(records)
+                last_open_time = records[-1].open_time_ms
+                next_cursor = last_open_time + interval_ms
+                if next_cursor <= cursor:
+                    raise DataSyncError("Coinbase kline pagination did not advance.")
+                cursor = next_cursor
+
+            return repository.finish_sync_run(result, status="completed")
+        except Exception as exc:
+            message = str(exc)
+            repository.finish_sync_run(result, status="failed", error=message)
+            if isinstance(exc, DataSyncError):
+                raise
+            raise DataSyncError(message) from exc
+
     def update_latest(self, spec: LatestUpdateSpec) -> DataSyncResult:
         interval = normalize_interval(spec.interval)
         symbol = spec.symbol.upper()
-        exchange = spec.exchange or DEFAULT_EXCHANGE
+        exchange = normalize_exchange(spec.exchange or DEFAULT_EXCHANGE)
+        if exchange not in SUPPORTED_SYNC_EXCHANGES:
+            raise DataSyncError(f"Unsupported crypto data exchange: {exchange}")
         repository = self.repository(spec.db_path)
         latest = repository.latest_open_time_ms(exchange=exchange, symbol=symbol, interval=interval)
         interval_ms = interval_to_milliseconds(interval)
@@ -1099,6 +1462,72 @@ class MarketDataService:
             trade_count=int(row[8]) if len(row) > 8 else 0,
             taker_buy_base_volume=float(row[9]) if len(row) > 9 else 0.0,
             taker_buy_quote_volume=float(row[10]) if len(row) > 10 else 0.0,
+        )
+
+    def _parse_coinbase_kline(
+        self,
+        exchange: str,
+        symbol: str,
+        interval: str,
+        row: list[Any],
+    ) -> KlineRecord:
+        if len(row) < 6:
+            raise DataSyncError(f"Invalid Coinbase kline row: {row}")
+        open_time_ms = int(row[0]) * 1000
+        close_time_ms = open_time_ms + interval_to_milliseconds(interval) - 1
+        close = float(row[4])
+        volume = float(row[5])
+        return KlineRecord(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            open_time_ms=open_time_ms,
+            open_time=from_milliseconds(open_time_ms).isoformat(),
+            close_time_ms=close_time_ms,
+            close_time=from_milliseconds(close_time_ms).isoformat(),
+            open=float(row[3]),
+            high=float(row[2]),
+            low=float(row[1]),
+            close=close,
+            volume=volume,
+            quote_volume=close * volume,
+            trade_count=0,
+            taker_buy_base_volume=0.0,
+            taker_buy_quote_volume=0.0,
+            source="coinbase_exchange_rest",
+        )
+
+    def _parse_kraken_kline(
+        self,
+        exchange: str,
+        symbol: str,
+        interval: str,
+        row: list[Any],
+    ) -> KlineRecord:
+        if len(row) < 7:
+            raise DataSyncError(f"Invalid Kraken OHLC row: {row}")
+        open_time_ms = int(row[0]) * 1000
+        close_time_ms = open_time_ms + interval_to_milliseconds(interval) - 1
+        close = float(row[4])
+        volume = float(row[6])
+        return KlineRecord(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            open_time_ms=open_time_ms,
+            open_time=from_milliseconds(open_time_ms).isoformat(),
+            close_time_ms=close_time_ms,
+            close_time=from_milliseconds(close_time_ms).isoformat(),
+            open=float(row[1]),
+            high=float(row[2]),
+            low=float(row[3]),
+            close=close,
+            volume=volume,
+            quote_volume=close * volume,
+            trade_count=int(row[7]) if len(row) > 7 else 0,
+            taker_buy_base_volume=0.0,
+            taker_buy_quote_volume=0.0,
+            source="kraken_rest",
         )
 
 

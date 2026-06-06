@@ -26,7 +26,7 @@ const defaultForm: FormState = {
 };
 
 const defaultDataForm: DataFormState = {
-  symbol: 'BTCUSDT', interval: '1m',
+  exchange: 'binance_spot', symbol: 'BTCUSDT', interval: '1m',
   startDate: '2024-01-01', endDate: '2024-01-03', dbPath: '',
 };
 
@@ -92,6 +92,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     const baseParams = new URLSearchParams();
     if (nextForm.dbPath) baseParams.set('db_path', nextForm.dbPath);
     const previewParams = new URLSearchParams(baseParams);
+    previewParams.set('exchange', nextForm.exchange);
     previewParams.set('symbol', nextForm.symbol);
     previewParams.set('interval', nextForm.interval);
     previewParams.set('limit', '16');
@@ -118,10 +119,14 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   const drawdownPeriods = useMemo(() => diagnosticsList<DrawdownPeriod>(run?.diagnostics, 'drawdown_periods'), [run]);
   const monthlyReturns = useMemo(() => diagnosticsList<PeriodReturn>(run?.diagnostics, 'monthly_returns'), [run]);
   const optimizationFramework = promotionGate?.framework ?? dataQuality?.framework ?? portfolioOptimization?.framework ?? walkForward?.framework ?? costStress?.framework ?? optimization?.framework ?? defaultOptimizationFramework;
-  const cryptoCoverageSummary = useMemo(() => summarizeCryptoCoverage(database?.coverage ?? []), [database]);
+  const selectedCoverage = useMemo(
+    () => (database?.coverage ?? []).filter((item) => item.exchange === dataForm.exchange && item.symbol === dataForm.symbol),
+    [database?.coverage, dataForm.exchange, dataForm.symbol],
+  );
+  const cryptoCoverageSummary = useMemo(() => summarizeCryptoCoverage(selectedCoverage), [selectedCoverage]);
   const cryptoResamplePlan = useMemo(
-    () => buildCryptoResamplePlan(database?.coverage ?? [], dataForm.symbol, dataForm.dbPath || database?.db_path || ''),
-    [database?.coverage, database?.db_path, dataForm.dbPath, dataForm.symbol],
+    () => buildCryptoResamplePlan(selectedCoverage, dataForm.symbol, dataForm.dbPath || database?.db_path || '', dataForm.exchange),
+    [database?.db_path, dataForm.dbPath, dataForm.exchange, dataForm.symbol, selectedCoverage],
   );
   const cryptoClosureTask = useMemo(
     () => taskQueue.find((task) => task.kind === 'crypto_closure') ?? null,
@@ -134,10 +139,10 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     const gateWarns = (promotionGate?.gates ?? []).filter((g: {status: string}) => g.status === 'warn').length;
     const completedSummary = run?.status === 'completed' ? run.summary : null;
     return [
-      {id: 'data_quality', label: '数据质量', status: dataQualityLoading || (mvpLoading && !dataQuality) ? 'active' : dataQuality ? (dataQuality.is_usable ? 'done' : 'fail') : 'pending', detail: dataQuality ? `Score ${dataQuality.quality_score.toFixed(0)} · ${dataQuality.coverage_pct.toFixed(1)}%` : '等待检查'},
-      {id: 'backtest', label: '回测执行', status: loading || (mvpLoading && !run) ? 'active' : completedSummary ? 'done' : run?.status === 'failed' ? 'fail' : 'pending', detail: completedSummary ? `Return ${completedSummary.total_return_pct.toFixed(2)}% · Sharpe ${completedSummary.sharpe_ratio.toFixed(2)}` : '等待生成'},
+      {id: 'data_quality', label: '数据质量', status: dataQualityLoading || (mvpLoading && !dataQuality) ? 'active' : dataQuality ? (dataQuality.is_usable ? 'done' : 'fail') : 'pending', detail: dataQuality ? `得分 ${dataQuality.quality_score.toFixed(0)} · ${dataQuality.coverage_pct.toFixed(1)}%` : '等待检查'},
+      {id: 'backtest', label: '回测执行', status: loading || (mvpLoading && !run) ? 'active' : completedSummary ? 'done' : run?.status === 'failed' ? 'fail' : 'pending', detail: completedSummary ? `收益 ${completedSummary.total_return_pct.toFixed(2)}% · Sharpe ${completedSummary.sharpe_ratio.toFixed(2)}` : '等待生成'},
       {id: 'visual_report', label: '图表报告', status: chart ? 'done' : run?.status === 'completed' ? 'warn' : 'pending', detail: chart ? `${chart.candles.length} 根K线 · ${chart.markers.length} 个标记` : '等待生成'},
-      {id: 'promotion_gate', label: '准入门', status: promotionGateLoading || (mvpLoading && !promotionGate) ? 'active' : promotionGate ? (promotionGate.decision === 'fail' ? 'fail' : promotionGate.decision === 'warn' ? 'warn' : 'done') : 'pending', detail: promotionGate ? `Decision ${promotionGate.decision.toUpperCase()} · ${gateWarns}w · ${gateFails}f` : '等待综合评估'},
+      {id: 'promotion_gate', label: '准入门', status: promotionGateLoading || (mvpLoading && !promotionGate) ? 'active' : promotionGate ? (promotionGate.decision === 'fail' ? 'fail' : promotionGate.decision === 'warn' ? 'warn' : 'done') : 'pending', detail: promotionGate ? `决策 ${promotionGate.decision.toUpperCase()} · ${gateWarns} 警告 · ${gateFails} 失败` : '等待综合评估'},
       {id: 'experiment_registry', label: '实验登记', status: promotionGate?.experiment_record?.registry_path ? 'done' : promotionGate ? 'warn' : 'pending', detail: promotionGate?.experiment_record?.registry_path ?? '等待登记'},
     ];
   }, [chart, dataQuality, dataQualityLoading, loading, mvpLoading, promotionGate, promotionGateLoading, run]);
@@ -197,7 +202,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     setDataLoading(true); setDataMessage(options.messagePrefix ?? ''); setError('');
     try {
       const nextRun = await apiPost<DataSyncRunResponse>('/api/data/sync', {
-        exchange: 'binance_spot',
+        exchange: dataForm.exchange,
         symbol: dataForm.symbol,
         interval,
         start: buildDateBoundary(dataForm.startDate, 'start', interval),
@@ -238,7 +243,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     weights: Object.entries(weightMap).filter(([, w]) => w > 0).map(([id, w]) => ({strategy_id: id, weight: w})),
     skip_deep_checks: false, persist_manifest: true, register_experiment: true,
     experiment_name: `${form.symbol.toLowerCase()}_${mode}_promotion_gate`,
-    notes: 'Created from QuantStation MVP acceptance flow.',
+    notes: '由 QuantStation MVP 验收流程创建。',
   });
 
   const buildCryptoClosureRequest = () => {
@@ -281,7 +286,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
       persist_manifest: true,
       register_experiment: true,
       experiment_name: `${form.symbol.toLowerCase()}_closure_gate`,
-      notes: 'Created from QuantStation BTC closure flow.',
+      notes: '由 QuantStation BTC 闭环流程创建。',
     };
   };
 
@@ -311,7 +316,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
         data_db_path: form.dataDbPath,
       });
       setDataQuality(quality);
-      setDataQualityMessage(`数据质量 Score ${quality.quality_score.toFixed(0)}，覆盖 ${quality.coverage_pct.toFixed(2)}%`);
+      setDataQualityMessage(`数据质量得分 ${quality.quality_score.toFixed(0)}，覆盖 ${quality.coverage_pct.toFixed(2)}%`);
       if (!quality.is_usable) throw new Error('数据质量阻断级问题');
 
       setMvpMessage('回测运行中...');
@@ -326,7 +331,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
       setMvpMessage('准入门评估中...');
       const gate = await apiPost<PromotionGateResponse>('/api/research/promotion-gate', buildPromotionGateRequest());
       setPromotionGate(gate);
-      setPromotionGateMessage(`准入门 Decision ${gate.decision.toUpperCase()}，下一阶段 ${gate.next_stage}`);
+      setPromotionGateMessage(`准入门决策 ${gate.decision.toUpperCase()}，下一阶段 ${gate.next_stage}`);
       setMvpMessage(`MVP 验收完成：${gate.decision.toUpperCase()}`);
     } catch (e) { const msg = humanizeError(e); setMvpMessage(msg); setError(msg); }
     finally { setMvpLoading(false); }
@@ -355,7 +360,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   };
 
   const handleCryptoClosure = async () => {
-    setCryptoClosureLoading(true); setCryptoClosureMessage('BTC production closure 任务已提交，后台会继续运行。'); setError('');
+    setCryptoClosureLoading(true); setCryptoClosureMessage('BTC 生产闭环任务已提交，后台会继续运行。'); setError('');
     try {
       const task = await submitTrackedTask('crypto-closure', () => taskApi.submitCryptoClosureTask(buildCryptoClosureRequest()), async (finishedTask) => {
         const result = (finishedTask.result ?? {}) as CryptoClosureResponse;
@@ -366,15 +371,15 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
         }
         if (result.promotion_gate?.decision) {
           setPromotionGate(result.promotion_gate as PromotionGateResponse);
-          setPromotionGateMessage(`准入门 Decision ${String(result.promotion_gate.decision).toUpperCase()}，下一阶段 ${result.promotion_gate.next_stage ?? result.next_stage}`);
+          setPromotionGateMessage(`准入门决策 ${String(result.promotion_gate.decision).toUpperCase()}，下一阶段 ${result.promotion_gate.next_stage ?? result.next_stage}`);
         }
         if (result.walk_forward?.stability) {
           setWalkForward(result.walk_forward as WalkForwardResponse);
-          setWalkForwardMessage(`Walk-forward: OOS pass rate ${Number(result.walk_forward.stability.fold_pass_rate_pct ?? result.walk_forward.stability.pass_rate_pct ?? 0).toFixed(0)}%`);
+          setWalkForwardMessage(`滚动验证：OOS 通过率 ${Number(result.walk_forward.stability.fold_pass_rate_pct ?? result.walk_forward.stability.pass_rate_pct ?? 0).toFixed(0)}%`);
         }
-        setCryptoClosureMessage(`BTC production closure ${finishedTask.status.toUpperCase()}：${String(result.decision || finishedTask.status).toUpperCase()}，blockers ${result.blockers?.length ?? finishedTask.blockers.length}`);
+        setCryptoClosureMessage(`BTC 生产闭环 ${finishedTask.status.toUpperCase()}：${String(result.decision || finishedTask.status).toUpperCase()}，阻塞项 ${result.blockers?.length ?? finishedTask.blockers.length}`);
       });
-      setCryptoClosureMessage(`BTC production closure 任务已提交：${task.task_id}`);
+      setCryptoClosureMessage(`BTC 生产闭环任务已提交：${task.task_id}`);
     } catch (e) {
       const message = humanizeError(e);
       setCryptoClosureMessage(message);
@@ -415,7 +420,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
         strategy_id: form.strategyId, strategy_params: optimizedStrategyParams ?? {},
       });
       setWalkForward(result);
-      setWalkForwardMessage(`Walk-forward: OOS pass rate ${result.stability.pass_rate_pct.toFixed(0)}%`);
+      setWalkForwardMessage(`滚动验证：OOS 通过率 ${result.stability.pass_rate_pct.toFixed(0)}%`);
     } catch (e) { setWalkForwardMessage(humanizeError(e)); }
     finally { setWalkForwardLoading(false); }
   };
@@ -435,7 +440,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
         baseline_weights: Object.values(normalized),
       });
       setPortfolioOptimization(result);
-      setPortfolioOptimizationMessage(`组合优化完成：Sharpe delta ${result.improvement.sharpe_delta.toFixed(2)}`);
+      setPortfolioOptimizationMessage(`组合优化完成：Sharpe 变化 ${result.improvement.sharpe_delta.toFixed(2)}`);
     } catch (e) { setPortfolioOptimizationMessage(humanizeError(e)); }
     finally { setPortfolioOptimizationLoading(false); }
   };
@@ -450,7 +455,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
         data_db_path: form.dataDbPath,
       });
       setDataQuality(result);
-      setDataQualityMessage(`数据质量 Score ${result.quality_score.toFixed(0)}，覆盖 ${result.coverage_pct.toFixed(2)}%`);
+      setDataQualityMessage(`数据质量得分 ${result.quality_score.toFixed(0)}，覆盖 ${result.coverage_pct.toFixed(2)}%`);
     } catch (e) { setDataQualityMessage(humanizeError(e)); }
     finally { setDataQualityLoading(false); }
   };
@@ -461,7 +466,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
       const task = await submitTrackedTask('promotion-gate', () => taskApi.submitResearchPromotionGateTask(buildPromotionGateRequest()), async (finishedTask) => {
         const result = (finishedTask.result ?? {}) as PromotionGateResponse;
         setPromotionGate(result);
-        setPromotionGateMessage(`准入门 Decision ${String(result.decision || finishedTask.status).toUpperCase()}，下一阶段 ${result.next_stage ?? '-'}`);
+        setPromotionGateMessage(`准入门决策 ${String(result.decision || finishedTask.status).toUpperCase()}，下一阶段 ${result.next_stage ?? '-'}`);
       });
       setPromotionGateMessage(`晋级门任务已提交：${task.task_id}`);
     } catch (e) { setPromotionGateMessage(humanizeError(e)); }
@@ -488,7 +493,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     setDataLoading(true); setDataMessage(`开始 1m -> ${interval} 聚合`); setError('');
     try {
       const result = await apiPost<CryptoResampleResponse>('/api/data/resample', {
-        exchange: 'binance_spot',
+        exchange: dataForm.exchange,
         symbol: dataForm.symbol,
         source_interval: '1m',
         target_interval: interval,
@@ -515,7 +520,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     try {
       const currentInterval = dataForm.interval;
       await apiPost<DataSyncRunResponse>('/api/data/sync', {
-        exchange: 'binance_spot',
+        exchange: dataForm.exchange,
         symbol: dataForm.symbol,
         interval: '1m',
         start: buildDateBoundary(dataForm.startDate, 'start', '1m'),
@@ -526,7 +531,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
       });
       for (const interval of cryptoIntervalOrder.slice(1)) {
         await apiPost<CryptoResampleResponse>('/api/data/resample', {
-          exchange: 'binance_spot',
+          exchange: dataForm.exchange,
           symbol: dataForm.symbol,
           source_interval: '1m',
           target_interval: interval,
@@ -551,7 +556,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     setDataLoading(true); setDataMessage(''); setError('');
     try {
       const nextRun = await apiPost<DataSyncRunResponse>('/api/data/update-latest', {
-        exchange: 'binance_spot', symbol: dataForm.symbol, interval: dataForm.interval, db_path: dataForm.dbPath, lookback_days: 30, limit: 1000,
+        exchange: dataForm.exchange, symbol: dataForm.symbol, interval: dataForm.interval, db_path: dataForm.dbPath, lookback_days: 30, limit: 1000,
       });
       setDataMessage(`增量更新完成：写入 ${nextRun.rows_written} K 线`);
       setForm((c) => ({...c, source: 'sqlite', symbol: dataForm.symbol, interval: dataForm.interval, dataDbPath: dataForm.dbPath}));
@@ -564,7 +569,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
     setDataLoading(true); setDataMessage('');
     try {
       const nextStatus = await apiPost<SchedulerStatusResponse>('/api/data/scheduler/start', {
-        exchange: 'binance_spot', symbol: dataForm.symbol, interval: dataForm.interval, db_path: dataForm.dbPath, lookback_days: 30, interval_seconds: 86400, run_immediately: true,
+        exchange: dataForm.exchange, symbol: dataForm.symbol, interval: dataForm.interval, db_path: dataForm.dbPath, lookback_days: 30, interval_seconds: 86400, run_immediately: true,
       });
       setScheduler(nextStatus); setDataMessage('日更任务已启动');
     } catch (e) { setDataMessage(humanizeError(e)); }
@@ -694,10 +699,10 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
             />
           </section>
           <TaskQueuePanel
-            title="BTC production closure 任务"
+            title="BTC 生产闭环任务"
             tasks={taskQueue.filter((task) => ['crypto_closure', 'promotion_gate'].includes(task.kind))}
             onRefresh={refreshTaskQueue}
-            emptyText="暂无 BTC production closure 或 promotion gate 后台任务"
+            emptyText="暂无 BTC 生产闭环或晋升门后台任务"
           />
         </ResultsPanel>
       </section>

@@ -11,7 +11,7 @@ export class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('ErrorBoundary caught:', error.message, info.componentStack);
+    console.error('错误边界捕获异常:', error.message, info.componentStack);
   }
 
   render() {
@@ -20,7 +20,7 @@ export class ErrorBoundary extends React.Component {
       return React.createElement('div', {
         style: { padding: '2rem', textAlign: 'center', color: '#ef4444' }
       },
-        React.createElement('h3', null, 'Something went wrong'),
+        React.createElement('h3', null, '页面渲染出错'),
         React.createElement('pre', {
           style: { fontSize: '0.85rem', opacity: 0.7, whiteSpace: 'pre-wrap' }
         }, this.state.error?.message),
@@ -31,7 +31,7 @@ export class ErrorBoundary extends React.Component {
             background: 'rgba(255,255,255,0.1)', color: '#e2e8f0',
             border: '1px solid rgba(255,255,255,0.15)', borderRadius: 4,
           }
-        }, 'Try Again')
+        }, '重试')
       );
     }
     return this.props.children;

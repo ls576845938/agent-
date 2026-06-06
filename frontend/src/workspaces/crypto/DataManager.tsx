@@ -4,6 +4,7 @@ import type {CryptoCoverageSummary, CryptoInterval, CryptoResamplePlanItem} from
 import {formatIso, formatPrice} from '../../lib/utils';
 
 type DataFormState = {
+  exchange: 'binance_spot' | 'coinbase_spot' | 'kraken_spot';
   symbol: string; interval: '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
   startDate: string; endDate: string; dbPath: string;
 };
@@ -30,6 +31,14 @@ interface DataManagerProps {
 
 export type {DataFormState};
 
+const statusText: Record<string, string> = {
+  completed: '完成',
+  failed: '失败',
+  running: '运行中',
+  queued: '排队中',
+  pending: '待处理',
+};
+
 export default function DataManager({
   dataForm, database, klinePreview, syncRuns, scheduler,
   coverageSummary, resamplePlan,
@@ -37,6 +46,7 @@ export default function DataManager({
   onChangeDataForm, onRefresh, onSync, onResampleInterval, onResampleChain, onUpdateLatest,
   onStartScheduler, onStopScheduler,
 }: DataManagerProps) {
+  const selectedCoverage = (database?.coverage ?? []).filter((item) => item.exchange === dataForm.exchange && item.symbol === dataForm.symbol);
   return (
     <section className="panel data-panel" data-testid="crypto-data-panel">
       <div className="panel-header">
@@ -59,6 +69,20 @@ export default function DataManager({
       </label>
 
       <div className="form-grid data-form-grid">
+        <label>数据源
+          <select value={dataForm.exchange} onChange={(e: ValueEvent) => {
+            const exchange = e.target.value as DataFormState['exchange'];
+            onChangeDataForm({
+              ...dataForm,
+              exchange,
+              symbol: exchange === 'binance_spot' ? 'BTCUSDT' : 'BTCUSD',
+            });
+          }}>
+            <option value="binance_spot">Binance 现货</option>
+            <option value="coinbase_spot">Coinbase 现货（美国）</option>
+            <option value="kraken_spot">Kraken 现货（美国可访问）</option>
+          </select>
+        </label>
         <label>标的<input value={dataForm.symbol} onChange={(e: ValueEvent) => onChangeDataForm({...dataForm, symbol: e.target.value.toUpperCase()})} /></label>
         <label>周期
           <select value={dataForm.interval} onChange={(e: ValueEvent) => onChangeDataForm({...dataForm, interval: e.target.value as DataFormState['interval']})}>
@@ -93,7 +117,7 @@ export default function DataManager({
       </div>
 
       <div className="coverage-list">
-        {(database?.coverage ?? []).slice(0, 4).map((item) => (
+        {selectedCoverage.slice(0, 4).map((item) => (
           <div key={`${item.exchange}-${item.symbol}-${item.interval}`} className="coverage-row">
             <strong>{item.symbol} {item.interval}</strong>
             <span>{item.rows.toLocaleString('en-US')} 根</span>
@@ -114,7 +138,7 @@ export default function DataManager({
       <div className="sync-log">
         {syncRuns.map((item) => (
           <div key={item.run_id} className="sync-row">
-            <span className={`status-tag ${item.status === 'completed' ? 'good' : item.status === 'failed' ? 'bad' : 'neutral'}`}>{item.status}</span>
+            <span className={`status-tag ${item.status === 'completed' ? 'good' : item.status === 'failed' ? 'bad' : 'neutral'}`}>{statusText[item.status] ?? item.status}</span>
             <span>{item.symbol} {item.interval}</span>
             <span>{item.rows_written.toLocaleString('en-US')} 根</span>
           </div>

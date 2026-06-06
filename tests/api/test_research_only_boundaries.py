@@ -45,8 +45,10 @@ def test_api_exposes_global_registry_as_read_only_research_summary() -> None:
 
     assert '@router.get("/research/global-registry")' in source
     assert "build_global_registry" in source
-    assert "write_registry(payload" in source
-    assert "write: bool = False" in source
+    assert "write_registry" not in source
+    assert "write: bool" not in source
+    assert "repo_root: str" not in source
+    assert "repo_root=settings.repo_root" in source
     assert "/research/global-registry" not in {
         "/api/live",
         "/api/orders",

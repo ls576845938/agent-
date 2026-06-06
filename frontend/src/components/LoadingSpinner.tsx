@@ -1,4 +1,4 @@
-export function LoadingSpinner({ text = 'Loading...' }: { text?: string }) {
+export function LoadingSpinner({ text = '加载中...' }: { text?: string }) {
   return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'0.75rem',padding:'2rem'}}>
       <div className="spinner" />

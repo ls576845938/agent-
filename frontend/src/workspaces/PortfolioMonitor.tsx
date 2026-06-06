@@ -26,6 +26,16 @@ const tabs = [
   {key: 'risk', label: '风险'},
 ];
 
+function withTimeout<T>(promise: Promise<T>, fallback: T, ms = 3500): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<T>((resolve) => {
+    timer = setTimeout(() => resolve(fallback), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
+
 export default function PortfolioMonitor() {
   const [data, setData] = useState<PortfolioData | null>(null);
   const [error, setError] = useState('');
@@ -36,10 +46,13 @@ export default function PortfolioMonitor() {
     let cancelled = false;
     (async () => {
       try {
-        const result = await apiGet<PortfolioData>('/api/portfolio/status');
+        const result = await withTimeout(
+          apiGet<PortfolioData>('/api/portfolio/status'),
+          {status: 'timeout', portfolio_count: 0, latest_portfolio: null},
+        );
         if (!cancelled) setData(result);
       } catch (e: unknown) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load');
+        if (!cancelled) setError(e instanceof Error ? e.message : '加载失败');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -49,10 +62,10 @@ export default function PortfolioMonitor() {
 
   if (loading) return <LoadingSpinner text="加载投资组合..." />;
   if (error) return (
-    <div style={{padding: 24, color: '#e2e8f0'}}>
+    <div className="portfolio-monitor">
       <h2>投资组合</h2>
       <div style={{color: '#ef4444', padding: 16, background: 'rgba(239,68,68,0.1)', borderRadius: 8}}>
-        连接错误: {error}
+        连接错误：{error}
       </div>
     </div>
   );
@@ -60,13 +73,13 @@ export default function PortfolioMonitor() {
   const pf = data?.latest_portfolio ?? null;
 
   return (
-    <div style={{padding: 24, color: '#e2e8f0'}}>
+    <div className="portfolio-monitor">
       <h2 style={{margin: '0 0 4px'}}>投资组合监控</h2>
       <p style={{color: '#94a3b8', margin: '0 0 20px', fontSize: '0.875rem'}}>
         {pf ? `${pf.portfolio_id} · ${pf.date?.slice(0, 10)}` : ''}
       </p>
 
-      {/* Tab navigation */}
+      {/* 页签导航 */}
       <div style={{display: 'flex', gap: 4, borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 20}}>
         {tabs.map(t => {
           const active = tab === t.key;

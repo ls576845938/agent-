@@ -180,6 +180,32 @@ type PortfolioGateSummary = {
   tone: GateTone;
 };
 
+type OpsStageKey = 'overview' | 'research' | 'portfolio' | 'paper' | 'evidence';
+
+type OpsStageCard = {
+  key: OpsStageKey;
+  label: string;
+  short: string;
+  status: string;
+  detail: string;
+  tone: GateTone;
+};
+
+function cnStatus(value: string): string {
+  const direct: Record<string, string> = {
+    missing: '缺失',
+    waiting: '等待中',
+    frozen: '冻结',
+    locked: '锁定',
+    confirmed: '已确认',
+    pending: '待处理',
+    research: '研究',
+    none: '无',
+    'live runtime frozen': '实盘运行已冻结',
+  };
+  return direct[value.toLowerCase()] ?? value;
+}
+
 const defaultUSForm: USEquityFormState = {
   symbol: 'AAPL',
   barSize: '1d',
@@ -309,6 +335,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
   const [edCostStress, setEDCostStress] = useState<EventDrivenCostStressResponse | null>(null);
   const [promotionGateResult, setPromotionGateResult] = useState<PromotionGateResponse | null>(null);
   const [systemOverview, setSystemOverview] = useState<SystemOverviewResponse | null>(null);
+  const [activeStage, setActiveStage] = useState<OpsStageKey>('overview');
 
   useEffect(() => {
     if (strategies.length > 0 && !strategies.find(strategy => strategy.id === usForm.strategyId)) {
@@ -762,18 +789,18 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
   ];
 
   const evidenceEntries: EvidenceEntry[] = [
-    {label: 'strategy_version', value: promotionGateResult?.strategy_version ?? selectedStrategy?.display_name ?? usForm.strategyId},
-    {label: 'data_version', value: usQualityReport?.data_version ?? promotionGateResult?.experiment_record.data_version ?? '未生成', muted: !usQualityReport && !promotionGateResult?.experiment_record.data_version},
+    {label: '策略版本', value: promotionGateResult?.strategy_version ?? selectedStrategy?.display_name ?? usForm.strategyId},
+    {label: '数据版本', value: usQualityReport?.data_version ?? promotionGateResult?.experiment_record.data_version ?? '未生成', muted: !usQualityReport && !promotionGateResult?.experiment_record.data_version},
     {label: 'manifest', value: systemOverview?.paper_review.manifest_path ?? promotionGateResult?.manifest_path ?? '未出具', muted: !systemOverview?.paper_review.manifest_path && !promotionGateResult?.manifest_path},
-    {label: 'why_blocked', value: (systemOverview?.paper_review.creation?.why_blocked ?? []).join(' · ') || 'none', muted: !(systemOverview?.paper_review.creation?.why_blocked ?? []).length},
-    {label: 'next_command', value: systemOverview?.paper_review.creation?.next_command ?? 'none', muted: !systemOverview?.paper_review.creation?.next_command},
-    {label: 'eligible_manifest', value: systemOverview?.paper_review.creation?.preferred_manifest_id ?? 'none', muted: !systemOverview?.paper_review.creation?.preferred_manifest_id},
-    {label: 'experiment', value: promotionGateResult?.experiment_record.experiment_id ?? '未记录', muted: !promotionGateResult?.experiment_record.experiment_id},
-    {label: 'registry', value: systemOverview?.registry.path ?? `${usForm.dataRoot}/research/evidence_registry.json`},
-    {label: 'paper_review', value: systemOverview?.paper_review.review_path ?? '未生成', muted: !systemOverview?.paper_review.review_path},
-    {label: 'evidence_pack', value: systemOverview?.paper_review.evidence_pack_path ?? '未生成', muted: !systemOverview?.paper_review.evidence_pack_path},
-    {label: 'ledger', value: usForm.ledgerDir},
-    {label: 'reconcile report', value: usReconcile?.report_path ?? '未生成', muted: !usReconcile?.report_path},
+    {label: '阻塞原因', value: (systemOverview?.paper_review.creation?.why_blocked ?? []).join(' · ') || '无', muted: !(systemOverview?.paper_review.creation?.why_blocked ?? []).length},
+    {label: '下一条命令', value: systemOverview?.paper_review.creation?.next_command ?? '无', muted: !systemOverview?.paper_review.creation?.next_command},
+    {label: '合格 manifest', value: systemOverview?.paper_review.creation?.preferred_manifest_id ?? '无', muted: !systemOverview?.paper_review.creation?.preferred_manifest_id},
+    {label: '实验', value: promotionGateResult?.experiment_record.experiment_id ?? '未记录', muted: !promotionGateResult?.experiment_record.experiment_id},
+    {label: '注册表', value: systemOverview?.registry.path ?? `${usForm.dataRoot}/research/evidence_registry.json`},
+    {label: '纸交易复核', value: systemOverview?.paper_review.review_path ?? '未生成', muted: !systemOverview?.paper_review.review_path},
+    {label: '证据包', value: systemOverview?.paper_review.evidence_pack_path ?? '未生成', muted: !systemOverview?.paper_review.evidence_pack_path},
+    {label: '账本', value: usForm.ledgerDir},
+    {label: '对账报告', value: usReconcile?.report_path ?? '未生成', muted: !usReconcile?.report_path},
   ];
 
   const planningOverview = useMemo(() => {
@@ -793,9 +820,9 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
     const qlibInstalled = readBoolean(dependencyRoot, 'qlib');
     const pypfoptInstalled = readBoolean(dependencyRoot, 'pypfopt');
     const latestQlibLabel = readString(qlibLatestRun, 'run_id') ?? readString(qlibRoot, 'latest_run_id') ?? '未找到';
-    const latestQlibStatus = readString(qlibLatestRun, 'workflow_status', 'dataset_status', 'manifest_status', 'status') ?? readString(qlibRoot, 'status') ?? 'missing';
+    const latestQlibStatus = cnStatus(readString(qlibLatestRun, 'workflow_status', 'dataset_status', 'manifest_status', 'status') ?? readString(qlibRoot, 'status') ?? 'missing');
     const latestPortfolioLabel = readString(portfolioLatestRun, 'portfolio_run_id') ?? readString(portfolioRoot, 'latest_run_id') ?? '未找到';
-    const latestPortfolioStatus = readString(portfolioLatestRun, 'optimizer', 'status') ?? readString(portfolioRoot, 'status') ?? 'missing';
+    const latestPortfolioStatus = cnStatus(readString(portfolioLatestRun, 'optimizer', 'status') ?? readString(portfolioRoot, 'status') ?? 'missing');
     const conflictDetected = readBoolean(diagnosticsRoot, 'conflict_detected') ?? false;
     const conflictNotes = readArray(diagnosticsRoot, 'conflict_notes');
     const nextActions = (systemOverview?.next_actions ?? []).slice(0, 3);
@@ -851,10 +878,10 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
         reason: promotionGateResult
           ? `${promotionGateResult.next_stage} · ${promotionGateResult.recommendations[0] ?? '晋升门已出具'}`
           : systemOverview?.paper_review.summary ?? '等待数据质量、回测和晋升门证据。',
-        hint: '数据同步、特征、回测、成本压力、walk-forward、晋升门',
+        hint: '数据同步、特征、回测、成本压力、滚动验证、晋升门',
         meta: [
           {label: '策略', value: selectedStrategy?.display_name ?? usForm.strategyId},
-          {label: '阶段', value: systemOverview?.stage ?? 'waiting'},
+          {label: '阶段', value: cnStatus(systemOverview?.stage ?? 'waiting')},
         ],
         actions: [{
           label: '运行晋升门',
@@ -865,22 +892,22 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
       },
       {
         id: 'paper-review',
-        title: 'paper review',
+        title: '纸交易复核',
         status: paperOutcome,
         tone: paperOutcome === 'PASS' ? 'good' : 'bad',
-        reason: systemOverview?.paper_review.creation?.summary ?? systemOverview?.paper_review.summary ?? '未进入 paper review。',
-        hint: 'manifest、evidence pack、人工 review 入口',
+        reason: systemOverview?.paper_review.creation?.summary ?? systemOverview?.paper_review.summary ?? '未进入纸交易复核。',
+        hint: 'manifest、证据包、人工复核入口',
         meta: [
-          {label: 'manifest', value: systemOverview?.paper_review.manifest_path ?? 'missing'},
-          {label: 'evidence', value: systemOverview?.paper_review.evidence_pack_path ?? 'missing'},
+          {label: 'manifest', value: systemOverview?.paper_review.manifest_path ?? '缺失'},
+          {label: '证据', value: systemOverview?.paper_review.evidence_pack_path ?? '缺失'},
         ],
         actions: [{
-          label: '运行 Paper 日',
+          label: '运行纸交易日',
           onClick: () => { void handleUSPaperRunDay(); },
           disabled: usLoading,
           variant: 'primary',
         }, {
-          label: '创建 review evidence',
+          label: '创建复核证据',
           onClick: () => {
             void handleUSCreatePaperReview({
               strategy_manifest_id: systemOverview?.paper_review.creation?.preferred_manifest_id,
@@ -892,14 +919,14 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
       },
       {
         id: 'live-freeze',
-        title: 'live freeze',
+        title: '实盘冻结',
         status: liveOutcome,
         tone: liveOutcome === 'PASS' ? 'good' : 'bad',
-        reason: systemOverview?.execution.live_block_reason ?? 'live runtime frozen',
+        reason: cnStatus(systemOverview?.execution.live_block_reason ?? 'live runtime frozen'),
         hint: '冻结是默认状态，只有证据闭环完成后才允许审批',
         meta: [
-          {label: 'live state', value: systemOverview?.execution.live_state ?? 'frozen'},
-          {label: 'submit', value: systemOverview?.execution.paper_network_submit_confirmation ? 'confirmed' : 'locked'},
+          {label: '实盘状态', value: cnStatus(systemOverview?.execution.live_state ?? 'frozen')},
+          {label: '提交', value: systemOverview?.execution.paper_network_submit_confirmation ? '已确认' : '锁定'},
         ],
         actions: [{
           label: '刷新冻结状态',
@@ -1003,25 +1030,25 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
     const budgetItems: PortfolioBudgetItem[] = [
       {
         key: 'gross',
-        label: 'Gross Exposure',
+        label: '总曝险',
         value: formatPercentValue(grossExposure, 1),
         detail: grossExposure !== null ? '组合总曝险' : 'API 未提供 gross exposure 字段',
       },
       {
         key: 'net',
-        label: 'Net Exposure',
+        label: '净曝险',
         value: formatPercentValue(netExposure, 1),
         detail: netExposure !== null ? '净曝险' : 'API 未提供 net exposure 字段',
       },
       {
         key: 'risk-budget',
-        label: 'Risk Budget',
+        label: '风险预算',
         value: formatPercentValue(totalRiskBudget, 1),
         detail: totalRiskBudget !== null ? '策略级预算汇总' : '显示占位，等待 risk_budget',
       },
       {
         key: 'cash-buffer',
-        label: 'Cash Buffer',
+        label: '现金缓冲',
         value: formatPercentValue(readNumber(riskBudgetRoot, 'cash_buffer_pct', 'cash_reserve_pct', 'reserve_pct'), 1),
         detail: '现金留存 / 风险缓冲',
       },
@@ -1043,13 +1070,13 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
     const gateSummaries: PortfolioGateSummary[] = [
       {
         key: 'paper',
-        label: 'Paper Gate',
+        label: '纸交易门禁',
         status: readString(paperGateRecord, 'status', 'state')
           ?? systemOverview?.paper_validation.state
           ?? getPaperStatusLabel(usPaperStatus),
         detail: readString(paperGateRecord, 'summary', 'detail')
           ?? systemOverview?.paper_review.summary
-          ?? (usPaperStatus ? `${usPaperStatus.days_traded} 天留样本` : '等待 paper validation'),
+          ?? (usPaperStatus ? `${usPaperStatus.days_traded} 天留样本` : '等待纸交易验证'),
         tone: toneFromOverviewStatus(
           firstPresent(
             readString(paperGateRecord, 'status', 'state'),
@@ -1059,13 +1086,13 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
       },
       {
         key: 'review',
-        label: 'Review Gate',
+        label: '复核门禁',
         status: readString(reviewGateRecord, 'status', 'state')
           ?? systemOverview?.paper_review.status
           ?? 'manual_gate',
         detail: readString(reviewGateRecord, 'summary', 'detail')
           ?? systemOverview?.paper_review.summary
-          ?? '等待人工 review / manifest',
+          ?? '等待人工复核 / manifest',
         tone: toneFromOverviewStatus(
           firstPresent(
             readBoolean(reviewGateRecord, 'allowed', 'entry_allowed'),
@@ -1075,13 +1102,13 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
       },
       {
         key: 'live',
-        label: 'Live Gate',
+        label: '实盘门禁',
         status: readString(liveGateRecord, 'status', 'state')
           ?? systemOverview?.execution.live_state
           ?? 'frozen',
         detail: readString(liveGateRecord, 'summary', 'detail', 'reason')
           ?? systemOverview?.execution.live_block_reason
-          ?? 'live runtime frozen',
+          ?? '实盘运行已冻结',
         tone: toneFromOverviewStatus(
           firstPresent(
             readString(liveGateRecord, 'status', 'state'),
@@ -1092,7 +1119,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
     ];
 
     return {
-      profile: readString(portfolioRoot, 'profile', 'mode', 'scope') ?? (strategyRows.length > 1 ? 'multi-strategy' : 'single-strategy fallback'),
+      profile: readString(portfolioRoot, 'profile', 'mode', 'scope') ?? (strategyRows.length > 1 ? '多策略' : '单策略降级'),
       status: readString(portfolioRoot, 'status', 'state') ?? systemOverview?.status ?? 'pending',
       detail: readString(portfolioRoot, 'summary', 'detail') ?? '若 overview 尚未返回组合字段，此区块使用单策略系统状态占位。',
       strategyCount,
@@ -1105,22 +1132,68 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
     };
   }, [systemOverview, usPaperStatus]);
 
+  const workflowDoneCount = workflowSteps.filter(step => step.status === 'done').length;
+  const opsStages: OpsStageCard[] = [
+    {
+      key: 'overview',
+      label: '总览',
+      short: '00',
+      status: systemOverview?.stage ?? '等待',
+      detail: `${workflowDoneCount}/${workflowSteps.length} 个流程节点完成`,
+      tone: workflowDoneCount >= 3 ? 'good' : 'neutral',
+    },
+    {
+      key: 'research',
+      label: '数据研究',
+      short: '01',
+      status: usQualityReport ? (usQualityReport.has_issues ? '数据异常' : '质量通过') : usUnifiedBacktest ? '回测完成' : '待验证',
+      detail: usQualityReport
+        ? (usQualityReport.has_issues ? `${usQualityReport.total_issues} 个数据问题` : `数据版本 ${usQualityReport.data_version}`)
+        : '同步、质量、特征、回测、压力测试',
+      tone: usQualityReport ? (usQualityReport.has_issues ? 'bad' : 'good') : usUnifiedBacktest ? (usUnifiedBacktest.equity_consistent ? 'good' : 'bad') : 'neutral',
+    },
+    {
+      key: 'portfolio',
+      label: '组合',
+      short: '02',
+      status: portfolioOverview.status,
+      detail: `${portfolioOverview.strategyCount || 0} 策略 · 风险预算 ${formatPercentValue(portfolioOverview.totalRiskBudget, 1)}`,
+      tone: toneFromOverviewStatus(portfolioOverview.status),
+    },
+    {
+      key: 'paper',
+      label: '纸交易',
+      short: '03',
+      status: getPaperStatusLabel(usPaperStatus),
+      detail: `${usPaperStatus?.days_traded ?? 0} 天样本 · 对账 ${usPaperStatus?.last_reconciliation_passed === true ? '通过' : usPaperStatus?.last_reconciliation_passed === false ? '失败' : '待确认'}`,
+      tone: toneForPaper(usPaperStatus),
+    },
+    {
+      key: 'evidence',
+      label: '证据风控',
+      short: '04',
+      status: systemOverview?.execution.live_state ?? 'frozen',
+      detail: systemOverview?.paper_review.summary ?? '等待 manifest、对账报告和人工复核',
+      tone: systemOverview?.execution.live_state === 'frozen' ? 'neutral' : toneFromOverviewStatus(systemOverview?.execution.live_state),
+    },
+  ];
+
   return (
     <main className="ops-dashboard">
       <section className="panel ops-hero-panel">
         <div className="ops-hero-copy">
           <div className="ops-title-row">
             <div>
-              <p className="eyebrow">US Equity</p>
+              <p className="eyebrow">美股</p>
               <h2>{selectedStrategy?.display_name ?? '单策略操作台'}</h2>
             </div>
             <div className="ops-title-badges">
-              <StatusBadge status={`Live ${systemOverview?.execution.live_state ?? 'frozen'}`} label="live-status" tone="bad" />
-              <StatusBadge status={systemOverview?.paper_review.entry_allowed ? 'Reviewable' : 'Manual Gate'} label="paper-status" tone={systemOverview?.paper_review.entry_allowed ? 'good' : 'neutral'} />
+              <StatusBadge status={`实盘 ${systemOverview?.execution.live_state ?? 'frozen'}`} label="实盘状态" tone="bad" />
+              <StatusBadge status={systemOverview?.paper_review.entry_allowed ? '可复核' : '人工门禁'} label="纸交易状态" tone={systemOverview?.paper_review.entry_allowed ? 'good' : 'neutral'} />
             </div>
           </div>
           <p className="ops-hero-note">
-            当前仍以 US equity pre-live 操作台为主，但会兼容显示 multi-strategy portfolio 状态。缺失字段不会阻塞页面，live 仍冻结，paper 仍需证据和人工门禁。
+            当前仍以美股准实盘操作台为主，同时兼容显示多策略组合状态。缺失字段不会阻塞页面，实盘仍冻结，纸交易仍需证据和人工门禁。
           </p>
           <div className="ops-context-grid">
             <div>
@@ -1129,7 +1202,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
             </div>
             <div>
               <span>观察窗口</span>
-              <strong>{usForm.startDate} to {usForm.endDate}</strong>
+              <strong>{usForm.startDate} 至 {usForm.endDate}</strong>
             </div>
             <div>
               <span>频率</span>
@@ -1141,7 +1214,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
             </div>
             <div>
               <span>小资金上限</span>
-              <strong>{systemOverview?.small_account.suggested_max_daily_notional ? `$${formatPrice(systemOverview.small_account.suggested_max_daily_notional)}/day` : '待加载'}</strong>
+              <strong>{systemOverview?.small_account.suggested_max_daily_notional ? `$${formatPrice(systemOverview.small_account.suggested_max_daily_notional)}/日` : '待加载'}</strong>
             </div>
             <div>
               <span>每日单数</span>
@@ -1153,30 +1226,50 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
           <div className="ops-command-card">
             <span>当前控制面</span>
             <strong>{usLoading ? '任务运行中' : '等待操作'}</strong>
-            <p>{usLoading ? '同一时间只允许一条链路写入。' : '从右侧证据区确认状态后执行下一步。'}</p>
+            <p>{usLoading ? '同一时间只允许一条链路写入。' : `当前阶段：${opsStages.find(stage => stage.key === activeStage)?.label ?? '总览'}`}</p>
           </div>
           <div className="ops-command-card ops-command-card-alert">
             <span>人工门禁</span>
-            <strong>Required</strong>
-            <p>promotion gate、paper 对账、风险摘要三项都要有证据，live 才能进入审批。</p>
+            <strong>必需</strong>
+            <p>晋升门、纸交易对账、风险摘要三项都要有证据，实盘才能进入审批。</p>
           </div>
         </div>
       </section>
 
+      <nav className="ops-stage-nav" aria-label="美股量化业务流程">
+        {opsStages.map(stage => (
+          <button
+            key={stage.key}
+            type="button"
+            className={`ops-stage-tab ops-stage-${stage.tone} ${activeStage === stage.key ? 'active' : ''}`}
+            onClick={() => setActiveStage(stage.key)}
+          >
+            <span className="ops-stage-index">{stage.short}</span>
+            <span className="ops-stage-body">
+              <strong>{stage.label}</strong>
+              <small>{stage.status}</small>
+            </span>
+            <span className="ops-stage-detail">{stage.detail}</span>
+          </button>
+        ))}
+      </nav>
+
+      {activeStage === 'overview' ? (
+        <div className="ops-stage-content">
       <section className="panel" style={{marginBottom: 18}}>
         <div className="panel-header">
           <h3>规划总览</h3>
-          <span>{systemOverview?.stage ?? 'waiting'}</span>
+          <span>{systemOverview?.stage ?? '等待中'}</span>
         </div>
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10}}>
           <div className={`metric-card ${planningOverview.qlibInstalled ? 'metric-good' : 'metric-bad'}`}>
-            <span>Qlib dependency</span>
-            <strong>{planningOverview.qlibInstalled ? 'installed' : 'missing'}</strong>
+            <span>Qlib 依赖</span>
+            <strong>{planningOverview.qlibInstalled ? '已安装' : '缺失'}</strong>
             <p className="ops-portfolio-detail">{planningOverview.latestQlibLabel} · {planningOverview.latestQlibStatus}</p>
           </div>
           <div className={`metric-card ${planningOverview.pypfoptInstalled ? 'metric-good' : 'metric-bad'}`}>
-            <span>PyPortfolioOpt dependency</span>
-            <strong>{planningOverview.pypfoptInstalled ? 'installed' : 'missing'}</strong>
+            <span>PyPortfolioOpt 依赖</span>
+            <strong>{planningOverview.pypfoptInstalled ? '已安装' : '缺失'}</strong>
             <p className="ops-portfolio-detail">{planningOverview.latestPortfolioLabel} · {planningOverview.latestPortfolioStatus}</p>
           </div>
           <div className={`metric-card ${planningOverview.rawCoverage !== null ? 'metric-good' : ''}`}>
@@ -1184,24 +1277,24 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
             <strong>{planningOverview.rawCoverage !== null ? formatPercentValue(planningOverview.rawCoverage, 1) : '未检查'}</strong>
             <p className="ops-portfolio-detail">
               {planningOverview.coverageStatus}
-              {planningOverview.minCoverage !== null ? ` · min ${formatPercentValue(planningOverview.minCoverage, 1)}` : ''}
+              {planningOverview.minCoverage !== null ? ` · 最小 ${formatPercentValue(planningOverview.minCoverage, 1)}` : ''}
             </p>
           </div>
           <div className={`metric-card ${planningOverview.latestQlibLabel !== '未找到' ? 'metric-good' : ''}`}>
-            <span>Latest Qlib run</span>
+            <span>最新 Qlib 运行</span>
             <strong>{planningOverview.latestQlibLabel}</strong>
             <p className="ops-portfolio-detail">{planningOverview.latestQlibStatus}</p>
           </div>
           <div className={`metric-card ${planningOverview.latestPortfolioLabel !== '未找到' ? 'metric-good' : ''}`}>
-            <span>Latest portfolio run</span>
+            <span>最新组合运行</span>
             <strong>{planningOverview.latestPortfolioLabel}</strong>
             <p className="ops-portfolio-detail">{planningOverview.latestPortfolioStatus}</p>
           </div>
           <div className={`metric-card ${planningOverview.conflictDetected ? 'metric-bad' : 'metric-good'}`}>
-            <span>Paper review conflict</span>
-            <strong>{planningOverview.conflictDetected ? 'conflict' : 'clear'}</strong>
+            <span>纸交易复核冲突</span>
+            <strong>{planningOverview.conflictDetected ? '有冲突' : '无冲突'}</strong>
             <p className="ops-portfolio-detail">
-              {planningOverview.conflictNotes.length > 0 ? planningOverview.conflictNotes[0] : systemOverview?.paper_review.summary ?? 'no conflict diagnostics'}
+              {planningOverview.conflictNotes.length > 0 ? planningOverview.conflictNotes[0] : systemOverview?.paper_review.summary ?? '无冲突诊断'}
             </p>
           </div>
         </div>
@@ -1224,7 +1317,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
       <section className="panel" style={{marginBottom: 18}}>
         <div className="panel-header">
           <h3>状态卡</h3>
-          <span>美股 / paper review / live freeze</span>
+          <span>美股 / 纸交易复核 / 实盘冻结</span>
         </div>
         <div className="state-board">
           {statusCards.map(card => (
@@ -1246,7 +1339,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
       <section className="panel mvp-panel">
         <div className="panel-header">
           <h3>晋升路径</h3>
-          <span>{usLoading ? <LoadingSpinner text="running" /> : 'single strategy workflow'}</span>
+              <span>{usLoading ? <LoadingSpinner text="运行中" /> : '单策略流程'}</span>
         </div>
         <div className="mvp-step-grid">
           {workflowSteps.map((step, index) => (
@@ -1259,12 +1352,17 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
         </div>
       </section>
 
+        </div>
+      ) : null}
+
+      {activeStage !== 'overview' ? (
       <section className="ops-grid">
         <div className="ops-main">
+          {(activeStage === 'research' || activeStage === 'evidence') ? (
           <section className="panel ops-gates-panel">
             <div className="panel-header">
               <h3>系统与门禁摘要</h3>
-              <span>{health?.status ?? 'unknown'}</span>
+              <span>{health?.status ?? '未知'}</span>
             </div>
             <div className="ops-gates-grid">
               {gateCards.map(card => (
@@ -1285,7 +1383,9 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
               </div>
             ) : null}
           </section>
+          ) : null}
 
+          {activeStage === 'portfolio' ? (
           <section className="panel ops-portfolio-panel">
             <div className="panel-header">
               <h3>多策略组合总览</h3>
@@ -1293,7 +1393,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
             </div>
             <div className="ops-portfolio-summary-grid">
               <div className={`metric-card ${toneFromOverviewStatus(portfolioOverview.status) === 'good' ? 'metric-good' : toneFromOverviewStatus(portfolioOverview.status) === 'bad' ? 'metric-bad' : ''}`}>
-                <span>Portfolio Status</span>
+                <span>组合状态</span>
                 <strong>{portfolioOverview.status}</strong>
               </div>
               <div className="metric-card">
@@ -1305,7 +1405,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
                 <strong>{formatPercentValue(portfolioOverview.totalRiskBudget, 1)}</strong>
               </div>
               <div className={`metric-card ${portfolioOverview.totalPnL !== null ? (portfolioOverview.totalPnL >= 0 ? 'metric-good' : 'metric-bad') : ''}`}>
-                <span>PnL Attribution</span>
+                <span>盈亏归因</span>
                 <strong>{formatSignedPrice(portfolioOverview.totalPnL)}</strong>
               </div>
             </div>
@@ -1315,7 +1415,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
               <section className="ops-subsection">
                 <div className="ops-subsection-header">
                   <strong>策略权重</strong>
-                  <span>{portfolioOverview.strategyRows.length > 0 ? `${portfolioOverview.strategyRows.length} rows` : 'placeholder'}</span>
+                  <span>{portfolioOverview.strategyRows.length > 0 ? `${portfolioOverview.strategyRows.length} 行` : '占位'}</span>
                 </div>
                 <div className="ops-section-list">
                   {portfolioOverview.strategyRows.length > 0 ? portfolioOverview.strategyRows.map(row => (
@@ -1338,7 +1438,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
               <section className="ops-subsection">
                 <div className="ops-subsection-header">
                   <strong>组合门禁</strong>
-                  <span>paper / review / live</span>
+                  <span>纸交易 / 复核 / 实盘</span>
                 </div>
                 <div className="ops-section-list">
                   {portfolioOverview.gateSummaries.map(gate => (
@@ -1358,7 +1458,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
               <section className="ops-subsection">
                 <div className="ops-subsection-header">
                   <strong>风险预算占位</strong>
-                  <span>graceful fallback</span>
+                  <span>降级显示</span>
                 </div>
                 <div className="ops-budget-grid">
                   {portfolioOverview.budgetItems.map(item => (
@@ -1373,8 +1473,8 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
 
               <section className="ops-subsection">
                 <div className="ops-subsection-header">
-                  <strong>PnL Attribution</strong>
-                  <span>{portfolioOverview.pnlRows.length > 0 ? `${portfolioOverview.pnlRows.length} rows` : 'placeholder'}</span>
+                  <strong>盈亏归因</strong>
+                  <span>{portfolioOverview.pnlRows.length > 0 ? `${portfolioOverview.pnlRows.length} 行` : '占位'}</span>
                 </div>
                 <div className="ops-section-list">
                   {portfolioOverview.pnlRows.length > 0 ? portfolioOverview.pnlRows.map(row => (
@@ -1395,7 +1495,9 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
               </section>
             </div>
           </section>
+          ) : null}
 
+          {(activeStage === 'research' || activeStage === 'paper') ? (
           <section className="panel ops-actions-panel">
             <div className="panel-header">
               <h3>工作流操作</h3>
@@ -1421,7 +1523,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
                   {strategies.map(strategy => <option key={strategy.id} value={strategy.id}>{strategy.display_name}</option>)}
                 </select>
               </label>
-              <label>Ledger
+              <label>账本目录
                 <input value={usForm.ledgerDir} onChange={(e: ValueEvent) => setUSForm({...usForm, ledgerDir: e.target.value})} />
               </label>
               <label className="wide-grid-field">数据根目录
@@ -1430,9 +1532,10 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
             </div>
 
             <div className="ops-action-groups">
+              {activeStage === 'research' ? (
               <div className="ops-action-group">
                 <div className="ops-action-group-header">
-                  <strong>Research Gate</strong>
+                  <strong>研究门禁</strong>
                   <span>数据版本、回测证据、晋升门</span>
                 </div>
                 <div className="ops-button-grid">
@@ -1442,19 +1545,21 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
                   <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSBacktest}>事件回测</button>
                   <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSUnifiedBacktest}>统一回测</button>
                   <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSCostStressED}>成本压力</button>
-                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSWalkForward}>Walk-Forward</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSWalkForward}>滚动验证</button>
                   <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPromotionGate}>晋升门</button>
                 </div>
               </div>
+              ) : null}
 
+              {activeStage === 'paper' ? (
               <div className="ops-action-group">
                 <div className="ops-action-group-header">
-                  <strong>Paper Gate</strong>
+                  <strong>纸交易门禁</strong>
                   <span>先对账，再留样本，再人工审批</span>
                 </div>
                 <div className="ops-button-grid">
-                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperRunDay}>运行 Paper 日</button>
-                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperBacktest}>Paper 回放</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperRunDay}>运行纸交易日</button>
+                  <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSPaperBacktest}>纸交易回放</button>
                   <button type="button" className="secondary-button" disabled={usLoading} onClick={handleUSReconcile}>运行对账</button>
                   <button
                     type="button"
@@ -1467,26 +1572,29 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
                       });
                     }}
                   >
-                    创建 review evidence
+                    创建复核证据
                   </button>
-                  <button type="button" className="secondary-button danger" disabled={usLoading} onClick={handleUSPaperReset}>重置 Paper</button>
+                  <button type="button" className="secondary-button danger" disabled={usLoading} onClick={handleUSPaperReset}>重置纸交易</button>
                 </div>
               </div>
+              ) : null}
             </div>
           </section>
+          ) : null}
 
+          {activeStage === 'paper' ? (
           <section className="panel ops-metrics-panel">
             <div className="panel-header">
-              <h3>Paper 与风险摘要</h3>
+              <h3>纸交易与风险摘要</h3>
               <span>{usPaperDailyResults.length > 0 ? `最近 ${usPaperDailyResults.length} 天` : '暂无样本'}</span>
             </div>
             <div className="ops-metric-grid">
               <div className="metric-card">
-                <span>Paper 权益</span>
+                <span>纸交易权益</span>
                 <strong>{usPaperStatus ? formatPrice(usPaperStatus.equity) : '-'}</strong>
               </div>
               <div className={`metric-card ${paperPnL >= 0 ? 'metric-good' : 'metric-bad'}`}>
-                <span>累计 PnL</span>
+                <span>累计盈亏</span>
                 <strong>{usPaperDailyResults.length > 0 ? formatPrice(paperPnL) : '-'}</strong>
               </div>
               <div className="metric-card">
@@ -1494,8 +1602,8 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
                 <strong>{paperOrdersSubmitted > 0 ? `${((paperOrdersFilled / paperOrdersSubmitted) * 100).toFixed(0)}%` : '-'}</strong>
               </div>
               <div className={`metric-card ${usPaperStatus?.kill_switch_triggered ? 'metric-bad' : 'metric-good'}`}>
-                <span>Kill Switch</span>
-                <strong>{usPaperStatus?.kill_switch_triggered ? 'Triggered' : 'Clear'}</strong>
+                <span>熔断开关</span>
+                <strong>{usPaperStatus?.kill_switch_triggered ? '已触发' : '正常'}</strong>
               </div>
             </div>
             <div className="ops-risk-grid">
@@ -1505,19 +1613,19 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
                 <p>{usPaperStatus?.last_reconciliation_passed === false ? '最近一次对账失败，禁止推进 live。' : '需要连续留存 paper 对账证据。'}</p>
               </div>
               <div className="ops-risk-card">
-                <span>Ledger 一致性</span>
-                <strong>{usUnifiedBacktest ? (usUnifiedBacktest.equity_consistent ? 'Pass' : 'Fail') : '-'}</strong>
+                <span>账本一致性</span>
+                <strong>{usUnifiedBacktest ? (usUnifiedBacktest.equity_consistent ? '通过' : '失败') : '-'}</strong>
                 <p>{usUnifiedBacktest?.equity_consistency_msg ?? '统一回测尚未出具账本一致性结论。'}</p>
               </div>
               <div className="ops-risk-card">
                 <span>晋升约束</span>
-                <strong>{promotionGateResult ? promotionGateResult.next_stage : 'research'}</strong>
-                <p>{systemOverview?.paper_review.summary ?? (promotionGateResult ? `决策 ${promotionGateResult.decision.toUpperCase()}，仍需人工门禁。` : '未出具 promotion manifest。')}</p>
+                <strong>{promotionGateResult ? promotionGateResult.next_stage : '研究'}</strong>
+                <p>{systemOverview?.paper_review.summary ?? (promotionGateResult ? `决策 ${promotionGateResult.decision.toUpperCase()}，仍需人工门禁。` : '未出具晋升 manifest。')}</p>
               </div>
             </div>
             {paperEquityCurve.length > 1 ? (
               <div className="ops-chart-wrap">
-                <LineChart title="Paper Equity Trail" points={paperEquityCurve} accentClass="line-accent" />
+                <LineChart title="纸交易权益曲线" points={paperEquityCurve} accentClass="line-accent" />
               </div>
             ) : null}
             {recentPaperRuns.length > 0 ? (
@@ -1526,7 +1634,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
                   <div key={day.date} className={`paper-result-row ${day.reconciliation_passed ? '' : 'paper-fail'}`}>
                     <span>{day.date}</span>
                     <span className={day.daily_pnl >= 0 ? 'metric-good' : 'metric-bad'}>{formatPrice(day.daily_pnl)}</span>
-                    <span>{day.orders_filled}/{day.orders_submitted} fills</span>
+                    <span>{day.orders_filled}/{day.orders_submitted} 成交</span>
                     <span className={`status-tag ${day.reconciliation_passed ? 'good' : 'bad'}`}>
                       {day.reconciliation_passed ? '对账通过' : '对账失败'}
                     </span>
@@ -1535,13 +1643,14 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
               </div>
             ) : null}
           </section>
+          ) : null}
         </div>
 
         <aside className="ops-rail">
           <section className="panel ops-evidence-panel">
             <div className="panel-header">
               <h3>账本 / 证据入口</h3>
-              <span>live 审批前必查</span>
+              <span>实盘审批前必查</span>
             </div>
             <div className="ops-evidence-list">
               {evidenceEntries.map(entry => (
@@ -1560,35 +1669,35 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
             </div>
             <div className="ops-evidence-list">
               <div className="ops-evidence-row">
-                <span>total_return</span>
+                <span>总收益</span>
                 <strong>{metricValue(usUnifiedBacktest?.summary.total_return_pct, 2, '%')}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>sharpe</span>
+                <span>Sharpe</span>
                 <strong>{metricValue(usUnifiedBacktest?.summary.sharpe_ratio)}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>max_drawdown</span>
+                <span>最大回撤</span>
                 <strong>{metricValue(usUnifiedBacktest?.summary.max_drawdown_pct, 2, '%')}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>fills / events</span>
+                <span>成交 / 事件</span>
                 <strong>{usUnifiedBacktest ? `${usUnifiedBacktest.fill_count} / ${usUnifiedBacktest.event_count}` : '-'}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>paper_validation</span>
+                <span>纸交易验证</span>
                 <strong>{systemOverview?.paper_validation.state ?? '-'}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>clean_days</span>
+                <span>干净天数</span>
                 <strong>{systemOverview ? `${systemOverview.paper_validation.days_completed ?? 0}/${systemOverview.paper_validation.days_required ?? 0}` : '-'}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>registry_state</span>
+                <span>注册表状态</span>
                 <strong>{systemOverview?.registry.state ?? '-'}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>ledger_final_equity</span>
+                <span>账本期末权益</span>
                 <strong>{usUnifiedBacktest ? formatPrice(usUnifiedBacktest.ledger_final_equity) : '-'}</strong>
               </div>
             </div>
@@ -1602,27 +1711,27 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
             <div className="ops-evidence-list">
               <div className="ops-evidence-row">
                 <span>新单状态</span>
-                <strong className={usReconcile?.halt_new_orders || systemOverview?.execution.live_state === 'frozen' ? 'status-err' : ''}>{usReconcile?.halt_new_orders ? 'halted' : systemOverview?.execution.live_state === 'frozen' ? 'live frozen' : 'open'}</strong>
+                <strong className={usReconcile?.halt_new_orders || systemOverview?.execution.live_state === 'frozen' ? 'status-err' : ''}>{usReconcile?.halt_new_orders ? '已暂停' : systemOverview?.execution.live_state === 'frozen' ? '实盘冻结' : '开放'}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>break_count</span>
+                <span>差异数</span>
                 <strong>{usReconcile ? String(usReconcile.break_count) : '-'}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>cash_diff</span>
+                <span>现金差异</span>
                 <strong>{typeof usReconcile?.cash_diff === 'number' ? formatPrice(usReconcile.cash_diff) : '-'}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>alert_sent</span>
-                <strong>{usReconcile?.alert_sent ? 'yes' : 'no'}</strong>
+                <span>已告警</span>
+                <strong>{usReconcile?.alert_sent ? '是' : '否'}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>audit_blocker</span>
-                <strong className="text-muted">{systemOverview?.paper_validation.audit_blocker_status ?? 'unknown'}</strong>
+                <span>审计阻塞</span>
+                <strong className="text-muted">{systemOverview?.paper_validation.audit_blocker_status ?? '未知'}</strong>
               </div>
               <div className="ops-evidence-row">
-                <span>kill_switch_reason</span>
-                <strong className="text-muted">{usPaperStatus?.kill_switch_reason ?? systemOverview?.execution.live_block_reason ?? 'none'}</strong>
+                <span>熔断原因</span>
+                <strong className="text-muted">{usPaperStatus?.kill_switch_reason ?? systemOverview?.execution.live_block_reason ?? '无'}</strong>
               </div>
             </div>
           </section>
@@ -1646,6 +1755,7 @@ export default function USEquityWorkspace({strategies, health}: USEquityWorkspac
           ) : null}
         </aside>
       </section>
+      ) : null}
     </main>
   );
 }

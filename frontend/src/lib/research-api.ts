@@ -27,6 +27,8 @@ export const researchApi = {
     apiPost<any>(`/api/research/candidates/${candId}/evidence-pack`, {data_root: dataRoot}),
   getEvidenceRegistry: (dataRoot = 'data', rebuild = false) =>
     apiGet<any>(`/api/research/evidence-registry${query({data_root: dataRoot, rebuild})}`),
+  getGlobalRegistry: () =>
+    apiGet<any>('/api/research/global-registry'),
   rebuildEvidenceRegistry: (dataRoot = 'data') =>
     apiPost<any>('/api/research/evidence-registry/rebuild', {data_root: dataRoot}),
   listFactors: (dataRoot = 'data') => apiGet<any[]>(`/api/research/factors${query({data_root: dataRoot})}`),

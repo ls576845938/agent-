@@ -19,13 +19,13 @@ type HealthState = {
   fastapi_available: boolean;
 };
 
-const tabs: Array<{path: string; label: string}> = [
-  {path: '/', label: '美股量化'},
-  {path: '/crypto', label: '加密策略'},
-  {path: '/live', label: '实盘监控'},
-  {path: '/strategies', label: '策略浏览'},
-  {path: '/research', label: '研究台'},
-  {path: '/portfolio', label: '投资组合'},
+const tabs: Array<{path: string; label: string; short: string; description: string}> = [
+  {path: '/', label: '美股量化', short: 'US', description: '数据、回测、纸交易门禁'},
+  {path: '/research', label: '研究台', short: 'RQ', description: '证据、候选、组合复核'},
+  {path: '/portfolio', label: '投资组合', short: 'PF', description: '权重、配置、风险'},
+  {path: '/crypto', label: '加密策略', short: 'BTC', description: '事件回测与闭环验证'},
+  {path: '/live', label: '实盘监控', short: 'LIVE', description: '冻结、对账、安全状态'},
+  {path: '/strategies', label: '策略浏览', short: 'ST', description: '策略目录与默认参数'},
 ];
 
 function AppShell() {
@@ -36,66 +36,86 @@ function AppShell() {
 
   useEffect(() => {
     void (async () => {
-      try {
-        const [healthResult, strategyResult] = await Promise.all([
-          apiGet<HealthState>('/api/health'),
-          apiGet<StrategyInfo[]>('/api/strategies'),
-        ]);
-        setHealth(healthResult);
-        setStrategies(strategyResult);
-      } catch (e) {
-        setError(humanizeError(e));
-      }
+      setError('');
+      const [healthResult, strategyResult] = await Promise.all([
+        apiGet<HealthState>('/api/health').catch((e) => {
+          setError(humanizeError(e));
+          return null;
+        }),
+        apiGet<StrategyInfo[]>('/api/strategies').catch(() => []),
+      ]);
+      if (healthResult) setHealth(healthResult);
+      setStrategies(strategyResult);
     })();
   }, []);
 
   const activePath = location.pathname;
+  const activeTab = tabs.find(tab => tab.path === activePath) ?? tabs[0];
 
   return (
     <div className="app-shell">
-      <div className="ambient ambient-a" />
-      <div className="ambient ambient-b" />
-
-      <header className="hero">
-        <div>
-          <p className="eyebrow">QuantStation vNext</p>
-          <h1>单策略小资金操作台</h1>
-          <p className="hero-copy">数据质量、账本一致性、paper readiness 与晋升门集中可视化；live 仍保持冻结。</p>
-        </div>
-        <div className="hero-actions">
-          <nav className="system-switch">
-            {tabs.map(tab => (
-              <Link
-                key={tab.path}
-                to={tab.path}
-                className={activePath === tab.path ? 'active' : ''}
-              >
-                {tab.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="hero-status">
-            <span className="status-chip">{health?.service ?? '等待后端'}</span>
-            <span className="status-chip muted">数据源 {health?.data_source_default ?? 'unknown'}</span>
+      <aside className="app-sidebar">
+        <div className="brand-block">
+          <div className="brand-mark">QS</div>
+          <div>
+            <p className="eyebrow">QuantStation vNext</p>
+            <h1>量化研究台</h1>
           </div>
         </div>
-      </header>
-
-      {error ? (
-        <div className="panel error-panel" style={{margin: '0 16px 16px'}}>
-          <div className="panel-header"><h2>连接错误</h2></div>
-          <p>{error}</p>
+        <nav className="app-nav" aria-label="主导航">
+          {tabs.map(tab => (
+            <Link
+              key={tab.path}
+              to={tab.path}
+              className={activePath === tab.path ? 'active' : ''}
+            >
+              <span className="nav-code">{tab.short}</span>
+              <span>
+                <strong>{tab.label}</strong>
+                <small>{tab.description}</small>
+              </span>
+            </Link>
+          ))}
+        </nav>
+        <div className="sidebar-status">
+          <span>后端</span>
+          <strong>{health?.service ?? '等待连接'}</strong>
+          <span>数据源</span>
+          <strong>{health?.data_source_default ?? '未知'}</strong>
         </div>
-      ) : null}
+      </aside>
 
-      <Routes>
-        <Route path="/" element={<ErrorBoundary><USEquityWorkspace strategies={strategies} health={health} /></ErrorBoundary>} />
-        <Route path="/crypto" element={<ErrorBoundary><CryptoWorkspace health={health} strategies={strategies} /></ErrorBoundary>} />
-        <Route path="/live" element={<ErrorBoundary><LiveTradingDashboard /></ErrorBoundary>} />
-        <Route path="/strategies" element={<ErrorBoundary><StrategyExplorer strategies={strategies} /></ErrorBoundary>} />
-        <Route path="/research" element={<ErrorBoundary><ResearchDashboard /></ErrorBoundary>} />
-        <Route path="/portfolio" element={<ErrorBoundary><PortfolioMonitor /></ErrorBoundary>} />
-      </Routes>
+      <section className="workspace-shell">
+        <header className="workspace-topbar">
+          <div>
+            <p className="eyebrow">当前页面</p>
+            <h2>{activeTab.label}</h2>
+            <p>{activeTab.description}</p>
+          </div>
+          <div className="topbar-status">
+            <span className="status-chip">{health?.status ?? '待检查'}</span>
+            <span className="status-chip muted">实盘冻结</span>
+          </div>
+        </header>
+
+        {error ? (
+          <div className="panel error-panel app-error-panel">
+            <div className="panel-header"><h2>连接错误</h2></div>
+            <p>{error}</p>
+          </div>
+        ) : null}
+
+        <div className="workspace-content">
+          <Routes>
+            <Route path="/" element={<ErrorBoundary><USEquityWorkspace strategies={strategies} health={health} /></ErrorBoundary>} />
+            <Route path="/crypto" element={<ErrorBoundary><CryptoWorkspace health={health} strategies={strategies} /></ErrorBoundary>} />
+            <Route path="/live" element={<ErrorBoundary><LiveTradingDashboard /></ErrorBoundary>} />
+            <Route path="/strategies" element={<ErrorBoundary><StrategyExplorer strategies={strategies} /></ErrorBoundary>} />
+            <Route path="/research" element={<ErrorBoundary><ResearchDashboard /></ErrorBoundary>} />
+            <Route path="/portfolio" element={<ErrorBoundary><PortfolioMonitor /></ErrorBoundary>} />
+          </Routes>
+        </div>
+      </section>
     </div>
   );
 }

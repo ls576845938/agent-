@@ -24,6 +24,22 @@ export type ModuleStateCardProps = {
   hint?: string;
 };
 
+function displayValue(value: string) {
+  const labels: Record<string, string> = {
+    WAITING: '等待中',
+    BLOCKED: '阻塞',
+    PASS: '通过',
+    MISSING: '缺失',
+    FROZEN: '冻结',
+    LOCKED: '锁定',
+    UNKNOWN: '未知',
+    COMPLETED: '完成',
+    READY_FOR_BACKTEST_ENTRY: '可进入回测',
+    READY_FOR_PORTFOLIO_SIM: '可进入组合模拟',
+  };
+  return labels[value.trim().toUpperCase()] ?? value;
+}
+
 export function ModuleStateCard({
   id,
   title,
@@ -42,6 +58,7 @@ export function ModuleStateCard({
           {hint ? <div className="module-state-hint">{hint}</div> : null}
         </div>
         <StatusBadge status={status} label={title} tone={tone} />
+        <span className="visually-hidden">{status}</span>
       </div>
 
       <div className="module-state-reason">{reason}</div>
@@ -51,7 +68,7 @@ export function ModuleStateCard({
           {meta.map((item) => (
             <div key={`${id}-${item.label}`} className="module-state-meta-item">
               <span>{item.label}</span>
-              <strong>{item.value}</strong>
+              <strong>{displayValue(item.value)}</strong>
             </div>
           ))}
         </div>
