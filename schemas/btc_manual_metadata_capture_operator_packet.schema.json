@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_manual_metadata_capture_operator_packet.schema.json",
+  "title": "QuantStation VNEXT BTC Manual Metadata Capture Operator Packet",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "status",
+    "symbol",
+    "capture_attempt_report",
+    "readiness_report",
+    "last_public_metadata_capture_status",
+    "operator_action",
+    "manual_inputs_status",
+    "paper_gate_manual_inputs_complete",
+    "required_manual_inputs",
+    "capture_requests",
+    "fee_tier_status",
+    "fee_tier_overlay_request",
+    "paper_gate_manual_inputs_request",
+    "post_capture_dry_run_import_command",
+    "post_capture_import_command",
+    "post_import_validation_commands",
+    "acceptance_checks",
+    "safety",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_manual_metadata_capture_operator_packet_v1"},
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "status": {"enum": ["awaiting_manual_capture", "metadata_verified"]},
+    "symbol": {"const": "BTCUSDT"},
+    "capture_attempt_report": {"type": ["string", "null"]},
+    "readiness_report": {"type": ["string", "null"]},
+    "last_public_metadata_capture_status": {
+      "type": "object",
+      "required": [
+        "status",
+        "network_called",
+        "exchange_info_http_status",
+        "funding_info_http_status",
+        "next_required_action"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "network_called": {"type": "boolean"},
+        "exchange_info_http_status": {"type": ["integer", "null"]},
+        "funding_info_http_status": {"type": ["integer", "null"]},
+        "next_required_action": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "operator_action": {"enum": ["manual_capture_from_allowed_network", "no_manual_capture_required"]},
+    "manual_inputs_status": {"enum": ["awaiting_manual_inputs", "manual_inputs_verified"]},
+    "paper_gate_manual_inputs_complete": {"type": "boolean"},
+    "required_manual_inputs": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        {"$ref": "#/$defs/exchange_info_manual_input"},
+        {"$ref": "#/$defs/funding_info_manual_input"},
+        {"$ref": "#/$defs/fee_tier_manual_input"}
+      ],
+      "items": false
+    },
+    "capture_requests": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        {"$ref": "#/$defs/exchange_info_capture_request"},
+        {"$ref": "#/$defs/funding_info_capture_request"}
+      ],
+      "items": false
+    },
+    "fee_tier_status": {
+      "type": "object",
+      "required": [
+        "cost_model_report",
+        "cost_model_status",
+        "fee_tier_verified",
+        "manual_capture_required",
+        "maker_fee_bps",
+        "taker_fee_bps",
+        "fee_tier_overlay",
+        "fee_tier_import_report",
+        "fee_tier_import_report_verified",
+        "fee_blockers"
+      ],
+      "properties": {
+        "cost_model_report": {"type": ["string", "null"]},
+        "cost_model_status": {"type": "string"},
+        "fee_tier_verified": {"type": "boolean"},
+        "manual_capture_required": {"type": "boolean"},
+        "maker_fee_bps": {"type": ["number", "null"], "minimum": 0},
+        "taker_fee_bps": {"type": ["number", "null"], "minimum": 0},
+        "fee_tier_overlay": {"type": ["string", "null"]},
+        "fee_tier_import_report": {"type": ["string", "null"]},
+        "fee_tier_import_report_verified": {"type": "boolean"},
+        "fee_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "fee_tier_overlay_request": {
+      "type": "object",
+      "required": [
+        "name",
+        "required_for",
+        "source_url_or_doc",
+        "output_file",
+        "dry_run_report",
+        "import_report",
+        "dry_run_command",
+        "import_command",
+        "post_import_rebuild_command",
+        "post_import_validation_command"
+      ],
+      "properties": {
+        "name": {"const": "fee_tier_overlay"},
+        "required_for": {"const": "maker_taker_fee_tier_verification"},
+        "source_url_or_doc": {"type": "string", "pattern": "\\S"},
+        "output_file": {"const": "artifacts/btc_cost_model/latest/btc_fee_tier_overlay.json"},
+        "dry_run_report": {"const": "artifacts/btc_cost_model/latest/btc_fee_tier_overlay_dry_run_report.json"},
+        "import_report": {"const": "artifacts/btc_cost_model/latest/btc_fee_tier_overlay_import_report.json"},
+        "dry_run_command": {
+          "type": "string",
+          "pattern": "^make dry-run-btc-fee-tier-overlay-import .*BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> .*BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees) .*BTC_FEE_TIER_CAPTURED_AT=<UTC_CAPTURE_TIME>"
+        },
+        "import_command": {
+          "type": "string",
+          "pattern": "^make apply-btc-fee-tier-overlay-import .*BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> .*BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees) .*BTC_FEE_TIER_CAPTURED_AT=<UTC_CAPTURE_TIME>"
+        },
+        "post_import_rebuild_command": {"const": "make rebuild-btc-paper-readiness-chain"},
+        "post_import_validation_command": {"const": "make validate-btc-evidence"}
+      },
+      "additionalProperties": false
+    },
+    "paper_gate_manual_inputs_request": {
+      "type": "object",
+      "required": [
+        "name",
+        "required_for",
+        "dry_run_command",
+        "apply_command",
+        "apply_and_validate_command",
+        "post_apply_rebuild_command",
+        "post_apply_validation_command",
+        "post_apply_readiness_command"
+      ],
+      "properties": {
+        "name": {"const": "paper_gate_manual_inputs"},
+        "required_for": {"const": "btc_paper_readiness_manual_input_gate"},
+        "dry_run_command": {
+          "type": "string",
+          "pattern": "^make dry-run-btc-paper-gate-manual-inputs .*EXCHANGE_INFO_RAW=exchange_info_raw\\.json .*FUNDING_INFO_RAW=funding_info_raw\\.json .*EXCHANGE_INFO_HTTP_STATUS=exchange_info_http_status\\.txt .*FUNDING_INFO_HTTP_STATUS=funding_info_http_status\\.txt .*BTC_MANUAL_METADATA_CAPTURED_AT=<UTC_METADATA_CAPTURE_TIME> .*BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> .*BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees) .*BTC_FEE_TIER_CAPTURED_AT=<UTC_FEE_CAPTURE_TIME>$"
+        },
+        "apply_command": {
+          "type": "string",
+          "pattern": "^make apply-btc-paper-gate-manual-inputs .*EXCHANGE_INFO_RAW=exchange_info_raw\\.json .*FUNDING_INFO_RAW=funding_info_raw\\.json .*EXCHANGE_INFO_HTTP_STATUS=exchange_info_http_status\\.txt .*FUNDING_INFO_HTTP_STATUS=funding_info_http_status\\.txt .*BTC_MANUAL_METADATA_CAPTURED_AT=<UTC_METADATA_CAPTURE_TIME> .*BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> .*BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees) .*BTC_FEE_TIER_CAPTURED_AT=<UTC_FEE_CAPTURE_TIME>$"
+        },
+        "apply_and_validate_command": {
+          "type": "string",
+          "pattern": "^make apply-and-validate-btc-paper-gate-manual-inputs .*EXCHANGE_INFO_RAW=exchange_info_raw\\.json .*FUNDING_INFO_RAW=funding_info_raw\\.json .*EXCHANGE_INFO_HTTP_STATUS=exchange_info_http_status\\.txt .*FUNDING_INFO_HTTP_STATUS=funding_info_http_status\\.txt .*BTC_MANUAL_METADATA_CAPTURED_AT=<UTC_METADATA_CAPTURE_TIME> .*BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> .*BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees) .*BTC_FEE_TIER_CAPTURED_AT=<UTC_FEE_CAPTURE_TIME>$"
+        },
+        "post_apply_rebuild_command": {"const": "make rebuild-btc-paper-readiness-chain"},
+        "post_apply_validation_command": {"const": "make validate-btc-evidence"},
+        "post_apply_readiness_command": {"const": "make check-btc-paper-validation-readiness"}
+      },
+      "additionalProperties": false
+    },
+    "post_capture_dry_run_import_command": {
+      "type": "string",
+      "anyOf": [
+        {"const": ""},
+        {
+          "pattern": "^make dry-run-btc-manual-metadata-import .*EXCHANGE_INFO_RAW=\\S+ .*FUNDING_INFO_RAW=\\S+ .*EXCHANGE_INFO_HTTP_STATUS=\\S+ .*FUNDING_INFO_HTTP_STATUS=\\S+ .*BTC_MANUAL_METADATA_CAPTURED_AT=\\S+"
+        }
+      ]
+    },
+    "post_capture_import_command": {
+      "type": "string",
+      "anyOf": [
+        {"const": ""},
+        {
+          "pattern": "^make apply-btc-manual-metadata-import .*EXCHANGE_INFO_RAW=\\S+ .*FUNDING_INFO_RAW=\\S+ .*EXCHANGE_INFO_HTTP_STATUS=\\S+ .*FUNDING_INFO_HTTP_STATUS=\\S+ .*BTC_MANUAL_METADATA_CAPTURED_AT=\\S+"
+        }
+      ]
+    },
+    "post_import_validation_commands": {
+      "type": "array",
+      "anyOf": [
+        {
+          "prefixItems": [
+            {
+              "type": "string",
+              "pattern": "^python3 scripts/build_btc_perpetual_data_bundle_manifest\\.py .*--bundle-dir \\S+ .*--bundle-id \\S+ .*--source-type production .*--promotion-clean-allowed .*--source-provider (binance_usdm|okx_swap) .*--license-note .+manual public metadata capture"
+            },
+            {"const": "make validate-btc-public-data-bundle"},
+            {"const": "make validate-btc-public-data-bundle-strict"},
+            {"const": "make rebuild-btc-paper-readiness-chain"}
+          ],
+          "minItems": 4,
+          "maxItems": 4,
+          "items": false
+        },
+        {"maxItems": 0}
+      ]
+    },
+    "acceptance_checks": {
+      "type": "array",
+      "items": {"type": "string"},
+      "allOf": [
+        {"contains": {"const": "exchange_info_raw.json contains BTCUSDT PERPETUAL TRADING symbol metadata"}},
+        {"contains": {"const": "exchangeInfo includes PRICE_FILTER.tickSize, LOT_SIZE.stepSize, LOT_SIZE.minQty, and MIN_NOTIONAL"}},
+        {"contains": {"const": "funding_info_raw.json is the raw public endpoint array response; an empty array is allowed"}},
+        {"contains": {"const": "funding_info_raw.json must not be an error object with code/msg or error fields"}},
+        {"contains": {"const": "exchange_info_http_status.txt and funding_info_http_status.txt both contain 200"}},
+        {"contains": {"const": "BTC_MANUAL_METADATA_CAPTURED_AT is the actual UTC capture time and is not omitted"}},
+        {"contains": {"const": "BTC_MANUAL_METADATA_CAPTURED_AT must not be in the future relative to import time"}},
+        {"contains": {"const": "record sha256sum and byte size for exchange_info_raw.json and funding_info_raw.json before import"}},
+        {"contains": {"const": "exchange_info_raw.json and funding_info_raw.json are distinct files"}},
+        {"contains": {"const": "raw capture files are kept outside the selected bundle directory"}},
+        {"contains": {"const": "atomic importer writes no bundle metadata unless both contracts verify"}},
+        {"contains": {"const": "dry-run import report is written separately from artifacts/btc_data_status/latest/btc_manual_metadata_import_report.json"}},
+        {"contains": {"const": "write-capable manual import report is written to artifacts/btc_data_status/latest/btc_manual_metadata_import_report.json"}},
+        {"contains": {"const": "manual metadata import report exchange_info_output_sha256 must match selected bundle exchange_info.json"}},
+        {"contains": {"const": "manual metadata import report funding_info_output_sha256 must match selected bundle funding_info.json"}},
+        {"contains": {"const": "BTC_FEE_TIER_MAKER_BPS and BTC_FEE_TIER_TAKER_BPS must come from a public USD-M fee schedule capture"}},
+        {"contains": {"const": "BTC_FEE_TIER_CAPTURED_AT is the actual UTC fee schedule capture time and is not omitted"}},
+        {"contains": {"const": "dry-run fee tier import report is written separately from artifacts/btc_cost_model/latest/btc_fee_tier_overlay_import_report.json"}},
+        {"contains": {"const": "write-capable fee tier import report is written to artifacts/btc_cost_model/latest/btc_fee_tier_overlay_import_report.json"}},
+        {"contains": {"const": "fee tier import report overlay_payload_sha256 must match artifacts/btc_cost_model/latest/btc_fee_tier_overlay.json"}}
+      ]
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "api_key_required",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "writes_bundle_files_during_capture",
+        "strategy_retest_allowed",
+        "paper_or_live_unlock_allowed",
+        "forbidden_endpoint_families"
+      ],
+      "properties": {
+        "api_key_required": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "writes_bundle_files_during_capture": {"const": false},
+        "strategy_retest_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "forbidden_endpoint_families": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "awaiting_manual_capture"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "post_import_validation_commands": {
+            "prefixItems": [
+              {
+                "type": "string",
+                "pattern": "^python3 scripts/build_btc_perpetual_data_bundle_manifest\\.py .*--bundle-dir \\S+ .*--bundle-id \\S+ .*--source-type production .*--promotion-clean-allowed .*--source-provider (binance_usdm|okx_swap) .*--license-note .+manual public metadata capture"
+              },
+              {"const": "make validate-btc-public-data-bundle"},
+              {"const": "make validate-btc-public-data-bundle-strict"},
+              {"const": "make rebuild-btc-paper-readiness-chain"}
+            ],
+            "minItems": 4,
+            "maxItems": 4,
+            "items": false
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "manual_input": {
+      "type": "object",
+      "required": ["name", "required_for", "status", "action", "blockers"],
+      "properties": {
+        "name": {"enum": ["exchange_info", "funding_info", "fee_tier_overlay"]},
+        "required_for": {"type": "string"},
+        "status": {"enum": ["awaiting_capture", "verified"]},
+        "action": {
+          "enum": ["manual_capture_from_allowed_network", "capture_public_fee_schedule_and_import", "none"]
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "exchange_info_manual_input": {
+      "allOf": [
+        {"$ref": "#/$defs/manual_input"},
+        {
+          "type": "object",
+          "properties": {
+            "name": {"const": "exchange_info"},
+            "required_for": {"const": "exchange_info_verification"}
+          }
+        }
+      ]
+    },
+    "funding_info_manual_input": {
+      "allOf": [
+        {"$ref": "#/$defs/manual_input"},
+        {
+          "type": "object",
+          "properties": {
+            "name": {"const": "funding_info"},
+            "required_for": {"const": "funding_info_endpoint_verification"}
+          }
+        }
+      ]
+    },
+    "fee_tier_manual_input": {
+      "allOf": [
+        {"$ref": "#/$defs/manual_input"},
+        {
+          "type": "object",
+          "properties": {
+            "name": {"const": "fee_tier_overlay"},
+            "required_for": {"const": "maker_taker_fee_tier_verification"}
+          }
+        }
+      ]
+    },
+    "capture_request": {
+      "type": "object",
+      "required": [
+        "name",
+        "required_for",
+        "method",
+        "endpoint",
+        "url",
+        "output_file",
+        "http_status_file",
+        "command",
+        "sha256_command",
+        "size_command",
+        "http_status_command",
+        "required_http_status",
+        "empty_response_allowed"
+      ],
+      "properties": {
+        "name": {"enum": ["exchange_info", "funding_info"]},
+        "required_for": {"type": "string"},
+        "method": {"const": "GET"},
+        "endpoint": {
+          "enum": [
+            "GET /fapi/v1/exchangeInfo",
+            "GET /fapi/v1/fundingInfo",
+            "GET /api/v5/public/instruments",
+            "GET /api/v5/public/funding-rate"
+          ]
+        },
+        "url": {"type": "string"},
+        "output_file": {"enum": ["exchange_info_raw.json", "funding_info_raw.json"]},
+        "http_status_file": {"enum": ["exchange_info_http_status.txt", "funding_info_http_status.txt"]},
+        "command": {"type": "string"},
+        "sha256_command": {
+          "type": "string",
+          "pattern": "^sha256sum (exchange_info_raw\\.json|funding_info_raw\\.json)$"
+        },
+        "size_command": {
+          "type": "string",
+          "pattern": "^wc -c (exchange_info_raw\\.json|funding_info_raw\\.json)$"
+        },
+        "http_status_command": {
+          "type": "string",
+          "pattern": "^cat (exchange_info_http_status\\.txt|funding_info_http_status\\.txt)$"
+        },
+        "required_http_status": {"const": 200},
+        "empty_response_allowed": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "exchange_info_capture_request": {
+      "allOf": [
+        {"$ref": "#/$defs/capture_request"},
+        {
+          "type": "object",
+          "properties": {
+            "name": {"const": "exchange_info"},
+            "required_for": {"const": "exchange_info_verification"},
+            "endpoint": {"enum": ["GET /fapi/v1/exchangeInfo", "GET /api/v5/public/instruments"]},
+            "url": {
+              "type": "string",
+              "pattern": "^https://(fapi\\.binance\\.com/fapi/v1/exchangeInfo|www\\.okx\\.com/api/v5/public/instruments\\?instType=SWAP)$"
+            },
+            "output_file": {"const": "exchange_info_raw.json"},
+            "http_status_file": {"const": "exchange_info_http_status.txt"},
+            "command": {"type": "string", "pattern": "^curl -sS -o exchange_info_raw\\.json .* > exchange_info_http_status\\.txt$"},
+            "sha256_command": {"const": "sha256sum exchange_info_raw.json"},
+            "size_command": {"const": "wc -c exchange_info_raw.json"},
+            "http_status_command": {"const": "cat exchange_info_http_status.txt"},
+            "required_http_status": {"const": 200},
+            "empty_response_allowed": {"const": false}
+          }
+        }
+      ]
+    },
+    "funding_info_capture_request": {
+      "allOf": [
+        {"$ref": "#/$defs/capture_request"},
+        {
+          "type": "object",
+          "properties": {
+            "name": {"const": "funding_info"},
+            "required_for": {"const": "funding_info_endpoint_verification"},
+            "endpoint": {"enum": ["GET /fapi/v1/fundingInfo", "GET /api/v5/public/funding-rate"]},
+            "url": {
+              "type": "string",
+              "pattern": "^https://(fapi\\.binance\\.com/fapi/v1/fundingInfo|www\\.okx\\.com/api/v5/public/funding-rate\\?instId=BTC-USDT-SWAP)$"
+            },
+            "output_file": {"const": "funding_info_raw.json"},
+            "http_status_file": {"const": "funding_info_http_status.txt"},
+            "command": {"type": "string", "pattern": "^curl -sS -o funding_info_raw\\.json .* > funding_info_http_status\\.txt$"},
+            "sha256_command": {"const": "sha256sum funding_info_raw.json"},
+            "size_command": {"const": "wc -c funding_info_raw.json"},
+            "http_status_command": {"const": "cat funding_info_http_status.txt"},
+            "required_http_status": {"const": 200},
+            "empty_response_allowed": {"type": "boolean"}
+          }
+        }
+      ]
+    }
+  }
+}

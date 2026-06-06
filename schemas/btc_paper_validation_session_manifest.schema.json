@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_paper_validation_session_manifest.schema.json",
+  "title": "QuantStation VNEXT BTC Paper Validation Session Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "run_id",
+    "asset",
+    "symbol",
+    "market_type",
+    "paper_broker",
+    "broker_backend",
+    "real_order_submission",
+    "allows_live_orders",
+    "orders_require_risk_engine",
+    "pnl_source",
+    "strategy_id",
+    "strategy_params",
+    "capital",
+    "commission_rate",
+    "slippage_bps",
+    "cost_model_report",
+    "data_version",
+    "strategy_version",
+    "bundle_dir",
+    "ledger_reconciliation_artifact_path",
+    "risk_gate",
+    "no_real_order_submission_proof"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_paper_validation_session_manifest_v1"},
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "run_id": {"type": "string", "pattern": "^btc_paper_\\d{8}T\\d{6}Z_\\d{8}T\\d{6}Z_\\S+"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "market_type": {"const": "usds_m_perpetual"},
+    "paper_broker": {"const": "simulated"},
+    "broker_backend": {"const": "simulated"},
+    "real_order_submission": {"const": false},
+    "allows_live_orders": {"const": false},
+    "orders_require_risk_engine": {"const": true},
+    "pnl_source": {"const": "fills_and_ledger"},
+    "strategy_id": {"type": "string", "pattern": "\\S"},
+    "strategy_params": {"type": "object"},
+    "capital": {"type": "number", "exclusiveMinimum": 0},
+    "commission_rate": {"type": "number", "minimum": 0},
+    "slippage_bps": {"type": "number", "minimum": 0},
+    "cost_model_report": {"type": "string", "pattern": "\\S"},
+    "data_version": {"type": "string", "pattern": "\\S"},
+    "strategy_version": {"type": "string", "pattern": "\\S"},
+    "bundle_dir": {"type": "string", "pattern": "data/external/btc_perpetual/binance_usdm/bundles/\\S+"},
+    "ledger_reconciliation_artifact_path": {"type": "string", "pattern": "\\S"},
+    "risk_gate": {"$ref": "#/$defs/riskGate"},
+    "no_real_order_submission_proof": {
+      "type": "object",
+      "required": [
+        "paper_broker",
+        "broker_backend",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "live_order_submission_enabled"
+      ],
+      "properties": {
+        "paper_broker": {"const": "simulated"},
+        "broker_backend": {"const": "simulated"},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "live_order_submission_enabled": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "riskGate": {
+      "type": "object",
+      "required": [
+        "enforced",
+        "risk_check_count",
+        "order_count",
+        "approved",
+        "rejected",
+        "rejection_reasons",
+        "all_orders_created_by_oms",
+        "all_orders_have_risk_check_id"
+      ],
+      "properties": {
+        "enforced": {"const": true},
+        "risk_check_count": {"type": "integer", "minimum": 0},
+        "order_count": {"type": "integer", "minimum": 0},
+        "approved": {"type": "integer", "minimum": 0},
+        "rejected": {"type": "integer", "minimum": 0},
+        "rejection_reasons": {"type": "object"},
+        "all_orders_created_by_oms": {"const": true},
+        "all_orders_have_risk_check_id": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

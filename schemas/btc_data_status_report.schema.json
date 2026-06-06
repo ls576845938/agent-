@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_data_status_report.schema.json",
+  "title": "QuantStation VNEXT BTC Data Status Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "metadata",
+    "instrument",
+    "coverage",
+    "data_sources",
+    "perpetual_bundle_preflight_report",
+    "perpetual_provider_verification_report",
+    "perpetual_provider_verification",
+    "data_quality",
+    "asset",
+    "symbol",
+    "status",
+    "source_run_dir",
+    "source_data_fold_regime_report",
+    "source_fold_regime_contract_audit",
+    "sqlite",
+    "intervals",
+    "manifest_lineage",
+    "fold_definition_version",
+    "fold_contract_status",
+    "fold_count",
+    "folds",
+    "regime_classifier_version",
+    "regime_contract_status",
+    "regime_gate_pass_rate",
+    "dragging_regimes",
+    "fee_model_status",
+    "funding_model_status",
+    "diagnostic_warnings",
+    "blockers",
+    "promotion_ready",
+    "paper_queue_status",
+    "live_status"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_data_status_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "metadata": {
+      "type": "object",
+      "required": ["generated_at", "commit", "branch", "source_type", "is_data_dependent", "is_placeholder"],
+      "properties": {
+        "generated_at": {"type": "string"},
+        "commit": {"type": "string"},
+        "branch": {"type": "string"},
+        "source_type": {"type": "string"},
+        "is_data_dependent": {"type": "boolean"},
+        "is_placeholder": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "instrument": {
+      "type": "object",
+      "required": ["exchange", "market_type", "symbol", "contract_type", "quote_asset", "margin_asset", "timezone"],
+      "properties": {
+        "exchange": {"type": "string"},
+        "market_type": {"type": "string"},
+        "symbol": {"const": "BTCUSDT"},
+        "contract_type": {"type": "string"},
+        "quote_asset": {"type": "string"},
+        "margin_asset": {"type": "string"},
+        "timezone": {"const": "UTC"}
+      },
+      "additionalProperties": false
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "sample_start",
+        "sample_end",
+        "intervals_available",
+        "bar_count_by_interval",
+        "missing_bar_count_by_interval",
+        "duplicate_bar_count_by_interval",
+        "completeness_ratio_by_interval"
+      ],
+      "properties": {
+        "sample_start": {"type": ["string", "null"]},
+        "sample_end": {"type": ["string", "null"]},
+        "intervals_available": {"type": "array", "items": {"type": "string"}},
+        "bar_count_by_interval": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "missing_bar_count_by_interval": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "duplicate_bar_count_by_interval": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "completeness_ratio_by_interval": {"type": "object", "additionalProperties": {"type": "number", "minimum": 0}}
+      },
+      "additionalProperties": false
+    },
+    "data_sources": {
+      "type": "object",
+      "required": [
+        "klines_available",
+        "mark_price_klines_available",
+        "premium_index_klines_available",
+        "funding_rate_available",
+        "funding_info_available",
+        "exchange_info_available",
+        "open_interest_available",
+        "open_interest_coverage_type",
+        "agg_trades_available",
+        "liquidation_snapshot_available",
+        "liquidation_snapshot_gate_eligible",
+        "liquidation_snapshot_status"
+      ],
+      "properties": {
+        "klines_available": {"type": "boolean"},
+        "mark_price_klines_available": {"type": "boolean"},
+        "premium_index_klines_available": {"type": "boolean"},
+        "funding_rate_available": {"type": "boolean"},
+        "funding_info_available": {"type": "boolean"},
+        "exchange_info_available": {"type": "boolean"},
+        "open_interest_available": {"type": "boolean"},
+        "open_interest_coverage_type": {
+          "enum": ["missing", "current_only", "latest_month_only", "partial_local_archive", "full_local_archive"]
+        },
+        "agg_trades_available": {"type": "boolean"},
+        "liquidation_snapshot_available": {"type": "boolean"},
+        "liquidation_snapshot_gate_eligible": {"const": false},
+        "liquidation_snapshot_status": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "perpetual_bundle_preflight_report": {"type": ["string", "null"]},
+    "perpetual_provider_verification_report": {"type": ["string", "null"]},
+    "perpetual_provider_verification": {
+      "type": "object",
+      "required": [
+        "selected_provider",
+        "selected_bundle_id",
+        "source_type",
+        "preflight_pass",
+        "perpetual_evidence_ready",
+        "data_lineage_grade_candidate",
+        "blockers"
+      ],
+      "properties": {
+        "selected_provider": {"type": "string"},
+        "selected_bundle_id": {"type": ["string", "null"]},
+        "source_type": {"type": ["string", "null"]},
+        "preflight_pass": {"type": "boolean"},
+        "perpetual_evidence_ready": {"type": "boolean"},
+        "data_lineage_grade_candidate": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "data_quality": {
+      "type": "object",
+      "required": [
+        "monotonic_time_pass",
+        "utc_alignment_pass",
+        "interval_grid_pass",
+        "symbol_consistency_pass",
+        "stale_data_check_pass",
+        "manifest_hash",
+        "sqlite_path",
+        "data_path",
+        "blockers"
+      ],
+      "properties": {
+        "monotonic_time_pass": {"type": "boolean"},
+        "utc_alignment_pass": {"type": "boolean"},
+        "interval_grid_pass": {"type": "boolean"},
+        "symbol_consistency_pass": {"type": "boolean"},
+        "stale_data_check_pass": {"type": "boolean"},
+        "manifest_hash": {"type": "string"},
+        "sqlite_path": {"type": "string"},
+        "data_path": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "status": {"enum": ["missing", "partial", "pass"]},
+    "source_run_dir": {"type": "string"},
+    "source_data_fold_regime_report": {"type": ["string", "null"]},
+    "source_fold_regime_contract_audit": {"type": ["string", "null"]},
+    "sqlite": {"type": "object"},
+    "intervals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "interval",
+          "status",
+          "manifest_status",
+          "row_count",
+          "expected_rows",
+          "missing_rows",
+          "duplicate_rows",
+          "data_version",
+          "latest_manifest_path",
+          "start",
+          "end"
+        ],
+        "properties": {
+          "interval": {"type": "string"},
+          "status": {"type": "string"},
+          "manifest_status": {"type": "string"},
+          "row_count": {"type": "integer", "minimum": 0},
+          "expected_rows": {"type": "integer", "minimum": 0},
+          "missing_rows": {"type": "integer", "minimum": 0},
+          "duplicate_rows": {"type": "integer", "minimum": 0},
+          "data_version": {"type": "string"},
+          "latest_manifest_path": {"type": "string"},
+          "start": {"type": "string"},
+          "end": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "manifest_lineage": {"type": "object"},
+    "fold_definition_version": {"const": "btc_walk_forward_fold_contract_v1"},
+    "fold_contract_status": {"type": "string"},
+    "fold_count": {"type": "integer", "minimum": 0},
+    "folds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "fold_id",
+          "validation_start",
+          "validation_end",
+          "validation_rows",
+          "passed"
+        ],
+        "properties": {
+          "fold_id": {"type": "string"},
+          "validation_start": {"type": "string"},
+          "validation_end": {"type": "string"},
+          "validation_rows": {"type": "integer", "minimum": 0},
+          "passed": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "regime_classifier_version": {"const": "classify_btc_regimes_v1"},
+    "regime_contract_status": {"type": "string"},
+    "regime_gate_pass_rate": {"type": "number"},
+    "dragging_regimes": {"type": "array", "items": {"type": "string"}},
+    "fee_model_status": {"type": "string"},
+    "funding_model_status": {"type": "string"},
+    "diagnostic_warnings": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "promotion_ready": {"const": false},
+    "paper_queue_status": {"const": "locked"},
+    "live_status": {"const": "frozen"}
+  },
+  "additionalProperties": false
+}

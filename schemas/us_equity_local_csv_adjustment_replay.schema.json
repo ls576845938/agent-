@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_local_csv_adjustment_replay.schema.json",
+  "title": "US Equity Local CSV Adjustment Replay Row",
+  "type": "object",
+  "required": [
+    "security_id",
+    "ticker",
+    "date",
+    "raw_close",
+    "adjusted_close",
+    "split_factor",
+    "dividend_adjustment",
+    "total_adjustment_factor",
+    "replay_adjusted_close",
+    "replay_error",
+    "source_record_id"
+  ],
+  "properties": {
+    "security_id": {"type": "string"},
+    "ticker": {"type": "string"},
+    "date": {"type": "string"},
+    "raw_close": {"type": "string"},
+    "adjusted_close": {"type": "string"},
+    "split_factor": {"type": "string"},
+    "dividend_adjustment": {"type": "string"},
+    "total_adjustment_factor": {"type": "string"},
+    "replay_adjusted_close": {"type": "string"},
+    "replay_error": {"type": "string"},
+    "source_record_id": {"type": "string"}
+  },
+  "additionalProperties": true
+}

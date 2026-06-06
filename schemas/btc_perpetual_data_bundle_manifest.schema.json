@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_perpetual_data_bundle_manifest.schema.json",
+  "title": "QuantStation VNEXT BTC Perpetual Data Bundle Manifest",
+  "type": "object",
+  "required": [
+    "bundle_id",
+    "source_provider",
+    "source_type",
+    "symbol",
+    "market_type",
+    "exchange",
+    "sample_start",
+    "sample_end",
+    "intervals",
+    "created_at",
+    "license_note",
+    "promotion_clean_allowed",
+    "files",
+    "blockers"
+  ],
+  "properties": {
+    "bundle_id": {"type": "string", "minLength": 1},
+    "source_provider": {"type": "string", "minLength": 1},
+    "source_type": {"enum": ["fixture", "sample", "production"]},
+    "symbol": {"const": "BTCUSDT"},
+    "market_type": {"const": "usds_m_perpetual"},
+    "exchange": {"enum": ["binance_usdm", "okx_swap"]},
+    "sample_start": {"type": ["string", "null"]},
+    "sample_end": {"type": ["string", "null"]},
+    "intervals": {"type": "array", "items": {"type": "string"}},
+    "created_at": {"type": "string"},
+    "license_note": {"type": "string"},
+    "promotion_clean_allowed": {"type": "boolean"},
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "role",
+          "sha256",
+          "record_count",
+          "sample_start",
+          "sample_end",
+          "interval",
+          "source_endpoint_or_archive",
+          "downloaded_at",
+          "imported_at",
+          "checksum_source",
+          "blockers"
+        ],
+        "properties": {
+          "path": {"type": "string"},
+          "role": {"type": "string"},
+          "sha256": {"type": "string"},
+          "record_count": {"type": "integer", "minimum": 0},
+          "sample_start": {"type": ["string", "null"]},
+          "sample_end": {"type": ["string", "null"]},
+          "interval": {"type": ["string", "null"]},
+          "source_endpoint_or_archive": {"type": "string"},
+          "downloaded_at": {"type": ["string", "null"]},
+          "imported_at": {"type": ["string", "null"]},
+          "checksum_source": {"type": ["string", "null"]},
+          "blockers": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

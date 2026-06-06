@@ -1,11 +1,341 @@
 {
-  "generated_at": "2026-05-18T12:18:11.487841+00:00",
+  "branch": "main",
+  "btc": {
+    "archived_or_rejected": [
+      "perp_dual_trend",
+      "low_vol_uptrend",
+      "liquidation_shock_recovery",
+      "range_reclaim_momentum",
+      "compression_expansion_breakout"
+    ],
+    "attribution_only": [],
+    "blockers": [
+      "btc_regime_contract_not_pass",
+      "btc_candidate_gate_event_pf_failed",
+      "btc_candidate_gate_walk_forward_failed",
+      "btc_candidate_gate_regime_failed",
+      "btc_candidate_metric_repair_event_profit_factor_failed",
+      "btc_candidate_metric_repair_walk_forward_pass_rate_failed",
+      "btc_candidate_bounded_retest_event_profit_factor_failed",
+      "btc_candidate_bounded_retest_walk_forward_pass_rate_failed",
+      "btc_next_hypothesis_all_probe_event_profit_factor_failed",
+      "btc_next_hypothesis_dual_trend_micro_surgery_rejected",
+      "btc_strategy_family_dual_trend_micro_surgery_rejected",
+      "btc_strategy_family_selected_okx_bundle_history_too_short",
+      "btc_strategy_family_selected_okx_1h_klines_too_short",
+      "btc_strategy_family_selected_okx_funding_history_too_short",
+      "btc_strategy_family_candidate_generation_blocked_until_okx_history_extended",
+      "btc_compression_expansion_archived",
+      "btc_compression_expansion_candidate_gate_failed",
+      "btc_compression_expansion_failed_folds_require_repair_decision",
+      "btc_compression_expansion_regime_drag_unresolved",
+      "btc_compression_expansion_full_ledger_event_pf_failed",
+      "btc_perpetual_cost_contract_not_complete"
+    ],
+    "candidate_bounded_retest_outcome_status": {
+      "blockers": [
+        "btc_candidate_bounded_retest_event_profit_factor_failed",
+        "btc_candidate_bounded_retest_walk_forward_pass_rate_failed"
+      ],
+      "candidate_gate_passed": false,
+      "cost_stress_base_pass": true,
+      "cost_stress_harsh_pass": true,
+      "event_profit_factor": 1.0205,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "live_status": "FROZEN",
+      "next_required_action": "design_new_fold_specific_hypothesis_or_select_better_candidate",
+      "ordinary_profit_factor": 1.631439,
+      "paper_or_live_unlock_allowed": false,
+      "paper_queue_status": "LOCKED",
+      "paper_review_pending_allowed": false,
+      "promotion_allowed": false,
+      "real_broker_api_called": false,
+      "real_orders_created": false,
+      "regime_pass_rate": 1.0,
+      "report_path": "artifacts/btc_candidate_gate/latest/candidate_bounded_retest_outcome_report.json",
+      "run_id": "20260604T132400Z_okx_bounded_retest",
+      "same_retest_repeat_allowed": false,
+      "status": "completed_candidate_gate_failed",
+      "walk_forward_pass_rate": 0.5
+    },
+    "candidate_bounded_retest_status": {
+      "blockers": [],
+      "bounded_parameter_search_allowed": true,
+      "broker_calls_allowed": false,
+      "candidate_strategy_id": "btc_perp_dual_trend_v4_eventpf_wf",
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "focus_failed_folds": [
+        3,
+        4
+      ],
+      "ordinary_profit_factor_diagnostic_only": true,
+      "paper_or_live_unlock_allowed": false,
+      "paper_review_pending_allowed": false,
+      "promotion_allowed": false,
+      "report_path": "artifacts/btc_candidate_gate/latest/candidate_bounded_retest_plan.json",
+      "retest_allowed": true,
+      "status": "ready_for_bounded_retest"
+    },
+    "candidate_metric_repair_status": {
+      "best_candidate_strategy_id": "btc_perp_dual_trend_v4_eventpf_wf",
+      "blockers": [
+        "btc_candidate_metric_repair_event_profit_factor_failed",
+        "btc_candidate_metric_repair_walk_forward_pass_rate_failed"
+      ],
+      "event_profit_factor": 1.0205,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "paper_review_pending_allowed": false,
+      "promotion_allowed": false,
+      "recommended_repair_actions": [
+        {
+          "name": "run_bounded_event_pf_retest",
+          "priority": 1,
+          "status": "pending"
+        },
+        {
+          "name": "repair_late_walk_forward_folds",
+          "priority": 2,
+          "status": "pending"
+        },
+        {
+          "name": "avoid_broad_short_reintroduction",
+          "priority": 3,
+          "status": "guardrail"
+        },
+        {
+          "name": "do_not_promote_on_ordinary_profit_factor",
+          "priority": 4,
+          "status": "guardrail"
+        }
+      ],
+      "regime_pass_rate": 1.0,
+      "report_path": "artifacts/btc_candidate_gate/latest/candidate_metric_repair_report.json",
+      "status": "needs_metric_repair",
+      "walk_forward_pass_rate": 0.5
+    },
+    "candidate_passed_internal_gate": 0,
+    "compression_boundary": {
+      "allowed_next_action": "archive_only",
+      "archive_recommended": true,
+      "limited_retest_allowed": false,
+      "paper_review_pending_allowed": false,
+      "status": "archived"
+    },
+    "current_candidates": [],
+    "latest_bundle_preflight": "artifacts/btc_data_status/latest/btc_perpetual_bundle_preflight_report.json",
+    "latest_candidate_bounded_retest_outcome_report": "artifacts/btc_candidate_gate/latest/candidate_bounded_retest_outcome_report.json",
+    "latest_candidate_bounded_retest_plan": "artifacts/btc_candidate_gate/latest/candidate_bounded_retest_plan.json",
+    "latest_candidate_gate_audit": "artifacts/btc_candidate_gate/latest/candidate_gate_audit_report.json",
+    "latest_candidate_metric_repair_report": "artifacts/btc_candidate_gate/latest/candidate_metric_repair_report.json",
+    "latest_compression_attribution": "artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/attribution_report.json",
+    "latest_cost_model": "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+    "latest_data_status": "artifacts/btc_data_status/latest/btc_data_status_report.json",
+    "latest_fold_regime_contract": "artifacts/btc_fold_regime/latest/fold_regime_contract_report.json",
+    "latest_funding_ledger": "artifacts/btc_cost_model/latest/btc_funding_ledger_report.json",
+    "latest_funding_rate_gap_report": "artifacts/btc_data_status/latest/btc_funding_rate_gap_report.json",
+    "latest_manual_metadata_capture_operator_packet": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_operator_packet.json",
+    "latest_manual_metadata_capture_readiness": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_readiness_report.json",
+    "latest_manual_metadata_import_report": "artifacts/btc_data_status/latest/btc_manual_metadata_import_report.json",
+    "latest_next_hypothesis_decision_report": "artifacts/btc_candidate_gate/latest/btc_next_hypothesis_decision_report.json",
+    "latest_objective_completion_audit": "artifacts/btc_data_status/latest/btc_objective_completion_audit_report.json",
+    "latest_provider_verification": "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json",
+    "latest_strategy_family_roadmap_report": "artifacts/btc_candidate_gate/latest/btc_strategy_family_roadmap_report.json",
+    "latest_tail_dependency": "artifacts/btc_tail_dependency/latest/tail_dependency_report.json",
+    "live_status": "frozen",
+    "manual_metadata_capture_operator_packet_status": {
+      "blockers": [],
+      "capture_request_count": 2,
+      "dry_run_import_available": true,
+      "fee_tier_status": {
+        "cost_model_report": "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+        "cost_model_status": "pass",
+        "fee_blockers": [],
+        "fee_tier_import_report_verified": true,
+        "fee_tier_verified": true,
+        "maker_fee_bps": 2.0,
+        "manual_capture_required": false,
+        "taker_fee_bps": 5.0
+      },
+      "last_exchange_info_http_status": null,
+      "last_funding_info_http_status": null,
+      "manual_inputs_status": "manual_inputs_verified",
+      "operator_action": "no_manual_capture_required",
+      "paper_gate_manual_inputs_complete": true,
+      "report_path": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_operator_packet.json",
+      "required_manual_input_count": 3,
+      "required_manual_inputs": [
+        {
+          "action": "none",
+          "blockers": [],
+          "name": "exchange_info",
+          "required_for": "exchange_info_verification",
+          "status": "verified"
+        },
+        {
+          "action": "none",
+          "blockers": [],
+          "name": "funding_info",
+          "required_for": "funding_info_endpoint_verification",
+          "status": "verified"
+        },
+        {
+          "action": "none",
+          "blockers": [],
+          "name": "fee_tier_overlay",
+          "required_for": "maker_taker_fee_tier_verification",
+          "status": "verified"
+        }
+      ],
+      "status": "metadata_verified"
+    },
+    "manual_metadata_capture_status": {
+      "api_key_required": false,
+      "blockers": [],
+      "exchange_info_allowed_endpoint": "GET /api/v5/public/instruments",
+      "exchange_info_manual_capture_required": false,
+      "funding_info_allowed_endpoint": "GET /api/v5/public/funding-rate",
+      "funding_info_manual_capture_required": false,
+      "last_exchange_info_capture_status": "not_executed",
+      "last_exchange_info_http_status": null,
+      "last_funding_info_capture_status": "not_executed",
+      "last_funding_info_http_status": null,
+      "last_public_metadata_capture_network_called": false,
+      "last_public_metadata_capture_status": "capture_incomplete",
+      "last_public_metadata_next_required_action": "manual_capture_from_allowed_network",
+      "latest_public_metadata_capture_attempt": "artifacts/btc_data_status/latest/btc_public_metadata_capture_attempt_report.json",
+      "order_endpoints_allowed": false,
+      "paper_or_live_unlock_allowed": false,
+      "private_endpoints_allowed": false,
+      "report_path": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_readiness_report.json",
+      "status": "metadata_verified",
+      "strategy_retest_allowed": false
+    },
+    "manual_metadata_import_status": {
+      "blockers": [],
+      "bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1",
+      "bundle_dir_exists": true,
+      "bundle_dir_matches_selected": true,
+      "bundle_exchange_info_exists": true,
+      "bundle_exchange_info_output_hash_verified": true,
+      "bundle_funding_info_exists": true,
+      "bundle_funding_info_output_hash_verified": true,
+      "captured_at": "2026-06-05T04:52:31Z",
+      "dry_run": false,
+      "exchange_info_verified": true,
+      "funding_info_verified": true,
+      "post_import_validation_command": "make validate-btc-public-data-bundle",
+      "raw_input_files": {
+        "exchange_info_raw": {
+          "exists": true,
+          "http_status": 200,
+          "http_status_file": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/exchange_info_http_status.txt",
+          "http_status_verified": true,
+          "path": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/exchange_info_raw.json",
+          "sha256": "3e28c1cbf9de5caa182499fe2c55aed4afe9fda5c78c74ae4ea91a12bdf66c86",
+          "size_bytes": 1439
+        },
+        "funding_info_raw": {
+          "exists": true,
+          "http_status": 200,
+          "http_status_file": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/funding_info_http_status.txt",
+          "http_status_verified": true,
+          "path": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/funding_info_raw.json",
+          "sha256": "7fb901c04c2abe7900cfd02c69d3b0737c5d05c2605447838dfe9766511ffbfc",
+          "size_bytes": 687
+        }
+      },
+      "report_path": "artifacts/btc_data_status/latest/btc_manual_metadata_import_report.json",
+      "status": "verified",
+      "valid_for_completion": true,
+      "writes_performed": true
+    },
+    "next_hypothesis_decision_status": {
+      "best_event_mode": "lifecycle_stop6_trail10_max240",
+      "best_event_profit_factor": 1.036973,
+      "best_event_walk_forward_pass_rate": 0.75,
+      "best_wf_event_profit_factor": 1.028127,
+      "best_wf_mode": "accel1p2_lifecycle",
+      "best_wf_pass_rate": 1.0,
+      "blockers": [
+        "btc_next_hypothesis_all_probe_event_profit_factor_failed",
+        "btc_next_hypothesis_dual_trend_micro_surgery_rejected"
+      ],
+      "decision": "reject_same_family_micro_surgery",
+      "event_profit_factor_pass_count": 0,
+      "mode_count": 10,
+      "next_required_action": "design_new_strategy_family_with_lifecycle_edge",
+      "paper_review_pending_allowed": false,
+      "promotion_allowed": false,
+      "report_path": "artifacts/btc_candidate_gate/latest/btc_next_hypothesis_decision_report.json",
+      "same_family_micro_search_allowed": false,
+      "status": "dual_trend_micro_surgery_rejected",
+      "walk_forward_pass_rate_pass_count": 1
+    },
+    "objective_completion_status": {
+      "blockers": [],
+      "complete_requirements": [
+        "archive_compression_expansion_breakout",
+        "btc_hypothesis_lab_v2_controlled_search",
+        "funding_info_endpoint_policy_repair",
+        "funding_ledger_net_pnl_integration",
+        "manual_exchange_info_capture"
+      ],
+      "goal_complete": true,
+      "incomplete_requirements": [],
+      "next_required_action": "none",
+      "report_path": "artifacts/btc_data_status/latest/btc_objective_completion_audit_report.json",
+      "status": "complete"
+    },
+    "paper_queue_status": "locked",
+    "status": "research_sandbox",
+    "strategy_family_roadmap_status": {
+      "blockers": [
+        "btc_strategy_family_dual_trend_micro_surgery_rejected",
+        "btc_strategy_family_selected_okx_bundle_history_too_short",
+        "btc_strategy_family_selected_okx_1h_klines_too_short",
+        "btc_strategy_family_selected_okx_funding_history_too_short",
+        "btc_strategy_family_candidate_generation_blocked_until_okx_history_extended"
+      ],
+      "candidate_generation_allowed": false,
+      "decision": "select_funding_carry_reversion_hypothesis",
+      "funding_rate_record_count": 284,
+      "hypothesis_distribution_allowed": false,
+      "min_required_funding_events": 1095,
+      "min_required_history_days": 365.0,
+      "next_required_action": "extend_okx_public_history_before_hypothesis_or_candidate_generation",
+      "paper_or_live_unlock_allowed": false,
+      "paper_review_pending_allowed": false,
+      "promotion_allowed": false,
+      "report_path": "artifacts/btc_candidate_gate/latest/btc_strategy_family_roadmap_report.json",
+      "selected_bundle_duration_days": 94.333333,
+      "selected_bundle_id": "btc_okx_swap_btcusdt_history_365d_v1",
+      "selected_family": "funding_carry_reversion",
+      "selected_family_id": "funding_carry_reversion_v0",
+      "selected_provider": "okx_swap",
+      "status": "family_design_data_blocked",
+      "strategy_skeleton_generation_allowed": false
+    }
+  },
+  "commit": "ab6e2e4",
+  "generated_at": "2026-06-06T02:30:17Z",
   "items": {
     "compression_expansion_breakout": {
+      "allowed_next_action": "archive_only",
+      "archive_recommended": true,
       "last_run_id": "20260516T133000Z_compression_expansion_eventledger",
-      "next_action": "evaluate_with_lifecycle_aware_gate_v2",
-      "reason": "hypothesis layer passed but event-ledger candidate failed: event_profit_factor, walk_forward_pass_rate, regime_pass_rate",
-      "status": "candidate_gate_failed"
+      "limited_retest_allowed": false,
+      "next_action": "do_not_retest_without_new_hypothesis",
+      "reason": "hypothesis layer passed but full-lifecycle event-ledger candidate failed event_PF, walk-forward, and regime gates; v2 lifecycle gate rejected the raw/target-active edge",
+      "status": "archived"
     },
     "liquidation_shock_recovery": {
       "last_run_id": "20260517T010000Z_liquidation_shock_attribution",
@@ -28,7 +358,7 @@
     "range_reclaim_momentum": {
       "last_run_id": "20260518T010000Z_range_reclaim_lifecycle",
       "next_action": "do_not_generate_skeleton",
-      "reason": "full_lifecycle_event_PF_proxy=1.098985; fold_pass_rate_lifecycle=0.250000; tail_top5=0.055292; reasons=raw_event_PF_proxy, target_active_event_PF_proxy, full_lifecycle_event_PF_proxy, fold_pass_rate_lifecycle, cost_stress_proxy_base",
+      "reason": "full_lifecycle_event_PF_proxy=1.098985; fold_pass_rate_lifecycle=0.250000",
       "status": "hypothesis_rejected"
     }
   },

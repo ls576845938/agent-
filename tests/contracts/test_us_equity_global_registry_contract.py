@@ -25,10 +25,19 @@ def test_us_equity_missing_artifacts_fail_closed_as_blockers(tmp_path: Path) -> 
     assert registry["paper_queue_status"] == "locked"
     assert registry["live_status"] == "frozen"
     assert registry["candidate_passed_internal_gate"] == 0
+    assert us_equity["factor_evidence_status"] == "missing"
+    assert us_equity["factor_count"] == 0
+    assert us_equity["factor_pass_count"] == 0
+    assert us_equity["factor_fail_count"] == 0
+    assert us_equity["current_factor_candidates"] == []
+    assert us_equity["data_lineage"]["data_lineage_grade"]["value"] == "L0_fixture"
+    assert us_equity["data_lineage"]["promotion_clean"] is False
     assert us_equity["current_candidates"] == []
     assert "us_equity_data_status_report_missing" in us_equity["blockers"]
     assert "us_equity_data_manifest_missing" in us_equity["blockers"]
+    assert "us_equity_factor_evidence_pack_missing" in us_equity["blockers"]
     assert "us_equity_factor_evidence_missing" in us_equity["blockers"]
+    assert "us_equity_portfolio_canonical_report_missing" in us_equity["blockers"]
     assert "us_equity_portfolio_report_missing" in us_equity["blockers"]
 
 
@@ -72,6 +81,7 @@ def test_us_equity_qlib_artifact_is_evidence_candidate_only(tmp_path: Path) -> N
 
     assert us_equity["data_lineage"]["manifest_count"] == 1
     assert us_equity["factor_evidence"]["generated_strategy_count"] == 1
+    assert us_equity["current_factor_candidates"] == []
     assert us_equity["portfolio_evidence"]["portfolio_run_count"] == 1
     assert candidate == {
         "name": "qlib_lgbm_fixture",
@@ -138,6 +148,7 @@ def test_us_equity_data_status_artifacts_are_wired_into_global_registry(tmp_path
         "artifacts/us_equity_data_status/latest/data_status_report.json"
     )
     assert data_lineage["data_status_report"] == "artifacts/us_equity_data_status/latest/data_status_report.json"
+    assert data_lineage["promotion_clean"] is False
     assert data_lineage["universe_manifest"] == "artifacts/us_equity_data_status/latest/universe_manifest.json"
     assert data_lineage["corporate_action_report"] == (
         "artifacts/us_equity_data_status/latest/corporate_action_report.json"

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_local_csv_delisted_symbols.schema.json",
+  "title": "US Equity Local CSV Delisted Symbols Row",
+  "type": "object",
+  "required": ["security_id", "ticker", "delisting_date", "delisting_reason", "last_trade_date", "delisting_return", "source_record_id"],
+  "properties": {
+    "security_id": {"type": "string"},
+    "ticker": {"type": "string"},
+    "delisting_date": {"type": "string"},
+    "delisting_reason": {"type": "string"},
+    "last_trade_date": {"type": "string"},
+    "delisting_return": {"type": ["number", "string", "null"]},
+    "source_record_id": {"type": "string"}
+  },
+  "additionalProperties": true
+}

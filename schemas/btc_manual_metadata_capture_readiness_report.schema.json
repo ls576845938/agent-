@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_manual_metadata_capture_readiness_report.schema.json",
+  "title": "QuantStation VNEXT BTC Manual Metadata Capture Readiness Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "bundle_dir",
+    "provider_verification_report",
+    "latest_public_metadata_capture_attempt",
+    "manual_capture_operator_packet",
+    "last_public_metadata_capture_status",
+    "status",
+    "perpetual_evidence_ready",
+    "exchange_info",
+    "funding_info",
+    "post_capture_commands",
+    "safety",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_manual_metadata_capture_readiness_report_v1"},
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "bundle_dir": {"type": "string"},
+    "provider_verification_report": {"type": ["string", "null"]},
+    "latest_public_metadata_capture_attempt": {"type": ["string", "null"]},
+    "manual_capture_operator_packet": {"type": "string"},
+    "last_public_metadata_capture_status": {
+      "type": "object",
+      "required": [
+        "status",
+        "network_called",
+        "exchange_info_capture_status",
+        "exchange_info_http_status",
+        "funding_info_capture_status",
+        "funding_info_http_status",
+        "next_required_action",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "network_called": {"type": "boolean"},
+        "exchange_info_capture_status": {"type": "string"},
+        "exchange_info_http_status": {"type": ["integer", "null"]},
+        "funding_info_capture_status": {"type": "string"},
+        "funding_info_http_status": {"type": ["integer", "null"]},
+        "next_required_action": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "status": {"enum": ["ready_for_manual_capture", "metadata_verified"]},
+    "perpetual_evidence_ready": {"type": "boolean"},
+    "exchange_info": {
+      "type": "object",
+      "required": [
+        "verified",
+        "manual_capture_required",
+        "current_overlay_path",
+        "allowed_endpoint",
+        "source_url",
+        "wrapper_command",
+        "validate_command",
+        "required_fields",
+        "forbidden_endpoint_families",
+        "blockers"
+      ],
+      "properties": {
+        "verified": {"type": "boolean"},
+        "manual_capture_required": {"type": "boolean"},
+        "current_overlay_path": {"type": ["string", "null"]},
+        "allowed_endpoint": {"enum": ["GET /fapi/v1/exchangeInfo", "GET /api/v5/public/instruments"]},
+        "source_url": {"type": "string"},
+        "wrapper_command": {"const": "atomic_importer_only: use post_capture_commands[0]"},
+        "validate_command": {"type": "string"},
+        "required_fields": {"type": "array", "items": {"type": "string"}},
+        "forbidden_endpoint_families": {"type": "array", "items": {"type": "string"}},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "funding_info": {
+      "type": "object",
+      "required": [
+        "verified",
+        "manual_capture_required",
+        "endpoint_response_available",
+        "source_method",
+        "current_overlay_path",
+        "allowed_endpoint",
+        "source_url",
+        "wrapper_command",
+        "validate_command",
+        "empty_response_allowed",
+        "funding_interval_hours",
+        "funding_interval_source",
+        "funding_interval_inference_confidence",
+        "blockers"
+      ],
+      "properties": {
+        "verified": {"type": "boolean"},
+        "manual_capture_required": {"type": "boolean"},
+        "endpoint_response_available": {"type": "boolean"},
+        "source_method": {"type": ["string", "null"]},
+        "current_overlay_path": {"type": ["string", "null"]},
+        "allowed_endpoint": {"enum": ["GET /fapi/v1/fundingInfo", "GET /api/v5/public/funding-rate"]},
+        "source_url": {"type": "string"},
+        "wrapper_command": {"const": "atomic_importer_only: use post_capture_commands[0]"},
+        "validate_command": {"type": "string"},
+        "empty_response_allowed": {"type": "boolean"},
+        "funding_interval_hours": {"type": ["number", "null"]},
+        "funding_interval_source": {"type": ["string", "null"]},
+        "funding_interval_inference_confidence": {"type": ["string", "null"]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "post_capture_commands": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "prefixItems": [
+        {
+          "type": "string",
+          "pattern": "^make apply-btc-manual-metadata-import .*EXCHANGE_INFO_RAW=\\S+ .*FUNDING_INFO_RAW=\\S+ .*EXCHANGE_INFO_HTTP_STATUS=\\S+ .*FUNDING_INFO_HTTP_STATUS=\\S+ .*BTC_MANUAL_METADATA_CAPTURED_AT=\\S+"
+        },
+        {
+          "type": "string",
+          "pattern": "^python3 scripts/build_btc_perpetual_data_bundle_manifest\\.py .*--bundle-dir \\S+ .*--bundle-id \\S+ .*--source-type production .*--promotion-clean-allowed .*--source-provider (binance_usdm|okx_swap) .*--license-note .+manual public metadata capture"
+        },
+        {"const": "make validate-btc-public-data-bundle"},
+        {"const": "make validate-btc-public-data-bundle-strict"},
+        {"const": "make rebuild-btc-paper-readiness-chain"}
+      ],
+      "items": false
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "api_key_required",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "strategy_retest_allowed",
+        "paper_or_live_unlock_allowed",
+        "compression_expansion_state"
+      ],
+      "properties": {
+        "api_key_required": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "strategy_retest_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "compression_expansion_state": {"const": "archived"}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

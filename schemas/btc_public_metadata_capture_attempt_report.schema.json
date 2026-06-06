@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_public_metadata_capture_attempt_report.schema.json",
+  "title": "QuantStation VNEXT BTC Public Metadata Capture Attempt Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "network_called",
+    "symbol",
+    "allowed_endpoints",
+    "safety",
+    "endpoint_results",
+    "raw_capture_artifacts",
+    "next_required_action",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_public_metadata_capture_attempt_report_v1"},
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "status": {"enum": ["capture_complete", "capture_incomplete"]},
+    "network_called": {"type": "boolean"},
+    "symbol": {"const": "BTCUSDT"},
+    "allowed_endpoints": {
+      "type": "object",
+      "required": ["exchange_info", "funding_info"],
+      "properties": {
+        "exchange_info": {"const": "GET /fapi/v1/exchangeInfo"},
+        "funding_info": {"const": "GET /fapi/v1/fundingInfo"}
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "api_key_required",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "writes_bundle_files",
+        "strategy_retest_allowed",
+        "paper_or_live_unlock_allowed"
+      ],
+      "properties": {
+        "api_key_required": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "writes_bundle_files": {"const": false},
+        "strategy_retest_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "endpoint_results": {
+      "type": "object",
+      "required": ["exchange_info", "funding_info"],
+      "properties": {
+        "exchange_info": {"$ref": "#/$defs/endpoint_result"},
+        "funding_info": {"$ref": "#/$defs/endpoint_result"}
+      },
+      "additionalProperties": false
+    },
+    "raw_capture_artifacts": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "output_root",
+        "writes_performed",
+        "exchange_info_raw",
+        "exchange_info_http_status",
+        "funding_info_raw",
+        "funding_info_http_status",
+        "dry_run_import_command",
+        "apply_import_command",
+        "blockers"
+      ],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "output_root": {"type": ["string", "null"]},
+        "writes_performed": {"type": "boolean"},
+        "exchange_info_raw": {"type": ["string", "null"]},
+        "exchange_info_http_status": {"type": ["string", "null"]},
+        "funding_info_raw": {"type": ["string", "null"]},
+        "funding_info_http_status": {"type": ["string", "null"]},
+        "dry_run_import_command": {"type": "string"},
+        "apply_import_command": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "next_required_action": {
+      "enum": ["manual_capture_from_allowed_network", "wrap_and_validate_metadata", "run_manual_metadata_import"]
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "endpoint_result": {
+      "type": "object",
+      "required": [
+        "required_for",
+        "capture_status",
+        "endpoint",
+        "url",
+        "network_called",
+        "http_status",
+        "record_count",
+        "response_error_excerpt",
+        "blockers"
+      ],
+      "properties": {
+        "required_for": {"type": "string"},
+        "capture_status": {"enum": ["captured", "failed", "not_executed"]},
+        "endpoint": {"type": "string"},
+        "url": {"type": "string"},
+        "network_called": {"type": "boolean"},
+        "http_status": {"type": ["integer", "null"]},
+        "record_count": {"type": "integer", "minimum": 0},
+        "response_error_excerpt": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

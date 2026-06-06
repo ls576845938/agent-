@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_exchange_info_overlay.schema.json",
+  "title": "QuantStation VNEXT BTC Exchange Info Overlay",
+  "type": "object",
+  "required": [
+    "source_method",
+    "source_endpoint",
+    "source_url_or_doc",
+    "captured_at",
+    "symbol",
+    "raw_symbol_info",
+    "historical_rule_lineage_available",
+    "operator_note",
+    "api_key_used",
+    "private_endpoint_used",
+    "auth_headers_present",
+    "blockers"
+  ],
+  "properties": {
+    "source_method": {"enum": ["public_rest_response", "manual_offline_capture", "official_public_rest_capture"]},
+    "source_endpoint": {"const": "/fapi/v1/exchangeInfo"},
+    "source_url_or_doc": {
+      "type": "string",
+      "pattern": "(/fapi/v1/exchangeInfo|https://fapi\\.binance\\.com/fapi/v1/exchangeInfo)"
+    },
+    "captured_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "symbol": {"const": "BTCUSDT"},
+    "raw_symbol_info": {"$ref": "#/$defs/btcusdt_symbol_info"},
+    "historical_rule_lineage_available": {"type": "boolean"},
+    "operator_note": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "api_key_used": {"const": false},
+    "private_endpoint_used": {"const": false},
+    "auth_headers_present": {"const": false},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "btcusdt_symbol_info": {
+      "type": "object",
+      "required": [
+        "symbol",
+        "contractType",
+        "status",
+        "pricePrecision",
+        "quantityPrecision",
+        "filters"
+      ],
+      "properties": {
+        "symbol": {"const": "BTCUSDT"},
+        "contractType": {"const": "PERPETUAL"},
+        "status": {"const": "TRADING"},
+        "pricePrecision": {"type": "integer"},
+        "quantityPrecision": {"type": "integer"},
+        "filters": {
+          "type": "array",
+          "allOf": [
+            {"contains": {"$ref": "#/$defs/price_filter"}},
+            {"contains": {"$ref": "#/$defs/lot_size_filter"}},
+            {"contains": {"$ref": "#/$defs/min_notional_filter"}}
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "price_filter": {
+      "type": "object",
+      "required": ["filterType", "tickSize"],
+      "properties": {
+        "filterType": {"const": "PRICE_FILTER"},
+        "tickSize": {"$ref": "#/$defs/positive_decimal_string"}
+      },
+      "additionalProperties": true
+    },
+    "lot_size_filter": {
+      "type": "object",
+      "required": ["filterType", "minQty", "stepSize"],
+      "properties": {
+        "filterType": {"const": "LOT_SIZE"},
+        "minQty": {"$ref": "#/$defs/positive_decimal_string"},
+        "stepSize": {"$ref": "#/$defs/positive_decimal_string"}
+      },
+      "additionalProperties": true
+    },
+    "min_notional_filter": {
+      "type": "object",
+      "required": ["filterType"],
+      "properties": {
+        "filterType": {"const": "MIN_NOTIONAL"},
+        "notional": {"$ref": "#/$defs/positive_decimal_string"},
+        "minNotional": {"$ref": "#/$defs/positive_decimal_string"}
+      },
+      "anyOf": [
+        {"required": ["notional"]},
+        {"required": ["minNotional"]}
+      ],
+      "additionalProperties": true
+    },
+    "positive_decimal_string": {
+      "type": "string",
+      "pattern": "^(?!0+(?:\\.0+)?$)(?:0|[1-9]\\d*)(?:\\.\\d+)?$"
+    }
+  }
+}

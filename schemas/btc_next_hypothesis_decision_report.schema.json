@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_next_hypothesis_decision_report.schema.json",
+  "title": "QuantStation VNEXT BTC Next Hypothesis Decision Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "status",
+    "decision",
+    "next_required_action",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "same_family_micro_search_allowed",
+    "source_bounded_retest_outcome",
+    "source_bounded_retest_status",
+    "baseline_candidate",
+    "thresholds",
+    "probe_run_dirs",
+    "probe_count",
+    "mode_count",
+    "event_profit_factor_pass_count",
+    "walk_forward_pass_rate_pass_count",
+    "best_by_event_profit_factor",
+    "best_by_walk_forward_pass_rate",
+    "rows",
+    "interpretation",
+    "guardrails",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_next_hypothesis_decision_report_v1"},
+    "generated_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "status": {"enum": ["dual_trend_micro_surgery_rejected", "candidate_probe_promising_requires_full_gate"]},
+    "decision": {"enum": ["reject_same_family_micro_surgery", "candidate_probe_requires_full_gate"]},
+    "next_required_action": {
+      "enum": ["design_new_strategy_family_with_lifecycle_edge", "run_full_candidate_gate_for_promising_probe"]
+    },
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "same_family_micro_search_allowed": {"const": false},
+    "source_bounded_retest_outcome": {"type": ["string", "null"]},
+    "source_bounded_retest_status": {"type": "string"},
+    "baseline_candidate": {
+      "type": "object",
+      "required": ["run_id", "event_profit_factor", "walk_forward_pass_rate", "max_drawdown", "failed_metrics"],
+      "properties": {
+        "run_id": {"type": "string"},
+        "event_profit_factor": {"type": ["number", "null"]},
+        "walk_forward_pass_rate": {"type": ["number", "null"]},
+        "max_drawdown": {"type": ["number", "null"]},
+        "failed_metrics": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "thresholds": {
+      "type": "object",
+      "required": ["event_profit_factor", "walk_forward_pass_rate"],
+      "properties": {
+        "event_profit_factor": {"const": 1.15},
+        "walk_forward_pass_rate": {"const": 0.8}
+      },
+      "additionalProperties": false
+    },
+    "probe_run_dirs": {"type": "array", "items": {"type": "string"}},
+    "probe_count": {"type": "integer", "minimum": 0},
+    "mode_count": {"type": "integer", "minimum": 0},
+    "event_profit_factor_pass_count": {"type": "integer", "minimum": 0},
+    "walk_forward_pass_rate_pass_count": {"type": "integer", "minimum": 0},
+    "best_by_event_profit_factor": {
+      "anyOf": [
+        {"$ref": "#/$defs/probeRow"},
+        {"type": "object", "maxProperties": 0}
+      ]
+    },
+    "best_by_walk_forward_pass_rate": {
+      "anyOf": [
+        {"$ref": "#/$defs/probeRow"},
+        {"type": "object", "maxProperties": 0}
+      ]
+    },
+    "rows": {"type": "array", "items": {"$ref": "#/$defs/probeRow"}},
+    "interpretation": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "research_only",
+        "broker_calls_allowed",
+        "paper_or_live_unlock_allowed",
+        "ordinary_profit_factor_diagnostic_only",
+        "do_not_optimize_sharpe_before_event_pf"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "broker_calls_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "ordinary_profit_factor_diagnostic_only": {"const": true},
+        "do_not_optimize_sharpe_before_event_pf": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "dual_trend_micro_surgery_rejected"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "decision": {"const": "reject_same_family_micro_surgery"},
+          "next_required_action": {"const": "design_new_strategy_family_with_lifecycle_edge"},
+          "event_profit_factor_pass_count": {"const": 0},
+          "blockers": {"minItems": 1}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "probeRow": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "mode",
+        "strategy_id",
+        "base_manifest_path",
+        "event_profit_factor",
+        "event_profit_factor_pass",
+        "walk_forward_pass_rate",
+        "walk_forward_pass_rate_pass",
+        "total_return_pct",
+        "max_drawdown",
+        "fill_count",
+        "ledger_equity_consistent",
+        "folds",
+        "failed_metrics"
+      ],
+      "properties": {
+        "run_id": {"type": "string"},
+        "mode": {"type": "string"},
+        "strategy_id": {"type": "string"},
+        "base_manifest_path": {"type": "string"},
+        "event_profit_factor": {"type": "number"},
+        "event_profit_factor_pass": {"type": "boolean"},
+        "walk_forward_pass_rate": {"type": "number"},
+        "walk_forward_pass_rate_pass": {"type": "boolean"},
+        "total_return_pct": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "fill_count": {"type": "integer", "minimum": 0},
+        "ledger_equity_consistent": {"type": "boolean"},
+        "folds": {"type": "array", "items": {"$ref": "#/$defs/foldRow"}},
+        "failed_metrics": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "foldRow": {
+      "type": "object",
+      "required": [
+        "fold_id",
+        "passed",
+        "event_profit_factor",
+        "total_return_pct",
+        "max_drawdown",
+        "fill_count",
+        "manifest_path"
+      ],
+      "properties": {
+        "fold_id": {"type": "integer", "minimum": 1},
+        "passed": {"type": "boolean"},
+        "event_profit_factor": {"type": "number"},
+        "total_return_pct": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "fill_count": {"type": "integer", "minimum": 0},
+        "manifest_path": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

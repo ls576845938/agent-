@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_candidate_bounded_retest_outcome_report.schema.json",
+  "title": "QuantStation VNEXT BTC Candidate Bounded Retest Outcome Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "run_id",
+    "run_dir",
+    "status",
+    "candidate_gate_passed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "same_retest_repeat_allowed",
+    "next_required_action",
+    "source_artifacts",
+    "manifest_contract",
+    "metrics",
+    "thresholds",
+    "failed_metrics",
+    "gate_checks",
+    "safety",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_candidate_bounded_retest_outcome_report_v1"},
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "run_id": {"type": "string", "minLength": 1},
+    "run_dir": {"type": "string", "minLength": 1},
+    "status": {
+      "enum": [
+        "missing_retest_output",
+        "unsafe_retest_output",
+        "completed_candidate_gate_failed",
+        "completed_candidate_gate_passed"
+      ]
+    },
+    "candidate_gate_passed": {"type": "boolean"},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "same_retest_repeat_allowed": {"const": false},
+    "next_required_action": {
+      "enum": [
+        "rerun_bounded_retest_to_completion",
+        "repair_retest_safety_output",
+        "design_new_fold_specific_hypothesis_or_select_better_candidate",
+        "rebuild_candidate_gate_and_prepare_human_paper_review_evidence"
+      ]
+    },
+    "source_artifacts": {
+      "type": "object",
+      "required": [
+        "run_manifest",
+        "results",
+        "canonical_backtest_report",
+        "promotion_decision",
+        "paper_live_safety_status"
+      ],
+      "properties": {
+        "run_manifest": {"type": ["string", "null"]},
+        "results": {"type": ["string", "null"]},
+        "canonical_backtest_report": {"type": ["string", "null"]},
+        "promotion_decision": {"type": ["string", "null"]},
+        "paper_live_safety_status": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "manifest_contract": {
+      "type": "object",
+      "required": ["run_manifest_exists", "schema_version", "code_commit_present", "artifact_paths_count"],
+      "properties": {
+        "run_manifest_exists": {"type": "boolean"},
+        "schema_version": {"type": ["string", "null"]},
+        "code_commit_present": {"type": "boolean"},
+        "artifact_paths_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate",
+        "ordinary_profit_factor",
+        "max_drawdown",
+        "trade_count",
+        "fill_count",
+        "cost_stress_base_pass",
+        "cost_stress_harsh_pass"
+      ],
+      "properties": {
+        "event_profit_factor": {"type": ["number", "null"]},
+        "walk_forward_pass_rate": {"type": ["number", "null"]},
+        "regime_pass_rate": {"type": ["number", "null"]},
+        "ordinary_profit_factor": {"type": ["number", "null"]},
+        "max_drawdown": {"type": ["number", "null"]},
+        "trade_count": {"type": ["integer", "null"], "minimum": 0},
+        "fill_count": {"type": ["integer", "null"], "minimum": 0},
+        "cost_stress_base_pass": {"type": "boolean"},
+        "cost_stress_harsh_pass": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "thresholds": {
+      "type": "object",
+      "required": ["event_profit_factor", "walk_forward_pass_rate", "regime_pass_rate"],
+      "properties": {
+        "event_profit_factor": {"type": ["number", "null"]},
+        "walk_forward_pass_rate": {"type": ["number", "null"]},
+        "regime_pass_rate": {"type": ["number", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "failed_metrics": {
+      "type": "array",
+      "items": {"enum": ["event_profit_factor", "walk_forward_pass_rate", "regime_pass_rate", "cost_stress"]}
+    },
+    "gate_checks": {
+      "type": "object",
+      "required": [
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate",
+        "cost_stress_base",
+        "cost_stress_harsh",
+        "event_ledger"
+      ],
+      "properties": {
+        "event_profit_factor": {"type": "boolean"},
+        "walk_forward_pass_rate": {"type": "boolean"},
+        "regime_pass_rate": {"type": "boolean"},
+        "cost_stress_base": {"type": "boolean"},
+        "cost_stress_harsh": {"type": "boolean"},
+        "event_ledger": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "paper_queue_status",
+        "paper_review_queue_locked",
+        "paper_auto_start",
+        "live_status",
+        "live_frozen",
+        "real_broker_api_called",
+        "real_orders_created",
+        "paper_or_live_unlock_allowed"
+      ],
+      "properties": {
+        "paper_queue_status": {"const": "LOCKED"},
+        "paper_review_queue_locked": {"const": true},
+        "paper_auto_start": {"const": false},
+        "live_status": {"const": "FROZEN"},
+        "live_frozen": {"const": true},
+        "real_broker_api_called": {"const": false},
+        "real_orders_created": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "completed_candidate_gate_failed"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "candidate_gate_passed": {"const": false},
+          "failed_metrics": {"minItems": 1},
+          "blockers": {"minItems": 1},
+          "next_required_action": {"const": "design_new_fold_specific_hypothesis_or_select_better_candidate"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"status": {"const": "completed_candidate_gate_passed"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "candidate_gate_passed": {"const": true},
+          "failed_metrics": {"maxItems": 0},
+          "blockers": {"maxItems": 0}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

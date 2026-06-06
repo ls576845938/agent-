@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_local_csv_symbol_mapping.schema.json",
+  "title": "US Equity Local CSV Symbol Mapping Row",
+  "type": "object",
+  "required": ["security_id", "ticker", "start_date", "end_date", "figi", "cik", "cusip", "permno", "exchange", "source_record_id"],
+  "properties": {
+    "security_id": {"type": "string"},
+    "ticker": {"type": "string"},
+    "start_date": {"type": "string"},
+    "end_date": {"type": "string"},
+    "figi": {"type": "string"},
+    "cik": {"type": "string"},
+    "cusip": {"type": "string"},
+    "permno": {"type": "string"},
+    "exchange": {"type": "string"},
+    "source_record_id": {"type": "string"}
+  },
+  "additionalProperties": true
+}

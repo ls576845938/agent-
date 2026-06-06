@@ -1,0 +1,30 @@
+providers:
+  binance_usdm:
+    enabled: false
+    mode: local_bundle
+    landing_mode: local_archive_import
+    root: data/external/btc_perpetual/binance_usdm/
+    selected_bundle_id: btc_usdm_binance_btcusdt_20240101_20260512_v1
+    require_explicit_bundle_selection: true
+    allow_local_archive_import: true
+    allow_public_rest_fetch: false
+    allow_network: false
+    allow_private_endpoints: false
+    allow_order_endpoints: false
+    allow_sample_for_tests_only: true
+    promotion_clean_allowed: true
+  okx_swap:
+    enabled: true
+    mode: local_bundle
+    landing_mode: public_rest_capture
+    root: data/external/btc_perpetual/okx_swap/
+    selected_bundle_id: btc_okx_swap_btcusdt_history_365d_v1
+    require_explicit_bundle_selection: true
+    allow_local_archive_import: true
+    allow_public_rest_fetch: false
+    allow_network: false
+    allow_private_endpoints: false
+    allow_order_endpoints: false
+    allow_sample_for_tests_only: false
+    promotion_clean_allowed: true
+selected_provider: okx_swap

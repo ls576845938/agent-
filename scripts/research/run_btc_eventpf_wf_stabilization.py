@@ -4,13 +4,22 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
-from quant_us.research.btc_eventpf_wf import (
-    BTC_EVENTPF_WF_RUN_ID,
-    BTC_EVENTPF_WF_SOURCE_RUN_DIR,
-    run_stabilization_sprint,
-)
+try:
+    from quant_us.research.btc_eventpf_wf import (
+        BTC_EVENTPF_WF_RUN_ID,
+        BTC_EVENTPF_WF_SOURCE_RUN_DIR,
+        run_stabilization_sprint,
+    )
+except ModuleNotFoundError:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from quant_us.research.btc_eventpf_wf import (
+        BTC_EVENTPF_WF_RUN_ID,
+        BTC_EVENTPF_WF_SOURCE_RUN_DIR,
+        run_stabilization_sprint,
+    )
 
 
 def main() -> None:

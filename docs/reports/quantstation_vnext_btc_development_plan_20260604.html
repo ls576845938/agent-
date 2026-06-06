@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT BTC 系统开发判断</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --line: #d8dee7;
+      --accent: #0f766e;
+      --accent-soft: #e6f4f1;
+      --warn: #a16207;
+      --warn-soft: #fff7df;
+      --danger: #b42318;
+      --danger-soft: #fff1f0;
+      --code-bg: #111827;
+      --code-text: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+    }
+
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+
+    header {
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 34px 0 14px;
+      font-size: 24px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 24px 0 10px;
+      font-size: 18px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 18px;
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+      background: #eef2f7;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    pre {
+      margin: 16px 0 22px;
+      padding: 16px;
+      overflow-x: auto;
+      color: var(--code-text);
+      background: var(--code-bg);
+      border-radius: 8px;
+      line-height: 1.55;
+    }
+
+    pre code {
+      color: inherit;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      font-size: 13px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .summary {
+      margin: 24px 0;
+      padding: 18px 20px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--accent);
+      border-radius: 8px;
+    }
+
+    .callout {
+      margin: 18px 0;
+      padding: 16px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .danger {
+      background: var(--danger-soft);
+      border-color: #f3b8b3;
+      border-left: 5px solid var(--danger);
+    }
+
+    .warn {
+      background: var(--warn-soft);
+      border-color: #f3d27a;
+      border-left: 5px solid var(--warn);
+    }
+
+    .ok {
+      background: var(--accent-soft);
+      border-color: #a7d8d1;
+      border-left: 5px solid var(--accent);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin: 18px 0 24px;
+    }
+
+    .tile {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 122px;
+    }
+
+    .tile .label {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .tile .value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .status-bad {
+      color: var(--danger);
+    }
+
+    .status-warn {
+      color: var(--warn);
+    }
+
+    .status-ok {
+      color: var(--accent);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 24px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef2f7;
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .footer {
+      margin-top: 40px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>QuantStation VNEXT BTC 系统开发判断</h1>
+      <div class="meta">生成日期：2026-06-04 · 最新更新：2026-06-05 · 角色视角：系统架构师 / 量化研究员 / 交易员</div>
+    </header>
+
+    <section class="summary">
+      <p><strong>核心判断：</strong>BTC 永续 P0 证据链已经用 OKX 公共数据补齐，但当前 paper/live 被锁仍是正确状态，不能绕过。</p>
+      <p>2026-06-04 已完成一次 bounded retest：候选仍因 <code>event_profit_factor</code> 与 <code>walk_forward_pass_rate</code> 未达标而失败。2026-06-05 又完成 10 个 lifecycle / entry-quality probe，结论是同家族 dual trend 微修复应停止。2026-06-06 已新增数据源决策报告：OKX 继续作为当前公开 evidence provider，更长历史只作为 research overlay，不解锁 candidate 或 paper/live。</p>
+    </section>
+
+    <h2>P0 执行结果</h2>
+    <div class="callout ok">
+      <strong>2026-06-05 更新</strong>
+      已将 BTC 永续公开数据源从 Binance 切到 <code>okx_swap</code>，并捕获 <code>btc_okx_swap_btcusdt_history_365d_v1</code>。OKX 公共 bundle、<code>exchange_info.json</code>、<code>funding_info.json</code>、funding、mark、premium、fee tier 均已验证；maker <code>2.0</code> bps、taker <code>5.0</code> bps。全程只使用公共 REST，无 API key、无账户接口、无下单接口。系统仍保持 paper/live fail-closed。
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>项目</th>
+          <th>当前状态</th>
+          <th>证据</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Fee tier overlay</td>
+          <td class="status-ok">verified</td>
+          <td><code>artifacts/btc_cost_model/latest/btc_fee_tier_overlay.json</code></td>
+        </tr>
+        <tr>
+          <td>exchangeInfo</td>
+          <td class="status-ok">verified</td>
+          <td><code>data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/exchange_info.json</code></td>
+        </tr>
+        <tr>
+          <td>fundingInfo</td>
+          <td class="status-ok">verified</td>
+          <td><code>data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/funding_info.json</code></td>
+        </tr>
+        <tr>
+          <td>Public bundle validation</td>
+          <td class="status-ok">passed</td>
+          <td><code>validate-btc-public-data-bundle: 210 passed</code></td>
+        </tr>
+        <tr>
+          <td>BTC evidence validation</td>
+          <td class="status-ok">passed</td>
+          <td><code>validate-btc-evidence: 226 passed</code></td>
+        </tr>
+        <tr>
+          <td>Paper readiness</td>
+          <td class="status-bad">locked</td>
+          <td><code>paper_execution_authorized=false</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>当前状态</h2>
+    <div class="grid">
+      <div class="tile">
+        <div class="label">Paper Readiness</div>
+        <div class="value status-bad">blocked</div>
+        <p><code>paper_queue_status=locked</code><br><code>paper_execution_authorized=false</code></p>
+      </div>
+      <div class="tile">
+        <div class="label">Data Status</div>
+        <div class="value status-warn">partial</div>
+        <p>OKX provider/cost 已过；data status 与 regime/candidate 仍未过。</p>
+      </div>
+      <div class="tile">
+        <div class="label">Best Candidate</div>
+        <div class="value status-warn">未通过</div>
+        <p><code>btc_perp_dual_trend_v4_eventpf_wf</code><br><code>dual_trend_micro_surgery_rejected</code></p>
+      </div>
+      <div class="tile">
+        <div class="label">Live Status</div>
+        <div class="value status-ok">frozen</div>
+        <p>实盘冻结是正确边界。</p>
+      </div>
+    </div>
+
+    <h2>主要阻塞</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>层级</th>
+          <th>阻塞</th>
+          <th>判断</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>数据状态</td>
+          <td><code>btc_paper_readiness_data_status_not_pass</code>、<code>btc_regime_contract_not_pass</code></td>
+          <td>OKX 永续证据完成，但整体 data/regime gate 还未达到 paper 条件。</td>
+        </tr>
+        <tr>
+          <td>候选指标</td>
+          <td><code>event_profit_factor</code>、<code>walk_forward_pass_rate</code> 未达标</td>
+          <td>bounded retest 已完成但失败；不允许 promotion、paper review pending 或重复同一条 retest。</td>
+        </tr>
+        <tr>
+          <td>同家族微修复</td>
+          <td><code>event_profit_factor_pass_count=0/10</code></td>
+          <td>lifecycle/entry-quality probe 没有任何模式达到 event PF 1.15；应停止 dual trend 微调。</td>
+        </tr>
+        <tr>
+          <td>人工审核</td>
+          <td><code>approved_paper_review</code> 缺失</td>
+          <td>即使候选修好，也必须先有人审 evidence pack 和 approval。</td>
+        </tr>
+        <tr>
+          <td>执行状态</td>
+          <td><code>paper_start_allowed=false</code>、<code>live=frozen</code></td>
+          <td>这是正确边界；换数据源不能绕过风控和晋级 gate。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout danger">
+      <strong>禁止动作</strong>
+      不能为了启动 paper 绕过 readiness，也不能把“公共数据已验证”误当成“候选可交易”。当前没有私有交易所接口、没有真实订单、没有 live 解锁。
+    </div>
+
+    <h2>开发顺序</h2>
+    <h3>P0：补齐 BTC 永续证据链</h3>
+    <div class="callout ok">
+      <strong>当前结果：P0 已完成</strong>
+      已执行 <code>make capture-btc-okx-public-history</code>、<code>make validate-btc-public-data-bundle</code>、<code>make validate-btc-evidence</code>。目标 <code>btc_objective_completion_audit_report</code> 显示 <code>status=complete</code>。
+    </div>
+    <ol>
+      <li><span class="status-ok">完成</span>：捕获并导入 OKX <code>exchangeInfo</code> 等价公开 instruments 数据。</li>
+      <li><span class="status-ok">完成</span>：捕获并导入 OKX <code>fundingInfo</code> 等价公开 funding-rate 数据。</li>
+      <li><span class="status-ok">完成</span>：导入 OKX maker/taker fee tier overlay。</li>
+      <li><span class="status-ok">完成</span>：重建 <code>btc_perpetual_bundle_manifest.json</code>。</li>
+      <li><span class="status-ok">完成</span>：跑 <code>validate-btc-public-data-bundle</code> 和 <code>validate-btc-evidence</code>。</li>
+    </ol>
+
+    <pre><code>make capture-btc-okx-public-history
+make validate-btc-public-data-bundle
+make validate-btc-evidence
+make check-btc-paper-validation-readiness</code></pre>
+
+    <h3>P1：修候选指标，但不解锁 paper</h3>
+    <div class="callout warn">
+      <strong>当前结果：bounded retest 已完成但未通过</strong>
+      Run ID：<code>20260604T132400Z_okx_bounded_retest</code>。Outcome：<code>completed_candidate_gate_failed</code>。系统已把结果写入 <code>candidate_bounded_retest_outcome_report.json</code>，并在 start report 中把下一步改为 <code>design_new_fold_specific_hypothesis_or_select_better_candidate</code>，不再推荐重复同一条 retest。
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>指标</th>
+          <th>结果</th>
+          <th>门槛 / 判断</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Event Profit Factor</td>
+          <td class="status-bad"><code>1.0205</code></td>
+          <td>低于 <code>1.15</code>，失败。</td>
+        </tr>
+        <tr>
+          <td>Walk-forward pass rate</td>
+          <td class="status-bad"><code>0.5</code></td>
+          <td>低于 <code>0.8</code>，失败。</td>
+        </tr>
+        <tr>
+          <td>Regime pass rate</td>
+          <td class="status-ok"><code>1.0</code></td>
+          <td>单项通过，但不足以晋级。</td>
+        </tr>
+        <tr>
+          <td>Cost stress</td>
+          <td class="status-ok">base / harsh pass</td>
+          <td>成本压力测试通过，但不能抵消 event PF 与 WF 失败。</td>
+        </tr>
+      </tbody>
+    </table>
+    <ul>
+      <li>不做大范围参数搜索。</li>
+      <li>不重复刚失败的 bounded retest；下一步必须有新的 fold-specific hypothesis。</li>
+      <li>重点解释 failed folds 3/4、event PF、walk-forward 稳定性，而不是调参撞结果。</li>
+      <li>普通 profit factor 只能诊断，不能作为晋级依据。</li>
+      <li>不要重新引入大范围 short，除非 regime evidence 支持。</li>
+    </ul>
+
+    <h3>P1.5：生命周期 / 入场质量 probe</h3>
+    <div class="callout warn">
+      <strong>当前结果：同家族 dual trend 微修复拒绝</strong>
+      已测试 10 个 lifecycle risk cut 与 entry-quality 模式。最佳 event PF 模式 <code>lifecycle_stop6_trail10_max240</code> 只达到 <code>event_profit_factor=1.036973</code>、<code>walk_forward_pass_rate=0.75</code>；最佳 WF 模式 <code>accel1p2_lifecycle</code> 达到 <code>walk_forward_pass_rate=1.0</code>，但 <code>event_profit_factor=1.028127</code>，仍低于 1.15。结论写入 <code>btc_next_hypothesis_decision_report.json</code>。
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Probe</th>
+          <th>最好结果</th>
+          <th>判断</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Lifecycle risk cut</td>
+          <td><code>event PF 1.036973 / WF 0.75 / MDD -4.1129</code></td>
+          <td>改善 MDD 和 WF，但 event PF 远低于 1.15。</td>
+        </tr>
+        <tr>
+          <td>Trend acceleration entry quality</td>
+          <td><code>WF 1.0 / event PF 1.028127</code></td>
+          <td>WF 可被修复，但 event-ledger edge 不存在。</td>
+        </tr>
+        <tr>
+          <td>决策</td>
+          <td><code>reject_same_family_micro_surgery</code></td>
+          <td>停止 dual trend 微调，转向新策略家族。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>P1.6：新策略家族 roadmap</h3>
+    <div class="callout warn">
+      <strong>当前结果：新家族已选定，但数据阻断</strong>
+      新报告 <code>btc_strategy_family_roadmap_report.json</code> 已把下一优先策略家族定为 <code>funding_carry_reversion_v0</code>。它使用 funding、premium、mark/index 结构作为核心输入，和 dual trend 的价格趋势延续逻辑不同。当前状态为 <code>family_design_data_blocked</code>，不允许生成 candidate、不允许 paper review、不允许 paper/live 解锁。
+      本次请求 365 天 OKX public history，但公共接口实际返回 <code>2026-03-02T16:00:00Z</code> 到 <code>2026-06-05T00:00:00Z</code>，约 <code>94.333333</code> 天。
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>项目</th>
+          <th>当前值</th>
+          <th>门槛 / 判断</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>选中家族</td>
+          <td><code>funding_carry_reversion_v0</code></td>
+          <td>下一优先 hypothesis；不是 dual trend 同族微调。</td>
+        </tr>
+        <tr>
+          <td>选中 bundle</td>
+          <td><code>btc_okx_swap_btcusdt_history_365d_v1</code></td>
+          <td>结构验证通过，但历史覆盖未达研究门槛。</td>
+        </tr>
+        <tr>
+          <td>OKX selected bundle 覆盖</td>
+          <td><code>94.333333 days</code></td>
+          <td>低于 <code>365</code> 天最低历史覆盖要求。</td>
+        </tr>
+        <tr>
+          <td>1h klines</td>
+          <td><code>2266</code></td>
+          <td>低于 <code>8760</code> 根最低要求。</td>
+        </tr>
+        <tr>
+          <td>funding records</td>
+          <td><code>284</code></td>
+          <td>低于 <code>1095</code> 条最低要求。</td>
+        </tr>
+        <tr>
+          <td>系统决策</td>
+          <td><code>extend_okx_public_history_before_hypothesis_or_candidate_generation</code></td>
+          <td>先扩 OKX public history，再做 funding/carry 分布诊断。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>P1.7：为什么 OKX 不全，换什么源</h3>
+    <div class="callout warn">
+      <strong>当前决策：换研究历史源，不换执行交易所</strong>
+      OKX public REST 适合作为公开 metadata 和近期数据 evidence，但历史接口实际只给到约 <code>94.333333</code> 天，不够 funding/carry 家族做 365 天分布诊断。新报告 <code>btc_perpetual_data_source_decision_report.json</code> 已选择更长的本地历史 bundle 作为 research-only overlay；它不能用于 candidate generation、paper review 或 paper/live。
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>来源</th>
+          <th>当前判断</th>
+          <th>允许用途</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>okx_swap</code></td>
+          <td>当前 evidence provider；<code>94.333333</code> 天、<code>2266</code> 根 1h、<code>284</code> 条 funding。</td>
+          <td>metadata、成本、preflight、paper gate evidence；不够 365 天研究分布。</td>
+        </tr>
+        <tr>
+          <td><code>btc_usdm_binance_btcusdt_20240101_20260512_v1</code></td>
+          <td>本地历史更长：<code>2024-01-01</code> 到 <code>2026-05-12</code>，<code>20689</code> 根 1h、<code>2587</code> 条 funding。</td>
+          <td>只允许 research-only funding/carry 分布诊断；不能当作你可用的执行交易所。</td>
+        </tr>
+        <tr>
+          <td>Bybit / Gate / MEXC / KuCoin</td>
+          <td>不推荐作为执行 provider。</td>
+          <td>官方限制地区包含中国大陆或 mainland China；不能把它们当成“你能使用的交易所”。</td>
+        </tr>
+        <tr>
+          <td>Tardis.dev / CoinAPI</td>
+          <td>更好的长期数据方向。</td>
+          <td>适合导入标准化衍生品历史；需要订阅、API key 或离线文件，当前 repo 没有密钥。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>P2：新候选策略方向</h3>
+    <p>不建议继续优化已经 archive 的旧策略，也不建议继续调 dual trend 同家族参数。更合理的是先用 research-only 历史 overlay 做 <code>funding_carry_reversion_v0</code> 的 hypothesis-level 分布诊断，再用同 venue 或批准的数据商历史做确认。只有数据覆盖和分布诊断都通过后，才允许进入 full event-ledger candidate。</p>
+    <ul>
+      <li>只交易 <code>BTCUSDT</code>。</li>
+      <li>1h 主周期，4h/1d 做 regime filter。</li>
+      <li>strategy 只输出 <code>TargetPosition</code>。</li>
+      <li>entry 必须下一根 bar 执行，禁止 same-bar lookahead。</li>
+      <li>成本使用 verified fee tier、slippage、funding ledger。</li>
+      <li>风控保守：低杠杆/无杠杆、notional cap、max daily loss、data freshness、volatility kill switch。</li>
+      <li>研究入口已收敛到 <code>funding_carry_reversion_v0</code>；禁止把旧 dual trend、compression、range reclaim、liquidation shock 重新包装成新候选。</li>
+    </ul>
+
+    <h3>P3：Paper 前置条件</h3>
+    <ul>
+      <li>data source gate pass</li>
+      <li>cost ledger gate pass</li>
+      <li>candidate gate pass</li>
+      <li>paper review approval 存档</li>
+      <li><code>make check-btc-paper-validation-readiness</code> 通过</li>
+    </ul>
+
+    <h3>P4：30 天 simulated paper</h3>
+    <p>只在 P3 完成后启动。这里仍然是 simulated paper，不接真实下单。</p>
+    <pre><code>make start-btc-paper-validation</code></pre>
+
+    <h2>交易员视角</h2>
+    <div class="callout warn">
+      <strong>不要急着追收益</strong>
+      现在最危险的不是策略收益低，而是成本、funding、exchange rules、ledger 证据不完整时产生虚假 edge。
+    </div>
+    <p>当前最佳正式候选 <code>btc_perp_dual_trend_v4_eventpf_wf</code> 的 <code>event_profit_factor=1.0205</code>，低于 1.15 门槛；<code>walk_forward_pass_rate=0.5</code>，低于 0.8 门槛。后续 10 个同家族微修复 probe 也没有一个通过 event PF，因此应停止在该家族上继续消耗。新家族已转向 funding/carry-reversion，但 selected OKX bundle 只有 1 天历史，所以交易员视角仍然是等待数据，不是上策略。</p>
+    <p>start report 当前保持 <code>status=blocked</code>、<code>paper_start_allowed=false</code>，候选修复步骤的 command 为空，避免系统自动重复已失败 retest。</p>
+
+    <h2>最终路线</h2>
+    <ol>
+      <li><span class="status-ok">完成</span>：让 BTC public metadata 和 fee tier 证据完整。</li>
+      <li><span class="status-warn">进行中</span>：让 data/regime/candidate gate 转绿。</li>
+      <li><span class="status-warn">下一步</span>：扩展 OKX public history，支撑 <code>funding_carry_reversion_v0</code> 的 hypothesis-level 分布诊断。</li>
+      <li>通过 internal candidate gate 后进入人工 paper review。</li>
+      <li>人工批准后启动 30 天 simulated paper validation。</li>
+      <li>30 天 clean 后再讨论真实 paper adapter，不讨论 live。</li>
+    </ol>
+
+    <div class="callout ok">
+      <strong>一句话结论</strong>
+      OKX 公开永续证据链已经补齐；bounded retest 和 10 个 lifecycle/entry-quality probe 都证明 dual trend 同家族不合格。下一步已收敛到 funding/carry-reversion 家族，但在 OKX 长历史补齐前，只能做数据扩展，不能生成候选或解锁 paper/live。
+    </div>
+
+    <div class="footer">
+      本文档基于当前仓库 artifacts 与 reports 的审计结果生成；只作为开发决策文档，不授权 paper/live execution。
+    </div>
+  </main>
+</body>
+</html>

@@ -89,7 +89,7 @@ def render_report(run_dir: Path) -> str:
     <ul>
       <li>本轮完成 registry 和 Hypothesis Lab v2 lifecycle-aware gate。</li>
       <li>compression-expansion 旧 hypothesis 层曾通过，但 lifecycle-aware gate 拒绝。</li>
-      <li>没有生成新的 strategy skeleton；paper/live 继续锁定。</li>
+      <li>Controlled Search 模式仅允许 hypothesis-level 输出；没有生成新的 strategy skeleton；paper/live 继续锁定。</li>
     </ul>
   </section>
 
@@ -117,6 +117,16 @@ def render_report(run_dir: Path) -> str:
       <div class="metric"><strong>lifecycle_drag</strong><span>required</span></div>
       <div class="metric"><strong>cost stress proxy</strong><span>required</span></div>
       <div class="metric"><strong>fold stability</strong><span>required</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>5A. Controlled Search Policy</h2>
+    <div class="grid">
+      <div class="metric"><strong>mode</strong><span>{esc(decision.get("controlled_search_policy", {}).get("mode", "hypothesis_level_only"))}</span></div>
+      <div class="metric"><strong>strategy_skeleton_generation_allowed</strong><span class="bad">{esc(decision.get("controlled_search_policy", {}).get("strategy_skeleton_generation_allowed", False))}</span></div>
+      <div class="metric"><strong>candidate_generation_allowed</strong><span class="bad">{esc(decision.get("controlled_search_policy", {}).get("candidate_generation_allowed", False))}</span></div>
+      <div class="metric"><strong>paper_or_live_side_effects_allowed</strong><span class="bad">{esc(decision.get("controlled_search_policy", {}).get("paper_or_live_side_effects_allowed", False))}</span></div>
     </div>
   </section>
 

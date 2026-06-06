@@ -121,3 +121,91 @@ not a trading authorization.
   dividend event source remains a blocker.
 - Global registry surfaces these artifact paths when they exist, but still keeps
   US equity candidates as evidence-only until internal event-ledger validation.
+
+## Phase 4 US Equity Factor Evidence Pack Contract
+
+- Added a read-only US equity factor evidence pack builder contract.
+- Default generated artifact path:
+  - `artifacts/us_equity_factor_evidence/latest/factor_evidence_pack.json`
+- The pack summarizes existing factor-mining artifacts only; it does not mine
+  factors, compile new strategies, run backtests, or promote candidates.
+- Required evidence now includes rank IC / IC, hit rate, turnover, style
+  exposure, capacity proxy, correlation report, cost-adjusted spread, and
+  walk-forward stability.
+- Missing factor-mining reports, generated-factor registry, correlation
+  reports, cost-adjusted spread, walk-forward stability, or portfolio-layer
+  validation remain blockers.
+- Global registry prefers the factor evidence pack when it exists, but US equity
+  factor candidates still remain evidence-only until portfolio and internal
+  event-ledger validation pass.
+
+## Phase 5 US Equity Portfolio Canonical Report Contract
+
+- Added a read-only US equity portfolio canonical report builder contract.
+- Default generated artifact paths:
+  - `artifacts/us_equity_portfolio/latest/portfolio_canonical_report.json`
+  - `artifacts/us_equity_portfolio/latest/exposure_report.json`
+  - `artifacts/us_equity_portfolio/latest/cost_stress_report.json`
+  - `artifacts/us_equity_portfolio/latest/rebalance_drift_report.json`
+- The report summarizes existing PyPortfolioOpt adapter run manifests and
+  target weights only; it does not optimize weights, submit orders, or run
+  portfolio backtests.
+- Missing factor evidence pack, target weights, sector/style exposure, cost
+  stress, event-ledger portfolio backtest, ledger PnL, walk-forward validation,
+  or promotion-gate evidence remain blockers.
+- Global registry prefers the portfolio canonical report when it exists, but
+  portfolio artifacts remain research-only until event-ledger validation passes.
+
+## Phase 6 BTC Data / Fold / Regime Status Contract
+
+- Added a read-only BTC data status builder contract.
+- Default generated artifact path:
+  - `artifacts/btc_data_status/latest/btc_data_status_report.json`
+- The report summarizes existing BTC candidate validation diagnostics,
+  including SQLite interval coverage, manifest lineage, fold contract status,
+  regime classifier status, and dragging regimes.
+- The fold definition is pinned as `btc_walk_forward_fold_contract_v1`; the
+  regime classifier is pinned as `classify_btc_regimes_v1`.
+- Missing interval coverage, manifest lineage, fold contract, regime contract,
+  fee model, or funding model evidence remain blockers.
+- Global registry now surfaces BTC data status as research-sandbox evidence;
+  it is not a paper/live approval path.
+
+## Phase 7 BTC Compression-Expansion Attribution Bundle
+
+- Added a read-only BTC compression-expansion attribution bundle builder.
+- Default generated artifact paths:
+  - `artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/attribution_report.json`
+  - `artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/fold_failure_report.json`
+  - `artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/regime_drag_report.json`
+  - `artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/entry_exit_timing_report.json`
+  - `artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/active_vs_full_ledger_report.json`
+- The bundle only splits and indexes existing event-ledger diagnostics; it does
+  not modify strategy logic, create a skeleton, optimize parameters, or unlock
+  paper/live.
+- Compression-expansion is now explicitly `archived` in the BTC and global
+  registries after the full-lifecycle event-ledger failure and Hypothesis Lab
+  v2 rejection; `paper_review_pending_allowed = false`.
+
+## Phase 8 Global Registry Read Path
+
+- Added a read-only API endpoint:
+  - `GET /api/research/global-registry`
+- Added a frontend research API client method and dashboard summary for the
+  global registry.
+- The endpoint builds the registry from existing artifacts and writes only when
+  explicitly called with `write=true`.
+- The dashboard now surfaces global US equity evidence paths, portfolio report
+  path, BTC data status, and BTC attribution path from the global registry
+  instead of inferring those paths locally.
+
+## Phase 9 Local Evidence Validation Commands
+
+- Added local validation Make targets:
+  - `make validate-contracts`
+  - `make validate-us-equity-evidence`
+  - `make validate-btc-evidence`
+  - `make validate-candidate-gate`
+  - `make build-global-registry`
+- Make now defaults to `python3` via `PYTHON ?= python3` so validation works in
+  environments without a `python` shim.

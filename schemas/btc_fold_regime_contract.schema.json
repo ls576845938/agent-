@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_fold_regime_contract.schema.json",
+  "title": "QuantStation VNEXT BTC Fold Regime Contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "source_run_dir",
+    "source_fold_regime_contract_audit",
+    "status",
+    "fold_definition",
+    "regime_classifier",
+    "regime_dimensions",
+    "fold_contract_status",
+    "regime_contract_status",
+    "regime_gate_pass_rate",
+    "promotion_ready",
+    "paper_queue_status",
+    "live_status",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_fold_regime_contract_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "source_run_dir": {"type": "string"},
+    "source_fold_regime_contract_audit": {"type": ["string", "null"]},
+    "status": {"enum": ["pass", "fail"]},
+    "fold_definition": {
+      "type": "object",
+      "required": ["fold_definition_version", "fold_count", "fold_schema_version", "folds"],
+      "properties": {
+        "fold_definition_version": {"type": "string"},
+        "fold_count": {"type": "integer", "minimum": 0},
+        "fold_schema_version": {"type": "string"},
+        "folds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["fold_id", "train_start", "train_end", "test_start", "test_end", "sample_type", "notes"],
+            "properties": {
+              "fold_id": {"type": "string"},
+              "train_start": {"type": "string"},
+              "train_end": {"type": "string"},
+              "test_start": {"type": "string"},
+              "test_end": {"type": "string"},
+              "sample_type": {"type": "string"},
+              "notes": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "regime_classifier": {
+      "type": "object",
+      "required": [
+        "regime_classifier_version",
+        "classifier_inputs",
+        "regime_labels",
+        "gate_regimes",
+        "diagnostic_regimes",
+        "gate_source",
+        "diagnostic_source"
+      ],
+      "properties": {
+        "regime_classifier_version": {"type": "string"},
+        "classifier_inputs": {"type": "array", "items": {"type": "string"}},
+        "regime_labels": {"type": "array", "items": {"type": "string"}},
+        "gate_regimes": {"type": "array", "items": {"type": "string"}},
+        "diagnostic_regimes": {"type": "array", "items": {"type": "string"}},
+        "gate_source": {"type": "string"},
+        "diagnostic_source": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "regime_dimensions": {
+      "type": "object",
+      "required": [
+        "trend_regime",
+        "volatility_regime",
+        "liquidity_regime",
+        "funding_regime",
+        "drawdown_regime"
+      ],
+      "properties": {
+        "trend_regime": {"type": "boolean"},
+        "volatility_regime": {"type": "boolean"},
+        "liquidity_regime": {"type": "boolean"},
+        "funding_regime": {"type": "boolean"},
+        "drawdown_regime": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "fold_contract_status": {"type": "string"},
+    "regime_contract_status": {"type": "string"},
+    "regime_gate_pass_rate": {"type": "number"},
+    "promotion_ready": {"const": false},
+    "paper_queue_status": {"const": "locked"},
+    "live_status": {"const": "frozen"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

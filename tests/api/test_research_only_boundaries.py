@@ -39,6 +39,21 @@ def test_api_integration_routes_do_not_expose_implicit_data_download_or_order_su
     assert violations == []
 
 
+def test_api_exposes_global_registry_as_read_only_research_summary() -> None:
+    path = Path("backend/app/api/app_factory.py")
+    source = path.read_text(encoding="utf-8")
+
+    assert '@router.get("/research/global-registry")' in source
+    assert "build_global_registry" in source
+    assert "write_registry(payload" in source
+    assert "write: bool = False" in source
+    assert "/research/global-registry" not in {
+        "/api/live",
+        "/api/orders",
+        "/api/trade",
+    }
+
+
 def test_api_qlib_run_summary_does_not_treat_artifact_as_paper_or_live_ready(tmp_path: Path) -> None:
     from backend.app.api.app_factory import _run_directory_summaries
     qlib_run = tmp_path / "artifacts" / "qlib_runs" / "qlib_poisoned_ready"

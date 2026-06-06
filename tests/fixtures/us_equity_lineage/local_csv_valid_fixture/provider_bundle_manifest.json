@@ -1,0 +1,44 @@
+{
+  "schema_version": "us_equity_local_csv_provider_bundle_manifest_v1",
+  "bundle_id": "local_csv_valid_fixture",
+  "source_provider": "local_csv",
+  "source_type": "fixture",
+  "created_at": "2026-05-19T00:00:00Z",
+  "as_of_date": "2021-01-03",
+  "sample_start": "2020-01-01",
+  "sample_end": "2021-01-03",
+  "universe_name": "us_core",
+  "price_data_reference": "fixture_only",
+  "license_note": "Synthetic contract fixture for tests only.",
+  "promotion_clean_allowed": false,
+  "files": {
+    "universe_membership_events": {
+      "path": "universe_membership_events.csv",
+      "sha256": "c814cdd830fdf41e2d96c7775e59470c2f56842c8723ae6504de65fdfd6d5686",
+      "record_count": 3
+    },
+    "delisted_symbols": {
+      "path": "delisted_symbols.csv",
+      "sha256": "85d2d140c008b22db7ee0cdbf1f9c447fcdc5742a5a61058f02c68719bf9e439",
+      "record_count": 1
+    },
+    "corporate_actions": {
+      "path": "corporate_actions.csv",
+      "sha256": "3f10312bb57c2a5949b75b2dd3cd00394b627af4c1dbbddc5acd672fd967a477",
+      "record_count": 3
+    },
+    "symbol_mapping": {
+      "path": "symbol_mapping.csv",
+      "sha256": "2ff2ebe4329160019afc70be422e67a6fd793164ba444547789acd42796bf547",
+      "record_count": 2
+    },
+    "adjustment_replay": {
+      "path": "adjustment_replay.csv",
+      "sha256": "c2b5902189cfadcfc88ad42ff3cb637e364573bcb82c7c1d6af08cae893ac221",
+      "record_count": 2
+    }
+  },
+  "blockers": [
+    "fixture_source_not_promotion_ready"
+  ]
+}

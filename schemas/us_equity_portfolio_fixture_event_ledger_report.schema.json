@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_portfolio_fixture_event_ledger_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Portfolio Fixture Event Ledger Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "source_type",
+    "promotion_evidence",
+    "event_ledger_validated",
+    "paper_review_allowed",
+    "candidate_passed_internal_gate",
+    "input_artifacts",
+    "fixture_chain",
+    "ledger_validation",
+    "metrics",
+    "promotion_ready",
+    "paper_queue_status",
+    "live_status",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_portfolio_fixture_event_ledger_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "source_type": {"const": "fixture"},
+    "promotion_evidence": {"const": false},
+    "event_ledger_validated": {"const": false},
+    "paper_review_allowed": {"const": false},
+    "candidate_passed_internal_gate": {"const": 0},
+    "input_artifacts": {"type": "object"},
+    "fixture_chain": {"type": "object"},
+    "ledger_validation": {
+      "type": "object",
+      "required": [
+        "target_portfolio_available",
+        "rebalance_orders_available",
+        "fills_available",
+        "ledger_pnl_available",
+        "cost_model_applied",
+        "cash_conservation_check",
+        "position_conservation_check",
+        "no_short_when_long_only_check",
+        "no_negative_cash_if_cash_constrained_check",
+        "promotion_ready",
+        "paper_review_allowed",
+        "blockers"
+      ],
+      "properties": {
+        "target_portfolio_available": {"type": "boolean"},
+        "rebalance_orders_available": {"type": "boolean"},
+        "fills_available": {"type": "boolean"},
+        "ledger_pnl_available": {"type": "boolean"},
+        "cost_model_applied": {"type": "boolean"},
+        "cash_conservation_check": {"type": "boolean"},
+        "position_conservation_check": {"type": "boolean"},
+        "no_short_when_long_only_check": {"type": "boolean"},
+        "no_negative_cash_if_cash_constrained_check": {"type": "boolean"},
+        "promotion_ready": {"const": false},
+        "paper_review_allowed": {"const": false},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["gross_pnl", "net_pnl", "turnover", "commission", "slippage", "max_drawdown"],
+      "properties": {
+        "gross_pnl": {"type": "number"},
+        "net_pnl": {"type": "number"},
+        "turnover": {"type": "number"},
+        "commission": {"type": "number"},
+        "slippage": {"type": "number"},
+        "max_drawdown": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "promotion_ready": {"const": false},
+    "paper_queue_status": {"const": "locked"},
+    "live_status": {"const": "frozen"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

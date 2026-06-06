@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_funding_info_overlay.schema.json",
+  "title": "QuantStation VNEXT BTC Funding Info Overlay",
+  "type": "object",
+  "required": [
+    "source_method",
+    "source_endpoint",
+    "captured_at",
+    "symbol",
+    "endpoint_response_available",
+    "raw_response",
+    "symbol_adjustment_record_present",
+    "funding_interval_hours",
+    "funding_interval_source",
+    "inference_confidence",
+    "spacing_diagnostics",
+    "blockers"
+  ],
+  "properties": {
+    "source_method": {
+      "enum": ["public_rest_response", "manual_offline_capture", "inferred_from_funding_rate_spacing"]
+    },
+    "source_endpoint": {"const": "/fapi/v1/fundingInfo"},
+    "source_url_or_doc": {
+      "anyOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "\\S"}
+      ]
+    },
+    "captured_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "symbol": {"const": "BTCUSDT"},
+    "endpoint_response_available": {"type": "boolean"},
+    "raw_response": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/funding_info_row"}
+    },
+    "symbol_adjustment_record_present": {"type": "boolean"},
+    "funding_interval_hours": {"type": ["number", "null"]},
+    "funding_interval_source": {"type": "string"},
+    "inference_confidence": {"enum": ["high", "medium", "low", "none"]},
+    "spacing_diagnostics": {"type": "object"},
+    "operator_note": {
+      "anyOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "\\S"}
+      ]
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "funding_info_row": {
+      "type": "object",
+      "required": ["symbol"],
+      "properties": {
+        "symbol": {"type": "string", "minLength": 1},
+        "adjustedFundingRateCap": {
+          "anyOf": [
+            {"type": "number"},
+            {"$ref": "#/$defs/signed_decimal_string"}
+          ]
+        },
+        "adjustedFundingRateFloor": {
+          "anyOf": [
+            {"type": "number"},
+            {"$ref": "#/$defs/signed_decimal_string"}
+          ]
+        },
+        "fundingIntervalHours": {
+          "anyOf": [
+            {"type": "number", "exclusiveMinimum": 0},
+            {"$ref": "#/$defs/positive_decimal_string"}
+          ]
+        },
+        "disclaimer": {"type": "boolean"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"symbol": {"const": "BTCUSDT"}},
+            "required": ["symbol"]
+          },
+          "then": {
+            "required": [
+              "adjustedFundingRateCap",
+              "adjustedFundingRateFloor",
+              "fundingIntervalHours"
+            ]
+          }
+        }
+      ],
+      "additionalProperties": true
+    },
+    "positive_decimal_string": {
+      "type": "string",
+      "pattern": "^(?!0+(?:\\.0+)?$)(?:0|[1-9]\\d*)(?:\\.\\d+)?$"
+    },
+    "signed_decimal_string": {
+      "type": "string",
+      "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$"
+    }
+  }
+}

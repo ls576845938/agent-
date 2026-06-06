@@ -1,0 +1,43 @@
+{
+  "api_key_used": false,
+  "captured_at": "2026-05-19T15:14:18Z",
+  "csv_columns": [
+    "timestamp",
+    "fundingTime",
+    "symbol",
+    "fundingRate",
+    "markPrice",
+    "source_record_id"
+  ],
+  "csv_sha256": "b5235f9ff037fe2de83936431aaada021632d41c9a594c1c25dcd784fb45266a",
+  "data_type": "funding_rate",
+  "dataset": "btc_perpetual",
+  "endTime": 1778572800000,
+  "expected_record_count": 34,
+  "first_fundingTime": 1777593600000,
+  "first_timestamp": "2026-05-01T00:00:00Z",
+  "instrument": "BTCUSDT",
+  "last_fundingTime": 1778544000002,
+  "last_timestamp": "2026-05-12T00:00:00Z",
+  "merge_executed": false,
+  "operator_note": "Captured from public Binance USD-M Futures fundingRate endpoint in an accessible network environment. No API key, no private/account/order endpoint. FundingTime values preserve Binance's returned millisecond offsets; timestamp is normalized to UTC seconds.",
+  "patch_id": "funding_rate_patch_20260501_20260512",
+  "private_endpoint_used": false,
+  "record_count": 34,
+  "records_after": 2553,
+  "request_params": {
+    "endTime": 1778572800000,
+    "limit": 1000,
+    "startTime": 1777593600000,
+    "symbol": "BTCUSDT"
+  },
+  "scheduled_last_fundingTime": 1778544000000,
+  "schema_version": 1,
+  "source_endpoint": "/fapi/v1/fundingRate",
+  "source_method": "manual_offline_public_rest_capture",
+  "source_url": "https://fapi.binance.com/fapi/v1/fundingRate",
+  "startTime": 1777593600000,
+  "symbol": "BTCUSDT",
+  "validation_status": "pass",
+  "venue": "binance_usdm"
+}

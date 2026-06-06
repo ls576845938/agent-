@@ -4,13 +4,22 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
-from quant_us.research.btc_hypothesis_lab_v2 import (
-    BTC_HYPOTHESIS_LAB_V2_ROOT,
-    BTC_HYPOTHESIS_LAB_V2_RUN_ID,
-    run_hypothesis_lab_v2,
-)
+try:
+    from quant_us.research.btc_hypothesis_lab_v2 import (
+        BTC_HYPOTHESIS_LAB_V2_ROOT,
+        BTC_HYPOTHESIS_LAB_V2_RUN_ID,
+        run_hypothesis_lab_v2,
+    )
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from quant_us.research.btc_hypothesis_lab_v2 import (
+        BTC_HYPOTHESIS_LAB_V2_ROOT,
+        BTC_HYPOTHESIS_LAB_V2_RUN_ID,
+        run_hypothesis_lab_v2,
+    )
 
 
 def main() -> None:

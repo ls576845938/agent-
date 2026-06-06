@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_local_csv_provider_bundle_manifest.schema.json",
+  "title": "QuantStation VNEXT US Equity Local CSV Provider Bundle Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "source_provider",
+    "source_type",
+    "created_at",
+    "as_of_date",
+    "sample_start",
+    "sample_end",
+    "universe_name",
+    "price_data_reference",
+    "license_note",
+    "promotion_clean_allowed",
+    "files",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_local_csv_provider_bundle_manifest_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "source_provider": {"enum": ["local_csv", "crsp", "sharadar", "polygon", "norgate", "other"]},
+    "source_type": {"enum": ["fixture", "sample", "production"]},
+    "created_at": {"type": "string"},
+    "as_of_date": {"type": "string"},
+    "sample_start": {"type": "string", "minLength": 1},
+    "sample_end": {"type": "string", "minLength": 1},
+    "universe_name": {"type": "string"},
+    "price_data_reference": {"type": "string"},
+    "license_note": {"type": "string", "minLength": 1},
+    "promotion_clean_allowed": {"type": "boolean"},
+    "files": {
+      "type": "object",
+      "required": [
+        "universe_membership_events",
+        "delisted_symbols",
+        "corporate_actions",
+        "symbol_mapping",
+        "adjustment_replay"
+      ],
+      "properties": {
+        "universe_membership_events": {"$ref": "#/$defs/fileRef"},
+        "delisted_symbols": {"$ref": "#/$defs/fileRef"},
+        "corporate_actions": {"$ref": "#/$defs/fileRef"},
+        "symbol_mapping": {"$ref": "#/$defs/fileRef"},
+        "adjustment_replay": {"$ref": "#/$defs/fileRef"}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "fileRef": {
+      "type": "object",
+      "required": ["path", "sha256", "record_count"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string"},
+        "record_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

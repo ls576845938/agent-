@@ -32,67 +32,20 @@ def run_hypothesis_lab_v2(
 ) -> Path:
     run_dir = output_root / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
-    registry = build_research_registry()
-    write_registry_summary(registry)
     lifecycle = build_compression_expansion_lifecycle_report(run_dir=run_dir)
     decision = evaluate_hypothesis_v2(run_dir=run_dir, lifecycle_report=lifecycle)
+    registry = build_research_registry()
+    write_registry_summary(registry)
     write_safety_status(run_dir=run_dir, decision=decision)
     write_run_manifest(run_dir=run_dir, decision=decision)
     return run_dir
 
 
 def build_research_registry(path: Path = RESEARCH_REGISTRY_PATH) -> dict[str, Any]:
-    compression_status = "pending_research"
-    compression_reason = "compression-to-expansion artifacts missing"
-    compression_last_run = ""
-    compression_candidate = COMPRESSION_CANDIDATE_RUN_DIR / "canonical_backtest_report.json"
-    compression_hypothesis = COMPRESSION_HYPOTHESIS_RUN_DIR / "compression_expansion_hypothesis_decision.json"
-    if compression_candidate.exists():
-        candidate = read_json(compression_candidate)
-        compression_status = str(candidate.get("promotion_gate_status", "candidate_gate_failed"))
-        compression_reason = (
-            "hypothesis layer passed but event-ledger candidate failed: "
-            + ", ".join(candidate.get("fail_reasons", []))
-        )
-        compression_last_run = COMPRESSION_CANDIDATE_RUN_DIR.name
-    elif compression_hypothesis.exists():
-        decision = read_json(compression_hypothesis)
-        compression_status = str(decision.get("decision", "unknown"))
-        compression_reason = "hypothesis artifact found but event-ledger candidate artifact missing"
-        compression_last_run = COMPRESSION_HYPOTHESIS_RUN_DIR.name
-    payload = {
-        "schema_version": "btc_research_registry_v1",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "paper_queue": "LOCKED",
-        "live": "FROZEN",
-        "items": {
-            "perp_dual_trend": {
-                "status": "archived",
-                "reason": "event_PF stuck near 1.01-1.02; no stable repair pattern",
-                "last_run_id": "20260516T100000Z_eventreturn_alpha",
-                "next_action": "do_not_resurrect_without_new_hypothesis",
-            },
-            "low_vol_uptrend": {
-                "status": "hypothesis_rejected",
-                "reason": "event_PF_proxy 0.979469; fold stability failed",
-                "last_run_id": "20260516T120000Z_lowvol_uptrend",
-                "next_action": "do_not_optimize_rejected_hypothesis",
-            },
-            "liquidation_shock_recovery": {
-                "status": "archived",
-                "reason": "full-ledger event_PF 0.998; lifecycle drag; no ablation passed",
-                "last_run_id": "20260517T010000Z_liquidation_shock_attribution",
-                "next_action": "do_not_generate_v2_or_v3",
-            },
-            "compression_expansion_breakout": {
-                "status": compression_status,
-                "reason": compression_reason,
-                "last_run_id": compression_last_run,
-                "next_action": "evaluate_with_lifecycle_aware_gate_v2",
-            },
-        },
-    }
-    write_json(path, payload)
+    from scripts.build_btc_research_registry import build_btc_research_registry, write_btc_research_registry
+
+    payload = build_btc_research_registry(generated_at=_utc_z_now())
+    write_btc_research_registry(payload, path)
     return payload
 
 
@@ -201,6 +154,18 @@ def build_compression_expansion_lifecycle_report(*, run_dir: Path) -> dict[str, 
             "liquidation-shock recovery showed target-active event_PF above threshold but full-ledger event_PF below 1",
             "compression-expansion must be judged on full lifecycle, fold stability, cost stress, and tails",
         ],
+        "controlled_search_policy": {
+            "mode": "hypothesis_level_only",
+            "strategy_skeleton_generation_allowed": False,
+            "candidate_generation_allowed": False,
+            "paper_or_live_side_effects_allowed": False,
+            "allowed_outputs": [
+                "lifecycle_aware_distribution_report",
+                "hypothesis_decision_v2",
+                "paper_live_safety_status",
+                "run_manifest",
+            ],
+        },
     }
     write_json(run_dir / "lifecycle_aware_distribution_report.json", report)
     write_json(run_dir / "compression_expansion_lifecycle_report.json", report)
@@ -235,8 +200,8 @@ def evaluate_hypothesis_v2(*, run_dir: Path, lifecycle_report: Mapping[str, Any]
     elif skeleton_fail_reasons:
         decision = "hypothesis_passed_distribution_only"
     else:
-        decision = "hypothesis_passed_for_strategy_skeleton"
-    skeleton_generated = decision == "hypothesis_passed_for_strategy_skeleton"
+        decision = "hypothesis_passed_distribution_only"
+    skeleton_generated = False
     payload = {
         "schema_version": "btc_hypothesis_lab_v2_decision_v1",
         "run_id": run_dir.name,
@@ -248,7 +213,13 @@ def evaluate_hypothesis_v2(*, run_dir: Path, lifecycle_report: Mapping[str, Any]
         "skeleton_reasons": skeleton_fail_reasons or ["skeleton_gate_passed"],
         "strategy_skeleton_generated": skeleton_generated,
         "strategy_skeleton_path": "",
-        "skeleton_guard_decision": "generate_skeleton" if skeleton_generated else "do_not_generate_skeleton",
+        "skeleton_guard_decision": "do_not_generate_skeleton",
+        "controlled_search_policy": {
+            "mode": "hypothesis_level_only",
+            "strategy_skeleton_generation_allowed": False,
+            "candidate_generation_allowed": False,
+            "paper_or_live_side_effects_allowed": False,
+        },
         "paper_queue": "LOCKED",
         "live": "FROZEN",
         "final_decision": _final_decision(decision),
@@ -276,20 +247,46 @@ def write_safety_status(*, run_dir: Path, decision: Mapping[str, Any]) -> dict[s
         "real_orders_created": False,
         "hypothesis_decision": decision.get("decision", "unknown"),
         "strategy_skeleton_generated": bool(decision.get("strategy_skeleton_generated", False)),
+        "controlled_search_policy": decision.get("controlled_search_policy", {}),
     }
     write_json(run_dir / "paper_live_safety_status.json", payload)
     return payload
 
 
 def write_run_manifest(*, run_dir: Path, decision: Mapping[str, Any]) -> dict[str, Any]:
+    controlled_search_policy = decision.get("controlled_search_policy", {})
     payload = {
         "schema_version": "btc_hypothesis_lab_v2_run_manifest_v1",
         "run_id": run_dir.name,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": _utc_z_now(),
         "code_commit": git_commit_hash(),
         "source_hypothesis_run": str(COMPRESSION_HYPOTHESIS_RUN_DIR),
         "source_candidate_run": str(COMPRESSION_CANDIDATE_RUN_DIR),
         "decision": decision.get("decision"),
+        "controlled_search_policy": controlled_search_policy,
+        "strategy_skeleton_generated": bool(decision.get("strategy_skeleton_generated", False)),
+        "strategy_skeleton_path": str(decision.get("strategy_skeleton_path", "")),
+        "candidate_generation_allowed": bool(
+            isinstance(controlled_search_policy, Mapping)
+            and controlled_search_policy.get("candidate_generation_allowed", False)
+        ),
+        "candidate_generated": False,
+        "allowed_output_level": "hypothesis",
+        "generated_artifacts": [
+            "lifecycle_aware_distribution_report.json",
+            "compression_expansion_lifecycle_report.json",
+            "hypothesis_decision_v2.json",
+            "compression_expansion_hypothesis_decision_v2.json",
+            "paper_live_safety_status.json",
+            "run_manifest.json",
+        ],
+        "forbidden_outputs": [
+            "strategy_skeleton",
+            "candidate_config",
+            "paper_order",
+            "live_order",
+            "broker_call",
+        ],
         "paper_queue": "LOCKED",
         "live": "FROZEN",
     }
@@ -330,3 +327,7 @@ def _final_decision(decision: str) -> str:
     if decision == "hypothesis_rejected":
         return "hypothesis rejected; no strategy generated; paper queue remains LOCKED; live remains FROZEN."
     return "registry/lifecycle audit completed; paper queue remains LOCKED; live remains FROZEN."
+
+
+def _utc_z_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")

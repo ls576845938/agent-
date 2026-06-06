@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_paper_validation_run_report.schema.json",
+  "title": "QuantStation VNEXT BTC Paper Validation Run Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "asset",
+    "symbol",
+    "market_type",
+    "run_id",
+    "ledger_root",
+    "validation_state_path",
+    "days_required",
+    "days_completed",
+    "consecutive_clean_days",
+    "cycle",
+    "strategy",
+    "risk_gate",
+    "execution",
+    "summary",
+    "diagnostics",
+    "ledger_reconciliation_artifact_path",
+    "preflight"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_paper_validation_run_v1"},
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "status": {"enum": ["IN_PROGRESS", "PASS"]},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "market_type": {"const": "usds_m_perpetual"},
+    "run_id": {"type": "string", "pattern": "^btc_paper_\\d{8}T\\d{6}Z_\\d{8}T\\d{6}Z_\\S+"},
+    "ledger_root": {"type": "string", "pattern": "\\S"},
+    "validation_state_path": {"type": "string", "pattern": "\\S"},
+    "days_required": {"type": "integer", "minimum": 1},
+    "days_completed": {"type": "integer", "minimum": 1},
+    "consecutive_clean_days": {"type": "integer", "minimum": 0},
+    "cycle": {
+      "type": "object",
+      "required": ["start", "end", "interval", "bar_count"],
+      "properties": {
+        "start": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+        "end": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+        "interval": {"const": "1h"},
+        "bar_count": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "strategy": {
+      "type": "object",
+      "required": ["strategy_id", "strategy_version", "params"],
+      "properties": {
+        "strategy_id": {"type": "string", "pattern": "\\S"},
+        "strategy_version": {"type": "string", "pattern": "\\S"},
+        "params": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "risk_gate": {"$ref": "#/$defs/riskGate"},
+    "execution": {
+      "type": "object",
+      "required": [
+        "paper_broker",
+        "broker_backend",
+        "real_order_submission",
+        "allows_live_orders",
+        "orders_require_risk_engine",
+        "pnl_source",
+        "cost_model_report",
+        "commission_rate",
+        "slippage_bps"
+      ],
+      "properties": {
+        "paper_broker": {"const": "simulated"},
+        "broker_backend": {"const": "simulated"},
+        "real_order_submission": {"const": false},
+        "allows_live_orders": {"const": false},
+        "orders_require_risk_engine": {"const": true},
+        "pnl_source": {"const": "fills_and_ledger"},
+        "cost_model_report": {"type": "string", "pattern": "\\S"},
+        "commission_rate": {"type": "number", "minimum": 0},
+        "slippage_bps": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "summary": {"type": "object"},
+    "diagnostics": {
+      "type": "object",
+      "required": [
+        "engine",
+        "asset_class",
+        "source",
+        "symbol",
+        "interval",
+        "strategy_id",
+        "data_version",
+        "strategy_version",
+        "pnl_source",
+        "orders",
+        "fills",
+        "ledger_equity_consistent",
+        "reconciliation"
+      ],
+      "properties": {
+        "engine": {"const": "event_driven"},
+        "asset_class": {"const": "crypto"},
+        "source": {"const": "binance_usdm_local_bundle"},
+        "symbol": {"const": "BTCUSDT"},
+        "interval": {"const": "1h"},
+        "strategy_id": {"type": "string", "pattern": "\\S"},
+        "data_version": {"type": "string", "pattern": "\\S"},
+        "strategy_version": {"type": "string", "pattern": "\\S"},
+        "pnl_source": {"const": "ledger_fills"},
+        "orders": {"type": "integer", "minimum": 0},
+        "fills": {"type": "integer", "minimum": 0},
+        "ledger_equity_consistent": {"const": true},
+        "reconciliation": {
+          "type": "object",
+          "required": ["passed", "snapshot_count"],
+          "properties": {
+            "passed": {"const": true},
+            "snapshot_count": {"type": "integer", "minimum": 1}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "ledger_reconciliation_artifact_path": {"type": "string", "pattern": "\\S"},
+    "preflight": {
+      "type": "object",
+      "required": ["schema_version", "status", "blocking_reasons", "execution_constraints"],
+      "properties": {
+        "schema_version": {"const": "btc_paper_validation_preflight_v1"},
+        "status": {"const": "PASS"},
+        "blocking_reasons": {"maxItems": 0},
+        "execution_constraints": {
+          "type": "object",
+          "required": [
+            "paper_broker",
+            "real_order_submission",
+            "allows_live_orders",
+            "orders_require_risk_engine",
+            "pnl_source",
+            "network_required"
+          ],
+          "properties": {
+            "paper_broker": {"const": "simulated"},
+            "real_order_submission": {"const": false},
+            "allows_live_orders": {"const": false},
+            "orders_require_risk_engine": {"const": true},
+            "pnl_source": {"const": "fills_and_ledger"},
+            "network_required": {"const": false}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "riskGate": {
+      "type": "object",
+      "required": [
+        "enforced",
+        "risk_check_count",
+        "order_count",
+        "approved",
+        "rejected",
+        "rejection_reasons",
+        "all_orders_created_by_oms",
+        "all_orders_have_risk_check_id"
+      ],
+      "properties": {
+        "enforced": {"const": true},
+        "risk_check_count": {"type": "integer", "minimum": 0},
+        "order_count": {"type": "integer", "minimum": 0},
+        "approved": {"type": "integer", "minimum": 0},
+        "rejected": {"type": "integer", "minimum": 0},
+        "rejection_reasons": {"type": "object"},
+        "all_orders_created_by_oms": {"const": true},
+        "all_orders_have_risk_check_id": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "PASS"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "consecutive_clean_days": {"minimum": 30}
+        }
+      }
+    }
+  ]
+}

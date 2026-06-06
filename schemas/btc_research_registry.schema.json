@@ -1,0 +1,593 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_research_registry.schema.json",
+  "title": "QuantStation VNEXT BTC Research Registry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "paper_queue",
+    "live",
+    "items",
+    "btc"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_research_registry_v1"},
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "paper_queue": {"enum": ["LOCKED", "PENDING_REVIEW"]},
+    "live": {"const": "FROZEN"},
+    "items": {
+      "type": "object",
+      "required": ["compression_expansion_breakout"],
+      "properties": {
+        "compression_expansion_breakout": {
+          "type": "object",
+          "required": [
+            "status",
+            "allowed_next_action",
+            "archive_recommended",
+            "limited_retest_allowed",
+            "next_action"
+          ],
+          "properties": {
+            "status": {"const": "archived"},
+            "allowed_next_action": {"const": "archive_only"},
+            "archive_recommended": {"const": true},
+            "limited_retest_allowed": {"const": false},
+            "next_action": {"const": "do_not_retest_without_new_hypothesis"}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "btc": {
+      "type": "object",
+      "required": [
+        "status",
+        "paper_queue_status",
+        "live_status",
+        "candidate_passed_internal_gate",
+        "latest_manual_metadata_capture_readiness",
+        "latest_manual_metadata_capture_operator_packet",
+        "latest_manual_metadata_import_report",
+        "latest_objective_completion_audit",
+        "latest_candidate_metric_repair_report",
+        "latest_candidate_bounded_retest_plan",
+        "latest_candidate_bounded_retest_outcome_report",
+        "latest_next_hypothesis_decision_report",
+        "latest_strategy_family_roadmap_report",
+        "manual_metadata_capture_status",
+        "manual_metadata_capture_operator_packet_status",
+        "manual_metadata_import_status",
+        "objective_completion_status",
+        "candidate_metric_repair_status",
+        "candidate_bounded_retest_status",
+        "candidate_bounded_retest_outcome_status",
+        "next_hypothesis_decision_status",
+        "strategy_family_roadmap_status",
+        "compression_boundary",
+        "current_candidates",
+        "attribution_only",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"const": "research_sandbox"},
+        "paper_queue_status": {"enum": ["locked", "pending_review"]},
+        "live_status": {"const": "frozen"},
+        "candidate_passed_internal_gate": {"type": "integer", "minimum": 0},
+        "latest_manual_metadata_capture_readiness": {"type": ["string", "null"]},
+        "latest_manual_metadata_capture_operator_packet": {"type": ["string", "null"]},
+        "latest_manual_metadata_import_report": {"type": ["string", "null"]},
+        "latest_objective_completion_audit": {"type": ["string", "null"]},
+        "latest_candidate_metric_repair_report": {"type": ["string", "null"]},
+        "latest_candidate_bounded_retest_plan": {"type": ["string", "null"]},
+        "latest_candidate_bounded_retest_outcome_report": {"type": ["string", "null"]},
+        "latest_next_hypothesis_decision_report": {"type": ["string", "null"]},
+        "latest_strategy_family_roadmap_report": {"type": ["string", "null"]},
+        "manual_metadata_capture_status": {"$ref": "#/$defs/manualMetadataCaptureStatus"},
+        "manual_metadata_capture_operator_packet_status": {"$ref": "#/$defs/manualMetadataPacketStatus"},
+        "manual_metadata_import_status": {"$ref": "#/$defs/manualMetadataImportStatus"},
+        "objective_completion_status": {"$ref": "#/$defs/objectiveCompletionStatus"},
+        "candidate_metric_repair_status": {"$ref": "#/$defs/candidateMetricRepairStatus"},
+        "candidate_bounded_retest_status": {"$ref": "#/$defs/candidateBoundedRetestStatus"},
+        "candidate_bounded_retest_outcome_status": {"$ref": "#/$defs/candidateBoundedRetestOutcomeStatus"},
+        "next_hypothesis_decision_status": {"$ref": "#/$defs/nextHypothesisDecisionStatus"},
+        "strategy_family_roadmap_status": {"$ref": "#/$defs/strategyFamilyRoadmapStatus"},
+        "compression_boundary": {
+          "type": "object",
+          "required": [
+            "status",
+            "allowed_next_action",
+            "archive_recommended",
+            "limited_retest_allowed",
+            "paper_review_pending_allowed"
+          ],
+          "properties": {
+            "status": {"const": "archived"},
+            "allowed_next_action": {"const": "archive_only"},
+            "archive_recommended": {"type": "boolean"},
+            "limited_retest_allowed": {"const": false},
+            "paper_review_pending_allowed": {"const": false}
+          },
+          "additionalProperties": false
+        },
+        "current_candidates": {"type": "array", "items": {"type": "string"}},
+        "attribution_only": {"type": "array"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "btc": {
+            "properties": {"paper_queue_status": {"const": "pending_review"}},
+            "required": ["paper_queue_status"]
+          }
+        },
+        "required": ["btc"]
+      },
+      "then": {
+        "properties": {
+          "paper_queue": {"const": "PENDING_REVIEW"},
+          "btc": {
+            "properties": {
+              "candidate_passed_internal_gate": {"type": "integer", "minimum": 1},
+              "current_candidates": {"type": "array", "minItems": 1}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "btc": {
+            "properties": {"paper_queue_status": {"const": "locked"}},
+            "required": ["paper_queue_status"]
+          }
+        },
+        "required": ["btc"]
+      },
+      "then": {
+        "properties": {
+          "paper_queue": {"const": "LOCKED"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "manualMetadataCaptureStatus": {
+      "type": "object",
+      "required": [
+        "status",
+        "latest_public_metadata_capture_attempt",
+        "last_public_metadata_capture_status",
+        "last_public_metadata_capture_network_called",
+        "exchange_info_manual_capture_required",
+        "funding_info_manual_capture_required",
+        "api_key_required",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "strategy_retest_allowed",
+        "paper_or_live_unlock_allowed",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "latest_public_metadata_capture_attempt": {"type": ["string", "null"]},
+        "last_public_metadata_capture_status": {"type": "string"},
+        "last_public_metadata_capture_network_called": {"type": "boolean"},
+        "exchange_info_manual_capture_required": {"type": "boolean"},
+        "funding_info_manual_capture_required": {"type": "boolean"},
+        "api_key_required": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "strategy_retest_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "candidateMetricRepairStatus": {
+      "type": "object",
+      "required": [
+        "status",
+        "report_path",
+        "promotion_allowed",
+        "paper_review_pending_allowed",
+        "best_candidate_strategy_id",
+        "failed_metrics",
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate",
+        "recommended_repair_actions",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "report_path": {"type": ["string", "null"]},
+        "promotion_allowed": {"type": "boolean"},
+        "paper_review_pending_allowed": {"type": "boolean"},
+        "best_candidate_strategy_id": {"type": "string"},
+        "failed_metrics": {"type": "array", "items": {"type": "string"}},
+        "event_profit_factor": {"type": ["number", "null"]},
+        "walk_forward_pass_rate": {"type": ["number", "null"]},
+        "regime_pass_rate": {"type": ["number", "null"]},
+        "recommended_repair_actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "priority", "status"],
+            "properties": {
+              "name": {"type": "string"},
+              "priority": {"type": "integer", "minimum": 0},
+              "status": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "candidateBoundedRetestStatus": {
+      "type": "object",
+      "required": [
+        "status",
+        "report_path",
+        "retest_allowed",
+        "bounded_parameter_search_allowed",
+        "promotion_allowed",
+        "paper_review_pending_allowed",
+        "candidate_strategy_id",
+        "failed_metrics",
+        "focus_failed_folds",
+        "ordinary_profit_factor_diagnostic_only",
+        "paper_or_live_unlock_allowed",
+        "broker_calls_allowed",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "report_path": {"type": ["string", "null"]},
+        "retest_allowed": {"type": "boolean"},
+        "bounded_parameter_search_allowed": {"type": "boolean"},
+        "promotion_allowed": {"const": false},
+        "paper_review_pending_allowed": {"const": false},
+        "candidate_strategy_id": {"type": "string"},
+        "failed_metrics": {"type": "array", "items": {"type": "string"}},
+        "focus_failed_folds": {"type": "array", "items": {"type": "integer"}},
+        "ordinary_profit_factor_diagnostic_only": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "candidateBoundedRetestOutcomeStatus": {
+      "type": "object",
+      "required": [
+        "status",
+        "report_path",
+        "run_id",
+        "candidate_gate_passed",
+        "promotion_allowed",
+        "paper_review_pending_allowed",
+        "same_retest_repeat_allowed",
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate",
+        "ordinary_profit_factor",
+        "cost_stress_base_pass",
+        "cost_stress_harsh_pass",
+        "failed_metrics",
+        "next_required_action",
+        "paper_queue_status",
+        "live_status",
+        "real_broker_api_called",
+        "real_orders_created",
+        "paper_or_live_unlock_allowed",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "report_path": {"type": ["string", "null"]},
+        "run_id": {"type": "string"},
+        "candidate_gate_passed": {"type": "boolean"},
+        "promotion_allowed": {"const": false},
+        "paper_review_pending_allowed": {"const": false},
+        "same_retest_repeat_allowed": {"const": false},
+        "event_profit_factor": {"type": ["number", "null"]},
+        "walk_forward_pass_rate": {"type": ["number", "null"]},
+        "regime_pass_rate": {"type": ["number", "null"]},
+        "ordinary_profit_factor": {"type": ["number", "null"]},
+        "cost_stress_base_pass": {"type": "boolean"},
+        "cost_stress_harsh_pass": {"type": "boolean"},
+        "failed_metrics": {"type": "array", "items": {"type": "string"}},
+        "next_required_action": {"type": "string"},
+        "paper_queue_status": {"const": "LOCKED"},
+        "live_status": {"const": "FROZEN"},
+        "real_broker_api_called": {"const": false},
+        "real_orders_created": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "nextHypothesisDecisionStatus": {
+      "type": "object",
+      "required": [
+        "status",
+        "report_path",
+        "decision",
+        "next_required_action",
+        "promotion_allowed",
+        "paper_review_pending_allowed",
+        "same_family_micro_search_allowed",
+        "mode_count",
+        "event_profit_factor_pass_count",
+        "walk_forward_pass_rate_pass_count",
+        "best_event_mode",
+        "best_event_profit_factor",
+        "best_event_walk_forward_pass_rate",
+        "best_wf_mode",
+        "best_wf_event_profit_factor",
+        "best_wf_pass_rate",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "report_path": {"type": ["string", "null"]},
+        "decision": {"type": "string"},
+        "next_required_action": {"type": "string"},
+        "promotion_allowed": {"const": false},
+        "paper_review_pending_allowed": {"const": false},
+        "same_family_micro_search_allowed": {"const": false},
+        "mode_count": {"type": "integer", "minimum": 0},
+        "event_profit_factor_pass_count": {"type": "integer", "minimum": 0},
+        "walk_forward_pass_rate_pass_count": {"type": "integer", "minimum": 0},
+        "best_event_mode": {"type": "string"},
+        "best_event_profit_factor": {"type": ["number", "null"]},
+        "best_event_walk_forward_pass_rate": {"type": ["number", "null"]},
+        "best_wf_mode": {"type": "string"},
+        "best_wf_event_profit_factor": {"type": ["number", "null"]},
+        "best_wf_pass_rate": {"type": ["number", "null"]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "strategyFamilyRoadmapStatus": {
+      "type": "object",
+      "required": [
+        "status",
+        "report_path",
+        "decision",
+        "next_required_action",
+        "selected_family_id",
+        "selected_family",
+        "selected_provider",
+        "selected_bundle_id",
+        "selected_bundle_duration_days",
+        "min_required_history_days",
+        "funding_rate_record_count",
+        "min_required_funding_events",
+        "hypothesis_distribution_allowed",
+        "candidate_generation_allowed",
+        "strategy_skeleton_generation_allowed",
+        "promotion_allowed",
+        "paper_review_pending_allowed",
+        "paper_or_live_unlock_allowed",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "report_path": {"type": ["string", "null"]},
+        "decision": {"type": "string"},
+        "next_required_action": {"type": "string"},
+        "selected_family_id": {"type": "string"},
+        "selected_family": {"type": "string"},
+        "selected_provider": {"type": "string"},
+        "selected_bundle_id": {"type": "string"},
+        "selected_bundle_duration_days": {"type": ["number", "null"]},
+        "min_required_history_days": {"type": ["number", "null"]},
+        "funding_rate_record_count": {"type": "integer", "minimum": 0},
+        "min_required_funding_events": {"type": "integer", "minimum": 0},
+        "hypothesis_distribution_allowed": {"type": "boolean"},
+        "candidate_generation_allowed": {"const": false},
+        "strategy_skeleton_generation_allowed": {"const": false},
+        "promotion_allowed": {"const": false},
+        "paper_review_pending_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "manualMetadataPacketStatus": {
+      "type": "object",
+      "required": [
+        "status",
+        "operator_action",
+        "manual_inputs_status",
+        "paper_gate_manual_inputs_complete",
+        "required_manual_input_count",
+        "required_manual_inputs",
+        "capture_request_count",
+        "dry_run_import_available",
+        "fee_tier_status",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "operator_action": {"type": "string"},
+        "manual_inputs_status": {"enum": ["awaiting_manual_inputs", "manual_inputs_verified"]},
+        "paper_gate_manual_inputs_complete": {"type": "boolean"},
+        "required_manual_input_count": {"type": "integer", "minimum": 0},
+        "required_manual_inputs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/manualInputStatus"}
+        },
+        "capture_request_count": {"const": 2},
+        "dry_run_import_available": {"type": "boolean"},
+        "fee_tier_status": {"$ref": "#/$defs/feeTierPacketStatus"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "manualInputStatus": {
+      "type": "object",
+      "required": ["name", "required_for", "status", "action", "blockers"],
+      "properties": {
+        "name": {"enum": ["exchange_info", "funding_info", "fee_tier_overlay"]},
+        "required_for": {"type": "string"},
+        "status": {"enum": ["awaiting_capture", "verified"]},
+        "action": {
+          "enum": ["manual_capture_from_allowed_network", "capture_public_fee_schedule_and_import", "none"]
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "feeTierPacketStatus": {
+      "type": "object",
+      "required": [
+        "cost_model_report",
+        "cost_model_status",
+        "fee_tier_verified",
+        "manual_capture_required",
+        "maker_fee_bps",
+        "taker_fee_bps",
+        "fee_tier_import_report_verified",
+        "fee_blockers"
+      ],
+      "properties": {
+        "cost_model_report": {"type": ["string", "null"]},
+        "cost_model_status": {"type": "string"},
+        "fee_tier_verified": {"type": "boolean"},
+        "manual_capture_required": {"type": "boolean"},
+        "maker_fee_bps": {"type": ["number", "null"], "minimum": 0},
+        "taker_fee_bps": {"type": ["number", "null"], "minimum": 0},
+        "fee_tier_import_report_verified": {"type": "boolean"},
+        "fee_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "manualMetadataImportStatus": {
+      "type": "object",
+      "required": [
+        "status",
+        "report_path",
+        "dry_run",
+        "captured_at",
+        "bundle_dir",
+        "bundle_dir_exists",
+        "bundle_dir_matches_selected",
+        "bundle_exchange_info_exists",
+        "bundle_funding_info_exists",
+        "bundle_exchange_info_output_hash_verified",
+        "bundle_funding_info_output_hash_verified",
+        "writes_performed",
+        "exchange_info_verified",
+        "funding_info_verified",
+        "valid_for_completion",
+        "raw_input_files",
+        "post_import_validation_command",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "report_path": {"type": ["string", "null"]},
+        "dry_run": {"type": "boolean"},
+        "captured_at": {"type": ["string", "null"]},
+        "bundle_dir": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "\\S"}
+          ]
+        },
+        "bundle_dir_exists": {"type": "boolean"},
+        "bundle_dir_matches_selected": {"type": "boolean"},
+        "bundle_exchange_info_exists": {"type": "boolean"},
+        "bundle_funding_info_exists": {"type": "boolean"},
+        "bundle_exchange_info_output_hash_verified": {"type": "boolean"},
+        "bundle_funding_info_output_hash_verified": {"type": "boolean"},
+        "writes_performed": {"type": "boolean"},
+        "exchange_info_verified": {"type": "boolean"},
+        "funding_info_verified": {"type": "boolean"},
+        "valid_for_completion": {"type": "boolean"},
+        "raw_input_files": {
+          "type": "object",
+          "required": ["exchange_info_raw", "funding_info_raw"],
+          "properties": {
+            "exchange_info_raw": {"$ref": "#/$defs/rawInputFileStatus"},
+            "funding_info_raw": {"$ref": "#/$defs/rawInputFileStatus"}
+          },
+          "additionalProperties": false
+        },
+        "post_import_validation_command": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "\\S"}
+          ]
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "objectiveCompletionStatus": {
+      "type": "object",
+      "required": [
+        "status",
+        "goal_complete",
+        "complete_requirements",
+        "incomplete_requirements",
+        "next_required_action",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "goal_complete": {"type": "boolean"},
+        "complete_requirements": {"type": "array", "items": {"type": "string"}},
+        "incomplete_requirements": {"type": "array", "items": {"type": "string"}},
+        "next_required_action": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "rawInputFileStatus": {
+      "type": "object",
+      "required": ["path", "exists", "size_bytes", "sha256", "http_status_file", "http_status", "http_status_verified"],
+      "properties": {
+        "path": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "\\S"}
+          ]
+        },
+        "exists": {"type": "boolean"},
+        "size_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "http_status_file": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "\\S"}
+          ]
+        },
+        "http_status": {"type": ["integer", "null"]},
+        "http_status_verified": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_provider_capability_matrix.schema.json",
+  "title": "QuantStation VNEXT US Equity Provider Capability Matrix",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "providers",
+    "selected_provider_profile",
+    "promotion_clean_provider_available",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_provider_capability_matrix_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "providers": {
+      "type": "array",
+      "minItems": 6,
+      "items": {"$ref": "#/$defs/provider"}
+    },
+    "selected_provider_profile": {"type": ["object", "null"]},
+    "promotion_clean_provider_available": {"type": "boolean"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "capability": {
+      "anyOf": [
+        {"type": "boolean"},
+        {"const": "unknown"}
+      ]
+    },
+    "provider": {
+      "type": "object",
+      "required": [
+        "provider_id",
+        "provider_name",
+        "provider_role",
+        "configured",
+        "local_data_available",
+        "local_data_verified",
+        "supports_price_bars",
+        "supports_point_in_time_universe",
+        "supports_historical_membership_events",
+        "supports_delisted_symbols",
+        "supports_split_events",
+        "supports_dividend_events",
+        "supports_adjustment_reproducibility",
+        "supports_symbol_mapping",
+        "promotion_clean_capable",
+        "verified_for_promotion",
+        "blockers"
+      ],
+      "properties": {
+        "provider_id": {"enum": ["yfinance", "crsp", "sharadar", "polygon", "norgate", "local_csv"]},
+        "provider_name": {"type": "string"},
+        "provider_role": {"type": "array", "items": {"type": "string"}},
+        "configured": {"type": "boolean"},
+        "local_data_available": {"type": "boolean"},
+        "local_data_verified": {"type": "boolean"},
+        "supports_price_bars": {"$ref": "#/$defs/capability"},
+        "supports_point_in_time_universe": {"$ref": "#/$defs/capability"},
+        "supports_historical_membership_events": {"$ref": "#/$defs/capability"},
+        "supports_delisted_symbols": {"$ref": "#/$defs/capability"},
+        "supports_split_events": {"$ref": "#/$defs/capability"},
+        "supports_dividend_events": {"$ref": "#/$defs/capability"},
+        "supports_adjustment_reproducibility": {"$ref": "#/$defs/capability"},
+        "supports_symbol_mapping": {"$ref": "#/$defs/capability"},
+        "promotion_clean_capable": {"type": "boolean"},
+        "verified_for_promotion": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

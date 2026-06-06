@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_cost_model_contract.schema.json",
+  "title": "QuantStation VNEXT BTC Cost Model Contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "source_run_dir",
+    "source_canonical_backtest_report",
+    "status",
+    "funding_model",
+    "fee_model",
+    "exchange_rules",
+    "mark_price_model",
+    "slippage_model",
+    "liquidation_data",
+    "candidate_pass_allowed",
+    "promotion_ready",
+    "paper_queue_status",
+    "live_status",
+    "diagnostic_warnings",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_cost_model_contract_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "source_run_dir": {"type": "string"},
+    "source_canonical_backtest_report": {"type": ["string", "null"]},
+    "status": {"enum": ["pass", "fail"]},
+    "funding_model": {
+      "type": "object",
+      "required": [
+        "funding_rate_available",
+        "funding_info_available",
+        "funding_interval_hours",
+        "funding_interval_source",
+        "funding_interval_inference_confidence",
+        "funding_rate_sample_start",
+        "funding_rate_sample_end",
+        "funding_payment_in_ledger",
+        "funding_ledger_report",
+        "funding_blockers"
+      ],
+      "properties": {
+        "funding_rate_available": {"type": "boolean"},
+        "funding_info_available": {"type": "boolean"},
+        "funding_interval_hours": {"type": ["number", "null"]},
+        "funding_interval_source": {"type": ["string", "null"]},
+        "funding_interval_inference_confidence": {"type": ["string", "null"]},
+        "funding_rate_sample_start": {"type": ["string", "null"]},
+        "funding_rate_sample_end": {"type": ["string", "null"]},
+        "funding_payment_in_ledger": {"type": "boolean"},
+        "funding_ledger_report": {"type": ["string", "null"]},
+        "funding_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "fee_model": {
+      "type": "object",
+      "required": [
+        "maker_fee_bps",
+        "taker_fee_bps",
+        "fee_source",
+        "fee_in_ledger",
+        "fee_tier_verified",
+        "fee_tier_overlay",
+        "fee_tier_overlay_sha256",
+        "fee_tier_import_report",
+        "fee_tier_import_report_verified",
+        "fee_tier_source",
+        "fee_tier_source_url_or_doc",
+        "fee_tier_captured_at",
+        "fee_blockers"
+      ],
+      "properties": {
+        "maker_fee_bps": {"type": ["number", "null"]},
+        "taker_fee_bps": {"type": ["number", "null"]},
+        "fee_source": {"type": ["string", "null"]},
+        "fee_in_ledger": {"type": "boolean"},
+        "fee_tier_verified": {"type": "boolean"},
+        "fee_tier_overlay": {"type": ["string", "null"]},
+        "fee_tier_overlay_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "fee_tier_import_report": {"type": ["string", "null"]},
+        "fee_tier_import_report_verified": {"type": "boolean"},
+        "fee_tier_source": {"type": ["string", "null"]},
+        "fee_tier_source_url_or_doc": {"type": ["string", "null"]},
+        "fee_tier_captured_at": {"type": ["string", "null"]},
+        "fee_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "exchange_rules": {
+      "type": "object",
+      "required": [
+        "exchange_info_available",
+        "exchange_rules_available",
+        "tick_size",
+        "step_size",
+        "min_qty",
+        "min_notional",
+        "price_precision",
+        "quantity_precision",
+        "rules_source",
+        "exchange_info_source_method",
+        "historical_rule_lineage_available",
+        "exchange_rules_blockers"
+      ],
+      "properties": {
+        "exchange_info_available": {"type": "boolean"},
+        "exchange_rules_available": {"type": "boolean"},
+        "tick_size": {"type": ["number", "null"]},
+        "step_size": {"type": ["number", "null"]},
+        "min_qty": {"type": ["number", "null"]},
+        "min_notional": {"type": ["number", "null"]},
+        "price_precision": {"type": ["integer", "null"]},
+        "quantity_precision": {"type": ["integer", "null"]},
+        "rules_source": {"type": ["string", "null"]},
+        "exchange_info_source_method": {"type": ["string", "null"]},
+        "historical_rule_lineage_available": {"type": "boolean"},
+        "exchange_rules_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "mark_price_model": {
+      "type": "object",
+      "required": [
+        "mark_price_available",
+        "mark_price_klines_available",
+        "premium_index_available",
+        "premium_index_klines_available",
+        "mark_price_current_available",
+        "mark_price_alignment_pass",
+        "mark_price_used_for_liquidation_risk",
+        "last_price_vs_mark_price_diagnostic_available",
+        "mark_price_blockers"
+      ],
+      "properties": {
+        "mark_price_available": {"type": "boolean"},
+        "mark_price_klines_available": {"type": "boolean"},
+        "premium_index_available": {"type": "boolean"},
+        "premium_index_klines_available": {"type": "boolean"},
+        "mark_price_current_available": {"type": "boolean"},
+        "mark_price_alignment_pass": {"type": "boolean"},
+        "mark_price_used_for_liquidation_risk": {"type": "boolean"},
+        "last_price_vs_mark_price_diagnostic_available": {"type": "boolean"},
+        "mark_price_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "slippage_model": {
+      "type": "object",
+      "required": [
+        "slippage_model_name",
+        "slippage_bps",
+        "slippage_in_ledger",
+        "slippage_stress_levels",
+        "slippage_blockers"
+      ],
+      "properties": {
+        "slippage_model_name": {"type": ["string", "null"]},
+        "slippage_bps": {"type": ["number", "null"], "minimum": 0},
+        "slippage_in_ledger": {"type": "boolean"},
+        "slippage_stress_levels": {"type": "array", "items": {"type": "string"}},
+        "slippage_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "liquidation_data": {
+      "type": "object",
+      "required": [
+        "liquidation_snapshot_available",
+        "liquidation_snapshot_status",
+        "complete_liquidation_history_available"
+      ],
+      "properties": {
+        "liquidation_snapshot_available": {"type": "boolean"},
+        "liquidation_snapshot_status": {"type": "string"},
+        "complete_liquidation_history_available": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "candidate_pass_allowed": {"const": false},
+    "promotion_ready": {"const": false},
+    "paper_queue_status": {"const": "locked"},
+    "live_status": {"const": "frozen"},
+    "diagnostic_warnings": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,900 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_paper_validation_start_report.schema.json",
+  "title": "QuantStation VNEXT BTC Paper Validation Start Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "market_type",
+    "status",
+    "paper_start_allowed",
+    "paper_execution_authorized",
+    "live_status",
+    "next_required_action",
+    "readiness",
+    "manual_inputs",
+    "operator_manual_unblock",
+    "approved_paper_review",
+    "runtime",
+    "preflight_probe",
+    "ledger_session",
+    "unblock_sequence",
+    "commands",
+    "safety",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_paper_validation_start_report_v1"},
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "market_type": {"const": "usds_m_perpetual"},
+    "status": {"enum": ["blocked", "ready_to_start_paper_validation"]},
+    "paper_start_allowed": {"type": "boolean"},
+    "paper_execution_authorized": {"type": "boolean"},
+    "live_status": {"type": "string"},
+    "next_required_action": {"type": "string", "minLength": 1},
+    "readiness": {
+      "type": "object",
+      "required": [
+        "path",
+        "exists",
+        "schema_version",
+        "status",
+        "paper_queue_status",
+        "paper_start_allowed",
+        "paper_execution_authorized",
+        "live_status",
+        "next_required_action",
+        "manual_inputs_status",
+        "paper_gate_manual_inputs_complete",
+        "required_manual_input_count",
+        "blocker_count"
+      ],
+      "properties": {
+        "path": {"type": "string"},
+        "exists": {"type": "boolean"},
+        "schema_version": {"type": "string"},
+        "status": {"type": "string"},
+        "paper_queue_status": {"type": "string"},
+        "paper_start_allowed": {"type": "boolean"},
+        "paper_execution_authorized": {"type": "boolean"},
+        "live_status": {"type": "string"},
+        "next_required_action": {"type": "string"},
+        "manual_inputs_status": {"enum": ["awaiting_manual_inputs", "manual_inputs_verified"]},
+        "paper_gate_manual_inputs_complete": {"type": "boolean"},
+        "required_manual_input_count": {"type": "integer", "minimum": 0},
+        "blocker_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "manual_inputs": {
+      "type": "object",
+      "required": [
+        "manual_inputs_status",
+        "paper_gate_manual_inputs_complete",
+        "required_manual_inputs",
+        "fee_tier_status"
+      ],
+      "properties": {
+        "manual_inputs_status": {"enum": ["awaiting_manual_inputs", "manual_inputs_verified"]},
+        "paper_gate_manual_inputs_complete": {"type": "boolean"},
+        "required_manual_inputs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/manualInputStatus"}
+        },
+        "fee_tier_status": {"$ref": "#/$defs/feeTierStatus"}
+      },
+      "additionalProperties": false
+    },
+    "operator_manual_unblock": {"$ref": "#/$defs/operatorManualUnblock"},
+    "approved_paper_review": {
+      "type": "object",
+      "required": [
+        "approved",
+        "paper_review_id",
+        "status",
+        "path",
+        "strategy_manifest_id",
+        "proposed_symbols",
+        "proposed_capital",
+        "evidence_pack_path",
+        "evidence_pack_exists",
+        "approval"
+      ],
+      "properties": {
+        "approved": {"type": "boolean"},
+        "paper_review_id": {"type": "string"},
+        "status": {"type": "string"},
+        "path": {"type": "string"},
+        "strategy_manifest_id": {"type": "string"},
+        "proposed_symbols": {"type": "array", "items": {"type": "string"}},
+        "proposed_capital": {"type": "number"},
+        "evidence_pack_path": {"type": "string"},
+        "evidence_pack_exists": {"type": "boolean"},
+        "approval": {"$ref": "#/$defs/approval"}
+      },
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "required": [
+        "validation_runner_path",
+        "preflight_runner_path",
+        "ledger_root",
+        "data_root",
+        "runtime_contract",
+        "preflight_contract",
+        "runner_supports_btc_usdm_perpetual",
+        "preflight_supports_btc_usdm_perpetual",
+        "checks"
+      ],
+      "properties": {
+        "validation_runner_path": {"type": "string"},
+        "preflight_runner_path": {"type": "string"},
+        "ledger_root": {"type": "string"},
+        "data_root": {"type": "string"},
+        "runtime_contract": {"const": "btc_paper_validation_runtime_v1"},
+        "preflight_contract": {"const": "btc_paper_validation_preflight_v1"},
+        "runner_supports_btc_usdm_perpetual": {"type": "boolean"},
+        "preflight_supports_btc_usdm_perpetual": {"type": "boolean"},
+        "checks": {
+          "type": "object",
+          "required": [
+            "validation_runner_exists",
+            "preflight_runner_exists",
+            "validation_runner_is_approved_default",
+            "preflight_runner_is_approved_default",
+            "validation_runner_declares_btc_contract",
+            "validation_runner_declares_usds_m_perpetual",
+            "validation_runner_declares_btcusdt",
+            "validation_runner_avoids_equity_only_loader",
+            "preflight_runner_declares_btc_contract",
+            "preflight_runner_declares_usds_m_perpetual",
+            "preflight_runner_declares_btcusdt",
+            "preflight_runner_avoids_equity_only_loader"
+          ],
+          "properties": {
+            "validation_runner_exists": {"type": "boolean"},
+            "preflight_runner_exists": {"type": "boolean"},
+            "validation_runner_is_approved_default": {"type": "boolean"},
+            "preflight_runner_is_approved_default": {"type": "boolean"},
+            "validation_runner_declares_btc_contract": {"type": "boolean"},
+            "validation_runner_declares_usds_m_perpetual": {"type": "boolean"},
+            "validation_runner_declares_btcusdt": {"type": "boolean"},
+            "validation_runner_avoids_equity_only_loader": {"type": "boolean"},
+            "preflight_runner_declares_btc_contract": {"type": "boolean"},
+            "preflight_runner_declares_usds_m_perpetual": {"type": "boolean"},
+            "preflight_runner_declares_btcusdt": {"type": "boolean"},
+            "preflight_runner_avoids_equity_only_loader": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "preflight_probe": {
+      "type": "object",
+      "required": [
+        "contract",
+        "command",
+        "start_report_ready_required",
+        "status",
+        "ready_without_start_report",
+        "exit_code",
+        "blocking_reasons",
+        "error"
+      ],
+      "properties": {
+        "contract": {"const": "btc_paper_validation_preflight_v1"},
+        "command": {
+          "const": "python3 scripts/check_btc_paper_validation_readiness.py --repo-root . --symbols BTCUSDT --market-type usds_m_perpetual --ledger-root data/paper_ledger/btc --data-root data --no-start-report-ready-required --json"
+        },
+        "start_report_ready_required": {"const": false},
+        "status": {"enum": ["PASS", "BLOCKED", "ERROR", "NOT_RUN"]},
+        "ready_without_start_report": {"type": "boolean"},
+        "exit_code": {"type": ["integer", "null"]},
+        "blocking_reasons": {"type": "array", "items": {"type": "string"}},
+        "error": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "ledger_session": {
+      "type": "object",
+      "required": [
+        "ledger_root",
+        "status",
+        "validation_state_exists",
+        "validation_state_valid",
+        "session_manifest_count",
+        "runtime_record_files",
+        "in_progress_cycle_markers",
+        "in_progress_cycle_marker_details",
+        "start_lock_status",
+        "start_lock_path",
+        "start_lock_claimable",
+        "latest_reconciliation_status",
+        "latest_reconciliation_artifact_path",
+        "latest_reconciliation_artifact_hash",
+        "latest_reconciliation_artifact_verified",
+        "latest_reconciliation_artifact_blockers",
+        "latest_clean",
+        "reconciliation_clean"
+      ],
+      "properties": {
+        "ledger_root": {"type": "string"},
+        "status": {"enum": ["clean_start", "resumable", "recovery_required", "dirty"]},
+        "validation_state_exists": {"type": "boolean"},
+        "validation_state_valid": {"type": "boolean"},
+        "session_manifest_count": {"type": "integer", "minimum": 0},
+        "runtime_record_files": {"type": "array", "items": {"type": "string"}},
+        "in_progress_cycle_markers": {"type": "array", "items": {"type": "string"}},
+        "in_progress_cycle_marker_details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "parse_ok",
+              "schema_version",
+              "run_id",
+              "cycle_key",
+              "status",
+              "start",
+              "end",
+              "blockers"
+            ],
+            "properties": {
+              "path": {"type": "string"},
+              "parse_ok": {"type": "boolean"},
+              "schema_version": {"type": "string"},
+              "run_id": {"type": "string"},
+              "cycle_key": {"type": "string"},
+              "status": {"type": "string"},
+              "start": {"type": "string"},
+              "end": {"type": "string"},
+              "blockers": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false
+          }
+        },
+        "start_lock_status": {"enum": ["absent", "active", "stale"]},
+        "start_lock_path": {"type": "string"},
+        "start_lock_claimable": {"type": "boolean"},
+        "latest_reconciliation_status": {"type": "string"},
+        "latest_reconciliation_artifact_path": {"type": "string"},
+        "latest_reconciliation_artifact_hash": {"type": "string"},
+        "latest_reconciliation_artifact_verified": {"type": "boolean"},
+        "latest_reconciliation_artifact_blockers": {"type": "array", "items": {"type": "string"}},
+        "latest_clean": {"type": ["boolean", "null"]},
+        "reconciliation_clean": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "unblock_sequence": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {"$ref": "#/$defs/unblockStep"}
+    },
+    "commands": {
+      "type": "object",
+      "required": ["report_rebuild_command", "preflight_command", "start_command", "resume_command"],
+      "properties": {
+        "report_rebuild_command": {"const": "python3 scripts/build_btc_paper_validation_start_report.py"},
+        "preflight_command": {"type": "string"},
+        "start_command": {"type": "string"},
+        "resume_command": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "report_only",
+        "requires_readiness_report",
+        "requires_approved_review",
+        "requires_evidence_pack",
+        "strategy_direct_broker_forbidden",
+        "all_orders_must_pass_risk_engine",
+        "allows_live_orders",
+        "paper_auto_start"
+      ],
+      "properties": {
+        "report_only": {"const": true},
+        "requires_readiness_report": {"const": true},
+        "requires_approved_review": {"const": true},
+        "requires_evidence_pack": {"const": true},
+        "strategy_direct_broker_forbidden": {"const": true},
+        "all_orders_must_pass_risk_engine": {"const": true},
+        "allows_live_orders": {"const": false},
+        "paper_auto_start": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "blocked"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "paper_start_allowed": {"const": false},
+          "paper_execution_authorized": {"const": false},
+          "commands": {
+            "properties": {
+              "preflight_command": {"const": ""},
+              "start_command": {"const": ""},
+              "resume_command": {"const": ""}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"status": {"const": "ready_to_start_paper_validation"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "paper_start_allowed": {"const": true},
+          "paper_execution_authorized": {"const": true},
+          "live_status": {"const": "frozen"},
+          "next_required_action": {"enum": ["start_paper_validation", "resume_paper_validation"]},
+          "blockers": {"maxItems": 0},
+          "readiness": {
+            "properties": {
+              "exists": {"const": true},
+              "schema_version": {"const": "btc_paper_readiness_report_v1"},
+              "status": {"const": "ready_for_paper_start"},
+              "paper_queue_status": {"const": "approved"},
+              "paper_start_allowed": {"const": true},
+              "paper_execution_authorized": {"const": true},
+              "live_status": {"const": "frozen"},
+              "manual_inputs_status": {"const": "manual_inputs_verified"},
+              "paper_gate_manual_inputs_complete": {"const": true},
+              "blocker_count": {"const": 0}
+            }
+          },
+          "manual_inputs": {
+            "properties": {
+              "manual_inputs_status": {"const": "manual_inputs_verified"},
+              "paper_gate_manual_inputs_complete": {"const": true}
+            }
+          },
+          "operator_manual_unblock": {
+            "properties": {
+              "manual_inputs_status": {"const": "manual_inputs_verified"},
+              "paper_gate_manual_inputs_complete": {"const": true},
+              "safety": {
+                "properties": {
+                  "api_key_required": {"const": false},
+                  "private_endpoints_allowed": {"const": false},
+                  "order_endpoints_allowed": {"const": false},
+                  "paper_or_live_unlock_allowed": {"const": false}
+                }
+              }
+            }
+          },
+          "approved_paper_review": {
+            "properties": {
+              "approved": {"const": true},
+              "status": {"const": "APPROVED_FOR_PAPER_ONLY"},
+              "evidence_pack_exists": {"const": true},
+              "approval": {
+                "properties": {
+                  "valid": {"const": true},
+                  "schema_version": {"const": "paper_review_approval_v1"},
+                  "blockers": {"maxItems": 0}
+                }
+              }
+            }
+          },
+          "runtime": {
+            "properties": {
+              "runner_supports_btc_usdm_perpetual": {"const": true},
+              "preflight_supports_btc_usdm_perpetual": {"const": true},
+              "checks": {
+                "properties": {
+                  "validation_runner_exists": {"const": true},
+                  "preflight_runner_exists": {"const": true},
+                  "validation_runner_is_approved_default": {"const": true},
+                  "preflight_runner_is_approved_default": {"const": true},
+                  "validation_runner_declares_btc_contract": {"const": true},
+                  "validation_runner_declares_usds_m_perpetual": {"const": true},
+                  "validation_runner_declares_btcusdt": {"const": true},
+                  "validation_runner_avoids_equity_only_loader": {"const": true},
+                  "preflight_runner_declares_btc_contract": {"const": true},
+                  "preflight_runner_declares_usds_m_perpetual": {"const": true},
+                  "preflight_runner_declares_btcusdt": {"const": true},
+                  "preflight_runner_avoids_equity_only_loader": {"const": true}
+                }
+              }
+            }
+          },
+          "preflight_probe": {
+            "properties": {
+              "contract": {"const": "btc_paper_validation_preflight_v1"},
+              "start_report_ready_required": {"const": false},
+              "status": {"const": "PASS"},
+              "ready_without_start_report": {"const": true},
+              "exit_code": {"const": 0},
+              "blocking_reasons": {"maxItems": 0},
+              "error": {"const": ""}
+            }
+          },
+          "unblock_sequence": {
+            "items": {
+              "if": {
+                "properties": {"gate": {"const": "paper_validation_start"}},
+                "required": ["gate"]
+              },
+              "then": {
+                "properties": {
+                  "status": {"const": "ready"},
+                  "action": {"enum": ["start_paper_validation", "resume_paper_validation"]},
+                  "command": {"enum": [
+                    "python3 scripts/run_btc_paper_validation.py --repo-root . --symbols BTCUSDT --market-type usds_m_perpetual --ledger-root data/paper_ledger/btc --data-root data",
+                    "python3 scripts/run_btc_paper_validation.py --repo-root . --symbols BTCUSDT --market-type usds_m_perpetual --ledger-root data/paper_ledger/btc --data-root data --resume"
+                  ]},
+                  "blockers": {"maxItems": 0}
+                }
+              }
+            }
+          },
+          "commands": {
+            "properties": {
+              "preflight_command": {
+                "const": "python3 scripts/check_btc_paper_validation_readiness.py --repo-root . --symbols BTCUSDT --market-type usds_m_perpetual --ledger-root data/paper_ledger/btc --data-root data --json"
+              },
+              "start_command": {
+                "type": "string"
+              },
+              "resume_command": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {"const": "ready_to_start_paper_validation"},
+          "ledger_session": {
+            "properties": {"status": {"const": "clean_start"}},
+            "required": ["status"]
+          }
+        },
+        "required": ["status", "ledger_session"]
+      },
+      "then": {
+        "properties": {
+          "next_required_action": {"const": "start_paper_validation"},
+          "commands": {
+            "properties": {
+              "start_command": {
+                "const": "python3 scripts/run_btc_paper_validation.py --repo-root . --symbols BTCUSDT --market-type usds_m_perpetual --ledger-root data/paper_ledger/btc --data-root data"
+              },
+              "resume_command": {"const": ""}
+            }
+          },
+          "unblock_sequence": {
+            "items": {
+              "if": {
+                "properties": {"gate": {"const": "paper_validation_start"}},
+                "required": ["gate"]
+              },
+              "then": {
+                "properties": {
+                  "action": {"const": "start_paper_validation"},
+                  "command": {
+                    "const": "python3 scripts/run_btc_paper_validation.py --repo-root . --symbols BTCUSDT --market-type usds_m_perpetual --ledger-root data/paper_ledger/btc --data-root data"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {"const": "ready_to_start_paper_validation"},
+          "ledger_session": {
+            "properties": {"status": {"const": "resumable"}},
+            "required": ["status"]
+          }
+        },
+        "required": ["status", "ledger_session"]
+      },
+      "then": {
+        "properties": {
+          "ledger_session": {
+            "properties": {
+              "validation_state_exists": {"const": true},
+              "validation_state_valid": {"const": true},
+              "latest_reconciliation_artifact_verified": {"const": true},
+              "latest_reconciliation_artifact_blockers": {"maxItems": 0}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {"const": "ready_to_start_paper_validation"},
+          "ledger_session": {
+            "properties": {"status": {"const": "resumable"}},
+            "required": ["status"]
+          }
+        },
+        "required": ["status", "ledger_session"]
+      },
+      "then": {
+        "properties": {
+          "next_required_action": {"const": "resume_paper_validation"},
+          "commands": {
+            "properties": {
+              "start_command": {"const": ""},
+              "resume_command": {
+                "const": "python3 scripts/run_btc_paper_validation.py --repo-root . --symbols BTCUSDT --market-type usds_m_perpetual --ledger-root data/paper_ledger/btc --data-root data --resume"
+              }
+            }
+          },
+          "unblock_sequence": {
+            "items": {
+              "if": {
+                "properties": {"gate": {"const": "paper_validation_start"}},
+                "required": ["gate"]
+              },
+              "then": {
+                "properties": {
+                  "action": {"const": "resume_paper_validation"},
+                  "command": {
+                    "const": "python3 scripts/run_btc_paper_validation.py --repo-root . --symbols BTCUSDT --market-type usds_m_perpetual --ledger-root data/paper_ledger/btc --data-root data --resume"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "manual_inputs": {
+            "properties": {"manual_inputs_status": {"const": "awaiting_manual_inputs"}},
+            "required": ["manual_inputs_status"]
+          }
+        },
+        "required": ["manual_inputs"]
+      },
+      "then": {
+        "properties": {
+          "operator_manual_unblock": {
+            "oneOf": [
+              {
+                "properties": {
+                  "packet_exists": {"const": true},
+                  "paper_gate_manual_inputs_complete": {"const": false},
+                  "dry_run_command": {
+                    "pattern": "^make dry-run-btc-paper-gate-manual-inputs .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees)"
+                  },
+                  "apply_command": {
+                    "pattern": "^make apply-btc-paper-gate-manual-inputs .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees)"
+                  },
+                  "apply_and_validate_command": {
+                    "pattern": "^make apply-and-validate-btc-paper-gate-manual-inputs .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees)"
+                  },
+                  "post_apply_rebuild_command": {"const": "make rebuild-btc-paper-readiness-chain"},
+                  "post_apply_validation_command": {"const": "make validate-btc-evidence"},
+                  "post_apply_readiness_command": {"const": "make check-btc-paper-validation-readiness"},
+                  "capture_requests": {"minItems": 2},
+                  "fee_tier_dry_run_command": {
+                    "pattern": "^make dry-run-btc-fee-tier-overlay-import .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees)"
+                  },
+                  "fee_tier_apply_command": {
+                    "pattern": "^make apply-btc-fee-tier-overlay-import .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees)"
+                  },
+                  "blockers": {"minItems": 1}
+                }
+              },
+              {
+                "properties": {
+                  "packet_exists": {"const": false},
+                  "paper_gate_manual_inputs_complete": {"const": false},
+                  "blockers": {
+                    "contains": {"const": "btc_paper_validation_operator_packet_missing"}
+                  }
+                }
+              }
+            ]
+          },
+          "unblock_sequence": {
+            "contains": {
+              "type": "object",
+              "required": ["gate", "status", "is_next_action", "command", "blockers"],
+              "properties": {
+                "gate": {"const": "manual_paper_gate_inputs"},
+                "status": {"const": "blocked"},
+                "is_next_action": {"const": true}
+              },
+              "anyOf": [
+                {
+                  "properties": {
+                    "command": {
+                      "pattern": "^make apply-and-validate-btc-paper-gate-manual-inputs .*BTC_FEE_TIER_SOURCE=manual_public_(binance_usdm|okx_swap)_fee_schedule .*BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://(www\\.binance\\.com/en/fee/futureFee|www\\.okx\\.com/en-us/fees)"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "command": {"const": ""},
+                    "blockers": {
+                      "contains": {"const": "btc_paper_validation_operator_packet_missing"}
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "unblockStep": {
+      "type": "object",
+      "required": [
+        "order",
+        "gate",
+        "status",
+        "required_before_paper_start",
+        "is_next_action",
+        "action",
+        "command",
+        "evidence",
+        "blockers"
+      ],
+      "properties": {
+        "order": {"type": "integer", "minimum": 1},
+        "gate": {
+          "enum": [
+            "manual_paper_gate_inputs",
+            "perpetual_data_cost_evidence",
+            "candidate_metric_gate",
+            "human_paper_review",
+            "paper_validation_start"
+          ]
+        },
+        "status": {"enum": ["blocked", "complete", "pending_review", "ready"]},
+        "required_before_paper_start": {"const": true},
+        "is_next_action": {"type": "boolean"},
+        "action": {"type": "string"},
+        "command": {"type": "string"},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "gate": {"const": "candidate_metric_gate"},
+              "status": {"const": "blocked"}
+            },
+            "required": ["gate", "status"]
+          },
+          "then": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "run_bounded_candidate_retest_after_data_cost",
+                  "design_new_fold_specific_hypothesis_or_select_better_candidate"
+                ]
+              },
+              "command": {
+                "pattern": "^(|make check-btc-candidate-bounded-retest-readiness|python3 scripts/research/run_btc_eventpf_wf_stabilization\\.py .*)$"
+              },
+              "evidence": {
+                "contains": {
+                  "const": "artifacts/btc_candidate_gate/latest/candidate_bounded_retest_plan.json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "gate": {"const": "candidate_metric_gate"},
+              "status": {"const": "blocked"},
+              "action": {"const": "design_new_fold_specific_hypothesis_or_select_better_candidate"}
+            },
+            "required": ["gate", "status", "action"]
+          },
+          "then": {
+            "properties": {
+              "command": {"const": ""},
+              "evidence": {
+                "contains": {
+                  "const": "artifacts/btc_candidate_gate/latest/candidate_bounded_retest_outcome_report.json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "operatorManualUnblock": {
+      "type": "object",
+      "required": [
+        "packet_path",
+        "packet_exists",
+        "status",
+        "manual_inputs_status",
+        "paper_gate_manual_inputs_complete",
+        "required_manual_inputs",
+        "dry_run_command",
+        "apply_command",
+        "apply_and_validate_command",
+        "post_apply_rebuild_command",
+        "post_apply_validation_command",
+        "post_apply_readiness_command",
+        "capture_requests",
+        "fee_tier_dry_run_command",
+        "fee_tier_apply_command",
+        "safety",
+        "blockers"
+      ],
+      "properties": {
+        "packet_path": {"type": ["string", "null"]},
+        "packet_exists": {"type": "boolean"},
+        "status": {"type": "string"},
+        "manual_inputs_status": {"enum": ["awaiting_manual_inputs", "manual_inputs_verified"]},
+        "paper_gate_manual_inputs_complete": {"type": "boolean"},
+        "required_manual_inputs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/manualInputStatus"}
+        },
+        "dry_run_command": {"type": "string"},
+        "apply_command": {"type": "string"},
+        "apply_and_validate_command": {"type": "string"},
+        "post_apply_rebuild_command": {"type": "string"},
+        "post_apply_validation_command": {"type": "string"},
+        "post_apply_readiness_command": {"type": "string"},
+        "capture_requests": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/captureRequestSummary"}
+        },
+        "fee_tier_dry_run_command": {"type": "string"},
+        "fee_tier_apply_command": {"type": "string"},
+        "safety": {
+          "type": "object",
+          "required": [
+            "api_key_required",
+            "private_endpoints_allowed",
+            "order_endpoints_allowed",
+            "paper_or_live_unlock_allowed"
+          ],
+          "properties": {
+            "api_key_required": {"type": "boolean"},
+            "private_endpoints_allowed": {"type": "boolean"},
+            "order_endpoints_allowed": {"type": "boolean"},
+            "paper_or_live_unlock_allowed": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "captureRequestSummary": {
+      "type": "object",
+      "required": [
+        "name",
+        "endpoint",
+        "url",
+        "command",
+        "output_file",
+        "http_status_file",
+        "required_http_status"
+      ],
+      "properties": {
+        "name": {"enum": ["exchange_info", "funding_info"]},
+        "endpoint": {"type": "string"},
+        "url": {"type": "string"},
+        "command": {"type": "string"},
+        "output_file": {"type": "string"},
+        "http_status_file": {"type": "string"},
+        "required_http_status": {"type": "integer"}
+      },
+      "additionalProperties": false
+    },
+    "manualInputStatus": {
+      "type": "object",
+      "required": ["name", "required_for", "status", "action", "blockers"],
+      "properties": {
+        "name": {"enum": ["exchange_info", "funding_info", "fee_tier_overlay"]},
+        "required_for": {"type": "string"},
+        "status": {"enum": ["awaiting_capture", "verified"]},
+        "action": {
+          "enum": ["manual_capture_from_allowed_network", "capture_public_fee_schedule_and_import", "none"]
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "feeTierStatus": {
+      "type": "object",
+      "required": [
+        "cost_model_report",
+        "cost_model_status",
+        "fee_tier_verified",
+        "manual_capture_required",
+        "maker_fee_bps",
+        "taker_fee_bps",
+        "fee_tier_import_report_verified",
+        "fee_blockers"
+      ],
+      "properties": {
+        "cost_model_report": {"type": ["string", "null"]},
+        "cost_model_status": {"type": "string"},
+        "fee_tier_verified": {"type": "boolean"},
+        "manual_capture_required": {"type": "boolean"},
+        "maker_fee_bps": {"type": ["number", "null"], "minimum": 0},
+        "taker_fee_bps": {"type": ["number", "null"], "minimum": 0},
+        "fee_tier_import_report_verified": {"type": "boolean"},
+        "fee_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "approval": {
+      "type": "object",
+      "required": [
+        "valid",
+        "schema_version",
+        "reviewer",
+        "reason",
+        "timestamp",
+        "candidate_id",
+        "commit_hash",
+        "source",
+        "source_sha256",
+        "gate_snapshot",
+        "blockers"
+      ],
+      "properties": {
+        "valid": {"type": "boolean"},
+        "schema_version": {"type": "string"},
+        "reviewer": {"type": "string"},
+        "reason": {"type": "string"},
+        "timestamp": {"type": "string"},
+        "candidate_id": {"type": "string"},
+        "commit_hash": {"type": "string"},
+        "source": {"type": "string"},
+        "source_sha256": {"type": "string"},
+        "gate_snapshot": {"type": "object"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

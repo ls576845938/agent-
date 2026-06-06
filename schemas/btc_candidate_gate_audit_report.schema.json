@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_candidate_gate_audit_report.schema.json",
+  "title": "QuantStation VNEXT BTC Candidate Gate Audit Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "strategy_id",
+    "source_run_dir",
+    "candidate_gate_required_artifacts",
+    "candidate_gate_perpetual_evidence",
+    "candidate_gate_metric_checks",
+    "candidate_gate_thresholds",
+    "metric_failures",
+    "best_available_candidate",
+    "candidate_repair_plan",
+    "candidate_passed_internal_gate",
+    "paper_review_pending_allowed",
+    "paper_queue_status",
+    "live_status",
+    "status",
+    "diagnostic_warnings",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_candidate_gate_audit_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "strategy_id": {"type": "string"},
+    "source_run_dir": {"type": "string"},
+    "candidate_gate_required_artifacts": {
+      "type": "object",
+      "required": [
+        "canonical_backtest_report",
+        "fills",
+        "ledger_pnl",
+        "funding_pnl",
+        "fee_pnl",
+        "slippage_pnl",
+        "cost_stress_report",
+        "walk_forward_report",
+        "regime_report",
+        "no_lookahead_report",
+        "PBO_DSR_report",
+        "tail_dependency_report"
+      ],
+      "properties": {
+        "canonical_backtest_report": {"type": "boolean"},
+        "fills": {"type": "boolean"},
+        "ledger_pnl": {"type": "boolean"},
+        "funding_pnl": {"type": "boolean"},
+        "fee_pnl": {"type": "boolean"},
+        "slippage_pnl": {"type": "boolean"},
+        "cost_stress_report": {"type": "boolean"},
+        "walk_forward_report": {"type": "boolean"},
+        "regime_report": {"type": "boolean"},
+        "no_lookahead_report": {"type": "boolean"},
+        "PBO_DSR_report": {"type": "boolean"},
+        "tail_dependency_report": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "candidate_gate_perpetual_evidence": {
+      "type": "object",
+      "required": [
+        "data_status_report",
+        "provider_verification_report",
+        "cost_model_report",
+        "funding_ledger_report",
+        "tail_dependency_report",
+        "market_type",
+        "contract_type",
+        "perpetual_evidence_ready",
+        "cost_model_status",
+        "funding_payment_in_ledger",
+        "tail_dependency_pass"
+      ],
+      "properties": {
+        "data_status_report": {"type": ["string", "null"]},
+        "provider_verification_report": {"type": ["string", "null"]},
+        "cost_model_report": {"type": ["string", "null"]},
+        "funding_ledger_report": {"type": ["string", "null"]},
+        "tail_dependency_report": {"type": ["string", "null"]},
+        "market_type": {"type": "string"},
+        "contract_type": {"type": "string"},
+        "perpetual_evidence_ready": {"type": "boolean"},
+        "cost_model_status": {"type": "string"},
+        "funding_payment_in_ledger": {"type": "boolean"},
+        "tail_dependency_pass": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "candidate_gate_metric_checks": {
+      "type": "object",
+      "required": [
+        "event_pf_pass",
+        "ordinary_pf_diagnostic_only",
+        "signal_equity_diagnostic_only",
+        "target_active_return_diagnostic_only",
+        "walk_forward_pass",
+        "regime_pass",
+        "cost_stress_pass"
+      ],
+      "properties": {
+        "event_pf_pass": {"type": "boolean"},
+        "ordinary_pf_diagnostic_only": {"type": "boolean"},
+        "signal_equity_diagnostic_only": {"type": "boolean"},
+        "target_active_return_diagnostic_only": {"type": "boolean"},
+        "walk_forward_pass": {"type": "boolean"},
+        "regime_pass": {"type": "boolean"},
+        "cost_stress_pass": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "candidate_gate_thresholds": {
+      "type": "object",
+      "required": [
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate",
+        "cost_stress_required"
+      ],
+      "properties": {
+        "event_profit_factor": {"type": ["number", "null"]},
+        "walk_forward_pass_rate": {"type": ["number", "null"]},
+        "regime_pass_rate": {"type": ["number", "null"]},
+        "cost_stress_required": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "metric_failures": {
+      "type": "array",
+      "items": {
+        "enum": ["event_profit_factor", "walk_forward_pass_rate", "regime_pass_rate", "cost_stress"]
+      }
+    },
+    "best_available_candidate": {"$ref": "#/$defs/candidateSummary"},
+    "candidate_repair_plan": {
+      "type": "object",
+      "required": ["next_required_action", "stages", "best_available_candidate_strategy_id"],
+      "properties": {
+        "next_required_action": {
+          "enum": [
+            "complete_btc_perpetual_data_cost_evidence",
+            "repair_btc_candidate_metric_gate",
+            "materialize_btc_candidate_promotion_decision",
+            "none"
+          ]
+        },
+        "stages": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            {"$ref": "#/$defs/repairStage"},
+            {"$ref": "#/$defs/repairStage"},
+            {"$ref": "#/$defs/repairStage"}
+          ],
+          "items": false
+        },
+        "best_available_candidate_strategy_id": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "candidate_passed_internal_gate": {"type": "integer", "minimum": 0},
+    "paper_review_pending_allowed": {"type": "boolean"},
+    "paper_queue_status": {"enum": ["locked", "pending_review"]},
+    "live_status": {"const": "frozen"},
+    "status": {"enum": ["pass", "fail"]},
+    "diagnostic_warnings": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "fail"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "paper_review_pending_allowed": {"const": false},
+          "paper_queue_status": {"const": "locked"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "pass"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "candidate_passed_internal_gate": {"type": "integer", "minimum": 1},
+          "paper_review_pending_allowed": {"const": true},
+          "paper_queue_status": {"const": "pending_review"},
+          "blockers": {"maxItems": 0},
+          "candidate_gate_required_artifacts": {
+            "properties": {
+              "canonical_backtest_report": {"const": true},
+              "fills": {"const": true},
+              "ledger_pnl": {"const": true},
+              "funding_pnl": {"const": true},
+              "fee_pnl": {"const": true},
+              "slippage_pnl": {"const": true},
+              "cost_stress_report": {"const": true},
+              "walk_forward_report": {"const": true},
+              "regime_report": {"const": true},
+              "no_lookahead_report": {"const": true},
+              "PBO_DSR_report": {"const": true},
+              "tail_dependency_report": {"const": true}
+            }
+          },
+          "candidate_gate_perpetual_evidence": {
+            "properties": {
+              "perpetual_evidence_ready": {"const": true},
+              "cost_model_status": {"const": "pass"},
+              "funding_payment_in_ledger": {"const": true},
+              "tail_dependency_pass": {"const": true}
+            }
+          },
+          "candidate_gate_metric_checks": {
+            "properties": {
+              "event_pf_pass": {"const": true},
+              "ordinary_pf_diagnostic_only": {"const": true},
+              "signal_equity_diagnostic_only": {"const": true},
+              "target_active_return_diagnostic_only": {"const": true},
+              "walk_forward_pass": {"const": true},
+              "regime_pass": {"const": true},
+              "cost_stress_pass": {"const": true}
+            }
+          },
+          "metric_failures": {"maxItems": 0},
+          "candidate_repair_plan": {
+            "properties": {
+              "next_required_action": {"const": "none"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "candidateSummary": {
+      "type": "object",
+      "required": [
+        "strategy_id",
+        "source_run_dir",
+        "status",
+        "passed_metric_count",
+        "required_metric_count",
+        "failed_metrics",
+        "metrics",
+        "thresholds"
+      ],
+      "properties": {
+        "strategy_id": {"type": "string"},
+        "source_run_dir": {"type": "string"},
+        "status": {"type": "string"},
+        "passed_metric_count": {"type": "integer", "minimum": 0},
+        "required_metric_count": {"type": "integer", "minimum": 0},
+        "failed_metrics": {"type": "array", "items": {"type": "string"}},
+        "metrics": {
+          "type": "object",
+          "required": [
+            "event_profit_factor",
+            "walk_forward_pass_rate",
+            "regime_pass_rate",
+            "profit_factor",
+            "dsr",
+            "pbo",
+            "max_drawdown",
+            "trade_count",
+            "fill_count"
+          ],
+          "properties": {
+            "event_profit_factor": {"type": ["number", "null"]},
+            "walk_forward_pass_rate": {"type": ["number", "null"]},
+            "regime_pass_rate": {"type": ["number", "null"]},
+            "profit_factor": {"type": ["number", "null"]},
+            "dsr": {"type": ["number", "null"]},
+            "pbo": {"type": ["number", "null"]},
+            "max_drawdown": {"type": ["number", "null"]},
+            "trade_count": {"type": ["integer", "null"]},
+            "fill_count": {"type": ["integer", "null"]}
+          },
+          "additionalProperties": false
+        },
+        "thresholds": {
+          "type": "object",
+          "required": ["event_profit_factor", "walk_forward_pass_rate", "regime_pass_rate"],
+          "properties": {
+            "event_profit_factor": {"type": ["number", "null"]},
+            "walk_forward_pass_rate": {"type": ["number", "null"]},
+            "regime_pass_rate": {"type": ["number", "null"]}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "repairStage": {
+      "type": "object",
+      "required": ["name", "status", "action", "blockers"],
+      "properties": {
+        "name": {
+          "enum": ["perpetual_data_cost_evidence", "internal_metric_gate", "paper_review_queue"]
+        },
+        "status": {"enum": ["blocked", "complete", "ready"]},
+        "action": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

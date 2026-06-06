@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_portfolio_canonical_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Portfolio Canonical Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "portfolio_run_id",
+    "source_score_run_id",
+    "source_run_manifest",
+    "factor_evidence_pack",
+    "dependency_available",
+    "fallback_used",
+    "optimizer",
+    "constraints_hash",
+    "target_weights_path",
+    "target_positions_path",
+    "weight_summary",
+    "exposure_report_path",
+    "cost_stress_report_path",
+    "rebalance_drift_report_path",
+    "portfolio_fixture_event_ledger_report",
+    "portfolio_evidence_maturity",
+    "ledger_validation",
+    "event_ledger_status",
+    "required_evidence",
+    "blockers",
+    "promotion_ready",
+    "paper_queue_status",
+    "live_status"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_portfolio_canonical_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["missing", "partial", "complete"]},
+    "portfolio_run_id": {"type": "string"},
+    "source_score_run_id": {"type": "string"},
+    "source_run_manifest": {"type": ["string", "null"]},
+    "factor_evidence_pack": {"type": ["string", "null"]},
+    "dependency_available": {"type": "boolean"},
+    "fallback_used": {"type": "boolean"},
+    "optimizer": {"type": "string"},
+    "constraints_hash": {"type": "string"},
+    "target_weights_path": {"type": ["string", "null"]},
+    "target_positions_path": {"type": ["string", "null"]},
+    "weight_summary": {
+      "type": "object",
+      "required": [
+        "timestamp",
+        "symbol_count",
+        "gross_weight",
+        "net_weight",
+        "cash_weight_estimate",
+        "max_symbol_weight",
+        "top_symbols"
+      ],
+      "properties": {
+        "timestamp": {"type": "string"},
+        "symbol_count": {"type": "integer", "minimum": 0},
+        "gross_weight": {"type": "number"},
+        "net_weight": {"type": "number"},
+        "cash_weight_estimate": {"type": "number"},
+        "max_symbol_weight": {"type": "number"},
+        "top_symbols": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["symbol", "target_weight"],
+            "properties": {
+              "symbol": {"type": "string"},
+              "target_weight": {"type": "number"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "exposure_report_path": {"type": "string"},
+    "cost_stress_report_path": {"type": "string"},
+    "rebalance_drift_report_path": {"type": "string"},
+    "portfolio_fixture_event_ledger_report": {"type": ["string", "null"]},
+    "portfolio_evidence_maturity": {
+      "type": "object",
+      "required": [
+        "contract_ready",
+        "fixture_ledger_available",
+        "sample_ledger_available",
+        "production_ledger_available",
+        "event_ledger_validated",
+        "cost_stress_available",
+        "walk_forward_available",
+        "exposure_report_available",
+        "promotion_ready"
+      ],
+      "properties": {
+        "contract_ready": {"type": "boolean"},
+        "fixture_ledger_available": {"type": "boolean"},
+        "sample_ledger_available": {"type": "boolean"},
+        "production_ledger_available": {"const": false},
+        "event_ledger_validated": {"const": false},
+        "cost_stress_available": {"type": "boolean"},
+        "walk_forward_available": {"type": "boolean"},
+        "exposure_report_available": {"type": "boolean"},
+        "promotion_ready": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "ledger_validation": {
+      "type": "object",
+      "required": [
+        "source_type",
+        "fills_available",
+        "ledger_pnl_available",
+        "cost_model_available",
+        "cash_conservation_pass",
+        "position_conservation_pass",
+        "event_ledger_candidate",
+        "production_data_required",
+        "blockers"
+      ],
+      "properties": {
+        "source_type": {"enum": ["fixture", "sample", "production", "none"]},
+        "fills_available": {"type": "boolean"},
+        "ledger_pnl_available": {"type": "boolean"},
+        "cost_model_available": {"type": "boolean"},
+        "cash_conservation_pass": {"type": "boolean"},
+        "position_conservation_pass": {"type": "boolean"},
+        "event_ledger_candidate": {"const": false},
+        "production_data_required": {"const": true},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "event_ledger_status": {
+      "type": "object",
+      "required": ["status", "required", "blocker"],
+      "properties": {
+        "status": {"enum": ["missing", "partial", "pass", "fail"]},
+        "required": {"const": true},
+        "blocker": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "required_evidence": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "promotion_ready": {"const": false},
+    "paper_queue_status": {"const": "locked"},
+    "live_status": {"const": "frozen"}
+  },
+  "additionalProperties": false
+}

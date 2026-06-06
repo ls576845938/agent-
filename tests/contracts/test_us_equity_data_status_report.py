@@ -13,6 +13,12 @@ def test_us_equity_data_status_schema_files_exist() -> None:
     assert Path("schemas/us_equity_data_status_report.schema.json").exists()
     assert Path("schemas/us_equity_universe_manifest.schema.json").exists()
     assert Path("schemas/us_equity_corporate_action_report.schema.json").exists()
+    assert Path("schemas/us_equity_universe_snapshot_manifest.schema.json").exists()
+    assert Path("schemas/us_equity_corporate_action_status_report.schema.json").exists()
+    assert Path("schemas/us_equity_survivorship_audit_report.schema.json").exists()
+    assert Path("schemas/us_equity_provider_capability_matrix.schema.json").exists()
+    assert Path("schemas/us_equity_production_bundle_preflight_report.schema.json").exists()
+    assert Path("schemas/us_equity_provider_verification_report.schema.json").exists()
 
 
 def test_us_equity_data_status_uses_only_us_equity_manifests(tmp_path: Path) -> None:
@@ -43,6 +49,9 @@ def test_us_equity_data_status_uses_only_us_equity_manifests(tmp_path: Path) -> 
     data_status = payload["data_status_report"]
     universe_manifest = payload["universe_manifest"]
     corporate_action_report = payload["corporate_action_report"]
+    universe_snapshot_manifest = payload["universe_snapshot_manifest"]
+    corporate_action_status_report = payload["corporate_action_status_report"]
+    survivorship_audit_report = payload["survivorship_audit_report"]
 
     assert data_status["schema_version"] == "us_equity_data_status_report_v1"
     assert data_status["paper_queue_status"] == "locked"
@@ -53,6 +62,17 @@ def test_us_equity_data_status_uses_only_us_equity_manifests(tmp_path: Path) -> 
     assert data_status["quality_summary"]["min_coverage_pct"] == 100.0
     assert data_status["quality_summary"]["avg_quality_score"] == 99.0
     assert data_status["promotion_ready"] is False
+    assert data_status["promotion_clean"] is False
+    assert data_status["data_lineage_grade"]["value"] == "L1_sample_non_pit"
+    assert data_status["data_lineage_maturity"]["point_in_time_universe_confirmed"] is False
+    assert data_status["data_lineage_maturity"]["corporate_action_event_source_available"] is False
+    assert data_status["data_lineage_maturity"]["delisting_coverage_confirmed"] is False
+    assert data_status["data_lineage_maturity"]["identifier_mapping_available"] is False
+    assert data_status["selected_provider"] == "yfinance"
+    assert data_status["provider_verified_for_promotion"] is False
+    assert "universe_snapshot_manifest_derived_only" in data_status["blockers"]
+    assert "identifier_mapping_missing" in data_status["blockers"]
+    assert "survivorship_status_not_clean" in data_status["blockers"]
 
     assert universe_manifest["schema_version"] == "us_equity_universe_manifest_v1"
     assert universe_manifest["symbol_count"] == 2
@@ -61,6 +81,10 @@ def test_us_equity_data_status_uses_only_us_equity_manifests(tmp_path: Path) -> 
     assert corporate_action_report["schema_version"] == "us_equity_corporate_action_report_v1"
     assert corporate_action_report["status"] == "manifest_derived_only"
     assert "corporate_action_event_source_missing" in corporate_action_report["blockers"]
+    assert universe_snapshot_manifest["source_type"] == "derived_from_bars"
+    assert universe_snapshot_manifest["point_in_time_confirmed"] is False
+    assert corporate_action_status_report["corporate_action_event_source_available"] is False
+    assert survivorship_audit_report["survivorship_status"] == "not_clean"
 
 
 def test_us_equity_data_status_writer_persists_three_artifacts(tmp_path: Path) -> None:
@@ -80,11 +104,31 @@ def test_us_equity_data_status_writer_persists_three_artifacts(tmp_path: Path) -
     data_status = json.loads(Path(paths["data_status_report"]).read_text(encoding="utf-8"))
     universe_manifest = json.loads(Path(paths["universe_manifest"]).read_text(encoding="utf-8"))
     corporate_action_report = json.loads(Path(paths["corporate_action_report"]).read_text(encoding="utf-8"))
+    universe_snapshot_manifest = json.loads(Path(paths["universe_snapshot_manifest"]).read_text(encoding="utf-8"))
+    corporate_action_status_report = json.loads(Path(paths["corporate_action_status_report"]).read_text(encoding="utf-8"))
+    survivorship_audit_report = json.loads(Path(paths["survivorship_audit_report"]).read_text(encoding="utf-8"))
+    provider_capability_matrix = json.loads(Path(paths["provider_capability_matrix"]).read_text(encoding="utf-8"))
+    production_bundle_preflight_report = json.loads(
+        Path(paths["production_bundle_preflight_report"]).read_text(encoding="utf-8")
+    )
+    provider_verification_report = json.loads(Path(paths["provider_verification_report"]).read_text(encoding="utf-8"))
 
     assert data_status["universe_manifest_path"].endswith("universe_manifest.json")
     assert data_status["corporate_action_report_path"].endswith("corporate_action_report.json")
+    assert data_status["universe_snapshot_manifest_path"].endswith("universe_snapshot_manifest.json")
+    assert data_status["corporate_action_status_report_path"].endswith("corporate_action_status_report.json")
+    assert data_status["survivorship_audit_report_path"].endswith("survivorship_audit_report.json")
+    assert data_status["provider_capability_matrix_path"].endswith("provider_capability_matrix.json")
+    assert data_status["production_bundle_preflight_report_path"].endswith("production_bundle_preflight_report.json")
+    assert data_status["provider_verification_report_path"].endswith("provider_verification_report.json")
     assert universe_manifest["symbols"] == ["AAPL"]
     assert corporate_action_report["symbols"] == ["AAPL"]
+    assert universe_snapshot_manifest["symbol_count"] == 1
+    assert corporate_action_status_report["promotion_clean"] is False
+    assert survivorship_audit_report["promotion_clean"] is False
+    assert provider_capability_matrix["promotion_clean_provider_available"] is False
+    assert production_bundle_preflight_report["production_bundle_preflight_pass"] is False
+    assert provider_verification_report["promotion_clean"] is False
 
 
 def _write_manifest(
