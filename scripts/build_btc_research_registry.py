@@ -52,6 +52,12 @@ BTC_CANDIDATE_BOUNDED_RETEST_OUTCOME = Path(
 )
 BTC_NEXT_HYPOTHESIS_DECISION = Path("artifacts/btc_candidate_gate/latest/btc_next_hypothesis_decision_report.json")
 BTC_STRATEGY_FAMILY_ROADMAP = Path("artifacts/btc_candidate_gate/latest/btc_strategy_family_roadmap_report.json")
+BTC_INTRADAY_SHORT_CYCLE_ALPHA_PLAN = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_plan_report.json"
+)
+BTC_INTRADAY_SHORT_CYCLE_ALPHA_PROBE = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_probe_report.json"
+)
 BTC_TAIL_DEPENDENCY = Path("artifacts/btc_tail_dependency/latest/tail_dependency_report.json")
 BTC_COMPRESSION_ATTRIBUTION = Path(
     "artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/attribution_report.json"
@@ -116,6 +122,8 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
     bounded_retest_outcome = _candidate_bounded_retest_outcome_status(root)
     next_hypothesis = _next_hypothesis_decision_status(root)
     strategy_family = _strategy_family_roadmap_status(root)
+    intraday_short_cycle = _intraday_short_cycle_alpha_plan_status(root)
+    intraday_short_cycle_probe = _intraday_short_cycle_alpha_probe_status(root)
     tail = _read_json(root / BTC_TAIL_DEPENDENCY)
     attribution = _read_json(root / BTC_COMPRESSION_ATTRIBUTION)
     candidate_passed_internal_gate = int(gate.get("candidate_passed_internal_gate", 0) or 0)
@@ -137,6 +145,8 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
         bounded_retest_outcome.get("blockers", []),
         next_hypothesis.get("blockers", []),
         strategy_family.get("blockers", []),
+        intraday_short_cycle.get("blockers", []),
+        intraday_short_cycle_probe.get("blockers", []),
         tail.get("blockers", []),
         attribution.get("blockers", []),
     )
@@ -174,6 +184,8 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
             ),
             "latest_next_hypothesis_decision_report": _maybe_path(root, BTC_NEXT_HYPOTHESIS_DECISION),
             "latest_strategy_family_roadmap_report": _maybe_path(root, BTC_STRATEGY_FAMILY_ROADMAP),
+            "latest_intraday_short_cycle_alpha_plan_report": _maybe_path(root, BTC_INTRADAY_SHORT_CYCLE_ALPHA_PLAN),
+            "latest_intraday_short_cycle_alpha_probe_report": _maybe_path(root, BTC_INTRADAY_SHORT_CYCLE_ALPHA_PROBE),
             "latest_tail_dependency": _maybe_path(root, BTC_TAIL_DEPENDENCY),
             "latest_compression_attribution": _maybe_path(root, BTC_COMPRESSION_ATTRIBUTION),
             "manual_metadata_capture_status": manual_metadata,
@@ -185,6 +197,8 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
             "candidate_bounded_retest_outcome_status": bounded_retest_outcome,
             "next_hypothesis_decision_status": next_hypothesis,
             "strategy_family_roadmap_status": strategy_family,
+            "intraday_short_cycle_alpha_plan_status": intraday_short_cycle,
+            "intraday_short_cycle_alpha_probe_status": intraday_short_cycle_probe,
             "current_candidates": current_candidates,
             "attribution_only": [],
             "compression_boundary": {
@@ -432,6 +446,87 @@ def _strategy_family_roadmap_status(root: Path) -> dict[str, Any]:
         "promotion_allowed": bool(payload.get("promotion_allowed", False)),
         "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
         "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "blockers": _merge(blockers),
+    }
+
+
+def _intraday_short_cycle_alpha_plan_status(root: Path) -> dict[str, Any]:
+    path = root / BTC_INTRADAY_SHORT_CYCLE_ALPHA_PLAN
+    payload = _read_json(path)
+    selected = _mapping(payload.get("selected_research_style"))
+    prerequisites = _mapping(payload.get("data_prerequisites"))
+    intervals = _mapping(prerequisites.get("intervals"))
+    blockers = []
+    if not path.exists():
+        blockers.append("btc_intraday_short_cycle_alpha_plan_report_missing")
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "selected_style_id": str(selected.get("style_id", "")),
+        "primary_timeframes": _list_of_strings(selected.get("primary_timeframes")),
+        "intraday_research_distribution_allowed": bool(
+            payload.get("intraday_research_distribution_allowed", False)
+        ),
+        "short_cycle_probe_allowed": bool(payload.get("short_cycle_probe_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "sample_days": _float_or_none(prerequisites.get("sample_days")),
+        "min_sample_days": _float_or_none(prerequisites.get("min_sample_days")),
+        "interval_bar_counts": {
+            interval: int(_mapping(intervals.get(interval)).get("bar_count", 0) or 0)
+            for interval in ("5m", "15m")
+        },
+        "candidate_family_count": len(payload.get("candidate_families", []))
+        if isinstance(payload.get("candidate_families"), list)
+        else 0,
+        "blockers": _merge(blockers),
+    }
+
+
+def _intraday_short_cycle_alpha_probe_status(root: Path) -> dict[str, Any]:
+    path = root / BTC_INTRADAY_SHORT_CYCLE_ALPHA_PROBE
+    payload = _read_json(path)
+    best = _mapping(payload.get("best_family"))
+    cost = _mapping(payload.get("cost_context"))
+    data = _mapping(payload.get("data_context"))
+    intervals = _mapping(data.get("intervals"))
+    blockers = []
+    if not path.exists():
+        blockers.append("btc_intraday_short_cycle_alpha_probe_report_missing")
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "distribution_probe_completed": bool(payload.get("distribution_probe_completed", False)),
+        "alpha_distribution_observed": bool(payload.get("alpha_distribution_observed", False)),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "best_family_id": str(best.get("family_id", "")),
+        "best_family_status": str(best.get("status", "")),
+        "best_family_event_count": int(best.get("event_count", 0) or 0),
+        "best_horizon": best.get("best_horizon"),
+        "best_net_mean_bps": _float_or_none(best.get("best_net_mean_bps")),
+        "family_count": len(payload.get("family_results", []))
+        if isinstance(payload.get("family_results"), list)
+        else 0,
+        "round_trip_taker_cost_bps": _float_or_none(cost.get("round_trip_taker_cost_bps")),
+        "interval_row_counts": {
+            interval: int(_mapping(intervals.get(interval)).get("row_count", 0) or 0)
+            for interval in ("5m", "15m")
+        },
         "blockers": _merge(blockers),
     }
 

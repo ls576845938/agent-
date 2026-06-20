@@ -88,6 +88,8 @@ def test_global_research_registry_schema_has_required_constraints() -> None:
     assert "latest_candidate_bounded_retest_plan" in btc_schema["required"]
     assert "latest_next_hypothesis_decision_report" in btc_schema["required"]
     assert "latest_strategy_family_roadmap_report" in btc_schema["required"]
+    assert "latest_intraday_short_cycle_alpha_plan_report" in btc_schema["required"]
+    assert "latest_intraday_short_cycle_alpha_probe_report" in btc_schema["required"]
     assert "latest_compression_attribution" in btc_schema["required"]
     assert "data_status" in btc_schema["required"]
     assert "bundle_preflight_status" in btc_schema["required"]
@@ -125,6 +127,8 @@ def test_global_research_registry_schema_has_required_constraints() -> None:
     assert "candidate_bounded_retest_status" in btc_schema["required"]
     assert "next_hypothesis_decision_status" in btc_schema["required"]
     assert "strategy_family_roadmap_status" in btc_schema["required"]
+    assert "intraday_short_cycle_alpha_plan_status" in btc_schema["required"]
+    assert "intraday_short_cycle_alpha_probe_status" in btc_schema["required"]
     assert "attribution_only" in btc_schema["required"]
 
 
@@ -189,6 +193,12 @@ def test_build_global_registry_minimum_structure_matches_policy() -> None:
     assert registry["assets"]["btc"]["latest_strategy_family_roadmap_report"] == (
         "artifacts/btc_candidate_gate/latest/btc_strategy_family_roadmap_report.json"
     )
+    assert registry["assets"]["btc"]["latest_intraday_short_cycle_alpha_plan_report"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_plan_report.json"
+    )
+    assert registry["assets"]["btc"]["latest_intraday_short_cycle_alpha_probe_report"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_probe_report.json"
+    )
     metric_repair = registry["assets"]["btc"]["candidate_metric_repair_status"]
     assert metric_repair["status"] == "needs_metric_repair"
     assert metric_repair["promotion_allowed"] is False
@@ -246,6 +256,45 @@ def test_build_global_registry_minimum_structure_matches_policy() -> None:
     assert strategy_family["paper_review_pending_allowed"] is False
     assert strategy_family["paper_or_live_unlock_allowed"] is False
     assert "btc_strategy_family_selected_okx_bundle_history_too_short" in strategy_family["blockers"]
+    intraday_plan = registry["assets"]["btc"]["intraday_short_cycle_alpha_plan_status"]
+    assert intraday_plan["status"] == "research_distribution_ready_candidate_blocked"
+    assert intraday_plan["decision"] == "start_intraday_short_cycle_alpha_distribution"
+    assert intraday_plan["next_required_action"] == "run_research_only_intraday_short_cycle_distribution_probe"
+    assert intraday_plan["selected_style_id"] == "intraday_short_cycle_alpha_v0"
+    assert intraday_plan["primary_timeframes"] == ["5m", "15m"]
+    assert intraday_plan["intraday_research_distribution_allowed"] is True
+    assert intraday_plan["short_cycle_probe_allowed"] is True
+    assert intraday_plan["true_scalping_allowed"] is False
+    assert intraday_plan["candidate_generation_allowed"] is False
+    assert intraday_plan["strategy_skeleton_generation_allowed"] is False
+    assert intraday_plan["promotion_allowed"] is False
+    assert intraday_plan["paper_review_pending_allowed"] is False
+    assert intraday_plan["paper_or_live_unlock_allowed"] is False
+    assert intraday_plan["sample_days"] == pytest.approx(862.0)
+    assert intraday_plan["interval_bar_counts"] == {"5m": 248257, "15m": 82753}
+    assert intraday_plan["candidate_family_count"] == 4
+    assert "btc_intraday_candidate_generation_blocked_until_distribution_probe_passes" in intraday_plan["blockers"]
+    assert "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model" in intraday_plan["blockers"]
+    intraday_probe = registry["assets"]["btc"]["intraday_short_cycle_alpha_probe_status"]
+    assert intraday_probe["status"] == "probe_completed_no_distribution_edge"
+    assert intraday_probe["decision"] == "continue_intraday_alpha_research"
+    assert intraday_probe["next_required_action"] == "refine_short_cycle_event_definitions_before_candidate"
+    assert intraday_probe["distribution_probe_completed"] is True
+    assert intraday_probe["alpha_distribution_observed"] is False
+    assert intraday_probe["candidate_generation_allowed"] is False
+    assert intraday_probe["strategy_skeleton_generation_allowed"] is False
+    assert intraday_probe["promotion_allowed"] is False
+    assert intraday_probe["paper_review_pending_allowed"] is False
+    assert intraday_probe["paper_or_live_unlock_allowed"] is False
+    assert intraday_probe["true_scalping_allowed"] is False
+    assert intraday_probe["best_family_id"] == "orderflow_confirmed_momentum_intraday_v0"
+    assert intraday_probe["best_family_event_count"] == 5659
+    assert intraday_probe["best_horizon"] == "60m"
+    assert intraday_probe["best_net_mean_bps"] == pytest.approx(-8.103324)
+    assert intraday_probe["family_count"] == 4
+    assert intraday_probe["round_trip_taker_cost_bps"] == pytest.approx(10.0)
+    assert intraday_probe["interval_row_counts"] == {"5m": 248270, "15m": 82756}
+    assert "btc_intraday_probe_no_net_positive_distribution_edge" in intraday_probe["blockers"]
     assert objective["status"] == "complete"
     assert objective["goal_complete"] is True
     assert objective["incomplete_requirements"] == []

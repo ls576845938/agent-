@@ -39,6 +39,8 @@ BTC_OKX_HISTORY_BUNDLE_ID ?= btc_okx_swap_btcusdt_history_365d_v1
 	apply-and-validate-btc-paper-gate-manual-inputs \
 	check-btc-candidate-bounded-retest-readiness build-btc-candidate-bounded-retest-outcome \
 	build-btc-next-hypothesis-decision build-btc-strategy-family-roadmap \
+	build-btc-intraday-short-cycle-alpha-plan \
+	build-btc-intraday-short-cycle-alpha-probe \
 	build-btc-data-source-decision \
 	capture-btc-public-metadata build-global-registry build-btc-paper-readiness \
 	build-btc-paper-validation-start rebuild-btc-paper-readiness-chain \
@@ -84,6 +86,8 @@ build-global-registry:
 	$(PYTHON) scripts/build_btc_candidate_bounded_retest_outcome_report.py
 	$(PYTHON) scripts/build_btc_next_hypothesis_decision_report.py
 	$(PYTHON) scripts/build_btc_strategy_family_roadmap_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
 	$(PYTHON) scripts/build_btc_compression_expansion_attribution_bundle.py
 	$(PYTHON) scripts/build_btc_research_registry.py
 	$(PYTHON) scripts/build_global_research_registry.py
@@ -168,6 +172,8 @@ rebuild-btc-paper-readiness-chain:
 	$(PYTHON) scripts/build_btc_candidate_bounded_retest_outcome_report.py
 	$(PYTHON) scripts/build_btc_next_hypothesis_decision_report.py
 	$(PYTHON) scripts/build_btc_strategy_family_roadmap_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
 	$(PYTHON) scripts/build_btc_compression_expansion_attribution_bundle.py
 	$(PYTHON) scripts/build_btc_research_registry.py
 	$(PYTHON) scripts/build_global_research_registry.py
@@ -223,12 +229,14 @@ validate-btc-evidence:
 	$(PYTHON) scripts/build_btc_candidate_bounded_retest_outcome_report.py
 	$(PYTHON) scripts/build_btc_next_hypothesis_decision_report.py
 	$(PYTHON) scripts/build_btc_strategy_family_roadmap_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
 	$(PYTHON) scripts/build_btc_compression_expansion_attribution_bundle.py
 	$(PYTHON) scripts/build_btc_research_registry.py
 	$(PYTHON) scripts/build_global_research_registry.py
 	$(PYTHON) scripts/build_btc_paper_readiness_report.py
 	$(PYTHON) scripts/build_btc_paper_validation_start_report.py
-	$(PYTHON) -m pytest tests/contracts/test_btc_funding_rate_gap_report.py tests/contracts/test_btc_funding_rate_archive_repair_diagnostics.py tests/contracts/test_btc_funding_rate_manual_patch_validation.py tests/contracts/test_btc_data_status_report.py tests/contracts/test_btc_data_source_coverage_contract.py tests/contracts/test_btc_perpetual_data_source_decision_report.py tests/contracts/test_btc_cost_model_contract.py tests/contracts/test_btc_fee_tier_overlay_import.py tests/contracts/test_btc_manual_metadata_capture_operator_packet.py tests/contracts/test_btc_fold_regime_contract.py tests/contracts/test_btc_candidate_gate_requires_full_ledger.py tests/contracts/test_btc_candidate_metric_repair_report.py tests/contracts/test_btc_candidate_bounded_retest_plan.py tests/contracts/test_btc_candidate_bounded_retest_outcome_report.py tests/contracts/test_btc_next_hypothesis_decision_report.py tests/contracts/test_btc_strategy_family_roadmap_report.py tests/contracts/test_btc_compression_expansion_attribution_bundle.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_perpetual_provider_verification_report.py tests/contracts/test_btc_tail_dependency_report.py tests/contracts/test_btc_paper_readiness_report.py tests/contracts/test_btc_paper_validation_start_report.py tests/contracts/test_btc_paper_validation_runtime_preflight.py tests/research/test_btc_data_fold_regime_status_report.py tests/research/test_btc_fold_regime_contract_audit.py tests/research/test_compression_expansion_event_ledger_attribution_artifact.py -q
+	$(PYTHON) -m pytest tests/contracts/test_btc_funding_rate_gap_report.py tests/contracts/test_btc_funding_rate_archive_repair_diagnostics.py tests/contracts/test_btc_funding_rate_manual_patch_validation.py tests/contracts/test_btc_data_status_report.py tests/contracts/test_btc_data_source_coverage_contract.py tests/contracts/test_btc_perpetual_data_source_decision_report.py tests/contracts/test_btc_cost_model_contract.py tests/contracts/test_btc_fee_tier_overlay_import.py tests/contracts/test_btc_manual_metadata_capture_operator_packet.py tests/contracts/test_btc_fold_regime_contract.py tests/contracts/test_btc_candidate_gate_requires_full_ledger.py tests/contracts/test_btc_candidate_metric_repair_report.py tests/contracts/test_btc_candidate_bounded_retest_plan.py tests/contracts/test_btc_candidate_bounded_retest_outcome_report.py tests/contracts/test_btc_next_hypothesis_decision_report.py tests/contracts/test_btc_strategy_family_roadmap_report.py tests/contracts/test_btc_intraday_short_cycle_alpha_plan_report.py tests/contracts/test_btc_intraday_short_cycle_alpha_probe_report.py tests/contracts/test_btc_compression_expansion_attribution_bundle.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_perpetual_provider_verification_report.py tests/contracts/test_btc_tail_dependency_report.py tests/contracts/test_btc_paper_readiness_report.py tests/contracts/test_btc_paper_validation_start_report.py tests/contracts/test_btc_paper_validation_runtime_preflight.py tests/research/test_btc_data_fold_regime_status_report.py tests/research/test_btc_fold_regime_contract_audit.py tests/research/test_compression_expansion_event_ledger_attribution_artifact.py -q
 
 validate-btc-data-cost-repair:
 	$(PYTHON) scripts/build_btc_perpetual_bundle_preflight_report.py
@@ -248,6 +256,8 @@ validate-btc-data-cost-repair:
 	$(PYTHON) scripts/build_btc_candidate_bounded_retest_outcome_report.py
 	$(PYTHON) scripts/build_btc_next_hypothesis_decision_report.py
 	$(PYTHON) scripts/build_btc_strategy_family_roadmap_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
 	$(PYTHON) scripts/build_btc_research_registry.py
 	$(PYTHON) scripts/build_global_research_registry.py
 	$(PYTHON) -m pytest tests/contracts/test_btc_funding_rate_gap_report.py tests/contracts/test_btc_funding_rate_archive_repair_diagnostics.py tests/contracts/test_btc_funding_rate_manual_patch_validation.py tests/contracts/test_btc_funding_info_overlay_policy.py tests/contracts/test_btc_exchange_info_overlay_policy.py tests/contracts/test_btc_perpetual_data_bundle_manifest.py tests/contracts/test_btc_binance_usdm_public_collector_boundaries.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_perpetual_provider_verification_report.py tests/contracts/test_btc_funding_payment_ledger_replay.py tests/contracts/test_btc_mark_premium_exchange_rules_integration.py tests/contracts/test_btc_tail_dependency_report.py tests/contracts/test_btc_candidate_gate_requires_full_ledger.py tests/contracts/test_btc_compression_archive_recommended_boundary.py -q
@@ -268,6 +278,18 @@ build-btc-strategy-family-roadmap:
 	$(PYTHON) scripts/build_btc_strategy_family_roadmap_report.py
 	$(PYTHON) -m pytest tests/contracts/test_btc_strategy_family_roadmap_report.py -q
 
+build-btc-intraday-short-cycle-alpha-plan:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
+	$(PYTHON) scripts/build_btc_research_registry.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_alpha_plan_report.py tests/research/test_btc_research_registry.py -q
+
+build-btc-intraday-short-cycle-alpha-probe:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
+	$(PYTHON) scripts/build_btc_research_registry.py
+	$(PYTHON) scripts/build_global_research_registry.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_alpha_probe_report.py tests/research/test_btc_research_registry.py tests/contracts/test_global_research_registry_schema.py -q
+
 build-btc-data-source-decision:
 	$(PYTHON) scripts/build_btc_perpetual_data_source_decision_report.py
 	$(PYTHON) -m pytest tests/contracts/test_btc_perpetual_data_source_decision_report.py -q
@@ -285,6 +307,8 @@ validate-btc-public-data-bundle:
 	$(PYTHON) scripts/build_btc_cost_model_report.py
 	$(PYTHON) scripts/build_btc_tail_dependency_report.py
 	$(PYTHON) scripts/build_btc_candidate_gate_audit.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
 	$(PYTHON) scripts/build_btc_research_registry.py
 	$(PYTHON) scripts/build_global_research_registry.py
 	$(PYTHON) -m pytest tests/contracts/test_btc_funding_rate_gap_report.py tests/contracts/test_btc_funding_rate_archive_repair_diagnostics.py tests/contracts/test_btc_funding_rate_manual_patch_validation.py tests/contracts/test_btc_funding_info_overlay_policy.py tests/contracts/test_btc_exchange_info_overlay_policy.py tests/contracts/test_btc_manual_metadata_import.py tests/contracts/test_btc_public_data_landing_mode.py tests/contracts/test_btc_public_metadata_capture_attempt_report.py tests/contracts/test_btc_manual_metadata_capture_operator_packet.py tests/contracts/test_btc_objective_completion_audit_report.py tests/contracts/test_btc_perpetual_data_bundle_manifest.py tests/contracts/test_btc_binance_usdm_public_collector_boundaries.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_perpetual_bundle_preflight_report.py tests/contracts/test_btc_perpetual_provider_verification_report.py tests/contracts/test_btc_manual_metadata_capture_readiness_report.py tests/contracts/test_btc_funding_payment_ledger_replay.py tests/contracts/test_btc_public_data_landing_no_strategy_side_effect.py tests/contracts/test_btc_candidate_gate_requires_full_ledger.py -q

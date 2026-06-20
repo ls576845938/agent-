@@ -470,6 +470,8 @@
             "latest_candidate_bounded_retest_plan",
             "latest_next_hypothesis_decision_report",
             "latest_strategy_family_roadmap_report",
+            "latest_intraday_short_cycle_alpha_plan_report",
+            "latest_intraday_short_cycle_alpha_probe_report",
             "latest_tail_dependency",
             "latest_compression_attribution",
             "data_status",
@@ -487,6 +489,8 @@
             "candidate_bounded_retest_status",
             "next_hypothesis_decision_status",
             "strategy_family_roadmap_status",
+            "intraday_short_cycle_alpha_plan_status",
+            "intraday_short_cycle_alpha_probe_status",
             "tail_dependency_status",
             "current_candidates",
             "attribution_only",
@@ -550,6 +554,12 @@
               "type": ["string", "null"]
             },
             "latest_strategy_family_roadmap_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_alpha_plan_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_alpha_probe_report": {
               "type": ["string", "null"]
             },
             "latest_tail_dependency": {
@@ -1119,6 +1129,118 @@
                 "promotion_allowed": {"const": false},
                 "paper_review_pending_allowed": {"const": false},
                 "paper_or_live_unlock_allowed": {"const": false},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_alpha_plan_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "selected_style_id",
+                "primary_timeframes",
+                "intraday_research_distribution_allowed",
+                "short_cycle_probe_allowed",
+                "true_scalping_allowed",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "sample_days",
+                "min_sample_days",
+                "interval_bar_counts",
+                "candidate_family_count",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "selected_style_id": {"type": "string"},
+                "primary_timeframes": {"type": "array", "items": {"type": "string"}},
+                "intraday_research_distribution_allowed": {"type": "boolean"},
+                "short_cycle_probe_allowed": {"type": "boolean"},
+                "true_scalping_allowed": {"const": false},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "sample_days": {"type": ["number", "null"], "minimum": 0},
+                "min_sample_days": {"type": ["number", "null"], "minimum": 0},
+                "interval_bar_counts": {
+                  "type": "object",
+                  "required": ["5m", "15m"],
+                  "properties": {
+                    "5m": {"type": "integer", "minimum": 0},
+                    "15m": {"type": "integer", "minimum": 0}
+                  },
+                  "additionalProperties": false
+                },
+                "candidate_family_count": {"type": "integer", "minimum": 0},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_alpha_probe_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "distribution_probe_completed",
+                "alpha_distribution_observed",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "best_family_id",
+                "best_family_status",
+                "best_family_event_count",
+                "best_horizon",
+                "best_net_mean_bps",
+                "family_count",
+                "round_trip_taker_cost_bps",
+                "interval_row_counts",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "distribution_probe_completed": {"type": "boolean"},
+                "alpha_distribution_observed": {"type": "boolean"},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "best_family_id": {"type": "string"},
+                "best_family_status": {"type": "string"},
+                "best_family_event_count": {"type": "integer", "minimum": 0},
+                "best_horizon": {"type": ["string", "null"]},
+                "best_net_mean_bps": {"type": ["number", "null"]},
+                "family_count": {"type": "integer", "minimum": 0},
+                "round_trip_taker_cost_bps": {"type": ["number", "null"], "minimum": 0},
+                "interval_row_counts": {
+                  "type": "object",
+                  "required": ["5m", "15m"],
+                  "properties": {
+                    "5m": {"type": "integer", "minimum": 0},
+                    "15m": {"type": "integer", "minimum": 0}
+                  },
+                  "additionalProperties": false
+                },
                 "blockers": {"type": "array", "items": {"type": "string"}}
               },
               "additionalProperties": false
