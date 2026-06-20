@@ -24,6 +24,7 @@ READ_ONLY_BUILDERS = [
     Path("scripts/build_btc_compression_expansion_attribution_bundle.py"),
     Path("scripts/build_btc_intraday_short_cycle_alpha_plan_report.py"),
     Path("scripts/build_btc_intraday_short_cycle_alpha_probe_report.py"),
+    Path("scripts/build_btc_intraday_short_cycle_alpha_refinement_report.py"),
     Path("scripts/build_btc_research_registry.py"),
     Path("scripts/check_artifact_lineage_health.py"),
 ]

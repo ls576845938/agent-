@@ -82,6 +82,9 @@ def test_btc_research_registry_exposes_manual_metadata_readiness() -> None:
     assert btc["latest_intraday_short_cycle_alpha_probe_report"] == (
         "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_probe_report.json"
     )
+    assert btc["latest_intraday_short_cycle_alpha_refinement_report"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_refinement_report.json"
+    )
     metric_repair = btc["candidate_metric_repair_status"]
     assert metric_repair["status"] == "needs_metric_repair"
     assert metric_repair["promotion_allowed"] is False
@@ -196,6 +199,29 @@ def test_btc_research_registry_exposes_manual_metadata_readiness() -> None:
     assert intraday_probe["round_trip_taker_cost_bps"] == pytest.approx(10.0)
     assert intraday_probe["interval_row_counts"] == {"5m": 248270, "15m": 82756}
     assert "btc_intraday_probe_no_net_positive_distribution_edge" in intraday_probe["blockers"]
+    intraday_refinement = btc["intraday_short_cycle_alpha_refinement_status"]
+    assert intraday_refinement["status"] == "refinement_completed_event_ledger_backtest_ready_candidate_blocked"
+    assert intraday_refinement["decision"] == "design_research_only_event_ledger_backtest_for_refined_alpha"
+    assert intraday_refinement["next_required_action"] == "build_event_ledger_backtest_for_best_refined_variant"
+    assert intraday_refinement["refinement_completed"] is True
+    assert intraday_refinement["robust_alpha_distribution_observed"] is True
+    assert intraday_refinement["candidate_generation_allowed"] is False
+    assert intraday_refinement["strategy_skeleton_generation_allowed"] is False
+    assert intraday_refinement["promotion_allowed"] is False
+    assert intraday_refinement["paper_review_pending_allowed"] is False
+    assert intraday_refinement["paper_or_live_unlock_allowed"] is False
+    assert intraday_refinement["true_scalping_allowed"] is False
+    assert intraday_refinement["best_variant_id"] == "pullback_reclaim_24_dd100_4htrend100_v1"
+    assert intraday_refinement["best_family_id"] == "pullback_reclaim_intraday_v0"
+    assert intraday_refinement["best_variant_event_count"] == 558
+    assert intraday_refinement["best_horizon"] == "60m"
+    assert intraday_refinement["best_net_mean_bps"] == pytest.approx(5.754492)
+    assert intraday_refinement["positive_net_fold_count"] == 4
+    assert intraday_refinement["variant_count"] == 8
+    assert intraday_refinement["round_trip_taker_cost_bps"] == pytest.approx(10.0)
+    assert "btc_intraday_refinement_candidate_generation_blocked_until_event_ledger_backtest" in (
+        intraday_refinement["blockers"]
+    )
     objective = btc["objective_completion_status"]
     assert objective["status"] == "complete"
     assert objective["goal_complete"] is True

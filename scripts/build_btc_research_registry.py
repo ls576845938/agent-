@@ -58,6 +58,9 @@ BTC_INTRADAY_SHORT_CYCLE_ALPHA_PLAN = Path(
 BTC_INTRADAY_SHORT_CYCLE_ALPHA_PROBE = Path(
     "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_probe_report.json"
 )
+BTC_INTRADAY_SHORT_CYCLE_ALPHA_REFINEMENT = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_refinement_report.json"
+)
 BTC_TAIL_DEPENDENCY = Path("artifacts/btc_tail_dependency/latest/tail_dependency_report.json")
 BTC_COMPRESSION_ATTRIBUTION = Path(
     "artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/attribution_report.json"
@@ -124,6 +127,7 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
     strategy_family = _strategy_family_roadmap_status(root)
     intraday_short_cycle = _intraday_short_cycle_alpha_plan_status(root)
     intraday_short_cycle_probe = _intraday_short_cycle_alpha_probe_status(root)
+    intraday_short_cycle_refinement = _intraday_short_cycle_alpha_refinement_status(root)
     tail = _read_json(root / BTC_TAIL_DEPENDENCY)
     attribution = _read_json(root / BTC_COMPRESSION_ATTRIBUTION)
     candidate_passed_internal_gate = int(gate.get("candidate_passed_internal_gate", 0) or 0)
@@ -147,6 +151,7 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
         strategy_family.get("blockers", []),
         intraday_short_cycle.get("blockers", []),
         intraday_short_cycle_probe.get("blockers", []),
+        intraday_short_cycle_refinement.get("blockers", []),
         tail.get("blockers", []),
         attribution.get("blockers", []),
     )
@@ -186,6 +191,9 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
             "latest_strategy_family_roadmap_report": _maybe_path(root, BTC_STRATEGY_FAMILY_ROADMAP),
             "latest_intraday_short_cycle_alpha_plan_report": _maybe_path(root, BTC_INTRADAY_SHORT_CYCLE_ALPHA_PLAN),
             "latest_intraday_short_cycle_alpha_probe_report": _maybe_path(root, BTC_INTRADAY_SHORT_CYCLE_ALPHA_PROBE),
+            "latest_intraday_short_cycle_alpha_refinement_report": _maybe_path(
+                root, BTC_INTRADAY_SHORT_CYCLE_ALPHA_REFINEMENT
+            ),
             "latest_tail_dependency": _maybe_path(root, BTC_TAIL_DEPENDENCY),
             "latest_compression_attribution": _maybe_path(root, BTC_COMPRESSION_ATTRIBUTION),
             "manual_metadata_capture_status": manual_metadata,
@@ -199,6 +207,7 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
             "strategy_family_roadmap_status": strategy_family,
             "intraday_short_cycle_alpha_plan_status": intraday_short_cycle,
             "intraday_short_cycle_alpha_probe_status": intraday_short_cycle_probe,
+            "intraday_short_cycle_alpha_refinement_status": intraday_short_cycle_refinement,
             "current_candidates": current_candidates,
             "attribution_only": [],
             "compression_boundary": {
@@ -527,6 +536,42 @@ def _intraday_short_cycle_alpha_probe_status(root: Path) -> dict[str, Any]:
             interval: int(_mapping(intervals.get(interval)).get("row_count", 0) or 0)
             for interval in ("5m", "15m")
         },
+        "blockers": _merge(blockers),
+    }
+
+
+def _intraday_short_cycle_alpha_refinement_status(root: Path) -> dict[str, Any]:
+    path = root / BTC_INTRADAY_SHORT_CYCLE_ALPHA_REFINEMENT
+    payload = _read_json(path)
+    best = _mapping(payload.get("best_variant"))
+    cost = _mapping(payload.get("cost_context"))
+    params = _mapping(payload.get("refinement_parameters"))
+    blockers = []
+    if not path.exists():
+        blockers.append("btc_intraday_short_cycle_alpha_refinement_report_missing")
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "refinement_completed": bool(payload.get("refinement_completed", False)),
+        "robust_alpha_distribution_observed": bool(payload.get("robust_alpha_distribution_observed", False)),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "best_variant_id": str(best.get("variant_id", "")),
+        "best_family_id": str(best.get("family_id", "")),
+        "best_variant_status": str(best.get("status", "")),
+        "best_variant_event_count": int(best.get("event_count", 0) or 0),
+        "best_horizon": best.get("best_horizon"),
+        "best_net_mean_bps": _float_or_none(best.get("best_net_mean_bps")),
+        "positive_net_fold_count": int(best.get("positive_net_fold_count", 0) or 0),
+        "variant_count": int(params.get("variant_count", 0) or 0),
+        "round_trip_taker_cost_bps": _float_or_none(cost.get("round_trip_taker_cost_bps")),
         "blockers": _merge(blockers),
     }
 
