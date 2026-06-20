@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT BTC 日内短周期 Alpha 阶段汇报</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fa;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #607080;
+      --line: #d8e0ea;
+      --header: #172033;
+      --ok: #126b45;
+      --ok-bg: #eaf7f0;
+      --warn: #8a5a00;
+      --warn-bg: #fff6dd;
+      --bad: #9b1c1c;
+      --bad-bg: #fff0f0;
+      --info: #1f5f99;
+      --info-bg: #eef6ff;
+      --code: #edf2f7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.58;
+    }
+
+    header {
+      background: var(--header);
+      color: #fff;
+      padding: 28px 20px 24px;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px 16px 48px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      line-height: 1.24;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 19px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 16px 0 8px;
+      font-size: 15px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 10px;
+    }
+
+    section {
+      margin: 0 0 14px;
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      margin: 8px 0 2px;
+      border-collapse: collapse;
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef2f7;
+      font-weight: 700;
+    }
+
+    ul {
+      margin: 0 0 6px;
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 5px 0;
+    }
+
+    code {
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: var(--code);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+      overflow-wrap: anywhere;
+    }
+
+    .meta {
+      color: #d8e2ef;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+      margin: 10px 0 4px;
+    }
+
+    .metric {
+      min-height: 82px;
+      padding: 11px;
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 5px;
+      font-size: 18px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+
+    .callout {
+      padding: 12px 13px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      margin: 10px 0 12px;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .ok {
+      color: var(--ok);
+    }
+
+    .warn {
+      color: var(--warn);
+    }
+
+    .bad {
+      color: var(--bad);
+    }
+
+    .info-box {
+      background: var(--info-bg);
+      border-left: 4px solid var(--info);
+    }
+
+    .warn-box {
+      background: var(--warn-bg);
+      border-left: 4px solid var(--warn);
+    }
+
+    .bad-box {
+      background: var(--bad-bg);
+      border-left: 4px solid var(--bad);
+    }
+
+    .ok-box {
+      background: var(--ok-bg);
+      border-left: 4px solid var(--ok);
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>QuantStation VNEXT BTC 日内短周期 Alpha 阶段汇报</h1>
+  <div class="meta">报告日期：2026-06-20 UTC ｜ 范围：BTC intraday short-cycle alpha research ｜ 状态：研究阶段，交易路径锁定</div>
+</header>
+
+<main>
+  <section>
+    <h2>1. 总判断</h2>
+    <div class="callout warn-box">
+      <strong>BTC 系统现在不应直接进入真正剥头皮或交易开发。</strong>
+      当前正确路径是先把“日内短周期 alpha”做成可审计的事件账本回测，再用成本压力、walk-forward、regime 和尾部依赖检查决定是否允许进入候选策略阶段。
+    </div>
+    <div class="grid">
+      <div class="metric"><strong>当前阶段</strong><span class="warn">Research-only</span></div>
+      <div class="metric"><strong>下一步动作</strong><span>事件账本回测</span></div>
+      <div class="metric"><strong>Paper / Live</strong><span class="bad">Locked</span></div>
+      <div class="metric"><strong>True scalping</strong><span class="bad">Blocked</span></div>
+    </div>
+    <p>架构含义：策略层只能继续产出研究信号和事件定义，不能接 broker、不能发单、不能调用交易所私有接口。所有交易化判断必须等填充账本 PnL、成本、滑点、manifest 和推广门禁全部补齐。</p>
+  </section>
+
+  <section>
+    <h2>2. BTC 与美股系统分工</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>系统</th>
+          <th>目标交易风格</th>
+          <th>当前开发重点</th>
+          <th>不允许跳过的门禁</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>美股系统</td>
+          <td>日间量化交易</td>
+          <td>点时数据、回测可复现、ledger PnL、组合和风险门禁</td>
+          <td>数据正确性、无幸存者偏差、成本和滑点验证</td>
+        </tr>
+        <tr>
+          <td>BTC 系统</td>
+          <td>日内短周期，先做分钟到小时级别，不做亚分钟剥头皮</td>
+          <td>5m 触发、15m/4h 上下文、事件账本回测、成本压力、walk-forward</td>
+          <td>事件账本、fill ledger PnL、regime、成本压力、manifest</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>3. 当前证据链</h2>
+    <div class="grid">
+      <div class="metric"><strong>数据状态</strong><span class="warn">partial</span></div>
+      <div class="metric"><strong>主要阻塞</strong><span>btc_regime_contract_not_pass</span></div>
+      <div class="metric"><strong>成本模型</strong><span class="ok">pass</span></div>
+      <div class="metric"><strong>候选策略数</strong><span>0</span></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Interval</th>
+          <th>Rows</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Missing</th>
+          <th>Manifest</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>5m</td>
+          <td>248257</td>
+          <td>2024-01-01T00:00:00+00:00</td>
+          <td>2026-05-12T00:00:00+00:00</td>
+          <td>0</td>
+          <td class="ok">pass</td>
+        </tr>
+        <tr>
+          <td>15m</td>
+          <td>82753</td>
+          <td>2024-01-01T00:00:00+00:00</td>
+          <td>2026-05-12T00:00:00+00:00</td>
+          <td>0</td>
+          <td class="ok">pass</td>
+        </tr>
+        <tr>
+          <td>1h</td>
+          <td>20689</td>
+          <td>2024-01-01T00:00:00+00:00</td>
+          <td>2026-05-12T00:00:00+00:00</td>
+          <td>0</td>
+          <td class="ok">pass</td>
+        </tr>
+        <tr>
+          <td>4h</td>
+          <td>5172</td>
+          <td>2024-01-01T00:00:00+00:00</td>
+          <td>2026-05-11T20:00:00+00:00</td>
+          <td>0</td>
+          <td class="ok">pass</td>
+        </tr>
+        <tr>
+          <td>1d</td>
+          <td>862</td>
+          <td>2024-01-01T00:00:00+00:00</td>
+          <td>2026-05-11T00:00:00+00:00</td>
+          <td>0</td>
+          <td class="ok">pass</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="small">当前 alpha 研究使用 <code>data/market_data.sqlite</code> 中的 <code>sqlite_binance_spot_klines</code> 作为连续历史研究覆盖层，不代表执行交易所已选择 Binance，也不解锁 paper/live。OKX 公共数据 bundle 可作为证据源之一，但当前报告的分布探针仍以连续 5m/15m 历史为主。</p>
+  </section>
+
+  <section>
+    <h2>4. 已完成的日内短周期 Alpha 工作</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>步骤</th>
+          <th>Artifact</th>
+          <th>结论</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>研究计划</td>
+          <td><code>btc_intraday_short_cycle_alpha_plan_report.json</code></td>
+          <td>允许启动 5m/15m research-only distribution probe；候选、paper、live、true scalping 全部锁定。</td>
+        </tr>
+        <tr>
+          <td>分布探针</td>
+          <td><code>btc_intraday_short_cycle_alpha_probe_report.json</code></td>
+          <td>样本足够的事件家族没有通过 10 bps taker round-trip 后的净收益分布；需要细化事件定义。</td>
+        </tr>
+        <tr>
+          <td>有界细化</td>
+          <td><code>btc_intraday_short_cycle_alpha_refinement_report.json</code></td>
+          <td>发现一个可以进入事件账本回测设计的研究型变体，但仍不允许生成策略候选。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>5. 初始探针结果</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Family</th>
+          <th>Events</th>
+          <th>Best horizon</th>
+          <th>Best net mean bps</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>volatility_compression_reclaim_intraday_v0</code></td>
+          <td>2722</td>
+          <td>30m</td>
+          <td class="bad">-9.681450</td>
+          <td>distribution sample ready, no net edge</td>
+        </tr>
+        <tr>
+          <td><code>liquidation_exhaustion_reclaim_intraday_v0</code></td>
+          <td>4</td>
+          <td>30m</td>
+          <td class="bad">-8.159597</td>
+          <td>sample too sparse</td>
+        </tr>
+        <tr>
+          <td><code>orderflow_confirmed_momentum_intraday_v0</code></td>
+          <td>5659</td>
+          <td>60m</td>
+          <td class="bad">-8.103324</td>
+          <td>distribution sample ready, no net edge</td>
+        </tr>
+        <tr>
+          <td><code>funding_premium_reversion_intraday_v0</code></td>
+          <td>0</td>
+          <td>N/A</td>
+          <td>N/A</td>
+          <td>missing intraday funding / premium context</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout bad-box">
+      <strong>解释</strong>
+      初始探针没有给出可交易 alpha。它只证明短周期事件有研究样本，不能证明策略有效，更不能证明可以剥头皮。
+    </div>
+  </section>
+
+  <section>
+    <h2>6. 有界细化后的最佳研究变体</h2>
+    <div class="grid">
+      <div class="metric"><strong>Variant</strong><span>pullback_reclaim_24_dd100_4htrend100_v1</span></div>
+      <div class="metric"><strong>Family</strong><span>pullback_reclaim_intraday_v0</span></div>
+      <div class="metric"><strong>Events</strong><span>558</span></div>
+      <div class="metric"><strong>Best horizon</strong><span>60m</span></div>
+      <div class="metric"><strong>Mean net</strong><span class="ok">+5.754492 bps</span></div>
+      <div class="metric"><strong>Median net</strong><span class="warn">-7.475294 bps</span></div>
+      <div class="metric"><strong>Net hit rate</strong><span>47.3118%</span></div>
+      <div class="metric"><strong>Positive folds</strong><span>4 / 6</span></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Fold</th>
+          <th>Events</th>
+          <th>Mean net bps</th>
+          <th>Net positive hit rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>0</td><td>150</td><td class="ok">0.056794</td><td>46.6667%</td></tr>
+        <tr><td>1</td><td>85</td><td class="ok">12.756545</td><td>54.1176%</td></tr>
+        <tr><td>2</td><td>111</td><td class="ok">34.547263</td><td>60.3604%</td></tr>
+        <tr><td>3</td><td>61</td><td class="bad">-19.257730</td><td>36.0656%</td></tr>
+        <tr><td>4</td><td>50</td><td class="ok">2.925823</td><td>46.0000%</td></tr>
+        <tr><td>5</td><td>101</td><td class="bad">-6.813217</td><td>35.6436%</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn-box">
+      <strong>关键解读</strong>
+      这个变体只是“有研究价值”。均值为正但中位数仍为负，胜率也不到 50%，说明收益可能依赖少数右尾事件。下一步必须做事件账本回测、尾部依赖、滑点压力和分段稳健性验证。
+    </div>
+  </section>
+
+  <section>
+    <h2>7. 当前硬锁</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>控制项</th>
+          <th>状态</th>
+          <th>原因</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Candidate generation</td>
+          <td class="bad">false</td>
+          <td>尚未通过事件账本回测、walk-forward、regime、成本压力。</td>
+        </tr>
+        <tr>
+          <td>Strategy skeleton generation</td>
+          <td class="bad">false</td>
+          <td>不能在研究分布阶段生成可交易策略骨架。</td>
+        </tr>
+        <tr>
+          <td>Paper review pending</td>
+          <td class="bad">false</td>
+          <td>没有 fill ledger PnL 和 promotion manifest。</td>
+        </tr>
+        <tr>
+          <td>Paper / live unlock</td>
+          <td class="bad">false</td>
+          <td>交易路径仍冻结。</td>
+        </tr>
+        <tr>
+          <td>Broker / private / order endpoints</td>
+          <td class="bad">false</td>
+          <td>策略研究层不得直连 broker 或交易所私有接口。</td>
+        </tr>
+        <tr>
+          <td>True scalping</td>
+          <td class="bad">false</td>
+          <td>缺少 1m、tick、order book、spread、latency、queue model 证据。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>8. 下一张工程票</h2>
+    <div class="callout info-box">
+      <strong>任务：为 <code>pullback_reclaim_24_dd100_4htrend100_v1</code> 建 research-only event ledger backtest。</strong>
+      目标不是提高收益，而是确认这条 alpha 是否经得起账本、成本、滑点、时间分段和市场状态的审计。
+    </div>
+    <ul>
+      <li>定义事件对象：entry timestamp、trigger state、context state、label horizon、禁止使用未来函数。</li>
+      <li>生成模拟 OrderIntent，但不接 broker，不进入 paper runtime。</li>
+      <li>所有 PnL 从 fill ledger 推导，不能直接从 bar return 记账。</li>
+      <li>记录 experiment manifest：data_version、strategy_version、params、cost_model、slippage_model、commit_hash。</li>
+      <li>做 cost stress：至少覆盖 10 bps 基准、加倍 taker 成本、保守滑点、错过成交和延迟进入。</li>
+      <li>做 walk-forward 和 regime 分段：要求确认不是单一时期或少数尾部事件驱动。</li>
+      <li>输出 promotion gate 报告，只允许给出“继续研究 / 拒绝 / 回到事件定义”的结论。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>9. 验证记录</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>make build-btc-intraday-short-cycle-alpha-refinement</code></td>
+          <td class="ok">25 passed</td>
+        </tr>
+        <tr>
+          <td><code>make validate-btc-evidence</code></td>
+          <td class="ok">238 passed</td>
+        </tr>
+        <tr>
+          <td><code>python3 -m pytest tests/contracts/test_global_research_registry_schema.py tests/contracts/test_global_registry_builder_boundaries.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q</code></td>
+          <td class="ok">14 passed</td>
+        </tr>
+        <tr>
+          <td><code>git diff --check</code></td>
+          <td class="ok">clean at previous code commit; this HTML report will be checked before commit</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>10. Git 与数据库边界</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>项目</th>
+          <th>状态</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>最新代码提交</td>
+          <td><code>da3edaf Add BTC intraday alpha refinement screen</code></td>
+          <td>已推送到 GitHub。</td>
+        </tr>
+        <tr>
+          <td>源 artifact 运行 commit</td>
+          <td><code>cbe4b54</code></td>
+          <td>artifact 在 refinement 提交前生成；代码随后以 <code>da3edaf</code> 固化。</td>
+        </tr>
+        <tr>
+          <td>GitHub 与本地代码</td>
+          <td class="ok">tracked files synced</td>
+          <td><code>main</code> 与 <code>origin/main</code> 对齐后生成本报告。</td>
+        </tr>
+        <tr>
+          <td>SQLite 数据库和 artifacts</td>
+          <td class="warn">not in Git</td>
+          <td><code>data/market_data.sqlite</code>、本地 generated artifacts 等属于本机状态，不会随 GitHub 同步。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>11. 结论</h2>
+    <div class="callout ok-box">
+      <strong>可以继续，但只能沿研究管线继续。</strong>
+      BTC 日内方向已经从“是否有剥头皮策略”推进到“是否存在可审计的日内短周期 alpha”。目前唯一值得推进的是 <code>pullback_reclaim_24_dd100_4htrend100_v1</code> 的事件账本回测。除非该回测通过成本压力、walk-forward、regime 和尾部依赖审计，否则不得进入候选策略、paper 或 live。
+    </div>
+  </section>
+</main>
+</body>
+</html>
