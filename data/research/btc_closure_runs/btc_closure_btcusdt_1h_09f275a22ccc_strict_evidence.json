@@ -1,0 +1,532 @@
+{
+  "candidate": {
+    "audit": {
+      "data_fingerprint": "fp-1h",
+      "data_manifest_path": "",
+      "data_root": "data",
+      "data_version": "dv-1h",
+      "event_run_id": "btc_closure_btcusdt_1h_09f275a22ccc_event",
+      "manifest_root": "data/manifests",
+      "run_id_prefix": "btc_closure_btcusdt_1h_09f275a22ccc",
+      "strategy_version": "donchian_breakout:registry_signal_replay_v1"
+    },
+    "candidate_count": 0,
+    "cost_stress_summary": {
+      "ledger_consistency_pct": 100.0,
+      "scenario_count": 0,
+      "survival_rate_pct": 100.0
+    },
+    "cpcv_summary": {
+      "fold_sharpes": [
+        1.2,
+        1.1,
+        1.3
+      ],
+      "path_count": 6,
+      "status": "completed",
+      "trial_count": 4
+    },
+    "event_backtest_summary": {
+      "annual_return_pct": 10.0,
+      "annual_volatility_pct": 15.0,
+      "calmar_ratio": 2.0,
+      "max_drawdown_pct": -4.0,
+      "profit_factor": 1.2,
+      "sharpe_ratio": 1.2,
+      "sortino_ratio": 1.5,
+      "total_return_pct": 3.0,
+      "trade_count": 12,
+      "win_rate_pct": 55.0
+    },
+    "event_ledger_metrics": {},
+    "event_ledger_validation": {},
+    "holding_period": {},
+    "metrics": {},
+    "optimizer_rank": null,
+    "overfit_gap": 0.1,
+    "parameters": {
+      "window": 20
+    },
+    "rank": 1,
+    "recommendations": [],
+    "research_metadata": {},
+    "score": 2.0,
+    "statistical_validation_blockers": [],
+    "strategy_id": "donchian_breakout",
+    "train": {
+      "sharpe_ratio": 1.0
+    },
+    "turnover": {},
+    "validation": {
+      "max_drawdown_pct": -4.0,
+      "profit_factor": 1.2,
+      "sharpe_ratio": 2.0,
+      "total_return_pct": 3.0,
+      "trade_count": 12
+    },
+    "validation_statistics": {
+      "available_components": {
+        "cost_before_after": false,
+        "cv_summary": true,
+        "deflated_sharpe_ratio": true,
+        "lookahead_controls": true,
+        "multiple_testing": true,
+        "net_return_distribution": true,
+        "pbo": true,
+        "trial_counting": true
+      },
+      "candidate_id": "donchian_breakout|window=20",
+      "cost_before_after": {
+        "baseline_multiplier": null,
+        "cost_drag_return": null,
+        "cost_drag_sharpe": null,
+        "gross_return": null,
+        "gross_sharpe": null,
+        "level_count": 0,
+        "mode": "unavailable",
+        "net_return": 3.0,
+        "net_sharpe": 2.0,
+        "stress_return_delta": null,
+        "surviving_levels": 0,
+        "worst_multiplier": null,
+        "worst_return": null,
+        "worst_sharpe": null
+      },
+      "cv_summary": {
+        "embargo_recorded": true,
+        "embargo_steps": 1,
+        "embargoed": true,
+        "fold_count": 3,
+        "mean_oos_sharpe": 1.2,
+        "median_oos_sharpe": 1.2,
+        "method": "cpcv",
+        "pass_rate": null,
+        "path_count": 6,
+        "purge_recorded": true,
+        "purge_steps": 1,
+        "purged": true,
+        "test_window_count": 2,
+        "train_window_count": 4
+      },
+      "deflated_sharpe_ratio": {
+        "benchmark_sharpe": 1.28528,
+        "dsr": 1.0,
+        "excess_kurtosis": -1.2,
+        "observed_sharpe": 2.0,
+        "passed": true,
+        "psr": 1.0,
+        "returns_count": 5,
+        "skew": 0.0,
+        "trial_count": 3
+      },
+      "lookahead_controls": {
+        "guard": "passed_next_bar_execution",
+        "passed": true,
+        "recorded": true,
+        "violations": []
+      },
+      "multiple_testing": {
+        "bonferroni_alpha": 0.025,
+        "dsr_p_value": 0.0,
+        "effective_trial_count": 3,
+        "familywise_alpha": 0.05,
+        "independent_trial_count": 2,
+        "mode": "familywise_error_control",
+        "passed": true,
+        "raw_p_value": 0.0,
+        "sidak_alpha": 0.025321
+      },
+      "net_return_distribution": {
+        "count": 5,
+        "max": 0.013,
+        "mean": 0.011,
+        "median": 0.011,
+        "min": 0.009,
+        "negative_share": 0.0,
+        "p05": 0.0092,
+        "p25": 0.01,
+        "p75": 0.012,
+        "p95": 0.0128,
+        "std": 0.001581
+      },
+      "pbo": {
+        "group_count": 2,
+        "logit_mean": 1.098612,
+        "logit_median": 1.098612,
+        "mode": "grouped_trials",
+        "overfit_group_count": 0,
+        "passed": true,
+        "pbo": 0.0
+      },
+      "promotion_gate_contract": {
+        "checks": {
+          "cpcv_available": true,
+          "cv_method_allowed": true,
+          "dsr_available": true,
+          "dsr_passed": true,
+          "lookahead_guard_passed": true,
+          "lookahead_guard_recorded": true,
+          "multi_path_validation": true,
+          "multiple_testing_complete": true,
+          "multiple_testing_passed": true,
+          "pbo_available": true,
+          "pbo_passed": true,
+          "purge_embargo_recorded": true,
+          "purged_or_embargoed": true,
+          "trial_count_sufficient": true
+        },
+        "observed": {
+          "cv_method": "cpcv",
+          "dsr": 1.0,
+          "effective_trial_count": 3,
+          "embargo_recorded": true,
+          "embargoed": true,
+          "independent_trial_count": 2,
+          "lookahead_guard_recorded": true,
+          "lookahead_violations": [],
+          "multiple_testing_mode": "familywise_error_control",
+          "pbo": 0.0,
+          "purge_recorded": true,
+          "purged": true,
+          "validation_paths": 6
+        },
+        "required": {
+          "allowed_cv_methods": [
+            "cpcv",
+            "purged_kfold",
+            "embargoed_walk_forward"
+          ],
+          "familywise_alpha": 0.05,
+          "lookahead_guard_recorded": true,
+          "max_pbo": 0.5,
+          "min_dsr": 0.1,
+          "min_effective_trial_count": 2,
+          "min_independent_trial_count": 2,
+          "min_validation_paths": 2,
+          "required_cv_method": "cpcv"
+        },
+        "status": "passed"
+      },
+      "status": "partial",
+      "trial_counting": {
+        "cost_level_count": 0,
+        "cv_fold_count": 3,
+        "cv_path_count": 6,
+        "declared_trial_count": 2,
+        "effective_trial_count": 3,
+        "independent_trial_count": 2,
+        "param_grid_trial_count": 2,
+        "pbo_split_count": 2,
+        "trial_sharpe_count": 3
+      }
+    },
+    "walk_forward_summary": {
+      "fold_pass_rate_pct": 100.0,
+      "ledger_consistency_pct": 100.0,
+      "pass_rate_pct": 100.0,
+      "regime_pass_rate_pct": 100.0
+    }
+  },
+  "candidate_key": "donchian_breakout|window=20",
+  "cost_stress": {
+    "audit": {
+      "data_version": "dv-1h",
+      "missing_manifest_scenarios": [],
+      "run_id_prefix": "btc_closure_btcusdt_1h_09f275a22ccc",
+      "scenario_manifests_complete": false,
+      "strategy_version": "donchian_breakout:registry_signal_replay_v1"
+    },
+    "engine": "event_driven",
+    "ledger_consistency_pct": 100.0,
+    "missing_manifest_scenarios": [],
+    "scenario_count": 0,
+    "scenario_manifests_complete": false,
+    "scenarios": [],
+    "survival_rate_pct": 100.0
+  },
+  "cpcv": {
+    "cv_method": "cpcv",
+    "embargoed": true,
+    "fold_drawdowns": [
+      -0.03,
+      -0.04,
+      -0.02
+    ],
+    "fold_sharpes": [
+      1.2,
+      1.1,
+      1.3
+    ],
+    "lookahead_guard": "passed_next_bar_execution",
+    "n_splits": 4,
+    "path_count": 6,
+    "pbo_trials": [
+      {
+        "config_id": "a",
+        "split_id": "s1",
+        "test_sharpe": 1.1,
+        "train_sharpe": 1.2
+      },
+      {
+        "config_id": "b",
+        "split_id": "s1",
+        "test_sharpe": 0.6,
+        "train_sharpe": 0.8
+      },
+      {
+        "config_id": "a",
+        "split_id": "s2",
+        "test_sharpe": 1.0,
+        "train_sharpe": 1.1
+      },
+      {
+        "config_id": "b",
+        "split_id": "s2",
+        "test_sharpe": 0.5,
+        "train_sharpe": 0.7
+      }
+    ],
+    "purged": true,
+    "status": "completed",
+    "test_splits": 2,
+    "trial_count": 4,
+    "validation_method": "cpcv"
+  },
+  "event_backtest": {
+    "audit": {
+      "data_version": "dv-1h",
+      "ledger_artifact_path": "",
+      "manifest_id": "",
+      "manifest_path": "",
+      "run_id": "btc_closure_btcusdt_1h_09f275a22ccc_event",
+      "strategy_version": "donchian_breakout:registry_signal_replay_v1"
+    },
+    "diagnostics": {
+      "engine": "event_driven",
+      "ledger_equity_consistent": true,
+      "pnl_source": "ledger_fills"
+    },
+    "summary": {
+      "annual_return_pct": 10.0,
+      "annual_volatility_pct": 15.0,
+      "calmar_ratio": 2.0,
+      "max_drawdown_pct": -4.0,
+      "profit_factor": 1.2,
+      "sharpe_ratio": 1.2,
+      "sortino_ratio": 1.5,
+      "total_return_pct": 3.0,
+      "trade_count": 12,
+      "win_rate_pct": 55.0
+    }
+  },
+  "generated_at": "2026-06-06T05:55:25.778187+00:00",
+  "live_enabled": false,
+  "scope": "btc_closure_candidate_strict_validation",
+  "selected_request": {
+    "asset_class": "crypto",
+    "capital": 100000.0,
+    "commission_rate": 0.0004,
+    "cost_aware_filter": true,
+    "data_db_path": "",
+    "data_root": "data",
+    "data_version": "dv-1h",
+    "end": "2024-02-01 00:00:00+00:00",
+    "event_ledger_screen": true,
+    "event_ledger_screen_top_n": 1,
+    "interval": "1h",
+    "leverage": 1.0,
+    "long_only": true,
+    "manifest_root": "data/manifests",
+    "max_annual_turnover_pct": 1500.0,
+    "min_cash_buffer_pct": 0.15,
+    "min_holding_bars": 24,
+    "min_trade_notional": 25.0,
+    "position_basis": "equity",
+    "rebalance_buffer_pct": 0.05,
+    "run_id": "btc_closure_btcusdt_1h_09f275a22ccc_event",
+    "run_id_prefix": "btc_closure_btcusdt_1h_09f275a22ccc",
+    "slippage": 4.0,
+    "source": "sqlite",
+    "start": "2024-01-01 00:00:00+00:00",
+    "strategy_id": "donchian_breakout",
+    "strategy_params": {
+      "window": 20
+    },
+    "strategy_version": "donchian_breakout:registry_signal_replay_v1",
+    "symbol": "BTCUSDT",
+    "target_weight": 0.85
+  },
+  "statistical_validation_blockers": [],
+  "status": "research_only",
+  "validation_statistics": {
+    "available_components": {
+      "cost_before_after": false,
+      "cv_summary": true,
+      "deflated_sharpe_ratio": true,
+      "lookahead_controls": true,
+      "multiple_testing": true,
+      "net_return_distribution": true,
+      "pbo": true,
+      "trial_counting": true
+    },
+    "candidate_id": "donchian_breakout|window=20",
+    "cost_before_after": {
+      "baseline_multiplier": null,
+      "cost_drag_return": null,
+      "cost_drag_sharpe": null,
+      "gross_return": null,
+      "gross_sharpe": null,
+      "level_count": 0,
+      "mode": "unavailable",
+      "net_return": 3.0,
+      "net_sharpe": 2.0,
+      "stress_return_delta": null,
+      "surviving_levels": 0,
+      "worst_multiplier": null,
+      "worst_return": null,
+      "worst_sharpe": null
+    },
+    "cv_summary": {
+      "embargo_recorded": true,
+      "embargo_steps": 1,
+      "embargoed": true,
+      "fold_count": 3,
+      "mean_oos_sharpe": 1.2,
+      "median_oos_sharpe": 1.2,
+      "method": "cpcv",
+      "pass_rate": null,
+      "path_count": 6,
+      "purge_recorded": true,
+      "purge_steps": 1,
+      "purged": true,
+      "test_window_count": 2,
+      "train_window_count": 4
+    },
+    "deflated_sharpe_ratio": {
+      "benchmark_sharpe": 1.28528,
+      "dsr": 1.0,
+      "excess_kurtosis": -1.2,
+      "observed_sharpe": 2.0,
+      "passed": true,
+      "psr": 1.0,
+      "returns_count": 5,
+      "skew": 0.0,
+      "trial_count": 3
+    },
+    "lookahead_controls": {
+      "guard": "passed_next_bar_execution",
+      "passed": true,
+      "recorded": true,
+      "violations": []
+    },
+    "multiple_testing": {
+      "bonferroni_alpha": 0.025,
+      "dsr_p_value": 0.0,
+      "effective_trial_count": 3,
+      "familywise_alpha": 0.05,
+      "independent_trial_count": 2,
+      "mode": "familywise_error_control",
+      "passed": true,
+      "raw_p_value": 0.0,
+      "sidak_alpha": 0.025321
+    },
+    "net_return_distribution": {
+      "count": 5,
+      "max": 0.013,
+      "mean": 0.011,
+      "median": 0.011,
+      "min": 0.009,
+      "negative_share": 0.0,
+      "p05": 0.0092,
+      "p25": 0.01,
+      "p75": 0.012,
+      "p95": 0.0128,
+      "std": 0.001581
+    },
+    "pbo": {
+      "group_count": 2,
+      "logit_mean": 1.098612,
+      "logit_median": 1.098612,
+      "mode": "grouped_trials",
+      "overfit_group_count": 0,
+      "passed": true,
+      "pbo": 0.0
+    },
+    "promotion_gate_contract": {
+      "checks": {
+        "cpcv_available": true,
+        "cv_method_allowed": true,
+        "dsr_available": true,
+        "dsr_passed": true,
+        "lookahead_guard_passed": true,
+        "lookahead_guard_recorded": true,
+        "multi_path_validation": true,
+        "multiple_testing_complete": true,
+        "multiple_testing_passed": true,
+        "pbo_available": true,
+        "pbo_passed": true,
+        "purge_embargo_recorded": true,
+        "purged_or_embargoed": true,
+        "trial_count_sufficient": true
+      },
+      "observed": {
+        "cv_method": "cpcv",
+        "dsr": 1.0,
+        "effective_trial_count": 3,
+        "embargo_recorded": true,
+        "embargoed": true,
+        "independent_trial_count": 2,
+        "lookahead_guard_recorded": true,
+        "lookahead_violations": [],
+        "multiple_testing_mode": "familywise_error_control",
+        "pbo": 0.0,
+        "purge_recorded": true,
+        "purged": true,
+        "validation_paths": 6
+      },
+      "required": {
+        "allowed_cv_methods": [
+          "cpcv",
+          "purged_kfold",
+          "embargoed_walk_forward"
+        ],
+        "familywise_alpha": 0.05,
+        "lookahead_guard_recorded": true,
+        "max_pbo": 0.5,
+        "min_dsr": 0.1,
+        "min_effective_trial_count": 2,
+        "min_independent_trial_count": 2,
+        "min_validation_paths": 2,
+        "required_cv_method": "cpcv"
+      },
+      "status": "passed"
+    },
+    "status": "partial",
+    "trial_counting": {
+      "cost_level_count": 0,
+      "cv_fold_count": 3,
+      "cv_path_count": 6,
+      "declared_trial_count": 2,
+      "effective_trial_count": 3,
+      "independent_trial_count": 2,
+      "param_grid_trial_count": 2,
+      "pbo_split_count": 2,
+      "trial_sharpe_count": 3
+    }
+  },
+  "walk_forward": {
+    "audit": {
+      "data_version": "dv-1h",
+      "run_id_prefix": "btc_closure_btcusdt_1h_09f275a22ccc",
+      "strategy_version": "donchian_breakout:registry_signal_replay_v1"
+    },
+    "recommendations": [],
+    "stability": {
+      "fold_pass_rate_pct": 100.0,
+      "ledger_consistency_pct": 100.0,
+      "pass_rate_pct": 100.0,
+      "regime_pass_rate_pct": 100.0
+    },
+    "status": "completed"
+  }
+}

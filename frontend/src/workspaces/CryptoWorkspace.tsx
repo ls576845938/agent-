@@ -4,8 +4,9 @@ import type {ChartSeriesPayload, CryptoResampleResponse, DataSyncRunResponse, Da
 import {buildCryptoResamplePlan, buildPortfolioRequest, buildSingleRequest, collectCryptoBlockers, createRunViewModel, humanizeError, summarizeCryptoCoverage, summarizeMetrics, cryptoIntervalOrder} from '../lib/view-model';
 import {buildDateBoundary, diagnosticsList} from '../lib/utils';
 import {apiGet, apiPost} from '../lib/api';
+import {researchApi} from '../lib/research-api';
 import {taskApi} from '../lib/task-api';
-import type {CostStressResponse, CryptoClosureResponse, DataQualityResponse, DrawdownPeriod, FormState, MvpStep, OptimizationHint, PeriodReturn, PortfolioOptimizationResponse, PromotionGateResponse, ReportSection, StrategyOptimizationResponse, WalkForwardResponse} from '../lib/shared-types';
+import type {BtcScalpingResearchBacktestReport, CostStressResponse, CryptoClosureResponse, DataQualityResponse, DrawdownPeriod, FormState, MvpStep, OptimizationHint, PeriodReturn, PortfolioOptimizationResponse, PromotionGateResponse, ReportSection, StrategyOptimizationResponse, WalkForwardResponse} from '../lib/shared-types';
 import type {TaskResponse} from '../lib/shared-types';
 import {defaultOptimizationFramework} from '../lib/shared-types';
 
@@ -78,6 +79,9 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   const [cryptoClosure, setCryptoClosure] = useState<CryptoClosureResponse | null>(null);
   const [cryptoClosureLoading, setCryptoClosureLoading] = useState(false);
   const [cryptoClosureMessage, setCryptoClosureMessage] = useState('');
+  const [scalpingResearch, setScalpingResearch] = useState<BtcScalpingResearchBacktestReport | null>(null);
+  const [scalpingResearchLoading, setScalpingResearchLoading] = useState(false);
+  const [scalpingResearchMessage, setScalpingResearchMessage] = useState('');
   const [taskQueue, setTaskQueue] = useState<TaskResponse[]>([]);
   const [mvpLoading, setMvpLoading] = useState(false);
   const [mvpMessage, setMvpMessage] = useState('');
@@ -110,6 +114,7 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
   useEffect(() => {
     void refreshDataPanel(defaultDataForm);
     void refreshTaskQueue();
+    void refreshScalpingResearch();
   }, []);
 
   const metricCards = useMemo(() => summarizeMetrics(run?.summary), [run]);
@@ -159,6 +164,22 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
       setTaskQueue(tasks);
     } catch {
       // best effort
+    }
+  };
+
+  const refreshScalpingResearch = async () => {
+    setScalpingResearchLoading(true);
+    setScalpingResearchMessage('');
+    try {
+      const report = await researchApi.getBtcScalpingBacktest();
+      setScalpingResearch(report);
+      const track = report.recommended_research_track === 'five_minute_drift_guarded_intraday' ? '5m drift-guarded' : report.recommended_research_track === 'one_minute_proxy_scalping' ? '1m proxy' : 'none';
+      setScalpingResearchMessage(`BTC 研究回测已加载：${track}`);
+    } catch (e) {
+      setScalpingResearch(null);
+      setScalpingResearchMessage(humanizeError(e));
+    } finally {
+      setScalpingResearchLoading(false);
     }
   };
 
@@ -686,9 +707,13 @@ export default function CryptoWorkspace({health, strategies}: CryptoWorkspacePro
               cryptoClosureTask={cryptoClosureTask}
               cryptoClosureLoading={cryptoClosureLoading}
               cryptoClosureMessage={cryptoClosureMessage}
+              scalpingResearch={scalpingResearch}
+              scalpingResearchLoading={scalpingResearchLoading}
+              scalpingResearchMessage={scalpingResearchMessage}
               optimizationFramework={optimizationFramework}
               optimizedStrategyParams={optimizedStrategyParams}
               onCryptoClosure={handleCryptoClosure}
+              onRefreshScalpingResearch={refreshScalpingResearch}
               onOptimize={handlePriorityOptimization}
               onCostStress={handleCostStress}
               onWalkForward={handleWalkForward}

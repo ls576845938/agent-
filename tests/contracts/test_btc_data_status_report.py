@@ -3,15 +3,42 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import jsonschema
+
 from scripts.build_btc_data_status_report import (
     build_btc_data_status_report,
     write_btc_data_status_report,
 )
 from scripts.build_global_research_registry import build_global_registry
 
+SCHEMA = Path("schemas/btc_data_status_report.schema.json")
+REPORT = Path("artifacts/btc_data_status/latest/btc_data_status_report.json")
+
 
 def test_btc_data_status_report_schema_file_exists() -> None:
-    assert Path("schemas/btc_data_status_report.schema.json").exists()
+    assert SCHEMA.exists()
+
+
+def test_current_btc_data_status_passes_from_drift_guarded_regime_source() -> None:
+    payload = json.loads(REPORT.read_text(encoding="utf-8"))
+    schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+
+    jsonschema.validate(payload, schema)
+    assert payload["status"] == "pass"
+    assert payload["source_run_dir"] == (
+        "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger"
+    )
+    assert payload["fold_contract_status"] == "pass"
+    assert payload["regime_contract_status"] == "pass"
+    assert payload["regime_gate_pass_rate"] == 0.8
+    assert payload["blockers"] == []
+    assert payload["data_quality"]["blockers"] == []
+    intervals = {row["interval"]: row for row in payload["intervals"]}
+    assert intervals["1m"]["status"] == "pass"
+    assert intervals["1m"]["manifest_status"] == "pass"
+    assert intervals["1m"]["data_version"].startswith("qs-sqlite-BTCUSDT-1m-")
+    assert payload["paper_queue_status"] == "locked"
+    assert payload["live_status"] == "frozen"
 
 
 def test_btc_data_status_report_summarizes_fold_regime_contract(tmp_path: Path) -> None:

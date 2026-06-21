@@ -1,0 +1,81 @@
+{
+  "artifacts": [
+    {
+      "artifact_type": "json",
+      "metadata": {
+        "data_version": "qs-sqlite-BTCUSDT-1h-f4d64c0f431d",
+        "decision": "fail",
+        "manifest_id": "cb60004e18a617c9f092f799",
+        "next_stage": "blocked"
+      },
+      "name": "promotion_manifest",
+      "path": "/home/lishuonewbing/agent\u6d4b\u8bd5/reports/research_gates/cb60004e18a617c9f092f799.json"
+    }
+  ],
+  "completed_at": "2026-05-11T23:32:17.605233+00:00",
+  "created_at": "2026-05-11T23:32:17.605233+00:00",
+  "error": null,
+  "experiment_id": "exp_9f38108f0ee54f21",
+  "metrics": {
+    "annual_return_pct": 10.1382,
+    "annual_volatility_pct": 13.4802,
+    "calmar_ratio": 0.6653,
+    "data_coverage_pct": 99.9951,
+    "data_quality_score": 99.9951,
+    "gate_fail_count": 1,
+    "gate_pass_count": 3,
+    "gate_warn_count": 4,
+    "max_drawdown_pct": -15.2382,
+    "profit_factor": 1.0521,
+    "promotion_score": 10.0,
+    "sharpe_ratio": 0.7837,
+    "sortino_ratio": 0.7936,
+    "total_return_pct": 25.202,
+    "trade_count": 6297,
+    "win_rate_pct": 49.7461
+  },
+  "run_id": "gate_cb60004e18a617c9f092f799",
+  "spec": {
+    "asset_class": "crypto",
+    "bar_size": "1h",
+    "data_vendor": "sqlite",
+    "data_version": "qs-sqlite-BTCUSDT-1h-f4d64c0f431d",
+    "dataset_run_id": "",
+    "end": "2026-04-29T13:00:00+00:00",
+    "experiment_name": "btcusdt_closure_gate_codex_bounded",
+    "feature_version": "",
+    "model_id": "",
+    "notes": "Codex bounded BTC long-sample closure verification run.",
+    "parameters": {
+      "capital": 100000.0,
+      "commission_rate": 0.0004,
+      "leverage": 1.0,
+      "mode": "single",
+      "position_basis": "equity",
+      "skip_deep_checks": false,
+      "slippage": 4.0,
+      "strategy_params": {
+        "fast_window": 20,
+        "signal_window": 9,
+        "slow_window": 60
+      },
+      "weights": []
+    },
+    "promotion_decision": "fail",
+    "promotion_manifest_id": "cb60004e18a617c9f092f799",
+    "promotion_stage": "blocked",
+    "run_type": "research_promotion_gate",
+    "start": "2024-01-01T00:00:00+00:00",
+    "strategy_id": "trend_macd",
+    "strategy_version": "strategy_4df9358c7eeea573",
+    "symbols": [
+      "BTCUSDT"
+    ],
+    "tags": [
+      "promotion_gate",
+      "single",
+      "fail"
+    ]
+  },
+  "status": "completed"
+}

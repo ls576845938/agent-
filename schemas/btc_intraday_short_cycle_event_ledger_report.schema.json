@@ -1,0 +1,345 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_intraday_short_cycle_event_ledger_report.schema.json",
+  "title": "BTC Intraday Short-Cycle Event Ledger Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "run_id",
+    "strategy_id",
+    "variant_id",
+    "family_id",
+    "asset",
+    "symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "event_ledger_completed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "true_scalping_allowed",
+    "run_dir",
+    "artifacts",
+    "data_context",
+    "cost_context",
+    "event_definition",
+    "metrics",
+    "gate",
+    "failed_metrics",
+    "cost_stress",
+    "walk_forward",
+    "regime",
+    "tail_dependency",
+    "promotion_gate",
+    "safety",
+    "manifest",
+    "guardrails",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_intraday_short_cycle_event_ledger_report_v1"},
+    "generated_at": {"type": "string"},
+    "run_id": {"type": "string"},
+    "strategy_id": {
+      "enum": [
+        "btc_pullback_reclaim_intraday_v1",
+        "btc_pullback_reclaim_intraday_high_vol_non_expansion_repair_v1",
+        "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1"
+      ]
+    },
+    "variant_id": {
+      "enum": [
+        "pullback_reclaim_24_dd100_4htrend100_v1",
+        "high_vol_non_expansion_repair_v1",
+        "high_vol_non_expansion_trend_guard_repair_v1"
+      ]
+    },
+    "family_id": {"const": "pullback_reclaim_intraday_v0"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "scope": {"const": "research_only_event_ledger_no_candidate_no_paper_no_live_no_true_scalping"},
+    "status": {
+      "enum": [
+        "event_ledger_completed_research_only",
+        "event_ledger_passed_internal_research_gate_candidate_still_locked"
+      ]
+    },
+    "decision": {"enum": ["continue_research", "reject", "return_to_event_definition"]},
+    "next_required_action": {"type": "string"},
+    "event_ledger_completed": {"const": true},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "source_refinement_report": {"type": ["string", "null"]},
+    "source_event_definition_repair_report": {"type": ["string", "null"]},
+    "run_dir": {"type": "string"},
+    "artifacts": {
+      "type": "object",
+      "required": [
+        "canonical_backtest_report",
+        "event_objects",
+        "trade_ledger",
+        "cost_stress_report",
+        "walk_forward_report",
+        "regime_report",
+        "tail_dependency_report",
+        "promotion_decision",
+        "run_manifest"
+      ],
+      "properties": {
+        "canonical_backtest_report": {"type": "string"},
+        "event_objects": {"type": "string"},
+        "trade_ledger": {"type": "string"},
+        "cost_stress_report": {"type": "string"},
+        "walk_forward_report": {"type": "string"},
+        "regime_report": {"type": "string"},
+        "tail_dependency_report": {"type": "string"},
+        "promotion_decision": {"type": "string"},
+        "run_manifest": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "data_context": {
+      "type": "object",
+      "required": ["data_status", "data_blockers", "data_version", "timeframe", "context_timeframe", "data_range"],
+      "properties": {
+        "data_status": {"type": "string"},
+        "data_blockers": {"type": "array", "items": {"type": "string"}},
+        "data_version": {"type": "string"},
+        "timeframe": {"const": "5m"},
+        "context_timeframe": {"const": "15m"},
+        "data_range": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "cost_context": {
+      "type": "object",
+      "required": [
+        "cost_model_status",
+        "base_taker_round_trip_bps",
+        "stress_scenario_count",
+        "required_scenarios_present"
+      ],
+      "properties": {
+        "cost_model_status": {"type": "string"},
+        "base_taker_round_trip_bps": {"const": 10.0},
+        "stress_scenario_count": {"type": "integer", "minimum": 5},
+        "required_scenarios_present": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "event_definition": {
+      "type": "object",
+      "required": [
+        "entry_timestamp_field",
+        "trigger_state_field",
+        "context_state_field",
+        "label_horizon",
+        "event_count",
+        "entry_filters",
+        "future_label_used_for_signal",
+        "lookahead_used_for_signal",
+        "simulated_order_intent_only"
+      ],
+      "properties": {
+        "entry_timestamp_field": {"const": "entry_timestamp"},
+        "trigger_state_field": {"const": "trigger_state"},
+        "context_state_field": {"const": "context_state"},
+        "label_horizon": {"const": "60m"},
+        "event_count": {"type": "integer", "minimum": 1},
+        "entry_filters": {
+          "type": "object",
+          "required": ["allowed_regimes", "volatility_states"],
+          "properties": {
+            "allowed_regimes": {"type": "array", "items": {"type": "string"}},
+            "volatility_states": {"type": "array", "items": {"type": "string"}},
+            "min_trend_by_regime": {
+              "type": "object",
+              "additionalProperties": {"type": "number"}
+            }
+          },
+          "additionalProperties": false
+        },
+        "future_label_used_for_signal": {"const": false},
+        "lookahead_used_for_signal": {"const": false},
+        "simulated_order_intent_only": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "profit_factor",
+        "event_profit_factor",
+        "total_return_pct",
+        "max_drawdown",
+        "annual_turnover",
+        "trade_count",
+        "fill_count",
+        "walk_forward_pass_rate",
+        "regime_pass_rate",
+        "pbo",
+        "dsr"
+      ],
+      "properties": {
+        "profit_factor": {"type": "number"},
+        "event_profit_factor": {"type": "number"},
+        "total_return_pct": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "annual_turnover": {"type": "number"},
+        "trade_count": {"type": "integer", "minimum": 1},
+        "fill_count": {"type": "integer", "minimum": 1},
+        "walk_forward_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "regime_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "pbo": {"type": "number", "minimum": 0, "maximum": 1},
+        "dsr": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "gate": {
+      "type": "object",
+      "required": ["status", "passed", "fail_reasons", "checks", "thresholds"],
+      "properties": {
+        "status": {"enum": ["candidate_gate_failed", "candidate_passed_internal_gate"]},
+        "passed": {"type": "boolean"},
+        "fail_reasons": {"type": "array", "items": {"type": "string"}},
+        "checks": {"type": "object"},
+        "thresholds": {"type": "object"}
+      },
+      "additionalProperties": true
+    },
+    "failed_metrics": {"type": "array", "items": {"type": "string"}},
+    "cost_stress": {
+      "type": "object",
+      "required": ["survival_rate", "base_passed", "harsh_survives", "scenarios"],
+      "properties": {
+        "survival_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "base_passed": {"type": "boolean"},
+        "harsh_survives": {"type": "boolean"},
+        "scenarios": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "object",
+            "required": ["name", "passed", "survives"],
+            "properties": {
+              "name": {"type": "string"},
+              "passed": {"type": "boolean"},
+              "survives": {"type": "boolean"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "walk_forward": {
+      "type": "object",
+      "required": ["method", "fold_count", "pass_rate"],
+      "properties": {
+        "method": {"const": "rolling_event_ledger_fixed_params_intraday_5m"},
+        "fold_count": {"type": "integer", "minimum": 1},
+        "pass_rate": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "regime": {
+      "type": "object",
+      "required": ["pass_rate", "dragging_regimes"],
+      "properties": {
+        "pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "dragging_regimes": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "tail_dependency": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "status",
+        "trade_count",
+        "event_count",
+        "right_tail_dependency_flag",
+        "blockers"
+      ],
+      "properties": {
+        "schema_version": {"const": "btc_intraday_tail_dependency_v1"},
+        "status": {"enum": ["pass", "fail"]},
+        "trade_count": {"type": "integer", "minimum": 0},
+        "event_count": {"type": "integer", "minimum": 0},
+        "top_5_trade_net_pnl_share": {"type": ["number", "null"]},
+        "top_decile_net_pnl_share": {"type": ["number", "null"]},
+        "mean_median_gap_ratio": {"type": ["number", "null"]},
+        "right_tail_dependency_flag": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "promotion_gate": {"type": "object"},
+    "safety": {
+      "type": "object",
+      "required": ["paper_queue", "paper_queue_locked", "paper_auto_start", "live", "live_frozen", "real_broker_api_called", "real_orders_created"],
+      "properties": {
+        "paper_queue": {"const": "LOCKED"},
+        "paper_queue_locked": {"const": true},
+        "paper_auto_start": {"const": false},
+        "live": {"const": "FROZEN"},
+        "live_frozen": {"const": true},
+        "real_broker_api_called": {"const": false},
+        "real_orders_created": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "manifest": {
+      "type": "object",
+      "required": ["data_version", "strategy_version", "params_hash", "cost_model", "slippage_model", "commit_hash"],
+      "properties": {
+        "data_version": {"type": "string"},
+        "strategy_version": {"type": "string"},
+        "params_hash": {"type": "string"},
+        "cost_model": {"type": "string"},
+        "slippage_model": {"type": "string"},
+        "commit_hash": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "research_only",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "paper_or_live_unlock_allowed",
+        "candidate_generation_allowed",
+        "strategy_skeleton_generation_allowed",
+        "true_scalping_allowed",
+        "sub_minute_or_tick_scalping_allowed",
+        "pnl_from_fill_ledger_required_for_promotion"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "candidate_generation_allowed": {"const": false},
+        "strategy_skeleton_generation_allowed": {"const": false},
+        "true_scalping_allowed": {"const": false},
+        "sub_minute_or_tick_scalping_allowed": {"const": false},
+        "pnl_from_fill_ledger_required_for_promotion": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

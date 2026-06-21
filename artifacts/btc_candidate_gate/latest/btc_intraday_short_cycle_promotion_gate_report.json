@@ -1,0 +1,141 @@
+{
+  "asset": "btc",
+  "blockers": [],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "checks": {
+    "candidate_generation_still_locked": true,
+    "cost_model_passed": true,
+    "cost_stress_base_passed": true,
+    "cost_stress_harsh_survives": true,
+    "cost_stress_required_scenarios_present": true,
+    "data_status_passed": true,
+    "event_ledger_completed": true,
+    "event_ledger_report_present": true,
+    "internal_gate_passed": true,
+    "manifest_commit_hash_present": true,
+    "manifest_cost_model_present": true,
+    "manifest_data_version_present": true,
+    "manifest_file_present": true,
+    "manifest_params_present": true,
+    "manifest_slippage_model_present": true,
+    "manifest_strategy_version_present": true,
+    "paper_live_still_locked": true,
+    "pnl_from_fill_ledger_required": true,
+    "private_order_broker_paths_locked": true,
+    "regime_pass_rate_met": true,
+    "strategy_signal_or_order_intent_only": true,
+    "tail_dependency_passed": true,
+    "true_scalping_still_locked": true,
+    "walk_forward_pass_rate_met": true
+  },
+  "commit": "03cad6a",
+  "decision": "continue_research_manual_review_only",
+  "family_id": "pullback_reclaim_intraday_v0",
+  "gate": {
+    "fail_reasons": [],
+    "passed": true,
+    "status": "candidate_passed_internal_gate",
+    "thresholds": {
+      "annual_turnover": 10.0,
+      "dsr": 0.1,
+      "event_profit_factor": 1.15,
+      "max_drawdown_pct_floor": -15.0,
+      "pbo": 0.5,
+      "profit_factor": 1.15,
+      "regime_pass_rate": 0.75,
+      "walk_forward_pass_rate": 0.8
+    }
+  },
+  "generated_at": "2026-06-21T05:54:05Z",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "live": "FROZEN",
+    "manual_review_gate_only": true,
+    "order_endpoints_allowed": false,
+    "paper_queue": "LOCKED",
+    "pnl_from_fill_ledger_required": true,
+    "private_endpoints_allowed": false,
+    "real_orders_created": false,
+    "research_only": true
+  },
+  "limitations": [
+    "manual_candidate_review_does_not_generate_strategy_skeleton",
+    "paper_and_live_remain_locked_until_separate_recorded_review_and_paper_gate",
+    "true_scalping_remains_blocked_until_1m_tick_orderbook_spread_latency_queue_model"
+  ],
+  "manifest": {
+    "commit_hash": "03cad6a5722219fa530fc65ce3d11dfdd78bb671",
+    "cost_model": "base_taker_10bps_round_trip_with_stress_grid_v1",
+    "data_version": "qs-sqlite-BTCUSDT-5m-248270-0013a572822e",
+    "params": {
+      "context_interval": "15m",
+      "cooldown_bars": 12,
+      "entry_filter": {
+        "allowed_regimes": [
+          "high_vol_trend",
+          "mean_reverting_chop",
+          "trending_up"
+        ],
+        "min_trend_by_regime": {
+          "high_vol_trend": 0.017
+        },
+        "volatility_states": [
+          "high_vol"
+        ]
+      },
+      "family_id": "pullback_reclaim_intraday_v0",
+      "feature_interval": "5m",
+      "label_horizon": "60m",
+      "label_horizon_bars": 12,
+      "lookahead_used_for_signal": false,
+      "lookback": 24,
+      "prior_high_window": 48,
+      "pullback_depth_min": 0.01,
+      "signal_scale": 0.2,
+      "source_event_definition_repair_report": "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_event_definition_repair_report.json",
+      "source_variant_id": "pullback_reclaim_24_dd100_4htrend100_v1",
+      "time_exit_bars": 12,
+      "trend_key": "trend_4h",
+      "trend_min": 0.01,
+      "variant_id": "high_vol_non_expansion_trend_guard_repair_v1",
+      "volume_multiple": 1.25
+    },
+    "params_hash": "b75aeb196cc66488cd5495d66654d0a35023e011b3dd15de6d25aab36ea3981f",
+    "slippage_model": "base_0bps_stress_5bps_each_fill",
+    "strategy_version": "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1:research_only_event_ledger_drift_guarded_v1"
+  },
+  "manual_candidate_review_allowed": true,
+  "metrics": {
+    "dsr": 1.0,
+    "event_profit_factor": 1.4397,
+    "fill_count": 156,
+    "pbo": 0.166667,
+    "profit_factor": 2.647434,
+    "regime_pass_rate": 0.8,
+    "trade_count": 78,
+    "walk_forward_pass_rate": 0.833333
+  },
+  "next_required_action": "manual_review_before_any_candidate_generation",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "schema_version": "btc_intraday_short_cycle_promotion_gate_report_v1",
+  "source_reports": {
+    "canonical_backtest_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/canonical_backtest_report.json",
+    "cost_stress_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/cost_stress_report.json",
+    "drift_guarded_event_ledger": "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_drift_guarded_event_ledger_report.json",
+    "event_objects": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/event_objects.csv",
+    "regime_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/regime_report.json",
+    "run_manifest": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/run_manifest.json",
+    "tail_dependency_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/tail_dependency_report.json",
+    "trade_ledger": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/trade_ledger.csv",
+    "walk_forward_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/walk_forward_report.json"
+  },
+  "status": "ready_for_manual_candidate_review",
+  "strategy_id": "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false,
+  "variant_id": "high_vol_non_expansion_trend_guard_repair_v1"
+}

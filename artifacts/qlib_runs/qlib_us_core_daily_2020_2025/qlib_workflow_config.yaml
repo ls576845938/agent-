@@ -1,0 +1,134 @@
+run_id_prefix: qlib_us_lgbm_alpha158_daily
+mode: research_only
+daily_only: true
+minute_data_enabled: false
+live_enabled: false
+paper_enabled: false
+universe_config: configs/universe/us_core_liquid.yaml
+workflow:
+  run_id: latest
+  experiment_name: qs_qlib_us_lgbm_alpha158_daily
+  enable_signal_analysis: true
+  enable_portfolio_analysis: true
+data:
+  source: yfinance
+  bar_size: 1d
+  require_manifests: true
+  fail_on_missing_symbol: true
+  fail_on_implicit_download: true
+  input_root: artifacts/qlib_runs
+qlib:
+  provider_uri_template: artifacts/qlib_runs/qlib_us_core_daily_2020_2025/qlib_provider
+  input_uri_template: artifacts/qlib_runs/qlib_us_core_daily_2020_2025/qlib_input
+  region: us
+qlib_init:
+  region: us
+  exp_manager:
+    class: MLflowExpManager
+    module_path: qlib.workflow.expm
+    kwargs:
+      uri: sqlite:///artifacts/qlib_runs/qlib_us_core_daily_2020_2025/mlflow.db
+      default_exp_name: qs_qlib_us_lgbm_alpha158_daily
+model:
+  name: lgbm_alpha158
+  model_class: qlib.contrib.model.gbdt.LGBModel
+  feature_set: Alpha158
+  label: Ref($close, -5) / $close - 1
+  strategy_version: qlib_lgbm_alpha158_us_daily_v1
+  objective: mse
+  validation_scheme: walk_forward
+  train_window:
+    start: 2020-01-01
+    end: 2025-12-31
+  params:
+    loss: mse
+    colsample_bytree: 0.8879
+    learning_rate: 0.2
+    subsample: 0.8789
+    lambda_l1: 205.6999
+    lambda_l2: 580.9768
+    max_depth: 8
+    num_leaves: 210
+    num_threads: 20
+task:
+  model:
+    class: LGBModel
+    module_path: qlib.contrib.model.gbdt
+    kwargs:
+      loss: mse
+      colsample_bytree: 0.8879
+      learning_rate: 0.2
+      subsample: 0.8789
+      lambda_l1: 205.6999
+      lambda_l2: 580.9768
+      max_depth: 8
+      num_leaves: 210
+      num_threads: 20
+  dataset:
+    class: DatasetH
+    module_path: qlib.data.dataset
+    kwargs:
+      handler:
+        class: Alpha158
+        module_path: qlib.contrib.data.handler
+        kwargs:
+          start_time: 2020-01-01
+          end_time: 2025-12-31
+          fit_start_time: 2020-01-01
+          fit_end_time: 2023-12-31
+          instruments: all
+      segments:
+        train:
+        - 2020-01-01
+        - 2023-12-31
+        valid:
+        - 2024-01-01
+        - 2024-12-31
+        test:
+        - 2025-01-01
+        - 2025-12-31
+portfolio_analysis:
+  executor:
+    class: SimulatorExecutor
+    module_path: qlib.backtest.executor
+    kwargs:
+      time_per_step: day
+      generate_portfolio_metrics: true
+  strategy:
+    class: TopkDropoutStrategy
+    module_path: qlib.contrib.strategy.signal_strategy
+    kwargs:
+      signal: <PRED>
+      topk: 20
+      n_drop: 2
+  backtest:
+    start_time: 2025-01-01
+    end_time: 2025-12-31
+    account: 100000000
+    benchmark: SPY
+    exchange_kwargs:
+      freq: day
+      limit_threshold: 0.095
+      deal_price: close
+      open_cost: 0.0005
+      close_cost: 0.0015
+      min_cost: 5
+lineage:
+  feature_set: Alpha158
+  label: Ref($close, -5) / $close - 1
+  strategy_version: qlib_lgbm_alpha158_us_daily_v1
+  cost_model:
+    open_cost: 0.0005
+    close_cost: 0.0015
+    min_cost: 5
+  slippage_model:
+    deal_price: close
+    limit_threshold: 0.095
+artifacts:
+  dataset_manifest: artifacts/qlib_runs/qlib_us_core_daily_2020_2025/qlib_input/dataset_manifest.json
+  pred_score: artifacts/qlib_runs/qlib_us_core_daily_2020_2025/pred_score.parquet
+  recorder_metrics: artifacts/qlib_runs/qlib_us_core_daily_2020_2025/recorder_metrics.json
+  backtest_summary: artifacts/qlib_runs/qlib_us_core_daily_2020_2025/qlib_backtest_summary.json
+  imported_recorder_metrics: artifacts/qlib_runs/qlib_us_core_daily_2020_2025/imported_recorder_metrics.json
+  research_model_scores: artifacts/qlib_runs/qlib_us_core_daily_2020_2025/research_model_scores.parquet
+  strategy_manifest: artifacts/qlib_runs/qlib_us_core_daily_2020_2025/qlib_strategy_manifest.json

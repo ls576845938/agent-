@@ -1,0 +1,89 @@
+{
+  "allowed_next_action": "archive_only",
+  "archive_recommended": true,
+  "asset": "btc",
+  "attribution_answers": {
+    "event_ledger_candidate_failure": "event_PF_walk_forward_and_regime_gates_failed",
+    "event_pf_failure_sources": [
+      "full_ledger_event_pf_below_gate",
+      "failed_folds_3_4",
+      "regime_drag_unresolved",
+      "active_exposure_outperformed_full_ledger_diagnostic"
+    ],
+    "failed_folds_concentrated": [
+      "3",
+      "4"
+    ],
+    "failed_regimes": [
+      "compression",
+      "expansion",
+      "high_vol_trend",
+      "mean_reverting_chop",
+      "trending_down"
+    ],
+    "hypothesis_layer": "passed_proxy_metrics_before_full_lifecycle_event_ledger",
+    "stable_repair_pattern": "none_confirmed",
+    "target_active_vs_full_ledger_gap": 0.164395
+  },
+  "blockers": [
+    "btc_compression_expansion_archived",
+    "btc_compression_expansion_candidate_gate_failed",
+    "btc_compression_expansion_failed_folds_require_repair_decision",
+    "btc_compression_expansion_regime_drag_unresolved",
+    "btc_compression_expansion_full_ledger_event_pf_failed",
+    "btc_perpetual_cost_contract_not_complete"
+  ],
+  "branch": "main",
+  "candidate_metrics": {
+    "annual_turnover": 2.520337,
+    "event_pf": 1.0241,
+    "max_drawdown": -6.44,
+    "ordinary_pf": 1.564877,
+    "regime_pass_rate": 0.285714,
+    "sharpe": 0.6765,
+    "walk_forward_pass_rate": 0.5
+  },
+  "child_reports": {
+    "active_vs_full_ledger_report": "artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/active_vs_full_ledger_report.json",
+    "cost_funding_drag_report": "artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/cost_funding_drag_report.json",
+    "entry_exit_timing_report": "artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/entry_exit_timing_report.json",
+    "fold_failure_report": "artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/fold_failure_report.json",
+    "regime_drag_report": "artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/regime_drag_report.json"
+  },
+  "commit": "cbe4b54",
+  "decision": {
+    "compression_expansion_status": "needs_event_ledger_surgery_before_any_paper_review",
+    "live_changed": false,
+    "next_research_route_if_unfixed": "liquidation_shock_recovery_continuation_hypothesis_lab",
+    "paper_review_pending_created": false
+  },
+  "gate_fail_reasons": [
+    "event_profit_factor",
+    "walk_forward_pass_rate",
+    "regime_pass_rate"
+  ],
+  "gate_status": "candidate_gate_failed",
+  "generated_at": "2026-06-20T09:17:05.804509+00:00",
+  "live": "FROZEN",
+  "paper_queue": "LOCKED",
+  "paper_review_pending_allowed": false,
+  "paper_review_pending_created": false,
+  "promotion_ready": false,
+  "root_cause_summary": [
+    "ordinary PF 1.5649 passes, but event_PF 1.0241 fails the 1.15 gate.",
+    "walk-forward pass rate is 0.50; failed folds are 3, 4.",
+    "regime pass rate is 0.2857; dragging regimes are compression, expansion, high_vol_trend, mean_reverting_chop, trending_down.",
+    "cost stress passes base and harsh scenarios, so the blocker is alpha stability rather than transaction cost survival."
+  ],
+  "schema_version": "btc_compression_expansion_attribution_bundle_v1",
+  "source_reports": {
+    "btc_data_fold_regime_status_report": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/btc_data_fold_regime_status_report.json",
+    "event_ledger_attribution_report": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/event_ledger_attribution_report.json",
+    "failure_mode_report": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/compression_expansion_failure_mode_report.json",
+    "fold_regime_contract_audit": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/fold_regime_contract_audit.json"
+  },
+  "source_run_dir": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger",
+  "stable_repair_pattern_found": false,
+  "status": "archived",
+  "strategy_id": "btc_compression_expansion_breakout_v1"
+}

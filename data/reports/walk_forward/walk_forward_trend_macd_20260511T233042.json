@@ -1,0 +1,73 @@
+{
+  "generated_utc": "2026-05-11T23:30:42.358076+00:00",
+  "strategy_id": "trend_macd",
+  "params": {
+    "fast_window": 20,
+    "slow_window": 60,
+    "signal_window": 9
+  },
+  "data_version": "qs-sqlite-BTCUSDT-1h-f4d64c0f431d",
+  "symbols_tested": [
+    "BTCUSDT"
+  ],
+  "insufficient_data": false,
+  "aggregate": {
+    "total_windows": 2,
+    "windows_consistent": 2,
+    "oos_total_return_pct": -4.9984,
+    "oos_avg_sharpe": -0.1794,
+    "oos_avg_max_dd": -11.2148,
+    "oos_avg_turnover_pct": 0.0,
+    "oos_win_rate": 0.0,
+    "fold_pass_rate_pct": 0.0,
+    "symbol_coverage_pct": 100.0
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "train_end": "2025-07-06T03:00:00+00:00",
+      "test_start": "2025-07-06T04:00:00+00:00",
+      "test_end": "2025-12-01T19:00:00+00:00",
+      "strategy_id": "trend_macd",
+      "params": {
+        "fast_window": 20,
+        "slow_window": 60,
+        "signal_window": 9
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-f4d64c0f431d",
+      "result": {
+        "total_return_pct": -2.8716,
+        "sharpe_ratio": -0.113,
+        "max_drawdown_pct": -11.2148,
+        "turnover_pct": 3288.4209,
+        "trade_count": 1111
+      },
+      "equity_consistent": true,
+      "pass": false
+    },
+    {
+      "fold": 1,
+      "train_start": "2024-05-28T16:00:00+00:00",
+      "train_end": "2025-12-01T19:00:00+00:00",
+      "test_start": "2025-12-01T20:00:00+00:00",
+      "test_end": "2026-04-29T11:00:00+00:00",
+      "strategy_id": "trend_macd",
+      "params": {
+        "fast_window": 20,
+        "slow_window": 60,
+        "signal_window": 9
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-f4d64c0f431d",
+      "result": {
+        "total_return_pct": -7.1252,
+        "sharpe_ratio": -0.2459,
+        "max_drawdown_pct": -8.6727,
+        "turnover_pct": 3532.0575,
+        "trade_count": 1025
+      },
+      "equity_consistent": true,
+      "pass": false
+    }
+  ]
+}

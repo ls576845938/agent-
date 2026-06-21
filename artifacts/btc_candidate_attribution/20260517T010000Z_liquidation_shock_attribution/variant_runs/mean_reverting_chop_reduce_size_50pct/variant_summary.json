@@ -1,0 +1,70 @@
+{
+  "DSR": 0.05735,
+  "MDD": -8.9399,
+  "PBO": 0.2,
+  "PF": 1.471247,
+  "Sharpe": 0.1147,
+  "WF_pass": 0.75,
+  "avg_holding_bars": 24.0,
+  "cost_stress_base_pass": true,
+  "cost_stress_harsh_survives": true,
+  "evaluation_source": "event_ledger_base_run_with_fold_attribution_and_cost_stress_base_fees2x",
+  "event_PF": 1.0049,
+  "fail_reasons": [
+    "event_profit_factor",
+    "walk_forward_pass_rate",
+    "dsr"
+  ],
+  "fold3_result": {
+    "downside_tail_5pct": -0.0014110069,
+    "event_PF": 0.716186,
+    "event_count": 72,
+    "fold_id": "3",
+    "max_adverse_event": -0.0033754997,
+    "max_favorable_event": 0.0032193464,
+    "mean_return": -9.30493e-05,
+    "median_return": 6.5546e-06,
+    "negative_event_count": 35,
+    "negative_sum": -0.02360546,
+    "positive_event_count": 36,
+    "positive_event_rate": 0.5,
+    "positive_sum": 0.0169059092,
+    "signed_pnl_sum": -0.0066995509
+  },
+  "fold_event_pass_rate": 0.75,
+  "manifest_path": "artifacts/btc_candidate_attribution/20260517T010000Z_liquidation_shock_attribution/variant_runs/mean_reverting_chop_reduce_size_50pct/manifests/run_btc_liquidation_shock_mean_reverting_chop_reduce_size_50pct_base.json",
+  "mean_reverting_chop_result": {
+    "downside_tail_5pct": -0.0006278618,
+    "event_PF": 2.091251,
+    "event_count": 133,
+    "max_adverse_event": -0.0016667005,
+    "max_favorable_event": 0.0023067586,
+    "mean_return": 0.0001520347,
+    "median_return": 3.03868e-05,
+    "negative_event_count": 57,
+    "negative_sum": -0.0185297637,
+    "positive_event_count": 76,
+    "positive_event_rate": 0.571429,
+    "positive_sum": 0.0387503841,
+    "regime": "mean_reverting_chop",
+    "signed_pnl_sum": 0.0202206204
+  },
+  "negative_event_sum": -0.2692463898,
+  "params": {
+    "cooldown_bars": 6,
+    "min_reentry_delay_bars": 6,
+    "no_orderflow_entry": true,
+    "no_short": true,
+    "regime_size_multipliers": {
+      "mean_reverting_chop": 0.5
+    },
+    "signal_scale": 0.2,
+    "time_exit_bars": 24
+  },
+  "positive_event_sum": 0.3117264123,
+  "regime_pass": 0.857143,
+  "total_return_pct": 1.0446,
+  "trade_count": 29,
+  "turnover": 3.397138,
+  "variant": "mean_reverting_chop_reduce_size_50pct"
+}

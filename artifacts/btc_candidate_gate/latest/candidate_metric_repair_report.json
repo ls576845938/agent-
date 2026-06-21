@@ -1,0 +1,180 @@
+{
+  "ablation_diagnostics": {
+    "adopted_exit_rules": [
+      "exit_hysteresis_only",
+      "combined_exit_surgery"
+    ],
+    "adopted_side_rules": [
+      "long_only",
+      "block_trending_down_and_high_vol_trend"
+    ],
+    "exit_surgery_best": {
+      "event_profit_factor": 1.022,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "gate_status": "candidate_gate_failed",
+      "max_drawdown": -7.6359,
+      "mode": "exit_hysteresis_only",
+      "regime_pass_rate": 1.0,
+      "walk_forward_pass_rate": 0.5
+    },
+    "rejected_exit_rules": [
+      "baseline_v3",
+      "no_same_bar_flip",
+      "flat_then_confirm_reverse",
+      "flip_cooldown_3",
+      "flip_cooldown_6",
+      "reverse_requires_regime_alignment"
+    ],
+    "rejected_side_rules": [
+      "broad_short_reintroduction",
+      "orderflow_short_trigger",
+      "short_in_high_vol_trend_without_fold_support"
+    ],
+    "short_reintroduction_rejected": true,
+    "side_regime_best": {
+      "event_profit_factor": 1.0339,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate"
+      ],
+      "gate_status": "candidate_gate_failed",
+      "max_drawdown": -4.773,
+      "mode": "long_biased_reduce_short_size",
+      "regime_pass_rate": 0.666667,
+      "walk_forward_pass_rate": 0.25
+    }
+  },
+  "asset": "btc",
+  "best_candidate": {
+    "failed_metrics": [
+      "event_profit_factor",
+      "walk_forward_pass_rate"
+    ],
+    "metrics": {
+      "dsr": 1.0,
+      "event_profit_factor": 1.0205,
+      "fill_count": 49,
+      "max_drawdown": -7.835,
+      "pbo": 0.5,
+      "profit_factor": 1.631439,
+      "regime_pass_rate": 1.0,
+      "trade_count": 24,
+      "walk_forward_pass_rate": 0.5
+    },
+    "passed_metric_count": 6,
+    "required_metric_count": 8,
+    "source_run_dir": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/btc_perp_dual_trend_v4_eventpf_wf",
+    "status": "candidate_gate_failed",
+    "strategy_id": "btc_perp_dual_trend_v4_eventpf_wf",
+    "thresholds": {
+      "event_profit_factor": 1.15,
+      "regime_pass_rate": 0.75,
+      "walk_forward_pass_rate": 0.8
+    }
+  },
+  "blockers": [
+    "btc_candidate_metric_repair_event_profit_factor_failed",
+    "btc_candidate_metric_repair_walk_forward_pass_rate_failed"
+  ],
+  "branch": "main",
+  "commit": "cbe4b54",
+  "failed_metrics": [
+    "event_profit_factor",
+    "walk_forward_pass_rate"
+  ],
+  "fold_failure_diagnostics": {
+    "failed_folds": [
+      3,
+      4
+    ],
+    "failure_sources": {
+      "event_profit_factor": 2,
+      "regime_pass_rate": 1,
+      "total_return": 2
+    },
+    "fold_count": 4,
+    "method": "rolling_event_ledger_fixed_params_with_fold_attribution",
+    "pass_rate": 0.5,
+    "source_strategy_id": "btc_perp_dual_trend_v3",
+    "stable_rules": [
+      "long side remains the most defensible side under v3/v4 evidence",
+      "signal_flip_exit is not the v3 fold-level failure source"
+    ],
+    "unstable_or_overfit_rules": [
+      "event_PF varies by time fold; full-period closed-trade PF is not stable enough for promotion",
+      "some folds lose money after event-ledger costs and mark-to-market"
+    ]
+  },
+  "gate_thresholds": {
+    "cost_stress_required": true,
+    "event_profit_factor": 1.15,
+    "regime_pass_rate": 0.75,
+    "walk_forward_pass_rate": 0.8
+  },
+  "generated_at": "2026-06-20T09:16:46Z",
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "recommended_repair_actions": [
+    {
+      "inputs": [
+        "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/btc_perp_dual_trend_v4_eventpf_wf",
+        "btc_perp_dual_trend_v4_eventpf_wf"
+      ],
+      "name": "run_bounded_event_pf_retest",
+      "priority": 1,
+      "reason": "best candidate event_PF remains below threshold",
+      "status": "pending"
+    },
+    {
+      "inputs": [
+        "3",
+        "4"
+      ],
+      "name": "repair_late_walk_forward_folds",
+      "priority": 2,
+      "reason": "walk-forward pass rate is below threshold; failed fold evidence must drive retest scope",
+      "status": "pending"
+    },
+    {
+      "inputs": [
+        "broad_short_reintroduction",
+        "orderflow_short_trigger",
+        "short_in_high_vol_trend_without_fold_support"
+      ],
+      "name": "avoid_broad_short_reintroduction",
+      "priority": 3,
+      "reason": "side-regime ablation shows short-side probes degrade fold or regime evidence",
+      "status": "guardrail"
+    },
+    {
+      "inputs": [],
+      "name": "do_not_promote_on_ordinary_profit_factor",
+      "priority": 4,
+      "reason": "ordinary PF is diagnostic only; promotion requires event-ledger PF, costs, and walk-forward robustness",
+      "status": "guardrail"
+    }
+  ],
+  "safety": {
+    "ordinary_profit_factor_diagnostic_only": true,
+    "paper_or_live_unlock_allowed": false,
+    "report_only": true,
+    "requires_cost_stress_pass": true,
+    "requires_event_ledger_fills_pnl": true,
+    "requires_perpetual_data_cost_evidence": true,
+    "requires_walk_forward_pass": true,
+    "strategy_retest_allowed": true
+  },
+  "schema_version": "btc_candidate_metric_repair_report_v1",
+  "source_artifacts": {
+    "candidate_gate": "artifacts/btc_candidate_gate/latest/candidate_gate_audit_report.json",
+    "exit_surgery_ablation": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/exit_surgery_ablation_report.json",
+    "side_regime_ablation": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/side_regime_ablation_report.json",
+    "walk_forward_fold_attribution": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/walk_forward_fold_attribution.json"
+  },
+  "status": "needs_metric_repair",
+  "symbol": "BTCUSDT"
+}

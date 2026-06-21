@@ -1,0 +1,427 @@
+{
+  "approved_paper_review": {
+    "approval": {
+      "blockers": [
+        "btc_paper_readiness_approved_paper_review_approval_missing"
+      ],
+      "candidate_id": "",
+      "commit_hash": "",
+      "gate_snapshot": {},
+      "reason": "",
+      "reviewer": "",
+      "schema_version": "",
+      "source": "",
+      "source_sha256": "",
+      "timestamp": "",
+      "valid": false
+    },
+    "approved": false,
+    "evidence_pack_exists": false,
+    "evidence_pack_path": "",
+    "paper_review_id": "",
+    "path": "",
+    "proposed_capital": 0.0,
+    "proposed_symbols": [],
+    "status": "missing",
+    "strategy_manifest_id": ""
+  },
+  "asset": "btc",
+  "blockers": [
+    "btc_paper_validation_readiness_not_ready",
+    "btc_paper_validation_start_not_allowed",
+    "btc_paper_validation_execution_not_authorized",
+    "btc_paper_validation_approved_review_missing",
+    "btc_paper_validation_approved_review_status_not_paper_only",
+    "btc_paper_validation_approved_review_symbol_scope_mismatch",
+    "btc_paper_validation_approved_review_proposed_capital_missing",
+    "btc_paper_validation_approved_review_approval_invalid",
+    "btc_paper_validation_approved_review_approval_schema_invalid",
+    "btc_paper_validation_approved_review_reviewer_missing",
+    "btc_paper_validation_approved_review_timestamp_invalid",
+    "btc_paper_validation_approved_review_candidate_missing",
+    "btc_paper_validation_approved_review_approval_has_blockers",
+    "btc_paper_validation_approved_review_gate_snapshot_missing",
+    "btc_paper_readiness_data_status_not_pass",
+    "btc_regime_contract_not_pass",
+    "btc_paper_readiness_candidate_gate_not_pass",
+    "btc_paper_readiness_no_candidate_passed_internal_gate",
+    "btc_paper_readiness_paper_review_pending_not_allowed",
+    "btc_paper_readiness_no_current_candidate_registered",
+    "btc_paper_readiness_candidate_metric_repair_not_pass",
+    "btc_paper_readiness_candidate_metric_repair_promotion_not_allowed",
+    "btc_paper_readiness_candidate_metric_repair_review_not_allowed",
+    "btc_paper_readiness_candidate_metric_repair_event_profit_factor_failed",
+    "btc_paper_readiness_candidate_metric_repair_walk_forward_pass_rate_failed",
+    "btc_candidate_gate_event_pf_failed",
+    "btc_candidate_gate_walk_forward_failed",
+    "btc_candidate_gate_regime_failed",
+    "btc_candidate_metric_repair_event_profit_factor_failed",
+    "btc_candidate_metric_repair_walk_forward_pass_rate_failed",
+    "btc_candidate_bounded_retest_event_profit_factor_failed",
+    "btc_candidate_bounded_retest_walk_forward_pass_rate_failed",
+    "btc_next_hypothesis_all_probe_event_profit_factor_failed",
+    "btc_next_hypothesis_dual_trend_micro_surgery_rejected",
+    "btc_strategy_family_dual_trend_micro_surgery_rejected",
+    "btc_strategy_family_selected_okx_bundle_history_too_short",
+    "btc_strategy_family_selected_okx_1h_klines_too_short",
+    "btc_strategy_family_selected_okx_funding_history_too_short",
+    "btc_strategy_family_candidate_generation_blocked_until_okx_history_extended",
+    "btc_intraday_existing_candidate_gate_not_pass",
+    "btc_current_evidence_provider_history_too_short_for_research_distribution",
+    "btc_selected_research_overlay_is_not_user_execution_provider",
+    "btc_data_source_decision_does_not_unlock_candidate_or_paper",
+    "btc_intraday_candidate_generation_blocked_until_distribution_probe_passes",
+    "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+    "btc_intraday_paper_live_locked",
+    "btc_intraday_probe_no_net_positive_distribution_edge",
+    "btc_intraday_probe_candidate_generation_blocked_until_event_ledger_backtest",
+    "btc_intraday_probe_requires_walk_forward_regime_cost_stress",
+    "btc_intraday_probe_paper_live_locked",
+    "btc_intraday_refinement_candidate_generation_blocked_until_event_ledger_backtest",
+    "btc_intraday_refinement_requires_walk_forward_regime_cost_stress",
+    "btc_intraday_refinement_paper_live_locked",
+    "btc_compression_expansion_archived",
+    "btc_compression_expansion_candidate_gate_failed",
+    "btc_compression_expansion_failed_folds_require_repair_decision",
+    "btc_compression_expansion_regime_drag_unresolved",
+    "btc_compression_expansion_full_ledger_event_pf_failed",
+    "btc_perpetual_cost_contract_not_complete",
+    "btc_paper_readiness_approved_paper_review_missing",
+    "btc_paper_validation_preflight_probe_not_pass",
+    "btc_paper_validation_readiness_report_blocked",
+    "btc_paper_validation_approved_paper_review_blocked",
+    "btc_paper_validation_approved_paper_review_integrity_blocked",
+    "btc_paper_validation_data_status_blocked",
+    "btc_paper_validation_candidate_gate_blocked",
+    "btc_paper_validation_candidate_metric_repair_blocked"
+  ],
+  "branch": "main",
+  "commands": {
+    "preflight_command": "",
+    "report_rebuild_command": "python3 scripts/build_btc_paper_validation_start_report.py",
+    "resume_command": "",
+    "start_command": ""
+  },
+  "commit": "cbe4b54",
+  "generated_at": "2026-06-20T09:17:07Z",
+  "ledger_session": {
+    "in_progress_cycle_marker_details": [],
+    "in_progress_cycle_markers": [],
+    "latest_clean": null,
+    "latest_reconciliation_artifact_blockers": [],
+    "latest_reconciliation_artifact_hash": "",
+    "latest_reconciliation_artifact_path": "",
+    "latest_reconciliation_artifact_verified": true,
+    "latest_reconciliation_status": "",
+    "ledger_root": "data/paper_ledger/btc",
+    "reconciliation_clean": true,
+    "runtime_record_files": [],
+    "session_manifest_count": 0,
+    "start_lock_claimable": true,
+    "start_lock_path": "",
+    "start_lock_status": "absent",
+    "status": "clean_start",
+    "validation_state_exists": false,
+    "validation_state_valid": false
+  },
+  "live_status": "frozen",
+  "manual_inputs": {
+    "fee_tier_status": {
+      "cost_model_report": "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+      "cost_model_status": "pass",
+      "fee_blockers": [],
+      "fee_tier_import_report_verified": true,
+      "fee_tier_verified": true,
+      "maker_fee_bps": 2.0,
+      "manual_capture_required": false,
+      "taker_fee_bps": 5.0
+    },
+    "manual_inputs_status": "manual_inputs_verified",
+    "paper_gate_manual_inputs_complete": true,
+    "required_manual_inputs": [
+      {
+        "action": "none",
+        "blockers": [],
+        "name": "exchange_info",
+        "required_for": "exchange_info_verification",
+        "status": "verified"
+      },
+      {
+        "action": "none",
+        "blockers": [],
+        "name": "funding_info",
+        "required_for": "funding_info_endpoint_verification",
+        "status": "verified"
+      },
+      {
+        "action": "none",
+        "blockers": [],
+        "name": "fee_tier_overlay",
+        "required_for": "maker_taker_fee_tier_verification",
+        "status": "verified"
+      }
+    ]
+  },
+  "market_type": "usds_m_perpetual",
+  "next_required_action": "repair_btc_data_source_metadata",
+  "operator_manual_unblock": {
+    "apply_and_validate_command": "make apply-and-validate-btc-paper-gate-manual-inputs EXCHANGE_INFO_RAW=exchange_info_raw.json FUNDING_INFO_RAW=funding_info_raw.json EXCHANGE_INFO_HTTP_STATUS=exchange_info_http_status.txt FUNDING_INFO_HTTP_STATUS=funding_info_http_status.txt BTC_MANUAL_METADATA_CAPTURED_AT=<UTC_METADATA_CAPTURE_TIME> BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> BTC_FEE_TIER_SOURCE=manual_public_okx_swap_fee_schedule BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://www.okx.com/en-us/fees BTC_FEE_TIER_CAPTURED_AT=<UTC_FEE_CAPTURE_TIME>",
+    "apply_command": "make apply-btc-paper-gate-manual-inputs EXCHANGE_INFO_RAW=exchange_info_raw.json FUNDING_INFO_RAW=funding_info_raw.json EXCHANGE_INFO_HTTP_STATUS=exchange_info_http_status.txt FUNDING_INFO_HTTP_STATUS=funding_info_http_status.txt BTC_MANUAL_METADATA_CAPTURED_AT=<UTC_METADATA_CAPTURE_TIME> BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> BTC_FEE_TIER_SOURCE=manual_public_okx_swap_fee_schedule BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://www.okx.com/en-us/fees BTC_FEE_TIER_CAPTURED_AT=<UTC_FEE_CAPTURE_TIME>",
+    "blockers": [],
+    "capture_requests": [
+      {
+        "command": "curl -sS -o exchange_info_raw.json -w \"%{http_code}\\n\" \"https://www.okx.com/api/v5/public/instruments?instType=SWAP\" > exchange_info_http_status.txt",
+        "endpoint": "GET /api/v5/public/instruments",
+        "http_status_file": "exchange_info_http_status.txt",
+        "name": "exchange_info",
+        "output_file": "exchange_info_raw.json",
+        "required_http_status": 200,
+        "url": "https://www.okx.com/api/v5/public/instruments?instType=SWAP"
+      },
+      {
+        "command": "curl -sS -o funding_info_raw.json -w \"%{http_code}\\n\" \"https://www.okx.com/api/v5/public/funding-rate?instId=BTC-USDT-SWAP\" > funding_info_http_status.txt",
+        "endpoint": "GET /api/v5/public/funding-rate",
+        "http_status_file": "funding_info_http_status.txt",
+        "name": "funding_info",
+        "output_file": "funding_info_raw.json",
+        "required_http_status": 200,
+        "url": "https://www.okx.com/api/v5/public/funding-rate?instId=BTC-USDT-SWAP"
+      }
+    ],
+    "dry_run_command": "make dry-run-btc-paper-gate-manual-inputs EXCHANGE_INFO_RAW=exchange_info_raw.json FUNDING_INFO_RAW=funding_info_raw.json EXCHANGE_INFO_HTTP_STATUS=exchange_info_http_status.txt FUNDING_INFO_HTTP_STATUS=funding_info_http_status.txt BTC_MANUAL_METADATA_CAPTURED_AT=<UTC_METADATA_CAPTURE_TIME> BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> BTC_FEE_TIER_SOURCE=manual_public_okx_swap_fee_schedule BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://www.okx.com/en-us/fees BTC_FEE_TIER_CAPTURED_AT=<UTC_FEE_CAPTURE_TIME>",
+    "fee_tier_apply_command": "make apply-btc-fee-tier-overlay-import BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> BTC_FEE_TIER_SOURCE=manual_public_okx_swap_fee_schedule BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://www.okx.com/en-us/fees BTC_FEE_TIER_CAPTURED_AT=<UTC_CAPTURE_TIME>",
+    "fee_tier_dry_run_command": "make dry-run-btc-fee-tier-overlay-import BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> BTC_FEE_TIER_SOURCE=manual_public_okx_swap_fee_schedule BTC_FEE_TIER_SOURCE_URL_OR_DOC=https://www.okx.com/en-us/fees BTC_FEE_TIER_CAPTURED_AT=<UTC_CAPTURE_TIME>",
+    "manual_inputs_status": "manual_inputs_verified",
+    "packet_exists": true,
+    "packet_path": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_operator_packet.json",
+    "paper_gate_manual_inputs_complete": true,
+    "post_apply_readiness_command": "make check-btc-paper-validation-readiness",
+    "post_apply_rebuild_command": "make rebuild-btc-paper-readiness-chain",
+    "post_apply_validation_command": "make validate-btc-evidence",
+    "required_manual_inputs": [
+      {
+        "action": "none",
+        "blockers": [],
+        "name": "exchange_info",
+        "required_for": "exchange_info_verification",
+        "status": "verified"
+      },
+      {
+        "action": "none",
+        "blockers": [],
+        "name": "funding_info",
+        "required_for": "funding_info_endpoint_verification",
+        "status": "verified"
+      },
+      {
+        "action": "none",
+        "blockers": [],
+        "name": "fee_tier_overlay",
+        "required_for": "maker_taker_fee_tier_verification",
+        "status": "verified"
+      }
+    ],
+    "safety": {
+      "api_key_required": false,
+      "order_endpoints_allowed": false,
+      "paper_or_live_unlock_allowed": false,
+      "private_endpoints_allowed": false
+    },
+    "status": "metadata_verified"
+  },
+  "paper_execution_authorized": false,
+  "paper_start_allowed": false,
+  "preflight_probe": {
+    "blocking_reasons": [
+      "btc_paper_validation_readiness_report_blocked",
+      "btc_paper_validation_approved_paper_review_blocked",
+      "btc_paper_validation_approved_paper_review_integrity_blocked",
+      "btc_paper_validation_data_status_blocked",
+      "btc_paper_validation_candidate_gate_blocked",
+      "btc_paper_validation_candidate_metric_repair_blocked"
+    ],
+    "command": "python3 scripts/check_btc_paper_validation_readiness.py --repo-root . --symbols BTCUSDT --market-type usds_m_perpetual --ledger-root data/paper_ledger/btc --data-root data --no-start-report-ready-required --json",
+    "contract": "btc_paper_validation_preflight_v1",
+    "error": "",
+    "exit_code": 1,
+    "ready_without_start_report": false,
+    "start_report_ready_required": false,
+    "status": "BLOCKED"
+  },
+  "readiness": {
+    "blocker_count": 46,
+    "exists": true,
+    "live_status": "frozen",
+    "manual_inputs_status": "manual_inputs_verified",
+    "next_required_action": "repair_btc_data_source_metadata",
+    "paper_execution_authorized": false,
+    "paper_gate_manual_inputs_complete": true,
+    "paper_queue_status": "locked",
+    "paper_start_allowed": false,
+    "path": "artifacts/btc_paper_readiness/latest/btc_paper_readiness_report.json",
+    "required_manual_input_count": 3,
+    "schema_version": "btc_paper_readiness_report_v1",
+    "status": "blocked"
+  },
+  "runtime": {
+    "checks": {
+      "preflight_runner_avoids_equity_only_loader": true,
+      "preflight_runner_declares_btc_contract": true,
+      "preflight_runner_declares_btcusdt": true,
+      "preflight_runner_declares_usds_m_perpetual": true,
+      "preflight_runner_exists": true,
+      "preflight_runner_is_approved_default": true,
+      "validation_runner_avoids_equity_only_loader": true,
+      "validation_runner_declares_btc_contract": true,
+      "validation_runner_declares_btcusdt": true,
+      "validation_runner_declares_usds_m_perpetual": true,
+      "validation_runner_exists": true,
+      "validation_runner_is_approved_default": true
+    },
+    "data_root": "data",
+    "ledger_root": "data/paper_ledger/btc",
+    "preflight_contract": "btc_paper_validation_preflight_v1",
+    "preflight_runner_path": "scripts/check_btc_paper_validation_readiness.py",
+    "preflight_supports_btc_usdm_perpetual": true,
+    "runner_supports_btc_usdm_perpetual": true,
+    "runtime_contract": "btc_paper_validation_runtime_v1",
+    "validation_runner_path": "scripts/run_btc_paper_validation.py"
+  },
+  "safety": {
+    "all_orders_must_pass_risk_engine": true,
+    "allows_live_orders": false,
+    "paper_auto_start": false,
+    "report_only": true,
+    "requires_approved_review": true,
+    "requires_evidence_pack": true,
+    "requires_readiness_report": true,
+    "strategy_direct_broker_forbidden": true
+  },
+  "schema_version": "btc_paper_validation_start_report_v1",
+  "status": "blocked",
+  "symbol": "BTCUSDT",
+  "unblock_sequence": [
+    {
+      "action": "none",
+      "blockers": [],
+      "command": "",
+      "evidence": [
+        "artifacts/btc_data_status/latest/btc_manual_metadata_capture_operator_packet.json"
+      ],
+      "gate": "manual_paper_gate_inputs",
+      "is_next_action": false,
+      "order": 1,
+      "required_before_paper_start": true,
+      "status": "complete"
+    },
+    {
+      "action": "complete_btc_perpetual_data_cost_evidence",
+      "blockers": [
+        "btc_paper_readiness_data_status_not_pass",
+        "btc_regime_contract_not_pass"
+      ],
+      "command": "make validate-btc-data-cost-repair",
+      "evidence": [
+        "artifacts/btc_data_status/latest/btc_data_status_report.json",
+        "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json",
+        "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+        "artifacts/btc_cost_model/latest/btc_funding_ledger_report.json"
+      ],
+      "gate": "perpetual_data_cost_evidence",
+      "is_next_action": true,
+      "order": 2,
+      "required_before_paper_start": true,
+      "status": "blocked"
+    },
+    {
+      "action": "design_new_fold_specific_hypothesis_or_select_better_candidate",
+      "blockers": [
+        "btc_paper_readiness_candidate_gate_not_pass",
+        "btc_paper_readiness_no_candidate_passed_internal_gate",
+        "btc_paper_readiness_paper_review_pending_not_allowed",
+        "btc_paper_readiness_no_current_candidate_registered",
+        "btc_paper_readiness_candidate_metric_repair_not_pass",
+        "btc_paper_readiness_candidate_metric_repair_promotion_not_allowed",
+        "btc_paper_readiness_candidate_metric_repair_review_not_allowed",
+        "btc_paper_readiness_candidate_metric_repair_event_profit_factor_failed",
+        "btc_paper_readiness_candidate_metric_repair_walk_forward_pass_rate_failed",
+        "btc_candidate_gate_event_pf_failed",
+        "btc_candidate_gate_walk_forward_failed",
+        "btc_candidate_gate_regime_failed",
+        "btc_candidate_metric_repair_event_profit_factor_failed",
+        "btc_candidate_metric_repair_walk_forward_pass_rate_failed",
+        "btc_regime_contract_not_pass",
+        "btc_candidate_bounded_retest_event_profit_factor_failed",
+        "btc_candidate_bounded_retest_walk_forward_pass_rate_failed",
+        "btc_next_hypothesis_all_probe_event_profit_factor_failed",
+        "btc_next_hypothesis_dual_trend_micro_surgery_rejected",
+        "btc_strategy_family_dual_trend_micro_surgery_rejected",
+        "btc_strategy_family_selected_okx_bundle_history_too_short",
+        "btc_strategy_family_selected_okx_1h_klines_too_short",
+        "btc_strategy_family_selected_okx_funding_history_too_short",
+        "btc_strategy_family_candidate_generation_blocked_until_okx_history_extended",
+        "btc_intraday_existing_candidate_gate_not_pass",
+        "btc_current_evidence_provider_history_too_short_for_research_distribution",
+        "btc_selected_research_overlay_is_not_user_execution_provider",
+        "btc_data_source_decision_does_not_unlock_candidate_or_paper",
+        "btc_intraday_candidate_generation_blocked_until_distribution_probe_passes",
+        "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+        "btc_intraday_paper_live_locked",
+        "btc_intraday_probe_no_net_positive_distribution_edge",
+        "btc_intraday_probe_candidate_generation_blocked_until_event_ledger_backtest",
+        "btc_intraday_probe_requires_walk_forward_regime_cost_stress",
+        "btc_intraday_probe_paper_live_locked",
+        "btc_intraday_refinement_candidate_generation_blocked_until_event_ledger_backtest",
+        "btc_intraday_refinement_requires_walk_forward_regime_cost_stress",
+        "btc_intraday_refinement_paper_live_locked",
+        "btc_compression_expansion_archived",
+        "btc_compression_expansion_candidate_gate_failed",
+        "btc_compression_expansion_failed_folds_require_repair_decision",
+        "btc_compression_expansion_regime_drag_unresolved",
+        "btc_compression_expansion_full_ledger_event_pf_failed",
+        "btc_perpetual_cost_contract_not_complete"
+      ],
+      "command": "",
+      "evidence": [
+        "artifacts/btc_candidate_gate/latest/candidate_gate_audit_report.json",
+        "artifacts/btc_candidate_gate/latest/candidate_metric_repair_report.json",
+        "artifacts/btc_candidate_gate/latest/candidate_bounded_retest_plan.json",
+        "artifacts/btc_candidate_gate/latest/candidate_bounded_retest_outcome_report.json"
+      ],
+      "gate": "candidate_metric_gate",
+      "is_next_action": false,
+      "order": 3,
+      "required_before_paper_start": true,
+      "status": "blocked"
+    },
+    {
+      "action": "human_paper_review_approval",
+      "blockers": [
+        "btc_paper_readiness_approved_paper_review_missing"
+      ],
+      "command": "",
+      "evidence": [],
+      "gate": "human_paper_review",
+      "is_next_action": false,
+      "order": 4,
+      "required_before_paper_start": true,
+      "status": "pending_review"
+    },
+    {
+      "action": "wait_for_prior_gates",
+      "blockers": [
+        "btc_paper_validation_preflight_probe_not_pass"
+      ],
+      "command": "",
+      "evidence": [
+        "scripts/run_btc_paper_validation.py",
+        "scripts/check_btc_paper_validation_readiness.py"
+      ],
+      "gate": "paper_validation_start",
+      "is_next_action": false,
+      "order": 5,
+      "required_before_paper_start": true,
+      "status": "blocked"
+    }
+  ]
+}

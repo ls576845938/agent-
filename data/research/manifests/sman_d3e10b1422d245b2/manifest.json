@@ -1,0 +1,340 @@
+{
+  "strategy_candidate_id": "sman_d3e10b1422d245b2",
+  "source_candidate_id": "cand_20b90fd795cd4c1d",
+  "source_experiment_id": "exp_8a9c08aac46c4994",
+  "lineage_id": "",
+  "feature_snapshot_ids": [],
+  "strategy_template": "cost_stress_momentum_research_smoke",
+  "params": {
+    "total_return_pct": 0.4995,
+    "cagr_pct": 0.5015,
+    "annual_return_pct": 0.5015,
+    "annual_volatility_pct": 0.9181,
+    "sharpe_ratio": 0.5495,
+    "sortino_ratio": 0.5447,
+    "max_drawdown_pct": -0.7908,
+    "calmar_ratio": 0.6342,
+    "win_rate_pct": 58.5106,
+    "profit_factor": 1.1247,
+    "turnover_pct": 80.9119,
+    "trade_count": 27,
+    "engine": "event_driven",
+    "canonical_for_promotion": true,
+    "backtest_manifest_path": "data/research/backtests/cand_20b90fd795cd4c1d/run_manifest.json",
+    "backtest_manifest_id": "ubt_4ec815ef36364725",
+    "ledger_artifact_path": "data/manifests/reconciliation/ledger_recon_artifact_bdc2f48a947c5821.json",
+    "ledger_artifact_hash": "bdc2f48a947c5821bda2d59290e628ef4fb6d30a9319694578a2699232f8c426",
+    "ledger_hash": "f899a5abf3c9d39a820786ed7c94577f27b937e684b2e04423652c46fea1b4c9",
+    "fills_hash": "e5a29120a25ad6094e0f2bf4b13a5c7ab72337eecde1b3f7c7f03322ff6151fb",
+    "orders_hash": "ed43ff895730d6f93caac2be39d1d23f4e73a70a1fcf6c4d1ceec2eb76bc8bd7",
+    "data_manifest_path": "data/manifests/qs-yfinance-SPY-1d-268b4e155ee3.json",
+    "data_manifest_exists": true,
+    "missing_data_manifest": false,
+    "data_version": "qs-yfinance-SPY-1d-268b4e155ee3",
+    "cost_model": "low",
+    "slippage_model": "low",
+    "ledger_consistency_pct": 100.0,
+    "total_order_count": 27,
+    "total_fill_count": 27,
+    "baseline_order_count": 27,
+    "baseline_fill_count": 27,
+    "scorecard_path": "data/research/scorecards/cand_20b90fd795cd4c1d.json",
+    "walk_forward_result_path": "data/research/walk_forward/cand_20b90fd795cd4c1d/result.json",
+    "cost_stress_result_path": "data/research/cost_stress/cand_20b90fd795cd4c1d/result.json",
+    "symbols": [
+      "SPY"
+    ],
+    "timeframe": "1d",
+    "data_source": "yfinance",
+    "asset_class": "equity",
+    "robustness_score": 0.5998,
+    "walk_forward_pass_rate": 0.0,
+    "cost_sensitivity": 0.0
+  },
+  "symbols": [
+    "SPY"
+  ],
+  "timeframe": "1d",
+  "expected_holding_period": "",
+  "scorecard": {},
+  "robustness_score": 0.0,
+  "walk_forward_score": 0.0,
+  "overfit_risk": "UNKNOWN",
+  "promotion_status": "BLOCKED",
+  "data_version": "qs-yfinance-SPY-1d-268b4e155ee3",
+  "data_manifest_path": "data/manifests/qs-yfinance-SPY-1d-268b4e155ee3.json",
+  "backtest_manifest_path": "data/research/backtests/cand_20b90fd795cd4c1d/run_manifest.json",
+  "scorecard_path": "data/research/scorecards/cand_20b90fd795cd4c1d.json",
+  "walk_forward_result_path": "data/research/walk_forward/cand_20b90fd795cd4c1d/result.json",
+  "cost_stress_result_path": "data/research/cost_stress/cand_20b90fd795cd4c1d/result.json",
+  "sample_window": {
+    "start": "2024-01-01",
+    "end": "2024-12-31",
+    "timeframe": "1d"
+  },
+  "purge_embargo": {},
+  "trial_id": "cand_20b90fd795cd4c1d",
+  "trial_count": 1,
+  "pbo": null,
+  "dsr": null,
+  "cpcv": {
+    "method": "unknown",
+    "purged": false,
+    "embargoed": false,
+    "embargo_steps": 0,
+    "fold_count": 0,
+    "path_count": 0,
+    "pass_rate": 0.0,
+    "missing_reason": "validation_method_not_cpcv:unknown"
+  },
+  "cost_stress": {
+    "status": "completed",
+    "stress_survival_rate": 0.0,
+    "cost_sensitivity": 0.0,
+    "level_count": 0,
+    "surviving_levels": 0
+  },
+  "style_exposure": {
+    "missing_reason": "style_exposure_benchmark_regression_missing"
+  },
+  "cost_model": {
+    "name": "low",
+    "commission_model": "{'model': 'PercentCommission', 'rate': 0.0, 'realized_total': 0.0}"
+  },
+  "slippage_model": {
+    "name": "low"
+  },
+  "capacity": {
+    "capacity_warning": "UNKNOWN"
+  },
+  "turnover": {
+    "turnover": 80.9119,
+    "trade_count": 27
+  },
+  "holding_period": {
+    "avg_holding_period": 0.0
+  },
+  "exposure_limits": {
+    "avg_exposure": 0.0
+  },
+  "failure_conditions": [],
+  "delisting_conditions": {
+    "policy": "manual_review_required",
+    "survivorship_bias_risk": "clean",
+    "universe_id": "single-symbol-SPY-1d-f6557a41cfbb",
+    "universe_source": "auto_lineage:single_symbol_request:v1:yfinance:SPY:1d:2024-06-03T14:30:00Z:2024-06-07T14:30:00Z"
+  },
+  "contract_missing_reasons": {
+    "purge_embargo": "purge_embargo_metadata_missing_from_validation",
+    "pbo": "pbo_missing_from_validation",
+    "dsr": "deflated_sharpe_ratio_missing_from_validation",
+    "cpcv": "validation_method_not_cpcv:unknown",
+    "capacity": "capacity_estimate_missing_from_cost_stress_or_metrics",
+    "failure_conditions": "failure_conditions_missing_from_candidate_or_experiment",
+    "style_exposure": "style_exposure_benchmark_regression_missing"
+  },
+  "promotion_result_path": "",
+  "promotion_gate_decision": "BLOCKED",
+  "promotion_gate_blocking_reasons": [
+    "strategy_manifest_contract_incomplete:sman_d3e10b1422d245b2:purge_embargo,pbo,dsr,cpcv,style_exposure,capacity",
+    "missing_deflated_sharpe_ratio: promotion requires DSR evidence after trial counting",
+    "missing_pbo_evidence: promotion requires CPCV/PBO path statistics, not a single best-path summary",
+    "validation_cv_method_not_allowed: method=unknown (need cpcv, purged_kfold, or embargoed_walk_forward)",
+    "validation_purge_embargo_missing: promotion requires purged or embargoed out-of-sample validation",
+    "single_path_validation_not_allowed: candidate cannot promote on a single validation path even with high Sharpe",
+    "insufficient_effective_trials: promotion requires at least 2 effective and independent trials",
+    "multiple_testing_missing: promotion requires family-wise multiple-testing statistics",
+    "max_drawdown_too_high: 79.1% (>= 50% threshold)",
+    "missing_monte_carlo_survival_rate: promotion requires Monte Carlo survival evidence",
+    "missing_param_stability_score: promotion requires parameter stability evidence",
+    "stress_survival_low: survival_rate=0.000 (<= 0.70 threshold)"
+  ],
+  "promotion_gate_warning_reasons": [
+    "validation_cv_summary_missing: walk-forward evidence should declare purged/embargoed CV or CPCV metadata",
+    "validation_statistics_partial: promotion evidence is missing one or more validation statistics",
+    "missing_alpha_decay_half_life_days: promotion evidence is missing alpha decay half-life metadata"
+  ],
+  "promotion_gate_needs_more_research": [],
+  "promotion_gate_next_commands": [
+    "PYTHONPATH=. venv/bin/python -c \"from quant_us.research.automation.evidence_materializer import ResearchEvidenceMaterializer; ResearchEvidenceMaterializer('data').materialize_candidate('cand_20b90fd795cd4c1d')\"",
+    "PYTHONPATH=. venv/bin/python scripts/run_walk_forward.py --symbol SPY --start 2024-01-01 --end 2024-12-31 --bar-size 1d --data-root data",
+    "PYTHONPATH=. venv/bin/python scripts/run_research_experiment.py --experiment-name rerun-exp_8a9c08aac46c4994 --symbols SPY --start 2024-01-01 --end 2024-12-31 --strategy-id trend_momentum --strategy-params-json '{\"entry_threshold\": 0.03, \"lookback_bars\": 20}' --bar-size 1d --data-root data --vendor yfinance"
+  ],
+  "evidence": {
+    "promotion_gate": {
+      "candidate_id": "cand_20b90fd795cd4c1d",
+      "decision": "BLOCKED",
+      "reasons": [
+        "strategy_manifest_contract_incomplete:sman_d3e10b1422d245b2:purge_embargo,pbo,dsr,cpcv,style_exposure,capacity",
+        "missing_deflated_sharpe_ratio: promotion requires DSR evidence after trial counting",
+        "missing_pbo_evidence: promotion requires CPCV/PBO path statistics, not a single best-path summary",
+        "validation_cv_method_not_allowed: method=unknown (need cpcv, purged_kfold, or embargoed_walk_forward)",
+        "validation_purge_embargo_missing: promotion requires purged or embargoed out-of-sample validation",
+        "single_path_validation_not_allowed: candidate cannot promote on a single validation path even with high Sharpe",
+        "insufficient_effective_trials: promotion requires at least 2 effective and independent trials",
+        "multiple_testing_missing: promotion requires family-wise multiple-testing statistics",
+        "max_drawdown_too_high: 79.1% (>= 50% threshold)",
+        "missing_monte_carlo_survival_rate: promotion requires Monte Carlo survival evidence",
+        "missing_param_stability_score: promotion requires parameter stability evidence",
+        "stress_survival_low: survival_rate=0.000 (<= 0.70 threshold)"
+      ],
+      "warnings": [
+        "validation_cv_summary_missing: walk-forward evidence should declare purged/embargoed CV or CPCV metadata",
+        "validation_statistics_partial: promotion evidence is missing one or more validation statistics",
+        "missing_alpha_decay_half_life_days: promotion evidence is missing alpha decay half-life metadata"
+      ],
+      "needs_more_research": [],
+      "promotion_result_path": "",
+      "validation_stats": {
+        "candidate_id": "cand_20b90fd795cd4c1d",
+        "status": "partial",
+        "available_components": {
+          "cv_summary": false,
+          "trial_counting": false,
+          "deflated_sharpe_ratio": false,
+          "pbo": false,
+          "multiple_testing": false,
+          "net_return_distribution": false,
+          "cost_before_after": false
+        },
+        "cv_summary": {
+          "method": "unknown",
+          "purged": false,
+          "embargoed": false,
+          "embargo_steps": 0,
+          "fold_count": 0,
+          "path_count": 0,
+          "train_window_count": 0,
+          "test_window_count": 0,
+          "pass_rate": 0.0,
+          "mean_oos_sharpe": null,
+          "median_oos_sharpe": null
+        },
+        "trial_counting": {
+          "declared_trial_count": 0,
+          "param_grid_trial_count": 0,
+          "cv_path_count": 0,
+          "cv_fold_count": 0,
+          "cost_level_count": 0,
+          "trial_sharpe_count": 0,
+          "pbo_split_count": 0,
+          "independent_trial_count": 0,
+          "effective_trial_count": 0
+        },
+        "deflated_sharpe_ratio": {
+          "observed_sharpe": 0.5495,
+          "benchmark_sharpe": null,
+          "trial_count": 0,
+          "returns_count": 0,
+          "skew": null,
+          "excess_kurtosis": null,
+          "psr": null,
+          "dsr": null,
+          "passed": null
+        },
+        "pbo": {
+          "mode": "unavailable",
+          "group_count": 0,
+          "overfit_group_count": 0,
+          "pbo": null,
+          "logit_mean": null,
+          "logit_median": null,
+          "passed": null
+        },
+        "multiple_testing": {
+          "mode": "unavailable",
+          "familywise_alpha": 0.05,
+          "effective_trial_count": 0,
+          "independent_trial_count": 0,
+          "raw_p_value": null,
+          "bonferroni_alpha": null,
+          "sidak_alpha": null,
+          "dsr_p_value": null,
+          "passed": null
+        },
+        "net_return_distribution": {
+          "count": 0,
+          "mean": null,
+          "std": null,
+          "median": null,
+          "min": null,
+          "max": null,
+          "p05": null,
+          "p25": null,
+          "p75": null,
+          "p95": null,
+          "negative_share": null
+        },
+        "cost_before_after": {
+          "mode": "unavailable",
+          "gross_return": null,
+          "net_return": 0.4995,
+          "gross_sharpe": null,
+          "net_sharpe": 0.5495,
+          "cost_drag_return": null,
+          "cost_drag_sharpe": null,
+          "baseline_multiplier": null,
+          "worst_multiplier": null,
+          "worst_return": null,
+          "worst_sharpe": null,
+          "stress_return_delta": null,
+          "surviving_levels": 0,
+          "level_count": 0
+        },
+        "promotion_gate_contract": {
+          "status": "blocked",
+          "required": {
+            "allowed_cv_methods": [
+              "cpcv",
+              "purged_kfold",
+              "embargoed_walk_forward"
+            ],
+            "min_validation_paths": 2,
+            "min_effective_trial_count": 2,
+            "min_independent_trial_count": 2,
+            "min_dsr": 0.1,
+            "max_pbo": 0.5,
+            "familywise_alpha": 0.05
+          },
+          "observed": {
+            "cv_method": "unknown",
+            "validation_paths": 0,
+            "effective_trial_count": 0,
+            "independent_trial_count": 0,
+            "dsr": null,
+            "pbo": null,
+            "multiple_testing_mode": "unavailable"
+          },
+          "checks": {
+            "cv_method_allowed": false,
+            "purged_or_embargoed": false,
+            "multi_path_validation": false,
+            "trial_count_sufficient": false,
+            "dsr_available": false,
+            "dsr_passed": false,
+            "pbo_available": false,
+            "pbo_passed": false,
+            "multiple_testing_complete": false,
+            "multiple_testing_passed": false
+          }
+        }
+      },
+      "next_commands": [
+        "PYTHONPATH=. venv/bin/python -c \"from quant_us.research.automation.evidence_materializer import ResearchEvidenceMaterializer; ResearchEvidenceMaterializer('data').materialize_candidate('cand_20b90fd795cd4c1d')\"",
+        "PYTHONPATH=. venv/bin/python scripts/run_walk_forward.py --symbol SPY --start 2024-01-01 --end 2024-12-31 --bar-size 1d --data-root data",
+        "PYTHONPATH=. venv/bin/python scripts/run_research_experiment.py --experiment-name rerun-exp_8a9c08aac46c4994 --symbols SPY --start 2024-01-01 --end 2024-12-31 --strategy-id trend_momentum --strategy-params-json '{\"entry_threshold\": 0.03, \"lookback_bars\": 20}' --bar-size 1d --data-root data --vendor yfinance"
+      ]
+    }
+  },
+  "paper_review_evidence_required": true,
+  "portfolio_evidence_pack_id": "",
+  "portfolio_evidence_pack_path": "",
+  "paper_review_gate_status": "",
+  "paper_review_evidence_pack_path": "",
+  "paper_review_candidate_path": "",
+  "paper_review_candidate_status": "",
+  "paper_review_blocking_reasons": [],
+  "paper_review_id": "",
+  "created_at": "2026-05-11T02:49:36.179573+00:00",
+  "params_frozen": true
+}

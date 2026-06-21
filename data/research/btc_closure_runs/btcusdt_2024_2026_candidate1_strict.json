@@ -1,0 +1,2274 @@
+{
+  "request": {
+    "symbol": "BTCUSDT",
+    "interval": "1h",
+    "start": "2024-01-01 00:00:00+00:00",
+    "end": "2026-05-12 00:00:00+00:00",
+    "data_db_path": "data/market_data.sqlite",
+    "data_root": "data",
+    "capital": "100000.0",
+    "commission_rate": "0.0004",
+    "slippage": "4.0",
+    "leverage": "1.0",
+    "target_intervals": "['5m', '15m', '1h', '4h', '1d']",
+    "strategy_ids": "['trend_macd', 'donchian_breakout', 'reversion_rsi', 'volatility_squeeze', 'macro_trend', 'dynamic_grid', 'time_window']",
+    "max_candidates_per_strategy": "4",
+    "max_ranked_candidates": "24",
+    "max_scenarios": "8",
+    "windows": "4",
+    "cpcv_splits": "4",
+    "cpcv_test_splits": "1",
+    "cpcv_max_paths": "4",
+    "cpcv_max_configs": "2",
+    "purge_bars": "2",
+    "embargo_bars": "2",
+    "persist_data_manifest": "True"
+  },
+  "data_integrity": {
+    "status": "pass",
+    "source_interval": "1m",
+    "target_intervals": [
+      "5m",
+      "15m",
+      "1h",
+      "4h",
+      "1d"
+    ],
+    "resample_results": [
+      {
+        "status": "completed",
+        "db_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "exchange": "binance_spot",
+        "symbol": "BTCUSDT",
+        "source_interval": "1m",
+        "target_interval": "5m",
+        "start": "2024-01-01 00:00:00+00:00",
+        "end": "2026-05-12 00:00:00+00:00",
+        "source_rows": 1241285,
+        "expected_source_rows": 1241285,
+        "rows_written": 248257,
+        "coverage_pct": 100.0,
+        "quality_score": 100.0,
+        "manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5.json",
+        "data_version": "qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5",
+        "fingerprint": "794d24e228b57ca0d340c4d56ee4f694cda930d96cee6a7dd91241c06b9565fd",
+        "completed_at": "2026-05-12 02:08:05.627523+00:00",
+        "quality_summary": {
+          "missing_bars": 0,
+          "duplicate_bars": 0,
+          "price_jump_bars": 0,
+          "zero_volume_bars": 0,
+          "corporate_action_flags": 0,
+          "invalid_ohlc_rows": 0,
+          "non_positive_price_rows": 0,
+          "duplicate_timestamps_removed": 0,
+          "cleaning_loss_rows": 0,
+          "total_issue_count": 0
+        }
+      },
+      {
+        "status": "completed",
+        "db_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "exchange": "binance_spot",
+        "symbol": "BTCUSDT",
+        "source_interval": "1m",
+        "target_interval": "15m",
+        "start": "2024-01-01 00:00:00+00:00",
+        "end": "2026-05-12 00:00:00+00:00",
+        "source_rows": 1241295,
+        "expected_source_rows": 1241295,
+        "rows_written": 82753,
+        "coverage_pct": 100.0,
+        "quality_score": 100.0,
+        "manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4.json",
+        "data_version": "qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4",
+        "fingerprint": "6af9de75d6c40799a593e190e7fef6b1372d04cdacd548a5728b43f79150fb44",
+        "completed_at": "2026-05-12 02:08:55.716501+00:00",
+        "quality_summary": {
+          "missing_bars": 0,
+          "duplicate_bars": 0,
+          "price_jump_bars": 0,
+          "zero_volume_bars": 0,
+          "corporate_action_flags": 0,
+          "invalid_ohlc_rows": 0,
+          "non_positive_price_rows": 0,
+          "duplicate_timestamps_removed": 0,
+          "cleaning_loss_rows": 0,
+          "total_issue_count": 0
+        }
+      },
+      {
+        "status": "completed",
+        "db_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "exchange": "binance_spot",
+        "symbol": "BTCUSDT",
+        "source_interval": "1m",
+        "target_interval": "1h",
+        "start": "2024-01-01 00:00:00+00:00",
+        "end": "2026-05-12 00:00:00+00:00",
+        "source_rows": 1241340,
+        "expected_source_rows": 1241340,
+        "rows_written": 20689,
+        "coverage_pct": 100.0,
+        "quality_score": 100.0,
+        "manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+        "data_version": "qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31",
+        "fingerprint": "23e70ff50f3180a9c743098808e03f14b1b2092dd0e9a03b7b533954669e8818",
+        "completed_at": "2026-05-12 02:09:17.173830+00:00",
+        "quality_summary": {
+          "missing_bars": 0,
+          "duplicate_bars": 0,
+          "price_jump_bars": 0,
+          "zero_volume_bars": 0,
+          "corporate_action_flags": 0,
+          "invalid_ohlc_rows": 0,
+          "non_positive_price_rows": 0,
+          "duplicate_timestamps_removed": 0,
+          "cleaning_loss_rows": 0,
+          "total_issue_count": 0
+        }
+      },
+      {
+        "status": "completed",
+        "db_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "exchange": "binance_spot",
+        "symbol": "BTCUSDT",
+        "source_interval": "1m",
+        "target_interval": "4h",
+        "start": "2024-01-01 00:00:00+00:00",
+        "end": "2026-05-11 20:00:00+00:00",
+        "source_rows": 1241280,
+        "expected_source_rows": 1241280,
+        "rows_written": 5172,
+        "coverage_pct": 100.0,
+        "quality_score": 100.0,
+        "manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d.json",
+        "data_version": "qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d",
+        "fingerprint": "15e65a22b06d7a412562c550798c25ee65df24987703615f35c7e840a2eaad38",
+        "completed_at": "2026-05-12 02:09:34.416725+00:00",
+        "quality_summary": {
+          "missing_bars": 0,
+          "duplicate_bars": 0,
+          "price_jump_bars": 0,
+          "zero_volume_bars": 0,
+          "corporate_action_flags": 0,
+          "invalid_ohlc_rows": 0,
+          "non_positive_price_rows": 0,
+          "duplicate_timestamps_removed": 0,
+          "cleaning_loss_rows": 0,
+          "total_issue_count": 0
+        }
+      },
+      {
+        "status": "completed",
+        "db_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "exchange": "binance_spot",
+        "symbol": "BTCUSDT",
+        "source_interval": "1m",
+        "target_interval": "1d",
+        "start": "2024-01-01 00:00:00+00:00",
+        "end": "2026-05-11 00:00:00+00:00",
+        "source_rows": 1241280,
+        "expected_source_rows": 1241280,
+        "rows_written": 862,
+        "coverage_pct": 100.0,
+        "quality_score": 100.0,
+        "manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4.json",
+        "data_version": "qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4",
+        "fingerprint": "c2f297aaeea47864fc694d3c99e243cab70444ac77da8497e7f011cb4036ec74",
+        "completed_at": "2026-05-12 02:09:52.537616+00:00",
+        "quality_summary": {
+          "missing_bars": 0,
+          "duplicate_bars": 0,
+          "price_jump_bars": 0,
+          "zero_volume_bars": 0,
+          "corporate_action_flags": 0,
+          "invalid_ohlc_rows": 0,
+          "non_positive_price_rows": 0,
+          "duplicate_timestamps_removed": 0,
+          "cleaning_loss_rows": 0,
+          "total_issue_count": 0
+        }
+      }
+    ],
+    "quality_results": [
+      {
+        "status": "completed",
+        "selected_priority": "数据质量与特征版本治理",
+        "framework": [
+          {
+            "priority": 1,
+            "title": "参数稳健性 + 样本外验证",
+            "status": "completed",
+            "reason": "已经具备基础样本外参数检验。"
+          },
+          {
+            "priority": 2,
+            "title": "交易成本压力测试",
+            "status": "completed",
+            "reason": "已经具备手续费和滑点压力测试。"
+          },
+          {
+            "priority": 3,
+            "title": "Walk-forward 与市场状态切片",
+            "status": "completed",
+            "reason": "已经具备时间窗口和市场状态切片验证。"
+          },
+          {
+            "priority": 4,
+            "title": "组合层相关性与资金分配",
+            "status": "completed",
+            "reason": "已经具备组合相关性和风险预算分析。"
+          },
+          {
+            "priority": 5,
+            "title": "数据质量与特征版本治理",
+            "status": "selected",
+            "reason": "当前阶段把数据质量、数据指纹和版本治理接入研究闭环，为后续 ML 特征库打基础。"
+          }
+        ],
+        "source": "sqlite",
+        "actual_source": "sqlite",
+        "symbol": "BTCUSDT",
+        "interval": "1m",
+        "row_count": 1241281,
+        "raw_row_count": 1241281,
+        "expected_rows": 1241281,
+        "coverage_pct": 100.0,
+        "missing_bars": 0,
+        "duplicate_timestamps": 0,
+        "cleaning_loss_rows": 0,
+        "invalid_ohlc": 0,
+        "non_positive_prices": 0,
+        "non_positive_volume": 526203,
+        "large_price_jumps": 0,
+        "volume_anomalies": 111970,
+        "max_gap_bars": 0,
+        "max_price_jump_pct": 2.8061,
+        "first_timestamp": "2024-01-01T00:00:00+00:00",
+        "last_timestamp": "2026-05-12T00:00:00+00:00",
+        "quality_score": 100.0,
+        "is_usable": true,
+        "fingerprint": "548e581b8c23052a5d1e7d4692ef76eb2b5aee2b5c91337c2d6de61b6c692722",
+        "data_version": "qs-sqlite-BTCUSDT-1m-548e581b8c23",
+        "issues": [
+          {
+            "severity": "low",
+            "code": "non_positive_volume",
+            "message": "发现 526203 条非正成交量。"
+          },
+          {
+            "severity": "low",
+            "code": "volume_anomalies",
+            "message": "发现 111970 条成交量超过中位数 20 倍。"
+          }
+        ],
+        "timezone": "UTC",
+        "adjustment_policy": "raw",
+        "corporate_action_adjustment": "raw",
+        "universe_id": "single-symbol-BTCUSDT-1m-049a4e5d8788",
+        "universe_source": "auto_lineage:single_symbol_request:v1:sqlite:BTCUSDT:1m:2024-01-01:2026-05-12",
+        "survivorship_bias_risk": "clean",
+        "raw_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "cleaned_path": "",
+        "source_lineage": "sqlite:market_klines"
+      },
+      {
+        "status": "completed",
+        "selected_priority": "数据质量与特征版本治理",
+        "framework": [
+          {
+            "priority": 1,
+            "title": "参数稳健性 + 样本外验证",
+            "status": "completed",
+            "reason": "已经具备基础样本外参数检验。"
+          },
+          {
+            "priority": 2,
+            "title": "交易成本压力测试",
+            "status": "completed",
+            "reason": "已经具备手续费和滑点压力测试。"
+          },
+          {
+            "priority": 3,
+            "title": "Walk-forward 与市场状态切片",
+            "status": "completed",
+            "reason": "已经具备时间窗口和市场状态切片验证。"
+          },
+          {
+            "priority": 4,
+            "title": "组合层相关性与资金分配",
+            "status": "completed",
+            "reason": "已经具备组合相关性和风险预算分析。"
+          },
+          {
+            "priority": 5,
+            "title": "数据质量与特征版本治理",
+            "status": "selected",
+            "reason": "当前阶段把数据质量、数据指纹和版本治理接入研究闭环，为后续 ML 特征库打基础。"
+          }
+        ],
+        "source": "sqlite",
+        "actual_source": "sqlite",
+        "symbol": "BTCUSDT",
+        "interval": "5m",
+        "row_count": 248257,
+        "raw_row_count": 248257,
+        "expected_rows": 248257,
+        "coverage_pct": 100.0,
+        "missing_bars": 0,
+        "duplicate_timestamps": 0,
+        "cleaning_loss_rows": 0,
+        "invalid_ohlc": 0,
+        "non_positive_prices": 0,
+        "non_positive_volume": 18105,
+        "large_price_jumps": 0,
+        "volume_anomalies": 27383,
+        "max_gap_bars": 0,
+        "max_price_jump_pct": 3.8979,
+        "first_timestamp": "2024-01-01T00:00:00+00:00",
+        "last_timestamp": "2026-05-12T00:00:00+00:00",
+        "quality_score": 100.0,
+        "is_usable": true,
+        "fingerprint": "0382a7a5de315131ffc9132af25f257d5c7990d38a3fa661d7940539a0942707",
+        "data_version": "qs-sqlite-BTCUSDT-5m-0382a7a5de31",
+        "issues": [
+          {
+            "severity": "low",
+            "code": "non_positive_volume",
+            "message": "发现 18105 条非正成交量。"
+          },
+          {
+            "severity": "low",
+            "code": "volume_anomalies",
+            "message": "发现 27383 条成交量超过中位数 20 倍。"
+          }
+        ],
+        "timezone": "UTC",
+        "adjustment_policy": "raw",
+        "corporate_action_adjustment": "raw",
+        "universe_id": "single-symbol-BTCUSDT-5m-e435ed6150e1",
+        "universe_source": "auto_lineage:single_symbol_request:v1:sqlite:BTCUSDT:5m:2024-01-01:2026-05-12",
+        "survivorship_bias_risk": "clean",
+        "raw_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "cleaned_path": "",
+        "source_lineage": "sqlite:market_klines"
+      },
+      {
+        "status": "completed",
+        "selected_priority": "数据质量与特征版本治理",
+        "framework": [
+          {
+            "priority": 1,
+            "title": "参数稳健性 + 样本外验证",
+            "status": "completed",
+            "reason": "已经具备基础样本外参数检验。"
+          },
+          {
+            "priority": 2,
+            "title": "交易成本压力测试",
+            "status": "completed",
+            "reason": "已经具备手续费和滑点压力测试。"
+          },
+          {
+            "priority": 3,
+            "title": "Walk-forward 与市场状态切片",
+            "status": "completed",
+            "reason": "已经具备时间窗口和市场状态切片验证。"
+          },
+          {
+            "priority": 4,
+            "title": "组合层相关性与资金分配",
+            "status": "completed",
+            "reason": "已经具备组合相关性和风险预算分析。"
+          },
+          {
+            "priority": 5,
+            "title": "数据质量与特征版本治理",
+            "status": "selected",
+            "reason": "当前阶段把数据质量、数据指纹和版本治理接入研究闭环，为后续 ML 特征库打基础。"
+          }
+        ],
+        "source": "sqlite",
+        "actual_source": "sqlite",
+        "symbol": "BTCUSDT",
+        "interval": "15m",
+        "row_count": 82753,
+        "raw_row_count": 82753,
+        "expected_rows": 82753,
+        "coverage_pct": 100.0,
+        "missing_bars": 0,
+        "duplicate_timestamps": 0,
+        "cleaning_loss_rows": 0,
+        "invalid_ohlc": 0,
+        "non_positive_prices": 0,
+        "non_positive_volume": 423,
+        "large_price_jumps": 0,
+        "volume_anomalies": 6425,
+        "max_gap_bars": 0,
+        "max_price_jump_pct": 4.99,
+        "first_timestamp": "2024-01-01T00:00:00+00:00",
+        "last_timestamp": "2026-05-12T00:00:00+00:00",
+        "quality_score": 100.0,
+        "is_usable": true,
+        "fingerprint": "1fe4f9e302d59bd91b7b68918cbf0edb254870c16b1b23f67c638c68699d7377",
+        "data_version": "qs-sqlite-BTCUSDT-15m-1fe4f9e302d5",
+        "issues": [
+          {
+            "severity": "low",
+            "code": "non_positive_volume",
+            "message": "发现 423 条非正成交量。"
+          },
+          {
+            "severity": "low",
+            "code": "volume_anomalies",
+            "message": "发现 6425 条成交量超过中位数 20 倍。"
+          }
+        ],
+        "timezone": "UTC",
+        "adjustment_policy": "raw",
+        "corporate_action_adjustment": "raw",
+        "universe_id": "single-symbol-BTCUSDT-15m-f6ee15727213",
+        "universe_source": "auto_lineage:single_symbol_request:v1:sqlite:BTCUSDT:15m:2024-01-01:2026-05-12",
+        "survivorship_bias_risk": "clean",
+        "raw_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "cleaned_path": "",
+        "source_lineage": "sqlite:market_klines"
+      },
+      {
+        "status": "completed",
+        "selected_priority": "数据质量与特征版本治理",
+        "framework": [
+          {
+            "priority": 1,
+            "title": "参数稳健性 + 样本外验证",
+            "status": "completed",
+            "reason": "已经具备基础样本外参数检验。"
+          },
+          {
+            "priority": 2,
+            "title": "交易成本压力测试",
+            "status": "completed",
+            "reason": "已经具备手续费和滑点压力测试。"
+          },
+          {
+            "priority": 3,
+            "title": "Walk-forward 与市场状态切片",
+            "status": "completed",
+            "reason": "已经具备时间窗口和市场状态切片验证。"
+          },
+          {
+            "priority": 4,
+            "title": "组合层相关性与资金分配",
+            "status": "completed",
+            "reason": "已经具备组合相关性和风险预算分析。"
+          },
+          {
+            "priority": 5,
+            "title": "数据质量与特征版本治理",
+            "status": "selected",
+            "reason": "当前阶段把数据质量、数据指纹和版本治理接入研究闭环，为后续 ML 特征库打基础。"
+          }
+        ],
+        "source": "sqlite",
+        "actual_source": "sqlite",
+        "symbol": "BTCUSDT",
+        "interval": "1h",
+        "row_count": 20689,
+        "raw_row_count": 20689,
+        "expected_rows": 20689,
+        "coverage_pct": 100.0,
+        "missing_bars": 0,
+        "duplicate_timestamps": 0,
+        "cleaning_loss_rows": 0,
+        "invalid_ohlc": 0,
+        "non_positive_prices": 0,
+        "non_positive_volume": 0,
+        "large_price_jumps": 0,
+        "volume_anomalies": 722,
+        "max_gap_bars": 0,
+        "max_price_jump_pct": 6.1541,
+        "first_timestamp": "2024-01-01T00:00:00+00:00",
+        "last_timestamp": "2026-05-12T00:00:00+00:00",
+        "quality_score": 100.0,
+        "is_usable": true,
+        "fingerprint": "5cfb8d5f45d542a75b1da342bd6820564b6b5c598065db66f4949525ac440fe4",
+        "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "issues": [
+          {
+            "severity": "low",
+            "code": "volume_anomalies",
+            "message": "发现 722 条成交量超过中位数 20 倍。"
+          }
+        ],
+        "timezone": "UTC",
+        "adjustment_policy": "raw",
+        "corporate_action_adjustment": "raw",
+        "universe_id": "single-symbol-BTCUSDT-1h-7994f40e32d5",
+        "universe_source": "auto_lineage:single_symbol_request:v1:sqlite:BTCUSDT:1h:2024-01-01:2026-05-12",
+        "survivorship_bias_risk": "clean",
+        "raw_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "cleaned_path": "",
+        "source_lineage": "sqlite:market_klines"
+      },
+      {
+        "status": "completed",
+        "selected_priority": "数据质量与特征版本治理",
+        "framework": [
+          {
+            "priority": 1,
+            "title": "参数稳健性 + 样本外验证",
+            "status": "completed",
+            "reason": "已经具备基础样本外参数检验。"
+          },
+          {
+            "priority": 2,
+            "title": "交易成本压力测试",
+            "status": "completed",
+            "reason": "已经具备手续费和滑点压力测试。"
+          },
+          {
+            "priority": 3,
+            "title": "Walk-forward 与市场状态切片",
+            "status": "completed",
+            "reason": "已经具备时间窗口和市场状态切片验证。"
+          },
+          {
+            "priority": 4,
+            "title": "组合层相关性与资金分配",
+            "status": "completed",
+            "reason": "已经具备组合相关性和风险预算分析。"
+          },
+          {
+            "priority": 5,
+            "title": "数据质量与特征版本治理",
+            "status": "selected",
+            "reason": "当前阶段把数据质量、数据指纹和版本治理接入研究闭环，为后续 ML 特征库打基础。"
+          }
+        ],
+        "source": "sqlite",
+        "actual_source": "sqlite",
+        "symbol": "BTCUSDT",
+        "interval": "4h",
+        "row_count": 5172,
+        "raw_row_count": 5172,
+        "expected_rows": 5172,
+        "coverage_pct": 100.0,
+        "missing_bars": 0,
+        "duplicate_timestamps": 0,
+        "cleaning_loss_rows": 0,
+        "invalid_ohlc": 0,
+        "non_positive_prices": 0,
+        "non_positive_volume": 0,
+        "large_price_jumps": 0,
+        "volume_anomalies": 67,
+        "max_gap_bars": 0,
+        "max_price_jump_pct": 10.3456,
+        "first_timestamp": "2024-01-01T00:00:00+00:00",
+        "last_timestamp": "2026-05-11T20:00:00+00:00",
+        "quality_score": 100.0,
+        "is_usable": true,
+        "fingerprint": "f935f3df727062d9613a0cdb742a98189eaf8be7f2519b9174f83e70f18b9640",
+        "data_version": "qs-sqlite-BTCUSDT-4h-f935f3df7270",
+        "issues": [
+          {
+            "severity": "low",
+            "code": "volume_anomalies",
+            "message": "发现 67 条成交量超过中位数 20 倍。"
+          }
+        ],
+        "timezone": "UTC",
+        "adjustment_policy": "raw",
+        "corporate_action_adjustment": "raw",
+        "universe_id": "single-symbol-BTCUSDT-4h-df1b233bbef7",
+        "universe_source": "auto_lineage:single_symbol_request:v1:sqlite:BTCUSDT:4h:2024-01-01:2026-05-11T20:00:00Z",
+        "survivorship_bias_risk": "clean",
+        "raw_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "cleaned_path": "",
+        "source_lineage": "sqlite:market_klines"
+      },
+      {
+        "status": "completed",
+        "selected_priority": "数据质量与特征版本治理",
+        "framework": [
+          {
+            "priority": 1,
+            "title": "参数稳健性 + 样本外验证",
+            "status": "completed",
+            "reason": "已经具备基础样本外参数检验。"
+          },
+          {
+            "priority": 2,
+            "title": "交易成本压力测试",
+            "status": "completed",
+            "reason": "已经具备手续费和滑点压力测试。"
+          },
+          {
+            "priority": 3,
+            "title": "Walk-forward 与市场状态切片",
+            "status": "completed",
+            "reason": "已经具备时间窗口和市场状态切片验证。"
+          },
+          {
+            "priority": 4,
+            "title": "组合层相关性与资金分配",
+            "status": "completed",
+            "reason": "已经具备组合相关性和风险预算分析。"
+          },
+          {
+            "priority": 5,
+            "title": "数据质量与特征版本治理",
+            "status": "selected",
+            "reason": "当前阶段把数据质量、数据指纹和版本治理接入研究闭环，为后续 ML 特征库打基础。"
+          }
+        ],
+        "source": "sqlite",
+        "actual_source": "sqlite",
+        "symbol": "BTCUSDT",
+        "interval": "1d",
+        "row_count": 862,
+        "raw_row_count": 862,
+        "expected_rows": 862,
+        "coverage_pct": 100.0,
+        "missing_bars": 0,
+        "duplicate_timestamps": 0,
+        "cleaning_loss_rows": 0,
+        "invalid_ohlc": 0,
+        "non_positive_prices": 0,
+        "non_positive_volume": 0,
+        "large_price_jumps": 0,
+        "volume_anomalies": 2,
+        "max_gap_bars": 0,
+        "max_price_jump_pct": 14.2243,
+        "first_timestamp": "2024-01-01T00:00:00+00:00",
+        "last_timestamp": "2026-05-11T00:00:00+00:00",
+        "quality_score": 100.0,
+        "is_usable": true,
+        "fingerprint": "3501225c2a15023157d8c2033b23bef92e7ca10ab0ec99fd1578ba9315f3311a",
+        "data_version": "qs-sqlite-BTCUSDT-1d-3501225c2a15",
+        "issues": [
+          {
+            "severity": "low",
+            "code": "volume_anomalies",
+            "message": "发现 2 条成交量超过中位数 20 倍。"
+          }
+        ],
+        "timezone": "UTC",
+        "adjustment_policy": "raw",
+        "corporate_action_adjustment": "raw",
+        "universe_id": "single-symbol-BTCUSDT-1d-955f68bd89c8",
+        "universe_source": "auto_lineage:single_symbol_request:v1:sqlite:BTCUSDT:1d:2024-01-01:2026-05-11",
+        "survivorship_bias_risk": "clean",
+        "raw_path": "/home/lishuonewbing/agent测试/data/market_data.sqlite",
+        "cleaned_path": "",
+        "source_lineage": "sqlite:market_klines"
+      }
+    ],
+    "validation_summary": {
+      "status": "pass",
+      "target_intervals": [
+        "5m",
+        "15m",
+        "1h",
+        "4h",
+        "1d"
+      ],
+      "coverage_floor_pct": 99.0,
+      "quality_score_floor": 95.0,
+      "intervals": [
+        {
+          "interval": "5m",
+          "status": "pass",
+          "row_count": 248257,
+          "min_required_bars": 8640,
+          "coverage_pct": 100.0,
+          "quality_score": 100.0,
+          "blockers": [],
+          "data_version": "qs-sqlite-BTCUSDT-5m-0382a7a5de31",
+          "fingerprint": "0382a7a5de315131ffc9132af25f257d5c7990d38a3fa661d7940539a0942707"
+        },
+        {
+          "interval": "15m",
+          "status": "pass",
+          "row_count": 82753,
+          "min_required_bars": 5760,
+          "coverage_pct": 100.0,
+          "quality_score": 100.0,
+          "blockers": [],
+          "data_version": "qs-sqlite-BTCUSDT-15m-1fe4f9e302d5",
+          "fingerprint": "1fe4f9e302d59bd91b7b68918cbf0edb254870c16b1b23f67c638c68699d7377"
+        },
+        {
+          "interval": "1h",
+          "status": "pass",
+          "row_count": 20689,
+          "min_required_bars": 4320,
+          "coverage_pct": 100.0,
+          "quality_score": 100.0,
+          "blockers": [],
+          "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+          "fingerprint": "5cfb8d5f45d542a75b1da342bd6820564b6b5c598065db66f4949525ac440fe4"
+        },
+        {
+          "interval": "4h",
+          "status": "pass",
+          "row_count": 5172,
+          "min_required_bars": 2190,
+          "coverage_pct": 100.0,
+          "quality_score": 100.0,
+          "blockers": [],
+          "data_version": "qs-sqlite-BTCUSDT-4h-f935f3df7270",
+          "fingerprint": "f935f3df727062d9613a0cdb742a98189eaf8be7f2519b9174f83e70f18b9640"
+        },
+        {
+          "interval": "1d",
+          "status": "pass",
+          "row_count": 862,
+          "min_required_bars": 730,
+          "coverage_pct": 100.0,
+          "quality_score": 100.0,
+          "blockers": [],
+          "data_version": "qs-sqlite-BTCUSDT-1d-3501225c2a15",
+          "fingerprint": "3501225c2a15023157d8c2033b23bef92e7ca10ab0ec99fd1578ba9315f3311a"
+        }
+      ],
+      "blockers": []
+    },
+    "long_sample": {
+      "status": "pass",
+      "intervals": [
+        {
+          "interval": "5m",
+          "status": "pass",
+          "row_count": 248257,
+          "min_required_bars": 8640,
+          "coverage_pct": 100.0,
+          "quality_score": 100.0,
+          "blockers": [],
+          "data_version": "qs-sqlite-BTCUSDT-5m-0382a7a5de31",
+          "fingerprint": "0382a7a5de315131ffc9132af25f257d5c7990d38a3fa661d7940539a0942707"
+        },
+        {
+          "interval": "15m",
+          "status": "pass",
+          "row_count": 82753,
+          "min_required_bars": 5760,
+          "coverage_pct": 100.0,
+          "quality_score": 100.0,
+          "blockers": [],
+          "data_version": "qs-sqlite-BTCUSDT-15m-1fe4f9e302d5",
+          "fingerprint": "1fe4f9e302d59bd91b7b68918cbf0edb254870c16b1b23f67c638c68699d7377"
+        },
+        {
+          "interval": "1h",
+          "status": "pass",
+          "row_count": 20689,
+          "min_required_bars": 4320,
+          "coverage_pct": 100.0,
+          "quality_score": 100.0,
+          "blockers": [],
+          "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+          "fingerprint": "5cfb8d5f45d542a75b1da342bd6820564b6b5c598065db66f4949525ac440fe4"
+        },
+        {
+          "interval": "4h",
+          "status": "pass",
+          "row_count": 5172,
+          "min_required_bars": 2190,
+          "coverage_pct": 100.0,
+          "quality_score": 100.0,
+          "blockers": [],
+          "data_version": "qs-sqlite-BTCUSDT-4h-f935f3df7270",
+          "fingerprint": "f935f3df727062d9613a0cdb742a98189eaf8be7f2519b9174f83e70f18b9640"
+        },
+        {
+          "interval": "1d",
+          "status": "pass",
+          "row_count": 862,
+          "min_required_bars": 730,
+          "coverage_pct": 100.0,
+          "quality_score": 100.0,
+          "blockers": [],
+          "data_version": "qs-sqlite-BTCUSDT-1d-3501225c2a15",
+          "fingerprint": "3501225c2a15023157d8c2033b23bef92e7ca10ab0ec99fd1578ba9315f3311a"
+        }
+      ],
+      "min_bars_by_interval": null
+    },
+    "blockers": [],
+    "audit": {
+      "research_interval": "1h",
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+      "fingerprint": "5cfb8d5f45d542a75b1da342bd6820564b6b5c598065db66f4949525ac440fe4"
+    }
+  },
+  "candidate_screen": {
+    "status": "completed",
+    "strategy_ids": [
+      "trend_macd",
+      "donchian_breakout",
+      "reversion_rsi",
+      "volatility_squeeze",
+      "macro_trend",
+      "dynamic_grid",
+      "time_window"
+    ],
+    "candidate_count": 25,
+    "candidates": [
+      {
+        "strategy_id": "volatility_squeeze",
+        "parameters": {
+          "boll_window": 20,
+          "boll_dev": 1.8,
+          "width_threshold": 0.03
+        },
+        "score": 2.656642,
+        "validation": {
+          "total_return_pct": 39.2941,
+          "annual_return_pct": 49.3147,
+          "annual_volatility_pct": 30.2663,
+          "sharpe_ratio": 1.4752,
+          "sortino_ratio": 0.8025,
+          "max_drawdown_pct": -19.4525,
+          "calmar_ratio": 2.5351,
+          "win_rate_pct": 48.6667,
+          "profit_factor": 1.1455,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 1.7255,
+          "annual_return_pct": 1.1207,
+          "annual_volatility_pct": 27.0979,
+          "sharpe_ratio": 0.1763,
+          "sortino_ratio": 0.0888,
+          "max_drawdown_pct": -27.9435,
+          "calmar_ratio": 0.0401,
+          "win_rate_pct": 46.8018,
+          "profit_factor": 1.0169,
+          "trade_count": 0
+        },
+        "overfit_gap": -1.2989,
+        "candidate_count": 4,
+        "optimizer_rank": 1,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 1
+      },
+      {
+        "strategy_id": "volatility_squeeze",
+        "parameters": {
+          "boll_window": 20,
+          "boll_dev": 2.0,
+          "width_threshold": 0.05
+        },
+        "score": 1.495014,
+        "validation": {
+          "total_return_pct": 25.7657,
+          "annual_return_pct": 31.9568,
+          "annual_volatility_pct": 26.3436,
+          "sharpe_ratio": 1.1847,
+          "sortino_ratio": 0.5107,
+          "max_drawdown_pct": -23.874,
+          "calmar_ratio": 1.3386,
+          "win_rate_pct": 48.802,
+          "profit_factor": 1.1258,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 57.5666,
+          "annual_return_pct": 34.4737,
+          "annual_volatility_pct": 30.2109,
+          "sharpe_ratio": 1.1309,
+          "sortino_ratio": 0.547,
+          "max_drawdown_pct": -22.9946,
+          "calmar_ratio": 1.4992,
+          "win_rate_pct": 48.4021,
+          "profit_factor": 1.1226,
+          "trade_count": 0
+        },
+        "overfit_gap": -0.0538,
+        "candidate_count": 4,
+        "optimizer_rank": 2,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 2
+      },
+      {
+        "strategy_id": "reversion_rsi",
+        "parameters": {
+          "rsi_window": 10,
+          "boll_window": 20,
+          "boll_dev": 1.8,
+          "rsi_long": 30,
+          "rsi_short": 70,
+          "rsi_exit_low": 45,
+          "rsi_exit_high": 55
+        },
+        "score": 0.092642,
+        "validation": {
+          "total_return_pct": 8.4279,
+          "annual_return_pct": 10.2825,
+          "annual_volatility_pct": 29.4832,
+          "sharpe_ratio": 0.4795,
+          "sortino_ratio": 0.1927,
+          "max_drawdown_pct": -24.1714,
+          "calmar_ratio": 0.4254,
+          "win_rate_pct": 52.4372,
+          "profit_factor": 1.0502,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": -11.5767,
+          "annual_return_pct": -7.7022,
+          "annual_volatility_pct": 24.9423,
+          "sharpe_ratio": -0.1963,
+          "sortino_ratio": -0.0744,
+          "max_drawdown_pct": -38.9759,
+          "calmar_ratio": -0.1976,
+          "win_rate_pct": 52.4638,
+          "profit_factor": 0.9789,
+          "trade_count": 0
+        },
+        "overfit_gap": -0.6758,
+        "candidate_count": 4,
+        "optimizer_rank": 1,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 3
+      },
+      {
+        "strategy_id": "dynamic_grid",
+        "parameters": {
+          "center_window": 30,
+          "band_pct": 0.035
+        },
+        "score": 0.040525,
+        "validation": {
+          "total_return_pct": 5.0377,
+          "annual_return_pct": 6.1254,
+          "annual_volatility_pct": 19.1813,
+          "sharpe_ratio": 0.4061,
+          "sortino_ratio": 0.0912,
+          "max_drawdown_pct": -16.2251,
+          "calmar_ratio": 0.3775,
+          "win_rate_pct": 53.5714,
+          "profit_factor": 1.0744,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 46.6321,
+          "annual_return_pct": 28.3185,
+          "annual_volatility_pct": 28.0169,
+          "sharpe_ratio": 1.0291,
+          "sortino_ratio": 0.3052,
+          "max_drawdown_pct": -23.4772,
+          "calmar_ratio": 1.2062,
+          "win_rate_pct": 52.7597,
+          "profit_factor": 1.1748,
+          "trade_count": 0
+        },
+        "overfit_gap": 0.623,
+        "candidate_count": 4,
+        "optimizer_rank": 1,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 4
+      },
+      {
+        "strategy_id": "donchian_breakout",
+        "parameters": {
+          "channel_window": 20
+        },
+        "score": 0.0,
+        "validation": {
+          "total_return_pct": 0.0,
+          "annual_return_pct": 0.0,
+          "annual_volatility_pct": 0.0,
+          "sharpe_ratio": 0.0,
+          "sortino_ratio": 0.0,
+          "max_drawdown_pct": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 0.0,
+          "annual_return_pct": 0.0,
+          "annual_volatility_pct": 0.0,
+          "sharpe_ratio": 0.0,
+          "sortino_ratio": 0.0,
+          "max_drawdown_pct": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "trade_count": 0
+        },
+        "overfit_gap": 0.0,
+        "candidate_count": 4,
+        "optimizer_rank": 1,
+        "recommendations": [
+          "最优参数相对默认参数优势有限，说明默认参数尚可，下一步应做更长样本和压力测试。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 5
+      },
+      {
+        "strategy_id": "donchian_breakout",
+        "parameters": {
+          "channel_window": 10
+        },
+        "score": 0.0,
+        "validation": {
+          "total_return_pct": 0.0,
+          "annual_return_pct": 0.0,
+          "annual_volatility_pct": 0.0,
+          "sharpe_ratio": 0.0,
+          "sortino_ratio": 0.0,
+          "max_drawdown_pct": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 0.0,
+          "annual_return_pct": 0.0,
+          "annual_volatility_pct": 0.0,
+          "sharpe_ratio": 0.0,
+          "sortino_ratio": 0.0,
+          "max_drawdown_pct": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "trade_count": 0
+        },
+        "overfit_gap": 0.0,
+        "candidate_count": 4,
+        "optimizer_rank": 2,
+        "recommendations": [
+          "最优参数相对默认参数优势有限，说明默认参数尚可，下一步应做更长样本和压力测试。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 6
+      },
+      {
+        "strategy_id": "donchian_breakout",
+        "parameters": {
+          "channel_window": 30
+        },
+        "score": 0.0,
+        "validation": {
+          "total_return_pct": 0.0,
+          "annual_return_pct": 0.0,
+          "annual_volatility_pct": 0.0,
+          "sharpe_ratio": 0.0,
+          "sortino_ratio": 0.0,
+          "max_drawdown_pct": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 0.0,
+          "annual_return_pct": 0.0,
+          "annual_volatility_pct": 0.0,
+          "sharpe_ratio": 0.0,
+          "sortino_ratio": 0.0,
+          "max_drawdown_pct": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "trade_count": 0
+        },
+        "overfit_gap": 0.0,
+        "candidate_count": 4,
+        "optimizer_rank": 3,
+        "recommendations": [
+          "最优参数相对默认参数优势有限，说明默认参数尚可，下一步应做更长样本和压力测试。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 7
+      },
+      {
+        "strategy_id": "donchian_breakout",
+        "parameters": {
+          "channel_window": 55
+        },
+        "score": 0.0,
+        "validation": {
+          "total_return_pct": 0.0,
+          "annual_return_pct": 0.0,
+          "annual_volatility_pct": 0.0,
+          "sharpe_ratio": 0.0,
+          "sortino_ratio": 0.0,
+          "max_drawdown_pct": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 0.0,
+          "annual_return_pct": 0.0,
+          "annual_volatility_pct": 0.0,
+          "sharpe_ratio": 0.0,
+          "sortino_ratio": 0.0,
+          "max_drawdown_pct": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "trade_count": 0
+        },
+        "overfit_gap": 0.0,
+        "candidate_count": 4,
+        "optimizer_rank": 4,
+        "recommendations": [
+          "最优参数相对默认参数优势有限，说明默认参数尚可，下一步应做更长样本和压力测试。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 8
+      },
+      {
+        "strategy_id": "volatility_squeeze",
+        "parameters": {
+          "boll_window": 20,
+          "boll_dev": 1.8,
+          "width_threshold": 0.05
+        },
+        "score": -0.397499,
+        "validation": {
+          "total_return_pct": 6.3501,
+          "annual_return_pct": 7.7315,
+          "annual_volatility_pct": 28.3109,
+          "sharpe_ratio": 0.4046,
+          "sortino_ratio": 0.2214,
+          "max_drawdown_pct": -29.3439,
+          "calmar_ratio": 0.2635,
+          "win_rate_pct": 48.3788,
+          "profit_factor": 1.0328,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 33.0273,
+          "annual_return_pct": 20.4317,
+          "annual_volatility_pct": 34.8412,
+          "sharpe_ratio": 0.7068,
+          "sortino_ratio": 0.4064,
+          "max_drawdown_pct": -30.6137,
+          "calmar_ratio": 0.6674,
+          "win_rate_pct": 47.544,
+          "profit_factor": 1.064,
+          "trade_count": 0
+        },
+        "overfit_gap": 0.3022,
+        "candidate_count": 4,
+        "optimizer_rank": 3,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 9
+      },
+      {
+        "strategy_id": "volatility_squeeze",
+        "parameters": {
+          "boll_window": 20,
+          "boll_dev": 1.8,
+          "width_threshold": 0.08
+        },
+        "score": -0.481567,
+        "validation": {
+          "total_return_pct": 8.3446,
+          "annual_return_pct": 10.1801,
+          "annual_volatility_pct": 28.8002,
+          "sharpe_ratio": 0.4805,
+          "sortino_ratio": 0.2727,
+          "max_drawdown_pct": -35.9676,
+          "calmar_ratio": 0.283,
+          "win_rate_pct": 48.7034,
+          "profit_factor": 1.0385,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 28.0928,
+          "annual_return_pct": 17.5024,
+          "annual_volatility_pct": 36.9409,
+          "sharpe_ratio": 0.6203,
+          "sortino_ratio": 0.3677,
+          "max_drawdown_pct": -33.2645,
+          "calmar_ratio": 0.5262,
+          "win_rate_pct": 47.0984,
+          "profit_factor": 1.0541,
+          "trade_count": 0
+        },
+        "overfit_gap": 0.1398,
+        "candidate_count": 4,
+        "optimizer_rank": 4,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 10
+      },
+      {
+        "strategy_id": "dynamic_grid",
+        "parameters": {
+          "center_window": 60,
+          "band_pct": 0.02
+        },
+        "score": -0.91216,
+        "validation": {
+          "total_return_pct": 5.3535,
+          "annual_return_pct": 6.5114,
+          "annual_volatility_pct": 45.8179,
+          "sharpe_ratio": 0.3675,
+          "sortino_ratio": 0.2157,
+          "max_drawdown_pct": -42.427,
+          "calmar_ratio": 0.1535,
+          "win_rate_pct": 51.8793,
+          "profit_factor": 1.0265,
+          "trade_count": 1
+        },
+        "train": {
+          "total_return_pct": -23.7236,
+          "annual_return_pct": -16.1731,
+          "annual_volatility_pct": 33.6908,
+          "sharpe_ratio": -0.355,
+          "sortino_ratio": -0.2413,
+          "max_drawdown_pct": -40.0573,
+          "calmar_ratio": -0.4037,
+          "win_rate_pct": 51.3797,
+          "profit_factor": 0.9782,
+          "trade_count": 1
+        },
+        "overfit_gap": -0.7225,
+        "candidate_count": 4,
+        "optimizer_rank": 2,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 11
+      },
+      {
+        "strategy_id": "dynamic_grid",
+        "parameters": {
+          "center_window": 30,
+          "band_pct": 0.01
+        },
+        "score": -1.263751,
+        "validation": {
+          "total_return_pct": -10.6676,
+          "annual_return_pct": -12.7552,
+          "annual_volatility_pct": 37.1654,
+          "sharpe_ratio": -0.1809,
+          "sortino_ratio": -0.1364,
+          "max_drawdown_pct": -23.0936,
+          "calmar_ratio": -0.5523,
+          "win_rate_pct": 51.1195,
+          "profit_factor": 0.9902,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": -29.9704,
+          "annual_return_pct": -20.7117,
+          "annual_volatility_pct": 47.6924,
+          "sharpe_ratio": -0.2464,
+          "sortino_ratio": -0.1784,
+          "max_drawdown_pct": -52.7192,
+          "calmar_ratio": -0.3929,
+          "win_rate_pct": 52.0086,
+          "profit_factor": 0.9851,
+          "trade_count": 1
+        },
+        "overfit_gap": -0.0655,
+        "candidate_count": 4,
+        "optimizer_rank": 3,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 12
+      },
+      {
+        "strategy_id": "time_window",
+        "parameters": {},
+        "score": -1.271119,
+        "validation": {
+          "total_return_pct": -6.6553,
+          "annual_return_pct": -7.9932,
+          "annual_volatility_pct": 22.8301,
+          "sharpe_ratio": -0.2511,
+          "sortino_ratio": -0.0961,
+          "max_drawdown_pct": -22.4542,
+          "calmar_ratio": -0.356,
+          "win_rate_pct": 46.5116,
+          "profit_factor": 0.9693,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": -1.8355,
+          "annual_return_pct": -1.1996,
+          "annual_volatility_pct": 21.6865,
+          "sharpe_ratio": 0.0531,
+          "sortino_ratio": 0.0181,
+          "max_drawdown_pct": -30.6393,
+          "calmar_ratio": -0.0392,
+          "win_rate_pct": 49.2739,
+          "profit_factor": 1.0067,
+          "trade_count": 0
+        },
+        "overfit_gap": 0.3042,
+        "candidate_count": 1,
+        "optimizer_rank": 1,
+        "recommendations": [
+          "最优参数相对默认参数优势有限，说明默认参数尚可，下一步应做更长样本和压力测试。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 13
+      },
+      {
+        "strategy_id": "macro_trend",
+        "parameters": {
+          "short_ma": 10,
+          "medium_ma": 50,
+          "long_ma": 180
+        },
+        "score": -1.783931,
+        "validation": {
+          "total_return_pct": -7.7898,
+          "annual_return_pct": -9.344,
+          "annual_volatility_pct": 37.2115,
+          "sharpe_ratio": -0.0775,
+          "sortino_ratio": -0.0775,
+          "max_drawdown_pct": -33.722,
+          "calmar_ratio": -0.2771,
+          "win_rate_pct": 49.6676,
+          "profit_factor": 0.9966,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 68.2487,
+          "annual_return_pct": 40.3445,
+          "annual_volatility_pct": 49.2993,
+          "sharpe_ratio": 0.9337,
+          "sortino_ratio": 0.9454,
+          "max_drawdown_pct": -43.0371,
+          "calmar_ratio": 0.9374,
+          "win_rate_pct": 49.3707,
+          "profit_factor": 1.044,
+          "trade_count": 1
+        },
+        "overfit_gap": 1.0112,
+        "candidate_count": 4,
+        "optimizer_rank": 1,
+        "recommendations": [
+          "最优参数相对默认参数优势有限，说明默认参数尚可，下一步应做更长样本和压力测试。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 14
+      },
+      {
+        "strategy_id": "macro_trend",
+        "parameters": {
+          "short_ma": 20,
+          "medium_ma": 60,
+          "long_ma": 120
+        },
+        "score": -2.015646,
+        "validation": {
+          "total_return_pct": -11.6062,
+          "annual_return_pct": -13.8628,
+          "annual_volatility_pct": 33.0708,
+          "sharpe_ratio": -0.286,
+          "sortino_ratio": -0.3082,
+          "max_drawdown_pct": -27.2833,
+          "calmar_ratio": -0.5081,
+          "win_rate_pct": 49.5538,
+          "profit_factor": 0.9882,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 88.48,
+          "annual_return_pct": 51.1195,
+          "annual_volatility_pct": 50.2444,
+          "sharpe_ratio": 1.0723,
+          "sortino_ratio": 1.1389,
+          "max_drawdown_pct": -39.1031,
+          "calmar_ratio": 1.3073,
+          "win_rate_pct": 49.8682,
+          "profit_factor": 1.0488,
+          "trade_count": 1
+        },
+        "overfit_gap": 1.3583,
+        "candidate_count": 4,
+        "optimizer_rank": 2,
+        "recommendations": [
+          "最优参数相对默认参数优势有限，说明默认参数尚可，下一步应做更长样本和压力测试。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 15
+      },
+      {
+        "strategy_id": "dynamic_grid",
+        "parameters": {
+          "center_window": 30,
+          "band_pct": 0.02
+        },
+        "score": -2.918534,
+        "validation": {
+          "total_return_pct": -24.7693,
+          "annual_return_pct": -29.1261,
+          "annual_volatility_pct": 39.4575,
+          "sharpe_ratio": -0.674,
+          "sortino_ratio": -0.2784,
+          "max_drawdown_pct": -41.4041,
+          "calmar_ratio": -0.7035,
+          "win_rate_pct": 52.4262,
+          "profit_factor": 0.9373,
+          "trade_count": 1
+        },
+        "train": {
+          "total_return_pct": -13.8123,
+          "annual_return_pct": -9.2292,
+          "annual_volatility_pct": 30.1552,
+          "sharpe_ratio": -0.1698,
+          "sortino_ratio": -0.0845,
+          "max_drawdown_pct": -47.4252,
+          "calmar_ratio": -0.1946,
+          "win_rate_pct": 51.5178,
+          "profit_factor": 0.9861,
+          "trade_count": 0
+        },
+        "overfit_gap": 0.5042,
+        "candidate_count": 4,
+        "optimizer_rank": 4,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 16
+      },
+      {
+        "strategy_id": "macro_trend",
+        "parameters": {
+          "short_ma": 10,
+          "medium_ma": 50,
+          "long_ma": 120
+        },
+        "score": -2.970083,
+        "validation": {
+          "total_return_pct": -21.1628,
+          "annual_return_pct": -24.9959,
+          "annual_volatility_pct": 32.9859,
+          "sharpe_ratio": -0.707,
+          "sortino_ratio": -0.7164,
+          "max_drawdown_pct": -28.4447,
+          "calmar_ratio": -0.8788,
+          "win_rate_pct": 49.5607,
+          "profit_factor": 0.9701,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 106.144,
+          "annual_return_pct": 60.2011,
+          "annual_volatility_pct": 50.9506,
+          "sharpe_ratio": 1.1794,
+          "sortino_ratio": 1.2221,
+          "max_drawdown_pct": -43.9307,
+          "calmar_ratio": 1.3704,
+          "win_rate_pct": 49.6388,
+          "profit_factor": 1.0544,
+          "trade_count": 1
+        },
+        "overfit_gap": 1.8864,
+        "candidate_count": 4,
+        "optimizer_rank": 3,
+        "recommendations": [
+          "最优参数相对默认参数优势有限，说明默认参数尚可，下一步应做更长样本和压力测试。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 17
+      },
+      {
+        "strategy_id": "macro_trend",
+        "parameters": {
+          "short_ma": 10,
+          "medium_ma": 60,
+          "long_ma": 120
+        },
+        "score": -3.140464,
+        "validation": {
+          "total_return_pct": -22.9961,
+          "annual_return_pct": -27.1005,
+          "annual_volatility_pct": 32.873,
+          "sharpe_ratio": -0.7971,
+          "sortino_ratio": -0.8219,
+          "max_drawdown_pct": -31.0396,
+          "calmar_ratio": -0.8731,
+          "win_rate_pct": 49.2586,
+          "profit_factor": 0.967,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 84.9437,
+          "annual_return_pct": 49.2663,
+          "annual_volatility_pct": 52.4511,
+          "sharpe_ratio": 1.0256,
+          "sortino_ratio": 1.0734,
+          "max_drawdown_pct": -41.6077,
+          "calmar_ratio": 1.1841,
+          "win_rate_pct": 49.6153,
+          "profit_factor": 1.0472,
+          "trade_count": 1
+        },
+        "overfit_gap": 1.8227,
+        "candidate_count": 4,
+        "optimizer_rank": 4,
+        "recommendations": [
+          "最优参数相对默认参数优势有限，说明默认参数尚可，下一步应做更长样本和压力测试。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 18
+      },
+      {
+        "strategy_id": "reversion_rsi",
+        "parameters": {
+          "rsi_window": 10,
+          "boll_window": 20,
+          "boll_dev": 2.0,
+          "rsi_long": 30,
+          "rsi_short": 70,
+          "rsi_exit_low": 45,
+          "rsi_exit_high": 55
+        },
+        "score": -3.380183,
+        "validation": {
+          "total_return_pct": -21.2615,
+          "annual_return_pct": -25.1095,
+          "annual_volatility_pct": 19.2153,
+          "sharpe_ratio": -1.4082,
+          "sortino_ratio": -0.4593,
+          "max_drawdown_pct": -30.2387,
+          "calmar_ratio": -0.8304,
+          "win_rate_pct": 51.145,
+          "profit_factor": 0.8499,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": -21.6798,
+          "annual_return_pct": -14.7166,
+          "annual_volatility_pct": 22.4608,
+          "sharpe_ratio": -0.596,
+          "sortino_ratio": -0.1966,
+          "max_drawdown_pct": -43.9707,
+          "calmar_ratio": -0.3347,
+          "win_rate_pct": 51.6129,
+          "profit_factor": 0.9294,
+          "trade_count": 0
+        },
+        "overfit_gap": 0.8122,
+        "candidate_count": 4,
+        "optimizer_rank": 2,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 19
+      },
+      {
+        "strategy_id": "trend_macd",
+        "parameters": {
+          "fast_window": 12,
+          "slow_window": 48,
+          "signal_window": 9
+        },
+        "score": -3.627987,
+        "validation": {
+          "total_return_pct": -32.1159,
+          "annual_return_pct": -37.4101,
+          "annual_volatility_pct": 41.5777,
+          "sharpe_ratio": -0.919,
+          "sortino_ratio": -0.8774,
+          "max_drawdown_pct": -42.6898,
+          "calmar_ratio": -0.8763,
+          "win_rate_pct": 47.4829,
+          "profit_factor": 0.9568,
+          "trade_count": 1
+        },
+        "train": {
+          "total_return_pct": 31.6,
+          "annual_return_pct": 19.5883,
+          "annual_volatility_pct": 50.4464,
+          "sharpe_ratio": 0.6064,
+          "sortino_ratio": 0.5907,
+          "max_drawdown_pct": -38.071,
+          "calmar_ratio": 0.5145,
+          "win_rate_pct": 48.9178,
+          "profit_factor": 1.0302,
+          "trade_count": 1
+        },
+        "overfit_gap": 1.5254,
+        "candidate_count": 4,
+        "optimizer_rank": 1,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 20
+      }
+    ],
+    "selected_candidate": {
+      "strategy_id": "volatility_squeeze",
+      "parameters": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.03
+      },
+      "score": 2.656642,
+      "validation": {
+        "total_return_pct": 39.2941,
+        "annual_return_pct": 49.3147,
+        "annual_volatility_pct": 30.2663,
+        "sharpe_ratio": 1.4752,
+        "sortino_ratio": 0.8025,
+        "max_drawdown_pct": -19.4525,
+        "calmar_ratio": 2.5351,
+        "win_rate_pct": 48.6667,
+        "profit_factor": 1.1455,
+        "trade_count": 0
+      },
+      "train": {
+        "total_return_pct": 1.7255,
+        "annual_return_pct": 1.1207,
+        "annual_volatility_pct": 27.0979,
+        "sharpe_ratio": 0.1763,
+        "sortino_ratio": 0.0888,
+        "max_drawdown_pct": -27.9435,
+        "calmar_ratio": 0.0401,
+        "win_rate_pct": 46.8018,
+        "profit_factor": 1.0169,
+        "trade_count": 0
+      },
+      "overfit_gap": -1.2989,
+      "candidate_count": 4,
+      "optimizer_rank": 1,
+      "recommendations": [
+        "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+        "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+        "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+      ],
+      "rank": 1
+    },
+    "errors": [],
+    "blockers": []
+  },
+  "validated_candidates": [
+    {
+      "strategy_id": "volatility_squeeze",
+      "parameters": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.03
+      },
+      "score": 2.656642,
+      "validation": {
+        "total_return_pct": 39.2941,
+        "annual_return_pct": 49.3147,
+        "annual_volatility_pct": 30.2663,
+        "sharpe_ratio": 1.4752,
+        "sortino_ratio": 0.8025,
+        "max_drawdown_pct": -19.4525,
+        "calmar_ratio": 2.5351,
+        "win_rate_pct": 48.6667,
+        "profit_factor": 1.1455,
+        "trade_count": 0
+      },
+      "train": {
+        "total_return_pct": 1.7255,
+        "annual_return_pct": 1.1207,
+        "annual_volatility_pct": 27.0979,
+        "sharpe_ratio": 0.1763,
+        "sortino_ratio": 0.0888,
+        "max_drawdown_pct": -27.9435,
+        "calmar_ratio": 0.0401,
+        "win_rate_pct": 46.8018,
+        "profit_factor": 1.0169,
+        "trade_count": 0
+      },
+      "overfit_gap": -1.2989,
+      "candidate_count": 4,
+      "optimizer_rank": 1,
+      "recommendations": [
+        "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+        "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+        "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+      ],
+      "rank": 1,
+      "audit": {
+        "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "data_manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+        "data_fingerprint": "5cfb8d5f45d542a75b1da342bd6820564b6b5c598065db66f4949525ac440fe4",
+        "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+        "run_id_prefix": "btc_closure_btcusdt_1h_acd395fed2b0",
+        "event_run_id": "btc_closure_btcusdt_1h_acd395fed2b0_event",
+        "manifest_root": "data/manifests",
+        "data_root": "data"
+      },
+      "event_backtest_summary": {
+        "total_return_pct": 1.7355,
+        "annual_return_pct": 0.7312,
+        "annual_volatility_pct": 2.7548,
+        "sharpe_ratio": 0.2782,
+        "sortino_ratio": 0.2537,
+        "max_drawdown_pct": -3.4728,
+        "calmar_ratio": 0.2105,
+        "win_rate_pct": 48.235,
+        "profit_factor": 1.0515,
+        "trade_count": 1786
+      },
+      "cost_stress_summary": {
+        "survival_rate_pct": 0.0,
+        "ledger_consistency_pct": 100.0,
+        "scenario_count": 8
+      },
+      "walk_forward_summary": {
+        "total_folds": 4,
+        "valid_folds": 4,
+        "passing_folds": 1,
+        "fold_pass_rate_pct": 25.0,
+        "pass_rate_pct": 25.0,
+        "window_count": 4,
+        "avg_oos_return_pct": -0.1163,
+        "median_oos_sharpe": -0.2105,
+        "worst_oos_drawdown_pct": -1.5278,
+        "parameter_stability_pct": 100.0,
+        "regime_pass_rate_pct": 0.0,
+        "ledger_equity_consistent_windows": 4,
+        "ledger_consistency_pct": 100.0,
+        "symbol_count": 1,
+        "symbols_covered": 1,
+        "symbols_insufficient": 0,
+        "symbol_details": {
+          "BTCUSDT": {
+            "folds": 4,
+            "passes": 1,
+            "bar_count": 20689
+          }
+        },
+        "manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T021736.json"
+      },
+      "cpcv_summary": {
+        "status": "completed",
+        "path_count": 4,
+        "trial_count": 8,
+        "fold_sharpes": [
+          0.9601,
+          -0.7028,
+          0.3386,
+          1.6557
+        ]
+      },
+      "validation_statistics": {
+        "candidate_id": "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03",
+        "status": "complete",
+        "available_components": {
+          "cv_summary": true,
+          "trial_counting": true,
+          "deflated_sharpe_ratio": true,
+          "pbo": true,
+          "multiple_testing": true,
+          "lookahead_controls": true,
+          "net_return_distribution": true,
+          "cost_before_after": true
+        },
+        "cv_summary": {
+          "method": "cpcv",
+          "purged": true,
+          "purge_steps": 2,
+          "purge_recorded": true,
+          "embargoed": true,
+          "embargo_steps": 2,
+          "embargo_recorded": true,
+          "fold_count": 4,
+          "path_count": 4,
+          "train_window_count": 4,
+          "test_window_count": 1,
+          "pass_rate": 0.25,
+          "mean_oos_sharpe": 0.5629,
+          "median_oos_sharpe": 0.64935
+        },
+        "lookahead_controls": {
+          "recorded": true,
+          "guard": "event_driven_signal_replay_no_future_features",
+          "violations": [],
+          "passed": true
+        },
+        "trial_counting": {
+          "declared_trial_count": 8,
+          "param_grid_trial_count": 2,
+          "cv_path_count": 4,
+          "cv_fold_count": 4,
+          "cost_level_count": 8,
+          "trial_sharpe_count": 12,
+          "pbo_split_count": 4,
+          "independent_trial_count": 8,
+          "effective_trial_count": 12
+        },
+        "deflated_sharpe_ratio": {
+          "observed_sharpe": 1.4752,
+          "benchmark_sharpe": 3.195331,
+          "trial_count": 12,
+          "returns_count": 4,
+          "skew": 0.015564,
+          "excess_kurtosis": -0.159142,
+          "psr": 0.965353,
+          "dsr": 0.017083,
+          "passed": false
+        },
+        "pbo": {
+          "mode": "grouped_trials",
+          "group_count": 4,
+          "overfit_group_count": 1,
+          "pbo": 0.25,
+          "logit_mean": 0.549306,
+          "logit_median": 1.098612,
+          "passed": false
+        },
+        "multiple_testing": {
+          "mode": "familywise_error_control",
+          "familywise_alpha": 0.05,
+          "effective_trial_count": 12,
+          "independent_trial_count": 8,
+          "raw_p_value": 0.034647,
+          "bonferroni_alpha": 0.00625,
+          "sidak_alpha": 0.006391,
+          "dsr_p_value": 0.982917,
+          "passed": false
+        },
+        "net_return_distribution": {
+          "count": 4,
+          "mean": 9.17235,
+          "std": 19.135722,
+          "median": 9.1161,
+          "min": -13.5086,
+          "max": 31.9658,
+          "p05": -10.96709,
+          "p25": -0.80105,
+          "p75": 19.0895,
+          "p95": 29.39054,
+          "negative_share": 0.25
+        },
+        "cost_before_after": {
+          "mode": "stress_curve",
+          "gross_return": null,
+          "net_return": 39.2941,
+          "gross_sharpe": null,
+          "net_sharpe": 1.4752,
+          "cost_drag_return": null,
+          "cost_drag_sharpe": null,
+          "baseline_multiplier": 1.0,
+          "worst_multiplier": 10.0,
+          "worst_return": -52.0943,
+          "worst_sharpe": -7.865,
+          "stress_return_delta": 91.3884,
+          "surviving_levels": 2,
+          "level_count": 8
+        },
+        "promotion_gate_contract": {
+          "status": "blocked",
+          "required": {
+            "allowed_cv_methods": [
+              "cpcv",
+              "purged_kfold",
+              "embargoed_walk_forward"
+            ],
+            "required_cv_method": "cpcv",
+            "min_validation_paths": 2,
+            "min_effective_trial_count": 2,
+            "min_independent_trial_count": 2,
+            "min_dsr": 0.1,
+            "max_pbo": 0.5,
+            "familywise_alpha": 0.05,
+            "lookahead_guard_recorded": true
+          },
+          "observed": {
+            "cv_method": "cpcv",
+            "validation_paths": 4,
+            "purged": true,
+            "purge_recorded": true,
+            "embargoed": true,
+            "embargo_recorded": true,
+            "effective_trial_count": 12,
+            "independent_trial_count": 8,
+            "dsr": 0.017083,
+            "pbo": 0.25,
+            "multiple_testing_mode": "familywise_error_control",
+            "lookahead_guard_recorded": true,
+            "lookahead_violations": []
+          },
+          "checks": {
+            "cv_method_allowed": true,
+            "cpcv_available": true,
+            "purged_or_embargoed": true,
+            "purge_embargo_recorded": true,
+            "multi_path_validation": true,
+            "trial_count_sufficient": true,
+            "dsr_available": true,
+            "dsr_passed": false,
+            "pbo_available": true,
+            "pbo_passed": true,
+            "multiple_testing_complete": true,
+            "multiple_testing_passed": false,
+            "lookahead_guard_recorded": true,
+            "lookahead_guard_passed": true
+          }
+        }
+      },
+      "statistical_validation_blockers": [
+        "CPCV/DSR/PBO promotion contract blocked",
+        "DSR below promotion threshold",
+        "multiple testing control did not pass"
+      ]
+    }
+  ],
+  "qualification": {
+    "status": "completed",
+    "thresholds": {
+      "min_validation_sharpe": 1.0,
+      "min_profit_factor": 1.15,
+      "min_trade_count": 10,
+      "min_total_return_pct": 0.0,
+      "max_drawdown_pct_floor": -15.0,
+      "min_cost_survival_rate_pct": 100.0,
+      "min_ledger_consistency_pct": 100.0,
+      "min_walk_forward_pass_rate_pct": 80.0,
+      "min_regime_pass_rate_pct": 75.0
+    },
+    "candidate_count": 1,
+    "qualified_count": 0,
+    "selected_count": 0,
+    "candidates": [
+      {
+        "strategy_id": "volatility_squeeze",
+        "parameters": {
+          "boll_window": 20,
+          "boll_dev": 1.8,
+          "width_threshold": 0.03
+        },
+        "score": 2.656642,
+        "validation": {
+          "total_return_pct": 39.2941,
+          "annual_return_pct": 49.3147,
+          "annual_volatility_pct": 30.2663,
+          "sharpe_ratio": 1.4752,
+          "sortino_ratio": 0.8025,
+          "max_drawdown_pct": -19.4525,
+          "calmar_ratio": 2.5351,
+          "win_rate_pct": 48.6667,
+          "profit_factor": 1.1455,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 1.7255,
+          "annual_return_pct": 1.1207,
+          "annual_volatility_pct": 27.0979,
+          "sharpe_ratio": 0.1763,
+          "sortino_ratio": 0.0888,
+          "max_drawdown_pct": -27.9435,
+          "calmar_ratio": 0.0401,
+          "win_rate_pct": 46.8018,
+          "profit_factor": 1.0169,
+          "trade_count": 0
+        },
+        "overfit_gap": -1.2989,
+        "candidate_count": 4,
+        "optimizer_rank": 1,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 1,
+        "audit": {
+          "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+          "data_manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+          "data_fingerprint": "5cfb8d5f45d542a75b1da342bd6820564b6b5c598065db66f4949525ac440fe4",
+          "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+          "run_id_prefix": "btc_closure_btcusdt_1h_acd395fed2b0",
+          "event_run_id": "btc_closure_btcusdt_1h_acd395fed2b0_event",
+          "manifest_root": "data/manifests",
+          "data_root": "data"
+        },
+        "event_backtest_summary": {
+          "total_return_pct": 1.7355,
+          "annual_return_pct": 0.7312,
+          "annual_volatility_pct": 2.7548,
+          "sharpe_ratio": 0.2782,
+          "sortino_ratio": 0.2537,
+          "max_drawdown_pct": -3.4728,
+          "calmar_ratio": 0.2105,
+          "win_rate_pct": 48.235,
+          "profit_factor": 1.0515,
+          "trade_count": 1786
+        },
+        "cost_stress_summary": {
+          "survival_rate_pct": 0.0,
+          "ledger_consistency_pct": 100.0,
+          "scenario_count": 8
+        },
+        "walk_forward_summary": {
+          "total_folds": 4,
+          "valid_folds": 4,
+          "passing_folds": 1,
+          "fold_pass_rate_pct": 25.0,
+          "pass_rate_pct": 25.0,
+          "window_count": 4,
+          "avg_oos_return_pct": -0.1163,
+          "median_oos_sharpe": -0.2105,
+          "worst_oos_drawdown_pct": -1.5278,
+          "parameter_stability_pct": 100.0,
+          "regime_pass_rate_pct": 0.0,
+          "ledger_equity_consistent_windows": 4,
+          "ledger_consistency_pct": 100.0,
+          "symbol_count": 1,
+          "symbols_covered": 1,
+          "symbols_insufficient": 0,
+          "symbol_details": {
+            "BTCUSDT": {
+              "folds": 4,
+              "passes": 1,
+              "bar_count": 20689
+            }
+          },
+          "manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T021736.json"
+        },
+        "cpcv_summary": {
+          "status": "completed",
+          "path_count": 4,
+          "trial_count": 8,
+          "fold_sharpes": [
+            0.9601,
+            -0.7028,
+            0.3386,
+            1.6557
+          ]
+        },
+        "validation_statistics": {
+          "candidate_id": "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03",
+          "status": "complete",
+          "available_components": {
+            "cv_summary": true,
+            "trial_counting": true,
+            "deflated_sharpe_ratio": true,
+            "pbo": true,
+            "multiple_testing": true,
+            "lookahead_controls": true,
+            "net_return_distribution": true,
+            "cost_before_after": true
+          },
+          "cv_summary": {
+            "method": "cpcv",
+            "purged": true,
+            "purge_steps": 2,
+            "purge_recorded": true,
+            "embargoed": true,
+            "embargo_steps": 2,
+            "embargo_recorded": true,
+            "fold_count": 4,
+            "path_count": 4,
+            "train_window_count": 4,
+            "test_window_count": 1,
+            "pass_rate": 0.25,
+            "mean_oos_sharpe": 0.5629,
+            "median_oos_sharpe": 0.64935
+          },
+          "lookahead_controls": {
+            "recorded": true,
+            "guard": "event_driven_signal_replay_no_future_features",
+            "violations": [],
+            "passed": true
+          },
+          "trial_counting": {
+            "declared_trial_count": 8,
+            "param_grid_trial_count": 2,
+            "cv_path_count": 4,
+            "cv_fold_count": 4,
+            "cost_level_count": 8,
+            "trial_sharpe_count": 12,
+            "pbo_split_count": 4,
+            "independent_trial_count": 8,
+            "effective_trial_count": 12
+          },
+          "deflated_sharpe_ratio": {
+            "observed_sharpe": 1.4752,
+            "benchmark_sharpe": 3.195331,
+            "trial_count": 12,
+            "returns_count": 4,
+            "skew": 0.015564,
+            "excess_kurtosis": -0.159142,
+            "psr": 0.965353,
+            "dsr": 0.017083,
+            "passed": false
+          },
+          "pbo": {
+            "mode": "grouped_trials",
+            "group_count": 4,
+            "overfit_group_count": 1,
+            "pbo": 0.25,
+            "logit_mean": 0.549306,
+            "logit_median": 1.098612,
+            "passed": false
+          },
+          "multiple_testing": {
+            "mode": "familywise_error_control",
+            "familywise_alpha": 0.05,
+            "effective_trial_count": 12,
+            "independent_trial_count": 8,
+            "raw_p_value": 0.034647,
+            "bonferroni_alpha": 0.00625,
+            "sidak_alpha": 0.006391,
+            "dsr_p_value": 0.982917,
+            "passed": false
+          },
+          "net_return_distribution": {
+            "count": 4,
+            "mean": 9.17235,
+            "std": 19.135722,
+            "median": 9.1161,
+            "min": -13.5086,
+            "max": 31.9658,
+            "p05": -10.96709,
+            "p25": -0.80105,
+            "p75": 19.0895,
+            "p95": 29.39054,
+            "negative_share": 0.25
+          },
+          "cost_before_after": {
+            "mode": "stress_curve",
+            "gross_return": null,
+            "net_return": 39.2941,
+            "gross_sharpe": null,
+            "net_sharpe": 1.4752,
+            "cost_drag_return": null,
+            "cost_drag_sharpe": null,
+            "baseline_multiplier": 1.0,
+            "worst_multiplier": 10.0,
+            "worst_return": -52.0943,
+            "worst_sharpe": -7.865,
+            "stress_return_delta": 91.3884,
+            "surviving_levels": 2,
+            "level_count": 8
+          },
+          "promotion_gate_contract": {
+            "status": "blocked",
+            "required": {
+              "allowed_cv_methods": [
+                "cpcv",
+                "purged_kfold",
+                "embargoed_walk_forward"
+              ],
+              "required_cv_method": "cpcv",
+              "min_validation_paths": 2,
+              "min_effective_trial_count": 2,
+              "min_independent_trial_count": 2,
+              "min_dsr": 0.1,
+              "max_pbo": 0.5,
+              "familywise_alpha": 0.05,
+              "lookahead_guard_recorded": true
+            },
+            "observed": {
+              "cv_method": "cpcv",
+              "validation_paths": 4,
+              "purged": true,
+              "purge_recorded": true,
+              "embargoed": true,
+              "embargo_recorded": true,
+              "effective_trial_count": 12,
+              "independent_trial_count": 8,
+              "dsr": 0.017083,
+              "pbo": 0.25,
+              "multiple_testing_mode": "familywise_error_control",
+              "lookahead_guard_recorded": true,
+              "lookahead_violations": []
+            },
+            "checks": {
+              "cv_method_allowed": true,
+              "cpcv_available": true,
+              "purged_or_embargoed": true,
+              "purge_embargo_recorded": true,
+              "multi_path_validation": true,
+              "trial_count_sufficient": true,
+              "dsr_available": true,
+              "dsr_passed": false,
+              "pbo_available": true,
+              "pbo_passed": true,
+              "multiple_testing_complete": true,
+              "multiple_testing_passed": false,
+              "lookahead_guard_recorded": true,
+              "lookahead_guard_passed": true
+            }
+          }
+        },
+        "statistical_validation_blockers": [
+          "CPCV/DSR/PBO promotion contract blocked",
+          "DSR below promotion threshold",
+          "multiple testing control did not pass"
+        ],
+        "candidate_key": "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03",
+        "qualified": false,
+        "selected": false,
+        "qualification_blockers": [
+          "validation profit_factor < 1.15",
+          "validation max_drawdown < -15.0%",
+          "validation trade_count < 10",
+          "cost survival_rate < 100.0%",
+          "walk_forward pass_rate < 80.0%",
+          "regime pass_rate < 75.0%",
+          "CPCV/DSR/PBO promotion contract blocked",
+          "DSR below promotion threshold",
+          "multiple testing control did not pass"
+        ]
+      }
+    ],
+    "selected_candidates": [],
+    "blockers": [
+      "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: validation profit_factor < 1.15",
+      "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: validation max_drawdown < -15.0%",
+      "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: validation trade_count < 10",
+      "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: cost survival_rate < 100.0%",
+      "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: walk_forward pass_rate < 80.0%",
+      "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: regime pass_rate < 75.0%",
+      "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: CPCV/DSR/PBO promotion contract blocked",
+      "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: DSR below promotion threshold",
+      "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: multiple testing control did not pass"
+    ]
+  }
+}

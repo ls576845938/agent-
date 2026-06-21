@@ -1,0 +1,111 @@
+{
+  "calendar": {
+    "expected_rows_per_symbol": 7,
+    "overall_expected_rows": 14,
+    "overall_missing_rate": 0.0,
+    "overall_missing_rows": 0,
+    "trading_days": [
+      "2024-01-02",
+      "2024-01-03",
+      "2024-01-04",
+      "2024-01-05",
+      "2024-01-08",
+      "2024-01-09",
+      "2024-01-10"
+    ]
+  },
+  "created_at": "2026-05-11T03:37:08.984968+00:00",
+  "daily_only": true,
+  "files": {
+    "daily_bars_parquet": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_smoke_aapl_msft/qlib_input/daily_bars.parquet",
+    "dataset_manifest": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_smoke_aapl_msft/qlib_input/dataset_manifest.json",
+    "input_csv_dir": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_smoke_aapl_msft/qlib_input/csv"
+  },
+  "input_contract": {
+    "asset_class": "equity",
+    "bar_size": "1d",
+    "data_version_request": "latest",
+    "end_date": "2024-01-10",
+    "source": "yfinance",
+    "start_date": "2024-01-02"
+  },
+  "missing_symbols": [],
+  "mode": "research_only",
+  "run_id": "qlib_smoke_aapl_msft",
+  "source_manifests": [
+    {
+      "checksum": "d901e2b00523df0274a19e7d93aece3fdddfbf889abc7d41af3d77ac8f8b258b",
+      "cleaned_path": "data/raw/vendor=yfinance/asset_class=equity/bar_size=1d/symbol=AAPL",
+      "coverage_pct": 96.1637,
+      "data_version": "qs-yfinance-AAPL-1d-d901e2b00523",
+      "manifest_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/data/manifests/qs-yfinance-AAPL-1d-d901e2b00523.json",
+      "quality_score": 97.0,
+      "symbol": "AAPL"
+    },
+    {
+      "checksum": "a5a88bf140052a9af810e07a1eb89a85395f53507f94cdf6b735edb958ee95cd",
+      "cleaned_path": "/tmp/tmpo2_gu94v/raw/vendor=yfinance/asset_class=equity/bar_size=1d/symbol=MSFT",
+      "coverage_pct": 15.0,
+      "data_version": "qs-yfinance-MSFT-1d-a5a88bf14005",
+      "manifest_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/data/manifests/qs-yfinance-MSFT-1d-a5a88bf14005.json",
+      "quality_score": 98.3,
+      "symbol": "MSFT"
+    }
+  ],
+  "status": "completed",
+  "symbols_exported": [
+    "AAPL",
+    "MSFT"
+  ],
+  "symbols_requested": [
+    "AAPL",
+    "MSFT"
+  ],
+  "universe": {
+    "allow_implicit_downloads": false,
+    "allow_live": false,
+    "allow_minute_data": false,
+    "asset_class": "equity",
+    "bar_size": "1d",
+    "description": "smoke",
+    "market": "us",
+    "research_only": true,
+    "source": "yfinance",
+    "strict_missing_symbols": true,
+    "survivorship_bias_risk": "clean",
+    "symbols": [
+      "AAPL",
+      "MSFT"
+    ],
+    "timezone": "UTC",
+    "universe_id": "smoke_daily_only"
+  },
+  "validation": {
+    "duplicate_datetime_symbol_rows": 0,
+    "required_columns": [
+      "timestamp_utc",
+      "symbol",
+      "open",
+      "high",
+      "low",
+      "close",
+      "volume"
+    ],
+    "symbols": {
+      "AAPL": {
+        "expected_rows": 7,
+        "missing_dates": [],
+        "missing_rate": 0.0,
+        "missing_rows": 0,
+        "rows": 7
+      },
+      "MSFT": {
+        "expected_rows": 7,
+        "missing_dates": [],
+        "missing_rate": 0.0,
+        "missing_rows": 0,
+        "rows": 7
+      }
+    }
+  }
+}

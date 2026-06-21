@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
@@ -18,6 +19,8 @@ PUBLIC_ENDPOINTS = {
     "candles": "/api/v5/market/history-candles",
     "mark_price_candles": "/api/v5/market/history-mark-price-candles",
     "index_candles": "/api/v5/market/history-index-candles",
+    "history_trades": "/api/v5/market/history-trades",
+    "books": "/api/v5/market/books",
     "open_interest": "/api/v5/public/open-interest",
 }
 FORBIDDEN_ENDPOINT_TOKENS = (
@@ -30,7 +33,6 @@ FORBIDDEN_ENDPOINT_TOKENS = (
     "order",
     "position",
     "private",
-    "trade",
     "transfer",
     "withdrawal",
 )
@@ -57,6 +59,8 @@ PUBLIC_ENDPOINT_PARAM_ALLOWLIST: dict[str, set[str]] = {
     "/api/v5/market/history-candles": {"instId", "bar", "before", "after", "limit"},
     "/api/v5/market/history-mark-price-candles": {"instId", "bar", "before", "after", "limit"},
     "/api/v5/market/history-index-candles": {"instId", "bar", "before", "after", "limit"},
+    "/api/v5/market/history-trades": {"instId", "type", "before", "after", "limit"},
+    "/api/v5/market/books": {"instId", "sz"},
     "/api/v5/public/open-interest": {"instType", "instId", "instFamily"},
 }
 
@@ -156,14 +160,17 @@ class OkxSwapPublicCollector:
                 "url": planned.url,
             }
         request = urllib.request.Request(url, headers={"User-Agent": "QuantStationVNEXT-public-data/1.0"})
+        started = time.perf_counter()
         with urllib.request.urlopen(request, timeout=30) as response:
             raw = response.read().decode("utf-8")
+        duration_ms = (time.perf_counter() - started) * 1000.0
         return {
             "dry_run": False,
             "network_called": True,
             "endpoint": planned.endpoint,
             "params": planned.params,
             "url": planned.url,
+            "duration_ms": duration_ms,
             "payload": json.loads(raw),
         }
 

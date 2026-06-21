@@ -1,0 +1,99 @@
+{
+  "api_key_used": false,
+  "blockers": [],
+  "broker_calls_used": false,
+  "channel_counts": {
+    "books": 86,
+    "trades": 14
+  },
+  "channels": [
+    "trades",
+    "books"
+  ],
+  "completed": true,
+  "connection_count": 1,
+  "data_message_count": 100,
+  "duration_seconds": 10.0,
+  "errors": [],
+  "files": [
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1_codex_ws_l2_segment_20260620t1818z/okx_public_ws_l2_raw_messages.jsonl",
+      "sha256": "b9eb50f3ebd65057b56368de414e9d1a85c7690b2117f9a77b9fddc1302e2223",
+      "size_bytes": 135143
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1_codex_ws_l2_segment_20260620t1818z/okx_public_ws_l2_raw_capture_manifest.json",
+      "sha256": "6da49f50a52b717abc27227f2dea159fb7b1d189b44aab64c3c58649587387a9",
+      "size_bytes": 1294
+    }
+  ],
+  "forced_reconnect_after_messages": 0,
+  "forced_reconnect_count": 0,
+  "generated_at": "2026-06-20T18:23:00.710910Z",
+  "manifest": {
+    "api_key_used": false,
+    "broker_calls_used": false,
+    "capture_duration_seconds": 10.256536694,
+    "capture_end": "2026-06-20T18:23:10Z",
+    "capture_ended_monotonic_ns": 1607346777742879,
+    "capture_start": "2026-06-20T18:23:00Z",
+    "capture_started_monotonic_ns": 1607336521206185,
+    "channel_counts": {
+      "books": 86,
+      "trades": 14
+    },
+    "checksum_or_sequence_policy": "raw_ws_capture_before_order_book_replay_sequence_validation",
+    "clock_source": "system_utc_and_python_monotonic_ns",
+    "connection_count": 1,
+    "data_message_count": 100,
+    "data_version": "okx_public_ws_l2_raw_preflight_20260620T182300Z",
+    "error_count": 0,
+    "forced_reconnect_after_messages": 0,
+    "forced_reconnect_count": 0,
+    "gap_count": 0,
+    "heartbeat_policy": "send_text_ping_after_20s_idle_capture_records_pong_events",
+    "message_count": 102,
+    "order_endpoint_used": false,
+    "private_endpoint_used": false,
+    "public_channels": [
+      "trades",
+      "books"
+    ],
+    "public_ws_only": true,
+    "public_ws_url": "wss://ws.okx.com:8443/ws/v5/public",
+    "required_time_bases": [
+      "local_receive_ts",
+      "monotonic_ns",
+      "exchange_ts_when_present"
+    ],
+    "schema_version": "btc_okx_public_ws_l2_raw_capture_manifest_v1",
+    "symbol": "BTCUSDT",
+    "venue": "okx",
+    "venue_symbol": "BTC-USDT-SWAP"
+  },
+  "max_messages": 120,
+  "message_count": 102,
+  "network_called": true,
+  "order_endpoint_used": false,
+  "planned_subscription": {
+    "args": [
+      {
+        "channel": "trades",
+        "instId": "BTC-USDT-SWAP"
+      },
+      {
+        "channel": "books",
+        "instId": "BTC-USDT-SWAP"
+      }
+    ],
+    "op": "subscribe"
+  },
+  "private_endpoint_used": false,
+  "public_ws_only": true,
+  "public_ws_url": "wss://ws.okx.com:8443/ws/v5/public",
+  "schema_version": "btc_okx_public_ws_l2_raw_capture_report_v1",
+  "selected_bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1_codex_ws_l2_segment_20260620t1818z",
+  "status": "verified_preflight",
+  "symbol": "BTCUSDT",
+  "venue_symbol": "BTC-USDT-SWAP"
+}

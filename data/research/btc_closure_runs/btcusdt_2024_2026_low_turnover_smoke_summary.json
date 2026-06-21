@@ -1,0 +1,59 @@
+{
+  "status": "completed",
+  "decision": "fail",
+  "next_stage": "blocked",
+  "blocker_count": 13,
+  "first_blockers": [
+    "no BTC candidate passed cost stress, walk-forward, CPCV/DSR/PBO gates",
+    "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: validation profit_factor < 1.15",
+    "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: validation max_drawdown < -15.0%",
+    "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: validation trade_count < 10",
+    "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: cost survival_rate < 100.0%",
+    "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: walk_forward pass_rate < 80.0%",
+    "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: regime pass_rate < 75.0%",
+    "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: avg holding bars < 24.0",
+    "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: CPCV/DSR/PBO promotion contract blocked",
+    "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03: multiple testing control did not pass"
+  ],
+  "candidate_count": 17,
+  "validated_candidate_count": 1,
+  "top_candidates": [
+    {
+      "rank": 1,
+      "strategy_id": "volatility_squeeze",
+      "candidate_key": "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03",
+      "score": 2.518752,
+      "base_score": null,
+      "metrics": {
+        "annual_turnover_pct": 0.0,
+        "avg_holding_bars": 1.9376,
+        "cost_sensitivity": 0.0
+      },
+      "screening_metrics": {
+        "annual_turnover_pct": 0.0,
+        "avg_holding_bars": 1.9376,
+        "cost_sensitivity": 0.0
+      },
+      "qualified": false,
+      "qualification_blockers": [
+        "validation profit_factor < 1.15",
+        "validation max_drawdown < -15.0%",
+        "validation trade_count < 10",
+        "cost survival_rate < 100.0%",
+        "walk_forward pass_rate < 80.0%",
+        "regime pass_rate < 75.0%"
+      ]
+    }
+  ],
+  "selected_candidate": null,
+  "closure_evidence_paths": [
+    "data/research/btc_closure_runs/btc_closure_btcusdt_1h_acd395fed2b0_strict_evidence.json"
+  ],
+  "progress_stages": [
+    "data_integrity",
+    "candidate_screen",
+    "candidate_validation",
+    "promotion_gate",
+    "completed"
+  ]
+}

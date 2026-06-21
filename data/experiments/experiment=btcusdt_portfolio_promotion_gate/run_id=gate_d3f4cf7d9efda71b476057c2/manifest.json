@@ -1,0 +1,110 @@
+{
+  "artifacts": [
+    {
+      "artifact_type": "json",
+      "metadata": {
+        "data_version": "qs-fixture-BTCUSDT-1h-7b0bdc6f0de0",
+        "decision": "warn",
+        "manifest_id": "d3f4cf7d9efda71b476057c2",
+        "next_stage": "research_iteration"
+      },
+      "name": "promotion_manifest",
+      "path": "/home/lishuonewbing/agent\u6d4b\u8bd5/reports/research_gates/d3f4cf7d9efda71b476057c2.json"
+    }
+  ],
+  "completed_at": "2026-05-01T16:04:36.878714+00:00",
+  "created_at": "2026-05-01T16:04:36.878714+00:00",
+  "error": null,
+  "experiment_id": "exp_c566694b23654c55",
+  "metrics": {
+    "annual_return_pct": 257.6048,
+    "annual_volatility_pct": 10.7399,
+    "calmar_ratio": 102.0278,
+    "data_coverage_pct": 100.0,
+    "data_quality_score": 100.0,
+    "gate_fail_count": 0,
+    "gate_pass_count": 3,
+    "gate_warn_count": 2,
+    "max_drawdown_pct": -2.5248,
+    "profit_factor": 1.4618,
+    "promotion_score": 75.0,
+    "sharpe_ratio": 11.9193,
+    "sortino_ratio": 20.0598,
+    "total_return_pct": 17.4205,
+    "trade_count": 1010,
+    "win_rate_pct": 49.703
+  },
+  "run_id": "gate_d3f4cf7d9efda71b476057c2",
+  "spec": {
+    "asset_class": "crypto",
+    "bar_size": "1h",
+    "data_vendor": "fixture",
+    "data_version": "qs-fixture-BTCUSDT-1h-7b0bdc6f0de0",
+    "dataset_run_id": "",
+    "end": "2024-02-15T23:00:00+00:00",
+    "experiment_name": "btcusdt_portfolio_promotion_gate",
+    "feature_version": "",
+    "model_id": "",
+    "notes": "Created from QuantStation MVP acceptance flow.",
+    "parameters": {
+      "capital": 100000.0,
+      "commission_rate": 0.0004,
+      "leverage": 1.0,
+      "mode": "portfolio",
+      "position_basis": "equity",
+      "skip_deep_checks": false,
+      "slippage": 4.0,
+      "strategy_params": {},
+      "weights": [
+        {
+          "strategy_id": "trend_macd",
+          "weight": 0.2
+        },
+        {
+          "strategy_id": "reversion_rsi",
+          "weight": 0.15
+        },
+        {
+          "strategy_id": "donchian_breakout",
+          "weight": 0.15
+        },
+        {
+          "strategy_id": "volatility_squeeze",
+          "weight": 0.15
+        },
+        {
+          "strategy_id": "funding_sentiment",
+          "weight": 0.1
+        },
+        {
+          "strategy_id": "macro_trend",
+          "weight": 0.05
+        },
+        {
+          "strategy_id": "time_window",
+          "weight": 0.1
+        },
+        {
+          "strategy_id": "dynamic_grid",
+          "weight": 0.1
+        }
+      ]
+    },
+    "promotion_decision": "warn",
+    "promotion_manifest_id": "d3f4cf7d9efda71b476057c2",
+    "promotion_stage": "research_iteration",
+    "run_type": "research_promotion_gate",
+    "start": "2024-01-01T00:00:00+00:00",
+    "strategy_id": "portfolio",
+    "strategy_version": "strategy_81fc0c8615814004",
+    "symbols": [
+      "BTCUSDT"
+    ],
+    "tags": [
+      "promotion_gate",
+      "portfolio",
+      "warn"
+    ]
+  },
+  "status": "completed"
+}

@@ -1,0 +1,268 @@
+{
+  "artifacts": {
+    "canonical_backtest_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/canonical_backtest_report.json",
+    "cost_stress_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/cost_stress_report.json",
+    "event_objects": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/event_objects.csv",
+    "promotion_decision": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/promotion_decision.json",
+    "regime_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/regime_report.json",
+    "run_manifest": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/run_manifest.json",
+    "tail_dependency_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/tail_dependency_report.json",
+    "trade_ledger": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/trade_ledger.csv",
+    "walk_forward_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/walk_forward_report.json"
+  },
+  "asset": "btc",
+  "blockers": [
+    "btc_intraday_event_ledger_candidate_generation_locked_pending_review",
+    "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+    "btc_intraday_event_ledger_paper_live_locked"
+  ],
+  "candidate_generation_allowed": false,
+  "cost_context": {
+    "base_taker_round_trip_bps": 10.0,
+    "cost_model_status": "pass",
+    "required_scenarios_present": true,
+    "stress_scenario_count": 5
+  },
+  "cost_stress": {
+    "base_passed": true,
+    "harsh_survives": true,
+    "scenarios": [
+      {
+        "name": "base_10bps_taker_round_trip",
+        "passed": true,
+        "survives": true
+      },
+      {
+        "name": "double_taker_20bps_round_trip",
+        "passed": true,
+        "survives": true
+      },
+      {
+        "name": "conservative_slippage_5bps_each_fill",
+        "passed": true,
+        "survives": true
+      },
+      {
+        "name": "missed_fill_every_fourth_entry",
+        "passed": true,
+        "survives": true
+      },
+      {
+        "name": "delayed_entry_one_5m_bar",
+        "passed": true,
+        "survives": true
+      }
+    ],
+    "survival_rate": 1.0
+  },
+  "data_context": {
+    "context_timeframe": "15m",
+    "data_blockers": [],
+    "data_range": {
+      "end": "2026-05-12T01:05:00+00:00",
+      "start": "2024-01-01T00:00:00+00:00"
+    },
+    "data_status": "pass",
+    "data_version": "qs-sqlite-BTCUSDT-5m-248270-0013a572822e",
+    "timeframe": "5m"
+  },
+  "decision": "continue_research",
+  "event_definition": {
+    "context_state_field": "context_state",
+    "entry_filters": {
+      "allowed_regimes": [
+        "high_vol_trend",
+        "mean_reverting_chop",
+        "trending_up"
+      ],
+      "min_trend_by_regime": {
+        "high_vol_trend": 0.017
+      },
+      "volatility_states": [
+        "high_vol"
+      ]
+    },
+    "entry_timestamp_field": "entry_timestamp",
+    "event_count": 161,
+    "future_label_used_for_signal": false,
+    "label_horizon": "60m",
+    "lookahead_used_for_signal": false,
+    "simulated_order_intent_only": true,
+    "trigger_state_field": "trigger_state"
+  },
+  "event_ledger_completed": true,
+  "failed_metrics": [],
+  "family_id": "pullback_reclaim_intraday_v0",
+  "gate": {
+    "checks": {
+      "annual_turnover": true,
+      "canonical_source": true,
+      "cost_stress_base": true,
+      "cost_stress_harsh": true,
+      "dsr": true,
+      "event_ledger": true,
+      "event_profit_factor": true,
+      "max_drawdown": true,
+      "no_lookahead": true,
+      "pbo": true,
+      "profit_factor": true,
+      "regime_pass_rate": true,
+      "signal_equity_diagnostic_only": true,
+      "walk_forward_pass_rate": true
+    },
+    "evidence_source": "canonical_backtest_report",
+    "fail_reasons": [],
+    "passed": true,
+    "status": "candidate_passed_internal_gate",
+    "strategy_id": "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1",
+    "thresholds": {
+      "annual_turnover": 10.0,
+      "dsr": 0.1,
+      "event_profit_factor": 1.15,
+      "max_drawdown_pct_floor": -15.0,
+      "pbo": 0.5,
+      "profit_factor": 1.15,
+      "regime_pass_rate": 0.75,
+      "walk_forward_pass_rate": 0.8
+    }
+  },
+  "generated_at": "2026-06-21T06:12:40Z",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "candidate_generation_allowed": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "pnl_from_fill_ledger_required_for_promotion": true,
+    "private_endpoints_allowed": false,
+    "research_only": true,
+    "strategy_skeleton_generation_allowed": false,
+    "sub_minute_or_tick_scalping_allowed": false,
+    "true_scalping_allowed": false
+  },
+  "manifest": {
+    "commit_hash": "03cad6a5722219fa530fc65ce3d11dfdd78bb671",
+    "cost_model": "base_taker_10bps_round_trip_with_stress_grid_v1",
+    "data_version": "qs-sqlite-BTCUSDT-5m-248270-0013a572822e",
+    "params_hash": "b75aeb196cc66488cd5495d66654d0a35023e011b3dd15de6d25aab36ea3981f",
+    "slippage_model": "base_0bps_stress_5bps_each_fill",
+    "strategy_version": "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1:research_only_event_ledger_drift_guarded_v1"
+  },
+  "metrics": {
+    "annual_turnover": 0.94974,
+    "dsr": 1.0,
+    "event_profit_factor": 1.4397,
+    "fill_count": 156,
+    "max_drawdown": -1.7496,
+    "pbo": 0.166667,
+    "profit_factor": 2.647434,
+    "regime_pass_rate": 0.8,
+    "total_return_pct": 3.7663,
+    "trade_count": 78,
+    "walk_forward_pass_rate": 0.833333
+  },
+  "next_required_action": "manual_review_before_any_candidate_generation",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "promotion_gate": {
+    "candidate_gate": {
+      "checks": {
+        "annual_turnover": true,
+        "canonical_source": true,
+        "cost_stress_base": true,
+        "cost_stress_harsh": true,
+        "dsr": true,
+        "event_ledger": true,
+        "event_profit_factor": true,
+        "max_drawdown": true,
+        "no_lookahead": true,
+        "pbo": true,
+        "profit_factor": true,
+        "regime_pass_rate": true,
+        "signal_equity_diagnostic_only": true,
+        "walk_forward_pass_rate": true
+      },
+      "evidence_source": "canonical_backtest_report",
+      "fail_reasons": [],
+      "passed": true,
+      "status": "candidate_passed_internal_gate",
+      "strategy_id": "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1",
+      "thresholds": {
+        "annual_turnover": 10.0,
+        "dsr": 0.1,
+        "event_profit_factor": 1.15,
+        "max_drawdown_pct_floor": -15.0,
+        "pbo": 0.5,
+        "profit_factor": 1.15,
+        "regime_pass_rate": 0.75,
+        "walk_forward_pass_rate": 0.8
+      }
+    },
+    "candidate_generation_allowed": false,
+    "decision": "continue_research",
+    "forbidden_states": [
+      "paper_ready",
+      "live_ready",
+      "live_enabled"
+    ],
+    "live": "FROZEN",
+    "live_frozen": true,
+    "next_required_action": "manual_review_before_any_candidate_generation",
+    "paper_queue": "LOCKED",
+    "paper_review": {
+      "paper_auto_start": false,
+      "paper_review_pending": [],
+      "paper_review_queue_locked": true,
+      "reason": "research_only_intraday_event_ledger_gate"
+    },
+    "schema_version": "btc_intraday_short_cycle_promotion_decision_v1"
+  },
+  "regime": {
+    "dragging_regimes": [
+      "expansion"
+    ],
+    "pass_rate": 0.8
+  },
+  "run_dir": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger",
+  "run_id": "20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger",
+  "safety": {
+    "candidate_passed_internal_gate": 1,
+    "live": "FROZEN",
+    "live_frozen": true,
+    "paper_auto_start": false,
+    "paper_queue": "LOCKED",
+    "paper_queue_locked": true,
+    "real_broker_api_called": false,
+    "real_orders_created": false,
+    "run_id": "20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger",
+    "schema_version": "btc_intraday_short_cycle_paper_live_safety_v1"
+  },
+  "schema_version": "btc_intraday_short_cycle_event_ledger_report_v1",
+  "scope": "research_only_event_ledger_no_candidate_no_paper_no_live_no_true_scalping",
+  "source_event_definition_repair_report": "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_event_definition_repair_report.json",
+  "source_refinement_report": "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_refinement_report.json",
+  "status": "event_ledger_passed_internal_research_gate_candidate_still_locked",
+  "strategy_id": "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "tail_dependency": {
+    "blockers": [],
+    "event_count": 161,
+    "mean_median_gap_ratio": 0.790874,
+    "mean_net_pnl": 17.79436,
+    "median_net_pnl": 3.721264,
+    "right_tail_dependency_flag": false,
+    "schema_version": "btc_intraday_tail_dependency_v1",
+    "status": "pass",
+    "top_5_trade_net_pnl_share": 0.418368,
+    "top_decile_net_pnl_share": 0.554329,
+    "trade_count": 78
+  },
+  "true_scalping_allowed": false,
+  "variant_id": "high_vol_non_expansion_trend_guard_repair_v1",
+  "walk_forward": {
+    "fold_count": 6,
+    "method": "rolling_event_ledger_fixed_params_intraday_5m",
+    "pass_rate": 0.833333
+  }
+}

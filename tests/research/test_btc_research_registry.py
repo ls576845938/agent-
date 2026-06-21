@@ -222,6 +222,265 @@ def test_btc_research_registry_exposes_manual_metadata_readiness() -> None:
     assert "btc_intraday_refinement_candidate_generation_blocked_until_event_ledger_backtest" in (
         intraday_refinement["blockers"]
     )
+    intraday_event_ledger = btc["intraday_short_cycle_event_ledger_status"]
+    assert btc["latest_intraday_short_cycle_event_ledger_report"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_event_ledger_report.json"
+    )
+    assert btc["latest_intraday_short_cycle_event_definition_repair_report"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_event_definition_repair_report.json"
+    )
+    assert btc["latest_intraday_short_cycle_repaired_event_ledger_report"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_repaired_event_ledger_report.json"
+    )
+    assert btc["latest_intraday_short_cycle_drift_guarded_event_ledger_report"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_drift_guarded_event_ledger_report.json"
+    )
+    assert btc["latest_intraday_short_cycle_promotion_gate_report"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_promotion_gate_report.json"
+    )
+    assert btc["latest_intraday_short_cycle_manual_review_packet"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_manual_review_packet.json"
+    )
+    assert btc["latest_intraday_short_cycle_research_candidate_definition_preflight"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_research_candidate_definition_preflight.json"
+    )
+    assert btc["latest_intraday_short_cycle_research_candidate_definition_manifest"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_research_candidate_definition_manifest.json"
+    )
+    assert btc["latest_intraday_short_cycle_remaining_external_evidence_status"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_remaining_external_evidence_status_report.json"
+    )
+    assert intraday_event_ledger["status"] == "event_ledger_completed_research_only"
+    assert intraday_event_ledger["decision"] == "return_to_event_definition"
+    assert intraday_event_ledger["next_required_action"] == "repair_intraday_event_definition_before_candidate"
+    assert intraday_event_ledger["event_ledger_completed"] is True
+    assert intraday_event_ledger["candidate_generation_allowed"] is False
+    assert intraday_event_ledger["strategy_skeleton_generation_allowed"] is False
+    assert intraday_event_ledger["promotion_allowed"] is False
+    assert intraday_event_ledger["paper_review_pending_allowed"] is False
+    assert intraday_event_ledger["paper_or_live_unlock_allowed"] is False
+    assert intraday_event_ledger["true_scalping_allowed"] is False
+    assert intraday_event_ledger["variant_id"] == "pullback_reclaim_24_dd100_4htrend100_v1"
+    assert intraday_event_ledger["family_id"] == "pullback_reclaim_intraday_v0"
+    assert intraday_event_ledger["event_count"] == 315
+    assert intraday_event_ledger["trade_count"] == 166
+    assert intraday_event_ledger["fill_count"] == 331
+    assert intraday_event_ledger["profit_factor"] == pytest.approx(1.214213)
+    assert intraday_event_ledger["event_profit_factor"] == pytest.approx(1.15)
+    assert intraday_event_ledger["walk_forward_pass_rate"] == pytest.approx(1.0)
+    assert intraday_event_ledger["regime_pass_rate"] == pytest.approx(0.333333)
+    assert intraday_event_ledger["gate_passed"] is False
+    assert intraday_event_ledger["gate_status"] == "candidate_gate_failed"
+    assert intraday_event_ledger["failed_metrics"] == ["regime_pass_rate"]
+    assert intraday_event_ledger["stress_scenario_count"] == 5
+    assert intraday_event_ledger["required_scenarios_present"] is True
+    assert "btc_intraday_event_ledger_gate_failed_regime_pass_rate" in intraday_event_ledger["blockers"]
+    intraday_repair = btc["intraday_short_cycle_event_definition_repair_status"]
+    assert intraday_repair["status"] == "repair_candidate_identified_retest_required"
+    assert intraday_repair["decision"] == "run_full_event_ledger_retest_for_repaired_definition"
+    assert intraday_repair["next_required_action"] == (
+        "run_research_only_event_ledger_retest_for_high_vol_non_expansion_repair_v1"
+    )
+    assert intraday_repair["repair_scan_completed"] is True
+    assert intraday_repair["repair_screen_is_promotion_evidence"] is False
+    assert intraday_repair["full_event_ledger_retest_required"] is True
+    assert intraday_repair["candidate_generation_allowed"] is False
+    assert intraday_repair["strategy_skeleton_generation_allowed"] is False
+    assert intraday_repair["promotion_allowed"] is False
+    assert intraday_repair["paper_review_pending_allowed"] is False
+    assert intraday_repair["paper_or_live_unlock_allowed"] is False
+    assert intraday_repair["true_scalping_allowed"] is False
+    assert intraday_repair["best_variant_id"] == "high_vol_non_expansion_repair_v1"
+    assert intraday_repair["best_trade_count"] == 103
+    assert intraday_repair["best_profit_factor"] == pytest.approx(1.859701)
+    assert intraday_repair["best_median_net_pnl"] == pytest.approx(2.371603)
+    assert intraday_repair["best_regime_pass_rate"] == pytest.approx(1.0)
+    assert intraday_repair["best_tail_dependency_pass"] is True
+    assert intraday_repair["best_repair_screen_pass"] is True
+    assert intraday_repair["variant_count"] == 5
+    assert intraday_repair["min_trade_count"] == 50
+    assert "btc_intraday_repair_full_event_ledger_retest_required" in intraday_repair["blockers"]
+    repaired_event_ledger = btc["intraday_short_cycle_repaired_event_ledger_status"]
+    assert repaired_event_ledger["status"] == "event_ledger_completed_research_only"
+    assert repaired_event_ledger["decision"] == "return_to_event_definition"
+    assert repaired_event_ledger["next_required_action"] == "repair_intraday_event_definition_before_candidate"
+    assert repaired_event_ledger["event_ledger_completed"] is True
+    assert repaired_event_ledger["source_event_definition_repair_report"] == (
+        "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_event_definition_repair_report.json"
+    )
+    assert repaired_event_ledger["candidate_generation_allowed"] is False
+    assert repaired_event_ledger["strategy_skeleton_generation_allowed"] is False
+    assert repaired_event_ledger["promotion_allowed"] is False
+    assert repaired_event_ledger["paper_review_pending_allowed"] is False
+    assert repaired_event_ledger["paper_or_live_unlock_allowed"] is False
+    assert repaired_event_ledger["true_scalping_allowed"] is False
+    assert repaired_event_ledger["variant_id"] == "high_vol_non_expansion_repair_v1"
+    assert repaired_event_ledger["allowed_regimes"] == ["high_vol_trend", "mean_reverting_chop", "trending_up"]
+    assert repaired_event_ledger["volatility_states"] == ["high_vol"]
+    assert repaired_event_ledger["event_count"] == 217
+    assert repaired_event_ledger["trade_count"] == 110
+    assert repaired_event_ledger["fill_count"] == 219
+    assert repaired_event_ledger["profit_factor"] == pytest.approx(1.637559)
+    assert repaired_event_ledger["event_profit_factor"] == pytest.approx(1.3697)
+    assert repaired_event_ledger["walk_forward_pass_rate"] == pytest.approx(0.833333)
+    assert repaired_event_ledger["regime_pass_rate"] == pytest.approx(0.5)
+    assert repaired_event_ledger["tail_dependency_status"] == "pass"
+    assert repaired_event_ledger["gate_passed"] is False
+    assert repaired_event_ledger["gate_status"] == "candidate_gate_failed"
+    assert repaired_event_ledger["failed_metrics"] == ["regime_pass_rate"]
+    assert repaired_event_ledger["stress_scenario_count"] == 5
+    assert repaired_event_ledger["required_scenarios_present"] is True
+    assert "btc_intraday_event_ledger_gate_failed_regime_pass_rate" in repaired_event_ledger["blockers"]
+    drift_guarded = btc["intraday_short_cycle_drift_guarded_event_ledger_status"]
+    assert drift_guarded["status"] == "event_ledger_passed_internal_research_gate_candidate_still_locked"
+    assert drift_guarded["decision"] == "continue_research"
+    assert drift_guarded["next_required_action"] == "manual_review_before_any_candidate_generation"
+    assert drift_guarded["event_ledger_completed"] is True
+    assert drift_guarded["candidate_generation_allowed"] is False
+    assert drift_guarded["strategy_skeleton_generation_allowed"] is False
+    assert drift_guarded["promotion_allowed"] is False
+    assert drift_guarded["paper_review_pending_allowed"] is False
+    assert drift_guarded["paper_or_live_unlock_allowed"] is False
+    assert drift_guarded["true_scalping_allowed"] is False
+    assert drift_guarded["variant_id"] == "high_vol_non_expansion_trend_guard_repair_v1"
+    assert drift_guarded["allowed_regimes"] == ["high_vol_trend", "mean_reverting_chop", "trending_up"]
+    assert drift_guarded["volatility_states"] == ["high_vol"]
+    assert drift_guarded["min_trend_by_regime"] == {"high_vol_trend": 0.017}
+    assert drift_guarded["event_count"] == 161
+    assert drift_guarded["trade_count"] == 78
+    assert drift_guarded["fill_count"] == 156
+    assert drift_guarded["profit_factor"] == pytest.approx(2.647434)
+    assert drift_guarded["event_profit_factor"] == pytest.approx(1.4397)
+    assert drift_guarded["walk_forward_pass_rate"] == pytest.approx(0.833333)
+    assert drift_guarded["regime_pass_rate"] == pytest.approx(0.8)
+    assert drift_guarded["tail_dependency_status"] == "pass"
+    assert drift_guarded["gate_passed"] is True
+    assert drift_guarded["gate_status"] == "candidate_passed_internal_gate"
+    assert drift_guarded["failed_metrics"] == []
+    assert drift_guarded["stress_scenario_count"] == 5
+    assert drift_guarded["required_scenarios_present"] is True
+    assert "btc_regime_contract_not_pass" not in drift_guarded["blockers"]
+    assert "btc_intraday_event_ledger_candidate_generation_locked_pending_review" in drift_guarded["blockers"]
+    promotion_gate = btc["intraday_short_cycle_promotion_gate_status"]
+    assert promotion_gate["status"] == "ready_for_manual_candidate_review"
+    assert promotion_gate["decision"] == "continue_research_manual_review_only"
+    assert promotion_gate["next_required_action"] == "manual_review_before_any_candidate_generation"
+    assert promotion_gate["manual_candidate_review_allowed"] is True
+    assert promotion_gate["candidate_generation_allowed"] is False
+    assert promotion_gate["strategy_skeleton_generation_allowed"] is False
+    assert promotion_gate["promotion_allowed"] is False
+    assert promotion_gate["paper_review_pending_allowed"] is False
+    assert promotion_gate["paper_or_live_unlock_allowed"] is False
+    assert promotion_gate["true_scalping_allowed"] is False
+    assert promotion_gate["strategy_id"] == "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1"
+    assert promotion_gate["variant_id"] == "high_vol_non_expansion_trend_guard_repair_v1"
+    assert promotion_gate["trade_count"] == 78
+    assert promotion_gate["fill_count"] == 156
+    assert promotion_gate["profit_factor"] == pytest.approx(2.647434)
+    assert promotion_gate["event_profit_factor"] == pytest.approx(1.4397)
+    assert promotion_gate["walk_forward_pass_rate"] == pytest.approx(0.833333)
+    assert promotion_gate["regime_pass_rate"] == pytest.approx(0.8)
+    assert promotion_gate["gate_passed"] is True
+    assert promotion_gate["gate_status"] == "candidate_passed_internal_gate"
+    assert promotion_gate["manifest_params_present"] is True
+    assert promotion_gate["private_order_broker_paths_locked"] is True
+    assert promotion_gate["paper_live_still_locked"] is True
+    assert promotion_gate["true_scalping_still_locked"] is True
+    assert promotion_gate["blockers"] == []
+    manual_review = btc["intraday_short_cycle_manual_review_packet_status"]
+    assert manual_review["status"] == "approved_for_research_candidate_definition"
+    assert manual_review["decision"] == "allow_research_candidate_definition_only"
+    assert manual_review["next_required_action"] == "build_research_candidate_definition_manifest"
+    assert manual_review["manual_review_packet_ready"] is True
+    assert manual_review["recorded_manual_review_approved"] is True
+    assert manual_review["research_candidate_definition_allowed"] is True
+    assert manual_review["candidate_generation_allowed"] is False
+    assert manual_review["strategy_skeleton_generation_allowed"] is False
+    assert manual_review["promotion_allowed"] is False
+    assert manual_review["paper_review_pending_allowed"] is False
+    assert manual_review["paper_or_live_unlock_allowed"] is False
+    assert manual_review["true_scalping_allowed"] is False
+    assert manual_review["strategy_id"] == "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1"
+    assert manual_review["variant_id"] == "high_vol_non_expansion_trend_guard_repair_v1"
+    assert manual_review["approval_exists"] is True
+    assert manual_review["approval_valid"] is True
+    assert manual_review["approval_path"] == (
+        "data/research/btc_intraday_candidate_reviews/btc_intraday_short_cycle_manual_review_v1/review.json"
+    )
+    assert manual_review["blockers"] == []
+    candidate_definition_preflight = btc["intraday_short_cycle_research_candidate_definition_preflight_status"]
+    assert candidate_definition_preflight["status"] == "ready_for_research_candidate_definition_manifest"
+    assert candidate_definition_preflight["decision"] == "allow_research_candidate_definition_manifest_only"
+    assert candidate_definition_preflight["next_required_action"] == (
+        "create_research_candidate_definition_manifest_no_strategy_skeleton"
+    )
+    assert candidate_definition_preflight["research_candidate_definition_manifest_allowed"] is True
+    assert candidate_definition_preflight["candidate_generation_allowed"] is False
+    assert candidate_definition_preflight["strategy_skeleton_generation_allowed"] is False
+    assert candidate_definition_preflight["promotion_allowed"] is False
+    assert candidate_definition_preflight["paper_or_live_unlock_allowed"] is False
+    assert candidate_definition_preflight["true_scalping_allowed"] is False
+    assert candidate_definition_preflight["strategy_id"] == (
+        "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1"
+    )
+    assert candidate_definition_preflight["variant_id"] == "high_vol_non_expansion_trend_guard_repair_v1"
+    assert candidate_definition_preflight["manual_review_packet_approved"] is True
+    assert candidate_definition_preflight["recorded_manual_review_approved"] is True
+    assert candidate_definition_preflight["blockers"] == []
+    candidate_definition_manifest = btc["intraday_short_cycle_research_candidate_definition_manifest_status"]
+    assert candidate_definition_manifest["status"] == "ready_research_candidate_definition_manifest_only"
+    assert candidate_definition_manifest["decision"] == "publish_research_candidate_definition_manifest_only"
+    assert candidate_definition_manifest["next_required_action"] == (
+        "review_research_candidate_definition_manifest_no_strategy_skeleton"
+    )
+    assert candidate_definition_manifest["research_candidate_definition_manifest_ready"] is True
+    assert candidate_definition_manifest["candidate_generation_allowed"] is False
+    assert candidate_definition_manifest["strategy_skeleton_generation_allowed"] is False
+    assert candidate_definition_manifest["promotion_allowed"] is False
+    assert candidate_definition_manifest["paper_or_live_unlock_allowed"] is False
+    assert candidate_definition_manifest["true_scalping_allowed"] is False
+    assert candidate_definition_manifest["preflight_ready_for_definition_manifest"] is True
+    assert candidate_definition_manifest["manual_review_packet_approved"] is True
+    assert candidate_definition_manifest["recorded_manual_review_approved"] is True
+    assert candidate_definition_manifest["only_manual_or_external_blockers_remain"] is True
+    assert candidate_definition_manifest["automated_engineering_blockers"] == []
+    assert set(candidate_definition_manifest["remaining_manual_or_external_categories"]) == {
+        "real_long_horizon_market_data",
+        "execution_evidence",
+        "queue_evidence",
+        "paper_gate",
+    }
+    assert candidate_definition_manifest["blockers"] == []
+    external_evidence = btc["intraday_short_cycle_remaining_external_evidence_status"]
+    assert external_evidence["status"] == "candidate_definition_ready_external_evidence_pending"
+    assert external_evidence["decision"] == "continue_external_evidence_collection_no_candidate_no_paper_no_live"
+    assert external_evidence["manual_approval_satisfied"] is True
+    assert external_evidence["research_candidate_definition_manifest_ready"] is True
+    assert external_evidence["only_external_evidence_blockers_remain"] is True
+    assert external_evidence["automated_engineering_blockers"] == []
+    assert set(external_evidence["remaining_external_evidence_categories"]) == {
+        "real_long_horizon_market_data",
+        "execution_evidence",
+        "queue_evidence",
+        "paper_gate",
+    }
+    assert external_evidence["ws_l2_coverage_contract_satisfied"] is False
+    assert external_evidence["ws_proxy_diagnostics_ready"] is True
+    assert external_evidence["execution_queue_external_evidence_contract_satisfied"] is False
+    assert external_evidence["execution_latency_evidence_contract_satisfied"] is False
+    assert external_evidence["queue_position_evidence_contract_satisfied"] is False
+    assert external_evidence["private_order_execution_latency_model_ready"] is False
+    assert external_evidence["exchange_queue_position_model_ready"] is False
+    assert external_evidence["paper_gate_ready"] is False
+    assert external_evidence["candidate_generation_allowed"] is False
+    assert external_evidence["strategy_skeleton_generation_allowed"] is False
+    assert external_evidence["paper_or_live_unlock_allowed"] is False
+    assert external_evidence["true_scalping_allowed"] is False
+    assert "btc_external_evidence_long_horizon_l2_coverage_not_satisfied" in external_evidence["blockers"]
+    assert "btc_external_evidence_private_execution_latency_model_missing" in external_evidence["blockers"]
+    assert btc["paper_queue_status"] == "locked"
+    assert btc["candidate_passed_internal_gate"] == 0
+    assert btc["current_candidates"] == []
     objective = btc["objective_completion_status"]
     assert objective["status"] == "complete"
     assert objective["goal_complete"] is True

@@ -280,6 +280,11 @@ def run_event_with_signal(
     commission_rate: float = 0.0004,
     slippage_bps: float = 4.0,
     target_weight: float = 0.90,
+    min_trade_notional: float = 25.0,
+    rebalance_buffer_pct: float = 0.05,
+    interval: str = "1h",
+    data_version: str = "qs-sqlite-BTCUSDT-1h-66968bfbabf2",
+    strategy_version: str | None = None,
 ) -> dict[str, Any]:
     replay = signal.copy()
     replay.index = pd.to_datetime(replay.index, utc=True)
@@ -291,7 +296,7 @@ def run_event_with_signal(
     result = run_crypto_event_backtest(
         source="sqlite",
         symbol="BTCUSDT",
-        interval="1h",
+        interval=interval,
         start=start,
         end=end,
         strategy_id=strategy_id,
@@ -301,13 +306,13 @@ def run_event_with_signal(
         slippage_bps=slippage_bps,
         market_loader=lambda **_: frame.copy(),
         signal_provider=provider,
-        data_version="qs-sqlite-BTCUSDT-1h-66968bfbabf2",
-        strategy_version=f"{strategy_id}:canonical_research_v1",
+        data_version=data_version,
+        strategy_version=strategy_version or f"{strategy_id}:canonical_research_v1",
         manifest_root=run_dir / "manifests",
         target_weight=target_weight,
         min_cash_buffer_pct=0.02,
-        min_trade_notional=25.0,
-        rebalance_buffer_pct=0.05,
+        min_trade_notional=min_trade_notional,
+        rebalance_buffer_pct=rebalance_buffer_pct,
         long_only=False,
         run_id=f"{strategy_id}_{scenario_name}",
     )
@@ -464,10 +469,11 @@ def canonical_metrics_from_event(
     signal: pd.Series,
     frame: pd.DataFrame,
     initial_capital: float = 100_000.0,
+    bars_per_year: float = 365.0 * 24.0,
 ) -> dict[str, Any]:
     summary = dict(event.get("summary", {}))
     fills = list(event.get("fills", []))
-    years = max(len(frame) / (365.0 * 24.0), 1e-12)
+    years = max(len(frame) / max(float(bars_per_year), 1.0), 1e-12)
     notional = sum(abs(float(getattr(fill, "quantity", 0.0)) * float(getattr(fill, "price", 0.0))) for fill in fills)
     turnover = notional / max(initial_capital, 1.0) / years
     net_pnl = float(trades["net_pnl"].sum()) if "net_pnl" in trades else 0.0
@@ -1072,8 +1078,19 @@ def build_canonical_report(
     walk_forward: Mapping[str, Any],
     regime_report: Mapping[str, Any],
     config_hash: str,
+    data_version: str = "qs-sqlite-BTCUSDT-1h-66968bfbabf2",
+    timeframe: str = "1h",
+    cost_model_id: str = "crypto_commission_4bps_slippage_4bps",
+    ledger_engine_version: str = "quant_us.crypto_event.event_ledger_v1",
+    bars_per_year: float = 365.0 * 24.0,
 ) -> dict[str, Any]:
-    metrics = canonical_metrics_from_event(event=event, trades=trades, signal=signal, frame=frame)
+    metrics = canonical_metrics_from_event(
+        event=event,
+        trades=trades,
+        signal=signal,
+        frame=frame,
+        bars_per_year=bars_per_year,
+    )
     metrics["walk_forward_pass_rate"] = float(walk_forward.get("pass_rate", 0.0))
     metrics["regime_pass_rate"] = float(regime_report.get("pass_rate", 0.0))
     metrics["pbo"] = simplified_pbo(walk_forward.get("windows", []), float(metrics.get("sharpe", 0.0)))
@@ -1090,12 +1107,12 @@ def build_canonical_report(
         "run_id": run_id,
         "strategy_id": strategy_id,
         "strategy_version": strategy_version,
-        "data_version": "qs-sqlite-BTCUSDT-1h-66968bfbabf2",
+        "data_version": data_version,
         "data_range": {"start": frame.index[0].isoformat(), "end": frame.index[-1].isoformat()},
-        "timeframe": "1h",
+        "timeframe": timeframe,
         "benchmark": None,
-        "cost_model_id": "crypto_commission_4bps_slippage_4bps",
-        "ledger_engine_version": "quant_us.crypto_event.event_ledger_v1",
+        "cost_model_id": cost_model_id,
+        "ledger_engine_version": ledger_engine_version,
         "config_hash": config_hash,
         "code_commit": git_commit_hash(),
         "metrics": metrics,

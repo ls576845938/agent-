@@ -1,0 +1,139 @@
+{
+  "asset": "us_equity",
+  "blockers": [
+    "source_type_fixture",
+    "production_data_missing",
+    "not_event_ledger_candidate"
+  ],
+  "branch": "main",
+  "candidate_passed_internal_gate": 0,
+  "commit": "ab6e2e4",
+  "event_ledger_validated": false,
+  "fixture_chain": {
+    "alpha_scores": [
+      {
+        "score": 0.6,
+        "symbol": "AAPL",
+        "timestamp": "2026-01-02T14:30:00Z"
+      },
+      {
+        "score": 0.4,
+        "symbol": "MSFT",
+        "timestamp": "2026-01-02T14:30:00Z"
+      }
+    ],
+    "fills": [
+      {
+        "commission": 1.0,
+        "fill_id": "fixture-fill-AAPL",
+        "fill_price": 100.05,
+        "order_id": "fixture-order-AAPL",
+        "quantity": 58.8,
+        "side": "buy",
+        "slippage": 2.94,
+        "symbol": "AAPL",
+        "timestamp": "2026-01-02T14:31:00Z"
+      },
+      {
+        "commission": 1.0,
+        "fill_id": "fixture-fill-MSFT",
+        "fill_price": 50.025,
+        "order_id": "fixture-order-MSFT",
+        "quantity": 78.4,
+        "side": "buy",
+        "slippage": 1.96,
+        "symbol": "MSFT",
+        "timestamp": "2026-01-02T14:31:00Z"
+      }
+    ],
+    "ledger_pnl": {
+      "commission": 2.0,
+      "ending_cash": 193.1,
+      "ending_value": 10012.7,
+      "gross_pnl": 14.7,
+      "initial_cash": 10000.0,
+      "mark_prices": {
+        "AAPL": 101.0,
+        "MSFT": 49.5
+      },
+      "net_pnl": 12.7,
+      "positions": {
+        "AAPL": 58.8,
+        "MSFT": 78.4
+      },
+      "slippage": 4.9,
+      "turnover": 0.98049
+    },
+    "rebalance_orders": [
+      {
+        "order_id": "fixture-order-AAPL",
+        "quantity": 58.8,
+        "reference_price": 100.0,
+        "side": "buy",
+        "symbol": "AAPL",
+        "timestamp": "2026-01-02T14:30:00Z"
+      },
+      {
+        "order_id": "fixture-order-MSFT",
+        "quantity": 78.4,
+        "reference_price": 50.0,
+        "side": "buy",
+        "symbol": "MSFT",
+        "timestamp": "2026-01-02T14:30:00Z"
+      }
+    ],
+    "target_portfolio": [
+      {
+        "symbol": "AAPL",
+        "target_weight": 0.588,
+        "timestamp": "2026-01-02T14:30:00Z"
+      },
+      {
+        "symbol": "MSFT",
+        "target_weight": 0.392,
+        "timestamp": "2026-01-02T14:30:00Z"
+      }
+    ]
+  },
+  "generated_at": "2026-05-22T16:48:52.449971+00:00",
+  "input_artifacts": {
+    "alpha_scores": "embedded_fixture:alpha_scores",
+    "fills": "embedded_fixture:simulated_fills",
+    "ledger_pnl": "embedded_fixture:ledger_pnl",
+    "rebalance_orders": "embedded_fixture:rebalance_orders",
+    "target_portfolio": "embedded_fixture:target_portfolio"
+  },
+  "ledger_validation": {
+    "blockers": [
+      "source_type_fixture",
+      "production_data_missing",
+      "not_event_ledger_candidate"
+    ],
+    "cash_conservation_check": true,
+    "cost_model_applied": true,
+    "fills_available": true,
+    "ledger_pnl_available": true,
+    "no_negative_cash_if_cash_constrained_check": true,
+    "no_short_when_long_only_check": true,
+    "paper_review_allowed": false,
+    "position_conservation_check": true,
+    "promotion_ready": false,
+    "rebalance_orders_available": true,
+    "target_portfolio_available": true
+  },
+  "live_status": "frozen",
+  "metrics": {
+    "commission": 2.0,
+    "gross_pnl": 14.7,
+    "max_drawdown": 0.0,
+    "net_pnl": 12.7,
+    "slippage": 4.9,
+    "turnover": 0.98049
+  },
+  "paper_queue_status": "locked",
+  "paper_review_allowed": false,
+  "promotion_evidence": false,
+  "promotion_ready": false,
+  "schema_version": "us_equity_portfolio_fixture_event_ledger_report_v1",
+  "source_type": "fixture"
+}

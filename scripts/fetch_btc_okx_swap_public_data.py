@@ -102,6 +102,8 @@ def capture_okx_public_bundle(
                 collector.request_by_name("instruments", {"instType": "SWAP", "instId": VENUE_SYMBOL}),
                 collector.request_by_name("funding_rate", {"instId": VENUE_SYMBOL}),
                 collector.request_by_name("funding_rate_history", {"instId": VENUE_SYMBOL, "limit": "100"}),
+                collector.request_by_name("history_trades", {"instId": VENUE_SYMBOL, "limit": "100"}),
+                collector.request_by_name("books", {"instId": VENUE_SYMBOL, "sz": "50"}),
             ],
             "blockers": [],
         }
@@ -231,6 +233,24 @@ def capture_okx_public_bundle(
         bundle_dir / "exchange_info.json",
     )
     _write_json_atomic(open_interest_response["payload"], bundle_dir / "open_interest_current.json")
+    microstructure_files: list[dict[str, Any]] = []
+    microstructure_errors: list[dict[str, str]] = []
+    try:
+        trade_response = _okx_request(collector, "history_trades", {"instId": VENUE_SYMBOL, "limit": "100"})
+        trade_rows = _trade_rows(trade_response["payload"].get("data", []))
+        _write_agg_trades(bundle_dir / "agg_trades.csv", trade_rows)
+        microstructure_files.append(_file_facts(bundle_dir / "agg_trades.csv", root))
+    except Exception as exc:  # noqa: BLE001 - persisted as evidence, not silently swallowed.
+        blockers.append("btc_okx_agg_trades_capture_failed")
+        microstructure_errors.append({"role": "agg_trades", "error": repr(exc)})
+    try:
+        book_response = _okx_request(collector, "books", {"instId": VENUE_SYMBOL, "sz": "50"})
+        book_rows = _book_depth_rows(book_response["payload"].get("data", []))
+        _write_order_book_depth(bundle_dir / "order_book_depth.csv", book_rows)
+        microstructure_files.append(_file_facts(bundle_dir / "order_book_depth.csv", root))
+    except Exception as exc:  # noqa: BLE001 - persisted as evidence, not silently swallowed.
+        blockers.append("btc_okx_order_book_depth_capture_failed")
+        microstructure_errors.append({"role": "order_book_depth", "error": repr(exc)})
 
     manifest = build_btc_perpetual_data_bundle_manifest(
         bundle_dir=bundle_dir,
@@ -283,6 +303,8 @@ def capture_okx_public_bundle(
         "order_endpoint_used": False,
         "raw_exchange_info": _file_facts(raw_exchange, root),
         "raw_funding_info": _file_facts(raw_funding, root),
+        "microstructure_files": microstructure_files,
+        "microstructure_errors": microstructure_errors,
         "manual_metadata_import_report": _relpath(manual_report_abs, root),
         "manual_metadata_import_report_written": metadata_report_written,
         "config_updated": bool(update_config and not blockers),
@@ -517,6 +539,89 @@ def _write_funding_rate(path: Path, rows: list[Mapping[str, Any]], mark_rows: li
             }
             for row in rows
         ],
+    )
+
+
+def _trade_rows(rows: object) -> list[dict[str, Any]]:
+    parsed = []
+    source_rows = rows if isinstance(rows, list) else []
+    for row in source_rows:
+        item = dict(row) if isinstance(row, Mapping) else {}
+        timestamp = _int_or_none(item.get("ts"))
+        if timestamp is None:
+            continue
+        parsed.append(item)
+    return sorted(parsed, key=lambda row: int(row["ts"]))
+
+
+def _write_agg_trades(path: Path, rows: list[Mapping[str, Any]]) -> None:
+    _write_csv_atomic(
+        path,
+        ["timestamp", "ts", "symbol", "trade_id", "price", "size", "side", "source_record_id"],
+        [
+            {
+                "timestamp": _iso_ms(_int_or_none(row.get("ts"))),
+                "ts": str(row.get("ts", "")),
+                "symbol": SYMBOL,
+                "trade_id": str(row.get("tradeId", "")),
+                "price": str(row.get("px", "")),
+                "size": str(row.get("sz", "")),
+                "side": str(row.get("side", "")),
+                "source_record_id": f"okx-trade:{VENUE_SYMBOL}:{row.get('tradeId', row.get('ts', ''))}",
+            }
+            for row in rows
+        ],
+    )
+
+
+def _book_depth_rows(rows: object) -> list[dict[str, Any]]:
+    parsed: list[dict[str, Any]] = []
+    source_rows = rows if isinstance(rows, list) else []
+    for book in source_rows:
+        payload = dict(book) if isinstance(book, Mapping) else {}
+        timestamp = _int_or_none(payload.get("ts"))
+        if timestamp is None:
+            continue
+        for side in ("bids", "asks"):
+            levels = payload.get(side)
+            if not isinstance(levels, list):
+                continue
+            for level, raw in enumerate(levels, start=1):
+                if not isinstance(raw, list) or len(raw) < 2:
+                    continue
+                parsed.append(
+                    {
+                        "timestamp": _iso_ms(timestamp),
+                        "ts": str(timestamp),
+                        "symbol": SYMBOL,
+                        "side": side[:-1],
+                        "level": level,
+                        "price": raw[0],
+                        "size": raw[1],
+                        "liquidation_orders": raw[2] if len(raw) > 2 else "",
+                        "order_count": raw[3] if len(raw) > 3 else "",
+                        "source_record_id": f"okx-book:{VENUE_SYMBOL}:{timestamp}:{side}:{level}",
+                    }
+                )
+    return parsed
+
+
+def _write_order_book_depth(path: Path, rows: list[Mapping[str, Any]]) -> None:
+    _write_csv_atomic(
+        path,
+        [
+            "timestamp",
+            "ts",
+            "symbol",
+            "side",
+            "level",
+            "price",
+            "size",
+            "liquidation_orders",
+            "order_count",
+            "source_record_id",
+        ],
+        rows,
     )
 
 

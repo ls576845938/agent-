@@ -1,0 +1,168 @@
+{
+  "asset": "btc",
+  "blockers": [
+    "btc_l2_features_bounded_sample_not_historical_l2",
+    "btc_l2_features_not_timestamp_aligned_to_historical_backtest",
+    "btc_l2_feature_event_ledger_validation_blocked_without_timestamp_aligned_history"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "decision": "collect_timestamp_aligned_l2_history_before_event_ledger_feature_validation",
+  "event_ledger_feature_validation_allowed": false,
+  "feature_candidates": [
+    {
+      "backtest_blocker": "timestamp_aligned_l2_history_missing_for_backtest",
+      "description": "Filter entries when observed public top-of-book spread exceeds the calibrated sample band.",
+      "diagnostic_status": "observed_in_bounded_sample",
+      "event_ledger_backtest_usable": false,
+      "feature_id": "spread_filter_bps",
+      "sample_observed": true
+    },
+    {
+      "backtest_blocker": "timestamp_aligned_l2_history_missing_for_backtest",
+      "description": "Require visible bid/ask depth pressure to agree with the proposed entry side.",
+      "diagnostic_status": "observed_in_bounded_sample",
+      "event_ledger_backtest_usable": false,
+      "feature_id": "depth_imbalance_top5",
+      "sample_observed": true
+    },
+    {
+      "backtest_blocker": "timestamp_aligned_l2_history_missing_for_backtest",
+      "description": "Use microprice displacement from midpoint as a short-horizon pressure proxy.",
+      "diagnostic_status": "observed_in_bounded_sample",
+      "event_ledger_backtest_usable": false,
+      "feature_id": "microprice_edge_bps",
+      "sample_observed": true
+    },
+    {
+      "backtest_blocker": "timestamp_aligned_l2_history_missing_for_backtest",
+      "description": "Use recent public trade aggressor imbalance as confirmation.",
+      "diagnostic_status": "observed_in_bounded_sample",
+      "event_ledger_backtest_usable": false,
+      "feature_id": "trade_flow_imbalance",
+      "sample_observed": true
+    },
+    {
+      "backtest_blocker": "timestamp_aligned_l2_history_missing_for_backtest",
+      "description": "Combine depth imbalance and trade-flow imbalance into a conservative pressure score.",
+      "diagnostic_status": "observed_in_bounded_sample",
+      "event_ledger_backtest_usable": false,
+      "feature_id": "book_trade_pressure_proxy",
+      "sample_observed": true
+    }
+  ],
+  "feature_diagnostics": {
+    "book_snapshot_count": 5,
+    "book_trade_pressure_proxy": {
+      "max": -0.28032948166233884,
+      "mean": -0.40102572410933307,
+      "median": -0.3318786944520702,
+      "min": -0.5525712918783049
+    },
+    "depth_imbalance_top1": {
+      "max": -0.48551641472997265,
+      "mean": -0.7807068664141804,
+      "median": -0.9401423699453256,
+      "min": -0.9750207451222366
+    },
+    "depth_imbalance_top10": {
+      "max": -0.5796731635810847,
+      "mean": -0.7944087761079697,
+      "median": -0.8877008691302445,
+      "min": -0.9452513643845109
+    },
+    "depth_imbalance_top5": {
+      "max": -0.6132742810804067,
+      "mean": -0.8242602310979722,
+      "median": -0.9401683988593208,
+      "min": -0.9813597941933112
+    },
+    "depth_imbalance_top50": {
+      "max": -0.6088978945889382,
+      "mean": -0.7322302027964894,
+      "median": -0.7228044107296473,
+      "min": -0.8694158255321375
+    },
+    "joined_sample_count": 5,
+    "max_book_level": 50,
+    "microprice_edge_bps": {
+      "max": -0.0037983999139376812,
+      "mean": -0.006107873134177807,
+      "median": -0.0073553148571722906,
+      "min": -0.007627998972782745
+    },
+    "spread_bps": {
+      "max": 0.01564723618932605,
+      "mean": 0.015647001152649977,
+      "median": 0.015646844461532597,
+      "min": 0.015646844461532597
+    },
+    "trade_flow_sample_count": 5,
+    "trade_notional_imbalance": {
+      "max": 0.3795094355346431,
+      "mean": 0.02220878287930609,
+      "median": 0.3176024052891708,
+      "min": -0.45948154730968904
+    },
+    "trade_size_imbalance": {
+      "max": 0.3795312074134642,
+      "mean": 0.022235156607735153,
+      "median": 0.3176317124429306,
+      "min": -0.4594522378089513
+    }
+  },
+  "generated_at": "2026-06-20T17:27:20.511356+00:00",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "future_label_used_for_signal": false,
+    "live": "FROZEN",
+    "lookahead_used_for_signal": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_usable": false,
+    "paper_queue": "LOCKED",
+    "private_endpoints_allowed": false,
+    "production_ready": false,
+    "real_orders_created": false,
+    "research_only": true
+  },
+  "historical_alignment": {
+    "backtest_end": "2026-05-12T01:12:00+00:00",
+    "backtest_start": "2025-05-12T01:12:00+00:00",
+    "causal_event_ledger_join_allowed": false,
+    "overlaps_backtest_window": false,
+    "reason": "bounded_public_rest_samples_are_current_observations_not_historical_l2_covering_the_backtest_window",
+    "sample_capture_end": "2026-06-20T16:33:08+00:00",
+    "sample_capture_start": "2026-06-20T16:33:04+00:00",
+    "status": "not_timestamp_aligned_to_backtest",
+    "timestamp_aligned_l2_history_available": false
+  },
+  "next_required_action": "collect_timestamp_aligned_l2_tick_history_or_build_1m_only_feature_redesign",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "schema_version": "btc_true_scalping_l2_feature_diagnostics_report_v1",
+  "scope": "research_only_l2_feature_diagnostics_no_candidate_no_paper_no_live",
+  "selected_bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1",
+  "source_files": {
+    "agg_trades_samples": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/agg_trades_samples.csv",
+      "row_count": 500
+    },
+    "order_book_depth_samples": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/order_book_depth_samples.csv",
+      "row_count": 500
+    }
+  },
+  "source_reports": {
+    "capture_report": "artifacts/btc_scalping_readiness/latest/btc_okx_l2_microstructure_sample_capture_report.json",
+    "event_definition_redesign": "artifacts/btc_scalping_event_ledger/latest/btc_true_scalping_event_definition_redesign_report.json",
+    "sample_quality": "artifacts/btc_scalping_readiness/latest/btc_true_scalping_l2_sample_quality_report.json"
+  },
+  "status": "l2_feature_diagnostics_ready_research_only_backtest_blocked",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false
+}

@@ -1,0 +1,92 @@
+{
+  "adjustment": "raw",
+  "adjustment_policy": "raw",
+  "asset_class": "equity",
+  "checksum": "d9cb9db38d81bf390394145fe05a12159f498e9c05c65a0ce9b533c87d1f075b",
+  "cleaned_path": "/tmp/tmp8s_b21zc/raw/vendor=yfinance/asset_class=equity/bar_size=1d/symbol=META",
+  "cleaning": {
+    "cleaning_loss_rows": 0,
+    "duplicate_timestamps_removed": 0,
+    "invalid_ohlc_removed": 0,
+    "missing_bars": 0,
+    "non_positive_prices_removed": 0
+  },
+  "corporate_action_adjustment": "raw",
+  "coverage_pct": 100.0,
+  "created_at": "2026-05-11T00:48:25.389714+00:00",
+  "data_version": "qs-yfinance-META-1d-d9cb9db38d81",
+  "end": "2024-06-07T14:30:00+00:00",
+  "expected_rows": 5,
+  "fields": [
+    "timestamp_utc",
+    "symbol",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume"
+  ],
+  "fingerprint": "d9cb9db38d81bf390394145fe05a12159f498e9c05c65a0ce9b533c87d1f075b",
+  "git_commit": "",
+  "interval": "1d",
+  "issues": [
+    {
+      "issues_found": 0,
+      "report_type": "missing_bars",
+      "symbol": "META"
+    },
+    {
+      "issues_found": 0,
+      "report_type": "duplicate_bars",
+      "symbol": "META"
+    },
+    {
+      "issues_found": 0,
+      "report_type": "price_jump",
+      "symbol": "META"
+    },
+    {
+      "issues_found": 0,
+      "report_type": "zero_volume",
+      "symbol": "META"
+    },
+    {
+      "details": [
+        {
+          "count": 5,
+          "session": "regular"
+        }
+      ],
+      "issues_found": 0,
+      "report_type": "session_coverage",
+      "symbol": "META"
+    },
+    {
+      "issues_found": 0,
+      "report_type": "corporate_action",
+      "symbol": "META"
+    }
+  ],
+  "quality_score": 100.0,
+  "quality_summary": {
+    "cleaning_loss_rows": 0,
+    "corporate_action_flags": 0,
+    "duplicate_bars": 0,
+    "duplicate_timestamps_removed": 0,
+    "invalid_ohlc_rows": 0,
+    "missing_bars": 0,
+    "non_positive_price_rows": 0,
+    "price_jump_bars": 0,
+    "total_issue_count": 0,
+    "zero_volume_bars": 0
+  },
+  "raw_path": "",
+  "row_count": 5,
+  "source": "yfinance",
+  "start": "2024-06-03T14:30:00+00:00",
+  "survivorship_bias_risk": "clean",
+  "symbol": "META",
+  "timezone": "UTC",
+  "universe_id": "single-symbol-META-1d-d07ddde6b04d",
+  "universe_source": "auto_lineage:single_symbol_request:v1:yfinance:META:1d:2024-06-03T14:30:00Z:2024-06-07T14:30:00Z"
+}

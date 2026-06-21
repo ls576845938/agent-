@@ -1,0 +1,209 @@
+{
+  "canonical_for_promotion": true,
+  "commission_model": {
+    "model": "PercentCommission",
+    "rate": 0.0001,
+    "realized_total": 1.111733
+  },
+  "commit_hash": "47097d2",
+  "config": {
+    "commission_rate": 0.0001,
+    "gap_config": null,
+    "initial_cash": 100000.0,
+    "max_daily_turnover_pct": 200.0,
+    "slippage_bps": 1.0
+  },
+  "cost_model": {
+    "commission_rate": 0.0001,
+    "fill_ratio": 1.0,
+    "realized_commission": 1.111733,
+    "realized_slippage_cost": 1.111643,
+    "slippage_bps": 1.0,
+    "total_fees": 1.111733,
+    "volume_participation_cap_pct": 5.0
+  },
+  "data_manifest": {
+    "asset_class": "",
+    "checksum": "",
+    "coverage": {},
+    "data_manifest_id": "",
+    "data_version": "",
+    "data_version_matches_requested": false,
+    "exists": false,
+    "fingerprint": "",
+    "interval": "",
+    "missing_data_manifest": true,
+    "path": "data/manifests/my_data_ver_42.json",
+    "quality": {},
+    "requested_data_version": "my_data_ver_42",
+    "source": "",
+    "symbol": ""
+  },
+  "data_manifest_exists": false,
+  "data_version": "my_data_ver_42",
+  "end_time": "2026-05-09T05:18:38.022751+00:00",
+  "engine": "event_driven",
+  "evidence": {
+    "approximate_scan_engine": false,
+    "canonical_for_promotion": true,
+    "cash": {
+      "cash_consistent": true,
+      "final_snapshot_cash": 90915.211838,
+      "initial_cash": 100000.0,
+      "ledger_cash_at_final_snapshot": 90915.211838
+    },
+    "commission": {
+      "model": "PercentCommission",
+      "rate": 0.0001,
+      "realized_total": 1.111733
+    },
+    "commit_hash": "47097d2",
+    "completeness": {
+      "data_manifest_bound": false,
+      "ledger_evidence_complete": true,
+      "missing_required_fields": [],
+      "promotion_evidence_complete": false
+    },
+    "costs": {
+      "commission_rate": 0.0001,
+      "fill_ratio": 1.0,
+      "realized_commission": 1.111733,
+      "realized_slippage_cost": 1.111643,
+      "slippage_bps": 1.0,
+      "total_fees": 1.111733,
+      "volume_participation_cap_pct": 5.0
+    },
+    "data_manifest": {
+      "asset_class": "",
+      "checksum": "",
+      "coverage": {},
+      "data_manifest_id": "",
+      "data_version": "",
+      "data_version_matches_requested": false,
+      "exists": false,
+      "fingerprint": "",
+      "interval": "",
+      "missing_data_manifest": true,
+      "path": "data/manifests/my_data_ver_42.json",
+      "quality": {},
+      "requested_data_version": "my_data_ver_42",
+      "source": "",
+      "symbol": ""
+    },
+    "data_manifest_exists": false,
+    "data_scope": {
+      "fixture_like_data_version": false,
+      "promotion_scope_ok": true,
+      "scope_rejections": []
+    },
+    "data_version": "my_data_ver_42",
+    "engine": "event_driven",
+    "equity": {
+      "consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%)",
+      "consistent": true,
+      "consistent_at_final_snapshot": false,
+      "ledger_curve_points": 21,
+      "ledger_final_equity": 101016.903012,
+      "snapshot_final_equity": 101016.903016
+    },
+    "events": {
+      "account_update": 0,
+      "broker_order": 21,
+      "fill": 21,
+      "market": 60,
+      "order_intent": 30,
+      "risk": 30,
+      "signal": 50,
+      "target_position": 50,
+      "total": 262
+    },
+    "fees": {
+      "fees_from_fills": true,
+      "ledger_total_fees": 1.111733,
+      "total_commission": 1.111733
+    },
+    "fills": {
+      "all_fills_match_orders": true,
+      "count": 21,
+      "filled_order_count": 21
+    },
+    "missing_data_manifest": true,
+    "orders": {
+      "all_orders_created_by_oms": true,
+      "all_orders_have_risk_check_id": true,
+      "count": 21,
+      "oms_order_count": 21,
+      "status_counts": {
+        "filled": 12,
+        "partially_filled": 9
+      }
+    },
+    "pnl": {
+      "final_equity": 101016.903012,
+      "final_pnl": 1016.903012,
+      "initial_cash": 100000.0,
+      "source": "ledger_fills",
+      "total_return_pct": 1.016903
+    },
+    "positions": {
+      "final_position_value": 10101.691174,
+      "final_positions": {
+        "AAPL": 59.84099145
+      },
+      "position_count": 1
+    },
+    "risk": {
+      "approved": 21,
+      "rejected": 9,
+      "rejection_reasons": {
+        "session_not_allowed": 9
+      },
+      "risk_check_count": 30
+    },
+    "run_id": "ubt_88586bde58f94dd7",
+    "slippage": {
+      "bps": 1.0,
+      "model": "BpsSlippage",
+      "realized_total": 1.111643
+    },
+    "strategy": {
+      "strategies": [
+        {
+          "params": {
+            "allow_short": false,
+            "entry_threshold": 0.005,
+            "exit_threshold": 0.0,
+            "lookback_bars": 10,
+            "strategy_id": "momentum_us"
+          },
+          "strategy_id": "momentum_us",
+          "version": "0.1.0"
+        }
+      ],
+      "strategy_version": "momentum_us@0.1.0"
+    }
+  },
+  "manifest_schema_version": "backtest_run_v2",
+  "missing_data_manifest": true,
+  "run_id": "ubt_88586bde58f94dd7",
+  "slippage_model": {
+    "bps": 1.0,
+    "model": "BpsSlippage",
+    "realized_total": 1.111643
+  },
+  "start_time": "2026-05-09T05:18:37.973292+00:00",
+  "strategy_params": [
+    {
+      "params": {
+        "allow_short": false,
+        "entry_threshold": 0.005,
+        "exit_threshold": 0.0,
+        "lookback_bars": 10,
+        "strategy_id": "momentum_us"
+      },
+      "strategy_id": "momentum_us",
+      "version": "0.1.0"
+    }
+  ],
+  "strategy_version": "momentum_us@0.1.0"
+}

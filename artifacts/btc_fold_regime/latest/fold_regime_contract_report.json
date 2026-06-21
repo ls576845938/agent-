@@ -1,0 +1,128 @@
+{
+  "asset": "btc",
+  "blockers": [],
+  "branch": "main",
+  "commit": "03cad6a",
+  "fold_contract_status": "pass",
+  "fold_definition": {
+    "fold_count": 6,
+    "fold_definition_version": "btc_walk_forward_fold_contract_v1",
+    "fold_schema_version": "btc_oos_fold_schema_v1",
+    "folds": [
+      {
+        "fold_id": "1",
+        "notes": "Fold definition is for validation comparability; candidate parameters are fixed, not optimized here.",
+        "sample_type": "rolling_event_ledger_oos_validation",
+        "test_end": "2024-05-23T16:05:00+00:00",
+        "test_start": "2024-01-01T00:00:00+00:00",
+        "train_end": "2024-01-01T00:00:00+00:00",
+        "train_start": "2024-01-01T00:00:00+00:00"
+      },
+      {
+        "fold_id": "2",
+        "notes": "Fold definition is for validation comparability; candidate parameters are fixed, not optimized here.",
+        "sample_type": "rolling_event_ledger_oos_validation",
+        "test_end": "2024-10-14T08:15:00+00:00",
+        "test_start": "2024-05-23T16:10:00+00:00",
+        "train_end": "2024-05-23T16:10:00+00:00",
+        "train_start": "2024-01-01T00:00:00+00:00"
+      },
+      {
+        "fold_id": "3",
+        "notes": "Fold definition is for validation comparability; candidate parameters are fixed, not optimized here.",
+        "sample_type": "rolling_event_ledger_oos_validation",
+        "test_end": "2025-03-07T00:25:00+00:00",
+        "test_start": "2024-10-14T08:20:00+00:00",
+        "train_end": "2024-10-14T08:20:00+00:00",
+        "train_start": "2024-01-01T00:00:00+00:00"
+      },
+      {
+        "fold_id": "4",
+        "notes": "Fold definition is for validation comparability; candidate parameters are fixed, not optimized here.",
+        "sample_type": "rolling_event_ledger_oos_validation",
+        "test_end": "2025-07-28T16:35:00+00:00",
+        "test_start": "2025-03-07T00:30:00+00:00",
+        "train_end": "2025-03-07T00:30:00+00:00",
+        "train_start": "2024-01-01T00:00:00+00:00"
+      },
+      {
+        "fold_id": "5",
+        "notes": "Fold definition is for validation comparability; candidate parameters are fixed, not optimized here.",
+        "sample_type": "rolling_event_ledger_oos_validation",
+        "test_end": "2025-12-19T08:45:00+00:00",
+        "test_start": "2025-07-28T16:40:00+00:00",
+        "train_end": "2025-07-28T16:40:00+00:00",
+        "train_start": "2024-01-01T00:00:00+00:00"
+      },
+      {
+        "fold_id": "6",
+        "notes": "Fold definition is for validation comparability; candidate parameters are fixed, not optimized here.",
+        "sample_type": "rolling_event_ledger_oos_validation",
+        "test_end": "2026-05-12T01:05:00+00:00",
+        "test_start": "2025-12-19T08:50:00+00:00",
+        "train_end": "2025-12-19T08:50:00+00:00",
+        "train_start": "2024-01-01T00:00:00+00:00"
+      }
+    ]
+  },
+  "generated_at": "2026-06-21T03:26:33.034498+00:00",
+  "live_status": "frozen",
+  "paper_queue_status": "locked",
+  "promotion_ready": false,
+  "regime_classifier": {
+    "classifier_inputs": [
+      "close",
+      "high",
+      "low",
+      "volume",
+      "taker_buy_base_volume",
+      "trend_window_168",
+      "volatility_window_168",
+      "compression_window_336"
+    ],
+    "diagnostic_regimes": [
+      "compression",
+      "mean_reverting_chop",
+      "trending_down",
+      "high_vol_trend",
+      "expansion",
+      "low_vol_chop",
+      "trending_up",
+      "liquidation_shock"
+    ],
+    "diagnostic_source": "bar_level_event_ledger_attribution",
+    "gate_regimes": [
+      "expansion",
+      "liquidation_shock",
+      "mean_reverting_chop",
+      "trending_up",
+      "high_vol_trend"
+    ],
+    "gate_source": "entry_regime_from_ledger_segments",
+    "regime_classifier_version": "classify_btc_regimes_v1",
+    "regime_labels": [
+      "expansion",
+      "liquidation_shock",
+      "mean_reverting_chop",
+      "trending_up",
+      "high_vol_trend",
+      "compression",
+      "trending_down",
+      "low_vol_chop"
+    ]
+  },
+  "regime_contract_status": "pass",
+  "regime_dimensions": {
+    "drawdown_regime": false,
+    "funding_regime": false,
+    "liquidity_regime": false,
+    "trend_regime": true,
+    "volatility_regime": true
+  },
+  "regime_gate_pass_rate": 0.8,
+  "schema_version": "btc_fold_regime_contract_v1",
+  "source_fold_regime_contract_audit": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/fold_regime_contract_audit.json",
+  "source_run_dir": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger",
+  "status": "pass",
+  "symbol": "BTCUSDT"
+}

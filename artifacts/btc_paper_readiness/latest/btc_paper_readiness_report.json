@@ -1,0 +1,304 @@
+{
+  "approved_paper_review": {
+    "approval": {
+      "blockers": [
+        "btc_paper_readiness_approved_paper_review_approval_missing"
+      ],
+      "candidate_id": "",
+      "commit_hash": "",
+      "gate_snapshot": {},
+      "reason": "",
+      "reviewer": "",
+      "schema_version": "",
+      "source": "",
+      "source_sha256": "",
+      "timestamp": "",
+      "valid": false
+    },
+    "approved": false,
+    "evidence_pack_exists": false,
+    "evidence_pack_path": "",
+    "paper_review_id": "",
+    "path": "",
+    "proposed_capital": 0.0,
+    "proposed_symbols": [],
+    "status": "missing",
+    "strategy_manifest_id": ""
+  },
+  "asset": "btc",
+  "blockers": [
+    "btc_paper_readiness_data_status_not_pass",
+    "btc_regime_contract_not_pass",
+    "btc_paper_readiness_candidate_gate_not_pass",
+    "btc_paper_readiness_no_candidate_passed_internal_gate",
+    "btc_paper_readiness_paper_review_pending_not_allowed",
+    "btc_paper_readiness_no_current_candidate_registered",
+    "btc_paper_readiness_candidate_metric_repair_not_pass",
+    "btc_paper_readiness_candidate_metric_repair_promotion_not_allowed",
+    "btc_paper_readiness_candidate_metric_repair_review_not_allowed",
+    "btc_paper_readiness_candidate_metric_repair_event_profit_factor_failed",
+    "btc_paper_readiness_candidate_metric_repair_walk_forward_pass_rate_failed",
+    "btc_candidate_gate_event_pf_failed",
+    "btc_candidate_gate_walk_forward_failed",
+    "btc_candidate_gate_regime_failed",
+    "btc_candidate_metric_repair_event_profit_factor_failed",
+    "btc_candidate_metric_repair_walk_forward_pass_rate_failed",
+    "btc_candidate_bounded_retest_event_profit_factor_failed",
+    "btc_candidate_bounded_retest_walk_forward_pass_rate_failed",
+    "btc_next_hypothesis_all_probe_event_profit_factor_failed",
+    "btc_next_hypothesis_dual_trend_micro_surgery_rejected",
+    "btc_strategy_family_dual_trend_micro_surgery_rejected",
+    "btc_strategy_family_selected_okx_bundle_history_too_short",
+    "btc_strategy_family_selected_okx_1h_klines_too_short",
+    "btc_strategy_family_selected_okx_funding_history_too_short",
+    "btc_strategy_family_candidate_generation_blocked_until_okx_history_extended",
+    "btc_intraday_existing_candidate_gate_not_pass",
+    "btc_current_evidence_provider_history_too_short_for_research_distribution",
+    "btc_selected_research_overlay_is_not_user_execution_provider",
+    "btc_data_source_decision_does_not_unlock_candidate_or_paper",
+    "btc_intraday_candidate_generation_blocked_until_distribution_probe_passes",
+    "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+    "btc_intraday_paper_live_locked",
+    "btc_intraday_probe_no_net_positive_distribution_edge",
+    "btc_intraday_probe_candidate_generation_blocked_until_event_ledger_backtest",
+    "btc_intraday_probe_requires_walk_forward_regime_cost_stress",
+    "btc_intraday_probe_paper_live_locked",
+    "btc_intraday_refinement_candidate_generation_blocked_until_event_ledger_backtest",
+    "btc_intraday_refinement_requires_walk_forward_regime_cost_stress",
+    "btc_intraday_refinement_paper_live_locked",
+    "btc_compression_expansion_archived",
+    "btc_compression_expansion_candidate_gate_failed",
+    "btc_compression_expansion_failed_folds_require_repair_decision",
+    "btc_compression_expansion_regime_drag_unresolved",
+    "btc_compression_expansion_full_ledger_event_pf_failed",
+    "btc_perpetual_cost_contract_not_complete",
+    "btc_paper_readiness_approved_paper_review_missing"
+  ],
+  "branch": "main",
+  "commit": "cbe4b54",
+  "evidence": {
+    "btc_registry": "artifacts/btc_research_registry/research_registry.json",
+    "bundle_preflight": "artifacts/btc_data_status/latest/btc_perpetual_bundle_preflight_report.json",
+    "candidate_gate": "artifacts/btc_candidate_gate/latest/candidate_gate_audit_report.json",
+    "candidate_metric_repair": "artifacts/btc_candidate_gate/latest/candidate_metric_repair_report.json",
+    "cost_model": "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+    "data_status": "artifacts/btc_data_status/latest/btc_data_status_report.json",
+    "funding_ledger": "artifacts/btc_cost_model/latest/btc_funding_ledger_report.json",
+    "global_registry": "artifacts/global_research_registry/research_registry.json",
+    "objective_audit": "artifacts/btc_data_status/latest/btc_objective_completion_audit_report.json",
+    "operator_packet": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_operator_packet.json",
+    "provider_verification": "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json",
+    "tail_dependency": "artifacts/btc_tail_dependency/latest/tail_dependency_report.json"
+  },
+  "fee_tier_status": {
+    "cost_model_report": "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+    "cost_model_status": "pass",
+    "fee_blockers": [],
+    "fee_tier_import_report_verified": true,
+    "fee_tier_verified": true,
+    "maker_fee_bps": 2.0,
+    "manual_capture_required": false,
+    "taker_fee_bps": 5.0
+  },
+  "generated_at": "2026-06-20T09:17:06Z",
+  "live_status": "frozen",
+  "manual_inputs_status": "manual_inputs_verified",
+  "next_required_action": "repair_btc_data_source_metadata",
+  "paper_execution_authorized": false,
+  "paper_gate_manual_inputs_complete": true,
+  "paper_queue_status": "locked",
+  "paper_start_allowed": false,
+  "required_manual_inputs": [
+    {
+      "action": "none",
+      "blockers": [],
+      "name": "exchange_info",
+      "required_for": "exchange_info_verification",
+      "status": "verified"
+    },
+    {
+      "action": "none",
+      "blockers": [],
+      "name": "funding_info",
+      "required_for": "funding_info_endpoint_verification",
+      "status": "verified"
+    },
+    {
+      "action": "none",
+      "blockers": [],
+      "name": "fee_tier_overlay",
+      "required_for": "maker_taker_fee_tier_verification",
+      "status": "verified"
+    }
+  ],
+  "requirements": {
+    "candidate_gate": {
+      "blockers": [
+        "btc_paper_readiness_candidate_gate_not_pass",
+        "btc_paper_readiness_no_candidate_passed_internal_gate",
+        "btc_paper_readiness_paper_review_pending_not_allowed",
+        "btc_paper_readiness_no_current_candidate_registered",
+        "btc_paper_readiness_candidate_metric_repair_not_pass",
+        "btc_paper_readiness_candidate_metric_repair_promotion_not_allowed",
+        "btc_paper_readiness_candidate_metric_repair_review_not_allowed",
+        "btc_paper_readiness_candidate_metric_repair_event_profit_factor_failed",
+        "btc_paper_readiness_candidate_metric_repair_walk_forward_pass_rate_failed",
+        "btc_candidate_gate_event_pf_failed",
+        "btc_candidate_gate_walk_forward_failed",
+        "btc_candidate_gate_regime_failed",
+        "btc_candidate_metric_repair_event_profit_factor_failed",
+        "btc_candidate_metric_repair_walk_forward_pass_rate_failed",
+        "btc_regime_contract_not_pass",
+        "btc_candidate_bounded_retest_event_profit_factor_failed",
+        "btc_candidate_bounded_retest_walk_forward_pass_rate_failed",
+        "btc_next_hypothesis_all_probe_event_profit_factor_failed",
+        "btc_next_hypothesis_dual_trend_micro_surgery_rejected",
+        "btc_strategy_family_dual_trend_micro_surgery_rejected",
+        "btc_strategy_family_selected_okx_bundle_history_too_short",
+        "btc_strategy_family_selected_okx_1h_klines_too_short",
+        "btc_strategy_family_selected_okx_funding_history_too_short",
+        "btc_strategy_family_candidate_generation_blocked_until_okx_history_extended",
+        "btc_intraday_existing_candidate_gate_not_pass",
+        "btc_current_evidence_provider_history_too_short_for_research_distribution",
+        "btc_selected_research_overlay_is_not_user_execution_provider",
+        "btc_data_source_decision_does_not_unlock_candidate_or_paper",
+        "btc_intraday_candidate_generation_blocked_until_distribution_probe_passes",
+        "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+        "btc_intraday_paper_live_locked",
+        "btc_intraday_probe_no_net_positive_distribution_edge",
+        "btc_intraday_probe_candidate_generation_blocked_until_event_ledger_backtest",
+        "btc_intraday_probe_requires_walk_forward_regime_cost_stress",
+        "btc_intraday_probe_paper_live_locked",
+        "btc_intraday_refinement_candidate_generation_blocked_until_event_ledger_backtest",
+        "btc_intraday_refinement_requires_walk_forward_regime_cost_stress",
+        "btc_intraday_refinement_paper_live_locked",
+        "btc_compression_expansion_archived",
+        "btc_compression_expansion_candidate_gate_failed",
+        "btc_compression_expansion_failed_folds_require_repair_decision",
+        "btc_compression_expansion_regime_drag_unresolved",
+        "btc_compression_expansion_full_ledger_event_pf_failed",
+        "btc_perpetual_cost_contract_not_complete"
+      ],
+      "checks": {
+        "candidate_gate_pass": false,
+        "candidate_metric_repair_failed_metrics": [
+          "event_profit_factor",
+          "walk_forward_pass_rate"
+        ],
+        "candidate_metric_repair_paper_review_pending_allowed": false,
+        "candidate_metric_repair_promotion_allowed": false,
+        "candidate_metric_repair_status": "needs_metric_repair",
+        "candidate_passed_internal_gate": 0,
+        "global_paper_queue_unlocked": false,
+        "paper_review_pending_allowed": false,
+        "registry_current_candidate_count": 0
+      },
+      "evidence": {
+        "btc_registry": "artifacts/btc_research_registry/research_registry.json",
+        "candidate_gate": "artifacts/btc_candidate_gate/latest/candidate_gate_audit_report.json",
+        "candidate_metric_repair": "artifacts/btc_candidate_gate/latest/candidate_metric_repair_report.json",
+        "global_registry": "artifacts/global_research_registry/research_registry.json"
+      },
+      "status": "blocked"
+    },
+    "cost_ledger_gate": {
+      "blockers": [],
+      "checks": {
+        "cost_model_pass": true,
+        "fee_blockers_empty": true,
+        "fee_tier_import_report_present": true,
+        "fee_tier_import_report_verified": true,
+        "fee_tier_overlay_present": true,
+        "fee_tier_verified": true,
+        "funding_adjusted_net_pnl_reconciled": true,
+        "funding_merged_into_net_ledger": true,
+        "funding_payment_in_ledger": true,
+        "maker_fee_bps_present": true,
+        "tail_dependency_pass": true,
+        "taker_fee_bps_present": true
+      },
+      "evidence": {
+        "cost_model": "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+        "funding_ledger": "artifacts/btc_cost_model/latest/btc_funding_ledger_report.json",
+        "tail_dependency": "artifacts/btc_tail_dependency/latest/tail_dependency_report.json"
+      },
+      "status": "complete"
+    },
+    "data_source_gate": {
+      "blockers": [
+        "btc_paper_readiness_data_status_not_pass",
+        "btc_regime_contract_not_pass"
+      ],
+      "checks": {
+        "bundle_preflight_pass": true,
+        "data_status_pass": false,
+        "exchange_info_verified": true,
+        "funding_info_endpoint_response_available": true,
+        "funding_info_verified": true,
+        "manual_metadata_import_not_in_progress": true,
+        "objective_goal_complete": true,
+        "provider_perpetual_evidence_ready": true
+      },
+      "evidence": {
+        "bundle_preflight": "artifacts/btc_data_status/latest/btc_perpetual_bundle_preflight_report.json",
+        "data_status": "artifacts/btc_data_status/latest/btc_data_status_report.json",
+        "manual_metadata_import_marker": "",
+        "objective_audit": "artifacts/btc_data_status/latest/btc_objective_completion_audit_report.json",
+        "provider_verification": "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json"
+      },
+      "status": "blocked"
+    },
+    "manual_input_gate": {
+      "blockers": [],
+      "checks": {
+        "exchange_info_input_verified": true,
+        "fee_tier_input_verified": true,
+        "fee_tier_verified": true,
+        "funding_info_input_verified": true,
+        "manual_inputs_status": "manual_inputs_verified",
+        "operator_packet_status": "metadata_verified",
+        "paper_gate_manual_inputs_complete": true,
+        "required_manual_input_count": 3
+      },
+      "evidence": {
+        "operator_packet": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_operator_packet.json"
+      },
+      "status": "complete"
+    },
+    "paper_review_gate": {
+      "blockers": [
+        "btc_paper_readiness_approved_paper_review_missing"
+      ],
+      "checks": {
+        "approval_candidate_id": "",
+        "approval_reviewer": "",
+        "approval_source": "",
+        "approval_timestamp": "",
+        "approval_valid": false,
+        "approved_review_found": false,
+        "evidence_pack_exists": false,
+        "review_path": "",
+        "review_status": "missing"
+      },
+      "evidence": {
+        "paper_review": ""
+      },
+      "status": "pending_review"
+    },
+    "runtime_boundary_gate": {
+      "blockers": [],
+      "checks": {
+        "live_status_frozen": true,
+        "paper_auto_start_disabled": true,
+        "paper_start_requires_human_review": true,
+        "real_order_submission_authorized": false,
+        "strategy_direct_broker_forbidden": true
+      },
+      "evidence": {},
+      "status": "complete"
+    }
+  },
+  "schema_version": "btc_paper_readiness_report_v1",
+  "status": "blocked",
+  "symbol": "BTCUSDT"
+}

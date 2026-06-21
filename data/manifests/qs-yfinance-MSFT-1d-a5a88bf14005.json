@@ -1,0 +1,124 @@
+{
+  "adjustment": "raw",
+  "adjustment_policy": "raw",
+  "asset_class": "equity",
+  "checksum": "a5a88bf140052a9af810e07a1eb89a85395f53507f94cdf6b735edb958ee95cd",
+  "cleaned_path": "/tmp/tmpo2_gu94v/raw/vendor=yfinance/asset_class=equity/bar_size=1d/symbol=MSFT",
+  "cleaning": {
+    "cleaning_loss_rows": 0,
+    "duplicate_timestamps_removed": 0,
+    "invalid_ohlc_removed": 0,
+    "missing_bars": 17,
+    "non_positive_prices_removed": 0
+  },
+  "corporate_action_adjustment": "raw",
+  "coverage_pct": 15.0,
+  "created_at": "2026-05-11T00:48:25.275038+00:00",
+  "data_version": "qs-yfinance-MSFT-1d-a5a88bf14005",
+  "end": "2024-06-05T14:30:00+00:00",
+  "expected_rows": 20,
+  "fields": [
+    "timestamp_utc",
+    "symbol",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume"
+  ],
+  "fingerprint": "a5a88bf140052a9af810e07a1eb89a85395f53507f94cdf6b735edb958ee95cd",
+  "git_commit": "",
+  "interval": "1d",
+  "issues": [
+    {
+      "details": [
+        {
+          "date": "2024-06-06"
+        },
+        {
+          "date": "2024-06-07"
+        },
+        {
+          "date": "2024-06-10"
+        },
+        {
+          "date": "2024-06-11"
+        },
+        {
+          "date": "2024-06-12"
+        },
+        {
+          "date": "2024-06-13"
+        },
+        {
+          "date": "2024-06-14"
+        },
+        {
+          "date": "2024-06-17"
+        },
+        {
+          "date": "2024-06-18"
+        },
+        {
+          "date": "2024-06-20"
+        }
+      ],
+      "issues_found": 16,
+      "report_type": "missing_bars",
+      "symbol": "MSFT"
+    },
+    {
+      "issues_found": 0,
+      "report_type": "duplicate_bars",
+      "symbol": "MSFT"
+    },
+    {
+      "issues_found": 0,
+      "report_type": "price_jump",
+      "symbol": "MSFT"
+    },
+    {
+      "issues_found": 0,
+      "report_type": "zero_volume",
+      "symbol": "MSFT"
+    },
+    {
+      "details": [
+        {
+          "count": 3,
+          "session": "regular"
+        }
+      ],
+      "issues_found": 0,
+      "report_type": "session_coverage",
+      "symbol": "MSFT"
+    },
+    {
+      "issues_found": 0,
+      "report_type": "corporate_action",
+      "symbol": "MSFT"
+    }
+  ],
+  "quality_score": 98.3,
+  "quality_summary": {
+    "cleaning_loss_rows": 0,
+    "corporate_action_flags": 0,
+    "duplicate_bars": 0,
+    "duplicate_timestamps_removed": 0,
+    "invalid_ohlc_rows": 0,
+    "missing_bars": 17,
+    "non_positive_price_rows": 0,
+    "price_jump_bars": 0,
+    "total_issue_count": 16,
+    "zero_volume_bars": 0
+  },
+  "raw_path": "",
+  "row_count": 3,
+  "source": "yfinance",
+  "start": "2024-06-03T14:30:00+00:00",
+  "survivorship_bias_risk": "clean",
+  "symbol": "MSFT",
+  "timezone": "UTC",
+  "universe_id": "single-symbol-MSFT-1d-88d1e6d0647b",
+  "universe_source": "auto_lineage:single_symbol_request:v1:yfinance:MSFT:1d:2024-06-03T14:30:00Z:2024-06-05T14:30:00Z"
+}

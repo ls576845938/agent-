@@ -1,0 +1,625 @@
+{
+  "canonical_for_promotion": true,
+  "commission_model": {
+    "model": "PercentCommission",
+    "rate": 0,
+    "realized_total": 0.0
+  },
+  "commit_hash": "5a9a14b",
+  "config": {
+    "commission_rate": 0,
+    "gap_config": null,
+    "initial_cash": 100000,
+    "max_daily_turnover_pct": 200.0,
+    "slippage_bps": 0
+  },
+  "corporate_actions": {
+    "adjustment_count": 0,
+    "split_event_count": 0,
+    "total_borrow_fees": 0.0,
+    "total_corporate_adjustments": 0.0,
+    "total_dividends": 0.0
+  },
+  "cost_model": {
+    "commission_rate": 0,
+    "fill_ratio": 1.0,
+    "realized_commission": 0.0,
+    "realized_slippage_cost": 0.0,
+    "slippage_bps": 0,
+    "total_fees": 0.0,
+    "volume_participation_cap_pct": 10.0
+  },
+  "data_manifest": {
+    "asset_class": "",
+    "checksum": "",
+    "coverage": {},
+    "data_manifest_id": "",
+    "data_version": "",
+    "data_version_matches_requested": false,
+    "exists": false,
+    "fingerprint": "",
+    "interval": "",
+    "missing_data_manifest": true,
+    "path": "",
+    "quality": {},
+    "requested_data_version": "",
+    "source": "",
+    "symbol": ""
+  },
+  "data_manifest_exists": false,
+  "data_version": "",
+  "end_time": "2026-05-10T15:07:05.923604+00:00",
+  "engine": "event_driven",
+  "evidence": {
+    "approximate_scan_engine": false,
+    "as_of_utc": "2024-01-02T14:33:00+00:00",
+    "canonical_for_promotion": true,
+    "cash": {
+      "cash_consistent": true,
+      "final_snapshot_cash": 99000.0,
+      "initial_cash": 100000,
+      "ledger_cash_at_final_snapshot": 99000.0
+    },
+    "commission": {
+      "model": "PercentCommission",
+      "rate": 0,
+      "realized_total": 0.0
+    },
+    "commit_hash": "5a9a14b",
+    "completeness": {
+      "data_manifest_bound": false,
+      "ledger_artifact_consistent": true,
+      "ledger_artifact_file_written": true,
+      "ledger_artifact_generated": true,
+      "ledger_artifact_present": true,
+      "ledger_evidence_complete": false,
+      "missing_required_fields": [
+        "data_version"
+      ],
+      "promotion_evidence_complete": false
+    },
+    "corporate_actions": {
+      "adjustments": [],
+      "digest": {
+        "adjustment_count": 0,
+        "split_event_count": 0,
+        "total_borrow_fees": 0.0,
+        "total_corporate_adjustments": 0.0,
+        "total_dividends": 0.0
+      },
+      "summary": {
+        "adjustment_count": 0,
+        "split_event_count": 0,
+        "total_borrow_fees": 0.0,
+        "total_corporate_adjustments": 0.0,
+        "total_dividends": 0.0
+      }
+    },
+    "costs": {
+      "commission_rate": 0,
+      "fill_ratio": 1.0,
+      "realized_commission": 0.0,
+      "realized_slippage_cost": 0.0,
+      "slippage_bps": 0,
+      "total_fees": 0.0,
+      "volume_participation_cap_pct": 10.0
+    },
+    "data_manifest": {
+      "asset_class": "",
+      "checksum": "",
+      "coverage": {},
+      "data_manifest_id": "",
+      "data_version": "",
+      "data_version_matches_requested": false,
+      "exists": false,
+      "fingerprint": "",
+      "interval": "",
+      "missing_data_manifest": true,
+      "path": "",
+      "quality": {},
+      "requested_data_version": "",
+      "source": "",
+      "symbol": ""
+    },
+    "data_manifest_exists": false,
+    "data_scope": {
+      "fixture_like_data_version": false,
+      "promotion_scope_ok": true,
+      "scope_rejections": []
+    },
+    "data_version": "",
+    "engine": "event_driven",
+    "equity": {
+      "consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000000)",
+      "consistent": true,
+      "consistent_at_final_snapshot": true,
+      "ledger_curve_points": 3,
+      "ledger_final_equity": 100000.0,
+      "snapshot_final_equity": 100000.0
+    },
+    "events": {
+      "account_update": 0,
+      "broker_order": 3,
+      "fill": 3,
+      "market": 4,
+      "order_intent": 4,
+      "risk": 3,
+      "signal": 4,
+      "target_position": 4,
+      "total": 25
+    },
+    "fees": {
+      "fees_from_fills": true,
+      "ledger_total_fees": 0.0,
+      "total_commission": 0.0
+    },
+    "fills": {
+      "all_fills_match_orders": true,
+      "count": 3,
+      "effective_fills_hash": "14b98937f50d0fb43ec40830b34d993123acb9778204b691ca0251b2512a2611",
+      "filled_order_count": 3,
+      "fills_hash": "14b98937f50d0fb43ec40830b34d993123acb9778204b691ca0251b2512a2611"
+    },
+    "fills_hash": "14b98937f50d0fb43ec40830b34d993123acb9778204b691ca0251b2512a2611",
+    "generated_at": "2024-01-02T14:33:00+00:00",
+    "ledger_artifact": {
+      "artifact_hash": "ff765cf1782b9142c00881205314207eff202c7b0ffec1acad3185d670b049aa",
+      "artifact_version": "ledger_reconciliation_v1",
+      "as_of_utc": "2024-01-02T14:33:00+00:00",
+      "cash": {
+        "cash_change": -1000.0,
+        "final_cash": 99000.0,
+        "initial_cash": 100000
+      },
+      "fees": {
+        "total_fees": 0.0
+      },
+      "fills": {
+        "by_side": {
+          "buy": 2,
+          "sell": 1
+        },
+        "conflict_fill_count": 0,
+        "conflict_fill_keys": [],
+        "duplicate_fill_count": 0,
+        "duplicate_fill_keys": [],
+        "effective_fill_count": 3,
+        "empty_identity_count": 0,
+        "first_fill_at": "2024-01-02T14:31:00+00:00",
+        "last_fill_at": "2024-01-02T14:33:00+00:00",
+        "passed": true,
+        "raw_fill_count": 3,
+        "total_notional": 3000.0
+      },
+      "generated_at": "2024-01-02T14:33:00+00:00",
+      "hashes": {
+        "effective_fills_hash": "14b98937f50d0fb43ec40830b34d993123acb9778204b691ca0251b2512a2611",
+        "fills_hash": "14b98937f50d0fb43ec40830b34d993123acb9778204b691ca0251b2512a2611",
+        "ledger_hash": "45742ec6f7649fae64abeac861ec8ad143beb336bb7a149aeb1eeb8247bcff06",
+        "orders_hash": "28648a5f039b2ac60c068f29d27e67d1909ddbf272b0decaa1cc412b29162599",
+        "portfolio_snapshots_hash": "da86500db1423441a68ce9c279b9a7f1352e49db23b0627af1a1d3fff05a9dc4"
+      },
+      "initial_cash": 100000,
+      "integrity": {
+        "fills": {
+          "conflict_fill_count": 0,
+          "conflict_fill_keys": [],
+          "duplicate_fill_count": 0,
+          "duplicate_fill_keys": [],
+          "effective_fill_count": 3,
+          "empty_identity_count": 0,
+          "passed": true,
+          "raw_fill_count": 3
+        },
+        "passed": true
+      },
+      "orders": {
+        "by_side": {
+          "buy": 2,
+          "sell": 1
+        },
+        "by_status": {
+          "partially_filled": 3
+        },
+        "total_orders": 3
+      },
+      "pnl": {
+        "final_equity": 100000.0,
+        "initial_equity": 100000,
+        "net_pnl": 0.0,
+        "position_value": 1000.0,
+        "source": "ledger_fills"
+      },
+      "positions": {
+        "AAPL": {
+          "market_price": 100.0,
+          "market_value": 1000.0,
+          "quantity": 10.0
+        }
+      },
+      "reconciliation": {
+        "adjustment_cross_check": null,
+        "snapshots": [
+          {
+            "diff": {
+              "cash": 0,
+              "equity": 0
+            },
+            "ledger_cash": 100000,
+            "ledger_equity": 100000,
+            "max_abs_diff": 0,
+            "max_pct_diff": 0.0,
+            "passed": true,
+            "snapshot_cash": 100000,
+            "snapshot_equity": 100000,
+            "timestamp_utc": "2024-01-02T14:30:00+00:00"
+          },
+          {
+            "diff": {
+              "cash": 0.0,
+              "equity": 0.0
+            },
+            "ledger_cash": 99000.0,
+            "ledger_equity": 100000.0,
+            "max_abs_diff": 0.0,
+            "max_pct_diff": 0.0,
+            "passed": true,
+            "snapshot_cash": 99000.0,
+            "snapshot_equity": 100000.0,
+            "timestamp_utc": "2024-01-02T14:31:00+00:00"
+          },
+          {
+            "diff": {
+              "cash": 0.0,
+              "equity": 0.0
+            },
+            "ledger_cash": 98000.0,
+            "ledger_equity": 100000.0,
+            "max_abs_diff": 0.0,
+            "max_pct_diff": 0.0,
+            "passed": true,
+            "snapshot_cash": 98000.0,
+            "snapshot_equity": 100000.0,
+            "timestamp_utc": "2024-01-02T14:32:00+00:00"
+          },
+          {
+            "diff": {
+              "cash": 0.0,
+              "equity": 0.0
+            },
+            "ledger_cash": 99000.0,
+            "ledger_equity": 100000.0,
+            "max_abs_diff": 0.0,
+            "max_pct_diff": 0.0,
+            "passed": true,
+            "snapshot_cash": 99000.0,
+            "snapshot_equity": 100000.0,
+            "timestamp_utc": "2024-01-02T14:33:00+00:00"
+          }
+        ],
+        "summary": {
+          "absolute_tolerance": 1e-06,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "message": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000000)",
+          "passed": true,
+          "snapshot_count": 4,
+          "tolerance_pct": 0.01
+        }
+      },
+      "slippage": {
+        "realized_slippage_cost": 0.0
+      }
+    },
+    "ledger_artifact_hash": "ff765cf1782b9142c00881205314207eff202c7b0ffec1acad3185d670b049aa",
+    "ledger_artifact_path": "data/manifests/reconciliation/ledger_recon_artifact_ff765cf1782b9142.json",
+    "ledger_hash": "45742ec6f7649fae64abeac861ec8ad143beb336bb7a149aeb1eeb8247bcff06",
+    "missing_data_manifest": true,
+    "orders": {
+      "all_orders_created_by_oms": true,
+      "all_orders_have_risk_check_id": true,
+      "count": 3,
+      "oms_order_count": 3,
+      "orders_hash": "28648a5f039b2ac60c068f29d27e67d1909ddbf272b0decaa1cc412b29162599",
+      "status_counts": {
+        "partially_filled": 3
+      }
+    },
+    "orders_hash": "28648a5f039b2ac60c068f29d27e67d1909ddbf272b0decaa1cc412b29162599",
+    "pnl": {
+      "final_equity": 100000.0,
+      "final_pnl": 0.0,
+      "initial_cash": 100000,
+      "source": "ledger_fills",
+      "total_return_pct": 0.0
+    },
+    "portfolio_snapshots_hash": "da86500db1423441a68ce9c279b9a7f1352e49db23b0627af1a1d3fff05a9dc4",
+    "positions": {
+      "final_position_value": 1000.0,
+      "final_positions": {
+        "AAPL": 10.0
+      },
+      "position_count": 1
+    },
+    "reconciliation": {
+      "adjustment_cross_check": null,
+      "snapshots": [
+        {
+          "diff": {
+            "cash": 0,
+            "equity": 0
+          },
+          "ledger_cash": 100000,
+          "ledger_equity": 100000,
+          "max_abs_diff": 0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000,
+          "snapshot_equity": 100000,
+          "timestamp_utc": "2024-01-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 99000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 99000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2024-01-02T14:31:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 98000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 98000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2024-01-02T14:32:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 99000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 99000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2024-01-02T14:33:00+00:00"
+        }
+      ],
+      "summary": {
+        "absolute_tolerance": 1e-06,
+        "max_abs_diff": 0.0,
+        "max_pct_diff": 0.0,
+        "message": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000000)",
+        "passed": true,
+        "snapshot_count": 4,
+        "tolerance_pct": 0.01
+      }
+    },
+    "risk": {
+      "approved": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "risk_check_count": 3
+    },
+    "run_id": "debug_partial4",
+    "slippage": {
+      "bps": 0,
+      "model": "BpsSlippage",
+      "realized_total": 0.0
+    },
+    "strategy": {
+      "strategies": [
+        {
+          "params": {
+            "long_bars": 2,
+            "strategy_id": "long_then_flat_fixture",
+            "version": "1.0.0"
+          },
+          "strategy_id": "long_then_flat_fixture",
+          "version": "1.0.0"
+        }
+      ],
+      "strategy_version": "long_then_flat_fixture@1.0.0"
+    }
+  },
+  "fills_hash": "14b98937f50d0fb43ec40830b34d993123acb9778204b691ca0251b2512a2611",
+  "generated_at": "2024-01-02T14:33:00+00:00",
+  "ledger_artifact": {
+    "artifact_hash": "ff765cf1782b9142c00881205314207eff202c7b0ffec1acad3185d670b049aa",
+    "artifact_version": "ledger_reconciliation_v1",
+    "as_of_utc": "2024-01-02T14:33:00+00:00",
+    "cash": {
+      "cash_change": -1000.0,
+      "final_cash": 99000.0,
+      "initial_cash": 100000
+    },
+    "fees": {
+      "total_fees": 0.0
+    },
+    "fills": {
+      "by_side": {
+        "buy": 2,
+        "sell": 1
+      },
+      "conflict_fill_count": 0,
+      "conflict_fill_keys": [],
+      "duplicate_fill_count": 0,
+      "duplicate_fill_keys": [],
+      "effective_fill_count": 3,
+      "empty_identity_count": 0,
+      "first_fill_at": "2024-01-02T14:31:00+00:00",
+      "last_fill_at": "2024-01-02T14:33:00+00:00",
+      "passed": true,
+      "raw_fill_count": 3,
+      "total_notional": 3000.0
+    },
+    "generated_at": "2024-01-02T14:33:00+00:00",
+    "hashes": {
+      "effective_fills_hash": "14b98937f50d0fb43ec40830b34d993123acb9778204b691ca0251b2512a2611",
+      "fills_hash": "14b98937f50d0fb43ec40830b34d993123acb9778204b691ca0251b2512a2611",
+      "ledger_hash": "45742ec6f7649fae64abeac861ec8ad143beb336bb7a149aeb1eeb8247bcff06",
+      "orders_hash": "28648a5f039b2ac60c068f29d27e67d1909ddbf272b0decaa1cc412b29162599",
+      "portfolio_snapshots_hash": "da86500db1423441a68ce9c279b9a7f1352e49db23b0627af1a1d3fff05a9dc4"
+    },
+    "initial_cash": 100000,
+    "integrity": {
+      "fills": {
+        "conflict_fill_count": 0,
+        "conflict_fill_keys": [],
+        "duplicate_fill_count": 0,
+        "duplicate_fill_keys": [],
+        "effective_fill_count": 3,
+        "empty_identity_count": 0,
+        "passed": true,
+        "raw_fill_count": 3
+      },
+      "passed": true
+    },
+    "orders": {
+      "by_side": {
+        "buy": 2,
+        "sell": 1
+      },
+      "by_status": {
+        "partially_filled": 3
+      },
+      "total_orders": 3
+    },
+    "pnl": {
+      "final_equity": 100000.0,
+      "initial_equity": 100000,
+      "net_pnl": 0.0,
+      "position_value": 1000.0,
+      "source": "ledger_fills"
+    },
+    "positions": {
+      "AAPL": {
+        "market_price": 100.0,
+        "market_value": 1000.0,
+        "quantity": 10.0
+      }
+    },
+    "reconciliation": {
+      "adjustment_cross_check": null,
+      "snapshots": [
+        {
+          "diff": {
+            "cash": 0,
+            "equity": 0
+          },
+          "ledger_cash": 100000,
+          "ledger_equity": 100000,
+          "max_abs_diff": 0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000,
+          "snapshot_equity": 100000,
+          "timestamp_utc": "2024-01-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 99000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 99000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2024-01-02T14:31:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 98000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 98000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2024-01-02T14:32:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 99000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 99000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2024-01-02T14:33:00+00:00"
+        }
+      ],
+      "summary": {
+        "absolute_tolerance": 1e-06,
+        "max_abs_diff": 0.0,
+        "max_pct_diff": 0.0,
+        "message": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000000)",
+        "passed": true,
+        "snapshot_count": 4,
+        "tolerance_pct": 0.01
+      }
+    },
+    "slippage": {
+      "realized_slippage_cost": 0.0
+    }
+  },
+  "ledger_artifact_hash": "ff765cf1782b9142c00881205314207eff202c7b0ffec1acad3185d670b049aa",
+  "ledger_artifact_path": "data/manifests/reconciliation/ledger_recon_artifact_ff765cf1782b9142.json",
+  "ledger_hash": "45742ec6f7649fae64abeac861ec8ad143beb336bb7a149aeb1eeb8247bcff06",
+  "manifest_schema_version": "backtest_run_v2",
+  "missing_data_manifest": true,
+  "reconciliation": {
+    "absolute_tolerance": 1e-06,
+    "max_abs_diff": 0.0,
+    "max_pct_diff": 0.0,
+    "message": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000000)",
+    "passed": true,
+    "snapshot_count": 4,
+    "tolerance_pct": 0.01
+  },
+  "run_id": "debug_partial4",
+  "slippage_model": {
+    "bps": 0,
+    "model": "BpsSlippage",
+    "realized_total": 0.0
+  },
+  "start_time": "2026-05-10T15:07:05.903550+00:00",
+  "strategy_params": [
+    {
+      "params": {
+        "long_bars": 2,
+        "strategy_id": "long_then_flat_fixture",
+        "version": "1.0.0"
+      },
+      "strategy_id": "long_then_flat_fixture",
+      "version": "1.0.0"
+    }
+  ],
+  "strategy_version": "long_then_flat_fixture@1.0.0"
+}

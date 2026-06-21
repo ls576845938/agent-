@@ -1,0 +1,55 @@
+{
+  "candidate_gate": {
+    "checks": {
+      "annual_turnover": true,
+      "canonical_source": true,
+      "cost_stress_base": true,
+      "cost_stress_harsh": true,
+      "dsr": true,
+      "event_ledger": true,
+      "event_profit_factor": true,
+      "max_drawdown": true,
+      "no_lookahead": true,
+      "pbo": true,
+      "profit_factor": true,
+      "regime_pass_rate": false,
+      "signal_equity_diagnostic_only": true,
+      "walk_forward_pass_rate": true
+    },
+    "evidence_source": "canonical_backtest_report",
+    "fail_reasons": [
+      "regime_pass_rate"
+    ],
+    "passed": false,
+    "status": "candidate_gate_failed",
+    "strategy_id": "btc_pullback_reclaim_intraday_v1",
+    "thresholds": {
+      "annual_turnover": 10.0,
+      "dsr": 0.1,
+      "event_profit_factor": 1.15,
+      "max_drawdown_pct_floor": -15.0,
+      "pbo": 0.5,
+      "profit_factor": 1.15,
+      "regime_pass_rate": 0.75,
+      "walk_forward_pass_rate": 0.8
+    }
+  },
+  "candidate_generation_allowed": false,
+  "decision": "return_to_event_definition",
+  "forbidden_states": [
+    "paper_ready",
+    "live_ready",
+    "live_enabled"
+  ],
+  "live": "FROZEN",
+  "live_frozen": true,
+  "next_required_action": "repair_intraday_event_definition_before_candidate",
+  "paper_queue": "LOCKED",
+  "paper_review": {
+    "paper_auto_start": false,
+    "paper_review_pending": [],
+    "paper_review_queue_locked": true,
+    "reason": "research_only_intraday_event_ledger_gate"
+  },
+  "schema_version": "btc_intraday_short_cycle_promotion_decision_v1"
+}

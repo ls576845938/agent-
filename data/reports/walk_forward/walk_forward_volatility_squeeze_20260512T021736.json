@@ -1,0 +1,119 @@
+{
+  "generated_utc": "2026-05-12T02:17:36.345647+00:00",
+  "strategy_id": "volatility_squeeze",
+  "params": {
+    "boll_window": 20,
+    "boll_dev": 1.8,
+    "width_threshold": 0.03
+  },
+  "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+  "symbols_tested": [
+    "BTCUSDT"
+  ],
+  "insufficient_data": false,
+  "aggregate": {
+    "total_windows": 4,
+    "windows_consistent": 4,
+    "oos_total_return_pct": -0.1163,
+    "oos_avg_sharpe": -0.2105,
+    "oos_avg_max_dd": -1.5278,
+    "oos_avg_turnover_pct": 0.0,
+    "oos_win_rate": 0.0,
+    "fold_pass_rate_pct": 25.0,
+    "symbol_coverage_pct": 100.0
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "train_end": "2025-07-14T06:00:00+00:00",
+      "test_start": "2025-07-14T07:00:00+00:00",
+      "test_end": "2025-09-27T16:00:00+00:00",
+      "strategy_id": "volatility_squeeze",
+      "params": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.03
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "result": {
+        "total_return_pct": -0.097,
+        "sharpe_ratio": -0.0552,
+        "max_drawdown_pct": -0.5465,
+        "turnover_pct": 344.0169,
+        "trade_count": 178
+      },
+      "equity_consistent": true,
+      "pass": false
+    },
+    {
+      "fold": 1,
+      "train_start": "2024-03-16T10:00:00+00:00",
+      "train_end": "2025-09-27T16:00:00+00:00",
+      "test_start": "2025-09-27T17:00:00+00:00",
+      "test_end": "2025-12-12T02:00:00+00:00",
+      "strategy_id": "volatility_squeeze",
+      "params": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.03
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "result": {
+        "total_return_pct": -0.7424,
+        "sharpe_ratio": -0.6398,
+        "max_drawdown_pct": -0.8979,
+        "turnover_pct": 393.9513,
+        "trade_count": 165
+      },
+      "equity_consistent": true,
+      "pass": false
+    },
+    {
+      "fold": 2,
+      "train_start": "2024-05-30T20:00:00+00:00",
+      "train_end": "2025-12-12T02:00:00+00:00",
+      "test_start": "2025-12-12T03:00:00+00:00",
+      "test_end": "2026-02-25T12:00:00+00:00",
+      "strategy_id": "volatility_squeeze",
+      "params": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.03
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "result": {
+        "total_return_pct": -1.2746,
+        "sharpe_ratio": -0.3657,
+        "max_drawdown_pct": -1.5278,
+        "turnover_pct": 1198.6244,
+        "trade_count": 171
+      },
+      "equity_consistent": true,
+      "pass": false
+    },
+    {
+      "fold": 3,
+      "train_start": "2024-08-14T06:00:00+00:00",
+      "train_end": "2026-02-25T12:00:00+00:00",
+      "test_start": "2026-02-25T13:00:00+00:00",
+      "test_end": "2026-05-11T22:00:00+00:00",
+      "strategy_id": "volatility_squeeze",
+      "params": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.03
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "result": {
+        "total_return_pct": 1.6486,
+        "sharpe_ratio": 0.4161,
+        "max_drawdown_pct": -1.2863,
+        "turnover_pct": 706.2563,
+        "trade_count": 169
+      },
+      "equity_consistent": true,
+      "pass": true
+    }
+  ]
+}

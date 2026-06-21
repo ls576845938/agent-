@@ -1,0 +1,93 @@
+{
+  "asset": "btc",
+  "blockers": [
+    "btc_execution_queue_evidence_import_manifest_missing",
+    "btc_execution_queue_evidence_read_only_export_boundary_not_satisfied",
+    "btc_execution_queue_evidence_importer_private_order_broker_boundary_not_satisfied",
+    "btc_execution_queue_evidence_file_integrity_not_satisfied",
+    "btc_execution_queue_evidence_clock_sync_missing",
+    "btc_execution_queue_evidence_exchange_order_ids_missing",
+    "btc_execution_latency_observations_missing",
+    "btc_execution_latency_model_external_evidence_missing",
+    "btc_execution_latency_observations_short_100",
+    "btc_queue_position_labels_missing",
+    "btc_queue_position_observations_missing",
+    "btc_queue_position_model_external_evidence_missing",
+    "btc_queue_position_observations_short_100"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "contract_satisfied": false,
+  "coverage_totals": {
+    "execution_latency_model_file_count": 0,
+    "execution_latency_observation_count": 0,
+    "execution_latency_observation_file_count": 0,
+    "manifest_count": 0,
+    "queue_position_model_file_count": 0,
+    "queue_position_observation_count": 0,
+    "queue_position_observation_file_count": 0,
+    "remaining_execution_latency_observations": 100,
+    "remaining_queue_position_observations": 100,
+    "valid_file_count": 0,
+    "valid_manifest_count": 0
+  },
+  "decision": "collect_or_import_execution_latency_and_queue_position_evidence",
+  "execution_latency_evidence_contract_satisfied": false,
+  "generated_at": "2026-06-21T05:54:05.843534+00:00",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "live": "FROZEN",
+    "order_endpoints_allowed": false,
+    "paper_queue": "LOCKED",
+    "private_endpoints_allowed": false,
+    "real_orders_created": false,
+    "research_only": true,
+    "status_report_only": true,
+    "true_scalping_claim_allowed": false
+  },
+  "import_manifest_root": "data/external/btc_perpetual/okx_swap/execution_queue_evidence",
+  "manifests": [],
+  "next_required_action": "import_read_only_execution_latency_and_queue_position_exports_with_hash_manifest",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "queue_position_evidence_contract_satisfied": false,
+  "schema_version": "btc_true_scalping_execution_queue_external_evidence_contract_v1",
+  "scope": "research_only_execution_queue_external_evidence_contract_no_candidate_no_paper_no_live",
+  "status": "execution_queue_external_evidence_contract_missing_or_invalid_research_only",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "thresholds": {
+    "minimum_execution_latency_observations": 100,
+    "minimum_queue_position_observations": 100,
+    "required_execution_roles": [
+      "execution_latency_observations",
+      "execution_latency_model"
+    ],
+    "required_queue_roles": [
+      "queue_position_observations",
+      "queue_position_model"
+    ]
+  },
+  "true_scalping_allowed": false,
+  "validation": {
+    "clock_sync_evidence_present": false,
+    "contract_satisfied": false,
+    "exchange_order_ids_present": false,
+    "execution_latency_evidence_contract_satisfied": false,
+    "execution_latency_model_present": false,
+    "execution_latency_observations_present": false,
+    "file_integrity_satisfied": false,
+    "import_manifests_present": false,
+    "importer_private_order_broker_boundary_satisfied": false,
+    "minimum_execution_latency_observations_satisfied": false,
+    "minimum_queue_position_observations_satisfied": false,
+    "queue_position_evidence_contract_satisfied": false,
+    "queue_position_labels_present": false,
+    "queue_position_model_present": false,
+    "queue_position_observations_present": false,
+    "read_only_export_boundary_satisfied": false
+  },
+  "venue_symbol": "BTC-USDT-SWAP"
+}

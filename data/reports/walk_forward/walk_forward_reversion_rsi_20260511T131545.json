@@ -1,0 +1,85 @@
+{
+  "generated_utc": "2026-05-11T13:15:45.321766+00:00",
+  "strategy_id": "reversion_rsi",
+  "params": {
+    "rsi_window": 10,
+    "boll_window": 20,
+    "boll_dev": 2.0,
+    "rsi_long": 30,
+    "rsi_short": 70,
+    "rsi_exit_low": 45,
+    "rsi_exit_high": 55
+  },
+  "data_version": "",
+  "symbols_tested": [
+    "BTCUSDT"
+  ],
+  "insufficient_data": false,
+  "aggregate": {
+    "total_windows": 2,
+    "windows_consistent": 2,
+    "oos_total_return_pct": 0.298,
+    "oos_avg_sharpe": 1.1419,
+    "oos_avg_max_dd": -0.1805,
+    "oos_avg_turnover_pct": 0.0,
+    "oos_win_rate": 0.0,
+    "fold_pass_rate_pct": 100.0,
+    "symbol_coverage_pct": 100.0
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "train_end": "2024-01-30T20:00:00+00:00",
+      "test_start": "2024-01-30T21:00:00+00:00",
+      "test_end": "2024-02-07T21:00:00+00:00",
+      "strategy_id": "reversion_rsi",
+      "params": {
+        "rsi_window": 10,
+        "boll_window": 20,
+        "boll_dev": 2.0,
+        "rsi_long": 30,
+        "rsi_short": 70,
+        "rsi_exit_low": 45,
+        "rsi_exit_high": 55
+      },
+      "data_version": "",
+      "result": {
+        "total_return_pct": 0.0537,
+        "sharpe_ratio": 1.0965,
+        "max_drawdown_pct": -0.0086,
+        "turnover_pct": 27.9664,
+        "trade_count": 6
+      },
+      "equity_consistent": true,
+      "pass": true
+    },
+    {
+      "fold": 1,
+      "train_start": "2024-01-09T01:00:00+00:00",
+      "train_end": "2024-02-07T21:00:00+00:00",
+      "test_start": "2024-02-07T22:00:00+00:00",
+      "test_end": "2024-02-15T22:00:00+00:00",
+      "strategy_id": "reversion_rsi",
+      "params": {
+        "rsi_window": 10,
+        "boll_window": 20,
+        "boll_dev": 2.0,
+        "rsi_long": 30,
+        "rsi_short": 70,
+        "rsi_exit_low": 45,
+        "rsi_exit_high": 55
+      },
+      "data_version": "",
+      "result": {
+        "total_return_pct": 0.5423,
+        "sharpe_ratio": 1.1873,
+        "max_drawdown_pct": -0.1805,
+        "turnover_pct": 126.3086,
+        "trade_count": 8
+      },
+      "equity_consistent": true,
+      "pass": true
+    }
+  ]
+}

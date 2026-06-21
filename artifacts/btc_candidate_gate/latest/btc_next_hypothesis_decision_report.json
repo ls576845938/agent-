@@ -1,0 +1,728 @@
+{
+  "asset": "btc",
+  "baseline_candidate": {
+    "event_profit_factor": 1.0205,
+    "failed_metrics": [
+      "event_profit_factor",
+      "walk_forward_pass_rate"
+    ],
+    "max_drawdown": -7.835,
+    "run_id": "20260604T132400Z_okx_bounded_retest",
+    "walk_forward_pass_rate": 0.5
+  },
+  "best_by_event_profit_factor": {
+    "base_manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240_ablation_base.json",
+    "event_profit_factor": 1.036973,
+    "event_profit_factor_pass": false,
+    "failed_metrics": [
+      "event_profit_factor",
+      "walk_forward_pass_rate"
+    ],
+    "fill_count": 48,
+    "folds": [
+      {
+        "event_profit_factor": 1.150382,
+        "fill_count": 11,
+        "fold_id": 1,
+        "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240_wf1.json",
+        "max_drawdown": -0.920301,
+        "passed": true,
+        "total_return_pct": 2.292995
+      },
+      {
+        "event_profit_factor": 1.060283,
+        "fill_count": 6,
+        "fold_id": 2,
+        "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240_wf2.json",
+        "max_drawdown": -1.808015,
+        "passed": true,
+        "total_return_pct": 1.755759
+      },
+      {
+        "event_profit_factor": 1.281903,
+        "fill_count": 3,
+        "fold_id": 3,
+        "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240_wf3.json",
+        "max_drawdown": -0.212388,
+        "passed": true,
+        "total_return_pct": 0.494197
+      },
+      {
+        "event_profit_factor": 0.913688,
+        "fill_count": 11,
+        "fold_id": 4,
+        "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240_wf4.json",
+        "max_drawdown": -3.920664,
+        "passed": false,
+        "total_return_pct": -2.828225
+      }
+    ],
+    "ledger_equity_consistent": true,
+    "max_drawdown": -4.112863,
+    "mode": "lifecycle_stop6_trail10_max240",
+    "run_id": "20260605T000000Z_lifecycle_probe",
+    "strategy_id": "btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240",
+    "total_return_pct": 7.966473,
+    "walk_forward_pass_rate": 0.75,
+    "walk_forward_pass_rate_pass": false
+  },
+  "best_by_walk_forward_pass_rate": {
+    "base_manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p2_lifecycle_ablation_base.json",
+    "event_profit_factor": 1.028127,
+    "event_profit_factor_pass": false,
+    "failed_metrics": [
+      "event_profit_factor"
+    ],
+    "fill_count": 57,
+    "folds": [
+      {
+        "event_profit_factor": 1.02878,
+        "fill_count": 11,
+        "fold_id": 1,
+        "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p2_lifecycle_wf1.json",
+        "max_drawdown": -0.886428,
+        "passed": true,
+        "total_return_pct": 0.32707
+      },
+      {
+        "event_profit_factor": 1.121738,
+        "fill_count": 9,
+        "fold_id": 2,
+        "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p2_lifecycle_wf2.json",
+        "max_drawdown": -0.390838,
+        "passed": true,
+        "total_return_pct": 0.899824
+      },
+      {
+        "event_profit_factor": 1.281903,
+        "fill_count": 3,
+        "fold_id": 3,
+        "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p2_lifecycle_wf3.json",
+        "max_drawdown": -0.212388,
+        "passed": true,
+        "total_return_pct": 0.494197
+      },
+      {
+        "event_profit_factor": 1.01941,
+        "fill_count": 12,
+        "fold_id": 4,
+        "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p2_lifecycle_wf4.json",
+        "max_drawdown": -0.651408,
+        "passed": true,
+        "total_return_pct": 0.1678
+      }
+    ],
+    "ledger_equity_consistent": true,
+    "max_drawdown": -2.744022,
+    "mode": "accel1p2_lifecycle",
+    "run_id": "20260605T001000Z_lifecycle_entry_quality_probe",
+    "strategy_id": "btc_perp_dual_trend_v5_accel1p2_lifecycle",
+    "total_return_pct": 3.051535,
+    "walk_forward_pass_rate": 1.0,
+    "walk_forward_pass_rate_pass": true
+  },
+  "blockers": [
+    "btc_next_hypothesis_all_probe_event_profit_factor_failed",
+    "btc_next_hypothesis_dual_trend_micro_surgery_rejected"
+  ],
+  "branch": "main",
+  "commit": "cbe4b54",
+  "decision": "reject_same_family_micro_surgery",
+  "event_profit_factor_pass_count": 0,
+  "generated_at": "2026-06-20T09:16:55Z",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "do_not_optimize_sharpe_before_event_pf": true,
+    "ordinary_profit_factor_diagnostic_only": true,
+    "paper_or_live_unlock_allowed": false,
+    "research_only": true
+  },
+  "interpretation": [
+    "lifecycle risk cuts improved drawdown and some fold stability, but no probe reached the event_PF gate",
+    "best event_PF mode lifecycle_stop6_trail10_max240 reached 1.036973 versus required 1.15",
+    "best WF mode accel1p2_lifecycle reached 1.0 pass rate, but still failed event_PF",
+    "same-family dual-trend micro-surgery should stop; the next research unit needs a new strategy family or a materially different lifecycle edge"
+  ],
+  "mode_count": 10,
+  "next_required_action": "design_new_strategy_family_with_lifecycle_edge",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "probe_count": 2,
+  "probe_run_dirs": [
+    "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe",
+    "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe"
+  ],
+  "promotion_allowed": false,
+  "rows": [
+    {
+      "base_manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_mom_decay_max240_ablation_base.json",
+      "event_profit_factor": 1.020511,
+      "event_profit_factor_pass": false,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 49,
+      "folds": [
+        {
+          "event_profit_factor": 1.154913,
+          "fill_count": 11,
+          "fold_id": 1,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_mom_decay_max240_wf1.json",
+          "max_drawdown": -1.247085,
+          "passed": true,
+          "total_return_pct": 4.257699
+        },
+        {
+          "event_profit_factor": 1.060744,
+          "fill_count": 6,
+          "fold_id": 2,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_mom_decay_max240_wf2.json",
+          "max_drawdown": -1.828536,
+          "passed": true,
+          "total_return_pct": 1.857716
+        },
+        {
+          "event_profit_factor": 0.922934,
+          "fill_count": 3,
+          "fold_id": 3,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_mom_decay_max240_wf3.json",
+          "max_drawdown": -5.098005,
+          "passed": false,
+          "total_return_pct": -3.41649
+        },
+        {
+          "event_profit_factor": 0.936154,
+          "fill_count": 11,
+          "fold_id": 4,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_mom_decay_max240_wf4.json",
+          "max_drawdown": -4.970081,
+          "passed": false,
+          "total_return_pct": -2.847832
+        }
+      ],
+      "ledger_equity_consistent": true,
+      "max_drawdown": -7.834999,
+      "mode": "lifecycle_mom_decay_max240",
+      "run_id": "20260605T000000Z_lifecycle_probe",
+      "strategy_id": "btc_perp_dual_trend_v5_lifecycle_mom_decay_max240",
+      "total_return_pct": 4.837307,
+      "walk_forward_pass_rate": 0.5,
+      "walk_forward_pass_rate_pass": false
+    },
+    {
+      "base_manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop5_trail8_max168_ablation_base.json",
+      "event_profit_factor": 1.00922,
+      "event_profit_factor_pass": false,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 45,
+      "folds": [
+        {
+          "event_profit_factor": 1.133149,
+          "fill_count": 11,
+          "fold_id": 1,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop5_trail8_max168_wf1.json",
+          "max_drawdown": -1.484357,
+          "passed": true,
+          "total_return_pct": 3.274802
+        },
+        {
+          "event_profit_factor": 1.062813,
+          "fill_count": 6,
+          "fold_id": 2,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop5_trail8_max168_wf2.json",
+          "max_drawdown": -1.716695,
+          "passed": true,
+          "total_return_pct": 1.853907
+        },
+        {
+          "event_profit_factor": 0.918727,
+          "fill_count": 3,
+          "fold_id": 3,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop5_trail8_max168_wf3.json",
+          "max_drawdown": -6.282039,
+          "passed": false,
+          "total_return_pct": -4.458383
+        },
+        {
+          "event_profit_factor": 1.010186,
+          "fill_count": 8,
+          "fold_id": 4,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop5_trail8_max168_wf4.json",
+          "max_drawdown": -1.275509,
+          "passed": true,
+          "total_return_pct": 0.221032
+        }
+      ],
+      "ledger_equity_consistent": true,
+      "max_drawdown": -8.703851,
+      "mode": "lifecycle_stop5_trail8_max168",
+      "run_id": "20260605T000000Z_lifecycle_probe",
+      "strategy_id": "btc_perp_dual_trend_v5_lifecycle_stop5_trail8_max168",
+      "total_return_pct": 2.580877,
+      "walk_forward_pass_rate": 0.75,
+      "walk_forward_pass_rate_pass": false
+    },
+    {
+      "base_manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240_ablation_base.json",
+      "event_profit_factor": 1.036973,
+      "event_profit_factor_pass": false,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 48,
+      "folds": [
+        {
+          "event_profit_factor": 1.150382,
+          "fill_count": 11,
+          "fold_id": 1,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240_wf1.json",
+          "max_drawdown": -0.920301,
+          "passed": true,
+          "total_return_pct": 2.292995
+        },
+        {
+          "event_profit_factor": 1.060283,
+          "fill_count": 6,
+          "fold_id": 2,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240_wf2.json",
+          "max_drawdown": -1.808015,
+          "passed": true,
+          "total_return_pct": 1.755759
+        },
+        {
+          "event_profit_factor": 1.281903,
+          "fill_count": 3,
+          "fold_id": 3,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240_wf3.json",
+          "max_drawdown": -0.212388,
+          "passed": true,
+          "total_return_pct": 0.494197
+        },
+        {
+          "event_profit_factor": 0.913688,
+          "fill_count": 11,
+          "fold_id": 4,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240_wf4.json",
+          "max_drawdown": -3.920664,
+          "passed": false,
+          "total_return_pct": -2.828225
+        }
+      ],
+      "ledger_equity_consistent": true,
+      "max_drawdown": -4.112863,
+      "mode": "lifecycle_stop6_trail10_max240",
+      "run_id": "20260605T000000Z_lifecycle_probe",
+      "strategy_id": "btc_perp_dual_trend_v5_lifecycle_stop6_trail10_max240",
+      "total_return_pct": 7.966473,
+      "walk_forward_pass_rate": 0.75,
+      "walk_forward_pass_rate_pass": false
+    },
+    {
+      "base_manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop8_trail12_max336_ablation_base.json",
+      "event_profit_factor": 1.030319,
+      "event_profit_factor_pass": false,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 49,
+      "folds": [
+        {
+          "event_profit_factor": 1.159861,
+          "fill_count": 11,
+          "fold_id": 1,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop8_trail12_max336_wf1.json",
+          "max_drawdown": -1.144601,
+          "passed": true,
+          "total_return_pct": 5.424922
+        },
+        {
+          "event_profit_factor": 1.059399,
+          "fill_count": 6,
+          "fold_id": 2,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop8_trail12_max336_wf2.json",
+          "max_drawdown": -2.020107,
+          "passed": true,
+          "total_return_pct": 2.012302
+        },
+        {
+          "event_profit_factor": 0.922934,
+          "fill_count": 3,
+          "fold_id": 3,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop8_trail12_max336_wf3.json",
+          "max_drawdown": -5.098005,
+          "passed": false,
+          "total_return_pct": -3.41649
+        },
+        {
+          "event_profit_factor": 1.020217,
+          "fill_count": 8,
+          "fold_id": 4,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_stop8_trail12_max336_wf4.json",
+          "max_drawdown": -1.223789,
+          "passed": true,
+          "total_return_pct": 0.449545
+        }
+      ],
+      "ledger_equity_consistent": true,
+      "max_drawdown": -7.737869,
+      "mode": "lifecycle_stop8_trail12_max336",
+      "run_id": "20260605T000000Z_lifecycle_probe",
+      "strategy_id": "btc_perp_dual_trend_v5_lifecycle_stop8_trail12_max336",
+      "total_return_pct": 7.269302,
+      "walk_forward_pass_rate": 0.75,
+      "walk_forward_pass_rate_pass": false
+    },
+    {
+      "base_manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_trail8_mom0_max240_ablation_base.json",
+      "event_profit_factor": 1.026697,
+      "event_profit_factor_pass": false,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 46,
+      "folds": [
+        {
+          "event_profit_factor": 1.099785,
+          "fill_count": 9,
+          "fold_id": 1,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_trail8_mom0_max240_wf1.json",
+          "max_drawdown": -1.935277,
+          "passed": true,
+          "total_return_pct": 6.311248
+        },
+        {
+          "event_profit_factor": 1.121352,
+          "fill_count": 5,
+          "fold_id": 2,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_trail8_mom0_max240_wf2.json",
+          "max_drawdown": -0.259752,
+          "passed": true,
+          "total_return_pct": 0.576543
+        },
+        {
+          "event_profit_factor": 0.922934,
+          "fill_count": 3,
+          "fold_id": 3,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_trail8_mom0_max240_wf3.json",
+          "max_drawdown": -5.098005,
+          "passed": false,
+          "total_return_pct": -3.41649
+        },
+        {
+          "event_profit_factor": 0.965324,
+          "fill_count": 11,
+          "fold_id": 4,
+          "manifest_path": "artifacts/btc_canonical/20260605T000000Z_lifecycle_probe/manifests/run_btc_perp_dual_trend_v5_lifecycle_trail8_mom0_max240_wf4.json",
+          "max_drawdown": -2.137704,
+          "passed": false,
+          "total_return_pct": -0.767681
+        }
+      ],
+      "ledger_equity_consistent": true,
+      "max_drawdown": -7.905249,
+      "mode": "lifecycle_trail8_mom0_max240",
+      "run_id": "20260605T000000Z_lifecycle_probe",
+      "strategy_id": "btc_perp_dual_trend_v5_lifecycle_trail8_mom0_max240",
+      "total_return_pct": 6.261896,
+      "walk_forward_pass_rate": 0.5,
+      "walk_forward_pass_rate_pass": false
+    },
+    {
+      "base_manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p0_lifecycle_ablation_base.json",
+      "event_profit_factor": 1.024526,
+      "event_profit_factor_pass": false,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 57,
+      "folds": [
+        {
+          "event_profit_factor": 1.028718,
+          "fill_count": 11,
+          "fold_id": 1,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p0_lifecycle_wf1.json",
+          "max_drawdown": -1.052597,
+          "passed": true,
+          "total_return_pct": 0.439059
+        },
+        {
+          "event_profit_factor": 1.064516,
+          "fill_count": 9,
+          "fold_id": 2,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p0_lifecycle_wf2.json",
+          "max_drawdown": -1.286203,
+          "passed": true,
+          "total_return_pct": 1.709175
+        },
+        {
+          "event_profit_factor": 1.281903,
+          "fill_count": 3,
+          "fold_id": 3,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p0_lifecycle_wf3.json",
+          "max_drawdown": -0.212388,
+          "passed": true,
+          "total_return_pct": 0.494197
+        },
+        {
+          "event_profit_factor": 0.940952,
+          "fill_count": 13,
+          "fold_id": 4,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p0_lifecycle_wf4.json",
+          "max_drawdown": -2.462664,
+          "passed": false,
+          "total_return_pct": -1.327791
+        }
+      ],
+      "ledger_equity_consistent": true,
+      "max_drawdown": -3.029488,
+      "mode": "accel1p0_lifecycle",
+      "run_id": "20260605T001000Z_lifecycle_entry_quality_probe",
+      "strategy_id": "btc_perp_dual_trend_v5_accel1p0_lifecycle",
+      "total_return_pct": 3.209568,
+      "walk_forward_pass_rate": 0.75,
+      "walk_forward_pass_rate_pass": false
+    },
+    {
+      "base_manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p0_mom04_lifecycle_ablation_base.json",
+      "event_profit_factor": 1.017468,
+      "event_profit_factor_pass": false,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "folds": [
+        {
+          "event_profit_factor": 0.982948,
+          "fill_count": 10,
+          "fold_id": 1,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p0_mom04_lifecycle_wf1.json",
+          "max_drawdown": -3.356205,
+          "passed": false,
+          "total_return_pct": -1.025288
+        },
+        {
+          "event_profit_factor": 1.070045,
+          "fill_count": 7,
+          "fold_id": 2,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p0_mom04_lifecycle_wf2.json",
+          "max_drawdown": -1.286203,
+          "passed": true,
+          "total_return_pct": 2.266646
+        },
+        {
+          "event_profit_factor": 1.266678,
+          "fill_count": 3,
+          "fold_id": 3,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p0_mom04_lifecycle_wf3.json",
+          "max_drawdown": -0.212388,
+          "passed": true,
+          "total_return_pct": 0.502527
+        },
+        {
+          "event_profit_factor": 0.983298,
+          "fill_count": 8,
+          "fold_id": 4,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p0_mom04_lifecycle_wf4.json",
+          "max_drawdown": -4.657277,
+          "passed": false,
+          "total_return_pct": -1.057729
+        }
+      ],
+      "ledger_equity_consistent": true,
+      "max_drawdown": -4.666803,
+      "mode": "accel1p0_mom04_lifecycle",
+      "run_id": "20260605T001000Z_lifecycle_entry_quality_probe",
+      "strategy_id": "btc_perp_dual_trend_v5_accel1p0_mom04_lifecycle",
+      "total_return_pct": 5.186655,
+      "walk_forward_pass_rate": 0.5,
+      "walk_forward_pass_rate_pass": false
+    },
+    {
+      "base_manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p2_lifecycle_ablation_base.json",
+      "event_profit_factor": 1.028127,
+      "event_profit_factor_pass": false,
+      "failed_metrics": [
+        "event_profit_factor"
+      ],
+      "fill_count": 57,
+      "folds": [
+        {
+          "event_profit_factor": 1.02878,
+          "fill_count": 11,
+          "fold_id": 1,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p2_lifecycle_wf1.json",
+          "max_drawdown": -0.886428,
+          "passed": true,
+          "total_return_pct": 0.32707
+        },
+        {
+          "event_profit_factor": 1.121738,
+          "fill_count": 9,
+          "fold_id": 2,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p2_lifecycle_wf2.json",
+          "max_drawdown": -0.390838,
+          "passed": true,
+          "total_return_pct": 0.899824
+        },
+        {
+          "event_profit_factor": 1.281903,
+          "fill_count": 3,
+          "fold_id": 3,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p2_lifecycle_wf3.json",
+          "max_drawdown": -0.212388,
+          "passed": true,
+          "total_return_pct": 0.494197
+        },
+        {
+          "event_profit_factor": 1.01941,
+          "fill_count": 12,
+          "fold_id": 4,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_accel1p2_lifecycle_wf4.json",
+          "max_drawdown": -0.651408,
+          "passed": true,
+          "total_return_pct": 0.1678
+        }
+      ],
+      "ledger_equity_consistent": true,
+      "max_drawdown": -2.744022,
+      "mode": "accel1p2_lifecycle",
+      "run_id": "20260605T001000Z_lifecycle_entry_quality_probe",
+      "strategy_id": "btc_perp_dual_trend_v5_accel1p2_lifecycle",
+      "total_return_pct": 3.051535,
+      "walk_forward_pass_rate": 1.0,
+      "walk_forward_pass_rate_pass": true
+    },
+    {
+      "base_manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_mom04_lifecycle_ablation_base.json",
+      "event_profit_factor": 1.027113,
+      "event_profit_factor_pass": false,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "folds": [
+        {
+          "event_profit_factor": 0.98195,
+          "fill_count": 11,
+          "fold_id": 1,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_mom04_lifecycle_wf1.json",
+          "max_drawdown": -2.759385,
+          "passed": false,
+          "total_return_pct": -0.796428
+        },
+        {
+          "event_profit_factor": 1.066239,
+          "fill_count": 7,
+          "fold_id": 2,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_mom04_lifecycle_wf2.json",
+          "max_drawdown": -1.839821,
+          "passed": true,
+          "total_return_pct": 2.359455
+        },
+        {
+          "event_profit_factor": 1.266678,
+          "fill_count": 3,
+          "fold_id": 3,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_mom04_lifecycle_wf3.json",
+          "max_drawdown": -0.212388,
+          "passed": true,
+          "total_return_pct": 0.502527
+        },
+        {
+          "event_profit_factor": 0.984247,
+          "fill_count": 8,
+          "fold_id": 4,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_mom04_lifecycle_wf4.json",
+          "max_drawdown": -4.657277,
+          "passed": false,
+          "total_return_pct": -1.007429
+        }
+      ],
+      "ledger_equity_consistent": true,
+      "max_drawdown": -4.454484,
+      "mode": "mom04_lifecycle",
+      "run_id": "20260605T001000Z_lifecycle_entry_quality_probe",
+      "strategy_id": "btc_perp_dual_trend_v5_mom04_lifecycle",
+      "total_return_pct": 8.244491,
+      "walk_forward_pass_rate": 0.5,
+      "walk_forward_pass_rate_pass": false
+    },
+    {
+      "base_manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_not_overextended_accel1p0_lifecycle_ablation_base.json",
+      "event_profit_factor": 1.01127,
+      "event_profit_factor_pass": false,
+      "failed_metrics": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "folds": [
+        {
+          "event_profit_factor": 1.009015,
+          "fill_count": 9,
+          "fold_id": 1,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_not_overextended_accel1p0_lifecycle_wf1.json",
+          "max_drawdown": -0.662715,
+          "passed": true,
+          "total_return_pct": 0.070923
+        },
+        {
+          "event_profit_factor": 1.046116,
+          "fill_count": 8,
+          "fold_id": 2,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_not_overextended_accel1p0_lifecycle_wf2.json",
+          "max_drawdown": -1.838742,
+          "passed": true,
+          "total_return_pct": 1.424528
+        },
+        {
+          "event_profit_factor": 1.281903,
+          "fill_count": 3,
+          "fold_id": 3,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_not_overextended_accel1p0_lifecycle_wf3.json",
+          "max_drawdown": -0.212388,
+          "passed": true,
+          "total_return_pct": 0.494197
+        },
+        {
+          "event_profit_factor": 0.940952,
+          "fill_count": 13,
+          "fold_id": 4,
+          "manifest_path": "artifacts/btc_canonical/20260605T001000Z_lifecycle_entry_quality_probe/manifests/run_btc_perp_dual_trend_v5_not_overextended_accel1p0_lifecycle_wf4.json",
+          "max_drawdown": -2.462664,
+          "passed": false,
+          "total_return_pct": -1.327791
+        }
+      ],
+      "ledger_equity_consistent": true,
+      "max_drawdown": -3.309263,
+      "mode": "not_overextended_accel1p0_lifecycle",
+      "run_id": "20260605T001000Z_lifecycle_entry_quality_probe",
+      "strategy_id": "btc_perp_dual_trend_v5_not_overextended_accel1p0_lifecycle",
+      "total_return_pct": 1.624307,
+      "walk_forward_pass_rate": 0.75,
+      "walk_forward_pass_rate_pass": false
+    }
+  ],
+  "same_family_micro_search_allowed": false,
+  "schema_version": "btc_next_hypothesis_decision_report_v1",
+  "source_bounded_retest_outcome": "artifacts/btc_candidate_gate/latest/candidate_bounded_retest_outcome_report.json",
+  "source_bounded_retest_status": "completed_candidate_gate_failed",
+  "status": "dual_trend_micro_surgery_rejected",
+  "symbol": "BTCUSDT",
+  "thresholds": {
+    "event_profit_factor": 1.15,
+    "walk_forward_pass_rate": 0.8
+  },
+  "walk_forward_pass_rate_pass_count": 1
+}

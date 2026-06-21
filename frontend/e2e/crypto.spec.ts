@@ -70,6 +70,66 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
       return;
     }
 
+    if (method === 'GET' && pathname === '/api/research/btc/scalping-backtest') {
+      await route.fulfill({
+        json: {
+          schema_version: 'btc_scalping_research_backtest_report_v1',
+          generated_at: '2026-06-21T06:10:00Z',
+          asset: 'btc',
+          symbol: 'BTCUSDT',
+          scope: 'research_only_btc_scalping_backtest_no_candidate_no_paper_no_live',
+          status: 'research_backtest_completed',
+          decision: 'use_5m_drift_guarded_for_research_iteration_redesign_1m_proxy_scalping',
+          next_required_action: 'inspect_research_backtest_outputs_or_adjust_params_then_rerun',
+          recommended_research_track: 'five_minute_drift_guarded_intraday',
+          operator_summary: {
+            current_research_answer: '5m drift-guarded BTC intraday research backtest is the usable research track now; 1m proxy scalping runs but fails after costs.',
+            run_command: 'make run-btc-scalping-research-backtest',
+            direct_command: 'python3 scripts/run_btc_scalping_research_backtest.py',
+          },
+          backtests: {
+            five_minute_drift_guarded_intraday: {
+              label: '5m drift-guarded intraday scalping research',
+              timeframe: '5m',
+              status: 'event_ledger_passed_internal_research_gate_candidate_still_locked',
+              strategy_id: 'btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1',
+              variant_id: 'high_vol_non_expansion_trend_guard_repair_v1',
+              scope: 'research_only_event_ledger_no_candidate_no_paper_no_live_no_true_scalping',
+              report_path: 'artifacts/btc_intraday_event_ledger/run/report.json',
+              run_dir: 'artifacts/btc_intraday_event_ledger/run',
+              artifacts: {run_manifest: 'artifacts/btc_intraday_event_ledger/run/run_manifest.json'},
+              metrics: {trade_count: 78, fill_count: 156, profit_factor: 2.647434, total_return_pct: 3.7663, max_drawdown: -1.7496, walk_forward_pass_rate: 0.833333, regime_pass_rate: 0.8},
+              gate_passed: true,
+              gate_status: 'candidate_passed_internal_gate',
+              blockers: ['btc_intraday_event_ledger_candidate_generation_locked_pending_review'],
+              manifest: {path: 'artifacts/btc_intraday_event_ledger/run/run_manifest.json', present: true, required_fields_present: {data_version: true, strategy_version: true, params: true, cost_model: true, slippage_model: true, commit_hash: true}, complete: true, paper_queue: 'LOCKED', live: 'FROZEN'},
+              research_only_lock: {candidate_generation_allowed: false, strategy_skeleton_generation_allowed: false, paper_or_live_unlock_allowed: false, true_scalping_allowed: false},
+            },
+            one_minute_proxy_scalping: {
+              label: '1m public microstructure proxy scalping',
+              timeframe: '1m',
+              status: 'event_ledger_research_gate_failed',
+              strategy_id: 'btc_true_scalp_liquidity_reclaim_research_v0',
+              variant_id: 'pullback_reclaim_1m_public_microstructure_proxy_v0',
+              scope: 'research_only_1m_scalping_event_ledger_no_candidate_no_paper_no_live',
+              report_path: null,
+              run_dir: 'artifacts/btc_scalping_event_ledger/latest/prototype_run',
+              artifacts: {run_manifest: 'artifacts/btc_scalping_event_ledger/latest/prototype_run/run_manifest.json'},
+              metrics: {event_count: 448, trade_count: 448, fill_count: 896, profit_factor: 0.3853317909627279, hit_rate: 0.30357142857142855, mean_trade_return_bps: -9.876537264205313},
+              gate_passed: false,
+              gate_status: 'candidate_gate_failed',
+              blockers: ['btc_true_scalping_event_ledger_gate_failed_profit_factor', 'btc_true_scalping_event_ledger_paper_live_locked'],
+              manifest: {path: 'artifacts/btc_scalping_event_ledger/latest/prototype_run/run_manifest.json', present: true, required_fields_present: {data_version: true, strategy_version: true, params: true, cost_model: true, slippage_model: true, commit_hash: true}, complete: true, paper_queue: 'LOCKED', live: 'FROZEN'},
+              research_only_lock: {candidate_generation_allowed: false, strategy_skeleton_generation_allowed: false, paper_or_live_unlock_allowed: false, true_scalping_allowed: false},
+            },
+          },
+          manifest_contract: {required_fields: ['data_version', 'strategy_version', 'params', 'cost_model', 'slippage_model', 'commit_hash'], one_minute_proxy_scalping_complete: true, five_minute_drift_guarded_intraday_complete: true},
+          guardrails: {research_only: true, strategy_outputs_only: ['Signal', 'OrderIntent', 'TargetPosition'], broker_calls_allowed: false, private_endpoints_allowed: false, order_endpoints_allowed: false, real_orders_created: false, candidate_generation_allowed: false, paper_or_live_unlock_allowed: false, paper_queue: 'LOCKED', live: 'FROZEN', pnl_from_fill_or_trade_ledger: true},
+        },
+      });
+      return;
+    }
+
     if (method === 'POST' && pathname === '/api/data/sync') {
       const payload = await route.request().postDataJSON();
       syncCalls.push(String(payload.interval));
@@ -430,6 +490,10 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
   await expect(page.getByRole('heading', {name: '事件驱动回测'})).toBeVisible();
   await expect(page.locator('[data-testid="crypto-sqlite-coverage"]')).toContainText('1m');
   await expect(page.locator('[data-testid="crypto-sqlite-coverage"]')).toContainText('触发 1m -> 5m 重采样');
+  await expect(page.locator('[data-testid="btc-scalping-research-panel"]')).toContainText('5m drift-guarded');
+  await expect(page.locator('[data-testid="btc-scalping-research-panel"]')).toContainText('2.647');
+  await expect(page.locator('[data-testid="btc-scalping-research-panel"]')).toContainText('paper LOCKED');
+  await expect(page.locator('[data-testid="btc-scalping-research-panel"]')).toContainText('btc_true_scalping_event_ledger_gate_failed_profit_factor');
 
   await page.getByRole('button', {name: '1m→1d 重采样链'}).click();
   await expect(page.locator('[data-testid="crypto-data-panel"]')).toContainText('重采样链完成');
@@ -441,15 +505,15 @@ test('Crypto workspace exposes sqlite coverage, resampling, and blockers', async
 
   await page.getByRole('button', {name: '研究准入门'}).click();
   await expect(page.locator('[data-testid="crypto-promotion-blockers"]')).toContainText('coverage below threshold');
-  await expect(page.locator('[data-testid="crypto-blockers"]')).toContainText('promotion');
+  await expect(page.locator('[data-testid="crypto-blockers"]')).toContainText('晋升');
 
-  await page.locator('[data-testid="module-state-btc"]').getByRole('button', {name: '启动 BTC production closure'}).click();
+  await page.locator('[data-testid="module-state-btc"]').getByRole('button', {name: '启动 BTC 生产闭环'}).click();
   await expect(page.locator('[data-testid="module-state-btc"]')).toContainText('任务进度');
   await expect(page.locator('[data-testid="module-state-btc"]')).toContainText('任务阶段');
-  await expect(page.locator('.task-queue-panel')).toContainText('BTC production closure 任务');
+  await expect(page.locator('.task-queue-panel')).toContainText('BTC 生产闭环任务');
   await expect(page.locator('.task-queue-panel')).toContainText('COMPLETED');
   await expect(page.locator('.task-queue-panel')).toContainText('100%');
-  await expect(page.locator('.task-queue-panel')).toContainText('Decision FAIL');
-  await expect(page.locator('.task-queue-panel')).toContainText('Candidate trend_macd');
+  await expect(page.locator('.task-queue-panel')).toContainText('决策 FAIL');
+  await expect(page.locator('.task-queue-panel')).toContainText('候选 trend_macd');
   await expect(page.locator('.task-queue-panel')).toContainText('coverage below threshold');
 });

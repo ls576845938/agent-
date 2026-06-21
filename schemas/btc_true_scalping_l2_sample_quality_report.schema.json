@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_l2_sample_quality_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_capture_report",
+    "selected_bundle_dir",
+    "source_files",
+    "capture_status",
+    "network_called",
+    "public_rest_only",
+    "bounded_public_rest_sample_only",
+    "sample_quality",
+    "thresholds",
+    "blockers",
+    "true_scalping_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_l2_sample_quality_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "scope": {"const": "research_only_public_l2_tick_sample_quality_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "public_l2_sample_evidence_ready_research_only",
+        "public_l2_sample_evidence_partial_research_only"
+      ]
+    },
+    "decision": {"type": "string"},
+    "next_required_action": {"type": "string"},
+    "source_capture_report": {"type": ["string", "null"]},
+    "selected_bundle_dir": {"type": "string"},
+    "source_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agg_trades_samples", "order_book_depth_samples"],
+      "properties": {
+        "agg_trades_samples": {"$ref": "#/$defs/sourceFile"},
+        "order_book_depth_samples": {"$ref": "#/$defs/sourceFile"}
+      }
+    },
+    "capture_status": {"type": "string"},
+    "network_called": {"type": "boolean"},
+    "public_rest_only": {"type": "boolean"},
+    "bounded_public_rest_sample_only": {"const": true},
+    "sample_quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested_sample_count",
+        "completed_sample_count",
+        "trade_row_count",
+        "book_level_row_count",
+        "trade_sample_count_with_rows",
+        "book_sample_count_with_rows",
+        "unique_trade_timestamps",
+        "unique_book_timestamps",
+        "valid_top_of_book_snapshot_count",
+        "max_book_level",
+        "book_side_counts",
+        "spread_bps",
+        "latency_sample_count",
+        "latency_ms"
+      ],
+      "properties": {
+        "requested_sample_count": {"type": "integer", "minimum": 0},
+        "completed_sample_count": {"type": "integer", "minimum": 0},
+        "trade_row_count": {"type": "integer", "minimum": 0},
+        "book_level_row_count": {"type": "integer", "minimum": 0},
+        "trade_sample_count_with_rows": {"type": "integer", "minimum": 0},
+        "book_sample_count_with_rows": {"type": "integer", "minimum": 0},
+        "unique_trade_timestamps": {"type": "integer", "minimum": 0},
+        "unique_book_timestamps": {"type": "integer", "minimum": 0},
+        "valid_top_of_book_snapshot_count": {"type": "integer", "minimum": 0},
+        "max_book_level": {"type": "integer", "minimum": 0},
+        "book_side_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bid", "ask"],
+          "properties": {
+            "bid": {"type": "integer", "minimum": 0},
+            "ask": {"type": "integer", "minimum": 0}
+          }
+        },
+        "spread_bps": {"$ref": "#/$defs/stats"},
+        "latency_sample_count": {"type": "integer", "minimum": 0},
+        "latency_ms": {"$ref": "#/$defs/stats"}
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min_completed_samples", "min_valid_book_snapshots", "min_latency_samples"],
+      "properties": {
+        "min_completed_samples": {"type": "integer", "minimum": 1},
+        "min_valid_book_snapshots": {"type": "integer", "minimum": 1},
+        "min_latency_samples": {"type": "integer", "minimum": 1}
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "true_scalping_allowed": {"const": false},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "production_ready",
+        "paper_or_live_usable",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed",
+        "real_orders_created",
+        "paper_queue",
+        "live"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "production_ready": {"const": false},
+        "paper_or_live_usable": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"}
+      }
+    }
+  },
+  "$defs": {
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "exists", "row_count"],
+      "properties": {
+        "path": {"type": ["string", "null"]},
+        "exists": {"type": "boolean"},
+        "row_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max", "mean", "median"],
+      "properties": {
+        "min": {"type": ["number", "null"]},
+        "max": {"type": ["number", "null"]},
+        "mean": {"type": ["number", "null"]},
+        "median": {"type": ["number", "null"]}
+      }
+    }
+  }
+}

@@ -26,6 +26,7 @@ DIAGNOSTIC_FILES: dict[str, str] = {
     "open_interest_hist_1h.csv": "open_interest_hist_1h",
     "open_interest_current.json": "open_interest_current",
     "agg_trades.csv": "agg_trades",
+    "order_book_depth.csv": "order_book_depth",
     "liquidation_snapshots.csv": "liquidation_snapshots",
 }
 FILE_ROLES: dict[str, str] = {**REQUIRED_FILES, **DIAGNOSTIC_FILES}
@@ -49,6 +50,7 @@ BINANCE_ROLE_SOURCE_HINTS: dict[str, str] = {
     "open_interest_hist_1h": "/futures/data/openInterestHist",
     "open_interest_current": "/fapi/v1/openInterest",
     "agg_trades": "/fapi/v1/aggTrades",
+    "order_book_depth": "/fapi/v1/depth",
     "liquidation_snapshots": "diagnostic_local_archive",
 }
 OKX_ROLE_SOURCE_HINTS: dict[str, str] = {
@@ -62,7 +64,8 @@ OKX_ROLE_SOURCE_HINTS: dict[str, str] = {
     "exchange_info": "/api/v5/public/instruments",
     "open_interest_hist_1h": "/api/v5/rubik/stat/contracts/open-interest-volume",
     "open_interest_current": "/api/v5/public/open-interest",
-    "agg_trades": "diagnostic_local_archive",
+    "agg_trades": "/api/v5/market/history-trades",
+    "order_book_depth": "/api/v5/market/books",
     "liquidation_snapshots": "diagnostic_local_archive",
 }
 ROLE_SOURCE_HINTS_BY_PROVIDER: dict[str, dict[str, str]] = {
@@ -78,6 +81,7 @@ TIME_SERIES_ROLES = {
     "funding_rate",
     "open_interest_hist_1h",
     "agg_trades",
+    "order_book_depth",
     "liquidation_snapshots",
 }
 REQUIRED_ROLES = set(REQUIRED_FILES.values())

@@ -1,0 +1,178 @@
+{
+  "acceptance_gates": {
+    "candidate_generation_after_distribution_probe_only": true,
+    "cost_stress_required": true,
+    "event_profit_factor_min": 1.15,
+    "ledger_fill_pnl_required": true,
+    "manifest_required": true,
+    "no_lookahead": true,
+    "regime_pass_rate_min": 0.75,
+    "walk_forward_pass_rate_min": 0.8
+  },
+  "asset": "btc",
+  "blockers": [
+    "btc_intraday_existing_candidate_gate_not_pass",
+    "btc_current_evidence_provider_history_too_short_for_research_distribution",
+    "btc_selected_research_overlay_is_not_user_execution_provider",
+    "btc_data_source_decision_does_not_unlock_candidate_or_paper",
+    "btc_intraday_candidate_generation_blocked_until_distribution_probe_passes",
+    "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+    "btc_intraday_paper_live_locked"
+  ],
+  "branch": "main",
+  "candidate_families": [
+    {
+      "family_id": "volatility_compression_reclaim_intraday_v0",
+      "primary_edge_inputs": [
+        "5m_ohlcv",
+        "15m_context",
+        "range_reclaim",
+        "realized_volatility"
+      ],
+      "priority": 1,
+      "selection_status": "distribution_probe_backlog"
+    },
+    {
+      "family_id": "liquidation_exhaustion_reclaim_intraday_v0",
+      "primary_edge_inputs": [
+        "5m_ohlcv",
+        "shock_recovery",
+        "event_lifecycle",
+        "tail_dependency_check"
+      ],
+      "priority": 2,
+      "selection_status": "distribution_probe_backlog"
+    },
+    {
+      "family_id": "funding_premium_reversion_intraday_v0",
+      "primary_edge_inputs": [
+        "funding_rate",
+        "premium_index",
+        "mark_price",
+        "15m_context"
+      ],
+      "priority": 3,
+      "selection_status": "context_overlay_not_primary_alpha"
+    },
+    {
+      "family_id": "orderflow_confirmed_momentum_intraday_v0",
+      "primary_edge_inputs": [
+        "5m_ohlcv",
+        "15m_momentum",
+        "volume_expansion"
+      ],
+      "priority": 4,
+      "selection_status": "confirmation_only_until_orderbook_data_exists"
+    }
+  ],
+  "candidate_gate_status": "fail",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "cost_context": {
+    "blockers": [],
+    "fee_tier_verified": true,
+    "maker_fee_bps": 2.0,
+    "status": "pass",
+    "taker_fee_bps": 5.0
+  },
+  "cost_model_status": "pass",
+  "current_candidate_count": 0,
+  "data_prerequisites": {
+    "data_status": "partial",
+    "data_status_blockers": [
+      "btc_regime_contract_not_pass"
+    ],
+    "intervals": {
+      "15m": {
+        "bar_count": 82753,
+        "completeness_ratio": 1.0,
+        "duplicate_bar_count": 0,
+        "min_completeness_ratio": 0.995,
+        "min_required_bars": 30000,
+        "missing_bar_count": 0
+      },
+      "5m": {
+        "bar_count": 248257,
+        "completeness_ratio": 1.0,
+        "duplicate_bar_count": 0,
+        "min_completeness_ratio": 0.995,
+        "min_required_bars": 100000,
+        "missing_bar_count": 0
+      }
+    },
+    "min_sample_days": 365.0,
+    "present_intervals": [
+      "5m",
+      "15m",
+      "1h",
+      "4h",
+      "1d"
+    ],
+    "required_intervals": [
+      "5m",
+      "15m"
+    ],
+    "sample_days": 862.0,
+    "sample_end": "2026-05-12T00:00:00+00:00",
+    "sample_start": "2024-01-01T00:00:00+00:00"
+  },
+  "data_source_decision_status": "research_history_overlay_ready_execution_provider_not_switched",
+  "data_status": "partial",
+  "decision": "start_intraday_short_cycle_alpha_distribution",
+  "generated_at": "2026-06-20T11:32:32Z",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "candidate_generation_allowed": false,
+    "cost_stress_required": true,
+    "event_profit_factor_gate_required": true,
+    "intraday_research_distribution_allowed": true,
+    "maker_queue_assumption_without_orderbook_allowed": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "pnl_from_fill_ledger_required": true,
+    "private_endpoints_allowed": false,
+    "research_only": true,
+    "short_cycle_probe_allowed": true,
+    "strategy_skeleton_generation_allowed": false,
+    "sub_minute_or_tick_scalping_allowed": false,
+    "true_scalping_allowed": false,
+    "walk_forward_required": true
+  },
+  "interpretation": [
+    "intraday_short_cycle_alpha_v0 can start research-only distribution probing on 5m/15m history",
+    "this unlocks short-cycle alpha research only; it does not unlock candidate generation, paper, live, or scalping",
+    "true scalping remains blocked until 1m/tick/orderbook/spread/latency/queue evidence exists"
+  ],
+  "intraday_research_distribution_allowed": true,
+  "next_required_action": "run_research_only_intraday_short_cycle_distribution_probe",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "schema_version": "btc_intraday_short_cycle_alpha_plan_report_v1",
+  "scope": "research_only_intraday_short_cycle_no_scalping_no_candidate_no_paper_no_live",
+  "selected_research_style": {
+    "core_hypothesis": "BTC perpetual intraday edges should first be tested as event-ledger short-cycle alpha using 5m triggers, 15m confirmation, explicit costs, and walk-forward gates",
+    "holding_period_intent": "minutes_to_hours_not_sub_minute_scalping",
+    "not_scalping_because": [
+      "does not require sub-minute bars, tick data, order book queue position, or latency model",
+      "does not assume maker fill priority or spread capture",
+      "does not connect to any broker, private endpoint, paper runtime, or live runtime"
+    ],
+    "primary_timeframes": [
+      "5m",
+      "15m"
+    ],
+    "status": "ready_for_distribution_probe",
+    "style_id": "intraday_short_cycle_alpha_v0"
+  },
+  "short_cycle_probe_allowed": true,
+  "source_candidate_gate": "artifacts/btc_candidate_gate/latest/candidate_gate_audit_report.json",
+  "source_cost_model": "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+  "source_data_source_decision": "artifacts/btc_data_status/latest/btc_perpetual_data_source_decision_report.json",
+  "source_data_status": "artifacts/btc_data_status/latest/btc_data_status_report.json",
+  "source_research_registry": "artifacts/btc_research_registry/research_registry.json",
+  "status": "research_distribution_ready_candidate_blocked",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false
+}

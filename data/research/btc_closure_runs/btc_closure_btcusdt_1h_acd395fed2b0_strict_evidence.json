@@ -1,0 +1,863 @@
+{
+  "candidate": {
+    "audit": {
+      "data_fingerprint": "5cfb8d5f45d542a75b1da342bd6820564b6b5c598065db66f4949525ac440fe4",
+      "data_manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+      "data_root": "data",
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "event_run_id": "btc_closure_btcusdt_1h_acd395fed2b0_event",
+      "manifest_root": "data/manifests",
+      "run_id_prefix": "btc_closure_btcusdt_1h_acd395fed2b0",
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1"
+    },
+    "candidate_count": 2,
+    "cost_stress_summary": {
+      "ledger_consistency_pct": 100.0,
+      "scenario_count": 2,
+      "survival_rate_pct": 0.0
+    },
+    "cpcv_summary": {
+      "fold_sharpes": [
+        1.0404,
+        -1.1913
+      ],
+      "path_count": 2,
+      "status": "completed",
+      "trial_count": 4
+    },
+    "event_backtest_summary": {
+      "annual_return_pct": 0.7312,
+      "annual_volatility_pct": 2.7548,
+      "calmar_ratio": 0.2105,
+      "max_drawdown_pct": -3.4728,
+      "profit_factor": 1.0515,
+      "sharpe_ratio": 0.2782,
+      "sortino_ratio": 0.2537,
+      "total_return_pct": 1.7355,
+      "trade_count": 1786,
+      "win_rate_pct": 48.235
+    },
+    "holding_period": {},
+    "metrics": {
+      "annual_turnover_pct": 0.0,
+      "avg_holding_bars": 1.9376,
+      "cost_sensitivity": 0.0
+    },
+    "optimizer_rank": 1,
+    "overfit_gap": -1.2989,
+    "parameters": {
+      "boll_dev": 1.8,
+      "boll_window": 20,
+      "width_threshold": 0.03
+    },
+    "rank": 1,
+    "recommendations": [
+      "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+      "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+      "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+    ],
+    "research_metadata": {
+      "runtime_hints": {
+        "cost_aware_filter": true,
+        "max_annual_turnover_pct": 1500.0,
+        "min_holding_bars": 24
+      }
+    },
+    "score": 2.518752,
+    "statistical_validation_blockers": [
+      "CPCV/DSR/PBO promotion contract blocked",
+      "multiple testing control did not pass"
+    ],
+    "strategy_id": "volatility_squeeze",
+    "train": {
+      "annual_return_pct": 1.1207,
+      "annual_volatility_pct": 27.0979,
+      "calmar_ratio": 0.0401,
+      "max_drawdown_pct": -27.9435,
+      "profit_factor": 1.0169,
+      "sharpe_ratio": 0.1763,
+      "sortino_ratio": 0.0888,
+      "total_return_pct": 1.7255,
+      "trade_count": 0,
+      "win_rate_pct": 46.8018
+    },
+    "turnover": {},
+    "validation": {
+      "annual_return_pct": 49.3147,
+      "annual_turnover_pct": 0.0,
+      "annual_volatility_pct": 30.2663,
+      "avg_holding_bars": 1.9376,
+      "calmar_ratio": 2.5351,
+      "cost_sensitivity": 0.0,
+      "max_drawdown_pct": -19.4525,
+      "profit_factor": 1.1455,
+      "sharpe_ratio": 1.4752,
+      "sortino_ratio": 0.8025,
+      "total_return_pct": 39.2941,
+      "trade_count": 0,
+      "win_rate_pct": 48.6667
+    },
+    "validation_statistics": {
+      "available_components": {
+        "cost_before_after": true,
+        "cv_summary": true,
+        "deflated_sharpe_ratio": true,
+        "lookahead_controls": true,
+        "multiple_testing": true,
+        "net_return_distribution": true,
+        "pbo": true,
+        "trial_counting": true
+      },
+      "candidate_id": "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03",
+      "cost_before_after": {
+        "baseline_multiplier": 1.0,
+        "cost_drag_return": null,
+        "cost_drag_sharpe": null,
+        "gross_return": null,
+        "gross_sharpe": null,
+        "level_count": 2,
+        "mode": "stress_curve",
+        "net_return": 39.2941,
+        "net_sharpe": 1.4752,
+        "stress_return_delta": 39.4312,
+        "surviving_levels": 1,
+        "worst_multiplier": 2.0,
+        "worst_return": -0.1371,
+        "worst_sharpe": -0.004
+      },
+      "cv_summary": {
+        "embargo_recorded": true,
+        "embargo_steps": 1,
+        "embargoed": true,
+        "fold_count": 2,
+        "mean_oos_sharpe": -0.07545,
+        "median_oos_sharpe": -0.07545,
+        "method": "cpcv",
+        "pass_rate": 0.5,
+        "path_count": 2,
+        "purge_recorded": true,
+        "purge_steps": 1,
+        "purged": true,
+        "test_window_count": 1,
+        "train_window_count": 3
+      },
+      "deflated_sharpe_ratio": {
+        "benchmark_sharpe": 1.005623,
+        "dsr": 0.627395,
+        "excess_kurtosis": 0.0,
+        "observed_sharpe": 1.4752,
+        "passed": true,
+        "psr": 0.846344,
+        "returns_count": 2,
+        "skew": 0.0,
+        "trial_count": 4
+      },
+      "lookahead_controls": {
+        "guard": "event_driven_signal_replay_no_future_features",
+        "passed": true,
+        "recorded": true,
+        "violations": []
+      },
+      "multiple_testing": {
+        "bonferroni_alpha": 0.0125,
+        "dsr_p_value": 0.372605,
+        "effective_trial_count": 4,
+        "familywise_alpha": 0.05,
+        "independent_trial_count": 4,
+        "mode": "familywise_error_control",
+        "passed": false,
+        "raw_p_value": 0.153656,
+        "sidak_alpha": 0.012741
+      },
+      "net_return_distribution": {
+        "count": 2,
+        "max": 22.1771,
+        "mean": 1.342,
+        "median": 1.342,
+        "min": -19.4931,
+        "negative_share": 0.5,
+        "p05": -17.40959,
+        "p25": -9.07555,
+        "p75": 11.75955,
+        "p95": 20.09359,
+        "std": 29.465281
+      },
+      "pbo": {
+        "group_count": 2,
+        "logit_mean": 1.098612,
+        "logit_median": 1.098612,
+        "mode": "grouped_trials",
+        "overfit_group_count": 0,
+        "passed": true,
+        "pbo": 0.0
+      },
+      "promotion_gate_contract": {
+        "checks": {
+          "cpcv_available": true,
+          "cv_method_allowed": true,
+          "dsr_available": true,
+          "dsr_passed": true,
+          "lookahead_guard_passed": true,
+          "lookahead_guard_recorded": true,
+          "multi_path_validation": true,
+          "multiple_testing_complete": true,
+          "multiple_testing_passed": false,
+          "pbo_available": true,
+          "pbo_passed": true,
+          "purge_embargo_recorded": true,
+          "purged_or_embargoed": true,
+          "trial_count_sufficient": true
+        },
+        "observed": {
+          "cv_method": "cpcv",
+          "dsr": 0.627395,
+          "effective_trial_count": 4,
+          "embargo_recorded": true,
+          "embargoed": true,
+          "independent_trial_count": 4,
+          "lookahead_guard_recorded": true,
+          "lookahead_violations": [],
+          "multiple_testing_mode": "familywise_error_control",
+          "pbo": 0.0,
+          "purge_recorded": true,
+          "purged": true,
+          "validation_paths": 2
+        },
+        "required": {
+          "allowed_cv_methods": [
+            "cpcv",
+            "purged_kfold",
+            "embargoed_walk_forward"
+          ],
+          "familywise_alpha": 0.05,
+          "lookahead_guard_recorded": true,
+          "max_pbo": 0.5,
+          "min_dsr": 0.1,
+          "min_effective_trial_count": 2,
+          "min_independent_trial_count": 2,
+          "min_validation_paths": 2,
+          "required_cv_method": "cpcv"
+        },
+        "status": "blocked"
+      },
+      "status": "complete",
+      "trial_counting": {
+        "cost_level_count": 2,
+        "cv_fold_count": 2,
+        "cv_path_count": 2,
+        "declared_trial_count": 4,
+        "effective_trial_count": 4,
+        "independent_trial_count": 4,
+        "param_grid_trial_count": 2,
+        "pbo_split_count": 2,
+        "trial_sharpe_count": 4
+      }
+    },
+    "walk_forward_summary": {
+      "avg_oos_return_pct": -0.2402,
+      "fold_pass_rate_pct": 50.0,
+      "ledger_consistency_pct": 100.0,
+      "ledger_equity_consistent_windows": 2,
+      "manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T050018.json",
+      "median_oos_sharpe": -0.1088,
+      "parameter_stability_pct": 100.0,
+      "pass_rate_pct": 50.0,
+      "passing_folds": 1,
+      "regime_pass_rate_pct": 0.0,
+      "symbol_count": 1,
+      "symbol_details": {
+        "BTCUSDT": {
+          "bar_count": 20689,
+          "folds": 2,
+          "passes": 1
+        }
+      },
+      "symbols_covered": 1,
+      "symbols_insufficient": 0,
+      "total_folds": 2,
+      "valid_folds": 2,
+      "window_count": 2,
+      "worst_oos_drawdown_pct": -1.5278
+    }
+  },
+  "candidate_key": "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03",
+  "cost_stress": {
+    "audit": {
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "missing_manifest_scenarios": [],
+      "run_id_prefix": "btc_closure_btcusdt_1h_acd395fed2b0",
+      "scenario_manifests_complete": true,
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1"
+    },
+    "engine": "event_driven",
+    "ledger_consistency_pct": 100.0,
+    "missing_manifest_scenarios": [],
+    "scenario_count": 2,
+    "scenario_manifests_complete": true,
+    "scenarios": [
+      {
+        "commission_multiplier": 1.0,
+        "name": "base",
+        "slippage_multiplier": 1.0,
+        "summary": {
+          "annual_return_pct": 0.7312,
+          "annual_volatility_pct": 2.7548,
+          "calmar_ratio": 0.2105,
+          "max_drawdown_pct": -3.4728,
+          "profit_factor": 1.0515,
+          "sharpe_ratio": 0.2782,
+          "sortino_ratio": 0.2537,
+          "total_return_pct": 1.7355,
+          "trade_count": 1786,
+          "win_rate_pct": 48.235
+        },
+        "survives": false
+      },
+      {
+        "commission_multiplier": 2.0,
+        "name": "fees_2x",
+        "slippage_multiplier": 1.0,
+        "summary": {
+          "annual_return_pct": -0.0581,
+          "annual_volatility_pct": 3.0338,
+          "calmar_ratio": -0.0113,
+          "max_drawdown_pct": -5.1458,
+          "profit_factor": 0.9992,
+          "sharpe_ratio": -0.004,
+          "sortino_ratio": -0.0033,
+          "total_return_pct": -0.1371,
+          "trade_count": 1770,
+          "win_rate_pct": 47.161
+        },
+        "survives": false
+      }
+    ],
+    "survival_rate_pct": 0.0
+  },
+  "cpcv": {
+    "cv_method": "cpcv",
+    "embargoed": true,
+    "fold_drawdowns": [
+      -17.979,
+      -23.6408
+    ],
+    "fold_sharpes": [
+      1.0404,
+      -1.1913
+    ],
+    "lookahead_guard": "event_driven_signal_replay_no_future_features",
+    "n_splits": 3,
+    "path_count": 2,
+    "pbo_trials": [
+      {
+        "config_id": "volatility_squeeze_cfg_01",
+        "params": {
+          "boll_dev": 1.8,
+          "boll_window": 20,
+          "width_threshold": 0.03
+        },
+        "split_id": "path_01_0",
+        "strategy_id": "volatility_squeeze",
+        "test_return_pct": 22.1771,
+        "test_sharpe": 1.0404,
+        "train_return_pct": -5.8076,
+        "train_sharpe": -0.0963
+      },
+      {
+        "config_id": "volatility_squeeze_cfg_02",
+        "params": {
+          "boll_dev": 2.0,
+          "boll_window": 20,
+          "width_threshold": 0.05
+        },
+        "split_id": "path_01_0",
+        "strategy_id": "volatility_squeeze",
+        "test_return_pct": 62.6243,
+        "test_sharpe": 2.1441,
+        "train_return_pct": 13.6937,
+        "train_sharpe": 0.4721
+      },
+      {
+        "config_id": "volatility_squeeze_cfg_01",
+        "params": {
+          "boll_dev": 1.8,
+          "boll_window": 20,
+          "width_threshold": 0.03
+        },
+        "split_id": "path_02_1",
+        "strategy_id": "volatility_squeeze",
+        "test_return_pct": -19.4931,
+        "test_sharpe": -1.1913,
+        "train_return_pct": 53.9322,
+        "train_sharpe": 1.0913
+      },
+      {
+        "config_id": "volatility_squeeze_cfg_02",
+        "params": {
+          "boll_dev": 2.0,
+          "boll_window": 20,
+          "width_threshold": 0.05
+        },
+        "split_id": "path_02_1",
+        "strategy_id": "volatility_squeeze",
+        "test_return_pct": -12.1381,
+        "test_sharpe": -0.4906,
+        "train_return_pct": 159.7097,
+        "train_sharpe": 2.0761
+      }
+    ],
+    "purged": true,
+    "status": "completed",
+    "test_splits": 1,
+    "trial_count": 4,
+    "validation_method": "cpcv"
+  },
+  "event_backtest": {
+    "audit": {
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "ledger_artifact_path": "data/manifests/reconciliation/ledger_recon_artifact_9e00ae7ab10b4bbc.json",
+      "manifest_id": "btc_closure_btcusdt_1h_acd395fed2b0_event",
+      "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_acd395fed2b0_event.json",
+      "run_id": "btc_closure_btcusdt_1h_acd395fed2b0_event",
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1"
+    },
+    "diagnostics": {
+      "asset_class": "crypto",
+      "connection_health": {
+        "broker": "sim",
+        "market_prices": 0,
+        "status": "ok"
+      },
+      "data_manifest": {
+        "asset_class": "",
+        "checksum": "",
+        "coverage": {},
+        "data_manifest_id": "",
+        "data_version": "",
+        "data_version_matches_requested": false,
+        "exists": false,
+        "fingerprint": "",
+        "interval": "",
+        "missing_data_manifest": true,
+        "path": "data/manifests/qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5.json",
+        "quality": {},
+        "requested_data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "source": "",
+        "symbol": ""
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "determinism_verified": false,
+      "engine": "event_driven",
+      "event_counts": {
+        "account_update": 0,
+        "broker_order": 1786,
+        "fill": 1786,
+        "market": 20689,
+        "order_intent": 2467,
+        "risk": 2466,
+        "signal": 20689,
+        "target_position": 20689,
+        "total": 70572
+      },
+      "execution_config": {
+        "cash_reserve_weight": 0.1,
+        "long_only": true,
+        "min_cash_buffer_pct": 0.1,
+        "min_trade_notional": 25.0,
+        "risk_limit": 0.9,
+        "target_weight": 0.9
+      },
+      "execution_semantics": "signal_at_bar_close_order_next_bar",
+      "fills": 1786,
+      "fills_hash": "186c8c202ebd2d6859c0bb26f4cfc4adcc83bb1413eb3b9158bdd88a0ffb8a89",
+      "interval": "1h",
+      "ledger_artifact_path": "data/manifests/reconciliation/ledger_recon_artifact_9e00ae7ab10b4bbc.json",
+      "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000265)",
+      "ledger_curve_points": 20689,
+      "ledger_equity_consistent": true,
+      "ledger_final_equity": 101735.464303,
+      "ledger_hash": "700e6eb6c83a3d515fc68176cf334db6800226004f3feb8a47821892221e5e2f",
+      "ledger_total_fees": 3180.099856,
+      "manifest_id": "btc_closure_btcusdt_1h_acd395fed2b0_event",
+      "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_acd395fed2b0_event.json",
+      "missing_data_manifest": true,
+      "orders": 1786,
+      "pnl_source": "ledger_fills",
+      "reconciliation": {
+        "absolute_tolerance": 1e-06,
+        "max_abs_diff": 0.000265,
+        "max_pct_diff": 0.0,
+        "message": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000265)",
+        "passed": true,
+        "snapshot_count": 20689,
+        "tolerance_pct": 0.01
+      },
+      "regime_split": {
+        "blockers": [],
+        "min_rows": 1034,
+        "pass_rate_pct": 100.0,
+        "regimes": [
+          {
+            "bar_count": 10938,
+            "coverage_pct": 52.8687,
+            "label": "Uptrend",
+            "name": "uptrend",
+            "summary": {
+              "annual_return_pct": 1.2715,
+              "annual_volatility_pct": 3.7822,
+              "calmar_ratio": 0.3698,
+              "max_drawdown_pct": -3.438,
+              "profit_factor": 1.0561,
+              "sharpe_ratio": 0.3529,
+              "sortino_ratio": 0.3251,
+              "total_return_pct": 1.5901,
+              "trade_count": 1227,
+              "win_rate_pct": 48.2147
+            },
+            "survives": true
+          },
+          {
+            "bar_count": 9751,
+            "coverage_pct": 47.1313,
+            "label": "Downtrend",
+            "name": "downtrend",
+            "summary": {
+              "annual_return_pct": 1.5671,
+              "annual_volatility_pct": 4.0653,
+              "calmar_ratio": 0.4986,
+              "max_drawdown_pct": -3.1432,
+              "profit_factor": 1.1111,
+              "sharpe_ratio": 0.4026,
+              "sortino_ratio": 0.4407,
+              "total_return_pct": 1.746,
+              "trade_count": 559,
+              "win_rate_pct": 47.3092
+            },
+            "survives": true
+          },
+          {
+            "bar_count": 10345,
+            "coverage_pct": 50.0024,
+            "label": "High volatility",
+            "name": "high_volatility",
+            "summary": {
+              "annual_return_pct": 2.4668,
+              "annual_volatility_pct": 4.0633,
+              "calmar_ratio": 0.7712,
+              "max_drawdown_pct": -3.1985,
+              "profit_factor": 1.155,
+              "sharpe_ratio": 0.6199,
+              "sortino_ratio": 0.5201,
+              "total_return_pct": 2.9196,
+              "trade_count": 641,
+              "win_rate_pct": 48.1352
+            },
+            "survives": true
+          },
+          {
+            "bar_count": 10344,
+            "coverage_pct": 49.9976,
+            "label": "Low volatility",
+            "name": "low_volatility",
+            "summary": {
+              "annual_return_pct": 1.345,
+              "annual_volatility_pct": 3.5926,
+              "calmar_ratio": 0.3912,
+              "max_drawdown_pct": -3.438,
+              "profit_factor": 1.0687,
+              "sharpe_ratio": 0.3898,
+              "sortino_ratio": 0.4134,
+              "total_return_pct": 1.5901,
+              "trade_count": 1145,
+              "win_rate_pct": 48.0428
+            },
+            "survives": true
+          }
+        ],
+        "status": "pass"
+      },
+      "risk": {
+        "approved": 1786,
+        "rejected": 680,
+        "rejection_reasons": {
+          "cash_buffer_limit": 264,
+          "symbol_weight_limit": 416
+        },
+        "risk_check_count": 2466
+      },
+      "run_id": "btc_closure_btcusdt_1h_acd395fed2b0_event",
+      "sample": {
+        "bar_count": 20689,
+        "duration_days": 862.0,
+        "end": "2026-05-12T00:00:00+00:00",
+        "long_sample_pass": true,
+        "min_required_bars": 4320,
+        "start": "2024-01-01T00:00:00+00:00"
+      },
+      "source": "sqlite",
+      "strategy_id": "volatility_squeeze",
+      "strategy_params": {
+        "boll_dev": 1.8,
+        "boll_window": 20,
+        "width_threshold": 0.03
+      },
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+      "symbol": "BTCUSDT"
+    },
+    "summary": {
+      "annual_return_pct": 0.7312,
+      "annual_volatility_pct": 2.7548,
+      "calmar_ratio": 0.2105,
+      "max_drawdown_pct": -3.4728,
+      "profit_factor": 1.0515,
+      "sharpe_ratio": 0.2782,
+      "sortino_ratio": 0.2537,
+      "total_return_pct": 1.7355,
+      "trade_count": 1786,
+      "win_rate_pct": 48.235
+    }
+  },
+  "generated_at": "2026-05-12T05:00:59.807394+00:00",
+  "live_enabled": false,
+  "scope": "btc_closure_candidate_strict_validation",
+  "selected_request": {
+    "asset_class": "crypto",
+    "capital": 100000.0,
+    "commission_rate": 0.0004,
+    "cost_aware_filter": true,
+    "data_db_path": "data/market_data.sqlite",
+    "data_root": "data",
+    "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+    "end": "2026-05-12 00:00:00+00:00",
+    "interval": "1h",
+    "leverage": 1.0,
+    "long_only": true,
+    "manifest_root": "data/manifests",
+    "max_annual_turnover_pct": 1500.0,
+    "min_cash_buffer_pct": 0.1,
+    "min_holding_bars": 24,
+    "min_trade_notional": 25.0,
+    "position_basis": "equity",
+    "rebalance_buffer_pct": 0.02,
+    "run_id": "btc_closure_btcusdt_1h_acd395fed2b0_event",
+    "run_id_prefix": "btc_closure_btcusdt_1h_acd395fed2b0",
+    "slippage": 4.0,
+    "source": "sqlite",
+    "start": "2024-01-01 00:00:00+00:00",
+    "strategy_id": "volatility_squeeze",
+    "strategy_params": {
+      "boll_dev": 1.8,
+      "boll_window": 20,
+      "width_threshold": 0.03
+    },
+    "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+    "symbol": "BTCUSDT",
+    "target_weight": 0.9
+  },
+  "statistical_validation_blockers": [
+    "CPCV/DSR/PBO promotion contract blocked",
+    "multiple testing control did not pass"
+  ],
+  "status": "research_only",
+  "validation_statistics": {
+    "available_components": {
+      "cost_before_after": true,
+      "cv_summary": true,
+      "deflated_sharpe_ratio": true,
+      "lookahead_controls": true,
+      "multiple_testing": true,
+      "net_return_distribution": true,
+      "pbo": true,
+      "trial_counting": true
+    },
+    "candidate_id": "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03",
+    "cost_before_after": {
+      "baseline_multiplier": 1.0,
+      "cost_drag_return": null,
+      "cost_drag_sharpe": null,
+      "gross_return": null,
+      "gross_sharpe": null,
+      "level_count": 2,
+      "mode": "stress_curve",
+      "net_return": 39.2941,
+      "net_sharpe": 1.4752,
+      "stress_return_delta": 39.4312,
+      "surviving_levels": 1,
+      "worst_multiplier": 2.0,
+      "worst_return": -0.1371,
+      "worst_sharpe": -0.004
+    },
+    "cv_summary": {
+      "embargo_recorded": true,
+      "embargo_steps": 1,
+      "embargoed": true,
+      "fold_count": 2,
+      "mean_oos_sharpe": -0.07545,
+      "median_oos_sharpe": -0.07545,
+      "method": "cpcv",
+      "pass_rate": 0.5,
+      "path_count": 2,
+      "purge_recorded": true,
+      "purge_steps": 1,
+      "purged": true,
+      "test_window_count": 1,
+      "train_window_count": 3
+    },
+    "deflated_sharpe_ratio": {
+      "benchmark_sharpe": 1.005623,
+      "dsr": 0.627395,
+      "excess_kurtosis": 0.0,
+      "observed_sharpe": 1.4752,
+      "passed": true,
+      "psr": 0.846344,
+      "returns_count": 2,
+      "skew": 0.0,
+      "trial_count": 4
+    },
+    "lookahead_controls": {
+      "guard": "event_driven_signal_replay_no_future_features",
+      "passed": true,
+      "recorded": true,
+      "violations": []
+    },
+    "multiple_testing": {
+      "bonferroni_alpha": 0.0125,
+      "dsr_p_value": 0.372605,
+      "effective_trial_count": 4,
+      "familywise_alpha": 0.05,
+      "independent_trial_count": 4,
+      "mode": "familywise_error_control",
+      "passed": false,
+      "raw_p_value": 0.153656,
+      "sidak_alpha": 0.012741
+    },
+    "net_return_distribution": {
+      "count": 2,
+      "max": 22.1771,
+      "mean": 1.342,
+      "median": 1.342,
+      "min": -19.4931,
+      "negative_share": 0.5,
+      "p05": -17.40959,
+      "p25": -9.07555,
+      "p75": 11.75955,
+      "p95": 20.09359,
+      "std": 29.465281
+    },
+    "pbo": {
+      "group_count": 2,
+      "logit_mean": 1.098612,
+      "logit_median": 1.098612,
+      "mode": "grouped_trials",
+      "overfit_group_count": 0,
+      "passed": true,
+      "pbo": 0.0
+    },
+    "promotion_gate_contract": {
+      "checks": {
+        "cpcv_available": true,
+        "cv_method_allowed": true,
+        "dsr_available": true,
+        "dsr_passed": true,
+        "lookahead_guard_passed": true,
+        "lookahead_guard_recorded": true,
+        "multi_path_validation": true,
+        "multiple_testing_complete": true,
+        "multiple_testing_passed": false,
+        "pbo_available": true,
+        "pbo_passed": true,
+        "purge_embargo_recorded": true,
+        "purged_or_embargoed": true,
+        "trial_count_sufficient": true
+      },
+      "observed": {
+        "cv_method": "cpcv",
+        "dsr": 0.627395,
+        "effective_trial_count": 4,
+        "embargo_recorded": true,
+        "embargoed": true,
+        "independent_trial_count": 4,
+        "lookahead_guard_recorded": true,
+        "lookahead_violations": [],
+        "multiple_testing_mode": "familywise_error_control",
+        "pbo": 0.0,
+        "purge_recorded": true,
+        "purged": true,
+        "validation_paths": 2
+      },
+      "required": {
+        "allowed_cv_methods": [
+          "cpcv",
+          "purged_kfold",
+          "embargoed_walk_forward"
+        ],
+        "familywise_alpha": 0.05,
+        "lookahead_guard_recorded": true,
+        "max_pbo": 0.5,
+        "min_dsr": 0.1,
+        "min_effective_trial_count": 2,
+        "min_independent_trial_count": 2,
+        "min_validation_paths": 2,
+        "required_cv_method": "cpcv"
+      },
+      "status": "blocked"
+    },
+    "status": "complete",
+    "trial_counting": {
+      "cost_level_count": 2,
+      "cv_fold_count": 2,
+      "cv_path_count": 2,
+      "declared_trial_count": 4,
+      "effective_trial_count": 4,
+      "independent_trial_count": 4,
+      "param_grid_trial_count": 2,
+      "pbo_split_count": 2,
+      "trial_sharpe_count": 4
+    }
+  },
+  "walk_forward": {
+    "audit": {
+      "aggregate_manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T050018.json",
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "fold_manifest_count": 2,
+      "fold_manifest_paths": [
+        "data/manifests/run_btc_closure_btcusdt_1h_acd395fed2b0_BTCUSDT_w0.json",
+        "data/manifests/run_btc_closure_btcusdt_1h_acd395fed2b0_BTCUSDT_w1.json"
+      ],
+      "missing_fold_manifest_count": 0,
+      "run_id_prefix": "btc_closure_btcusdt_1h_acd395fed2b0",
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1"
+    },
+    "recommendations": [
+      "样本外通过率低于 60%，当前策略不应进入 paper trading，先收紧参数空间或增加市场状态过滤。",
+      "市场状态切片中 上涨 / 趋势向上, 下跌 / 趋势向下, 高波动 未通过，实盘前应加入对应 regime filter 或降低仓位。"
+    ],
+    "stability": {
+      "avg_oos_return_pct": -0.2402,
+      "fold_pass_rate_pct": 50.0,
+      "ledger_consistency_pct": 100.0,
+      "ledger_equity_consistent_windows": 2,
+      "manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T050018.json",
+      "median_oos_sharpe": -0.1088,
+      "parameter_stability_pct": 100.0,
+      "pass_rate_pct": 50.0,
+      "passing_folds": 1,
+      "regime_pass_rate_pct": 0.0,
+      "symbol_count": 1,
+      "symbol_details": {
+        "BTCUSDT": {
+          "bar_count": 20689,
+          "folds": 2,
+          "passes": 1
+        }
+      },
+      "symbols_covered": 1,
+      "symbols_insufficient": 0,
+      "total_folds": 2,
+      "valid_folds": 2,
+      "window_count": 2,
+      "worst_oos_drawdown_pct": -1.5278
+    },
+    "status": "completed"
+  }
+}

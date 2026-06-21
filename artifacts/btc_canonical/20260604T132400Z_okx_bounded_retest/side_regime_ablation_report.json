@@ -1,0 +1,261 @@
+{
+  "adopted_rules": [
+    "long_only",
+    "block_trending_down_and_high_vol_trend"
+  ],
+  "best_by_event_PF": {
+    "MDD": -4.773,
+    "PF": 1.595145,
+    "Sharpe": 0.6824,
+    "cost_stress": {
+      "base_passed": true,
+      "base_profit_factor": 1.0339,
+      "status": "base_event_only_for_ablation"
+    },
+    "cost_stress_base_pass": true,
+    "event_PF": 1.0339,
+    "fail_reasons": [
+      "event_profit_factor",
+      "walk_forward_pass_rate",
+      "regime_pass_rate"
+    ],
+    "fill_count": 58,
+    "gate_status": "candidate_gate_failed",
+    "long_event_PF": 1.794427,
+    "mode": "long_biased_reduce_short_size",
+    "note": "limited_expansion_short_probe",
+    "regime_pass_rate": 0.666667,
+    "short_event_PF": 0.599883,
+    "trade_count": 36,
+    "turnover": 1.355746,
+    "walk_forward_pass_rate": 0.25
+  },
+  "notes": [
+    "Current v3 evidence is long-only; short rules remain diagnostic unless they improve event_PF and WF together",
+    "No future returns are used for regime assignment; regimes are historical OHLCV classifications"
+  ],
+  "rejected_rules": [
+    "broad_short_reintroduction",
+    "orderflow_short_trigger",
+    "short_in_high_vol_trend_without_fold_support"
+  ],
+  "rows": [
+    {
+      "MDD": -8.5324,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0176,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "long_event_PF": 2.049816,
+      "mode": "baseline_v3",
+      "note": "reference_v3",
+      "regime_pass_rate": 1.0,
+      "short_event_PF": 0.0,
+      "trade_count": 21,
+      "turnover": 1.051634,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -8.5324,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0176,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "long_event_PF": 2.049816,
+      "mode": "long_only",
+      "note": "current_v3_shape",
+      "regime_pass_rate": 1.0,
+      "short_event_PF": 0.0,
+      "trade_count": 21,
+      "turnover": 1.051634,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -4.773,
+      "PF": 1.595145,
+      "Sharpe": 0.6824,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0339,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0339,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate"
+      ],
+      "fill_count": 58,
+      "gate_status": "candidate_gate_failed",
+      "long_event_PF": 1.794427,
+      "mode": "long_biased_reduce_short_size",
+      "note": "limited_expansion_short_probe",
+      "regime_pass_rate": 0.666667,
+      "short_event_PF": 0.599883,
+      "trade_count": 36,
+      "turnover": 1.355746,
+      "walk_forward_pass_rate": 0.25
+    },
+    {
+      "MDD": -10.0334,
+      "PF": 0.706966,
+      "Sharpe": -0.3569,
+      "cost_stress": {
+        "base_passed": false,
+        "base_profit_factor": 0.9837,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": false,
+      "event_PF": 0.9837,
+      "fail_reasons": [
+        "event_profit_factor",
+        "profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate",
+        "cost_stress_base"
+      ],
+      "fill_count": 62,
+      "gate_status": "candidate_gate_failed",
+      "long_event_PF": 1.608307,
+      "mode": "block_short_in_trending_down",
+      "note": "shorts_not_allowed_in_trending_down",
+      "regime_pass_rate": 0.4,
+      "short_event_PF": 0.15851,
+      "trade_count": 42,
+      "turnover": 1.493695,
+      "walk_forward_pass_rate": 0.25
+    },
+    {
+      "MDD": -5.7546,
+      "PF": 1.235614,
+      "Sharpe": 0.2783,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0122,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0122,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate"
+      ],
+      "fill_count": 90,
+      "gate_status": "candidate_gate_failed",
+      "long_event_PF": 3.585225,
+      "mode": "block_short_in_high_vol_trend",
+      "note": "shorts_not_allowed_in_high_vol_trend",
+      "regime_pass_rate": 0.6,
+      "short_event_PF": 0.431625,
+      "trade_count": 59,
+      "turnover": 1.883056,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -4.8798,
+      "PF": 1.393038,
+      "Sharpe": 0.5153,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0262,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0262,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate"
+      ],
+      "fill_count": 59,
+      "gate_status": "candidate_gate_failed",
+      "long_event_PF": 1.636461,
+      "mode": "allow_short_only_in_expansion_confirmed",
+      "note": "narrow_short_condition",
+      "regime_pass_rate": 0.4,
+      "short_event_PF": 0.546535,
+      "trade_count": 40,
+      "turnover": 1.387662,
+      "walk_forward_pass_rate": 0.25
+    },
+    {
+      "MDD": -8.5324,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0176,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "long_event_PF": 2.049816,
+      "mode": "block_trending_down_and_high_vol_trend",
+      "note": "block_known_loss_regimes",
+      "regime_pass_rate": 1.0,
+      "short_event_PF": 0.0,
+      "trade_count": 21,
+      "turnover": 1.051634,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -7.835,
+      "PF": 1.631439,
+      "Sharpe": 0.5146,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0205,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0205,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 49,
+      "gate_status": "candidate_gate_failed",
+      "long_event_PF": 1.631439,
+      "mode": "combined_side_regime_surgery",
+      "note": "v4_side_regime_candidate",
+      "regime_pass_rate": 1.0,
+      "short_event_PF": 0.0,
+      "trade_count": 24,
+      "turnover": 1.215925,
+      "walk_forward_pass_rate": 0.5
+    }
+  ],
+  "run_id": "20260604T132400Z_okx_bounded_retest",
+  "schema_version": "btc_side_regime_ablation_v1",
+  "source_strategy": "btc_perp_dual_trend_v3"
+}

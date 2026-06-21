@@ -1,0 +1,181 @@
+{
+  "canonical_for_promotion": true,
+  "commission_model": {
+    "model": "PercentCommission",
+    "rate": 0.0001,
+    "realized_total": 13.2983
+  },
+  "commit_hash": "47097d2",
+  "config": {
+    "commission_rate": 0.0001,
+    "gap_config": null,
+    "initial_cash": 100000.0,
+    "max_daily_turnover_pct": 200.0,
+    "slippage_bps": 1.0
+  },
+  "cost_model": {
+    "commission_rate": 0.0001,
+    "fill_ratio": 0.5,
+    "realized_commission": 13.2983,
+    "realized_slippage_cost": 13.298206,
+    "slippage_bps": 1.0,
+    "total_fees": 13.2983,
+    "volume_participation_cap_pct": 5.0
+  },
+  "data_version": "",
+  "end_time": "2026-05-09T03:09:31.308130+00:00",
+  "engine": "event_driven",
+  "evidence": {
+    "approximate_scan_engine": false,
+    "canonical_for_promotion": true,
+    "cash": {
+      "cash_consistent": true,
+      "final_snapshot_cash": 90656.706732,
+      "initial_cash": 100000.0,
+      "ledger_cash_at_final_snapshot": 90656.706732
+    },
+    "commission": {
+      "model": "PercentCommission",
+      "rate": 0.0001,
+      "realized_total": 13.2983
+    },
+    "commit_hash": "47097d2",
+    "completeness": {
+      "missing_required_fields": [
+        "data_version"
+      ],
+      "promotion_evidence_complete": false
+    },
+    "costs": {
+      "commission_rate": 0.0001,
+      "fill_ratio": 0.5,
+      "realized_commission": 13.2983,
+      "realized_slippage_cost": 13.298206,
+      "slippage_bps": 1.0,
+      "total_fees": 13.2983,
+      "volume_participation_cap_pct": 5.0
+    },
+    "data_version": "",
+    "engine": "event_driven",
+    "equity": {
+      "consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%)",
+      "consistent": true,
+      "consistent_at_final_snapshot": true,
+      "ledger_curve_points": 101,
+      "ledger_final_equity": 99737.727064,
+      "snapshot_final_equity": 99737.727064
+    },
+    "events": {
+      "account_update": 0,
+      "broker_order": 101,
+      "fill": 101,
+      "market": 1432,
+      "order_intent": 114,
+      "risk": 114,
+      "signal": 240,
+      "target_position": 240,
+      "total": 2342
+    },
+    "fees": {
+      "fees_from_fills": true,
+      "ledger_total_fees": 13.2983,
+      "total_commission": 13.2983
+    },
+    "fills": {
+      "all_fills_match_orders": true,
+      "count": 101,
+      "filled_order_count": 101
+    },
+    "orders": {
+      "all_orders_created_by_oms": true,
+      "all_orders_have_risk_check_id": true,
+      "count": 101,
+      "oms_order_count": 101,
+      "status_counts": {
+        "filled": 52,
+        "partially_filled": 49
+      }
+    },
+    "pnl": {
+      "final_equity": 99737.727064,
+      "final_pnl": -262.272936,
+      "initial_cash": 100000.0,
+      "source": "ledger_fills",
+      "total_return_pct": -0.262273
+    },
+    "positions": {
+      "final_position_value": 9081.020332,
+      "final_positions": {
+        "DIA": 0.0,
+        "IWM": 16.32900573,
+        "QQQ": 0.0,
+        "SPY": 31.71500354
+      },
+      "position_count": 4
+    },
+    "risk": {
+      "approved": 101,
+      "rejected": 13,
+      "rejection_reasons": {
+        "session_not_allowed": 13
+      },
+      "risk_check_count": 114
+    },
+    "run_id": "ubt_fdfa1aab09864086",
+    "slippage": {
+      "bps": 1.0,
+      "model": "BpsSlippage",
+      "realized_total": 13.298206
+    },
+    "strategy": {
+      "strategies": [
+        {
+          "params": {
+            "lookback_days": 60,
+            "max_single_weight": 0.45,
+            "rebalance_weekday": 0,
+            "strategy_id": "etf_rotation",
+            "top_n": 2,
+            "universe": [
+              "SPY",
+              "QQQ",
+              "IWM",
+              "DIA"
+            ]
+          },
+          "strategy_id": "etf_rotation",
+          "version": "0.1.0"
+        }
+      ],
+      "strategy_version": "etf_rotation@0.1.0"
+    }
+  },
+  "manifest_schema_version": "backtest_run_v2",
+  "run_id": "ubt_fdfa1aab09864086",
+  "slippage_model": {
+    "bps": 1.0,
+    "model": "BpsSlippage",
+    "realized_total": 13.298206
+  },
+  "start_time": "2026-05-09T03:09:31.144088+00:00",
+  "strategy_params": [
+    {
+      "params": {
+        "lookback_days": 60,
+        "max_single_weight": 0.45,
+        "rebalance_weekday": 0,
+        "strategy_id": "etf_rotation",
+        "top_n": 2,
+        "universe": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA"
+        ]
+      },
+      "strategy_id": "etf_rotation",
+      "version": "0.1.0"
+    }
+  ],
+  "strategy_version": "etf_rotation@0.1.0"
+}

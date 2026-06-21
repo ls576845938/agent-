@@ -24,6 +24,14 @@ BTC_PAPER_CYCLE_HOURS ?= 24
 BTC_PAPER_DAYS_REQUIRED ?= 30
 BTC_OKX_HISTORY_DAYS ?= 365
 BTC_OKX_HISTORY_BUNDLE_ID ?= btc_okx_swap_btcusdt_history_365d_v1
+BTC_OKX_L2_SAMPLE_COUNT ?= 5
+BTC_OKX_L2_REQUEST_SLEEP_SECONDS ?= 0.2
+BTC_OKX_ALIGNED_L2_SAMPLE_COUNT ?= 6
+BTC_OKX_ALIGNED_L2_REQUEST_SLEEP_SECONDS ?= 0.25
+BTC_OKX_PUBLIC_WS_L2_DURATION_SECONDS ?= 10
+BTC_OKX_PUBLIC_WS_L2_MAX_MESSAGES ?= 2000
+BTC_OKX_PUBLIC_WS_L2_FORCED_RECONNECT_AFTER_MESSAGES ?= 0
+BTC_OKX_PUBLIC_WS_L2_SEGMENT_ID ?=
 
 .PHONY: test test-unit test-integration test-e2e frontend-build ci-local \
 	validate-contracts validate-us-equity-evidence validate-btc-evidence \
@@ -33,6 +41,11 @@ BTC_OKX_HISTORY_BUNDLE_ID ?= btc_okx_swap_btcusdt_history_365d_v1
 	validate-btc-data-cost-repair validate-btc-public-data-bundle \
 	validate-btc-public-data-bundle-strict restore-btc-live-metadata-evidence \
 	capture-btc-okx-public-bundle capture-btc-okx-public-history \
+	dry-run-btc-okx-microstructure-capture capture-btc-okx-microstructure \
+	dry-run-btc-okx-l2-microstructure-samples capture-btc-okx-l2-microstructure-samples \
+	dry-run-btc-okx-timestamp-aligned-l2-capture capture-btc-okx-timestamp-aligned-l2-capture \
+	dry-run-btc-okx-public-ws-l2-raw-capture capture-btc-okx-public-ws-l2-raw-capture \
+	dry-run-btc-okx-public-ws-l2-segment-capture capture-btc-okx-public-ws-l2-segment-capture \
 	dry-run-btc-manual-metadata-import apply-btc-manual-metadata-import \
 	dry-run-btc-fee-tier-overlay-import apply-btc-fee-tier-overlay-import \
 	dry-run-btc-paper-gate-manual-inputs apply-btc-paper-gate-manual-inputs \
@@ -42,6 +55,35 @@ BTC_OKX_HISTORY_BUNDLE_ID ?= btc_okx_swap_btcusdt_history_365d_v1
 	build-btc-intraday-short-cycle-alpha-plan \
 	build-btc-intraday-short-cycle-alpha-probe \
 	build-btc-intraday-short-cycle-alpha-refinement \
+	build-btc-intraday-short-cycle-event-ledger \
+	build-btc-intraday-short-cycle-event-definition-repair \
+	build-btc-intraday-short-cycle-repaired-event-ledger \
+	build-btc-intraday-short-cycle-drift-guarded-event-ledger \
+	build-btc-intraday-short-cycle-promotion-gate \
+	build-btc-intraday-short-cycle-manual-review-packet \
+	build-btc-intraday-short-cycle-research-candidate-definition-preflight \
+	build-btc-intraday-short-cycle-research-candidate-definition-manifest \
+	build-btc-intraday-short-cycle-remaining-external-evidence-status \
+	build-btc-intraday-drift-guarded-fold-regime-source-reports \
+	build-btc-true-scalping-microstructure-models \
+	build-btc-true-scalping-microstructure-readiness \
+	build-btc-true-scalping-l2-sample-quality \
+	build-btc-true-scalping-l2-feature-diagnostics \
+	build-btc-true-scalping-timestamp-aligned-l2-data-contract \
+	build-btc-true-scalping-l2-aligned-capture-quality \
+	build-btc-true-scalping-ws-l2-raw-capture-quality \
+	build-btc-true-scalping-ws-order-book-replay \
+	build-btc-true-scalping-ws-reconnect-resync-policy \
+	build-btc-true-scalping-ws-latency-queue-diagnostics \
+	build-btc-true-scalping-ws-l2-capture-coverage \
+	build-btc-true-scalping-long-horizon-l2-tick-import-contract \
+	build-btc-true-scalping-execution-queue-external-evidence-contract \
+	build-btc-true-scalping-1m-proxy-feature-redesign \
+	build-btc-true-scalping-research-design-review \
+	build-btc-true-scalping-research-design \
+	build-btc-true-scalping-event-ledger-prototype \
+	build-btc-true-scalping-event-definition-redesign \
+	run-btc-scalping-research-backtest \
 	build-btc-data-source-decision \
 	capture-btc-public-metadata build-global-registry build-btc-paper-readiness \
 	build-btc-paper-validation-start rebuild-btc-paper-readiness-chain \
@@ -90,6 +132,22 @@ build-global-registry:
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_refinement_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_definition_repair_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_repaired_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_drift_guarded_fold_regime_source_reports.py
+	$(PYTHON) scripts/build_btc_fold_regime_contract_report.py
+	$(PYTHON) scripts/build_btc_data_status_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_preflight.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_manifest.py
+	$(PYTHON) scripts/build_btc_true_scalping_long_horizon_l2_tick_import_contract_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_execution_queue_external_evidence_contract_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_remaining_external_evidence_status.py
+	$(PYTHON) scripts/build_btc_true_scalping_microstructure_readiness_report.py
 	$(PYTHON) scripts/build_btc_compression_expansion_attribution_bundle.py
 	$(PYTHON) scripts/build_btc_research_registry.py
 	$(PYTHON) scripts/build_global_research_registry.py
@@ -177,6 +235,16 @@ rebuild-btc-paper-readiness-chain:
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_refinement_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_definition_repair_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_repaired_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_drift_guarded_fold_regime_source_reports.py
+	$(PYTHON) scripts/build_btc_fold_regime_contract_report.py
+	$(PYTHON) scripts/build_btc_data_status_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
 	$(PYTHON) scripts/build_btc_compression_expansion_attribution_bundle.py
 	$(PYTHON) scripts/build_btc_research_registry.py
 	$(PYTHON) scripts/build_global_research_registry.py
@@ -235,12 +303,22 @@ validate-btc-evidence:
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_refinement_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_definition_repair_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_repaired_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_drift_guarded_fold_regime_source_reports.py
+	$(PYTHON) scripts/build_btc_fold_regime_contract_report.py
+	$(PYTHON) scripts/build_btc_data_status_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
 	$(PYTHON) scripts/build_btc_compression_expansion_attribution_bundle.py
 	$(PYTHON) scripts/build_btc_research_registry.py
 	$(PYTHON) scripts/build_global_research_registry.py
 	$(PYTHON) scripts/build_btc_paper_readiness_report.py
 	$(PYTHON) scripts/build_btc_paper_validation_start_report.py
-	$(PYTHON) -m pytest tests/contracts/test_btc_funding_rate_gap_report.py tests/contracts/test_btc_funding_rate_archive_repair_diagnostics.py tests/contracts/test_btc_funding_rate_manual_patch_validation.py tests/contracts/test_btc_data_status_report.py tests/contracts/test_btc_data_source_coverage_contract.py tests/contracts/test_btc_perpetual_data_source_decision_report.py tests/contracts/test_btc_cost_model_contract.py tests/contracts/test_btc_fee_tier_overlay_import.py tests/contracts/test_btc_manual_metadata_capture_operator_packet.py tests/contracts/test_btc_fold_regime_contract.py tests/contracts/test_btc_candidate_gate_requires_full_ledger.py tests/contracts/test_btc_candidate_metric_repair_report.py tests/contracts/test_btc_candidate_bounded_retest_plan.py tests/contracts/test_btc_candidate_bounded_retest_outcome_report.py tests/contracts/test_btc_next_hypothesis_decision_report.py tests/contracts/test_btc_strategy_family_roadmap_report.py tests/contracts/test_btc_intraday_short_cycle_alpha_plan_report.py tests/contracts/test_btc_intraday_short_cycle_alpha_probe_report.py tests/contracts/test_btc_intraday_short_cycle_alpha_refinement_report.py tests/contracts/test_btc_compression_expansion_attribution_bundle.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_perpetual_provider_verification_report.py tests/contracts/test_btc_tail_dependency_report.py tests/contracts/test_btc_paper_readiness_report.py tests/contracts/test_btc_paper_validation_start_report.py tests/contracts/test_btc_paper_validation_runtime_preflight.py tests/research/test_btc_data_fold_regime_status_report.py tests/research/test_btc_fold_regime_contract_audit.py tests/research/test_compression_expansion_event_ledger_attribution_artifact.py -q
+	$(PYTHON) -m pytest tests/contracts/test_btc_funding_rate_gap_report.py tests/contracts/test_btc_funding_rate_archive_repair_diagnostics.py tests/contracts/test_btc_funding_rate_manual_patch_validation.py tests/contracts/test_btc_data_status_report.py tests/contracts/test_btc_data_source_coverage_contract.py tests/contracts/test_btc_perpetual_data_source_decision_report.py tests/contracts/test_btc_cost_model_contract.py tests/contracts/test_btc_fee_tier_overlay_import.py tests/contracts/test_btc_manual_metadata_capture_operator_packet.py tests/contracts/test_btc_fold_regime_contract.py tests/contracts/test_btc_candidate_gate_requires_full_ledger.py tests/contracts/test_btc_candidate_metric_repair_report.py tests/contracts/test_btc_candidate_bounded_retest_plan.py tests/contracts/test_btc_candidate_bounded_retest_outcome_report.py tests/contracts/test_btc_next_hypothesis_decision_report.py tests/contracts/test_btc_strategy_family_roadmap_report.py tests/contracts/test_btc_intraday_short_cycle_alpha_plan_report.py tests/contracts/test_btc_intraday_short_cycle_alpha_probe_report.py tests/contracts/test_btc_intraday_short_cycle_alpha_refinement_report.py tests/contracts/test_btc_intraday_short_cycle_event_ledger_report.py tests/contracts/test_btc_intraday_short_cycle_event_definition_repair_report.py tests/contracts/test_btc_intraday_short_cycle_repaired_event_ledger_report.py tests/contracts/test_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py tests/contracts/test_btc_intraday_drift_guarded_fold_regime_source_reports.py tests/contracts/test_btc_true_scalping_microstructure_readiness_report.py tests/contracts/test_btc_compression_expansion_attribution_bundle.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_perpetual_provider_verification_report.py tests/contracts/test_btc_tail_dependency_report.py tests/contracts/test_btc_paper_readiness_report.py tests/contracts/test_btc_paper_validation_start_report.py tests/contracts/test_btc_paper_validation_runtime_preflight.py tests/research/test_btc_data_fold_regime_status_report.py tests/research/test_btc_fold_regime_contract_audit.py tests/research/test_compression_expansion_event_ledger_attribution_artifact.py tests/research/test_btc_intraday_short_cycle_event_ledger.py -q
 
 validate-btc-data-cost-repair:
 	$(PYTHON) scripts/build_btc_perpetual_bundle_preflight_report.py
@@ -263,6 +341,17 @@ validate-btc-data-cost-repair:
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
 	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_refinement_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_definition_repair_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_repaired_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_drift_guarded_fold_regime_source_reports.py
+	$(PYTHON) scripts/build_btc_fold_regime_contract_report.py
+	$(PYTHON) scripts/build_btc_data_status_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) scripts/build_btc_true_scalping_microstructure_readiness_report.py
 	$(PYTHON) scripts/build_btc_research_registry.py
 	$(PYTHON) scripts/build_global_research_registry.py
 	$(PYTHON) -m pytest tests/contracts/test_btc_funding_rate_gap_report.py tests/contracts/test_btc_funding_rate_archive_repair_diagnostics.py tests/contracts/test_btc_funding_rate_manual_patch_validation.py tests/contracts/test_btc_funding_info_overlay_policy.py tests/contracts/test_btc_exchange_info_overlay_policy.py tests/contracts/test_btc_perpetual_data_bundle_manifest.py tests/contracts/test_btc_binance_usdm_public_collector_boundaries.py tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_perpetual_provider_verification_report.py tests/contracts/test_btc_funding_payment_ledger_replay.py tests/contracts/test_btc_mark_premium_exchange_rules_integration.py tests/contracts/test_btc_tail_dependency_report.py tests/contracts/test_btc_candidate_gate_requires_full_ledger.py tests/contracts/test_btc_compression_archive_recommended_boundary.py -q
@@ -302,6 +391,173 @@ build-btc-intraday-short-cycle-alpha-refinement:
 	$(PYTHON) scripts/build_btc_research_registry.py
 	$(PYTHON) scripts/build_global_research_registry.py
 	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_alpha_refinement_report.py tests/research/test_btc_research_registry.py tests/contracts/test_global_research_registry_schema.py -q
+
+build-btc-intraday-short-cycle-event-ledger:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_plan_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_probe_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_alpha_refinement_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_definition_repair_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_repaired_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_drift_guarded_fold_regime_source_reports.py
+	$(PYTHON) scripts/build_btc_fold_regime_contract_report.py
+	$(PYTHON) scripts/build_btc_data_status_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) scripts/build_btc_true_scalping_microstructure_readiness_report.py
+	$(PYTHON) scripts/build_btc_research_registry.py
+	$(PYTHON) scripts/build_global_research_registry.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_event_ledger_report.py tests/contracts/test_btc_intraday_short_cycle_event_definition_repair_report.py tests/contracts/test_btc_intraday_short_cycle_repaired_event_ledger_report.py tests/contracts/test_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py tests/contracts/test_btc_intraday_drift_guarded_fold_regime_source_reports.py tests/research/test_btc_intraday_short_cycle_event_ledger.py tests/research/test_btc_research_registry.py tests/contracts/test_global_research_registry_schema.py -q
+
+build-btc-intraday-short-cycle-event-definition-repair:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_definition_repair_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_repaired_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_drift_guarded_fold_regime_source_reports.py
+	$(PYTHON) scripts/build_btc_fold_regime_contract_report.py
+	$(PYTHON) scripts/build_btc_data_status_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_preflight.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_manifest.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_remaining_external_evidence_status.py
+	$(PYTHON) scripts/build_btc_research_registry.py
+	$(PYTHON) scripts/build_global_research_registry.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_event_definition_repair_report.py tests/contracts/test_btc_intraday_short_cycle_repaired_event_ledger_report.py tests/contracts/test_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py tests/research/test_btc_research_registry.py tests/contracts/test_global_research_registry_schema.py -q
+
+build-btc-intraday-short-cycle-repaired-event-ledger:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_definition_repair_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_repaired_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_drift_guarded_fold_regime_source_reports.py
+	$(PYTHON) scripts/build_btc_fold_regime_contract_report.py
+	$(PYTHON) scripts/build_btc_data_status_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_preflight.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_manifest.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_remaining_external_evidence_status.py
+	$(PYTHON) scripts/build_btc_research_registry.py
+	$(PYTHON) scripts/build_global_research_registry.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_repaired_event_ledger_report.py tests/contracts/test_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py tests/research/test_btc_intraday_short_cycle_event_ledger.py tests/research/test_btc_research_registry.py tests/contracts/test_global_research_registry_schema.py -q
+
+build-btc-intraday-short-cycle-drift-guarded-event-ledger:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_event_definition_repair_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_repaired_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_drift_guarded_fold_regime_source_reports.py
+	$(PYTHON) scripts/build_btc_fold_regime_contract_report.py
+	$(PYTHON) scripts/build_btc_data_status_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_preflight.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_manifest.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_remaining_external_evidence_status.py
+	$(PYTHON) scripts/build_btc_research_registry.py
+	$(PYTHON) scripts/build_global_research_registry.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py tests/contracts/test_btc_intraday_drift_guarded_fold_regime_source_reports.py tests/research/test_btc_intraday_short_cycle_event_ledger.py tests/research/test_btc_research_registry.py tests/contracts/test_global_research_registry_schema.py -q
+
+build-btc-intraday-short-cycle-promotion-gate:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_promotion_gate_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py tests/contracts/test_global_registry_builder_boundaries.py -q
+
+build-btc-intraday-short-cycle-manual-review-packet:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_manual_review_packet.py tests/contracts/test_no_broker_import_in_evidence_builders.py tests/contracts/test_global_registry_builder_boundaries.py -q
+
+build-btc-intraday-short-cycle-research-candidate-definition-preflight:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_preflight.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_manifest.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_remaining_external_evidence_status.py
+	$(PYTHON) scripts/build_btc_research_registry.py
+	$(PYTHON) scripts/build_global_research_registry.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_research_candidate_definition_preflight.py tests/contracts/test_btc_intraday_short_cycle_research_candidate_definition_manifest.py tests/contracts/test_btc_intraday_short_cycle_remaining_external_evidence_status.py tests/research/test_btc_research_registry.py tests/contracts/test_global_research_registry_schema.py tests/contracts/test_no_broker_import_in_evidence_builders.py tests/contracts/test_global_registry_builder_boundaries.py -q
+
+build-btc-intraday-short-cycle-research-candidate-definition-manifest:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_preflight.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_manifest.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_remaining_external_evidence_status.py
+	$(PYTHON) scripts/build_btc_research_registry.py
+	$(PYTHON) scripts/build_global_research_registry.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_short_cycle_research_candidate_definition_preflight.py tests/contracts/test_btc_intraday_short_cycle_research_candidate_definition_manifest.py tests/contracts/test_btc_intraday_short_cycle_remaining_external_evidence_status.py tests/research/test_btc_research_registry.py tests/contracts/test_global_research_registry_schema.py tests/contracts/test_no_broker_import_in_evidence_builders.py tests/contracts/test_global_registry_builder_boundaries.py -q
+
+build-btc-intraday-short-cycle-remaining-external-evidence-status:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_preflight.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_manifest.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_l2_capture_coverage_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_long_horizon_l2_tick_import_contract_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_execution_queue_external_evidence_contract_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_remaining_external_evidence_status.py
+	$(PYTHON) scripts/build_btc_research_registry.py
+	$(PYTHON) scripts/build_global_research_registry.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_long_horizon_l2_tick_import_contract_report.py tests/contracts/test_btc_true_scalping_execution_queue_external_evidence_contract_report.py tests/contracts/test_btc_intraday_short_cycle_remaining_external_evidence_status.py tests/research/test_btc_research_registry.py tests/contracts/test_global_research_registry_schema.py tests/contracts/test_no_broker_import_in_evidence_builders.py tests/contracts/test_global_registry_builder_boundaries.py -q
+
+build-btc-intraday-drift-guarded-fold-regime-source-reports:
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_drift_guarded_fold_regime_source_reports.py
+	$(PYTHON) scripts/build_btc_fold_regime_contract_report.py
+	$(PYTHON) scripts/build_btc_data_status_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_promotion_gate_report.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_manual_review_packet.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_preflight.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_research_candidate_definition_manifest.py
+	$(PYTHON) scripts/build_btc_intraday_short_cycle_remaining_external_evidence_status.py
+	$(PYTHON) scripts/build_btc_research_registry.py
+	$(PYTHON) scripts/build_global_research_registry.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_intraday_drift_guarded_fold_regime_source_reports.py tests/contracts/test_btc_data_status_report.py tests/contracts/test_btc_fold_regime_contract.py tests/contracts/test_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py tests/contracts/test_btc_true_scalping_microstructure_readiness_report.py tests/contracts/test_global_research_registry_schema.py -q
+
+build-btc-true-scalping-microstructure-readiness:
+	$(PYTHON) scripts/build_btc_intraday_drift_guarded_fold_regime_source_reports.py
+	$(PYTHON) scripts/build_btc_data_status_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_microstructure_models.py
+	$(PYTHON) scripts/build_btc_true_scalping_microstructure_readiness_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_microstructure_models.py tests/contracts/test_btc_true_scalping_microstructure_readiness_report.py tests/contracts/test_btc_data_status_report.py tests/contracts/test_btc_intraday_drift_guarded_fold_regime_source_reports.py -q
+
+build-btc-true-scalping-microstructure-models:
+	$(PYTHON) scripts/build_btc_true_scalping_microstructure_models.py
+	$(PYTHON) scripts/build_btc_true_scalping_microstructure_readiness_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_microstructure_models.py tests/contracts/test_btc_true_scalping_microstructure_readiness_report.py -q
+
+build-btc-true-scalping-research-design-review:
+	$(MAKE) build-btc-true-scalping-microstructure-readiness
+	$(PYTHON) scripts/build_btc_true_scalping_research_design_review.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_research_design_review.py tests/contracts/test_btc_true_scalping_microstructure_readiness_report.py -q
+
+build-btc-true-scalping-research-design:
+	$(MAKE) build-btc-true-scalping-research-design-review
+	$(PYTHON) scripts/build_btc_true_scalping_research_design_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_research_design_report.py tests/contracts/test_btc_true_scalping_research_design_review.py -q
+
+build-btc-true-scalping-event-ledger-prototype:
+	$(MAKE) build-btc-true-scalping-research-design
+	$(PYTHON) scripts/build_btc_true_scalping_event_ledger_prototype_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_event_ledger_prototype_report.py tests/contracts/test_btc_true_scalping_research_design_report.py -q
+
+build-btc-true-scalping-event-definition-redesign:
+	$(MAKE) build-btc-true-scalping-event-ledger-prototype
+	$(PYTHON) scripts/build_btc_true_scalping_event_definition_redesign_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_event_definition_redesign_report.py tests/contracts/test_btc_true_scalping_event_ledger_prototype_report.py -q
+
+run-btc-scalping-research-backtest:
+	$(PYTHON) scripts/run_btc_scalping_research_backtest.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_scalping_research_backtest_report.py tests/contracts/test_btc_true_scalping_event_ledger_prototype_report.py tests/contracts/test_btc_intraday_short_cycle_drift_guarded_event_ledger_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
 
 build-btc-data-source-decision:
 	$(PYTHON) scripts/build_btc_perpetual_data_source_decision_report.py
@@ -356,6 +612,143 @@ capture-btc-okx-public-history:
 		--history-days "$(BTC_OKX_HISTORY_DAYS)"
 	$(PYTHON) scripts/build_btc_perpetual_bundle_preflight_report.py
 	$(PYTHON) scripts/build_btc_perpetual_provider_verification_report.py
+
+dry-run-btc-okx-microstructure-capture:
+	$(PYTHON) scripts/fetch_btc_okx_microstructure_public_data.py \
+		--capture-report artifacts/btc_scalping_readiness/latest/btc_okx_microstructure_capture_dry_run_report.json
+	$(PYTHON) -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py -q
+
+capture-btc-okx-microstructure:
+	$(PYTHON) scripts/fetch_btc_okx_microstructure_public_data.py --execute-network
+	$(PYTHON) scripts/build_btc_true_scalping_microstructure_models.py
+	$(PYTHON) scripts/build_btc_true_scalping_microstructure_readiness_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_true_scalping_microstructure_models.py tests/contracts/test_btc_true_scalping_microstructure_readiness_report.py -q
+
+dry-run-btc-okx-l2-microstructure-samples:
+	$(PYTHON) scripts/fetch_btc_okx_l2_microstructure_public_samples.py \
+		--sample-count "$(BTC_OKX_L2_SAMPLE_COUNT)" \
+		--capture-report artifacts/btc_scalping_readiness/latest/btc_okx_l2_microstructure_sample_capture_dry_run_report.json
+	$(PYTHON) -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py -q
+
+capture-btc-okx-l2-microstructure-samples:
+	$(PYTHON) scripts/fetch_btc_okx_l2_microstructure_public_samples.py \
+		--execute-network \
+		--sample-count "$(BTC_OKX_L2_SAMPLE_COUNT)" \
+		--request-sleep-seconds "$(BTC_OKX_L2_REQUEST_SLEEP_SECONDS)"
+	$(PYTHON) scripts/build_btc_true_scalping_l2_sample_quality_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_l2_feature_diagnostics_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_timestamp_aligned_l2_data_contract_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_true_scalping_l2_sample_quality_report.py tests/contracts/test_btc_true_scalping_l2_feature_diagnostics_report.py tests/contracts/test_btc_true_scalping_timestamp_aligned_l2_data_contract_report.py -q
+
+dry-run-btc-okx-timestamp-aligned-l2-capture:
+	$(PYTHON) scripts/fetch_btc_okx_timestamp_aligned_l2_public_capture.py \
+		--sample-count "$(BTC_OKX_ALIGNED_L2_SAMPLE_COUNT)" \
+		--capture-report artifacts/btc_scalping_readiness/latest/btc_okx_timestamp_aligned_l2_capture_dry_run_report.json
+	$(PYTHON) -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py -q
+
+capture-btc-okx-timestamp-aligned-l2-capture:
+	$(PYTHON) scripts/fetch_btc_okx_timestamp_aligned_l2_public_capture.py \
+		--execute-network \
+		--sample-count "$(BTC_OKX_ALIGNED_L2_SAMPLE_COUNT)" \
+		--request-sleep-seconds "$(BTC_OKX_ALIGNED_L2_REQUEST_SLEEP_SECONDS)"
+	$(PYTHON) scripts/build_btc_true_scalping_l2_aligned_capture_quality_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_true_scalping_l2_aligned_capture_quality_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+dry-run-btc-okx-public-ws-l2-raw-capture:
+	$(PYTHON) scripts/fetch_btc_okx_public_ws_l2_raw_capture.py \
+		--duration-seconds "$(BTC_OKX_PUBLIC_WS_L2_DURATION_SECONDS)" \
+		--max-messages "$(BTC_OKX_PUBLIC_WS_L2_MAX_MESSAGES)" \
+		--forced-reconnect-after-messages "$(BTC_OKX_PUBLIC_WS_L2_FORCED_RECONNECT_AFTER_MESSAGES)" \
+		--capture-report artifacts/btc_scalping_readiness/latest/btc_okx_public_ws_l2_raw_capture_dry_run_report.json
+	$(PYTHON) -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py -q
+
+capture-btc-okx-public-ws-l2-raw-capture:
+	$(PYTHON) scripts/fetch_btc_okx_public_ws_l2_raw_capture.py \
+		--execute-network \
+		--duration-seconds "$(BTC_OKX_PUBLIC_WS_L2_DURATION_SECONDS)" \
+		--max-messages "$(BTC_OKX_PUBLIC_WS_L2_MAX_MESSAGES)" \
+		--forced-reconnect-after-messages "$(BTC_OKX_PUBLIC_WS_L2_FORCED_RECONNECT_AFTER_MESSAGES)"
+	$(PYTHON) scripts/build_btc_true_scalping_ws_l2_raw_capture_quality_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_order_book_replay_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_reconnect_resync_policy_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_latency_queue_diagnostics_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_l2_capture_coverage_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_true_scalping_ws_l2_raw_capture_quality_report.py tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py tests/contracts/test_btc_true_scalping_ws_reconnect_resync_policy_report.py tests/contracts/test_btc_true_scalping_ws_latency_queue_diagnostics_report.py tests/contracts/test_btc_true_scalping_ws_l2_capture_coverage_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+dry-run-btc-okx-public-ws-l2-segment-capture:
+	$(PYTHON) scripts/run_btc_okx_public_ws_l2_segment_capture.py $(if $(BTC_OKX_PUBLIC_WS_L2_SEGMENT_ID),--segment-id "$(BTC_OKX_PUBLIC_WS_L2_SEGMENT_ID)") \
+		--duration-seconds "$(BTC_OKX_PUBLIC_WS_L2_DURATION_SECONDS)" \
+		--max-messages "$(BTC_OKX_PUBLIC_WS_L2_MAX_MESSAGES)" \
+		--forced-reconnect-after-messages "$(BTC_OKX_PUBLIC_WS_L2_FORCED_RECONNECT_AFTER_MESSAGES)"
+	$(PYTHON) -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+capture-btc-okx-public-ws-l2-segment-capture:
+	$(PYTHON) scripts/run_btc_okx_public_ws_l2_segment_capture.py $(if $(BTC_OKX_PUBLIC_WS_L2_SEGMENT_ID),--segment-id "$(BTC_OKX_PUBLIC_WS_L2_SEGMENT_ID)") \
+		--execute-network \
+		--duration-seconds "$(BTC_OKX_PUBLIC_WS_L2_DURATION_SECONDS)" \
+		--max-messages "$(BTC_OKX_PUBLIC_WS_L2_MAX_MESSAGES)" \
+		--forced-reconnect-after-messages "$(BTC_OKX_PUBLIC_WS_L2_FORCED_RECONNECT_AFTER_MESSAGES)"
+	$(PYTHON) -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_true_scalping_ws_l2_raw_capture_quality_report.py tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py tests/contracts/test_btc_true_scalping_ws_reconnect_resync_policy_report.py tests/contracts/test_btc_true_scalping_ws_latency_queue_diagnostics_report.py tests/contracts/test_btc_true_scalping_ws_l2_capture_coverage_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+build-btc-true-scalping-l2-sample-quality:
+	$(PYTHON) scripts/build_btc_true_scalping_l2_sample_quality_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_l2_sample_quality_report.py -q
+
+build-btc-true-scalping-l2-feature-diagnostics:
+	$(PYTHON) scripts/build_btc_true_scalping_l2_sample_quality_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_l2_feature_diagnostics_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_l2_sample_quality_report.py tests/contracts/test_btc_true_scalping_l2_feature_diagnostics_report.py -q
+
+build-btc-true-scalping-timestamp-aligned-l2-data-contract:
+	$(PYTHON) scripts/build_btc_true_scalping_l2_sample_quality_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_l2_feature_diagnostics_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_timestamp_aligned_l2_data_contract_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_l2_sample_quality_report.py tests/contracts/test_btc_true_scalping_l2_feature_diagnostics_report.py tests/contracts/test_btc_true_scalping_timestamp_aligned_l2_data_contract_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+build-btc-true-scalping-l2-aligned-capture-quality:
+	$(PYTHON) scripts/build_btc_true_scalping_timestamp_aligned_l2_data_contract_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_l2_aligned_capture_quality_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_timestamp_aligned_l2_data_contract_report.py tests/contracts/test_btc_true_scalping_l2_aligned_capture_quality_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+build-btc-true-scalping-ws-l2-raw-capture-quality:
+	$(PYTHON) scripts/build_btc_true_scalping_ws_l2_raw_capture_quality_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_ws_l2_raw_capture_quality_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+build-btc-true-scalping-ws-order-book-replay:
+	$(PYTHON) scripts/build_btc_true_scalping_ws_l2_raw_capture_quality_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_order_book_replay_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_reconnect_resync_policy_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_latency_queue_diagnostics_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_l2_capture_coverage_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_ws_l2_raw_capture_quality_report.py tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py tests/contracts/test_btc_true_scalping_ws_reconnect_resync_policy_report.py tests/contracts/test_btc_true_scalping_ws_latency_queue_diagnostics_report.py tests/contracts/test_btc_true_scalping_ws_l2_capture_coverage_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+build-btc-true-scalping-ws-reconnect-resync-policy:
+	$(PYTHON) scripts/build_btc_true_scalping_ws_order_book_replay_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_reconnect_resync_policy_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py tests/contracts/test_btc_true_scalping_ws_reconnect_resync_policy_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+build-btc-true-scalping-ws-latency-queue-diagnostics:
+	$(PYTHON) scripts/build_btc_true_scalping_ws_order_book_replay_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_ws_latency_queue_diagnostics_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_ws_order_book_replay_report.py tests/contracts/test_btc_true_scalping_ws_latency_queue_diagnostics_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+build-btc-true-scalping-ws-l2-capture-coverage:
+	$(PYTHON) scripts/build_btc_true_scalping_ws_l2_capture_coverage_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_ws_l2_capture_coverage_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+build-btc-true-scalping-long-horizon-l2-tick-import-contract:
+	$(PYTHON) scripts/build_btc_true_scalping_long_horizon_l2_tick_import_contract_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_long_horizon_l2_tick_import_contract_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+build-btc-true-scalping-execution-queue-external-evidence-contract:
+	$(PYTHON) scripts/build_btc_true_scalping_execution_queue_external_evidence_contract_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_execution_queue_external_evidence_contract_report.py tests/contracts/test_no_broker_import_in_evidence_builders.py -q
+
+build-btc-true-scalping-1m-proxy-feature-redesign:
+	$(PYTHON) scripts/build_btc_true_scalping_l2_sample_quality_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_l2_feature_diagnostics_report.py
+	$(PYTHON) scripts/build_btc_true_scalping_1m_proxy_feature_redesign_report.py
+	$(PYTHON) -m pytest tests/contracts/test_btc_true_scalping_l2_feature_diagnostics_report.py tests/contracts/test_btc_true_scalping_1m_proxy_feature_redesign_report.py -q
 
 dry-run-btc-manual-metadata-import:
 	@test -n "$(EXCHANGE_INFO_RAW)" || (echo "EXCHANGE_INFO_RAW is required" >&2; exit 2)

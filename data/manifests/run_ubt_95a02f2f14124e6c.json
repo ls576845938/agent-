@@ -1,0 +1,209 @@
+{
+  "canonical_for_promotion": true,
+  "commission_model": {
+    "model": "PercentCommission",
+    "rate": 0.0001,
+    "realized_total": 2.24761
+  },
+  "commit_hash": "47097d2",
+  "config": {
+    "commission_rate": 0.0001,
+    "gap_config": null,
+    "initial_cash": 200000.0,
+    "max_daily_turnover_pct": 200.0,
+    "slippage_bps": 1.0
+  },
+  "cost_model": {
+    "commission_rate": 0.0001,
+    "fill_ratio": 0.95,
+    "realized_commission": 2.24761,
+    "realized_slippage_cost": 2.247428,
+    "slippage_bps": 1.0,
+    "total_fees": 2.24761,
+    "volume_participation_cap_pct": 5.0
+  },
+  "data_manifest": {
+    "asset_class": "",
+    "checksum": "",
+    "coverage": {},
+    "data_manifest_id": "",
+    "data_version": "",
+    "data_version_matches_requested": false,
+    "exists": false,
+    "fingerprint": "",
+    "interval": "",
+    "missing_data_manifest": true,
+    "path": "data/manifests/test_v1.json",
+    "quality": {},
+    "requested_data_version": "test_v1",
+    "source": "",
+    "symbol": ""
+  },
+  "data_manifest_exists": false,
+  "data_version": "test_v1",
+  "end_time": "2026-05-09T04:09:20.674786+00:00",
+  "engine": "event_driven",
+  "evidence": {
+    "approximate_scan_engine": false,
+    "canonical_for_promotion": true,
+    "cash": {
+      "cash_consistent": true,
+      "final_snapshot_cash": 181786.740956,
+      "initial_cash": 200000.0,
+      "ledger_cash_at_final_snapshot": 181786.740956
+    },
+    "commission": {
+      "model": "PercentCommission",
+      "rate": 0.0001,
+      "realized_total": 2.24761
+    },
+    "commit_hash": "47097d2",
+    "completeness": {
+      "data_manifest_bound": false,
+      "ledger_evidence_complete": true,
+      "missing_required_fields": [],
+      "promotion_evidence_complete": false
+    },
+    "costs": {
+      "commission_rate": 0.0001,
+      "fill_ratio": 0.95,
+      "realized_commission": 2.24761,
+      "realized_slippage_cost": 2.247428,
+      "slippage_bps": 1.0,
+      "total_fees": 2.24761,
+      "volume_participation_cap_pct": 5.0
+    },
+    "data_manifest": {
+      "asset_class": "",
+      "checksum": "",
+      "coverage": {},
+      "data_manifest_id": "",
+      "data_version": "",
+      "data_version_matches_requested": false,
+      "exists": false,
+      "fingerprint": "",
+      "interval": "",
+      "missing_data_manifest": true,
+      "path": "data/manifests/test_v1.json",
+      "quality": {},
+      "requested_data_version": "test_v1",
+      "source": "",
+      "symbol": ""
+    },
+    "data_manifest_exists": false,
+    "data_scope": {
+      "fixture_like_data_version": false,
+      "promotion_scope_ok": true,
+      "scope_rejections": []
+    },
+    "data_version": "test_v1",
+    "engine": "event_driven",
+    "equity": {
+      "consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%)",
+      "consistent": true,
+      "consistent_at_final_snapshot": true,
+      "ledger_curve_points": 28,
+      "ledger_final_equity": 204137.983476,
+      "snapshot_final_equity": 204137.983476
+    },
+    "events": {
+      "account_update": 0,
+      "broker_order": 28,
+      "fill": 28,
+      "market": 120,
+      "order_intent": 91,
+      "risk": 91,
+      "signal": 100,
+      "target_position": 100,
+      "total": 558
+    },
+    "fees": {
+      "fees_from_fills": true,
+      "ledger_total_fees": 2.24761,
+      "total_commission": 2.24761
+    },
+    "fills": {
+      "all_fills_match_orders": true,
+      "count": 28,
+      "filled_order_count": 28
+    },
+    "missing_data_manifest": true,
+    "orders": {
+      "all_orders_created_by_oms": true,
+      "all_orders_have_risk_check_id": true,
+      "count": 28,
+      "oms_order_count": 28,
+      "status_counts": {
+        "filled": 14,
+        "partially_filled": 14
+      }
+    },
+    "pnl": {
+      "final_equity": 204137.983476,
+      "final_pnl": 4137.983476,
+      "initial_cash": 200000.0,
+      "source": "ledger_fills",
+      "total_return_pct": 2.068992
+    },
+    "positions": {
+      "final_position_value": 22351.24252,
+      "final_positions": {
+        "AAPL": 117.19605704
+      },
+      "position_count": 1
+    },
+    "risk": {
+      "approved": 28,
+      "rejected": 63,
+      "rejection_reasons": {
+        "session_not_allowed": 63
+      },
+      "risk_check_count": 91
+    },
+    "run_id": "ubt_95a02f2f14124e6c",
+    "slippage": {
+      "bps": 1.0,
+      "model": "BpsSlippage",
+      "realized_total": 2.247428
+    },
+    "strategy": {
+      "strategies": [
+        {
+          "params": {
+            "allow_short": false,
+            "entry_threshold": 0.03,
+            "exit_threshold": 0.0,
+            "lookback_bars": 20,
+            "strategy_id": "trend_momentum"
+          },
+          "strategy_id": "trend_momentum",
+          "version": "0.1.0"
+        }
+      ],
+      "strategy_version": "trend_momentum@0.1.0"
+    }
+  },
+  "manifest_schema_version": "backtest_run_v2",
+  "missing_data_manifest": true,
+  "run_id": "ubt_95a02f2f14124e6c",
+  "slippage_model": {
+    "bps": 1.0,
+    "model": "BpsSlippage",
+    "realized_total": 2.247428
+  },
+  "start_time": "2026-05-09T04:09:20.626301+00:00",
+  "strategy_params": [
+    {
+      "params": {
+        "allow_short": false,
+        "entry_threshold": 0.03,
+        "exit_threshold": 0.0,
+        "lookback_bars": 20,
+        "strategy_id": "trend_momentum"
+      },
+      "strategy_id": "trend_momentum",
+      "version": "0.1.0"
+    }
+  ],
+  "strategy_version": "trend_momentum@0.1.0"
+}

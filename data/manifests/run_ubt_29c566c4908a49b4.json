@@ -1,0 +1,5284 @@
+{
+  "canonical_for_promotion": true,
+  "commission_model": {
+    "model": "PercentCommission",
+    "rate": 0.0001,
+    "realized_total": 11.601076
+  },
+  "commit_hash": "6b49ea2",
+  "config": {
+    "commission_rate": 0.0001,
+    "gap_config": null,
+    "initial_cash": 100000.0,
+    "max_daily_turnover_pct": 200.0,
+    "slippage_bps": 1.0
+  },
+  "corporate_actions": {
+    "adjustment_count": 0,
+    "split_event_count": 0,
+    "total_borrow_fees": 0.0,
+    "total_corporate_adjustments": 0.0,
+    "total_dividends": 0.0
+  },
+  "cost_model": {
+    "commission_rate": 0.0001,
+    "fill_ratio": 0.5,
+    "realized_commission": 11.601076,
+    "realized_slippage_cost": 11.601002,
+    "slippage_bps": 1.0,
+    "total_fees": 11.601076,
+    "volume_participation_cap_pct": 5.0
+  },
+  "data_manifest": {
+    "asset_class": "",
+    "checksum": "",
+    "coverage": {},
+    "data_manifest_id": "",
+    "data_version": "",
+    "data_version_matches_requested": false,
+    "exists": false,
+    "fingerprint": "",
+    "interval": "",
+    "missing_data_manifest": true,
+    "path": "",
+    "quality": {},
+    "requested_data_version": "",
+    "source": "",
+    "symbol": ""
+  },
+  "data_manifest_exists": false,
+  "data_version": "",
+  "end_time": "2026-05-09T12:21:20.533817+00:00",
+  "engine": "event_driven",
+  "evidence": {
+    "approximate_scan_engine": false,
+    "canonical_for_promotion": true,
+    "cash": {
+      "cash_consistent": true,
+      "final_snapshot_cash": 92573.157102,
+      "initial_cash": 100000.0,
+      "ledger_cash_at_final_snapshot": 92573.157102
+    },
+    "commission": {
+      "model": "PercentCommission",
+      "rate": 0.0001,
+      "realized_total": 11.601076
+    },
+    "commit_hash": "6b49ea2",
+    "completeness": {
+      "data_manifest_bound": false,
+      "ledger_evidence_complete": false,
+      "missing_required_fields": [
+        "data_version"
+      ],
+      "promotion_evidence_complete": false
+    },
+    "corporate_actions": {
+      "adjustments": [],
+      "digest": {
+        "adjustment_count": 0,
+        "split_event_count": 0,
+        "total_borrow_fees": 0.0,
+        "total_corporate_adjustments": 0.0,
+        "total_dividends": 0.0
+      },
+      "summary": {
+        "adjustment_count": 0,
+        "split_event_count": 0,
+        "total_borrow_fees": 0.0,
+        "total_corporate_adjustments": 0.0,
+        "total_dividends": 0.0
+      }
+    },
+    "costs": {
+      "commission_rate": 0.0001,
+      "fill_ratio": 0.5,
+      "realized_commission": 11.601076,
+      "realized_slippage_cost": 11.601002,
+      "slippage_bps": 1.0,
+      "total_fees": 11.601076,
+      "volume_participation_cap_pct": 5.0
+    },
+    "data_manifest": {
+      "asset_class": "",
+      "checksum": "",
+      "coverage": {},
+      "data_manifest_id": "",
+      "data_version": "",
+      "data_version_matches_requested": false,
+      "exists": false,
+      "fingerprint": "",
+      "interval": "",
+      "missing_data_manifest": true,
+      "path": "",
+      "quality": {},
+      "requested_data_version": "",
+      "source": "",
+      "symbol": ""
+    },
+    "data_manifest_exists": false,
+    "data_scope": {
+      "fixture_like_data_version": false,
+      "promotion_scope_ok": true,
+      "scope_rejections": []
+    },
+    "data_version": "",
+    "engine": "event_driven",
+    "equity": {
+      "consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000002)",
+      "consistent": true,
+      "consistent_at_final_snapshot": false,
+      "ledger_curve_points": 108,
+      "ledger_final_equity": 99960.260439,
+      "snapshot_final_equity": 99960.260437
+    },
+    "events": {
+      "account_update": 0,
+      "broker_order": 108,
+      "fill": 108,
+      "market": 1432,
+      "order_intent": 121,
+      "risk": 121,
+      "signal": 240,
+      "target_position": 240,
+      "total": 2370
+    },
+    "fees": {
+      "fees_from_fills": true,
+      "ledger_total_fees": 11.601076,
+      "total_commission": 11.601076
+    },
+    "fills": {
+      "all_fills_match_orders": true,
+      "count": 108,
+      "filled_order_count": 108
+    },
+    "missing_data_manifest": true,
+    "orders": {
+      "all_orders_created_by_oms": true,
+      "all_orders_have_risk_check_id": true,
+      "count": 108,
+      "oms_order_count": 108,
+      "status_counts": {
+        "filled": 32,
+        "partially_filled": 76
+      }
+    },
+    "pnl": {
+      "final_equity": 99960.260439,
+      "final_pnl": -39.739561,
+      "initial_cash": 100000.0,
+      "source": "ledger_fills",
+      "total_return_pct": -0.03974
+    },
+    "positions": {
+      "final_position_value": 7387.103336,
+      "final_positions": {
+        "IWM": 14.21466183,
+        "QQQ": 1e-08,
+        "SPY": 23.94340595
+      },
+      "position_count": 3
+    },
+    "reconciliation": {
+      "adjustment_cross_check": null,
+      "snapshots": [
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-30T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-01-31T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-02-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 100000.0,
+          "ledger_equity": 100000.0,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 100000.0,
+          "snapshot_equity": 100000.0,
+          "timestamp_utc": "2023-03-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 93248.649932,
+          "ledger_equity": 99998.649933,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 93248.649932,
+          "snapshot_equity": 99998.649932,
+          "timestamp_utc": "2023-03-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 93248.649932,
+          "ledger_equity": 100015.192283,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 93248.649932,
+          "snapshot_equity": 100015.192283,
+          "timestamp_utc": "2023-03-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 93248.649932,
+          "ledger_equity": 99987.662591,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 93248.649932,
+          "snapshot_equity": 99987.662591,
+          "timestamp_utc": "2023-03-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 93248.649932,
+          "ledger_equity": 99923.236243,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 93248.649932,
+          "snapshot_equity": 99923.236243,
+          "timestamp_utc": "2023-03-30T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 93248.649932,
+          "ledger_equity": 99807.772278,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 93248.649932,
+          "snapshot_equity": 99807.772278,
+          "timestamp_utc": "2023-03-31T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 92001.031623,
+          "ledger_equity": 99729.324452,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 92001.031623,
+          "snapshot_equity": 99729.324452,
+          "timestamp_utc": "2023-04-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 92001.031623,
+          "ledger_equity": 99740.555123,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 92001.031623,
+          "snapshot_equity": 99740.555123,
+          "timestamp_utc": "2023-04-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 92001.031623,
+          "ledger_equity": 99830.916573,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 92001.031623,
+          "snapshot_equity": 99830.916573,
+          "timestamp_utc": "2023-04-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 92001.031623,
+          "ledger_equity": 99726.700001,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 92001.031623,
+          "snapshot_equity": 99726.700001,
+          "timestamp_utc": "2023-04-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 92001.031623,
+          "ledger_equity": 99732.316388,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 92001.031623,
+          "snapshot_equity": 99732.316388,
+          "timestamp_utc": "2023-04-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91393.045084,
+          "ledger_equity": 99766.76816,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91393.045084,
+          "snapshot_equity": 99766.76816,
+          "timestamp_utc": "2023-04-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91393.045084,
+          "ledger_equity": 99678.265783,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91393.045084,
+          "snapshot_equity": 99678.265783,
+          "timestamp_utc": "2023-04-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91393.045084,
+          "ledger_equity": 99721.17289,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91393.045084,
+          "snapshot_equity": 99721.17289,
+          "timestamp_utc": "2023-04-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91393.045084,
+          "ledger_equity": 99746.520962,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91393.045084,
+          "snapshot_equity": 99746.520962,
+          "timestamp_utc": "2023-04-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91393.045084,
+          "ledger_equity": 99605.537458,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91393.045084,
+          "snapshot_equity": 99605.537458,
+          "timestamp_utc": "2023-04-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 93184.687474,
+          "ledger_equity": 99562.459377,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 93184.687474,
+          "snapshot_equity": 99562.459377,
+          "timestamp_utc": "2023-04-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 93184.687474,
+          "ledger_equity": 99545.021316,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 93184.687474,
+          "snapshot_equity": 99545.021316,
+          "timestamp_utc": "2023-04-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 93184.687474,
+          "ledger_equity": 99536.083594,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 93184.687474,
+          "snapshot_equity": 99536.083594,
+          "timestamp_utc": "2023-04-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 93184.687474,
+          "ledger_equity": 99446.277031,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 93184.687474,
+          "snapshot_equity": 99446.277031,
+          "timestamp_utc": "2023-04-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 93184.687474,
+          "ledger_equity": 99434.180806,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 93184.687474,
+          "snapshot_equity": 99434.180806,
+          "timestamp_utc": "2023-04-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90744.99714,
+          "ledger_equity": 99429.288415,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90744.99714,
+          "snapshot_equity": 99429.288414,
+          "timestamp_utc": "2023-04-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90744.99714,
+          "ledger_equity": 99453.416703,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90744.99714,
+          "snapshot_equity": 99453.416703,
+          "timestamp_utc": "2023-04-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90744.99714,
+          "ledger_equity": 99472.295557,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90744.99714,
+          "snapshot_equity": 99472.295556,
+          "timestamp_utc": "2023-04-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90744.99714,
+          "ledger_equity": 99658.625921,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90744.99714,
+          "snapshot_equity": 99658.62592,
+          "timestamp_utc": "2023-04-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90744.99714,
+          "ledger_equity": 99629.493941,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90744.99714,
+          "snapshot_equity": 99629.493941,
+          "timestamp_utc": "2023-04-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90562.661524,
+          "ledger_equity": 99519.41328,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90562.661524,
+          "snapshot_equity": 99519.413279,
+          "timestamp_utc": "2023-05-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90562.661524,
+          "ledger_equity": 99695.059312,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90562.661524,
+          "snapshot_equity": 99695.05931,
+          "timestamp_utc": "2023-05-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90562.661524,
+          "ledger_equity": 99741.687187,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90562.661524,
+          "snapshot_equity": 99741.687186,
+          "timestamp_utc": "2023-05-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90562.661524,
+          "ledger_equity": 99814.137961,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90562.661524,
+          "snapshot_equity": 99814.137959,
+          "timestamp_utc": "2023-05-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90562.661524,
+          "ledger_equity": 99828.212152,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90562.661524,
+          "snapshot_equity": 99828.21215,
+          "timestamp_utc": "2023-05-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90676.033751,
+          "ledger_equity": 99768.605162,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90676.033751,
+          "snapshot_equity": 99768.605161,
+          "timestamp_utc": "2023-05-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90676.033751,
+          "ledger_equity": 99673.827355,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90676.033751,
+          "snapshot_equity": 99673.827353,
+          "timestamp_utc": "2023-05-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90676.033751,
+          "ledger_equity": 99503.682457,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90676.033751,
+          "snapshot_equity": 99503.682455,
+          "timestamp_utc": "2023-05-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90676.033751,
+          "ledger_equity": 99559.166389,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90676.033751,
+          "snapshot_equity": 99559.166388,
+          "timestamp_utc": "2023-05-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90676.033751,
+          "ledger_equity": 99530.338218,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90676.033751,
+          "snapshot_equity": 99530.338216,
+          "timestamp_utc": "2023-05-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90641.189788,
+          "ledger_equity": 99605.70541,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90641.189788,
+          "snapshot_equity": 99605.705409,
+          "timestamp_utc": "2023-05-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90641.189788,
+          "ledger_equity": 99654.883919,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90641.189788,
+          "snapshot_equity": 99654.883917,
+          "timestamp_utc": "2023-05-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90641.189788,
+          "ledger_equity": 99716.388974,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90641.189788,
+          "snapshot_equity": 99716.388973,
+          "timestamp_utc": "2023-05-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90641.189788,
+          "ledger_equity": 99828.64077,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90641.189788,
+          "snapshot_equity": 99828.640768,
+          "timestamp_utc": "2023-05-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90641.189788,
+          "ledger_equity": 99832.071197,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90641.189788,
+          "snapshot_equity": 99832.071196,
+          "timestamp_utc": "2023-05-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90838.940455,
+          "ledger_equity": 99779.255354,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90838.940455,
+          "snapshot_equity": 99779.255352,
+          "timestamp_utc": "2023-05-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90838.940455,
+          "ledger_equity": 99738.841561,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90838.940455,
+          "snapshot_equity": 99738.841559,
+          "timestamp_utc": "2023-05-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90838.940455,
+          "ledger_equity": 99829.275926,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90838.940455,
+          "snapshot_equity": 99829.275925,
+          "timestamp_utc": "2023-05-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90838.940455,
+          "ledger_equity": 99835.153015,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90838.940455,
+          "snapshot_equity": 99835.153013,
+          "timestamp_utc": "2023-05-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90838.940455,
+          "ledger_equity": 99825.782026,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90838.940455,
+          "snapshot_equity": 99825.782025,
+          "timestamp_utc": "2023-05-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90838.940455,
+          "ledger_equity": 99896.643553,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90838.940455,
+          "snapshot_equity": 99896.643551,
+          "timestamp_utc": "2023-05-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90838.940455,
+          "ledger_equity": 99841.249775,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90838.940455,
+          "snapshot_equity": 99841.249774,
+          "timestamp_utc": "2023-05-30T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90838.940455,
+          "ledger_equity": 99943.498071,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90838.940455,
+          "snapshot_equity": 99943.498069,
+          "timestamp_utc": "2023-05-31T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90838.940455,
+          "ledger_equity": 99977.215886,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90838.940455,
+          "snapshot_equity": 99977.215884,
+          "timestamp_utc": "2023-06-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90838.940455,
+          "ledger_equity": 99821.151318,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90838.940455,
+          "snapshot_equity": 99821.151316,
+          "timestamp_utc": "2023-06-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90744.511986,
+          "ledger_equity": 99719.419635,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90744.511986,
+          "snapshot_equity": 99719.419634,
+          "timestamp_utc": "2023-06-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90744.511986,
+          "ledger_equity": 99715.879604,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90744.511986,
+          "snapshot_equity": 99715.879603,
+          "timestamp_utc": "2023-06-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90744.511986,
+          "ledger_equity": 99726.663811,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90744.511986,
+          "snapshot_equity": 99726.66381,
+          "timestamp_utc": "2023-06-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90744.511986,
+          "ledger_equity": 99690.618423,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90744.511986,
+          "snapshot_equity": 99690.618422,
+          "timestamp_utc": "2023-06-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90744.511986,
+          "ledger_equity": 99705.900351,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90744.511986,
+          "snapshot_equity": 99705.90035,
+          "timestamp_utc": "2023-06-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90696.497699,
+          "ledger_equity": 99671.439438,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90696.497699,
+          "snapshot_equity": 99671.439437,
+          "timestamp_utc": "2023-06-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90696.497699,
+          "ledger_equity": 99824.894455,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90696.497699,
+          "snapshot_equity": 99824.894454,
+          "timestamp_utc": "2023-06-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90696.497699,
+          "ledger_equity": 99809.236814,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90696.497699,
+          "snapshot_equity": 99809.236813,
+          "timestamp_utc": "2023-06-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90696.497699,
+          "ledger_equity": 99892.612016,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90696.497699,
+          "snapshot_equity": 99892.612015,
+          "timestamp_utc": "2023-06-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90696.497699,
+          "ledger_equity": 99934.048082,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90696.497699,
+          "snapshot_equity": 99934.048081,
+          "timestamp_utc": "2023-06-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90696.497699,
+          "ledger_equity": 99862.910718,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90696.497699,
+          "snapshot_equity": 99862.910717,
+          "timestamp_utc": "2023-06-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90696.497699,
+          "ledger_equity": 99838.507107,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90696.497699,
+          "snapshot_equity": 99838.507106,
+          "timestamp_utc": "2023-06-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90696.497699,
+          "ledger_equity": 99825.422986,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90696.497699,
+          "snapshot_equity": 99825.422985,
+          "timestamp_utc": "2023-06-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90696.497699,
+          "ledger_equity": 99786.598145,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90696.497699,
+          "snapshot_equity": 99786.598144,
+          "timestamp_utc": "2023-06-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90696.497699,
+          "ledger_equity": 99827.393016,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90696.497699,
+          "snapshot_equity": 99827.393015,
+          "timestamp_utc": "2023-06-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90777.74685,
+          "ledger_equity": 99859.733605,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90777.74685,
+          "snapshot_equity": 99859.733604,
+          "timestamp_utc": "2023-06-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90777.74685,
+          "ledger_equity": 99911.628656,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90777.74685,
+          "snapshot_equity": 99911.628655,
+          "timestamp_utc": "2023-06-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90777.74685,
+          "ledger_equity": 99950.84328,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90777.74685,
+          "snapshot_equity": 99950.843279,
+          "timestamp_utc": "2023-06-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90777.74685,
+          "ledger_equity": 99868.735548,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90777.74685,
+          "snapshot_equity": 99868.735547,
+          "timestamp_utc": "2023-06-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90777.74685,
+          "ledger_equity": 99912.315756,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90777.74685,
+          "snapshot_equity": 99912.315755,
+          "timestamp_utc": "2023-06-30T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90981.057806,
+          "ledger_equity": 99979.188426,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90981.057806,
+          "snapshot_equity": 99979.188425,
+          "timestamp_utc": "2023-07-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90981.057806,
+          "ledger_equity": 100078.625775,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90981.057806,
+          "snapshot_equity": 100078.625775,
+          "timestamp_utc": "2023-07-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90981.057806,
+          "ledger_equity": 100010.381645,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90981.057806,
+          "snapshot_equity": 100010.381644,
+          "timestamp_utc": "2023-07-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90981.057806,
+          "ledger_equity": 99944.390198,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90981.057806,
+          "snapshot_equity": 99944.390198,
+          "timestamp_utc": "2023-07-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90981.057806,
+          "ledger_equity": 99914.406672,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90981.057806,
+          "snapshot_equity": 99914.406671,
+          "timestamp_utc": "2023-07-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90983.648596,
+          "ledger_equity": 99984.900337,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90983.648596,
+          "snapshot_equity": 99984.900337,
+          "timestamp_utc": "2023-07-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90983.648596,
+          "ledger_equity": 100028.20207,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90983.648596,
+          "snapshot_equity": 100028.202069,
+          "timestamp_utc": "2023-07-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90983.648596,
+          "ledger_equity": 99962.797068,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90983.648596,
+          "snapshot_equity": 99962.797068,
+          "timestamp_utc": "2023-07-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90983.648596,
+          "ledger_equity": 99975.368131,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90983.648596,
+          "snapshot_equity": 99975.36813,
+          "timestamp_utc": "2023-07-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90983.648596,
+          "ledger_equity": 100079.532773,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90983.648596,
+          "snapshot_equity": 100079.532773,
+          "timestamp_utc": "2023-07-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90975.457493,
+          "ledger_equity": 100080.869861,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90975.457493,
+          "snapshot_equity": 100080.86986,
+          "timestamp_utc": "2023-07-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90975.457493,
+          "ledger_equity": 100068.438953,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90975.457493,
+          "snapshot_equity": 100068.438953,
+          "timestamp_utc": "2023-07-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90975.457493,
+          "ledger_equity": 100043.586538,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90975.457493,
+          "snapshot_equity": 100043.586537,
+          "timestamp_utc": "2023-07-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90975.457493,
+          "ledger_equity": 100105.95087,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90975.457493,
+          "snapshot_equity": 100105.950869,
+          "timestamp_utc": "2023-07-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90975.457493,
+          "ledger_equity": 99982.310217,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90975.457493,
+          "snapshot_equity": 99982.310216,
+          "timestamp_utc": "2023-07-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91007.307815,
+          "ledger_equity": 100018.540858,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91007.307815,
+          "snapshot_equity": 100018.540858,
+          "timestamp_utc": "2023-07-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91007.307815,
+          "ledger_equity": 100106.420938,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91007.307815,
+          "snapshot_equity": 100106.420938,
+          "timestamp_utc": "2023-07-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91007.307815,
+          "ledger_equity": 99979.934951,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91007.307815,
+          "snapshot_equity": 99979.934951,
+          "timestamp_utc": "2023-07-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91007.307815,
+          "ledger_equity": 99826.475937,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91007.307815,
+          "snapshot_equity": 99826.475936,
+          "timestamp_utc": "2023-07-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91007.307815,
+          "ledger_equity": 99896.70573,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91007.307815,
+          "snapshot_equity": 99896.705729,
+          "timestamp_utc": "2023-07-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90960.405687,
+          "ledger_equity": 99910.947663,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90960.405687,
+          "snapshot_equity": 99910.947663,
+          "timestamp_utc": "2023-07-31T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90960.405687,
+          "ledger_equity": 99968.252721,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90960.405687,
+          "snapshot_equity": 99968.25272,
+          "timestamp_utc": "2023-08-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90960.405687,
+          "ledger_equity": 99929.332803,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90960.405687,
+          "snapshot_equity": 99929.332803,
+          "timestamp_utc": "2023-08-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90960.405687,
+          "ledger_equity": 99867.484487,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90960.405687,
+          "snapshot_equity": 99867.484487,
+          "timestamp_utc": "2023-08-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90960.405687,
+          "ledger_equity": 100009.966148,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90960.405687,
+          "snapshot_equity": 100009.966148,
+          "timestamp_utc": "2023-08-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90994.347996,
+          "ledger_equity": 100011.090633,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90994.347996,
+          "snapshot_equity": 100011.090632,
+          "timestamp_utc": "2023-08-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90994.347996,
+          "ledger_equity": 100001.359423,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90994.347996,
+          "snapshot_equity": 100001.359422,
+          "timestamp_utc": "2023-08-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90994.347996,
+          "ledger_equity": 99979.118372,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90994.347996,
+          "snapshot_equity": 99979.118371,
+          "timestamp_utc": "2023-08-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90994.347996,
+          "ledger_equity": 100079.46754,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90994.347996,
+          "snapshot_equity": 100079.467539,
+          "timestamp_utc": "2023-08-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90994.347996,
+          "ledger_equity": 100061.17831,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90994.347996,
+          "snapshot_equity": 100061.178309,
+          "timestamp_utc": "2023-08-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91120.274712,
+          "ledger_equity": 100132.172505,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91120.274712,
+          "snapshot_equity": 100132.172505,
+          "timestamp_utc": "2023-08-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91120.274712,
+          "ledger_equity": 100223.738377,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91120.274712,
+          "snapshot_equity": 100223.738377,
+          "timestamp_utc": "2023-08-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91120.274712,
+          "ledger_equity": 100283.335795,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91120.274712,
+          "snapshot_equity": 100283.335795,
+          "timestamp_utc": "2023-08-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91120.274712,
+          "ledger_equity": 100144.307232,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91120.274712,
+          "snapshot_equity": 100144.307232,
+          "timestamp_utc": "2023-08-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91120.274712,
+          "ledger_equity": 99982.134212,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91120.274712,
+          "snapshot_equity": 99982.134212,
+          "timestamp_utc": "2023-08-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91097.715772,
+          "ledger_equity": 100032.762728,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91097.715772,
+          "snapshot_equity": 100032.762728,
+          "timestamp_utc": "2023-08-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91097.715772,
+          "ledger_equity": 100154.638581,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91097.715772,
+          "snapshot_equity": 100154.638581,
+          "timestamp_utc": "2023-08-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91097.715772,
+          "ledger_equity": 100122.766344,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91097.715772,
+          "snapshot_equity": 100122.766344,
+          "timestamp_utc": "2023-08-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91097.715772,
+          "ledger_equity": 100081.827099,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91097.715772,
+          "snapshot_equity": 100081.827099,
+          "timestamp_utc": "2023-08-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91097.715772,
+          "ledger_equity": 100096.302882,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91097.715772,
+          "snapshot_equity": 100096.302882,
+          "timestamp_utc": "2023-08-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91047.258433,
+          "ledger_equity": 100052.113067,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91047.258433,
+          "snapshot_equity": 100052.113066,
+          "timestamp_utc": "2023-08-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91047.258433,
+          "ledger_equity": 100110.380809,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91047.258433,
+          "snapshot_equity": 100110.380808,
+          "timestamp_utc": "2023-08-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91047.258433,
+          "ledger_equity": 100146.129284,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91047.258433,
+          "snapshot_equity": 100146.129283,
+          "timestamp_utc": "2023-08-30T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91047.258433,
+          "ledger_equity": 100266.49134,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91047.258433,
+          "snapshot_equity": 100266.491339,
+          "timestamp_utc": "2023-08-31T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91047.258433,
+          "ledger_equity": 100371.127441,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91047.258433,
+          "snapshot_equity": 100371.12744,
+          "timestamp_utc": "2023-09-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91047.258433,
+          "ledger_equity": 100303.426165,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91047.258433,
+          "snapshot_equity": 100303.426163,
+          "timestamp_utc": "2023-09-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91047.258433,
+          "ledger_equity": 100491.769231,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91047.258433,
+          "snapshot_equity": 100491.76923,
+          "timestamp_utc": "2023-09-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91047.258433,
+          "ledger_equity": 100387.185111,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91047.258433,
+          "snapshot_equity": 100387.18511,
+          "timestamp_utc": "2023-09-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91047.258433,
+          "ledger_equity": 100552.52343,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91047.258433,
+          "snapshot_equity": 100552.523429,
+          "timestamp_utc": "2023-09-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91047.258433,
+          "ledger_equity": 100509.441546,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91047.258433,
+          "snapshot_equity": 100509.441545,
+          "timestamp_utc": "2023-09-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91507.815552,
+          "ledger_equity": 100643.309804,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91507.815552,
+          "snapshot_equity": 100643.309804,
+          "timestamp_utc": "2023-09-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91507.815552,
+          "ledger_equity": 100590.162103,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91507.815552,
+          "snapshot_equity": 100590.162103,
+          "timestamp_utc": "2023-09-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91507.815552,
+          "ledger_equity": 100732.308188,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91507.815552,
+          "snapshot_equity": 100732.308188,
+          "timestamp_utc": "2023-09-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91507.815552,
+          "ledger_equity": 100847.311465,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91507.815552,
+          "snapshot_equity": 100847.311466,
+          "timestamp_utc": "2023-09-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91507.815552,
+          "ledger_equity": 100863.538857,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91507.815552,
+          "snapshot_equity": 100863.538857,
+          "timestamp_utc": "2023-09-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91742.757855,
+          "ledger_equity": 100816.222072,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91742.757855,
+          "snapshot_equity": 100816.222072,
+          "timestamp_utc": "2023-09-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91742.757855,
+          "ledger_equity": 100871.32948,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91742.757855,
+          "snapshot_equity": 100871.329481,
+          "timestamp_utc": "2023-09-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91742.757855,
+          "ledger_equity": 100986.150321,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91742.757855,
+          "snapshot_equity": 100986.150321,
+          "timestamp_utc": "2023-09-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91742.757855,
+          "ledger_equity": 100910.332264,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91742.757855,
+          "snapshot_equity": 100910.332264,
+          "timestamp_utc": "2023-09-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91742.757855,
+          "ledger_equity": 100787.40204,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91742.757855,
+          "snapshot_equity": 100787.402041,
+          "timestamp_utc": "2023-09-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91733.31716,
+          "ledger_equity": 100805.844893,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91733.31716,
+          "snapshot_equity": 100805.844894,
+          "timestamp_utc": "2023-09-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91733.31716,
+          "ledger_equity": 100849.851352,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91733.31716,
+          "snapshot_equity": 100849.851353,
+          "timestamp_utc": "2023-09-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91733.31716,
+          "ledger_equity": 100736.271885,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91733.31716,
+          "snapshot_equity": 100736.271885,
+          "timestamp_utc": "2023-09-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91733.31716,
+          "ledger_equity": 100746.704075,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91733.31716,
+          "snapshot_equity": 100746.704076,
+          "timestamp_utc": "2023-09-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91733.31716,
+          "ledger_equity": 100781.06296,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91733.31716,
+          "snapshot_equity": 100781.06296,
+          "timestamp_utc": "2023-09-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91667.426037,
+          "ledger_equity": 100733.439131,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91667.426037,
+          "snapshot_equity": 100733.439132,
+          "timestamp_utc": "2023-10-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91667.426037,
+          "ledger_equity": 100662.576618,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91667.426037,
+          "snapshot_equity": 100662.57662,
+          "timestamp_utc": "2023-10-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91667.426037,
+          "ledger_equity": 100595.478723,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91667.426037,
+          "snapshot_equity": 100595.478724,
+          "timestamp_utc": "2023-10-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91667.426037,
+          "ledger_equity": 100595.168756,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91667.426037,
+          "snapshot_equity": 100595.168758,
+          "timestamp_utc": "2023-10-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91667.426037,
+          "ledger_equity": 100548.076002,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91667.426037,
+          "snapshot_equity": 100548.076004,
+          "timestamp_utc": "2023-10-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91602.563507,
+          "ledger_equity": 100563.669018,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91602.563507,
+          "snapshot_equity": 100563.669019,
+          "timestamp_utc": "2023-10-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91602.563507,
+          "ledger_equity": 100515.327313,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91602.563507,
+          "snapshot_equity": 100515.327315,
+          "timestamp_utc": "2023-10-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91602.563507,
+          "ledger_equity": 100384.58132,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91602.563507,
+          "snapshot_equity": 100384.581322,
+          "timestamp_utc": "2023-10-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91602.563507,
+          "ledger_equity": 100383.88699,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91602.563507,
+          "snapshot_equity": 100383.886991,
+          "timestamp_utc": "2023-10-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91602.563507,
+          "ledger_equity": 100373.765497,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91602.563507,
+          "snapshot_equity": 100373.765499,
+          "timestamp_utc": "2023-10-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91475.021195,
+          "ledger_equity": 100522.003836,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91475.021195,
+          "snapshot_equity": 100522.003836,
+          "timestamp_utc": "2023-10-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91475.021195,
+          "ledger_equity": 100538.491705,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91475.021195,
+          "snapshot_equity": 100538.491706,
+          "timestamp_utc": "2023-10-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91475.021195,
+          "ledger_equity": 100504.906539,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91475.021195,
+          "snapshot_equity": 100504.90654,
+          "timestamp_utc": "2023-10-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91475.021195,
+          "ledger_equity": 100473.503345,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91475.021195,
+          "snapshot_equity": 100473.503346,
+          "timestamp_utc": "2023-10-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91475.021195,
+          "ledger_equity": 100504.432088,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91475.021195,
+          "snapshot_equity": 100504.432089,
+          "timestamp_utc": "2023-10-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91467.668088,
+          "ledger_equity": 100513.92374,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91467.668088,
+          "snapshot_equity": 100513.92374,
+          "timestamp_utc": "2023-10-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91467.668088,
+          "ledger_equity": 100499.44576,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91467.668088,
+          "snapshot_equity": 100499.44576,
+          "timestamp_utc": "2023-10-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91467.668088,
+          "ledger_equity": 100433.659232,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91467.668088,
+          "snapshot_equity": 100433.659233,
+          "timestamp_utc": "2023-10-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91467.668088,
+          "ledger_equity": 100378.619176,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91467.668088,
+          "snapshot_equity": 100378.619176,
+          "timestamp_utc": "2023-10-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91467.668088,
+          "ledger_equity": 100479.866358,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91467.668088,
+          "snapshot_equity": 100479.866358,
+          "timestamp_utc": "2023-10-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91489.088951,
+          "ledger_equity": 100561.034452,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91489.088951,
+          "snapshot_equity": 100561.034453,
+          "timestamp_utc": "2023-10-30T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91489.088951,
+          "ledger_equity": 100548.715907,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91489.088951,
+          "snapshot_equity": 100548.715907,
+          "timestamp_utc": "2023-10-31T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91489.088951,
+          "ledger_equity": 100445.966762,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91489.088951,
+          "snapshot_equity": 100445.966763,
+          "timestamp_utc": "2023-11-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91489.088951,
+          "ledger_equity": 100455.880291,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91489.088951,
+          "snapshot_equity": 100455.880291,
+          "timestamp_utc": "2023-11-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91489.088951,
+          "ledger_equity": 100371.507954,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91489.088951,
+          "snapshot_equity": 100371.507954,
+          "timestamp_utc": "2023-11-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91372.56739,
+          "ledger_equity": 100409.417018,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91372.56739,
+          "snapshot_equity": 100409.417018,
+          "timestamp_utc": "2023-11-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91372.56739,
+          "ledger_equity": 100429.870141,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91372.56739,
+          "snapshot_equity": 100429.870141,
+          "timestamp_utc": "2023-11-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91372.56739,
+          "ledger_equity": 100515.00663,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91372.56739,
+          "snapshot_equity": 100515.006631,
+          "timestamp_utc": "2023-11-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91372.56739,
+          "ledger_equity": 100659.605053,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91372.56739,
+          "snapshot_equity": 100659.605053,
+          "timestamp_utc": "2023-11-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91372.56739,
+          "ledger_equity": 100682.831204,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91372.56739,
+          "snapshot_equity": 100682.831205,
+          "timestamp_utc": "2023-11-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91510.888748,
+          "ledger_equity": 100713.45084,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91510.888748,
+          "snapshot_equity": 100713.450841,
+          "timestamp_utc": "2023-11-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91510.888748,
+          "ledger_equity": 100626.864947,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91510.888748,
+          "snapshot_equity": 100626.864948,
+          "timestamp_utc": "2023-11-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91510.888748,
+          "ledger_equity": 100587.56676,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91510.888748,
+          "snapshot_equity": 100587.566761,
+          "timestamp_utc": "2023-11-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91510.888748,
+          "ledger_equity": 100567.891178,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91510.888748,
+          "snapshot_equity": 100567.891178,
+          "timestamp_utc": "2023-11-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 91510.888748,
+          "ledger_equity": 100438.219946,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91510.888748,
+          "snapshot_equity": 100438.219946,
+          "timestamp_utc": "2023-11-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 89194.156591,
+          "ledger_equity": 100460.545396,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89194.156591,
+          "snapshot_equity": 100460.545397,
+          "timestamp_utc": "2023-11-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 89194.156591,
+          "ledger_equity": 100530.799575,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89194.156591,
+          "snapshot_equity": 100530.799575,
+          "timestamp_utc": "2023-11-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 89194.156591,
+          "ledger_equity": 100488.051372,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89194.156591,
+          "snapshot_equity": 100488.051372,
+          "timestamp_utc": "2023-11-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 89194.156591,
+          "ledger_equity": 100426.740807,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89194.156591,
+          "snapshot_equity": 100426.740807,
+          "timestamp_utc": "2023-11-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 89194.156591,
+          "ledger_equity": 100456.811519,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89194.156591,
+          "snapshot_equity": 100456.811519,
+          "timestamp_utc": "2023-11-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91473.692758,
+          "ledger_equity": 100485.412344,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91473.692758,
+          "snapshot_equity": 100485.412345,
+          "timestamp_utc": "2023-11-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91473.692758,
+          "ledger_equity": 100393.037593,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91473.692758,
+          "snapshot_equity": 100393.037594,
+          "timestamp_utc": "2023-11-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91473.692758,
+          "ledger_equity": 100384.751188,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91473.692758,
+          "snapshot_equity": 100384.751189,
+          "timestamp_utc": "2023-11-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91473.692758,
+          "ledger_equity": 100427.453658,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91473.692758,
+          "snapshot_equity": 100427.453659,
+          "timestamp_utc": "2023-11-30T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91473.692758,
+          "ledger_equity": 100424.348063,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91473.692758,
+          "snapshot_equity": 100424.348064,
+          "timestamp_utc": "2023-12-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91391.773341,
+          "ledger_equity": 100356.233516,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91391.773341,
+          "snapshot_equity": 100356.233517,
+          "timestamp_utc": "2023-12-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91391.773341,
+          "ledger_equity": 100227.461747,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91391.773341,
+          "snapshot_equity": 100227.461748,
+          "timestamp_utc": "2023-12-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91391.773341,
+          "ledger_equity": 100205.485855,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91391.773341,
+          "snapshot_equity": 100205.485856,
+          "timestamp_utc": "2023-12-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91391.773341,
+          "ledger_equity": 100193.519588,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91391.773341,
+          "snapshot_equity": 100193.519589,
+          "timestamp_utc": "2023-12-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91391.773341,
+          "ledger_equity": 100217.271337,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91391.773341,
+          "snapshot_equity": 100217.271338,
+          "timestamp_utc": "2023-12-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91106.487582,
+          "ledger_equity": 100008.915029,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91106.487582,
+          "snapshot_equity": 100008.91503,
+          "timestamp_utc": "2023-12-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91106.487582,
+          "ledger_equity": 99989.230127,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91106.487582,
+          "snapshot_equity": 99989.230128,
+          "timestamp_utc": "2023-12-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91106.487582,
+          "ledger_equity": 99926.50825,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91106.487582,
+          "snapshot_equity": 99926.508251,
+          "timestamp_utc": "2023-12-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91106.487582,
+          "ledger_equity": 99966.866958,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91106.487582,
+          "snapshot_equity": 99966.866959,
+          "timestamp_utc": "2023-12-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91106.487582,
+          "ledger_equity": 100021.691723,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91106.487582,
+          "snapshot_equity": 100021.691723,
+          "timestamp_utc": "2023-12-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 99995.345191,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 99995.345192,
+          "timestamp_utc": "2023-12-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 100079.324064,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 100079.324065,
+          "timestamp_utc": "2023-12-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 100166.229126,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 100166.229126,
+          "timestamp_utc": "2023-12-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 100140.695489,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 100140.69549,
+          "timestamp_utc": "2023-12-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 100116.32046,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 100116.320461,
+          "timestamp_utc": "2023-12-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 100035.808757,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 100035.808758,
+          "timestamp_utc": "2023-12-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 99990.240883,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 99990.240884,
+          "timestamp_utc": "2023-12-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 100043.926706,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 100043.926707,
+          "timestamp_utc": "2023-12-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 100014.326293,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 100014.326294,
+          "timestamp_utc": "2023-12-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 99994.132524,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 99994.132525,
+          "timestamp_utc": "2023-12-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 99995.834399,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 99995.8344,
+          "timestamp_utc": "2024-01-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 99876.580756,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 99876.580757,
+          "timestamp_utc": "2024-01-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 99780.31975,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 99780.319751,
+          "timestamp_utc": "2024-01-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 99745.656704,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 99745.656704,
+          "timestamp_utc": "2024-01-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 91019.654194,
+          "ledger_equity": 99797.533587,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91019.654194,
+          "snapshot_equity": 99797.533588,
+          "timestamp_utc": "2024-01-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 90883.829575,
+          "ledger_equity": 99745.409391,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90883.829575,
+          "snapshot_equity": 99745.409392,
+          "timestamp_utc": "2024-01-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 90883.829575,
+          "ledger_equity": 99752.894163,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90883.829575,
+          "snapshot_equity": 99752.894164,
+          "timestamp_utc": "2024-01-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 90883.829575,
+          "ledger_equity": 99788.359512,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90883.829575,
+          "snapshot_equity": 99788.359513,
+          "timestamp_utc": "2024-01-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 90883.829575,
+          "ledger_equity": 99812.098938,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90883.829575,
+          "snapshot_equity": 99812.098939,
+          "timestamp_utc": "2024-01-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 90883.829575,
+          "ledger_equity": 99807.95636,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90883.829575,
+          "snapshot_equity": 99807.956361,
+          "timestamp_utc": "2024-01-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 90883.829575,
+          "ledger_equity": 99766.803734,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90883.829575,
+          "snapshot_equity": 99766.803735,
+          "timestamp_utc": "2024-01-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 90883.829575,
+          "ledger_equity": 99704.845717,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90883.829575,
+          "snapshot_equity": 99704.845717,
+          "timestamp_utc": "2024-01-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 90883.829575,
+          "ledger_equity": 99697.492486,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90883.829575,
+          "snapshot_equity": 99697.492487,
+          "timestamp_utc": "2024-01-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 90883.829575,
+          "ledger_equity": 99693.453382,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90883.829575,
+          "snapshot_equity": 99693.453383,
+          "timestamp_utc": "2024-01-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": 1e-06
+          },
+          "ledger_cash": 90883.829575,
+          "ledger_equity": 99705.135491,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90883.829575,
+          "snapshot_equity": 99705.135492,
+          "timestamp_utc": "2024-01-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 90714.594347,
+          "ledger_equity": 99727.924478,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90714.594347,
+          "snapshot_equity": 99727.924478,
+          "timestamp_utc": "2024-01-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 90714.594347,
+          "ledger_equity": 99878.937015,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90714.594347,
+          "snapshot_equity": 99878.937015,
+          "timestamp_utc": "2024-01-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 90714.594347,
+          "ledger_equity": 99859.964272,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90714.594347,
+          "snapshot_equity": 99859.964272,
+          "timestamp_utc": "2024-01-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 90714.594347,
+          "ledger_equity": 99897.996044,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90714.594347,
+          "snapshot_equity": 99897.996044,
+          "timestamp_utc": "2024-01-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90714.594347,
+          "ledger_equity": 99926.698856,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90714.594347,
+          "snapshot_equity": 99926.698856,
+          "timestamp_utc": "2024-01-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90829.670334,
+          "ledger_equity": 99939.319344,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90829.670334,
+          "snapshot_equity": 99939.319344,
+          "timestamp_utc": "2024-01-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90829.670334,
+          "ledger_equity": 100089.64525,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90829.670334,
+          "snapshot_equity": 100089.64525,
+          "timestamp_utc": "2024-01-30T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90829.670334,
+          "ledger_equity": 100041.417324,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90829.670334,
+          "snapshot_equity": 100041.417324,
+          "timestamp_utc": "2024-01-31T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90829.670334,
+          "ledger_equity": 99987.66981,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90829.670334,
+          "snapshot_equity": 99987.66981,
+          "timestamp_utc": "2024-02-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90829.670334,
+          "ledger_equity": 100083.432561,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90829.670334,
+          "snapshot_equity": 100083.432561,
+          "timestamp_utc": "2024-02-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 90990.263759,
+          "ledger_equity": 99955.855181,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90990.263759,
+          "snapshot_equity": 99955.855181,
+          "timestamp_utc": "2024-02-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 90990.263759,
+          "ledger_equity": 99881.208505,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90990.263759,
+          "snapshot_equity": 99881.208505,
+          "timestamp_utc": "2024-02-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 90990.263759,
+          "ledger_equity": 99786.941646,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90990.263759,
+          "snapshot_equity": 99786.941646,
+          "timestamp_utc": "2024-02-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 90990.263759,
+          "ledger_equity": 99850.782677,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90990.263759,
+          "snapshot_equity": 99850.782677,
+          "timestamp_utc": "2024-02-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": 0.0
+          },
+          "ledger_cash": 90990.263759,
+          "ledger_equity": 99979.279801,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90990.263759,
+          "snapshot_equity": 99979.279801,
+          "timestamp_utc": "2024-02-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90822.135934,
+          "ledger_equity": 99804.548309,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90822.135934,
+          "snapshot_equity": 99804.548309,
+          "timestamp_utc": "2024-02-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90822.135934,
+          "ledger_equity": 99921.361152,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90822.135934,
+          "snapshot_equity": 99921.361152,
+          "timestamp_utc": "2024-02-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90822.135934,
+          "ledger_equity": 100029.959962,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90822.135934,
+          "snapshot_equity": 100029.959961,
+          "timestamp_utc": "2024-02-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90822.135934,
+          "ledger_equity": 99778.538726,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90822.135934,
+          "snapshot_equity": 99778.538725,
+          "timestamp_utc": "2024-02-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90822.135934,
+          "ledger_equity": 99768.289247,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90822.135934,
+          "snapshot_equity": 99768.289247,
+          "timestamp_utc": "2024-02-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90822.135934,
+          "ledger_equity": 99738.442694,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90822.135934,
+          "snapshot_equity": 99738.442694,
+          "timestamp_utc": "2024-02-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90822.135934,
+          "ledger_equity": 99856.901144,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90822.135934,
+          "snapshot_equity": 99856.901144,
+          "timestamp_utc": "2024-02-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90822.135934,
+          "ledger_equity": 99932.288581,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90822.135934,
+          "snapshot_equity": 99932.288581,
+          "timestamp_utc": "2024-02-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90822.135934,
+          "ledger_equity": 100135.478451,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90822.135934,
+          "snapshot_equity": 100135.47845,
+          "timestamp_utc": "2024-02-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": 0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90822.135934,
+          "ledger_equity": 100112.300925,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90822.135934,
+          "snapshot_equity": 100112.300925,
+          "timestamp_utc": "2024-02-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91014.384395,
+          "ledger_equity": 100015.812242,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91014.384395,
+          "snapshot_equity": 100015.812242,
+          "timestamp_utc": "2024-02-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91014.384395,
+          "ledger_equity": 99973.266941,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91014.384395,
+          "snapshot_equity": 99973.266941,
+          "timestamp_utc": "2024-02-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91014.384395,
+          "ledger_equity": 99917.774338,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91014.384395,
+          "snapshot_equity": 99917.774337,
+          "timestamp_utc": "2024-02-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91014.384395,
+          "ledger_equity": 99888.493409,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91014.384395,
+          "snapshot_equity": 99888.493408,
+          "timestamp_utc": "2024-02-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 91014.384395,
+          "ledger_equity": 99857.666932,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91014.384395,
+          "snapshot_equity": 99857.666932,
+          "timestamp_utc": "2024-03-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90856.691487,
+          "ledger_equity": 99842.700155,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90856.691487,
+          "snapshot_equity": 99842.700155,
+          "timestamp_utc": "2024-03-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90856.691487,
+          "ledger_equity": 99789.584635,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90856.691487,
+          "snapshot_equity": 99789.584635,
+          "timestamp_utc": "2024-03-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90856.691487,
+          "ledger_equity": 99742.989501,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90856.691487,
+          "snapshot_equity": 99742.989501,
+          "timestamp_utc": "2024-03-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90856.691487,
+          "ledger_equity": 99830.339685,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90856.691487,
+          "snapshot_equity": 99830.339685,
+          "timestamp_utc": "2024-03-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -0.0
+          },
+          "ledger_cash": 90856.691487,
+          "ledger_equity": 99915.790709,
+          "max_abs_diff": 0.0,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90856.691487,
+          "snapshot_equity": 99915.790709,
+          "timestamp_utc": "2024-03-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 88575.060211,
+          "ledger_equity": 99810.580573,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 88575.060211,
+          "snapshot_equity": 99810.580572,
+          "timestamp_utc": "2024-03-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 88575.060211,
+          "ledger_equity": 99833.63935,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 88575.060211,
+          "snapshot_equity": 99833.639349,
+          "timestamp_utc": "2024-03-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 88575.060211,
+          "ledger_equity": 99816.784234,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 88575.060211,
+          "snapshot_equity": 99816.784233,
+          "timestamp_utc": "2024-03-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 88575.060211,
+          "ledger_equity": 99858.857736,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 88575.060211,
+          "snapshot_equity": 99858.857735,
+          "timestamp_utc": "2024-03-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 88575.060211,
+          "ledger_equity": 99977.733055,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 88575.060211,
+          "snapshot_equity": 99977.733054,
+          "timestamp_utc": "2024-03-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 89791.825142,
+          "ledger_equity": 100010.248017,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89791.825142,
+          "snapshot_equity": 100010.248016,
+          "timestamp_utc": "2024-03-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 89791.825142,
+          "ledger_equity": 100094.865442,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89791.825142,
+          "snapshot_equity": 100094.865441,
+          "timestamp_utc": "2024-03-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 89791.825142,
+          "ledger_equity": 100127.886244,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89791.825142,
+          "snapshot_equity": 100127.886243,
+          "timestamp_utc": "2024-03-20T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 89791.825142,
+          "ledger_equity": 100169.152477,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89791.825142,
+          "snapshot_equity": 100169.152476,
+          "timestamp_utc": "2024-03-21T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 89791.825142,
+          "ledger_equity": 100234.642374,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89791.825142,
+          "snapshot_equity": 100234.642373,
+          "timestamp_utc": "2024-03-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91151.416391,
+          "ledger_equity": 100182.269417,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91151.416391,
+          "snapshot_equity": 100182.269416,
+          "timestamp_utc": "2024-03-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91151.416391,
+          "ledger_equity": 100185.580254,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91151.416391,
+          "snapshot_equity": 100185.580254,
+          "timestamp_utc": "2024-03-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91151.416391,
+          "ledger_equity": 100121.466169,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91151.416391,
+          "snapshot_equity": 100121.466169,
+          "timestamp_utc": "2024-03-27T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91151.416391,
+          "ledger_equity": 100074.792915,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91151.416391,
+          "snapshot_equity": 100074.792915,
+          "timestamp_utc": "2024-03-28T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91151.416391,
+          "ledger_equity": 100112.146847,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91151.416391,
+          "snapshot_equity": 100112.146846,
+          "timestamp_utc": "2024-03-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91127.842335,
+          "ledger_equity": 100115.654378,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91127.842335,
+          "snapshot_equity": 100115.654378,
+          "timestamp_utc": "2024-04-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91127.842335,
+          "ledger_equity": 100216.615214,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91127.842335,
+          "snapshot_equity": 100216.615214,
+          "timestamp_utc": "2024-04-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91127.842335,
+          "ledger_equity": 100231.421059,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91127.842335,
+          "snapshot_equity": 100231.421058,
+          "timestamp_utc": "2024-04-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91127.842335,
+          "ledger_equity": 100227.893592,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91127.842335,
+          "snapshot_equity": 100227.893591,
+          "timestamp_utc": "2024-04-04T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91127.842335,
+          "ledger_equity": 100195.453204,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91127.842335,
+          "snapshot_equity": 100195.453203,
+          "timestamp_utc": "2024-04-05T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90091.064468,
+          "ledger_equity": 100230.975158,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90091.064468,
+          "snapshot_equity": 100230.975158,
+          "timestamp_utc": "2024-04-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90091.064468,
+          "ledger_equity": 100308.982094,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90091.064468,
+          "snapshot_equity": 100308.982093,
+          "timestamp_utc": "2024-04-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90091.064468,
+          "ledger_equity": 100367.088522,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90091.064468,
+          "snapshot_equity": 100367.088522,
+          "timestamp_utc": "2024-04-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90091.064468,
+          "ledger_equity": 100307.05981,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90091.064468,
+          "snapshot_equity": 100307.059809,
+          "timestamp_utc": "2024-04-11T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90091.064468,
+          "ledger_equity": 100193.087379,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90091.064468,
+          "snapshot_equity": 100193.087379,
+          "timestamp_utc": "2024-04-12T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91132.951164,
+          "ledger_equity": 100169.657427,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91132.951164,
+          "snapshot_equity": 100169.657425,
+          "timestamp_utc": "2024-04-15T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91132.951164,
+          "ledger_equity": 100122.149161,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91132.951164,
+          "snapshot_equity": 100122.149159,
+          "timestamp_utc": "2024-04-16T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91132.951164,
+          "ledger_equity": 100171.956995,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91132.951164,
+          "snapshot_equity": 100171.956994,
+          "timestamp_utc": "2024-04-17T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91132.951164,
+          "ledger_equity": 100144.724268,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91132.951164,
+          "snapshot_equity": 100144.724267,
+          "timestamp_utc": "2024-04-18T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 91132.951164,
+          "ledger_equity": 100071.892729,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 91132.951164,
+          "snapshot_equity": 100071.892728,
+          "timestamp_utc": "2024-04-19T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90971.421388,
+          "ledger_equity": 99968.598128,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90971.421388,
+          "snapshot_equity": 99968.598127,
+          "timestamp_utc": "2024-04-22T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90971.421388,
+          "ledger_equity": 99810.704566,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90971.421388,
+          "snapshot_equity": 99810.704565,
+          "timestamp_utc": "2024-04-23T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90971.421388,
+          "ledger_equity": 99825.610706,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90971.421388,
+          "snapshot_equity": 99825.610705,
+          "timestamp_utc": "2024-04-24T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 90971.421388,
+          "ledger_equity": 99817.609443,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90971.421388,
+          "snapshot_equity": 99817.609442,
+          "timestamp_utc": "2024-04-25T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -1e-06
+          },
+          "ledger_cash": 90971.421388,
+          "ledger_equity": 99727.246555,
+          "max_abs_diff": 1e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 90971.421388,
+          "snapshot_equity": 99727.246553,
+          "timestamp_utc": "2024-04-26T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 88661.039274,
+          "ledger_equity": 99834.942355,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 88661.039274,
+          "snapshot_equity": 99834.942353,
+          "timestamp_utc": "2024-04-29T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 88661.039274,
+          "ledger_equity": 99770.682341,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 88661.039274,
+          "snapshot_equity": 99770.682339,
+          "timestamp_utc": "2024-04-30T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 88661.039274,
+          "ledger_equity": 99740.087101,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 88661.039274,
+          "snapshot_equity": 99740.087099,
+          "timestamp_utc": "2024-05-01T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 88661.039274,
+          "ledger_equity": 99774.107144,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 88661.039274,
+          "snapshot_equity": 99774.107142,
+          "timestamp_utc": "2024-05-02T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 88661.039274,
+          "ledger_equity": 99876.620114,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 88661.039274,
+          "snapshot_equity": 99876.620112,
+          "timestamp_utc": "2024-05-03T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 89820.857883,
+          "ledger_equity": 99959.93652,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89820.857883,
+          "snapshot_equity": 99959.936518,
+          "timestamp_utc": "2024-05-06T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 89820.857883,
+          "ledger_equity": 99966.393238,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89820.857883,
+          "snapshot_equity": 99966.393236,
+          "timestamp_utc": "2024-05-07T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 89820.857883,
+          "ledger_equity": 99979.543002,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89820.857883,
+          "snapshot_equity": 99979.543,
+          "timestamp_utc": "2024-05-08T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 89820.857883,
+          "ledger_equity": 99930.6497,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89820.857883,
+          "snapshot_equity": 99930.649697,
+          "timestamp_utc": "2024-05-09T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 89820.857883,
+          "ledger_equity": 99836.811902,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 89820.857883,
+          "snapshot_equity": 99836.8119,
+          "timestamp_utc": "2024-05-10T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 92573.157102,
+          "ledger_equity": 99873.157162,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 92573.157102,
+          "snapshot_equity": 99873.157161,
+          "timestamp_utc": "2024-05-13T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 92573.157102,
+          "ledger_equity": 99923.870701,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 92573.157102,
+          "snapshot_equity": 99923.8707,
+          "timestamp_utc": "2024-05-14T14:30:00+00:00"
+        },
+        {
+          "diff": {
+            "cash": -0.0,
+            "equity": -2e-06
+          },
+          "ledger_cash": 92573.157102,
+          "ledger_equity": 99960.260439,
+          "max_abs_diff": 2e-06,
+          "max_pct_diff": 0.0,
+          "passed": true,
+          "snapshot_cash": 92573.157102,
+          "snapshot_equity": 99960.260437,
+          "timestamp_utc": "2024-05-15T14:30:00+00:00"
+        }
+      ],
+      "summary": {
+        "absolute_tolerance": 1e-06,
+        "max_abs_diff": 2e-06,
+        "max_pct_diff": 0.0,
+        "message": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000002)",
+        "passed": true,
+        "snapshot_count": 358,
+        "tolerance_pct": 0.01
+      }
+    },
+    "risk": {
+      "approved": 108,
+      "rejected": 13,
+      "rejection_reasons": {
+        "session_not_allowed": 13
+      },
+      "risk_check_count": 121
+    },
+    "run_id": "ubt_29c566c4908a49b4",
+    "slippage": {
+      "bps": 1.0,
+      "model": "BpsSlippage",
+      "realized_total": 11.601002
+    },
+    "strategy": {
+      "strategies": [
+        {
+          "params": {
+            "lookback_days": 60,
+            "max_single_weight": 0.45,
+            "rebalance_weekday": 0,
+            "strategy_id": "etf_rotation",
+            "top_n": 2,
+            "universe": [
+              "SPY",
+              "QQQ",
+              "IWM",
+              "DIA"
+            ]
+          },
+          "strategy_id": "etf_rotation",
+          "version": "0.1.0"
+        }
+      ],
+      "strategy_version": "etf_rotation@0.1.0"
+    }
+  },
+  "manifest_schema_version": "backtest_run_v2",
+  "missing_data_manifest": true,
+  "reconciliation": {
+    "absolute_tolerance": 1e-06,
+    "max_abs_diff": 2e-06,
+    "max_pct_diff": 0.0,
+    "message": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000002)",
+    "passed": true,
+    "snapshot_count": 358,
+    "tolerance_pct": 0.01
+  },
+  "run_id": "ubt_29c566c4908a49b4",
+  "slippage_model": {
+    "bps": 1.0,
+    "model": "BpsSlippage",
+    "realized_total": 11.601002
+  },
+  "start_time": "2026-05-09T12:21:20.411284+00:00",
+  "strategy_params": [
+    {
+      "params": {
+        "lookback_days": 60,
+        "max_single_weight": 0.45,
+        "rebalance_weekday": 0,
+        "strategy_id": "etf_rotation",
+        "top_n": 2,
+        "universe": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA"
+        ]
+      },
+      "strategy_id": "etf_rotation",
+      "version": "0.1.0"
+    }
+  ],
+  "strategy_version": "etf_rotation@0.1.0"
+}

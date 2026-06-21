@@ -1,0 +1,128 @@
+{
+  "generated_utc": "2026-05-12T13:51:22.781556+00:00",
+  "strategy_id": "btc_perp_dual_trend",
+  "params": {
+    "short_enabled": 1.0,
+    "fast_ma": 72,
+    "slow_ma": 240,
+    "regime_ma": 720,
+    "momentum_window": 168,
+    "momentum_threshold": 0.02,
+    "vol_window": 168,
+    "max_volatility": 0.055,
+    "min_hold_bars": 72,
+    "cooldown_bars": 24,
+    "max_hold_bars": 720
+  },
+  "data_version": "qs-sqlite-BTCUSDT-1h-67d40204893a",
+  "symbols_tested": [
+    "BTCUSDT"
+  ],
+  "insufficient_data": false,
+  "aggregate": {
+    "total_windows": 3,
+    "windows_consistent": 3,
+    "oos_total_return_pct": -0.025,
+    "oos_avg_sharpe": 0.0748,
+    "oos_avg_max_dd": -8.5191,
+    "oos_avg_turnover_pct": 0.0,
+    "oos_win_rate": 0.0,
+    "fold_pass_rate_pct": 66.6667,
+    "symbol_coverage_pct": 100.0
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "train_end": "2025-07-06T04:00:00+00:00",
+      "test_start": "2025-07-06T05:00:00+00:00",
+      "test_end": "2025-10-13T07:00:00+00:00",
+      "strategy_id": "btc_perp_dual_trend",
+      "params": {
+        "short_enabled": 1.0,
+        "fast_ma": 72,
+        "slow_ma": 240,
+        "regime_ma": 720,
+        "momentum_window": 168,
+        "momentum_threshold": 0.02,
+        "vol_window": 168,
+        "max_volatility": 0.055,
+        "min_hold_bars": 72,
+        "cooldown_bars": 24,
+        "max_hold_bars": 720
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-67d40204893a",
+      "result": {
+        "total_return_pct": 1.3344,
+        "sharpe_ratio": 0.0748,
+        "max_drawdown_pct": -8.5191,
+        "turnover_pct": 709.2949,
+        "trade_count": 283
+      },
+      "equity_consistent": true,
+      "pass": true
+    },
+    {
+      "fold": 1,
+      "train_start": "2024-04-09T03:00:00+00:00",
+      "train_end": "2025-10-13T07:00:00+00:00",
+      "test_start": "2025-10-13T08:00:00+00:00",
+      "test_end": "2026-01-20T10:00:00+00:00",
+      "strategy_id": "btc_perp_dual_trend",
+      "params": {
+        "short_enabled": 1.0,
+        "fast_ma": 72,
+        "slow_ma": 240,
+        "regime_ma": 720,
+        "momentum_window": 168,
+        "momentum_threshold": 0.02,
+        "vol_window": 168,
+        "max_volatility": 0.055,
+        "min_hold_bars": 72,
+        "cooldown_bars": 24,
+        "max_hold_bars": 720
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-67d40204893a",
+      "result": {
+        "total_return_pct": -7.2436,
+        "sharpe_ratio": -0.5256,
+        "max_drawdown_pct": -7.6911,
+        "turnover_pct": 443.0795,
+        "trade_count": 192
+      },
+      "equity_consistent": true,
+      "pass": false
+    },
+    {
+      "fold": 2,
+      "train_start": "2024-07-17T06:00:00+00:00",
+      "train_end": "2026-01-20T10:00:00+00:00",
+      "test_start": "2026-01-20T11:00:00+00:00",
+      "test_end": "2026-04-29T13:00:00+00:00",
+      "strategy_id": "btc_perp_dual_trend",
+      "params": {
+        "short_enabled": 1.0,
+        "fast_ma": 72,
+        "slow_ma": 240,
+        "regime_ma": 720,
+        "momentum_window": 168,
+        "momentum_threshold": 0.02,
+        "vol_window": 168,
+        "max_volatility": 0.055,
+        "min_hold_bars": 72,
+        "cooldown_bars": 24,
+        "max_hold_bars": 720
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-67d40204893a",
+      "result": {
+        "total_return_pct": 5.8342,
+        "sharpe_ratio": 0.2441,
+        "max_drawdown_pct": -5.3193,
+        "turnover_pct": 535.6039,
+        "trade_count": 177
+      },
+      "equity_consistent": true,
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,556 @@
+{
+  "asset": "btc",
+  "blockers": [
+    "btc_ws_latency_queue_research_capture_duration_below_contract",
+    "btc_ws_latency_queue_history_missing_for_event_ledger_window",
+    "btc_execution_latency_model_missing_ws_receive_latency_is_not_order_execution_latency",
+    "btc_queue_model_missing_public_l2_visible_depth_is_not_exchange_queue_position"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "capture_summary": {
+    "capture_duration_seconds": 30.278312427,
+    "connection_count": 4,
+    "data_message_count": 309,
+    "event_ledger_history_days": 0.00035044343086805557,
+    "forced_reconnect_count": 3,
+    "message_count": 317
+  },
+  "commit": "03cad6a",
+  "contract_satisfied": false,
+  "decision": "continue_long_public_ws_l2_capture_and_keep_execution_latency_queue_unlocked_false",
+  "event_ledger_feature_validation_allowed": false,
+  "execution_latency_model_ready": false,
+  "generated_at": "2026-06-21T04:25:02.622570Z",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "future_label_used_for_signal": false,
+    "live": "FROZEN",
+    "lookahead_used_for_signal": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_usable": false,
+    "paper_queue": "LOCKED",
+    "private_endpoints_allowed": false,
+    "production_ready": false,
+    "real_orders_created": false,
+    "research_only": true
+  },
+  "next_required_action": "extend_public_ws_l2_capture_duration_then_separate_order_execution_latency_and_queue_position_evidence",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "proxy_diagnostics_ready": true,
+  "queue_model_ready": false,
+  "receive_latency_proxy": {
+    "book_sample_count": 237,
+    "clock_precision_warning": true,
+    "limitations": [
+      "local_receive_ts_clock_delta_is_not_private_order_execution_latency",
+      "second_precision_receive_timestamps_can_create_negative_clock_delta_samples",
+      "network_path_is_public_market_data_not_authenticated_order_path"
+    ],
+    "negative_clock_delta_count": 275,
+    "proxy_id": "btc_okx_public_ws_receive_latency_proxy_v1",
+    "proxy_scope": "public_ws_market_data_receive_clock_delta_not_order_execution_latency",
+    "receive_clock_delta_ms": {
+      "max": 112.0,
+      "mean": -341.2168284789644,
+      "median": -305.0,
+      "min": -886.0
+    },
+    "sample_count": 309,
+    "sample_preview": [
+      {
+        "capture_sequence": 3,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015903905,
+        "receive_clock_delta_ms": 95
+      },
+      {
+        "capture_sequence": 4,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904005,
+        "receive_clock_delta_ms": -5
+      },
+      {
+        "capture_sequence": 5,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904105,
+        "receive_clock_delta_ms": -105
+      },
+      {
+        "capture_sequence": 6,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904205,
+        "receive_clock_delta_ms": -205
+      },
+      {
+        "capture_sequence": 7,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904305,
+        "receive_clock_delta_ms": -305
+      },
+      {
+        "capture_sequence": 8,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904405,
+        "receive_clock_delta_ms": -405
+      },
+      {
+        "capture_sequence": 9,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904505,
+        "receive_clock_delta_ms": -505
+      },
+      {
+        "capture_sequence": 10,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904605,
+        "receive_clock_delta_ms": -605
+      },
+      {
+        "capture_sequence": 11,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904705,
+        "receive_clock_delta_ms": -705
+      },
+      {
+        "capture_sequence": 12,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904805,
+        "receive_clock_delta_ms": -805
+      },
+      {
+        "capture_sequence": 13,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904905,
+        "receive_clock_delta_ms": 95
+      },
+      {
+        "capture_sequence": 14,
+        "channel": "trades",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015904948,
+        "receive_clock_delta_ms": 52
+      },
+      {
+        "capture_sequence": 15,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015905005,
+        "receive_clock_delta_ms": -5
+      },
+      {
+        "capture_sequence": 16,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015905105,
+        "receive_clock_delta_ms": -105
+      },
+      {
+        "capture_sequence": 17,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015905205,
+        "receive_clock_delta_ms": -205
+      },
+      {
+        "capture_sequence": 18,
+        "channel": "trades",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015905272,
+        "receive_clock_delta_ms": -272
+      },
+      {
+        "capture_sequence": 19,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015905305,
+        "receive_clock_delta_ms": -305
+      },
+      {
+        "capture_sequence": 20,
+        "channel": "trades",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015905353,
+        "receive_clock_delta_ms": -353
+      },
+      {
+        "capture_sequence": 21,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015905405,
+        "receive_clock_delta_ms": -405
+      },
+      {
+        "capture_sequence": 22,
+        "channel": "books",
+        "connection_sequence": 1,
+        "exchange_ts_ms": 1782015905505,
+        "receive_clock_delta_ms": -505
+      }
+    ],
+    "trade_sample_count": 72
+  },
+  "schema_version": "btc_true_scalping_ws_latency_queue_diagnostics_report_v1",
+  "scope": "research_only_ws_receive_latency_visible_queue_proxy_no_candidate_no_paper_no_live",
+  "selected_bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1_codex_ws_l2_segment_20260621042502z",
+  "source_files": {
+    "raw_capture_manifest": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1_codex_ws_l2_segment_20260621042502z/okx_public_ws_l2_raw_capture_manifest.json",
+      "row_count": 1
+    },
+    "raw_messages": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1_codex_ws_l2_segment_20260621042502z/okx_public_ws_l2_raw_messages.jsonl",
+      "row_count": 317
+    }
+  },
+  "source_reports": {
+    "ws_capture_report": "artifacts/btc_scalping_readiness/codex_ws_l2_segment_20260621042502z/btc_okx_public_ws_l2_raw_capture_report.json",
+    "ws_order_book_replay_report": "artifacts/btc_scalping_readiness/codex_ws_l2_segment_20260621042502z/btc_true_scalping_ws_order_book_replay_report.json"
+  },
+  "status": "ws_latency_queue_proxy_ready_research_only_execution_latency_history_insufficient",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false,
+  "validation": {
+    "execution_latency_model_ready": false,
+    "minimum_event_ledger_history_days_satisfied": false,
+    "minimum_research_capture_seconds_satisfied": false,
+    "proxy_diagnostics_ready": true,
+    "public_source_boundary_satisfied": true,
+    "queue_model_ready": false,
+    "raw_capture_ready": true,
+    "receive_latency_proxy_is_execution_latency": false,
+    "receive_latency_proxy_ready": true,
+    "replay_sequence_ready": true,
+    "visible_queue_proxy_is_exchange_queue_position": false,
+    "visible_queue_proxy_ready": true
+  },
+  "venue_symbol": "BTC-USDT-SWAP",
+  "visible_queue_proxy": {
+    "best_ask_visible_queue_btc": {
+      "max": 1541.51,
+      "mean": 656.3822362869198,
+      "median": 496.17,
+      "min": 404.47
+    },
+    "best_bid_visible_queue_btc": {
+      "max": 657.95,
+      "mean": 469.1377637130802,
+      "median": 472.5,
+      "min": 183.49
+    },
+    "limitations": [
+      "public_l2_depth_does_not_reveal_private_queue_position",
+      "visible_size_can_cancel_before_fill",
+      "proxy_cannot_estimate_order_priority_without_executions_or_private_order_ack_timestamps"
+    ],
+    "maker_fill_assumption": "join_back_of_visible_best_level_queue_research_only",
+    "proxy_id": "btc_okx_public_ws_visible_queue_proxy_v1",
+    "proxy_scope": "visible_book_depth_proxy_not_exchange_order_queue_position",
+    "sample_count": 237,
+    "sample_preview": [
+      {
+        "action": "snapshot",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 68.0,
+        "best_ask_visible_queue_btc": 1532.72,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 348.13,
+        "capture_sequence": 3,
+        "seq_id": 325069852478,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1579.03,
+        "top5_bid_visible_queue_btc": 348.92
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 69.0,
+        "best_ask_visible_queue_btc": 1534.28,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 348.13,
+        "capture_sequence": 4,
+        "seq_id": 325069852527,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1580.59,
+        "top5_bid_visible_queue_btc": 348.92
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 69.0,
+        "best_ask_visible_queue_btc": 1534.29,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 14.0,
+        "best_bid_visible_queue_btc": 316.06,
+        "capture_sequence": 5,
+        "seq_id": 325069852641,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1580.6,
+        "top5_bid_visible_queue_btc": 316.85
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 69.0,
+        "best_ask_visible_queue_btc": 1534.29,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 14.0,
+        "best_bid_visible_queue_btc": 316.06,
+        "capture_sequence": 6,
+        "seq_id": 325069852724,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1580.6,
+        "top5_bid_visible_queue_btc": 316.85
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 69.0,
+        "best_ask_visible_queue_btc": 1534.29,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 14.0,
+        "best_bid_visible_queue_btc": 316.06,
+        "capture_sequence": 7,
+        "seq_id": 325069852797,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1580.6,
+        "top5_bid_visible_queue_btc": 316.85
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.39,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 14.0,
+        "best_bid_visible_queue_btc": 316.06,
+        "capture_sequence": 8,
+        "seq_id": 325069852880,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.7,
+        "top5_bid_visible_queue_btc": 316.85
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.39,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 14.0,
+        "best_bid_visible_queue_btc": 316.06,
+        "capture_sequence": 9,
+        "seq_id": 325069853075,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.7,
+        "top5_bid_visible_queue_btc": 316.85
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.39,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 14.0,
+        "best_bid_visible_queue_btc": 316.06,
+        "capture_sequence": 10,
+        "seq_id": 325069853183,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.7,
+        "top5_bid_visible_queue_btc": 316.85
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.39,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 316.6,
+        "capture_sequence": 11,
+        "seq_id": 325069853235,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.7,
+        "top5_bid_visible_queue_btc": 317.39000000000004
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.39,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 316.6,
+        "capture_sequence": 12,
+        "seq_id": 325069853269,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.7,
+        "top5_bid_visible_queue_btc": 317.39000000000004
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.39,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 316.6,
+        "capture_sequence": 13,
+        "seq_id": 325069853282,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.7,
+        "top5_bid_visible_queue_btc": 317.39000000000004
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.39,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 311.6,
+        "capture_sequence": 15,
+        "seq_id": 325069853305,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.7,
+        "top5_bid_visible_queue_btc": 312.39000000000004
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.39,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 311.6,
+        "capture_sequence": 16,
+        "seq_id": 325069853354,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.7,
+        "top5_bid_visible_queue_btc": 312.39000000000004
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.39,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 311.55,
+        "capture_sequence": 17,
+        "seq_id": 325069853383,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.7,
+        "top5_bid_visible_queue_btc": 312.34000000000003
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.41,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 306.55,
+        "capture_sequence": 19,
+        "seq_id": 325069853423,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.72,
+        "top5_bid_visible_queue_btc": 307.34000000000003
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.41,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 306.37,
+        "capture_sequence": 21,
+        "seq_id": 325069853479,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.72,
+        "top5_bid_visible_queue_btc": 307.16
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.41,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 306.37,
+        "capture_sequence": 22,
+        "seq_id": 325069853513,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.72,
+        "top5_bid_visible_queue_btc": 307.16
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.41,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 15.0,
+        "best_bid_visible_queue_btc": 301.37,
+        "capture_sequence": 24,
+        "seq_id": 325069853617,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.72,
+        "top5_bid_visible_queue_btc": 302.16
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 71.0,
+        "best_ask_visible_queue_btc": 1536.41,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 13.0,
+        "best_bid_visible_queue_btc": 256.78,
+        "capture_sequence": 25,
+        "seq_id": 325069853690,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.72,
+        "top5_bid_visible_queue_btc": 257.57
+      },
+      {
+        "action": "update",
+        "best_ask": 64458.0,
+        "best_ask_order_count": 72.0,
+        "best_ask_visible_queue_btc": 1536.51,
+        "best_bid": 64457.9,
+        "best_bid_order_count": 13.0,
+        "best_bid_visible_queue_btc": 256.78,
+        "capture_sequence": 26,
+        "seq_id": 325069853717,
+        "spread_bps": 0.015513990128222323,
+        "top5_ask_visible_queue_btc": 1582.82,
+        "top5_bid_visible_queue_btc": 257.57
+      }
+    ],
+    "spread_bps": {
+      "max": 0.015513990128222323,
+      "mean": 0.015513990128222323,
+      "median": 0.015513990128222323,
+      "min": 0.015513990128222323
+    },
+    "taker_fill_assumption": "cross_spread_and_pay_cost_model_research_only"
+  }
+}

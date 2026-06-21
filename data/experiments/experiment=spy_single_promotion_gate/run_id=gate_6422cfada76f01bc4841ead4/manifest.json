@@ -1,0 +1,77 @@
+{
+  "artifacts": [
+    {
+      "artifact_type": "json",
+      "metadata": {
+        "data_version": "qs-yfinance-SPY-1d-38dbffe22507",
+        "decision": "fail",
+        "manifest_id": "6422cfada76f01bc4841ead4",
+        "next_stage": "blocked"
+      },
+      "name": "promotion_manifest",
+      "path": "/home/lishuonewbing/agent\u6d4b\u8bd5/reports/research_gates/6422cfada76f01bc4841ead4.json"
+    }
+  ],
+  "completed_at": "2026-05-08T03:44:28.241086+00:00",
+  "created_at": "2026-05-08T03:44:28.241086+00:00",
+  "error": null,
+  "experiment_id": "exp_1085f84016a64c2f",
+  "metrics": {
+    "annual_return_pct": 39.4663,
+    "annual_volatility_pct": 7.8187,
+    "calmar_ratio": 16.1277,
+    "data_coverage_pct": 95.4373,
+    "data_quality_score": 95.4373,
+    "gate_fail_count": 1,
+    "gate_pass_count": 2,
+    "gate_warn_count": 3,
+    "max_drawdown_pct": -2.4471,
+    "profit_factor": 2.9457,
+    "promotion_score": 22.5,
+    "sharpe_ratio": 4.2954,
+    "sortino_ratio": 6.1152,
+    "total_return_pct": 39.7208,
+    "trade_count": 3,
+    "win_rate_pct": 62.5
+  },
+  "run_id": "gate_6422cfada76f01bc4841ead4",
+  "spec": {
+    "asset_class": "equity",
+    "bar_size": "1d",
+    "data_vendor": "yfinance",
+    "data_version": "qs-yfinance-SPY-1d-38dbffe22507",
+    "dataset_run_id": "",
+    "end": "2025-01-01T00:00:00+00:00",
+    "experiment_name": "spy_single_promotion_gate",
+    "feature_version": "",
+    "model_id": "",
+    "notes": "",
+    "parameters": {
+      "capital": 100000.0,
+      "commission_rate": 0.0001,
+      "leverage": 1.0,
+      "mode": "single",
+      "position_basis": "equity",
+      "skip_deep_checks": false,
+      "slippage": 1.0,
+      "strategy_params": {},
+      "weights": []
+    },
+    "promotion_decision": "fail",
+    "promotion_manifest_id": "6422cfada76f01bc4841ead4",
+    "promotion_stage": "blocked",
+    "run_type": "research_promotion_gate",
+    "start": "2024-01-01T00:00:00+00:00",
+    "strategy_id": "trend_momentum",
+    "strategy_version": "strategy_af14a9b17bf09ff7",
+    "symbols": [
+      "SPY"
+    ],
+    "tags": [
+      "promotion_gate",
+      "single",
+      "fail"
+    ]
+  },
+  "status": "completed"
+}

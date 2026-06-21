@@ -1,0 +1,41 @@
+{
+  "portfolio_run_id": "pypfopt_us_core_max_sharpe_2025",
+  "source_score_run_id": "qlib_us_core_daily_2020_2025",
+  "status": "completed",
+  "research_only": true,
+  "daily_only": true,
+  "live_enabled": false,
+  "order_generation": "disabled",
+  "generated_at": "2026-05-11T05:23:21.228818+00:00",
+  "dependency_available": true,
+  "fallback_used": true,
+  "config": {
+    "optimizer": "max_sharpe",
+    "fallback_optimizer": "equal_weight_topk",
+    "expected_return_method": "rank_zscore",
+    "covariance_method": "sample",
+    "top_k": 5,
+    "lookback_days": 252,
+    "min_observations": 60,
+    "annualization": 252,
+    "rebalance_freq": "daily",
+    "long_only": true,
+    "max_weight": 0.15,
+    "cash_buffer": 0.02,
+    "max_turnover": 0.3,
+    "risk_free_rate": 0.0,
+    "min_expected_return": 0.02,
+    "max_expected_return": 0.2,
+    "strategy_id": "pypfopt_daily_only",
+    "vendor": "yfinance",
+    "asset_class": "equity",
+    "bar_size": "1d",
+    "current_weights_path": "",
+    "constraints_hash": "66c89cc0847c3204"
+  },
+  "output_files": {
+    "expected_returns": "artifacts/portfolio_runs/pypfopt_us_core_max_sharpe_2025/expected_returns.parquet",
+    "covariance": "artifacts/portfolio_runs/pypfopt_us_core_max_sharpe_2025/covariance.parquet",
+    "target_weights": "artifacts/portfolio_runs/pypfopt_us_core_max_sharpe_2025/target_weights.parquet"
+  }
+}

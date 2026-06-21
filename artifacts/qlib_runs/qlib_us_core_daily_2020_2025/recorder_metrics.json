@@ -1,0 +1,49 @@
+{
+  "artifacts": [
+    "code_cached.txt",
+    "code_diff.txt",
+    "code_status.txt",
+    "label.pkl",
+    "pred.pkl",
+    "sig_analysis"
+  ],
+  "id": "86817728010f4f84b586bbe3fb9670c9",
+  "metrics": {
+    "l2.train": 0.9230769257301209,
+    "l2.valid": 0.9230769221655507
+  },
+  "name": "mlflow_recorder",
+  "params": {
+    "cmd-sys.argv": "/home/lishuonewbing/agent\u6d4b\u8bd5/integrations/qlib_adapter/run_qlib_workflow.py --config configs/qlib/us_lgbm_alpha158_daily.yaml --run-id qlib_us_core_daily_2020_2025",
+    "dataset.class": "DatasetH",
+    "dataset.kwargs.handler.class": "Alpha158",
+    "dataset.kwargs.handler.kwargs.end_time": "2025-12-31",
+    "dataset.kwargs.handler.kwargs.fit_end_time": "2023-12-31",
+    "dataset.kwargs.handler.kwargs.fit_start_time": "2020-01-01",
+    "dataset.kwargs.handler.kwargs.instruments": "all",
+    "dataset.kwargs.handler.kwargs.start_time": "2020-01-01",
+    "dataset.kwargs.handler.module_path": "qlib.contrib.data.handler",
+    "dataset.kwargs.segments.test": "[datetime.date(2025, 1, 1), datetime.date(2025, 12, 31)]",
+    "dataset.kwargs.segments.train": "[datetime.date(2020, 1, 1), datetime.date(2023, 12, 31)]",
+    "dataset.kwargs.segments.valid": "[datetime.date(2024, 1, 1), datetime.date(2024, 12, 31)]",
+    "dataset.module_path": "qlib.data.dataset",
+    "model.class": "LGBModel",
+    "model.kwargs.colsample_bytree": "0.8879",
+    "model.kwargs.lambda_l1": "205.6999",
+    "model.kwargs.lambda_l2": "580.9768",
+    "model.kwargs.learning_rate": "0.2",
+    "model.kwargs.loss": "mse",
+    "model.kwargs.max_depth": "8",
+    "model.kwargs.num_leaves": "210",
+    "model.kwargs.num_threads": "20",
+    "model.kwargs.subsample": "0.8789",
+    "model.module_path": "qlib.contrib.model.gbdt"
+  },
+  "tags": {
+    "mlflow.runName": "mlflow_recorder",
+    "mlflow.source.git.commit": "af2ef8d7381d4b0263a18d48059af1d76859af4c",
+    "mlflow.source.name": "/home/lishuonewbing/agent\u6d4b\u8bd5/integrations/qlib_adapter/run_qlib_workflow.py",
+    "mlflow.source.type": "LOCAL",
+    "mlflow.user": "lishuonewbing"
+  }
+}

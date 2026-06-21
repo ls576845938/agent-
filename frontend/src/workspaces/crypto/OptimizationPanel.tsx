@@ -1,4 +1,4 @@
-import type {StrategyOptimizationResponse, CostStressResponse, WalkForwardResponse, PortfolioOptimizationResponse, DataQualityResponse, PromotionGateResponse, OptimizationFrameworkItem, CryptoClosureResponse, TaskResponse} from '../../lib/shared-types';
+import type {BtcScalpingResearchBacktest, BtcScalpingResearchBacktestReport, StrategyOptimizationResponse, CostStressResponse, WalkForwardResponse, PortfolioOptimizationResponse, DataQualityResponse, PromotionGateResponse, OptimizationFrameworkItem, CryptoClosureResponse, TaskResponse} from '../../lib/shared-types';
 import {formatOptimizationScore, formatParams, formatTimestamp, formatPrice, scenarioClass, gateClass} from '../../lib/utils';
 import {ModuleStateCard} from '../../components/ModuleStateCard';
 
@@ -64,6 +64,60 @@ const btcAlphaHardening = {
   ],
 };
 
+function researchTrackLabel(value: BtcScalpingResearchBacktestReport['recommended_research_track']): string {
+  if (value === 'five_minute_drift_guarded_intraday') return '5m drift-guarded';
+  if (value === 'one_minute_proxy_scalping') return '1m proxy scalping';
+  return '无可用轨道';
+}
+
+function metricNumber(value: number | null | undefined, digits = 2): string {
+  return typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : '-';
+}
+
+function metricText(track: BtcScalpingResearchBacktest | null, key: keyof BtcScalpingResearchBacktest['metrics'], label: string): string {
+  const value = track?.metrics[key];
+  if (typeof value !== 'number') return `${label} -`;
+  const metricKey = String(key);
+  const digits = metricKey === 'profit_factor' ? 3 : metricKey === 'hit_rate' || metricKey.endsWith('_pass_rate') ? 1 : 2;
+  const display = metricKey === 'hit_rate' || metricKey.endsWith('_pass_rate') ? `${(value * 100).toFixed(digits)}%` : value.toFixed(digits);
+  return `${label} ${display}`;
+}
+
+function ScalpingTrackCard({track, preferred = false}: {track: BtcScalpingResearchBacktest; preferred?: boolean}) {
+  const tone = track.gate_passed ? 'good' : 'bad';
+  const metrics = track.metrics;
+  const blockers = track.blockers.slice(0, 3);
+  return (
+    <article className={`scalping-track scalping-track-${tone}`}>
+      <div className="scalping-track-head">
+        <div>
+          <span>{preferred ? '推荐' : '观测'}</span>
+          <strong>{track.label}</strong>
+        </div>
+        <span className={`status-tag ${tone}`}>{track.gate_status}</span>
+      </div>
+      <div className="scalping-metrics">
+        <div><span>Trades</span><strong>{metrics.trade_count ?? '-'}</strong></div>
+        <div><span>Fills</span><strong>{metrics.fill_count ?? '-'}</strong></div>
+        <div><span>PF</span><strong>{metricNumber(metrics.profit_factor, 3)}</strong></div>
+        <div><span>Return</span><strong>{metricNumber(metrics.total_return_pct, 2)}%</strong></div>
+        <div><span>WF</span><strong>{typeof metrics.walk_forward_pass_rate === 'number' ? `${(metrics.walk_forward_pass_rate * 100).toFixed(0)}%` : '-'}</strong></div>
+        <div><span>Regime</span><strong>{typeof metrics.regime_pass_rate === 'number' ? `${(metrics.regime_pass_rate * 100).toFixed(0)}%` : '-'}</strong></div>
+      </div>
+      <div className="scalping-lock-row">
+        <span>manifest {track.manifest.complete ? 'complete' : 'missing'}</span>
+        <span>paper {track.manifest.paper_queue ?? 'LOCKED'}</span>
+        <span>live {track.manifest.live ?? 'FROZEN'}</span>
+      </div>
+      {blockers.length ? (
+        <div className="scalping-blockers">
+          {blockers.map((blocker) => <p key={blocker}>{blocker}</p>)}
+        </div>
+      ) : <p className="scalping-pass-note">internal research gate passed</p>}
+    </article>
+  );
+}
+
 interface OptimizationPanelProps {
   optimization: StrategyOptimizationResponse | null;
   optimizationLoading: boolean;
@@ -87,9 +141,13 @@ interface OptimizationPanelProps {
   cryptoClosureTask: TaskResponse | null;
   cryptoClosureLoading: boolean;
   cryptoClosureMessage: string;
+  scalpingResearch: BtcScalpingResearchBacktestReport | null;
+  scalpingResearchLoading: boolean;
+  scalpingResearchMessage: string;
   optimizationFramework: OptimizationFrameworkItem[];
   optimizedStrategyParams: Record<string, number> | null;
   onCryptoClosure: () => void;
+  onRefreshScalpingResearch: () => void;
   onOptimize: () => void;
   onCostStress: () => void;
   onWalkForward: () => void;
@@ -107,8 +165,10 @@ export default function OptimizationPanel({
   dataQuality, dataQualityLoading, dataQualityMessage,
   promotionGate, promotionGateLoading, promotionGateMessage,
   cryptoClosure, cryptoClosureTask, cryptoClosureLoading, cryptoClosureMessage,
+  scalpingResearch, scalpingResearchLoading, scalpingResearchMessage,
   optimizationFramework, optimizedStrategyParams,
   onCryptoClosure,
+  onRefreshScalpingResearch,
   onOptimize, onCostStress, onWalkForward, onPortfolioOptimize,
   onDataQuality, onPromotionGate, onApplyWeights,
 }: OptimizationPanelProps) {
@@ -146,6 +206,9 @@ export default function OptimizationPanel({
     {label: '下一阶段', value: cryptoClosure?.next_stage ?? promotionGate?.next_stage ?? '研究'},
     {label: '覆盖周期', value: cryptoClosure?.target_intervals.join(' / ') ?? '1m / 5m / 15m / 1h / 4h / 1d'},
   ];
+  const scalpingOneMinute = scalpingResearch?.backtests.one_minute_proxy_scalping ?? null;
+  const scalpingFiveMinute = scalpingResearch?.backtests.five_minute_drift_guarded_intraday ?? null;
+  const recommendedTrack = scalpingResearch ? researchTrackLabel(scalpingResearch.recommended_research_track) : '等待加载';
   return (
     <>
       <ModuleStateCard
@@ -163,6 +226,30 @@ export default function OptimizationPanel({
           variant: 'primary',
         }]}
       />
+
+      <div className="scalping-research-panel" data-testid="btc-scalping-research-panel">
+        <div className="panel-header">
+          <div>
+            <h2>BTC 剥头皮研究回测</h2>
+            <p className="panel-subtitle">{scalpingResearch?.operator_summary.current_research_answer ?? '等待最新研究回测报告'}</p>
+          </div>
+          <span>{scalpingResearch?.status ?? 'loading'}</span>
+        </div>
+        <div className="stress-summary-grid scalping-summary-grid">
+          <div className="optimization-best"><span>推荐轨道</span><strong>{recommendedTrack}</strong><p>{scalpingResearch?.decision ?? '-'}</p></div>
+          <div className="optimization-best"><span>5m 研究门</span><strong>{scalpingFiveMinute?.gate_passed ? '通过' : '未通过'}</strong><p>{metricText(scalpingFiveMinute, 'profit_factor', 'PF')}</p></div>
+          <div className="optimization-best"><span>1m Proxy</span><strong>{scalpingOneMinute?.gate_passed ? '通过' : '失败'}</strong><p>{metricText(scalpingOneMinute, 'mean_trade_return_bps', '均值 bps')}</p></div>
+          <div className="optimization-best"><span>交易状态</span><strong>{scalpingResearch?.guardrails.paper_queue ?? 'LOCKED'} / {scalpingResearch?.guardrails.live ?? 'FROZEN'}</strong><p>broker {scalpingResearch?.guardrails.broker_calls_allowed ? 'on' : 'off'} · order {scalpingResearch?.guardrails.order_endpoints_allowed ? 'on' : 'off'}</p></div>
+        </div>
+        <div className="scalping-track-grid">
+          {scalpingFiveMinute ? <ScalpingTrackCard track={scalpingFiveMinute} preferred /> : null}
+          {scalpingOneMinute ? <ScalpingTrackCard track={scalpingOneMinute} /> : null}
+        </div>
+        <div className="scalping-action-row">
+          <button type="button" className="secondary-button" disabled={scalpingResearchLoading} onClick={onRefreshScalpingResearch}>{scalpingResearchLoading ? '刷新中...' : '刷新研究报告'}</button>
+          <span>{scalpingResearchMessage || scalpingResearch?.generated_at || ''}</span>
+        </div>
+      </div>
 
       <div className="promotion-panel" data-testid="btc-alpha-hardening-panel">
         <div className="panel-header"><h2>BTC Alpha 加固</h2><span>{btcAlphaHardening.runId}</span></div>

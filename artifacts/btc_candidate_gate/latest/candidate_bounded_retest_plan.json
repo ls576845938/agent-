@@ -1,0 +1,242 @@
+{
+  "acceptance_criteria": {
+    "cost_stress_required": true,
+    "event_profit_factor_min": 1.15,
+    "ledger_fill_pnl_required": true,
+    "manifest_required": true,
+    "regime_pass_rate_min": 0.75,
+    "walk_forward_pass_rate_min": 0.8,
+    "walk_forward_recompute_required": true
+  },
+  "asset": "btc",
+  "blockers": [],
+  "bounded_parameter_search_allowed": true,
+  "branch": "main",
+  "candidate": {
+    "failed_metrics": [
+      "event_profit_factor",
+      "walk_forward_pass_rate"
+    ],
+    "metrics": {
+      "dsr": 1.0,
+      "event_profit_factor": 1.0205,
+      "fill_count": 49,
+      "max_drawdown": -7.835,
+      "ordinary_profit_factor": 1.631439,
+      "pbo": 0.5,
+      "regime_pass_rate": 1.0,
+      "trade_count": 24,
+      "walk_forward_pass_rate": 0.5
+    },
+    "source_run_dir": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/btc_perp_dual_trend_v4_eventpf_wf",
+    "status": "candidate_gate_failed",
+    "strategy_id": "btc_perp_dual_trend_v4_eventpf_wf",
+    "thresholds": {
+      "event_profit_factor": 1.15,
+      "regime_pass_rate": 0.75,
+      "walk_forward_pass_rate": 0.8
+    }
+  },
+  "commit": "cbe4b54",
+  "data_cost_prerequisite": {
+    "action": "complete_perpetual_data_cost_evidence",
+    "blockers": [],
+    "required_before_retest": true,
+    "status": "complete"
+  },
+  "execution_plan": {
+    "input_artifacts": [
+      "artifacts/btc_candidate_gate/latest/candidate_metric_repair_report.json",
+      "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/walk_forward_fold_attribution.json",
+      "artifacts/btc_canonical/20260516T061000Z_attribution"
+    ],
+    "manifest_contract": {
+      "blockers": [],
+      "existing_event_manifest_contract_ok": true,
+      "existing_event_manifest_fields_present": {
+        "commit_hash": true,
+        "cost_model": true,
+        "data_version": true,
+        "slippage_model": true,
+        "strategy_params": true,
+        "strategy_version": true
+      },
+      "existing_event_manifest_path": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_base.json",
+      "existing_run_manifest_has_artifact_paths": true,
+      "existing_run_manifest_path": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/run_manifest.json",
+      "params_field": "strategy_params",
+      "required_event_manifest_fields": [
+        "data_version",
+        "strategy_version",
+        "strategy_params",
+        "cost_model",
+        "slippage_model",
+        "commit_hash"
+      ]
+    },
+    "post_retest_validation_command": "make validate-btc-evidence",
+    "preflight_checks": [
+      {
+        "blockers": [],
+        "name": "perpetual_data_cost_evidence_complete",
+        "status": "complete"
+      },
+      {
+        "blockers": [],
+        "name": "bounded_retest_runner_contract",
+        "status": "complete"
+      },
+      {
+        "blockers": [],
+        "name": "event_backtest_manifest_contract",
+        "status": "complete"
+      }
+    ],
+    "readiness_check_command": "make check-btc-candidate-bounded-retest-readiness",
+    "required_output_artifacts": [
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/run_manifest.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/promotion_decision.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/paper_live_safety_status.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/btc_perp_dual_trend_v4_eventpf_wf_results.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/btc_perp_dual_trend_v4_eventpf_wf_decision.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/btc_perp_dual_trend_v4_eventpf_wf/canonical_backtest_report.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/btc_perp_dual_trend_v4_eventpf_wf/gate_inputs.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/walk_forward_fold_attribution.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_base.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_cost_costs_2x.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_wf1.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_wf2.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_wf3.json",
+      "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_wf4.json"
+    ],
+    "retest_command": "python3 scripts/research/run_btc_eventpf_wf_stabilization.py --run-id BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ --output-root artifacts/btc_canonical --source-run-dir artifacts/btc_canonical/20260516T061000Z_attribution",
+    "retest_command_template": "python3 scripts/research/run_btc_eventpf_wf_stabilization.py --run-id BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ --output-root artifacts/btc_canonical --source-run-dir artifacts/btc_canonical/20260516T061000Z_attribution",
+    "runner": {
+      "broker_calls_allowed": false,
+      "exists": true,
+      "module": "quant_us.research.btc_eventpf_wf.run_stabilization_sprint",
+      "paper_or_live_unlock_allowed": false,
+      "path": "scripts/research/run_btc_eventpf_wf_stabilization.py",
+      "supports_output_root_arg": true,
+      "supports_run_id_arg": true,
+      "supports_source_run_dir_arg": true
+    },
+    "status": "ready",
+    "strategy_id": "btc_perp_dual_trend_v4_eventpf_wf"
+  },
+  "generated_at": "2026-06-20T09:16:46Z",
+  "guardrails": {
+    "bounded_parameter_search_only": true,
+    "broker_calls_allowed": false,
+    "no_future_function": true,
+    "order_endpoints_allowed": false,
+    "ordinary_profit_factor_diagnostic_only": true,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoints_allowed": false,
+    "report_only": true,
+    "requires_cost_stress_pass": true,
+    "requires_event_ledger_fills_pnl": true,
+    "requires_manifest": true,
+    "requires_perpetual_data_cost_evidence": true,
+    "requires_walk_forward_pass": true,
+    "strategy_retest_allowed": true
+  },
+  "metric_repair_context": {
+    "event_profit_factor": 1.0205,
+    "failed_metrics": [
+      "event_profit_factor",
+      "walk_forward_pass_rate"
+    ],
+    "metric_repair_blockers": [
+      "btc_candidate_metric_repair_event_profit_factor_failed",
+      "btc_candidate_metric_repair_walk_forward_pass_rate_failed"
+    ],
+    "ordinary_profit_factor": 1.631439,
+    "regime_pass_rate": 1.0,
+    "status": "needs_metric_repair",
+    "walk_forward_pass_rate": 0.5
+  },
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "retest_allowed": true,
+  "retest_steps": [
+    {
+      "description": "verified USD-M perpetual metadata, funding metadata, fee tier, funding ledger, and cost model",
+      "name": "complete_perpetual_data_cost_evidence",
+      "required": true,
+      "status": "complete"
+    },
+    {
+      "description": "rerun from fills and ledger with data_version, strategy_version, params, costs, slippage, and commit hash recorded",
+      "name": "rerun_event_ledger_candidate_with_fixed_manifest",
+      "required": true,
+      "status": "pending"
+    },
+    {
+      "description": "fold diagnostics must cover the failed folds before any candidate promotion",
+      "name": "repair_late_walk_forward_folds",
+      "required": true,
+      "status": "pending"
+    },
+    {
+      "description": "promotion requires event PF, walk-forward, regime, cost stress, and ledger checks together",
+      "name": "rerun_cost_stress_and_walk_forward_gate",
+      "required": true,
+      "status": "pending"
+    }
+  ],
+  "schema_version": "btc_candidate_bounded_retest_plan_v1",
+  "source_artifacts": {
+    "candidate_metric_repair_report": "artifacts/btc_candidate_gate/latest/candidate_metric_repair_report.json",
+    "walk_forward_fold_attribution": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/walk_forward_fold_attribution.json"
+  },
+  "status": "ready_for_bounded_retest",
+  "symbol": "BTCUSDT",
+  "test_scope": {
+    "allowed_rule_changes": [
+      "exit_hysteresis_only",
+      "combined_exit_surgery",
+      "long_only",
+      "block_trending_down_and_high_vol_trend"
+    ],
+    "diagnostic_only_metrics": [
+      "ordinary_profit_factor",
+      "sharpe",
+      "total_return"
+    ],
+    "disallowed_rule_changes": [
+      "baseline_v3",
+      "no_same_bar_flip",
+      "flat_then_confirm_reverse",
+      "flip_cooldown_3",
+      "flip_cooldown_6",
+      "reverse_requires_regime_alignment",
+      "broad_short_reintroduction",
+      "orderflow_short_trigger",
+      "short_in_high_vol_trend_without_fold_support",
+      "ordinary_profit_factor_primary_objective",
+      "sharpe_first_search",
+      "paper_or_live_unlock_from_retest_plan"
+    ],
+    "focus_failed_folds": [
+      3,
+      4
+    ],
+    "focus_failed_metrics": [
+      "event_profit_factor",
+      "walk_forward_pass_rate"
+    ],
+    "folds_required_for_rerun": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "primary_objectives": [
+      "event_profit_factor",
+      "walk_forward_pass_rate",
+      "regime_pass_rate",
+      "cost_stress"
+    ]
+  }
+}

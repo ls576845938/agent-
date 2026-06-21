@@ -1,0 +1,61 @@
+{
+  "asset": "btc",
+  "blockers": [],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "checks": {
+    "event_ledger_candidate_still_locked": true,
+    "event_ledger_paper_live_locked": true,
+    "event_ledger_passed_internal_research_gate": true,
+    "latency_model_pass": true,
+    "microstructure_model_report_pass": true,
+    "microstructure_readiness_passed": true,
+    "one_minute_klines_pass": true,
+    "order_book_depth_history_pass": true,
+    "private_order_broker_paths_locked": true,
+    "public_capture_has_latency_samples": true,
+    "public_capture_verified": true,
+    "queue_position_model_pass": true,
+    "readiness_candidate_generation_still_locked": true,
+    "readiness_strategy_skeleton_still_locked": true,
+    "readiness_true_scalping_still_locked": true,
+    "spread_model_pass": true,
+    "tick_or_agg_trade_history_pass": true
+  },
+  "commit": "03cad6a",
+  "decision": "allow_research_only_true_scalping_design",
+  "generated_at": "2026-06-20T16:34:03.878993+00:00",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "live": "FROZEN",
+    "manual_review_gate_only": true,
+    "order_endpoints_allowed": false,
+    "paper_queue": "LOCKED",
+    "private_endpoints_allowed": false,
+    "real_orders_created": false,
+    "research_only": true
+  },
+  "limitations": [
+    "public_rest_microstructure_sample_is_research_only_not_execution_latency",
+    "queue_model_uses_visible_book_depth_not_exchange_order_queue_position",
+    "spread_model_uses_current_public_book_sample_not_full_historical_l2_replay",
+    "research_design_must_emit_signal_or_order_intent_only_no_broker_or_private_endpoint"
+  ],
+  "next_required_action": "build_research_only_true_scalping_design_report",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "research_only_event_definition_allowed": true,
+  "research_only_scalping_design_allowed": true,
+  "schema_version": "btc_true_scalping_research_design_review_v1",
+  "source_reports": {
+    "drift_guarded_event_ledger": "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_drift_guarded_event_ledger_report.json",
+    "microstructure_capture_report": "artifacts/btc_scalping_readiness/latest/btc_okx_microstructure_capture_report.json",
+    "microstructure_model_report": "artifacts/btc_scalping_readiness/latest/btc_true_scalping_microstructure_model_report.json",
+    "microstructure_readiness": "artifacts/btc_scalping_readiness/latest/btc_true_scalping_microstructure_readiness_report.json"
+  },
+  "status": "research_only_scalping_design_review_passed",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false
+}

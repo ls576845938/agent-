@@ -1,0 +1,217 @@
+{
+  "asset": "btc",
+  "blockers": [
+    "btc_same_window_public_trade_book_alignment_missing",
+    "btc_timestamp_aligned_l2_history_missing_for_event_ledger_window",
+    "btc_spread_slippage_queue_replay_inputs_missing",
+    "btc_execution_latency_model_missing_rest_latency_is_not_execution_latency",
+    "btc_l2_alignment_manifest_missing",
+    "btc_l2_features_bounded_sample_not_historical_l2",
+    "btc_l2_features_not_timestamp_aligned_to_historical_backtest",
+    "btc_l2_feature_event_ledger_validation_blocked_without_timestamp_aligned_history"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "contract_satisfied": false,
+  "current_evidence": {
+    "backtest_end": "2026-05-12T01:12:00+00:00",
+    "backtest_start": "2025-05-12T01:12:00+00:00",
+    "book_level_row_count": 500,
+    "book_snapshot_count": 5,
+    "bounded_public_rest_sample_only": true,
+    "capture_status": "verified",
+    "causal_event_ledger_join_allowed": false,
+    "completed_sample_count": 5,
+    "feature_candidate_count": 5,
+    "feature_diagnostics_status": "l2_feature_diagnostics_ready_research_only_backtest_blocked",
+    "historical_alignment_status": "not_timestamp_aligned_to_backtest",
+    "joined_sample_count": 5,
+    "latency_sample_count": 10,
+    "network_called": true,
+    "order_endpoint_used": false,
+    "overlaps_backtest_window": false,
+    "private_endpoint_used": false,
+    "public_rest_only": true,
+    "rest_latency_observed_but_execution_latency_model_missing": true,
+    "same_window_trade_book_alignment_available": false,
+    "sample_capture_end": "2026-06-20T16:33:08+00:00",
+    "sample_capture_start": "2026-06-20T16:33:04+00:00",
+    "sample_quality_status": "public_l2_sample_evidence_ready_research_only",
+    "source_files": {
+      "agg_trades_samples": {
+        "exists": true,
+        "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/agg_trades_samples.csv",
+        "row_count": 500
+      },
+      "order_book_depth_samples": {
+        "exists": true,
+        "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/order_book_depth_samples.csv",
+        "row_count": 500
+      }
+    },
+    "timestamp_aligned_l2_history_available": false,
+    "trade_flow_sample_count": 5,
+    "trade_row_count": 500,
+    "valid_top_of_book_snapshot_count": 5
+  },
+  "decision": "collect_timestamp_aligned_public_l2_tick_window_before_true_scalping_event_ledger",
+  "event_ledger_feature_validation_allowed": false,
+  "generated_at": "2026-06-20T17:36:25.026657+00:00",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "future_label_used_for_signal": false,
+    "live": "FROZEN",
+    "lookahead_used_for_signal": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_usable": false,
+    "paper_queue": "LOCKED",
+    "private_endpoints_allowed": false,
+    "production_ready": false,
+    "real_orders_created": false,
+    "research_only": true
+  },
+  "minimum_capture_contract": {
+    "api_key_allowed": false,
+    "broker_calls_allowed": false,
+    "minimum_book_depth_levels": 50,
+    "minimum_event_ledger_history_days": 30,
+    "minimum_research_capture_seconds": 3600,
+    "order_endpoints_allowed": false,
+    "private_endpoints_allowed": false,
+    "public_data_only": true,
+    "required_alignment_max_clock_skew_ms": 250,
+    "required_capture_manifest": "l2_alignment_manifest.json",
+    "required_cost_model_inputs": [
+      "observed_top_of_book_spread_bps",
+      "visible_depth_notional",
+      "trade_aggressor_flow",
+      "capture_receive_latency_ms",
+      "missed_fill_proxy",
+      "queue_position_proxy"
+    ],
+    "required_time_bases": [
+      "exchange_ts",
+      "local_receive_ts",
+      "monotonic_ns"
+    ],
+    "venue": "okx",
+    "venue_symbol": "BTC-USDT-SWAP"
+  },
+  "next_required_action": "run_public_l2_trade_book_capture_or_import_archive_then_validate_same_window_alignment",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "required_datasets": [
+    {
+      "dataset_id": "agg_trades_aligned",
+      "file_name": "agg_trades_aligned.csv",
+      "minimum_records": 1,
+      "purpose": "same-window public trade flow and aggressor imbalance",
+      "required": true,
+      "required_fields": [
+        "exchange_ts",
+        "local_receive_ts",
+        "monotonic_ns",
+        "trade_id",
+        "price",
+        "size",
+        "side"
+      ],
+      "timestamp_alignment_required": true
+    },
+    {
+      "dataset_id": "order_book_depth_aligned",
+      "file_name": "order_book_depth_aligned.csv",
+      "minimum_records": 3600,
+      "purpose": "same-window top-of-book spread, depth, and queue proxy evidence",
+      "required": true,
+      "required_fields": [
+        "exchange_ts",
+        "local_receive_ts",
+        "monotonic_ns",
+        "side",
+        "level",
+        "price",
+        "size",
+        "best_bid",
+        "best_ask",
+        "spread_bps",
+        "bid_depth_notional",
+        "ask_depth_notional"
+      ],
+      "timestamp_alignment_required": true
+    },
+    {
+      "dataset_id": "l2_alignment_manifest",
+      "file_name": "l2_alignment_manifest.json",
+      "minimum_records": 1,
+      "purpose": "reproducible capture lineage, clock source, public-channel boundary, and gap accounting",
+      "required": true,
+      "required_fields": [
+        "data_version",
+        "capture_start",
+        "capture_end",
+        "venue_symbol",
+        "public_channels",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "clock_source",
+        "gap_count",
+        "checksum_or_sequence_policy"
+      ],
+      "timestamp_alignment_required": true
+    }
+  ],
+  "schema_version": "btc_true_scalping_timestamp_aligned_l2_data_contract_report_v1",
+  "scope": "research_only_timestamp_aligned_l2_data_contract_no_candidate_no_paper_no_live",
+  "selected_bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1",
+  "source_reports": {
+    "capture_report": "artifacts/btc_scalping_readiness/latest/btc_okx_l2_microstructure_sample_capture_report.json",
+    "feature_diagnostics": "artifacts/btc_scalping_readiness/latest/btc_true_scalping_l2_feature_diagnostics_report.json",
+    "sample_quality": "artifacts/btc_scalping_readiness/latest/btc_true_scalping_l2_sample_quality_report.json"
+  },
+  "status": "timestamp_aligned_l2_capture_required_research_only",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false,
+  "validation_gates": [
+    {
+      "blocker": null,
+      "gate_id": "public_source_boundary",
+      "required": true,
+      "satisfied": true
+    },
+    {
+      "blocker": "btc_same_window_public_trade_book_alignment_missing",
+      "gate_id": "same_window_trade_book_alignment",
+      "required": true,
+      "satisfied": false
+    },
+    {
+      "blocker": "btc_timestamp_aligned_l2_history_missing_for_event_ledger_window",
+      "gate_id": "historical_event_ledger_coverage",
+      "required": true,
+      "satisfied": false
+    },
+    {
+      "blocker": "btc_spread_slippage_queue_replay_inputs_missing",
+      "gate_id": "spread_slippage_queue_replay_inputs",
+      "required": true,
+      "satisfied": false
+    },
+    {
+      "blocker": "btc_execution_latency_model_missing_rest_latency_is_not_execution_latency",
+      "gate_id": "execution_latency_model_separated_from_rest_latency",
+      "required": true,
+      "satisfied": false
+    },
+    {
+      "blocker": "btc_l2_alignment_manifest_missing",
+      "gate_id": "aligned_capture_manifest_reproducibility",
+      "required": true,
+      "satisfied": false
+    }
+  ],
+  "venue_symbol": "BTC-USDT-SWAP"
+}

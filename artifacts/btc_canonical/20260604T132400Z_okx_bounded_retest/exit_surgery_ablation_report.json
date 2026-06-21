@@ -1,0 +1,266 @@
+{
+  "adopted_rules": [
+    "exit_hysteresis_only",
+    "combined_exit_surgery"
+  ],
+  "best_by_event_PF": {
+    "MDD": -7.6359,
+    "PF": 1.669929,
+    "Sharpe": 0.5321,
+    "cost_stress": {
+      "base_passed": true,
+      "base_profit_factor": 1.022,
+      "status": "base_event_only_for_ablation"
+    },
+    "cost_stress_base_pass": true,
+    "event_PF": 1.022,
+    "fail_reasons": [
+      "event_profit_factor",
+      "walk_forward_pass_rate"
+    ],
+    "fill_count": 49,
+    "gate_status": "candidate_gate_failed",
+    "mode": "exit_hysteresis_only",
+    "note": "changes_exit_confirmation",
+    "regime_pass_rate": 1.0,
+    "signal_flat_exit_pnl": 4298.566065,
+    "signal_flip_exit_count": 0,
+    "signal_flip_exit_pnl": 0.0,
+    "trade_count": 22,
+    "turnover": 0.998638,
+    "walk_forward_pass_rate": 0.5
+  },
+  "notes": [
+    "v3 is already long-only in the canonical source run, so direct reverse/flip rules are mostly no-ops unless shorts are reintroduced",
+    "adoption requires event_PF and walk-forward improvement, not ordinary PF alone"
+  ],
+  "rejected_rules": [
+    "baseline_v3",
+    "no_same_bar_flip",
+    "flat_then_confirm_reverse",
+    "flip_cooldown_3",
+    "flip_cooldown_6",
+    "reverse_requires_regime_alignment"
+  ],
+  "rows": [
+    {
+      "MDD": -8.5324,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0176,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "mode": "baseline_v3",
+      "note": "reference_v3",
+      "regime_pass_rate": 1.0,
+      "signal_flat_exit_pnl": 5486.753222,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_pnl": 0.0,
+      "trade_count": 21,
+      "turnover": 1.051634,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -8.5324,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0176,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "mode": "no_same_bar_flip",
+      "note": "policy_noop_for_v3_long_only",
+      "regime_pass_rate": 1.0,
+      "signal_flat_exit_pnl": 5486.753222,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_pnl": 0.0,
+      "trade_count": 21,
+      "turnover": 1.051634,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -8.5324,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0176,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "mode": "flat_then_confirm_reverse",
+      "note": "policy_noop_for_v3_long_only",
+      "regime_pass_rate": 1.0,
+      "signal_flat_exit_pnl": 5486.753222,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_pnl": 0.0,
+      "trade_count": 21,
+      "turnover": 1.051634,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -8.5324,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0176,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "mode": "flip_cooldown_3",
+      "note": "policy_noop_for_v3_long_only",
+      "regime_pass_rate": 1.0,
+      "signal_flat_exit_pnl": 5486.753222,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_pnl": 0.0,
+      "trade_count": 21,
+      "turnover": 1.051634,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -8.5324,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0176,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "mode": "flip_cooldown_6",
+      "note": "policy_noop_for_v3_long_only",
+      "regime_pass_rate": 1.0,
+      "signal_flat_exit_pnl": 5486.753222,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_pnl": 0.0,
+      "trade_count": 21,
+      "turnover": 1.051634,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -8.5324,
+      "PF": 2.049816,
+      "Sharpe": 0.4216,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0176,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0176,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 47,
+      "gate_status": "candidate_gate_failed",
+      "mode": "reverse_requires_regime_alignment",
+      "note": "policy_noop_for_v3_long_only",
+      "regime_pass_rate": 1.0,
+      "signal_flat_exit_pnl": 5486.753222,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_pnl": 0.0,
+      "trade_count": 21,
+      "turnover": 1.051634,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -7.6359,
+      "PF": 1.669929,
+      "Sharpe": 0.5321,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.022,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.022,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 49,
+      "gate_status": "candidate_gate_failed",
+      "mode": "exit_hysteresis_only",
+      "note": "changes_exit_confirmation",
+      "regime_pass_rate": 1.0,
+      "signal_flat_exit_pnl": 4298.566065,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_pnl": 0.0,
+      "trade_count": 22,
+      "turnover": 0.998638,
+      "walk_forward_pass_rate": 0.5
+    },
+    {
+      "MDD": -7.835,
+      "PF": 1.631439,
+      "Sharpe": 0.5146,
+      "cost_stress": {
+        "base_passed": true,
+        "base_profit_factor": 1.0205,
+        "status": "base_event_only_for_ablation"
+      },
+      "cost_stress_base_pass": true,
+      "event_PF": 1.0205,
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "fill_count": 49,
+      "gate_status": "candidate_gate_failed",
+      "mode": "combined_exit_surgery",
+      "note": "v4_exit_policy_candidate",
+      "regime_pass_rate": 1.0,
+      "signal_flat_exit_pnl": 4543.364018,
+      "signal_flip_exit_count": 0,
+      "signal_flip_exit_pnl": 0.0,
+      "trade_count": 24,
+      "turnover": 1.215925,
+      "walk_forward_pass_rate": 0.5
+    }
+  ],
+  "run_id": "20260604T132400Z_okx_bounded_retest",
+  "schema_version": "btc_exit_surgery_ablation_v1",
+  "source_strategy": "btc_perp_dual_trend_v3"
+}

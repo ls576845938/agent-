@@ -1,0 +1,543 @@
+{
+  "generated_at": "2026-05-12T02:24:42.493311+00:00",
+  "sample": {
+    "symbol": "BTCUSDT",
+    "interval": "1h",
+    "start": "2024-01-01T00:00:00Z",
+    "end": "2026-05-12T00:00:00Z"
+  },
+  "data_integrity_status": "pass",
+  "data_integrity_blockers": [],
+  "candidate_count": 25,
+  "top_candidates": [
+    {
+      "rank": 1,
+      "strategy_id": "volatility_squeeze",
+      "parameters": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.03
+      },
+      "score": 2.656642,
+      "validation": {
+        "total_return_pct": 39.2941,
+        "annual_return_pct": 49.3147,
+        "annual_volatility_pct": 30.2663,
+        "sharpe_ratio": 1.4752,
+        "sortino_ratio": 0.8025,
+        "max_drawdown_pct": -19.4525,
+        "calmar_ratio": 2.5351,
+        "win_rate_pct": 48.6667,
+        "profit_factor": 1.1455,
+        "trade_count": 0
+      },
+      "basic_gate_blockers": [
+        "validation profit_factor < 1.15",
+        "validation max_drawdown < -15%",
+        "validation trade_count < 10"
+      ]
+    },
+    {
+      "rank": 2,
+      "strategy_id": "volatility_squeeze",
+      "parameters": {
+        "boll_window": 20,
+        "boll_dev": 2.0,
+        "width_threshold": 0.05
+      },
+      "score": 1.495014,
+      "validation": {
+        "total_return_pct": 25.7657,
+        "annual_return_pct": 31.9568,
+        "annual_volatility_pct": 26.3436,
+        "sharpe_ratio": 1.1847,
+        "sortino_ratio": 0.5107,
+        "max_drawdown_pct": -23.874,
+        "calmar_ratio": 1.3386,
+        "win_rate_pct": 48.802,
+        "profit_factor": 1.1258,
+        "trade_count": 0
+      },
+      "basic_gate_blockers": [
+        "validation profit_factor < 1.15",
+        "validation max_drawdown < -15%",
+        "validation trade_count < 10"
+      ]
+    },
+    {
+      "rank": 3,
+      "strategy_id": "reversion_rsi",
+      "parameters": {
+        "rsi_window": 10,
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "rsi_long": 30,
+        "rsi_short": 70,
+        "rsi_exit_low": 45,
+        "rsi_exit_high": 55
+      },
+      "score": 0.092642,
+      "validation": {
+        "total_return_pct": 8.4279,
+        "annual_return_pct": 10.2825,
+        "annual_volatility_pct": 29.4832,
+        "sharpe_ratio": 0.4795,
+        "sortino_ratio": 0.1927,
+        "max_drawdown_pct": -24.1714,
+        "calmar_ratio": 0.4254,
+        "win_rate_pct": 52.4372,
+        "profit_factor": 1.0502,
+        "trade_count": 0
+      },
+      "basic_gate_blockers": [
+        "validation sharpe < 1.0",
+        "validation profit_factor < 1.15",
+        "validation max_drawdown < -15%",
+        "validation trade_count < 10"
+      ]
+    },
+    {
+      "rank": 4,
+      "strategy_id": "dynamic_grid",
+      "parameters": {
+        "center_window": 30,
+        "band_pct": 0.035
+      },
+      "score": 0.040525,
+      "validation": {
+        "total_return_pct": 5.0377,
+        "annual_return_pct": 6.1254,
+        "annual_volatility_pct": 19.1813,
+        "sharpe_ratio": 0.4061,
+        "sortino_ratio": 0.0912,
+        "max_drawdown_pct": -16.2251,
+        "calmar_ratio": 0.3775,
+        "win_rate_pct": 53.5714,
+        "profit_factor": 1.0744,
+        "trade_count": 0
+      },
+      "basic_gate_blockers": [
+        "validation sharpe < 1.0",
+        "validation profit_factor < 1.15",
+        "validation max_drawdown < -15%",
+        "validation trade_count < 10"
+      ]
+    },
+    {
+      "rank": 5,
+      "strategy_id": "donchian_breakout",
+      "parameters": {
+        "channel_window": 20
+      },
+      "score": 0.0,
+      "validation": {
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "annual_volatility_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "calmar_ratio": 0.0,
+        "win_rate_pct": 0.0,
+        "profit_factor": 0.0,
+        "trade_count": 0
+      },
+      "basic_gate_blockers": [
+        "validation total_return <= 0",
+        "validation sharpe < 1.0",
+        "validation profit_factor < 1.15",
+        "validation trade_count < 10"
+      ]
+    },
+    {
+      "rank": 6,
+      "strategy_id": "donchian_breakout",
+      "parameters": {
+        "channel_window": 10
+      },
+      "score": 0.0,
+      "validation": {
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "annual_volatility_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "calmar_ratio": 0.0,
+        "win_rate_pct": 0.0,
+        "profit_factor": 0.0,
+        "trade_count": 0
+      },
+      "basic_gate_blockers": [
+        "validation total_return <= 0",
+        "validation sharpe < 1.0",
+        "validation profit_factor < 1.15",
+        "validation trade_count < 10"
+      ]
+    },
+    {
+      "rank": 7,
+      "strategy_id": "donchian_breakout",
+      "parameters": {
+        "channel_window": 30
+      },
+      "score": 0.0,
+      "validation": {
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "annual_volatility_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "calmar_ratio": 0.0,
+        "win_rate_pct": 0.0,
+        "profit_factor": 0.0,
+        "trade_count": 0
+      },
+      "basic_gate_blockers": [
+        "validation total_return <= 0",
+        "validation sharpe < 1.0",
+        "validation profit_factor < 1.15",
+        "validation trade_count < 10"
+      ]
+    },
+    {
+      "rank": 8,
+      "strategy_id": "donchian_breakout",
+      "parameters": {
+        "channel_window": 55
+      },
+      "score": 0.0,
+      "validation": {
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "annual_volatility_pct": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown_pct": 0.0,
+        "calmar_ratio": 0.0,
+        "win_rate_pct": 0.0,
+        "profit_factor": 0.0,
+        "trade_count": 0
+      },
+      "basic_gate_blockers": [
+        "validation total_return <= 0",
+        "validation sharpe < 1.0",
+        "validation profit_factor < 1.15",
+        "validation trade_count < 10"
+      ]
+    },
+    {
+      "rank": 9,
+      "strategy_id": "volatility_squeeze",
+      "parameters": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.05
+      },
+      "score": -0.397499,
+      "validation": {
+        "total_return_pct": 6.3501,
+        "annual_return_pct": 7.7315,
+        "annual_volatility_pct": 28.3109,
+        "sharpe_ratio": 0.4046,
+        "sortino_ratio": 0.2214,
+        "max_drawdown_pct": -29.3439,
+        "calmar_ratio": 0.2635,
+        "win_rate_pct": 48.3788,
+        "profit_factor": 1.0328,
+        "trade_count": 0
+      },
+      "basic_gate_blockers": [
+        "validation sharpe < 1.0",
+        "validation profit_factor < 1.15",
+        "validation max_drawdown < -15%",
+        "validation trade_count < 10"
+      ]
+    },
+    {
+      "rank": 10,
+      "strategy_id": "volatility_squeeze",
+      "parameters": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.08
+      },
+      "score": -0.481567,
+      "validation": {
+        "total_return_pct": 8.3446,
+        "annual_return_pct": 10.1801,
+        "annual_volatility_pct": 28.8002,
+        "sharpe_ratio": 0.4805,
+        "sortino_ratio": 0.2727,
+        "max_drawdown_pct": -35.9676,
+        "calmar_ratio": 0.283,
+        "win_rate_pct": 48.7034,
+        "profit_factor": 1.0385,
+        "trade_count": 0
+      },
+      "basic_gate_blockers": [
+        "validation sharpe < 1.0",
+        "validation profit_factor < 1.15",
+        "validation max_drawdown < -15%",
+        "validation trade_count < 10"
+      ]
+    }
+  ],
+  "strict_validations": [
+    {
+      "candidate_key": "volatility_squeeze|boll_dev=1.8,boll_window=20,width_threshold=0.03",
+      "strategy_id": "volatility_squeeze",
+      "parameters": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.03
+      },
+      "qualified": false,
+      "selected": false,
+      "qualification_blockers": [
+        "validation profit_factor < 1.15",
+        "validation max_drawdown < -15.0%",
+        "validation trade_count < 10",
+        "cost survival_rate < 100.0%",
+        "walk_forward pass_rate < 80.0%",
+        "regime pass_rate < 75.0%",
+        "CPCV/DSR/PBO promotion contract blocked",
+        "DSR below promotion threshold",
+        "multiple testing control did not pass"
+      ],
+      "cost_stress_summary": {
+        "survival_rate_pct": 0.0,
+        "ledger_consistency_pct": 100.0,
+        "scenario_count": 8
+      },
+      "walk_forward_summary": {
+        "total_folds": 4,
+        "valid_folds": 4,
+        "passing_folds": 1,
+        "fold_pass_rate_pct": 25.0,
+        "pass_rate_pct": 25.0,
+        "window_count": 4,
+        "avg_oos_return_pct": -0.1163,
+        "median_oos_sharpe": -0.2105,
+        "worst_oos_drawdown_pct": -1.5278,
+        "parameter_stability_pct": 100.0,
+        "regime_pass_rate_pct": 0.0,
+        "ledger_equity_consistent_windows": 4,
+        "ledger_consistency_pct": 100.0,
+        "symbol_count": 1,
+        "symbols_covered": 1,
+        "symbols_insufficient": 0,
+        "symbol_details": {
+          "BTCUSDT": {
+            "folds": 4,
+            "passes": 1,
+            "bar_count": 20689
+          }
+        },
+        "manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T021736.json"
+      },
+      "cpcv_summary": {
+        "status": "completed",
+        "path_count": 4,
+        "trial_count": 8,
+        "fold_sharpes": [
+          0.9601,
+          -0.7028,
+          0.3386,
+          1.6557
+        ]
+      },
+      "dsr": 0.017083,
+      "pbo": 0.25,
+      "multiple_testing": {
+        "mode": "familywise_error_control",
+        "familywise_alpha": 0.05,
+        "effective_trial_count": 12,
+        "independent_trial_count": 8,
+        "raw_p_value": 0.034647,
+        "bonferroni_alpha": 0.00625,
+        "sidak_alpha": 0.006391,
+        "dsr_p_value": 0.982917,
+        "passed": false
+      },
+      "promotion_contract": {
+        "status": "blocked",
+        "required": {
+          "allowed_cv_methods": [
+            "cpcv",
+            "purged_kfold",
+            "embargoed_walk_forward"
+          ],
+          "required_cv_method": "cpcv",
+          "min_validation_paths": 2,
+          "min_effective_trial_count": 2,
+          "min_independent_trial_count": 2,
+          "min_dsr": 0.1,
+          "max_pbo": 0.5,
+          "familywise_alpha": 0.05,
+          "lookahead_guard_recorded": true
+        },
+        "observed": {
+          "cv_method": "cpcv",
+          "validation_paths": 4,
+          "purged": true,
+          "purge_recorded": true,
+          "embargoed": true,
+          "embargo_recorded": true,
+          "effective_trial_count": 12,
+          "independent_trial_count": 8,
+          "dsr": 0.017083,
+          "pbo": 0.25,
+          "multiple_testing_mode": "familywise_error_control",
+          "lookahead_guard_recorded": true,
+          "lookahead_violations": []
+        },
+        "checks": {
+          "cv_method_allowed": true,
+          "cpcv_available": true,
+          "purged_or_embargoed": true,
+          "purge_embargo_recorded": true,
+          "multi_path_validation": true,
+          "trial_count_sufficient": true,
+          "dsr_available": true,
+          "dsr_passed": false,
+          "pbo_available": true,
+          "pbo_passed": true,
+          "multiple_testing_complete": true,
+          "multiple_testing_passed": false,
+          "lookahead_guard_recorded": true,
+          "lookahead_guard_passed": true
+        }
+      }
+    },
+    {
+      "candidate_key": "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05",
+      "strategy_id": "volatility_squeeze",
+      "parameters": {
+        "boll_window": 20,
+        "boll_dev": 2.0,
+        "width_threshold": 0.05
+      },
+      "qualified": false,
+      "selected": false,
+      "qualification_blockers": [
+        "validation profit_factor < 1.15",
+        "validation max_drawdown < -15.0%",
+        "validation trade_count < 10",
+        "cost survival_rate < 100.0%",
+        "walk_forward pass_rate < 80.0%",
+        "regime pass_rate < 75.0%",
+        "CPCV/DSR/PBO promotion contract blocked",
+        "DSR below promotion threshold",
+        "multiple testing control did not pass"
+      ],
+      "cost_stress_summary": {
+        "survival_rate_pct": 0.0,
+        "ledger_consistency_pct": 100.0,
+        "scenario_count": 8
+      },
+      "walk_forward_summary": {
+        "total_folds": 4,
+        "valid_folds": 4,
+        "passing_folds": 0,
+        "fold_pass_rate_pct": 0.0,
+        "pass_rate_pct": 0.0,
+        "window_count": 4,
+        "avg_oos_return_pct": -1.1392,
+        "median_oos_sharpe": -0.4758,
+        "worst_oos_drawdown_pct": -3.1142,
+        "parameter_stability_pct": 100.0,
+        "regime_pass_rate_pct": 0.0,
+        "ledger_equity_consistent_windows": 4,
+        "ledger_consistency_pct": 100.0,
+        "symbol_count": 1,
+        "symbols_covered": 1,
+        "symbols_insufficient": 0,
+        "symbol_details": {
+          "BTCUSDT": {
+            "folds": 4,
+            "passes": 0,
+            "bar_count": 20689
+          }
+        },
+        "manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T022250.json"
+      },
+      "cpcv_summary": {
+        "status": "completed",
+        "path_count": 4,
+        "trial_count": 8,
+        "fold_sharpes": [
+          2.5795,
+          0.2761,
+          0.4011,
+          1.1221
+        ]
+      },
+      "dsr": 0.0,
+      "pbo": 0.25,
+      "multiple_testing": {
+        "mode": "familywise_error_control",
+        "familywise_alpha": 0.05,
+        "effective_trial_count": 12,
+        "independent_trial_count": 8,
+        "raw_p_value": 0.005818,
+        "bonferroni_alpha": 0.00625,
+        "sidak_alpha": 0.006391,
+        "dsr_p_value": 1.0,
+        "passed": false
+      },
+      "promotion_contract": {
+        "status": "blocked",
+        "required": {
+          "allowed_cv_methods": [
+            "cpcv",
+            "purged_kfold",
+            "embargoed_walk_forward"
+          ],
+          "required_cv_method": "cpcv",
+          "min_validation_paths": 2,
+          "min_effective_trial_count": 2,
+          "min_independent_trial_count": 2,
+          "min_dsr": 0.1,
+          "max_pbo": 0.5,
+          "familywise_alpha": 0.05,
+          "lookahead_guard_recorded": true
+        },
+        "observed": {
+          "cv_method": "cpcv",
+          "validation_paths": 4,
+          "purged": true,
+          "purge_recorded": true,
+          "embargoed": true,
+          "embargo_recorded": true,
+          "effective_trial_count": 12,
+          "independent_trial_count": 8,
+          "dsr": 0.0,
+          "pbo": 0.25,
+          "multiple_testing_mode": "familywise_error_control",
+          "lookahead_guard_recorded": true,
+          "lookahead_violations": []
+        },
+        "checks": {
+          "cv_method_allowed": true,
+          "cpcv_available": true,
+          "purged_or_embargoed": true,
+          "purge_embargo_recorded": true,
+          "multi_path_validation": true,
+          "trial_count_sufficient": true,
+          "dsr_available": true,
+          "dsr_passed": false,
+          "pbo_available": true,
+          "pbo_passed": true,
+          "multiple_testing_complete": true,
+          "multiple_testing_passed": false,
+          "lookahead_guard_recorded": true,
+          "lookahead_guard_passed": true
+        }
+      }
+    }
+  ],
+  "selected_count": 0,
+  "conclusion": "No BTC candidate passed the current strict gate. Top two candidates failed cost stress, walk-forward, and CPCV/DSR/multiple-testing evidence; lower-ranked candidates already failed basic validation thresholds."
+}

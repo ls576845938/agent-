@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_timestamp_aligned_l2_data_contract_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "venue_symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_reports",
+    "selected_bundle_dir",
+    "current_evidence",
+    "minimum_capture_contract",
+    "required_datasets",
+    "validation_gates",
+    "blockers",
+    "contract_satisfied",
+    "event_ledger_feature_validation_allowed",
+    "true_scalping_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_timestamp_aligned_l2_data_contract_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "venue_symbol": {"const": "BTC-USDT-SWAP"},
+    "scope": {"const": "research_only_timestamp_aligned_l2_data_contract_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "timestamp_aligned_l2_capture_required_research_only",
+        "timestamp_aligned_l2_contract_blocked_missing_source_evidence"
+      ]
+    },
+    "decision": {"const": "collect_timestamp_aligned_public_l2_tick_window_before_true_scalping_event_ledger"},
+    "next_required_action": {"type": "string"},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sample_quality", "feature_diagnostics", "capture_report"],
+      "properties": {
+        "sample_quality": {"type": ["string", "null"]},
+        "feature_diagnostics": {"type": ["string", "null"]},
+        "capture_report": {"type": ["string", "null"]}
+      }
+    },
+    "selected_bundle_dir": {"type": "string"},
+    "current_evidence": {"$ref": "#/$defs/currentEvidence"},
+    "minimum_capture_contract": {"$ref": "#/$defs/minimumCaptureContract"},
+    "required_datasets": {
+      "type": "array",
+      "minItems": 3,
+      "items": {"$ref": "#/$defs/requiredDataset"}
+    },
+    "validation_gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/validationGate"}
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "contract_satisfied": {"const": false},
+    "event_ledger_feature_validation_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "production_ready",
+        "paper_or_live_usable",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed",
+        "real_orders_created",
+        "future_label_used_for_signal",
+        "lookahead_used_for_signal",
+        "paper_queue",
+        "live"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "production_ready": {"const": false},
+        "paper_or_live_usable": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "future_label_used_for_signal": {"const": false},
+        "lookahead_used_for_signal": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"}
+      }
+    }
+  },
+  "$defs": {
+    "currentEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capture_status",
+        "sample_quality_status",
+        "feature_diagnostics_status",
+        "public_rest_only",
+        "bounded_public_rest_sample_only",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "network_called",
+        "completed_sample_count",
+        "trade_row_count",
+        "book_level_row_count",
+        "valid_top_of_book_snapshot_count",
+        "latency_sample_count",
+        "book_snapshot_count",
+        "trade_flow_sample_count",
+        "joined_sample_count",
+        "feature_candidate_count",
+        "source_files",
+        "historical_alignment_status",
+        "sample_capture_start",
+        "sample_capture_end",
+        "backtest_start",
+        "backtest_end",
+        "overlaps_backtest_window",
+        "timestamp_aligned_l2_history_available",
+        "same_window_trade_book_alignment_available",
+        "causal_event_ledger_join_allowed",
+        "rest_latency_observed_but_execution_latency_model_missing"
+      ],
+      "properties": {
+        "capture_status": {"type": "string"},
+        "sample_quality_status": {"type": "string"},
+        "feature_diagnostics_status": {"type": "string"},
+        "public_rest_only": {"type": "boolean"},
+        "bounded_public_rest_sample_only": {"type": "boolean"},
+        "private_endpoint_used": {"type": "boolean"},
+        "order_endpoint_used": {"type": "boolean"},
+        "network_called": {"type": "boolean"},
+        "completed_sample_count": {"type": "integer", "minimum": 0},
+        "trade_row_count": {"type": "integer", "minimum": 0},
+        "book_level_row_count": {"type": "integer", "minimum": 0},
+        "valid_top_of_book_snapshot_count": {"type": "integer", "minimum": 0},
+        "latency_sample_count": {"type": "integer", "minimum": 0},
+        "book_snapshot_count": {"type": "integer", "minimum": 0},
+        "trade_flow_sample_count": {"type": "integer", "minimum": 0},
+        "joined_sample_count": {"type": "integer", "minimum": 0},
+        "feature_candidate_count": {"type": "integer", "minimum": 0},
+        "source_files": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["agg_trades_samples", "order_book_depth_samples"],
+          "properties": {
+            "agg_trades_samples": {"$ref": "#/$defs/sourceFile"},
+            "order_book_depth_samples": {"$ref": "#/$defs/sourceFile"}
+          }
+        },
+        "historical_alignment_status": {"type": "string"},
+        "sample_capture_start": {"type": ["string", "null"]},
+        "sample_capture_end": {"type": ["string", "null"]},
+        "backtest_start": {"type": ["string", "null"]},
+        "backtest_end": {"type": ["string", "null"]},
+        "overlaps_backtest_window": {"type": "boolean"},
+        "timestamp_aligned_l2_history_available": {"const": false},
+        "same_window_trade_book_alignment_available": {"const": false},
+        "causal_event_ledger_join_allowed": {"const": false},
+        "rest_latency_observed_but_execution_latency_model_missing": {"type": "boolean"}
+      }
+    },
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "exists", "row_count"],
+      "properties": {
+        "path": {"type": ["string", "null"]},
+        "exists": {"type": "boolean"},
+        "row_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "minimumCaptureContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "venue",
+        "venue_symbol",
+        "public_data_only",
+        "api_key_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed",
+        "minimum_research_capture_seconds",
+        "minimum_event_ledger_history_days",
+        "minimum_book_depth_levels",
+        "required_time_bases",
+        "required_alignment_max_clock_skew_ms",
+        "required_capture_manifest",
+        "required_cost_model_inputs"
+      ],
+      "properties": {
+        "venue": {"const": "okx"},
+        "venue_symbol": {"const": "BTC-USDT-SWAP"},
+        "public_data_only": {"const": true},
+        "api_key_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "minimum_research_capture_seconds": {"type": "integer", "minimum": 3600},
+        "minimum_event_ledger_history_days": {"type": "integer", "minimum": 30},
+        "minimum_book_depth_levels": {"type": "integer", "minimum": 50},
+        "required_time_bases": {
+          "type": "array",
+          "minItems": 3,
+          "items": {"type": "string"}
+        },
+        "required_alignment_max_clock_skew_ms": {"type": "integer", "minimum": 1},
+        "required_capture_manifest": {"const": "l2_alignment_manifest.json"},
+        "required_cost_model_inputs": {
+          "type": "array",
+          "minItems": 6,
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "requiredDataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dataset_id",
+        "file_name",
+        "purpose",
+        "required",
+        "minimum_records",
+        "timestamp_alignment_required",
+        "required_fields"
+      ],
+      "properties": {
+        "dataset_id": {"type": "string"},
+        "file_name": {"type": "string"},
+        "purpose": {"type": "string"},
+        "required": {"const": true},
+        "minimum_records": {"type": "integer", "minimum": 1},
+        "timestamp_alignment_required": {"const": true},
+        "required_fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "validationGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gate_id", "required", "satisfied", "blocker"],
+      "properties": {
+        "gate_id": {"type": "string"},
+        "required": {"const": true},
+        "satisfied": {"type": "boolean"},
+        "blocker": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

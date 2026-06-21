@@ -1,0 +1,92 @@
+{
+  "accepted_source_examples": [
+    {
+      "required_data": [
+        "trade_history",
+        "order_book"
+      ],
+      "source_name": "OKX historical data download",
+      "url": "https://www.okx.com/en-us/historical-data"
+    }
+  ],
+  "asset": "btc",
+  "blockers": [
+    "btc_long_horizon_l2_tick_import_manifest_missing",
+    "btc_long_horizon_l2_tick_import_public_or_licensed_boundary_not_satisfied",
+    "btc_long_horizon_l2_tick_import_private_order_broker_boundary_not_satisfied",
+    "btc_long_horizon_l2_tick_import_file_integrity_not_satisfied",
+    "btc_long_horizon_l2_tick_import_tick_history_missing",
+    "btc_long_horizon_l2_tick_import_l2_order_book_history_missing",
+    "btc_long_horizon_l2_tick_import_tick_history_days_short_30.000000",
+    "btc_long_horizon_l2_tick_import_l2_history_days_short_30.000000",
+    "btc_long_horizon_l2_tick_import_common_calendar_span_days_short_30.000000"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "contract_satisfied": false,
+  "coverage_totals": {
+    "common_calendar_span_days": 0.0,
+    "common_sample_end": null,
+    "common_sample_start": null,
+    "l2_file_count": 0,
+    "l2_history_days": 0.0,
+    "manifest_count": 0,
+    "remaining_common_calendar_span_days": 30.0,
+    "remaining_l2_history_days": 30.0,
+    "remaining_tick_history_days": 30.0,
+    "tick_file_count": 0,
+    "tick_history_days": 0.0,
+    "total_record_count": 0,
+    "valid_file_count": 0,
+    "valid_manifest_count": 0
+  },
+  "decision": "collect_or_import_30d_tick_and_l2_history_before_true_scalping",
+  "generated_at": "2026-06-21T05:54:05.734859+00:00",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "live": "FROZEN",
+    "order_endpoints_allowed": false,
+    "paper_queue": "LOCKED",
+    "private_endpoints_allowed": false,
+    "real_orders_created": false,
+    "research_only": true,
+    "status_report_only": true,
+    "true_scalping_claim_allowed": false
+  },
+  "import_manifest_root": "data/external/btc_perpetual/okx_swap/historical_l2_tick_imports",
+  "long_horizon_l2_tick_history_ready": false,
+  "manifests": [],
+  "next_required_action": "import_public_or_licensed_30d_tick_and_l2_order_book_history_with_hash_manifest",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "schema_version": "btc_true_scalping_long_horizon_l2_tick_import_contract_v1",
+  "scope": "research_only_long_horizon_l2_tick_import_contract_no_candidate_no_paper_no_live",
+  "status": "long_horizon_l2_tick_import_contract_missing_or_invalid_research_only",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "thresholds": {
+    "minimum_common_calendar_span_days": 30.0,
+    "minimum_l2_history_days": 30.0,
+    "minimum_tick_history_days": 30.0,
+    "required_roles": [
+      "tick_trades_or_agg_trades",
+      "l2_order_book_or_depth"
+    ]
+  },
+  "true_scalping_allowed": false,
+  "validation": {
+    "contract_satisfied": false,
+    "file_integrity_satisfied": false,
+    "import_manifests_present": false,
+    "l2_order_book_history_present": false,
+    "minimum_common_calendar_span_days_satisfied": false,
+    "minimum_l2_history_days_satisfied": false,
+    "minimum_tick_history_days_satisfied": false,
+    "private_order_broker_boundary_satisfied": false,
+    "public_or_licensed_archive_boundary_satisfied": false,
+    "tick_history_present": false
+  },
+  "venue_symbol": "BTC-USDT-SWAP"
+}

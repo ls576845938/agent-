@@ -1,0 +1,135 @@
+{
+  "artifact_hash": "57731b59022d011a3c5838a5e7969e422e44aa489a8c0c500c9e66c1597489ba",
+  "artifact_version": "ledger_reconciliation_v1",
+  "as_of_utc": "2024-01-02T14:32:00+00:00",
+  "cash": {
+    "cash_change": 10.0,
+    "final_cash": 100010.0,
+    "initial_cash": 100000.0
+  },
+  "fees": {
+    "total_fees": 0.0
+  },
+  "fills": {
+    "by_side": {
+      "buy": 1,
+      "sell": 1
+    },
+    "conflict_fill_count": 0,
+    "conflict_fill_keys": [],
+    "duplicate_fill_count": 0,
+    "duplicate_fill_keys": [],
+    "effective_fill_count": 2,
+    "empty_identity_count": 0,
+    "first_fill_at": "2024-01-02T14:31:00+00:00",
+    "last_fill_at": "2024-01-02T14:32:00+00:00",
+    "passed": true,
+    "raw_fill_count": 2,
+    "total_notional": 20000.0
+  },
+  "generated_at": "2024-01-02T14:32:00+00:00",
+  "hashes": {
+    "effective_fills_hash": "155b92978b40e672441594698fbaac0c908d34f6cf36d029e66e86667d4bdedf",
+    "fills_hash": "155b92978b40e672441594698fbaac0c908d34f6cf36d029e66e86667d4bdedf",
+    "ledger_hash": "2ce10293f44d2b9b52f01efcce833ecafb5f14309bec0068d5faebb8238e1953",
+    "orders_hash": "26e4424237634cf0882cc85b0643e42241d9c387747731d715d0aa7a83bf5287",
+    "portfolio_snapshots_hash": "f3ea76c296f7d1fdf598ced4509fee579b2e47ecaf738d5cbfa9e20594fa6026"
+  },
+  "initial_cash": 100000.0,
+  "integrity": {
+    "fills": {
+      "conflict_fill_count": 0,
+      "conflict_fill_keys": [],
+      "duplicate_fill_count": 0,
+      "duplicate_fill_keys": [],
+      "effective_fill_count": 2,
+      "empty_identity_count": 0,
+      "passed": true,
+      "raw_fill_count": 2
+    },
+    "passed": true
+  },
+  "orders": {
+    "by_side": {
+      "buy": 1,
+      "sell": 1
+    },
+    "by_status": {
+      "filled": 2
+    },
+    "total_orders": 2
+  },
+  "pnl": {
+    "final_equity": 100010.0,
+    "initial_equity": 100000.0,
+    "net_pnl": 10.0,
+    "position_value": 0,
+    "source": "ledger_fills"
+  },
+  "positions": {},
+  "reconciliation": {
+    "adjustment_cross_check": {
+      "equity_diff": 0.0,
+      "passed": true,
+      "reconstructed_final_equity": 100010.0,
+      "replay_final_equity": 100010.0,
+      "timestamp_utc": "2024-01-02T14:32:00+00:00"
+    },
+    "snapshots": [
+      {
+        "diff": {
+          "cash": 0.0,
+          "equity": 0.0
+        },
+        "ledger_cash": 100000.0,
+        "ledger_equity": 100000.0,
+        "max_abs_diff": 0.0,
+        "max_pct_diff": 0.0,
+        "passed": true,
+        "snapshot_cash": 100000.0,
+        "snapshot_equity": 100000.0,
+        "timestamp_utc": "2024-01-02T14:30:00+00:00"
+      },
+      {
+        "diff": {
+          "cash": 0.0,
+          "equity": 0.0
+        },
+        "ledger_cash": 90010.0,
+        "ledger_equity": 100010.0,
+        "max_abs_diff": 0.0,
+        "max_pct_diff": 0.0,
+        "passed": true,
+        "snapshot_cash": 90010.0,
+        "snapshot_equity": 100010.0,
+        "timestamp_utc": "2024-01-02T14:31:00+00:00"
+      },
+      {
+        "diff": {
+          "cash": 0.0,
+          "equity": 0.0
+        },
+        "ledger_cash": 100010.0,
+        "ledger_equity": 100010.0,
+        "max_abs_diff": 0.0,
+        "max_pct_diff": 0.0,
+        "passed": true,
+        "snapshot_cash": 100010.0,
+        "snapshot_equity": 100010.0,
+        "timestamp_utc": "2024-01-02T14:32:00+00:00"
+      }
+    ],
+    "summary": {
+      "absolute_tolerance": 1e-06,
+      "max_abs_diff": 0.0,
+      "max_pct_diff": 0.0,
+      "message": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000000)",
+      "passed": true,
+      "snapshot_count": 3,
+      "tolerance_pct": 0.01
+    }
+  },
+  "slippage": {
+    "realized_slippage_cost": 0.0
+  }
+}

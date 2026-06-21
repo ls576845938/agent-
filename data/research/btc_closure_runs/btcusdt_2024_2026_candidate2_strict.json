@@ -1,0 +1,1808 @@
+{
+  "source_screen_path": "data/research/btc_closure_runs/btcusdt_2024_2026_candidate1_strict.json",
+  "candidate": {
+    "strategy_id": "volatility_squeeze",
+    "parameters": {
+      "boll_window": 20,
+      "boll_dev": 2.0,
+      "width_threshold": 0.05
+    },
+    "score": 1.495014,
+    "validation": {
+      "total_return_pct": 25.7657,
+      "annual_return_pct": 31.9568,
+      "annual_volatility_pct": 26.3436,
+      "sharpe_ratio": 1.1847,
+      "sortino_ratio": 0.5107,
+      "max_drawdown_pct": -23.874,
+      "calmar_ratio": 1.3386,
+      "win_rate_pct": 48.802,
+      "profit_factor": 1.1258,
+      "trade_count": 0
+    },
+    "train": {
+      "total_return_pct": 57.5666,
+      "annual_return_pct": 34.4737,
+      "annual_volatility_pct": 30.2109,
+      "sharpe_ratio": 1.1309,
+      "sortino_ratio": 0.547,
+      "max_drawdown_pct": -22.9946,
+      "calmar_ratio": 1.4992,
+      "win_rate_pct": 48.4021,
+      "profit_factor": 1.1226,
+      "trade_count": 0
+    },
+    "overfit_gap": -0.0538,
+    "candidate_count": 4,
+    "optimizer_rank": 2,
+    "recommendations": [
+      "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+      "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+      "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+    ],
+    "rank": 2,
+    "audit": {
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "data_manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+      "data_fingerprint": "5cfb8d5f45d542a75b1da342bd6820564b6b5c598065db66f4949525ac440fe4",
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+      "run_id_prefix": "btc_closure_btcusdt_1h_aa6bddc7d682",
+      "event_run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_event",
+      "manifest_root": "data/manifests",
+      "data_root": "data"
+    },
+    "event_backtest_summary": {
+      "total_return_pct": 3.6473,
+      "annual_return_pct": 1.5284,
+      "annual_volatility_pct": 3.4085,
+      "sharpe_ratio": 0.462,
+      "sortino_ratio": 0.4383,
+      "max_drawdown_pct": -5.2752,
+      "calmar_ratio": 0.2897,
+      "win_rate_pct": 49.169,
+      "profit_factor": 1.0854,
+      "trade_count": 1716
+    },
+    "cost_stress_summary": {
+      "survival_rate_pct": 0.0,
+      "ledger_consistency_pct": 100.0,
+      "scenario_count": 8
+    },
+    "walk_forward_summary": {
+      "total_folds": 4,
+      "valid_folds": 4,
+      "passing_folds": 0,
+      "fold_pass_rate_pct": 0.0,
+      "pass_rate_pct": 0.0,
+      "window_count": 4,
+      "avg_oos_return_pct": -1.1392,
+      "median_oos_sharpe": -0.4758,
+      "worst_oos_drawdown_pct": -3.1142,
+      "parameter_stability_pct": 100.0,
+      "regime_pass_rate_pct": 0.0,
+      "ledger_equity_consistent_windows": 4,
+      "ledger_consistency_pct": 100.0,
+      "symbol_count": 1,
+      "symbols_covered": 1,
+      "symbols_insufficient": 0,
+      "symbol_details": {
+        "BTCUSDT": {
+          "folds": 4,
+          "passes": 0,
+          "bar_count": 20689
+        }
+      },
+      "manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T022250.json"
+    },
+    "cpcv_summary": {
+      "status": "completed",
+      "path_count": 4,
+      "trial_count": 8,
+      "fold_sharpes": [
+        2.5795,
+        0.2761,
+        0.4011,
+        1.1221
+      ]
+    },
+    "validation_statistics": {
+      "candidate_id": "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05",
+      "status": "complete",
+      "available_components": {
+        "cv_summary": true,
+        "trial_counting": true,
+        "deflated_sharpe_ratio": true,
+        "pbo": true,
+        "multiple_testing": true,
+        "lookahead_controls": true,
+        "net_return_distribution": true,
+        "cost_before_after": true
+      },
+      "cv_summary": {
+        "method": "cpcv",
+        "purged": true,
+        "purge_steps": 2,
+        "purge_recorded": true,
+        "embargoed": true,
+        "embargo_steps": 2,
+        "embargo_recorded": true,
+        "fold_count": 4,
+        "path_count": 4,
+        "train_window_count": 4,
+        "test_window_count": 1,
+        "pass_rate": 0.5,
+        "mean_oos_sharpe": 1.0947,
+        "median_oos_sharpe": 0.7616
+      },
+      "lookahead_controls": {
+        "recorded": true,
+        "guard": "event_driven_signal_replay_no_future_features",
+        "violations": [],
+        "passed": true
+      },
+      "trial_counting": {
+        "declared_trial_count": 8,
+        "param_grid_trial_count": 2,
+        "cv_path_count": 4,
+        "cv_fold_count": 4,
+        "cost_level_count": 8,
+        "trial_sharpe_count": 12,
+        "pbo_split_count": 4,
+        "independent_trial_count": 8,
+        "effective_trial_count": 12
+      },
+      "deflated_sharpe_ratio": {
+        "observed_sharpe": 1.1847,
+        "benchmark_sharpe": 3.606247,
+        "trial_count": 12,
+        "returns_count": 4,
+        "skew": 1.643735,
+        "excess_kurtosis": 2.58507,
+        "psr": 0.994182,
+        "dsr": 0.0,
+        "passed": false
+      },
+      "pbo": {
+        "mode": "grouped_trials",
+        "group_count": 4,
+        "overfit_group_count": 1,
+        "pbo": 0.25,
+        "logit_mean": 0.549306,
+        "logit_median": 1.098612,
+        "passed": false
+      },
+      "multiple_testing": {
+        "mode": "familywise_error_control",
+        "familywise_alpha": 0.05,
+        "effective_trial_count": 12,
+        "independent_trial_count": 8,
+        "raw_p_value": 0.005818,
+        "bonferroni_alpha": 0.00625,
+        "sidak_alpha": 0.006391,
+        "dsr_p_value": 1.0,
+        "passed": false
+      },
+      "net_return_distribution": {
+        "count": 4,
+        "mean": 20.313,
+        "std": 25.769378,
+        "median": 10.75485,
+        "min": 2.0405,
+        "max": 57.7018,
+        "p05": 2.41295,
+        "p25": 3.90275,
+        "p75": 27.1651,
+        "p95": 51.59446,
+        "negative_share": 0.0
+      },
+      "cost_before_after": {
+        "mode": "stress_curve",
+        "gross_return": null,
+        "net_return": 25.7657,
+        "gross_sharpe": null,
+        "net_sharpe": 1.1847,
+        "cost_drag_return": null,
+        "cost_drag_sharpe": null,
+        "baseline_multiplier": 1.0,
+        "worst_multiplier": 10.0,
+        "worst_return": -55.3259,
+        "worst_sharpe": -7.6167,
+        "stress_return_delta": 81.0916,
+        "surviving_levels": 3,
+        "level_count": 8
+      },
+      "promotion_gate_contract": {
+        "status": "blocked",
+        "required": {
+          "allowed_cv_methods": [
+            "cpcv",
+            "purged_kfold",
+            "embargoed_walk_forward"
+          ],
+          "required_cv_method": "cpcv",
+          "min_validation_paths": 2,
+          "min_effective_trial_count": 2,
+          "min_independent_trial_count": 2,
+          "min_dsr": 0.1,
+          "max_pbo": 0.5,
+          "familywise_alpha": 0.05,
+          "lookahead_guard_recorded": true
+        },
+        "observed": {
+          "cv_method": "cpcv",
+          "validation_paths": 4,
+          "purged": true,
+          "purge_recorded": true,
+          "embargoed": true,
+          "embargo_recorded": true,
+          "effective_trial_count": 12,
+          "independent_trial_count": 8,
+          "dsr": 0.0,
+          "pbo": 0.25,
+          "multiple_testing_mode": "familywise_error_control",
+          "lookahead_guard_recorded": true,
+          "lookahead_violations": []
+        },
+        "checks": {
+          "cv_method_allowed": true,
+          "cpcv_available": true,
+          "purged_or_embargoed": true,
+          "purge_embargo_recorded": true,
+          "multi_path_validation": true,
+          "trial_count_sufficient": true,
+          "dsr_available": true,
+          "dsr_passed": false,
+          "pbo_available": true,
+          "pbo_passed": true,
+          "multiple_testing_complete": true,
+          "multiple_testing_passed": false,
+          "lookahead_guard_recorded": true,
+          "lookahead_guard_passed": true
+        }
+      }
+    },
+    "statistical_validation_blockers": [
+      "CPCV/DSR/PBO promotion contract blocked",
+      "DSR below promotion threshold",
+      "multiple testing control did not pass"
+    ]
+  },
+  "event_backtest": {
+    "status": "completed",
+    "mode": "crypto_event",
+    "summary": {
+      "total_return_pct": 3.6473,
+      "annual_return_pct": 1.5284,
+      "annual_volatility_pct": 3.4085,
+      "sharpe_ratio": 0.462,
+      "sortino_ratio": 0.4383,
+      "max_drawdown_pct": -5.2752,
+      "calmar_ratio": 0.2897,
+      "win_rate_pct": 49.169,
+      "profit_factor": 1.0854,
+      "trade_count": 1716
+    },
+    "strategy_details": [
+      {
+        "strategy_id": "volatility_squeeze",
+        "version": "volatility_squeeze:registry_signal_replay_v1",
+        "params": {
+          "boll_window": 20,
+          "boll_dev": 2.0,
+          "width_threshold": 0.05
+        },
+        "signal_points": 20689
+      }
+    ],
+    "latest_weights": [
+      {
+        "strategy_id": "volatility_squeeze",
+        "display_name": "volatility_squeeze",
+        "weight": 0.0
+      }
+    ],
+    "diagnostics": {
+      "engine": "event_driven",
+      "asset_class": "crypto",
+      "source": "sqlite",
+      "symbol": "BTCUSDT",
+      "interval": "1h",
+      "sample": {
+        "bar_count": 20689,
+        "start": "2024-01-01T00:00:00+00:00",
+        "end": "2026-05-12T00:00:00+00:00",
+        "duration_days": 862.0,
+        "min_required_bars": 4320,
+        "long_sample_pass": true
+      },
+      "strategy_id": "volatility_squeeze",
+      "strategy_params": {
+        "boll_window": 20,
+        "boll_dev": 2.0,
+        "width_threshold": 0.05
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+      "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_event",
+      "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_event.json",
+      "pnl_source": "ledger_fills",
+      "execution_semantics": "signal_at_bar_close_order_next_bar",
+      "connection_health": {
+        "status": "ok",
+        "broker": "sim",
+        "market_prices": 0
+      },
+      "orders": 1716,
+      "fills": 1716,
+      "ledger_equity_consistent": true,
+      "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000351)",
+      "ledger_final_equity": 103647.337853,
+      "ledger_total_fees": 3561.737024,
+      "ledger_curve_points": 20689,
+      "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_event",
+      "execution_config": {
+        "target_weight": 0.9,
+        "risk_limit": 0.9,
+        "cash_reserve_weight": 0.1,
+        "min_cash_buffer_pct": 0.1,
+        "min_trade_notional": 25.0,
+        "long_only": true
+      },
+      "event_counts": {
+        "market": 20689,
+        "signal": 20689,
+        "target_position": 20689,
+        "order_intent": 2345,
+        "risk": 2345,
+        "broker_order": 1716,
+        "fill": 1716,
+        "account_update": 0,
+        "total": 70189
+      },
+      "regime_split": {
+        "status": "pass",
+        "pass_rate_pct": 100.0,
+        "min_rows": 1034,
+        "regimes": [
+          {
+            "name": "uptrend",
+            "label": "Uptrend",
+            "bar_count": 10938,
+            "coverage_pct": 52.8687,
+            "survives": true,
+            "summary": {
+              "total_return_pct": 1.0897,
+              "annual_return_pct": 0.8718,
+              "annual_volatility_pct": 4.2384,
+              "sharpe_ratio": 0.2259,
+              "sortino_ratio": 0.1989,
+              "max_drawdown_pct": -5.2075,
+              "calmar_ratio": 0.1674,
+              "win_rate_pct": 49.3449,
+              "profit_factor": 1.0325,
+              "trade_count": 1217
+            }
+          },
+          {
+            "name": "downtrend",
+            "label": "Downtrend",
+            "bar_count": 9751,
+            "coverage_pct": 47.1313,
+            "survives": true,
+            "summary": {
+              "total_return_pct": 3.6086,
+              "annual_return_pct": 3.236,
+              "annual_volatility_pct": 4.5987,
+              "sharpe_ratio": 0.7153,
+              "sortino_ratio": 0.8674,
+              "max_drawdown_pct": -4.0584,
+              "calmar_ratio": 0.7974,
+              "win_rate_pct": 48.1306,
+              "profit_factor": 1.1986,
+              "trade_count": 499
+            }
+          },
+          {
+            "name": "high_volatility",
+            "label": "High volatility",
+            "bar_count": 10345,
+            "coverage_pct": 50.0024,
+            "survives": true,
+            "summary": {
+              "total_return_pct": 5.5444,
+              "annual_return_pct": 4.6754,
+              "annual_volatility_pct": 5.0698,
+              "sharpe_ratio": 0.9264,
+              "sortino_ratio": 0.9341,
+              "max_drawdown_pct": -2.9761,
+              "calmar_ratio": 1.571,
+              "win_rate_pct": 49.755,
+              "profit_factor": 1.221,
+              "trade_count": 724
+            }
+          },
+          {
+            "name": "low_volatility",
+            "label": "Low volatility",
+            "bar_count": 10344,
+            "coverage_pct": 49.9976,
+            "survives": true,
+            "summary": {
+              "total_return_pct": 1.0909,
+              "annual_return_pct": 0.9231,
+              "annual_volatility_pct": 3.7643,
+              "sharpe_ratio": 0.2628,
+              "sortino_ratio": 0.2825,
+              "max_drawdown_pct": -5.2752,
+              "calmar_ratio": 0.175,
+              "win_rate_pct": 48.4642,
+              "profit_factor": 1.0445,
+              "trade_count": 992
+            }
+          }
+        ],
+        "blockers": []
+      },
+      "risk": {
+        "risk_check_count": 2345,
+        "approved": 1716,
+        "rejected": 629,
+        "rejection_reasons": {
+          "cash_buffer_limit": 216,
+          "symbol_weight_limit": 413
+        }
+      },
+      "reconciliation": {
+        "snapshot_count": 20689,
+        "tolerance_pct": 0.01,
+        "absolute_tolerance": 1e-06,
+        "max_abs_diff": 0.000351,
+        "max_pct_diff": 0.0,
+        "passed": true,
+        "message": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000351)"
+      },
+      "ledger_artifact_path": "data/manifests/reconciliation/ledger_recon_artifact_fc794d87c96414e3.json",
+      "ledger_hash": "0939616046aec5c26ff04b5ef714874563bcb733b3b9671ce06d6c535f8408eb",
+      "fills_hash": "c6d91311b34d58596597a6c05c445ff76d2ecdef704f8e5f5e8e4c4d83f3708f",
+      "data_manifest": {
+        "exists": false,
+        "missing_data_manifest": true,
+        "requested_data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "data_version": "",
+        "data_version_matches_requested": false,
+        "data_manifest_id": "",
+        "path": "data/manifests/qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5.json",
+        "checksum": "",
+        "fingerprint": "",
+        "source": "",
+        "asset_class": "",
+        "symbol": "",
+        "interval": "",
+        "coverage": {},
+        "quality": {}
+      },
+      "missing_data_manifest": true,
+      "determinism_verified": false
+    },
+    "audit": {
+      "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_event",
+      "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_event",
+      "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_event.json",
+      "ledger_artifact_path": "data/manifests/reconciliation/ledger_recon_artifact_fc794d87c96414e3.json",
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1"
+    }
+  },
+  "cost_stress": {
+    "status": "completed",
+    "engine": "event_driven",
+    "strategy_id": "volatility_squeeze",
+    "strategy_params": {
+      "boll_window": 20,
+      "boll_dev": 2.0,
+      "width_threshold": 0.05
+    },
+    "symbol": "BTCUSDT",
+    "interval": "1h",
+    "asset_class": "crypto",
+    "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+    "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+    "run_id_prefix": "btc_closure_btcusdt_1h_aa6bddc7d682",
+    "scenario_names": [
+      "base",
+      "fees_2x",
+      "slippage_2x",
+      "costs_2x",
+      "fees_3x_slippage_5x",
+      "slippage_5x",
+      "costs_5x",
+      "tail_10x"
+    ],
+    "scenario_count": 8,
+    "execution_config": {
+      "target_weight": 0.9,
+      "risk_limit": 0.9,
+      "cash_reserve_weight": 0.1,
+      "min_cash_buffer_pct": 0.1,
+      "min_trade_notional": 25.0,
+      "long_only": true
+    },
+    "baseline": {
+      "name": "base",
+      "label": "Current costs",
+      "commission_multiplier": 1.0,
+      "slippage_multiplier": 1.0,
+      "engine": "event_driven",
+      "commission_rate": 0.0004,
+      "slippage_bps": 4.0,
+      "survives": false,
+      "summary": {
+        "total_return_pct": 3.6473,
+        "annual_return_pct": 1.5284,
+        "annual_volatility_pct": 3.4085,
+        "sharpe_ratio": 0.462,
+        "sortino_ratio": 0.4383,
+        "max_drawdown_pct": -5.2752,
+        "calmar_ratio": 0.2897,
+        "win_rate_pct": 49.169,
+        "profit_factor": 1.0854,
+        "trade_count": 1716
+      },
+      "execution": {
+        "engine": "event_driven",
+        "orders": 1716,
+        "fills": 1716,
+        "ledger_equity_consistent": true,
+        "pnl_source": "ledger_fills",
+        "connection_health": {
+          "status": "ok",
+          "broker": "sim",
+          "market_prices": 0
+        },
+        "execution_config": {
+          "target_weight": 0.9,
+          "risk_limit": 0.9,
+          "cash_reserve_weight": 0.1,
+          "min_cash_buffer_pct": 0.1,
+          "min_trade_notional": 25.0,
+          "long_only": true
+        }
+      },
+      "execution_config": {
+        "target_weight": 0.9,
+        "risk_limit": 0.9,
+        "cash_reserve_weight": 0.1,
+        "min_cash_buffer_pct": 0.1,
+        "min_trade_notional": 25.0,
+        "long_only": true
+      },
+      "fill_count": 1716,
+      "order_count": 1716,
+      "ledger_equity_consistent": true,
+      "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000351)",
+      "ledger_final_equity": 103647.337853,
+      "ledger_total_fees": 3561.737024,
+      "ledger_curve_points": 1716,
+      "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_base",
+      "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_base",
+      "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_base.json",
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+      "return_decay_pct": 0.0,
+      "sharpe_decay": 0.0
+    },
+    "scenarios": [
+      {
+        "name": "base",
+        "label": "Current costs",
+        "commission_multiplier": 1.0,
+        "slippage_multiplier": 1.0,
+        "engine": "event_driven",
+        "commission_rate": 0.0004,
+        "slippage_bps": 4.0,
+        "survives": false,
+        "summary": {
+          "total_return_pct": 3.6473,
+          "annual_return_pct": 1.5284,
+          "annual_volatility_pct": 3.4085,
+          "sharpe_ratio": 0.462,
+          "sortino_ratio": 0.4383,
+          "max_drawdown_pct": -5.2752,
+          "calmar_ratio": 0.2897,
+          "win_rate_pct": 49.169,
+          "profit_factor": 1.0854,
+          "trade_count": 1716
+        },
+        "execution": {
+          "engine": "event_driven",
+          "orders": 1716,
+          "fills": 1716,
+          "ledger_equity_consistent": true,
+          "pnl_source": "ledger_fills",
+          "connection_health": {
+            "status": "ok",
+            "broker": "sim",
+            "market_prices": 0
+          },
+          "execution_config": {
+            "target_weight": 0.9,
+            "risk_limit": 0.9,
+            "cash_reserve_weight": 0.1,
+            "min_cash_buffer_pct": 0.1,
+            "min_trade_notional": 25.0,
+            "long_only": true
+          }
+        },
+        "execution_config": {
+          "target_weight": 0.9,
+          "risk_limit": 0.9,
+          "cash_reserve_weight": 0.1,
+          "min_cash_buffer_pct": 0.1,
+          "min_trade_notional": 25.0,
+          "long_only": true
+        },
+        "fill_count": 1716,
+        "order_count": 1716,
+        "ledger_equity_consistent": true,
+        "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000351)",
+        "ledger_final_equity": 103647.337853,
+        "ledger_total_fees": 3561.737024,
+        "ledger_curve_points": 1716,
+        "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_base",
+        "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_base",
+        "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_base.json",
+        "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+        "return_decay_pct": 0.0,
+        "sharpe_decay": 0.0
+      },
+      {
+        "name": "fees_2x",
+        "label": "Fees 2x",
+        "commission_multiplier": 2.0,
+        "slippage_multiplier": 1.0,
+        "engine": "event_driven",
+        "commission_rate": 0.0008,
+        "slippage_bps": 4.0,
+        "survives": false,
+        "summary": {
+          "total_return_pct": 2.4335,
+          "annual_return_pct": 1.0232,
+          "annual_volatility_pct": 3.4389,
+          "sharpe_ratio": 0.3131,
+          "sortino_ratio": 0.3175,
+          "max_drawdown_pct": -6.1139,
+          "calmar_ratio": 0.1674,
+          "win_rate_pct": 48.6746,
+          "profit_factor": 1.0564,
+          "trade_count": 1685
+        },
+        "execution": {
+          "engine": "event_driven",
+          "orders": 1685,
+          "fills": 1685,
+          "ledger_equity_consistent": true,
+          "pnl_source": "ledger_fills",
+          "connection_health": {
+            "status": "ok",
+            "broker": "sim",
+            "market_prices": 0
+          },
+          "execution_config": {
+            "target_weight": 0.9,
+            "risk_limit": 0.9,
+            "cash_reserve_weight": 0.1,
+            "min_cash_buffer_pct": 0.1,
+            "min_trade_notional": 25.0,
+            "long_only": true
+          }
+        },
+        "execution_config": {
+          "target_weight": 0.9,
+          "risk_limit": 0.9,
+          "cash_reserve_weight": 0.1,
+          "min_cash_buffer_pct": 0.1,
+          "min_trade_notional": 25.0,
+          "long_only": true
+        },
+        "fill_count": 1685,
+        "order_count": 1685,
+        "ledger_equity_consistent": true,
+        "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000395)",
+        "ledger_final_equity": 102433.480636,
+        "ledger_total_fees": 6922.593124,
+        "ledger_curve_points": 1685,
+        "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_fees_2x",
+        "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_fees_2x",
+        "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_fees_2x.json",
+        "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+        "return_decay_pct": -1.2138,
+        "sharpe_decay": -0.1489
+      },
+      {
+        "name": "slippage_2x",
+        "label": "Slippage 2x",
+        "commission_multiplier": 1.0,
+        "slippage_multiplier": 2.0,
+        "engine": "event_driven",
+        "commission_rate": 0.0004,
+        "slippage_bps": 8.0,
+        "survives": false,
+        "summary": {
+          "total_return_pct": 1.8695,
+          "annual_return_pct": 0.7874,
+          "annual_volatility_pct": 3.5913,
+          "sharpe_ratio": 0.2363,
+          "sortino_ratio": 0.2146,
+          "max_drawdown_pct": -6.6655,
+          "calmar_ratio": 0.1181,
+          "win_rate_pct": 47.93,
+          "profit_factor": 1.0433,
+          "trade_count": 1702
+        },
+        "execution": {
+          "engine": "event_driven",
+          "orders": 1702,
+          "fills": 1702,
+          "ledger_equity_consistent": true,
+          "pnl_source": "ledger_fills",
+          "connection_health": {
+            "status": "ok",
+            "broker": "sim",
+            "market_prices": 0
+          },
+          "execution_config": {
+            "target_weight": 0.9,
+            "risk_limit": 0.9,
+            "cash_reserve_weight": 0.1,
+            "min_cash_buffer_pct": 0.1,
+            "min_trade_notional": 25.0,
+            "long_only": true
+          }
+        },
+        "execution_config": {
+          "target_weight": 0.9,
+          "risk_limit": 0.9,
+          "cash_reserve_weight": 0.1,
+          "min_cash_buffer_pct": 0.1,
+          "min_trade_notional": 25.0,
+          "long_only": true
+        },
+        "fill_count": 1702,
+        "order_count": 1702,
+        "ledger_equity_consistent": true,
+        "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000147)",
+        "ledger_final_equity": 101869.531484,
+        "ledger_total_fees": 3600.379059,
+        "ledger_curve_points": 1702,
+        "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_slippage_2x",
+        "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_slippage_2x",
+        "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_slippage_2x.json",
+        "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+        "return_decay_pct": -1.7778,
+        "sharpe_decay": -0.2257
+      },
+      {
+        "name": "costs_2x",
+        "label": "Fees and slippage 2x",
+        "commission_multiplier": 2.0,
+        "slippage_multiplier": 2.0,
+        "engine": "event_driven",
+        "commission_rate": 0.0008,
+        "slippage_bps": 8.0,
+        "survives": false,
+        "summary": {
+          "total_return_pct": -2.0552,
+          "annual_return_pct": -0.8754,
+          "annual_volatility_pct": 3.6105,
+          "sharpe_ratio": -0.2256,
+          "sortino_ratio": -0.2067,
+          "max_drawdown_pct": -8.6344,
+          "calmar_ratio": -0.1014,
+          "win_rate_pct": 47.4104,
+          "profit_factor": 0.9625,
+          "trade_count": 1742
+        },
+        "execution": {
+          "engine": "event_driven",
+          "orders": 1742,
+          "fills": 1742,
+          "ledger_equity_consistent": true,
+          "pnl_source": "ledger_fills",
+          "connection_health": {
+            "status": "ok",
+            "broker": "sim",
+            "market_prices": 0
+          },
+          "execution_config": {
+            "target_weight": 0.9,
+            "risk_limit": 0.9,
+            "cash_reserve_weight": 0.1,
+            "min_cash_buffer_pct": 0.1,
+            "min_trade_notional": 25.0,
+            "long_only": true
+          }
+        },
+        "execution_config": {
+          "target_weight": 0.9,
+          "risk_limit": 0.9,
+          "cash_reserve_weight": 0.1,
+          "min_cash_buffer_pct": 0.1,
+          "min_trade_notional": 25.0,
+          "long_only": true
+        },
+        "fill_count": 1742,
+        "order_count": 1742,
+        "ledger_equity_consistent": true,
+        "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000448)",
+        "ledger_final_equity": 97944.842755,
+        "ledger_total_fees": 7332.419009,
+        "ledger_curve_points": 1742,
+        "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_costs_2x",
+        "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_costs_2x",
+        "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_costs_2x.json",
+        "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+        "return_decay_pct": -5.7025,
+        "sharpe_decay": -0.6876
+      },
+      {
+        "name": "fees_3x_slippage_5x",
+        "label": "Fees 3x and slippage 5x",
+        "commission_multiplier": 3.0,
+        "slippage_multiplier": 5.0,
+        "engine": "event_driven",
+        "commission_rate": 0.0012,
+        "slippage_bps": 20.0,
+        "survives": false,
+        "summary": {
+          "total_return_pct": -14.6161,
+          "annual_return_pct": -6.4715,
+          "annual_volatility_pct": 3.5617,
+          "sharpe_ratio": -1.8607,
+          "sortino_ratio": -1.5966,
+          "max_drawdown_pct": -16.7296,
+          "calmar_ratio": -0.3868,
+          "win_rate_pct": 46.3821,
+          "profit_factor": 0.7373,
+          "trade_count": 1676
+        },
+        "execution": {
+          "engine": "event_driven",
+          "orders": 1676,
+          "fills": 1676,
+          "ledger_equity_consistent": true,
+          "pnl_source": "ledger_fills",
+          "connection_health": {
+            "status": "ok",
+            "broker": "sim",
+            "market_prices": 0
+          },
+          "execution_config": {
+            "target_weight": 0.9,
+            "risk_limit": 0.9,
+            "cash_reserve_weight": 0.1,
+            "min_cash_buffer_pct": 0.1,
+            "min_trade_notional": 25.0,
+            "long_only": true
+          }
+        },
+        "execution_config": {
+          "target_weight": 0.9,
+          "risk_limit": 0.9,
+          "cash_reserve_weight": 0.1,
+          "min_cash_buffer_pct": 0.1,
+          "min_trade_notional": 25.0,
+          "long_only": true
+        },
+        "fill_count": 1676,
+        "order_count": 1676,
+        "ledger_equity_consistent": true,
+        "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000159)",
+        "ledger_final_equity": 85383.933671,
+        "ledger_total_fees": 10507.353629,
+        "ledger_curve_points": 1676,
+        "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_fees_3x_slippage_5x",
+        "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_fees_3x_slippage_5x",
+        "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_fees_3x_slippage_5x.json",
+        "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+        "return_decay_pct": -18.2634,
+        "sharpe_decay": -2.3227
+      },
+      {
+        "name": "slippage_5x",
+        "label": "Slippage 5x",
+        "commission_multiplier": 1.0,
+        "slippage_multiplier": 5.0,
+        "engine": "event_driven",
+        "commission_rate": 0.0004,
+        "slippage_bps": 20.0,
+        "survives": false,
+        "summary": {
+          "total_return_pct": -10.3118,
+          "annual_return_pct": -4.5035,
+          "annual_volatility_pct": 3.6181,
+          "sharpe_ratio": -1.2556,
+          "sortino_ratio": -1.0942,
+          "max_drawdown_pct": -13.3244,
+          "calmar_ratio": -0.338,
+          "win_rate_pct": 47.0394,
+          "profit_factor": 0.8104,
+          "trade_count": 1721
+        },
+        "execution": {
+          "engine": "event_driven",
+          "orders": 1721,
+          "fills": 1721,
+          "ledger_equity_consistent": true,
+          "pnl_source": "ledger_fills",
+          "connection_health": {
+            "status": "ok",
+            "broker": "sim",
+            "market_prices": 0
+          },
+          "execution_config": {
+            "target_weight": 0.9,
+            "risk_limit": 0.9,
+            "cash_reserve_weight": 0.1,
+            "min_cash_buffer_pct": 0.1,
+            "min_trade_notional": 25.0,
+            "long_only": true
+          }
+        },
+        "execution_config": {
+          "target_weight": 0.9,
+          "risk_limit": 0.9,
+          "cash_reserve_weight": 0.1,
+          "min_cash_buffer_pct": 0.1,
+          "min_trade_notional": 25.0,
+          "long_only": true
+        },
+        "fill_count": 1721,
+        "order_count": 1721,
+        "ledger_equity_consistent": true,
+        "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000068)",
+        "ledger_final_equity": 89688.182083,
+        "ledger_total_fees": 3661.446014,
+        "ledger_curve_points": 1721,
+        "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_slippage_5x",
+        "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_slippage_5x",
+        "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_slippage_5x.json",
+        "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+        "return_decay_pct": -13.9591,
+        "sharpe_decay": -1.7176
+      },
+      {
+        "name": "costs_5x",
+        "label": "Fees and slippage 5x",
+        "commission_multiplier": 5.0,
+        "slippage_multiplier": 5.0,
+        "engine": "event_driven",
+        "commission_rate": 0.002,
+        "slippage_bps": 20.0,
+        "survives": false,
+        "summary": {
+          "total_return_pct": -21.1235,
+          "annual_return_pct": -9.5588,
+          "annual_volatility_pct": 3.686,
+          "sharpe_ratio": -2.7074,
+          "sortino_ratio": -3.1844,
+          "max_drawdown_pct": -23.0525,
+          "calmar_ratio": -0.4147,
+          "win_rate_pct": 49.131,
+          "profit_factor": 0.6412,
+          "trade_count": 1681
+        },
+        "execution": {
+          "engine": "event_driven",
+          "orders": 1681,
+          "fills": 1681,
+          "ledger_equity_consistent": true,
+          "pnl_source": "ledger_fills",
+          "connection_health": {
+            "status": "ok",
+            "broker": "sim",
+            "market_prices": 0
+          },
+          "execution_config": {
+            "target_weight": 0.9,
+            "risk_limit": 0.9,
+            "cash_reserve_weight": 0.1,
+            "min_cash_buffer_pct": 0.1,
+            "min_trade_notional": 25.0,
+            "long_only": true
+          }
+        },
+        "execution_config": {
+          "target_weight": 0.9,
+          "risk_limit": 0.9,
+          "cash_reserve_weight": 0.1,
+          "min_cash_buffer_pct": 0.1,
+          "min_trade_notional": 25.0,
+          "long_only": true
+        },
+        "fill_count": 1681,
+        "order_count": 1681,
+        "ledger_equity_consistent": true,
+        "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.001268)",
+        "ledger_final_equity": 78876.523141,
+        "ledger_total_fees": 17679.659563,
+        "ledger_curve_points": 1681,
+        "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_costs_5x",
+        "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_costs_5x",
+        "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_costs_5x.json",
+        "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+        "return_decay_pct": -24.7708,
+        "sharpe_decay": -3.1694
+      },
+      {
+        "name": "tail_10x",
+        "label": "Tail cost shock 10x",
+        "commission_multiplier": 10.0,
+        "slippage_multiplier": 10.0,
+        "engine": "event_driven",
+        "commission_rate": 0.004,
+        "slippage_bps": 40.0,
+        "survives": false,
+        "summary": {
+          "total_return_pct": -55.3259,
+          "annual_return_pct": -28.9067,
+          "annual_volatility_pct": 4.4662,
+          "sharpe_ratio": -7.6167,
+          "sortino_ratio": -4.3422,
+          "max_drawdown_pct": -56.0689,
+          "calmar_ratio": -0.5156,
+          "win_rate_pct": 42.686,
+          "profit_factor": 0.2984,
+          "trade_count": 1694
+        },
+        "execution": {
+          "engine": "event_driven",
+          "orders": 1694,
+          "fills": 1694,
+          "ledger_equity_consistent": true,
+          "pnl_source": "ledger_fills",
+          "connection_health": {
+            "status": "ok",
+            "broker": "sim",
+            "market_prices": 0
+          },
+          "execution_config": {
+            "target_weight": 0.9,
+            "risk_limit": 0.9,
+            "cash_reserve_weight": 0.1,
+            "min_cash_buffer_pct": 0.1,
+            "min_trade_notional": 25.0,
+            "long_only": true
+          }
+        },
+        "execution_config": {
+          "target_weight": 0.9,
+          "risk_limit": 0.9,
+          "cash_reserve_weight": 0.1,
+          "min_cash_buffer_pct": 0.1,
+          "min_trade_notional": 25.0,
+          "long_only": true
+        },
+        "fill_count": 1694,
+        "order_count": 1694,
+        "ledger_equity_consistent": true,
+        "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000480)",
+        "ledger_final_equity": 44674.055516,
+        "ledger_total_fees": 33805.213988,
+        "ledger_curve_points": 1694,
+        "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_tail_10x",
+        "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_tail_10x",
+        "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_tail_10x.json",
+        "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+        "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+        "return_decay_pct": -58.9732,
+        "sharpe_decay": -8.0787
+      }
+    ],
+    "survival_rate_pct": 0.0,
+    "ledger_consistency_pct": 100.0,
+    "ledger_equity_consistent_scenarios": 8,
+    "total_fill_count": 13617,
+    "total_order_count": 13617,
+    "baseline_fill_count": 1716,
+    "baseline_order_count": 1716,
+    "scenario_manifests_complete": true,
+    "missing_manifest_scenarios": [],
+    "worst_case": {
+      "name": "tail_10x",
+      "label": "Tail cost shock 10x",
+      "commission_multiplier": 10.0,
+      "slippage_multiplier": 10.0,
+      "engine": "event_driven",
+      "commission_rate": 0.004,
+      "slippage_bps": 40.0,
+      "survives": false,
+      "summary": {
+        "total_return_pct": -55.3259,
+        "annual_return_pct": -28.9067,
+        "annual_volatility_pct": 4.4662,
+        "sharpe_ratio": -7.6167,
+        "sortino_ratio": -4.3422,
+        "max_drawdown_pct": -56.0689,
+        "calmar_ratio": -0.5156,
+        "win_rate_pct": 42.686,
+        "profit_factor": 0.2984,
+        "trade_count": 1694
+      },
+      "execution": {
+        "engine": "event_driven",
+        "orders": 1694,
+        "fills": 1694,
+        "ledger_equity_consistent": true,
+        "pnl_source": "ledger_fills",
+        "connection_health": {
+          "status": "ok",
+          "broker": "sim",
+          "market_prices": 0
+        },
+        "execution_config": {
+          "target_weight": 0.9,
+          "risk_limit": 0.9,
+          "cash_reserve_weight": 0.1,
+          "min_cash_buffer_pct": 0.1,
+          "min_trade_notional": 25.0,
+          "long_only": true
+        }
+      },
+      "execution_config": {
+        "target_weight": 0.9,
+        "risk_limit": 0.9,
+        "cash_reserve_weight": 0.1,
+        "min_cash_buffer_pct": 0.1,
+        "min_trade_notional": 25.0,
+        "long_only": true
+      },
+      "fill_count": 1694,
+      "order_count": 1694,
+      "ledger_equity_consistent": true,
+      "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000480)",
+      "ledger_final_equity": 44674.055516,
+      "ledger_total_fees": 33805.213988,
+      "ledger_curve_points": 1694,
+      "run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_tail_10x",
+      "manifest_id": "btc_closure_btcusdt_1h_aa6bddc7d682_tail_10x",
+      "manifest_path": "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_tail_10x.json",
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+      "return_decay_pct": -58.9732,
+      "sharpe_decay": -8.0787
+    },
+    "recommendations": [
+      "基础成本场景已经未通过，先暂停参数优化，优先降低换手、杠杆或调整策略信号。",
+      "极端成本下收益转负明显，paper trading 前需要加入最小调仓阈值或成交额上限。",
+      "压力场景回撤超过 12%，建议把回撤降仓规则纳入下一轮优化。"
+    ],
+    "engine_note": "PnL derived from fills, orders go through OMS -> risk -> broker -> ledger",
+    "audit": {
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+      "run_id_prefix": "btc_closure_btcusdt_1h_aa6bddc7d682",
+      "scenario_manifests_complete": true,
+      "missing_manifest_scenarios": []
+    }
+  },
+  "walk_forward": {
+    "status": "completed",
+    "selected_priority": "Walk-forward 与市场状态切片",
+    "framework": [
+      {
+        "priority": 1,
+        "title": "参数稳健性 + 样本外验证",
+        "status": "completed",
+        "reason": "当前系统已有回测报告，但还缺少防过拟合的参数筛选；这是进入 paper trading 前最重要的工程关口。"
+      },
+      {
+        "priority": 2,
+        "title": "交易成本压力测试",
+        "status": "completed",
+        "reason": "对手续费、滑点、延迟和成交比例做压力测试，避免低频策略被真实执行吞噬。"
+      },
+      {
+        "priority": 3,
+        "title": "Walk-forward 与市场状态切片",
+        "status": "selected",
+        "reason": "按牛熊、震荡、高波动、低波动切片验证策略稳定性。"
+      },
+      {
+        "priority": 4,
+        "title": "组合层相关性与资金分配",
+        "status": "next",
+        "reason": "在单策略样本外稳定后，再优化多策略权重、相关性惩罚和风险预算。"
+      },
+      {
+        "priority": 5,
+        "title": "数据质量与特征版本治理",
+        "status": "later",
+        "reason": "为后续机器学习和多数据源接入保留可复现的数据谱系。"
+      }
+    ],
+    "strategy_id": "volatility_squeeze",
+    "strategy_params": {
+      "boll_window": 20,
+      "boll_dev": 2.0,
+      "width_threshold": 0.05
+    },
+    "symbols": [
+      "BTCUSDT"
+    ],
+    "windows": [
+      {
+        "fold": 1,
+        "symbol": "BTCUSDT",
+        "train_start": 1704067200,
+        "train_end": 1752472800,
+        "validation_start": 1752476400,
+        "validation_end": 1758988800,
+        "train_rows": 0,
+        "validation_rows": 0,
+        "selected_params": {
+          "boll_window": 20,
+          "boll_dev": 2.0,
+          "width_threshold": 0.05
+        },
+        "train_score": 0.0,
+        "train": {},
+        "validation": {
+          "total_return_pct": -0.4569,
+          "cagr_pct": -0.0637,
+          "annual_return_pct": -0.0637,
+          "annual_volatility_pct": 0.0879,
+          "sharpe_ratio": -0.7248,
+          "sortino_ratio": -0.4756,
+          "max_drawdown_pct": -0.5129,
+          "calmar_ratio": -0.1243,
+          "win_rate_pct": 49.734,
+          "profit_factor": 0.6411,
+          "turnover_pct": 166.321,
+          "trade_count": 106
+        },
+        "survives": false,
+        "equity_consistent": true
+      },
+      {
+        "fold": 2,
+        "symbol": "BTCUSDT",
+        "train_start": 1710583200,
+        "train_end": 1758988800,
+        "validation_start": 1758992400,
+        "validation_end": 1765504800,
+        "train_rows": 0,
+        "validation_rows": 0,
+        "selected_params": {
+          "boll_window": 20,
+          "boll_dev": 2.0,
+          "width_threshold": 0.05
+        },
+        "train_score": 0.0,
+        "train": {},
+        "validation": {
+          "total_return_pct": -0.8955,
+          "cagr_pct": -0.1252,
+          "annual_return_pct": -0.1252,
+          "annual_volatility_pct": 0.3052,
+          "sharpe_ratio": -0.4089,
+          "sortino_ratio": -0.3104,
+          "max_drawdown_pct": -1.2146,
+          "calmar_ratio": -0.1031,
+          "win_rate_pct": 48.5149,
+          "profit_factor": 0.7899,
+          "turnover_pct": 683.6014,
+          "trade_count": 201
+        },
+        "survives": false,
+        "equity_consistent": true
+      },
+      {
+        "fold": 3,
+        "symbol": "BTCUSDT",
+        "train_start": 1717099200,
+        "train_end": 1765504800,
+        "validation_start": 1765508400,
+        "validation_end": 1772020800,
+        "train_rows": 0,
+        "validation_rows": 0,
+        "selected_params": {
+          "boll_window": 20,
+          "boll_dev": 2.0,
+          "width_threshold": 0.05
+        },
+        "train_score": 0.0,
+        "train": {},
+        "validation": {
+          "total_return_pct": -1.7956,
+          "cagr_pct": -0.252,
+          "annual_return_pct": -0.252,
+          "annual_volatility_pct": 0.4629,
+          "sharpe_ratio": -0.5427,
+          "sortino_ratio": -0.2487,
+          "max_drawdown_pct": -1.8691,
+          "calmar_ratio": -0.1348,
+          "win_rate_pct": 42.5466,
+          "profit_factor": 0.6337,
+          "turnover_pct": 1032.0135,
+          "trade_count": 152
+        },
+        "survives": false,
+        "equity_consistent": true
+      },
+      {
+        "fold": 4,
+        "symbol": "BTCUSDT",
+        "train_start": 1723615200,
+        "train_end": 1772020800,
+        "validation_start": 1772024400,
+        "validation_end": 1778536800,
+        "train_rows": 0,
+        "validation_rows": 0,
+        "selected_params": {
+          "boll_window": 20,
+          "boll_dev": 2.0,
+          "width_threshold": 0.05
+        },
+        "train_score": 0.0,
+        "train": {},
+        "validation": {
+          "total_return_pct": -1.4088,
+          "cagr_pct": -0.1973,
+          "annual_return_pct": -0.1973,
+          "annual_volatility_pct": 0.6578,
+          "sharpe_ratio": -0.297,
+          "sortino_ratio": -0.2238,
+          "max_drawdown_pct": -3.1142,
+          "calmar_ratio": -0.0634,
+          "win_rate_pct": 49.7101,
+          "profit_factor": 0.7925,
+          "turnover_pct": 833.1744,
+          "trade_count": 211
+        },
+        "survives": false,
+        "equity_consistent": true
+      }
+    ],
+    "regimes": [
+      {
+        "name": "uptrend",
+        "label": "上涨 / 趋势向上",
+        "bar_count": 10938,
+        "coverage_pct": 52.8687,
+        "survives": false,
+        "summary": {
+          "total_return_pct": 7.3086,
+          "annual_return_pct": 5.8119,
+          "annual_volatility_pct": 32.2483,
+          "sharpe_ratio": 0.3372,
+          "sortino_ratio": 0.133,
+          "max_drawdown_pct": -29.3213,
+          "calmar_ratio": 0.1982,
+          "win_rate_pct": 46.3458,
+          "profit_factor": 1.0438,
+          "trade_count": 1
+        }
+      },
+      {
+        "name": "downtrend",
+        "label": "下跌 / 趋势向下",
+        "bar_count": 9751,
+        "coverage_pct": 47.1313,
+        "survives": false,
+        "summary": {
+          "total_return_pct": 2.8695,
+          "annual_return_pct": 2.5742,
+          "annual_volatility_pct": 36.6911,
+          "sharpe_ratio": 0.2551,
+          "sortino_ratio": 0.0909,
+          "max_drawdown_pct": -33.5878,
+          "calmar_ratio": 0.0766,
+          "win_rate_pct": 48.2863,
+          "profit_factor": 1.0368,
+          "trade_count": 1
+        }
+      },
+      {
+        "name": "high_volatility",
+        "label": "高波动",
+        "bar_count": 10345,
+        "coverage_pct": 50.0024,
+        "survives": false,
+        "summary": {
+          "total_return_pct": -12.6643,
+          "annual_return_pct": -10.8334,
+          "annual_volatility_pct": 35.954,
+          "sharpe_ratio": -0.1346,
+          "sortino_ratio": -0.0452,
+          "max_drawdown_pct": -37.8615,
+          "calmar_ratio": -0.2861,
+          "win_rate_pct": 47.955,
+          "profit_factor": 0.9833,
+          "trade_count": 1
+        }
+      },
+      {
+        "name": "low_volatility",
+        "label": "低波动",
+        "bar_count": 10344,
+        "coverage_pct": 49.9976,
+        "survives": false,
+        "summary": {
+          "total_return_pct": 37.4111,
+          "annual_return_pct": 30.8839,
+          "annual_volatility_pct": 33.9453,
+          "sharpe_ratio": 0.9613,
+          "sortino_ratio": 0.4833,
+          "max_drawdown_pct": -27.6325,
+          "calmar_ratio": 1.1177,
+          "win_rate_pct": 48.5075,
+          "profit_factor": 1.1088,
+          "trade_count": 0
+        }
+      }
+    ],
+    "stability": {
+      "total_folds": 4,
+      "valid_folds": 4,
+      "passing_folds": 0,
+      "fold_pass_rate_pct": 0.0,
+      "pass_rate_pct": 0.0,
+      "window_count": 4,
+      "avg_oos_return_pct": -1.1392,
+      "median_oos_sharpe": -0.4758,
+      "worst_oos_drawdown_pct": -3.1142,
+      "parameter_stability_pct": 100.0,
+      "regime_pass_rate_pct": 0.0,
+      "ledger_equity_consistent_windows": 4,
+      "ledger_consistency_pct": 100.0,
+      "symbol_count": 1,
+      "symbols_covered": 1,
+      "symbols_insufficient": 0,
+      "symbol_details": {
+        "BTCUSDT": {
+          "folds": 4,
+          "passes": 0,
+          "bar_count": 20689
+        }
+      },
+      "manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T022250.json"
+    },
+    "audit": {
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "run_id_prefix": "btc_closure_btcusdt_1h_aa6bddc7d682",
+      "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+      "aggregate_manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T022250.json",
+      "fold_manifest_count": 4,
+      "fold_manifest_paths": [
+        "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_BTCUSDT_w0.json",
+        "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_BTCUSDT_w1.json",
+        "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_BTCUSDT_w2.json",
+        "data/manifests/run_btc_closure_btcusdt_1h_aa6bddc7d682_BTCUSDT_w3.json"
+      ],
+      "missing_fold_manifest_count": 0
+    },
+    "recommendations": [
+      "样本外通过率低于 60%，当前策略不应进入 paper trading，先收紧参数空间或增加市场状态过滤。",
+      "市场状态切片中 上涨 / 趋势向上, 下跌 / 趋势向下, 高波动 未通过，实盘前应加入对应 regime filter 或降低仓位。"
+    ]
+  },
+  "qualification": {
+    "status": "completed",
+    "thresholds": {
+      "min_validation_sharpe": 1.0,
+      "min_profit_factor": 1.15,
+      "min_trade_count": 10,
+      "min_total_return_pct": 0.0,
+      "max_drawdown_pct_floor": -15.0,
+      "min_cost_survival_rate_pct": 100.0,
+      "min_ledger_consistency_pct": 100.0,
+      "min_walk_forward_pass_rate_pct": 80.0,
+      "min_regime_pass_rate_pct": 75.0
+    },
+    "candidate_count": 1,
+    "qualified_count": 0,
+    "selected_count": 0,
+    "candidates": [
+      {
+        "strategy_id": "volatility_squeeze",
+        "parameters": {
+          "boll_window": 20,
+          "boll_dev": 2.0,
+          "width_threshold": 0.05
+        },
+        "score": 1.495014,
+        "validation": {
+          "total_return_pct": 25.7657,
+          "annual_return_pct": 31.9568,
+          "annual_volatility_pct": 26.3436,
+          "sharpe_ratio": 1.1847,
+          "sortino_ratio": 0.5107,
+          "max_drawdown_pct": -23.874,
+          "calmar_ratio": 1.3386,
+          "win_rate_pct": 48.802,
+          "profit_factor": 1.1258,
+          "trade_count": 0
+        },
+        "train": {
+          "total_return_pct": 57.5666,
+          "annual_return_pct": 34.4737,
+          "annual_volatility_pct": 30.2109,
+          "sharpe_ratio": 1.1309,
+          "sortino_ratio": 0.547,
+          "max_drawdown_pct": -22.9946,
+          "calmar_ratio": 1.4992,
+          "win_rate_pct": 48.4021,
+          "profit_factor": 1.1226,
+          "trade_count": 0
+        },
+        "overfit_gap": -0.0538,
+        "candidate_count": 4,
+        "optimizer_rank": 2,
+        "recommendations": [
+          "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+          "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+          "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+        ],
+        "rank": 2,
+        "audit": {
+          "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+          "data_manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+          "data_fingerprint": "5cfb8d5f45d542a75b1da342bd6820564b6b5c598065db66f4949525ac440fe4",
+          "strategy_version": "volatility_squeeze:registry_signal_replay_v1",
+          "run_id_prefix": "btc_closure_btcusdt_1h_aa6bddc7d682",
+          "event_run_id": "btc_closure_btcusdt_1h_aa6bddc7d682_event",
+          "manifest_root": "data/manifests",
+          "data_root": "data"
+        },
+        "event_backtest_summary": {
+          "total_return_pct": 3.6473,
+          "annual_return_pct": 1.5284,
+          "annual_volatility_pct": 3.4085,
+          "sharpe_ratio": 0.462,
+          "sortino_ratio": 0.4383,
+          "max_drawdown_pct": -5.2752,
+          "calmar_ratio": 0.2897,
+          "win_rate_pct": 49.169,
+          "profit_factor": 1.0854,
+          "trade_count": 1716
+        },
+        "cost_stress_summary": {
+          "survival_rate_pct": 0.0,
+          "ledger_consistency_pct": 100.0,
+          "scenario_count": 8
+        },
+        "walk_forward_summary": {
+          "total_folds": 4,
+          "valid_folds": 4,
+          "passing_folds": 0,
+          "fold_pass_rate_pct": 0.0,
+          "pass_rate_pct": 0.0,
+          "window_count": 4,
+          "avg_oos_return_pct": -1.1392,
+          "median_oos_sharpe": -0.4758,
+          "worst_oos_drawdown_pct": -3.1142,
+          "parameter_stability_pct": 100.0,
+          "regime_pass_rate_pct": 0.0,
+          "ledger_equity_consistent_windows": 4,
+          "ledger_consistency_pct": 100.0,
+          "symbol_count": 1,
+          "symbols_covered": 1,
+          "symbols_insufficient": 0,
+          "symbol_details": {
+            "BTCUSDT": {
+              "folds": 4,
+              "passes": 0,
+              "bar_count": 20689
+            }
+          },
+          "manifest_path": "data/reports/walk_forward/walk_forward_volatility_squeeze_20260512T022250.json"
+        },
+        "cpcv_summary": {
+          "status": "completed",
+          "path_count": 4,
+          "trial_count": 8,
+          "fold_sharpes": [
+            2.5795,
+            0.2761,
+            0.4011,
+            1.1221
+          ]
+        },
+        "validation_statistics": {
+          "candidate_id": "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05",
+          "status": "complete",
+          "available_components": {
+            "cv_summary": true,
+            "trial_counting": true,
+            "deflated_sharpe_ratio": true,
+            "pbo": true,
+            "multiple_testing": true,
+            "lookahead_controls": true,
+            "net_return_distribution": true,
+            "cost_before_after": true
+          },
+          "cv_summary": {
+            "method": "cpcv",
+            "purged": true,
+            "purge_steps": 2,
+            "purge_recorded": true,
+            "embargoed": true,
+            "embargo_steps": 2,
+            "embargo_recorded": true,
+            "fold_count": 4,
+            "path_count": 4,
+            "train_window_count": 4,
+            "test_window_count": 1,
+            "pass_rate": 0.5,
+            "mean_oos_sharpe": 1.0947,
+            "median_oos_sharpe": 0.7616
+          },
+          "lookahead_controls": {
+            "recorded": true,
+            "guard": "event_driven_signal_replay_no_future_features",
+            "violations": [],
+            "passed": true
+          },
+          "trial_counting": {
+            "declared_trial_count": 8,
+            "param_grid_trial_count": 2,
+            "cv_path_count": 4,
+            "cv_fold_count": 4,
+            "cost_level_count": 8,
+            "trial_sharpe_count": 12,
+            "pbo_split_count": 4,
+            "independent_trial_count": 8,
+            "effective_trial_count": 12
+          },
+          "deflated_sharpe_ratio": {
+            "observed_sharpe": 1.1847,
+            "benchmark_sharpe": 3.606247,
+            "trial_count": 12,
+            "returns_count": 4,
+            "skew": 1.643735,
+            "excess_kurtosis": 2.58507,
+            "psr": 0.994182,
+            "dsr": 0.0,
+            "passed": false
+          },
+          "pbo": {
+            "mode": "grouped_trials",
+            "group_count": 4,
+            "overfit_group_count": 1,
+            "pbo": 0.25,
+            "logit_mean": 0.549306,
+            "logit_median": 1.098612,
+            "passed": false
+          },
+          "multiple_testing": {
+            "mode": "familywise_error_control",
+            "familywise_alpha": 0.05,
+            "effective_trial_count": 12,
+            "independent_trial_count": 8,
+            "raw_p_value": 0.005818,
+            "bonferroni_alpha": 0.00625,
+            "sidak_alpha": 0.006391,
+            "dsr_p_value": 1.0,
+            "passed": false
+          },
+          "net_return_distribution": {
+            "count": 4,
+            "mean": 20.313,
+            "std": 25.769378,
+            "median": 10.75485,
+            "min": 2.0405,
+            "max": 57.7018,
+            "p05": 2.41295,
+            "p25": 3.90275,
+            "p75": 27.1651,
+            "p95": 51.59446,
+            "negative_share": 0.0
+          },
+          "cost_before_after": {
+            "mode": "stress_curve",
+            "gross_return": null,
+            "net_return": 25.7657,
+            "gross_sharpe": null,
+            "net_sharpe": 1.1847,
+            "cost_drag_return": null,
+            "cost_drag_sharpe": null,
+            "baseline_multiplier": 1.0,
+            "worst_multiplier": 10.0,
+            "worst_return": -55.3259,
+            "worst_sharpe": -7.6167,
+            "stress_return_delta": 81.0916,
+            "surviving_levels": 3,
+            "level_count": 8
+          },
+          "promotion_gate_contract": {
+            "status": "blocked",
+            "required": {
+              "allowed_cv_methods": [
+                "cpcv",
+                "purged_kfold",
+                "embargoed_walk_forward"
+              ],
+              "required_cv_method": "cpcv",
+              "min_validation_paths": 2,
+              "min_effective_trial_count": 2,
+              "min_independent_trial_count": 2,
+              "min_dsr": 0.1,
+              "max_pbo": 0.5,
+              "familywise_alpha": 0.05,
+              "lookahead_guard_recorded": true
+            },
+            "observed": {
+              "cv_method": "cpcv",
+              "validation_paths": 4,
+              "purged": true,
+              "purge_recorded": true,
+              "embargoed": true,
+              "embargo_recorded": true,
+              "effective_trial_count": 12,
+              "independent_trial_count": 8,
+              "dsr": 0.0,
+              "pbo": 0.25,
+              "multiple_testing_mode": "familywise_error_control",
+              "lookahead_guard_recorded": true,
+              "lookahead_violations": []
+            },
+            "checks": {
+              "cv_method_allowed": true,
+              "cpcv_available": true,
+              "purged_or_embargoed": true,
+              "purge_embargo_recorded": true,
+              "multi_path_validation": true,
+              "trial_count_sufficient": true,
+              "dsr_available": true,
+              "dsr_passed": false,
+              "pbo_available": true,
+              "pbo_passed": true,
+              "multiple_testing_complete": true,
+              "multiple_testing_passed": false,
+              "lookahead_guard_recorded": true,
+              "lookahead_guard_passed": true
+            }
+          }
+        },
+        "statistical_validation_blockers": [
+          "CPCV/DSR/PBO promotion contract blocked",
+          "DSR below promotion threshold",
+          "multiple testing control did not pass"
+        ],
+        "candidate_key": "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05",
+        "qualified": false,
+        "selected": false,
+        "qualification_blockers": [
+          "validation profit_factor < 1.15",
+          "validation max_drawdown < -15.0%",
+          "validation trade_count < 10",
+          "cost survival_rate < 100.0%",
+          "walk_forward pass_rate < 80.0%",
+          "regime pass_rate < 75.0%",
+          "CPCV/DSR/PBO promotion contract blocked",
+          "DSR below promotion threshold",
+          "multiple testing control did not pass"
+        ]
+      }
+    ],
+    "selected_candidates": [],
+    "blockers": [
+      "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05: validation profit_factor < 1.15",
+      "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05: validation max_drawdown < -15.0%",
+      "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05: validation trade_count < 10",
+      "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05: cost survival_rate < 100.0%",
+      "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05: walk_forward pass_rate < 80.0%",
+      "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05: regime pass_rate < 75.0%",
+      "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05: CPCV/DSR/PBO promotion contract blocked",
+      "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05: DSR below promotion threshold",
+      "volatility_squeeze|boll_dev=2.0,boll_window=20,width_threshold=0.05: multiple testing control did not pass"
+    ]
+  }
+}

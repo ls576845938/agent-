@@ -1,0 +1,88 @@
+{
+  "asset": "btc",
+  "blockers": [],
+  "branch": "main",
+  "candidate_pass_allowed": false,
+  "commit": "cbe4b54",
+  "diagnostic_warnings": [
+    "btc_open_interest_history_not_verified_diagnostic_partial"
+  ],
+  "exchange_rules": {
+    "exchange_info_available": true,
+    "exchange_info_source_method": "official_public_rest_capture",
+    "exchange_rules_available": true,
+    "exchange_rules_blockers": [],
+    "historical_rule_lineage_available": false,
+    "min_notional": 6.33994,
+    "min_qty": 0.01,
+    "price_precision": 1,
+    "quantity_precision": 2,
+    "rules_source": "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json",
+    "step_size": 0.01,
+    "tick_size": 0.1
+  },
+  "fee_model": {
+    "fee_blockers": [],
+    "fee_in_ledger": true,
+    "fee_source": "manual_public_okx_swap_fee_schedule",
+    "fee_tier_captured_at": "2026-06-04T12:52:22Z",
+    "fee_tier_import_report": "artifacts/btc_cost_model/latest/btc_fee_tier_overlay_import_report.json",
+    "fee_tier_import_report_verified": true,
+    "fee_tier_overlay": "artifacts/btc_cost_model/latest/btc_fee_tier_overlay.json",
+    "fee_tier_overlay_sha256": "a4e122550a57dfbe7eb125255e1930231092d25490004b7dd2988e989685802a",
+    "fee_tier_source": "manual_public_okx_swap_fee_schedule",
+    "fee_tier_source_url_or_doc": "https://www.okx.com/en-us/fees",
+    "fee_tier_verified": true,
+    "maker_fee_bps": 2.0,
+    "taker_fee_bps": 5.0
+  },
+  "funding_model": {
+    "funding_blockers": [],
+    "funding_info_available": true,
+    "funding_interval_hours": 8.0,
+    "funding_interval_inference_confidence": "high",
+    "funding_interval_source": "funding_info_endpoint",
+    "funding_ledger_report": "artifacts/btc_cost_model/latest/btc_funding_ledger_report.json",
+    "funding_payment_in_ledger": true,
+    "funding_rate_available": true,
+    "funding_rate_sample_end": null,
+    "funding_rate_sample_start": null
+  },
+  "generated_at": "2026-06-20T09:16:45.350187+00:00",
+  "liquidation_data": {
+    "complete_liquidation_history_available": false,
+    "liquidation_snapshot_available": false,
+    "liquidation_snapshot_status": "diagnostic_missing_not_complete_history"
+  },
+  "live_status": "frozen",
+  "mark_price_model": {
+    "last_price_vs_mark_price_diagnostic_available": false,
+    "mark_price_alignment_pass": true,
+    "mark_price_available": true,
+    "mark_price_blockers": [],
+    "mark_price_current_available": false,
+    "mark_price_klines_available": true,
+    "mark_price_used_for_liquidation_risk": false,
+    "premium_index_available": true,
+    "premium_index_klines_available": true
+  },
+  "paper_queue_status": "locked",
+  "promotion_ready": false,
+  "schema_version": "btc_cost_model_contract_v1",
+  "slippage_model": {
+    "slippage_blockers": [],
+    "slippage_bps": 4.0,
+    "slippage_in_ledger": true,
+    "slippage_model_name": "bps_slippage_research_config",
+    "slippage_stress_levels": [
+      "base",
+      "fees_2x",
+      "slippage_2x",
+      "costs_2x"
+    ]
+  },
+  "source_canonical_backtest_report": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger/canonical_backtest_report.json",
+  "source_run_dir": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger",
+  "status": "pass",
+  "symbol": "BTCUSDT"
+}

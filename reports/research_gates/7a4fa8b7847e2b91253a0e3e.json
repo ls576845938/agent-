@@ -1,0 +1,1674 @@
+{
+  "canonical_validation": {
+    "engine": "portfolio_optimization",
+    "ledger_verified": false,
+    "reason": "portfolio gate requires separate allocation validation before paper review"
+  },
+  "config_version": "44136fa355b3678a",
+  "created_at": "2026-05-10T03:46:29.382664+00:00",
+  "data_fingerprint": "a20d972fbaca9cfb332aedb7572de745ff89a4181171e72fe1fce7651a71f42d",
+  "data_manifest": {
+    "adjustment": "raw",
+    "adjustment_policy": "raw",
+    "asset_class": "equity",
+    "checksum": "a20d972fbaca9cfb332aedb7572de745ff89a4181171e72fe1fce7651a71f42d",
+    "cleaned_path": "data/cleaned/vendor=yfinance/asset_class=equity/bar_size=1d/symbol=AAPL",
+    "cleaning": {
+      "cleaning_loss_rows": 0,
+      "duplicate_timestamps_removed": 0,
+      "invalid_ohlc_removed": 0,
+      "missing_bars": 5,
+      "non_positive_prices_removed": 0
+    },
+    "corporate_action_adjustment": "raw",
+    "coverage_pct": 95.4545,
+    "created_at": "2026-05-10T03:46:27.201411+00:00",
+    "data_version": "qs-yfinance-AAPL-1d-a20d972fbaca",
+    "end": "2024-05-31T19:59:00+00:00",
+    "expected_rows": 110,
+    "fields": [
+      "timestamp_utc",
+      "symbol",
+      "open",
+      "high",
+      "low",
+      "close",
+      "volume"
+    ],
+    "fingerprint": "a20d972fbaca9cfb332aedb7572de745ff89a4181171e72fe1fce7651a71f42d",
+    "git_commit": "",
+    "interval": "1d",
+    "issues": [
+      {
+        "code": "missing_bars",
+        "message": "\u8bf7\u6c42\u533a\u95f4\u7f3a\u5931 5 \u6839 K \u7ebf\uff0c\u8986\u76d6\u7387 95.45%\u3002",
+        "severity": "medium"
+      }
+    ],
+    "quality_score": 95.4545,
+    "quality_summary": {
+      "cleaning_loss_rows": 0,
+      "corporate_action_flags": 0,
+      "duplicate_bars": 0,
+      "duplicate_timestamps_removed": 0,
+      "invalid_ohlc_rows": 0,
+      "missing_bars": 5,
+      "non_positive_price_rows": 0,
+      "price_jump_bars": 0,
+      "total_issue_count": 0,
+      "zero_volume_bars": 0
+    },
+    "raw_path": "",
+    "row_count": 105,
+    "source": "yfinance",
+    "start": "2024-01-02T20:59:00+00:00",
+    "survivorship_bias_risk": "clean",
+    "symbol": "AAPL",
+    "timezone": "UTC",
+    "universe_id": "single-symbol-AAPL-1d-cfc7a5bbc81b",
+    "universe_source": "auto_lineage:single_symbol_request:v1:yfinance:AAPL:1d:2024-01-02T20:59:00Z:2024-05-31T19:59:00Z"
+  },
+  "data_manifest_validation": {
+    "metrics": {
+      "adjustment_policy": "raw",
+      "asset_class": "equity",
+      "checksum": "a20d972fbaca9cfb332aedb7572de745ff89a4181171e72fe1fce7651a71f42d",
+      "coverage_pct": 95.4545,
+      "data_version": "qs-yfinance-AAPL-1d-a20d972fbaca",
+      "expected_rows": 110,
+      "interval": "1d",
+      "quality_score": 95.4545,
+      "quality_summary": {
+        "cleaning_loss_rows": 0,
+        "corporate_action_flags": 0,
+        "duplicate_bars": 0,
+        "duplicate_timestamps_removed": 0,
+        "invalid_ohlc_rows": 0,
+        "missing_bars": 5,
+        "non_positive_price_rows": 0,
+        "price_jump_bars": 0,
+        "total_issue_count": 0,
+        "zero_volume_bars": 0
+      },
+      "row_count": 105,
+      "source": "yfinance",
+      "survivorship_bias_risk": "clean",
+      "symbol": "AAPL",
+      "universe_id": "single-symbol-AAPL-1d-cfc7a5bbc81b",
+      "universe_source": "auto_lineage:single_symbol_request:v1:yfinance:AAPL:1d:2024-01-02T20:59:00Z:2024-05-31T19:59:00Z"
+    },
+    "ok": true,
+    "reasons": [],
+    "warnings": [
+      "missing_bars:5"
+    ]
+  },
+  "data_version": "qs-yfinance-AAPL-1d-a20d972fbaca",
+  "decision": "fail",
+  "deep_checks": {
+    "portfolio_optimization": {
+      "baseline_summary": {
+        "annual_return_pct": 5.3822,
+        "annual_volatility_pct": 5.2004,
+        "calmar_ratio": 1.9694,
+        "max_drawdown_pct": -2.7329,
+        "profit_factor": 1.1939,
+        "sharpe_ratio": 1.0341,
+        "sortino_ratio": 1.1828,
+        "total_return_pct": 1.5195,
+        "trade_count": 5,
+        "win_rate_pct": 60.8696
+      },
+      "baseline_weights": {
+        "donchian_breakout": 0.098684,
+        "dynamic_grid": 0.065789,
+        "earnings_drift": 0.065789,
+        "etf_rotation": 0.065789,
+        "factor_rank": 0.065789,
+        "funding_sentiment": 0.065789,
+        "macro_trend": 0.032895,
+        "reversion_rsi": 0.098684,
+        "short_reversion": 0.065789,
+        "time_window": 0.065789,
+        "trend_macd": 0.131579,
+        "trend_momentum": 0.078947,
+        "volatility_squeeze": 0.098684
+      },
+      "correlation_matrix": [
+        {
+          "avg_abs_correlation": 0.273,
+          "strategy_id": "trend_macd",
+          "values": [
+            {
+              "correlation": 1.0,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": -0.0015,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": 0.4008,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": -0.0889,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": -0.7711,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": 0.6363,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": -0.1224,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": 0.4908,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": 0.272,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": 0.4919,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.1181,
+          "strategy_id": "reversion_rsi",
+          "values": [
+            {
+              "correlation": -0.0015,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": -0.0054,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": -0.0013,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": -0.0007,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": -0.3506,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": 0.3173,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": -0.2467,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": -0.2414,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": -0.2529,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.0,
+          "strategy_id": "donchian_breakout",
+          "values": [
+            {
+              "correlation": 0.0,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.0,
+          "strategy_id": "volatility_squeeze",
+          "values": [
+            {
+              "correlation": 0.0,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.2098,
+          "strategy_id": "funding_sentiment",
+          "values": [
+            {
+              "correlation": 0.4008,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": -0.0054,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": 0.217,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": -0.5688,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": 0.2596,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": 0.501,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": -0.1089,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": -0.2747,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": -0.1819,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.0,
+          "strategy_id": "macro_trend",
+          "values": [
+            {
+              "correlation": 0.0,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.0627,
+          "strategy_id": "time_window",
+          "values": [
+            {
+              "correlation": -0.0889,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": -0.0013,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": 0.217,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": -0.0537,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": 0.1073,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": 0.1333,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": 0.0639,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": -0.0862,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": -0.0005,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.2702,
+          "strategy_id": "dynamic_grid",
+          "values": [
+            {
+              "correlation": -0.7711,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": -0.0007,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": -0.5688,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": -0.0537,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": -0.5923,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": 0.1189,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": -0.5186,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": -0.1668,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": -0.4517,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.3331,
+          "strategy_id": "trend_momentum",
+          "values": [
+            {
+              "correlation": 0.6363,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": -0.3506,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": 0.2596,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": 0.1073,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": -0.5923,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": -0.2222,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": 0.7077,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": 0.3889,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": 0.7327,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.2438,
+          "strategy_id": "short_reversion",
+          "values": [
+            {
+              "correlation": -0.1224,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": 0.3173,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": 0.501,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": 0.1333,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": 0.1189,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": -0.2222,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": -0.3895,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": -0.724,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": -0.397,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.3276,
+          "strategy_id": "factor_rank",
+          "values": [
+            {
+              "correlation": 0.4908,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": -0.2467,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": -0.1089,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": 0.0639,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": -0.5186,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": 0.7077,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": -0.3895,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": 0.4377,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": 0.9671,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.2561,
+          "strategy_id": "earnings_drift",
+          "values": [
+            {
+              "correlation": 0.272,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": -0.2414,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": -0.2747,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": -0.0862,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": -0.1668,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": 0.3889,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": -0.724,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": 0.4377,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": 0.4815,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        },
+        {
+          "avg_abs_correlation": 0.3298,
+          "strategy_id": "etf_rotation",
+          "values": [
+            {
+              "correlation": 0.4919,
+              "strategy_id": "trend_macd"
+            },
+            {
+              "correlation": -0.2529,
+              "strategy_id": "reversion_rsi"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "donchian_breakout"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "volatility_squeeze"
+            },
+            {
+              "correlation": -0.1819,
+              "strategy_id": "funding_sentiment"
+            },
+            {
+              "correlation": 0.0,
+              "strategy_id": "macro_trend"
+            },
+            {
+              "correlation": -0.0005,
+              "strategy_id": "time_window"
+            },
+            {
+              "correlation": -0.4517,
+              "strategy_id": "dynamic_grid"
+            },
+            {
+              "correlation": 0.7327,
+              "strategy_id": "trend_momentum"
+            },
+            {
+              "correlation": -0.397,
+              "strategy_id": "short_reversion"
+            },
+            {
+              "correlation": 0.9671,
+              "strategy_id": "factor_rank"
+            },
+            {
+              "correlation": 0.4815,
+              "strategy_id": "earnings_drift"
+            },
+            {
+              "correlation": 1.0,
+              "strategy_id": "etf_rotation"
+            }
+          ]
+        }
+      ],
+      "correlation_pairs": [
+        {
+          "abs_correlation": 0.9671,
+          "correlation": 0.9671,
+          "left": "factor_rank",
+          "right": "etf_rotation"
+        },
+        {
+          "abs_correlation": 0.7711,
+          "correlation": -0.7711,
+          "left": "trend_macd",
+          "right": "dynamic_grid"
+        },
+        {
+          "abs_correlation": 0.7327,
+          "correlation": 0.7327,
+          "left": "trend_momentum",
+          "right": "etf_rotation"
+        },
+        {
+          "abs_correlation": 0.724,
+          "correlation": -0.724,
+          "left": "short_reversion",
+          "right": "earnings_drift"
+        },
+        {
+          "abs_correlation": 0.7077,
+          "correlation": 0.7077,
+          "left": "trend_momentum",
+          "right": "factor_rank"
+        },
+        {
+          "abs_correlation": 0.6363,
+          "correlation": 0.6363,
+          "left": "trend_macd",
+          "right": "trend_momentum"
+        },
+        {
+          "abs_correlation": 0.5923,
+          "correlation": -0.5923,
+          "left": "dynamic_grid",
+          "right": "trend_momentum"
+        },
+        {
+          "abs_correlation": 0.5688,
+          "correlation": -0.5688,
+          "left": "funding_sentiment",
+          "right": "dynamic_grid"
+        },
+        {
+          "abs_correlation": 0.5186,
+          "correlation": -0.5186,
+          "left": "dynamic_grid",
+          "right": "factor_rank"
+        },
+        {
+          "abs_correlation": 0.501,
+          "correlation": 0.501,
+          "left": "funding_sentiment",
+          "right": "short_reversion"
+        }
+      ],
+      "framework": [
+        {
+          "priority": 1,
+          "reason": "\u5f53\u524d\u7cfb\u7edf\u5df2\u6709\u56de\u6d4b\u62a5\u544a\uff0c\u4f46\u8fd8\u7f3a\u5c11\u9632\u8fc7\u62df\u5408\u7684\u53c2\u6570\u7b5b\u9009\uff1b\u8fd9\u662f\u8fdb\u5165 paper trading \u524d\u6700\u91cd\u8981\u7684\u5de5\u7a0b\u5173\u53e3\u3002",
+          "status": "completed",
+          "title": "\u53c2\u6570\u7a33\u5065\u6027 + \u6837\u672c\u5916\u9a8c\u8bc1"
+        },
+        {
+          "priority": 2,
+          "reason": "\u5bf9\u624b\u7eed\u8d39\u3001\u6ed1\u70b9\u3001\u5ef6\u8fdf\u548c\u6210\u4ea4\u6bd4\u4f8b\u505a\u538b\u529b\u6d4b\u8bd5\uff0c\u907f\u514d\u4f4e\u9891\u7b56\u7565\u88ab\u771f\u5b9e\u6267\u884c\u541e\u566c\u3002",
+          "status": "completed",
+          "title": "\u4ea4\u6613\u6210\u672c\u538b\u529b\u6d4b\u8bd5"
+        },
+        {
+          "priority": 3,
+          "reason": "\u6309\u725b\u718a\u3001\u9707\u8361\u3001\u9ad8\u6ce2\u52a8\u3001\u4f4e\u6ce2\u52a8\u5207\u7247\u9a8c\u8bc1\u7b56\u7565\u7a33\u5b9a\u6027\u3002",
+          "status": "completed",
+          "title": "Walk-forward \u4e0e\u5e02\u573a\u72b6\u6001\u5207\u7247"
+        },
+        {
+          "priority": 4,
+          "reason": "\u5728\u5355\u7b56\u7565\u6837\u672c\u5916\u7a33\u5b9a\u540e\uff0c\u518d\u4f18\u5316\u591a\u7b56\u7565\u6743\u91cd\u3001\u76f8\u5173\u6027\u60e9\u7f5a\u548c\u98ce\u9669\u9884\u7b97\u3002",
+          "status": "selected",
+          "title": "\u7ec4\u5408\u5c42\u76f8\u5173\u6027\u4e0e\u8d44\u91d1\u5206\u914d"
+        },
+        {
+          "priority": 5,
+          "reason": "\u4e3a\u540e\u7eed\u673a\u5668\u5b66\u4e60\u548c\u591a\u6570\u636e\u6e90\u63a5\u5165\u4fdd\u7559\u53ef\u590d\u73b0\u7684\u6570\u636e\u8c31\u7cfb\u3002",
+          "status": "next",
+          "title": "\u6570\u636e\u8d28\u91cf\u4e0e\u7279\u5f81\u7248\u672c\u6cbb\u7406"
+        }
+      ],
+      "improvement": {
+        "cost_delta": 0.7129,
+        "drawdown_delta_pct": 1.5836,
+        "return_delta_pct": 6.1935,
+        "sharpe_delta": 3.214
+      },
+      "optimized_summary": {
+        "annual_return_pct": 29.4704,
+        "annual_volatility_pct": 6.1259,
+        "calmar_ratio": 25.6421,
+        "max_drawdown_pct": -1.1493,
+        "profit_factor": 2.3169,
+        "sharpe_ratio": 4.2481,
+        "sortino_ratio": 10.4467,
+        "total_return_pct": 7.713,
+        "trade_count": 6,
+        "win_rate_pct": 54.0816
+      },
+      "optimized_weight_rows": [
+        {
+          "baseline_weight_pct": 9.8684,
+          "display_name": "Reversion RSI",
+          "strategy_id": "reversion_rsi",
+          "weight": 0.35,
+          "weight_pct": 35.0
+        },
+        {
+          "baseline_weight_pct": 6.5789,
+          "display_name": "Short Reversion (US)",
+          "strategy_id": "short_reversion",
+          "weight": 0.219388,
+          "weight_pct": 21.9388
+        },
+        {
+          "baseline_weight_pct": 7.8947,
+          "display_name": "Trend Momentum (US)",
+          "strategy_id": "trend_momentum",
+          "weight": 0.136711,
+          "weight_pct": 13.6711
+        },
+        {
+          "baseline_weight_pct": 6.5789,
+          "display_name": "Dynamic Grid",
+          "strategy_id": "dynamic_grid",
+          "weight": 0.064212,
+          "weight_pct": 6.4212
+        },
+        {
+          "baseline_weight_pct": 6.5789,
+          "display_name": "ETF Rotation (US)",
+          "strategy_id": "etf_rotation",
+          "weight": 0.051297,
+          "weight_pct": 5.1297
+        },
+        {
+          "baseline_weight_pct": 6.5789,
+          "display_name": "Factor Rank (US)",
+          "strategy_id": "factor_rank",
+          "weight": 0.046248,
+          "weight_pct": 4.6248
+        },
+        {
+          "baseline_weight_pct": 6.5789,
+          "display_name": "Time Window Effect",
+          "strategy_id": "time_window",
+          "weight": 0.031377,
+          "weight_pct": 3.1377
+        },
+        {
+          "baseline_weight_pct": 13.1579,
+          "display_name": "Trend MACD",
+          "strategy_id": "trend_macd",
+          "weight": 0.021153,
+          "weight_pct": 2.1153
+        },
+        {
+          "baseline_weight_pct": 9.8684,
+          "display_name": "Donchian Breakout",
+          "strategy_id": "donchian_breakout",
+          "weight": 0.015923,
+          "weight_pct": 1.5923
+        },
+        {
+          "baseline_weight_pct": 9.8684,
+          "display_name": "Volatility Squeeze",
+          "strategy_id": "volatility_squeeze",
+          "weight": 0.015923,
+          "weight_pct": 1.5923
+        },
+        {
+          "baseline_weight_pct": 6.5789,
+          "display_name": "Funding Sentiment",
+          "strategy_id": "funding_sentiment",
+          "weight": 0.015923,
+          "weight_pct": 1.5923
+        },
+        {
+          "baseline_weight_pct": 3.2895,
+          "display_name": "Macro Trend Stack",
+          "strategy_id": "macro_trend",
+          "weight": 0.015923,
+          "weight_pct": 1.5923
+        },
+        {
+          "baseline_weight_pct": 6.5789,
+          "display_name": "Earnings Drift (US)",
+          "strategy_id": "earnings_drift",
+          "weight": 0.015923,
+          "weight_pct": 1.5923
+        }
+      ],
+      "optimized_weights": {
+        "donchian_breakout": 0.015923,
+        "dynamic_grid": 0.064212,
+        "earnings_drift": 0.015923,
+        "etf_rotation": 0.051297,
+        "factor_rank": 0.046248,
+        "funding_sentiment": 0.015923,
+        "macro_trend": 0.015923,
+        "reversion_rsi": 0.35,
+        "short_reversion": 0.219388,
+        "time_window": 0.031377,
+        "trend_macd": 0.021153,
+        "trend_momentum": 0.136711,
+        "volatility_squeeze": 0.015923
+      },
+      "recommendations": [
+        "\u5efa\u8bae\u7528\u4f18\u5316\u6743\u91cd\u8fdb\u5165\u4e0b\u4e00\u8f6e\u7ec4\u5408\u56de\u6d4b\uff0c\u98ce\u9669\u8c03\u6574\u540e\u6536\u76ca\u8d28\u91cf\u4f18\u4e8e\u5f53\u524d\u6743\u91cd\u3002",
+        "factor_rank \u4e0e etf_rotation \u76f8\u5173\u6027\u504f\u9ad8\uff0c\u5b9e\u76d8\u8d44\u91d1\u5206\u914d\u5e94\u907f\u514d\u540c\u65f6\u6ee1\u6743\u91cd\u8fd0\u884c\u3002"
+      ],
+      "risk_budget": {
+        "active_gross_pct": 95.0,
+        "cash_reserve_pct": 5.0,
+        "max_pair_abs_correlation": 0.9671,
+        "risk_contributions": [
+          {
+            "avg_abs_correlation": 0.1181,
+            "risk_contribution_pct": 15.962,
+            "standalone_volatility_pct": 5.7251,
+            "strategy_id": "reversion_rsi",
+            "weight_pct": 35.0
+          },
+          {
+            "avg_abs_correlation": 0.2438,
+            "risk_contribution_pct": 31.3603,
+            "standalone_volatility_pct": 17.9444,
+            "strategy_id": "short_reversion",
+            "weight_pct": 21.9388
+          },
+          {
+            "avg_abs_correlation": 0.3331,
+            "risk_contribution_pct": 17.7043,
+            "standalone_volatility_pct": 16.2568,
+            "strategy_id": "trend_momentum",
+            "weight_pct": 13.6711
+          },
+          {
+            "avg_abs_correlation": 0.2702,
+            "risk_contribution_pct": 7.4912,
+            "standalone_volatility_pct": 14.6451,
+            "strategy_id": "dynamic_grid",
+            "weight_pct": 6.4212
+          },
+          {
+            "avg_abs_correlation": 0.3298,
+            "risk_contribution_pct": 9.0292,
+            "standalone_volatility_pct": 22.0963,
+            "strategy_id": "etf_rotation",
+            "weight_pct": 5.1297
+          },
+          {
+            "avg_abs_correlation": 0.3276,
+            "risk_contribution_pct": 8.4501,
+            "standalone_volatility_pct": 22.9366,
+            "strategy_id": "factor_rank",
+            "weight_pct": 4.6248
+          },
+          {
+            "avg_abs_correlation": 0.0627,
+            "risk_contribution_pct": 2.8101,
+            "standalone_volatility_pct": 11.2427,
+            "strategy_id": "time_window",
+            "weight_pct": 3.1377
+          },
+          {
+            "avg_abs_correlation": 0.273,
+            "risk_contribution_pct": 1.9019,
+            "standalone_volatility_pct": 11.2868,
+            "strategy_id": "trend_macd",
+            "weight_pct": 2.1153
+          },
+          {
+            "avg_abs_correlation": 0.0,
+            "risk_contribution_pct": 0.0,
+            "standalone_volatility_pct": 0.0,
+            "strategy_id": "donchian_breakout",
+            "weight_pct": 1.5923
+          },
+          {
+            "avg_abs_correlation": 0.0,
+            "risk_contribution_pct": 0.0,
+            "standalone_volatility_pct": 0.0,
+            "strategy_id": "volatility_squeeze",
+            "weight_pct": 1.5923
+          },
+          {
+            "avg_abs_correlation": 0.2098,
+            "risk_contribution_pct": 2.241,
+            "standalone_volatility_pct": 17.6678,
+            "strategy_id": "funding_sentiment",
+            "weight_pct": 1.5923
+          },
+          {
+            "avg_abs_correlation": 0.0,
+            "risk_contribution_pct": 0.0,
+            "standalone_volatility_pct": 0.0,
+            "strategy_id": "macro_trend",
+            "weight_pct": 1.5923
+          },
+          {
+            "avg_abs_correlation": 0.2561,
+            "risk_contribution_pct": 3.0499,
+            "standalone_volatility_pct": 24.0455,
+            "strategy_id": "earnings_drift",
+            "weight_pct": 1.5923
+          }
+        ]
+      },
+      "risk_overlay": {
+        "cash_reserve_pct": 5.0,
+        "drawdown_trigger_pct": -1.1493,
+        "max_single_weight_pct": 35.0,
+        "state": "normal",
+        "suggested_gross_multiplier": 1.0
+      },
+      "selected_priority": "\u7ec4\u5408\u5c42\u76f8\u5173\u6027\u4e0e\u8d44\u91d1\u5206\u914d",
+      "status": "completed",
+      "strategy_allocations": [
+        {
+          "avg_abs_correlation": 0.273,
+          "baseline_weight_pct": 13.1579,
+          "category": "trend",
+          "display_name": "Trend MACD",
+          "optimized_weight_pct": 2.1153,
+          "quality_score": 0.091475,
+          "strategy_id": "trend_macd",
+          "summary": {
+            "annual_return_pct": 0.3576,
+            "annual_volatility_pct": 16.7473,
+            "calmar_ratio": 0.05,
+            "max_drawdown_pct": -7.1495,
+            "profit_factor": 1.0364,
+            "sharpe_ratio": 0.1058,
+            "sortino_ratio": 0.0562,
+            "total_return_pct": 0.1027,
+            "trade_count": 5,
+            "win_rate_pct": 63.1579
+          }
+        },
+        {
+          "avg_abs_correlation": 0.1181,
+          "baseline_weight_pct": 9.8684,
+          "category": "mean_reversion",
+          "display_name": "Reversion RSI",
+          "optimized_weight_pct": 35.0,
+          "quality_score": 3.835928,
+          "strategy_id": "reversion_rsi",
+          "summary": {
+            "annual_return_pct": 5.2003,
+            "annual_volatility_pct": 2.9517,
+            "calmar_ratio": 8.311,
+            "max_drawdown_pct": -0.6257,
+            "profit_factor": 3.3494,
+            "sharpe_ratio": 1.7323,
+            "sortino_ratio": 1.0895,
+            "total_return_pct": 1.4691,
+            "trade_count": 1,
+            "win_rate_pct": 50.0
+          }
+        },
+        {
+          "avg_abs_correlation": 0.0,
+          "baseline_weight_pct": 9.8684,
+          "category": "breakout",
+          "display_name": "Donchian Breakout",
+          "optimized_weight_pct": 1.5923,
+          "quality_score": -0.35,
+          "strategy_id": "donchian_breakout",
+          "summary": {
+            "annual_return_pct": 0.0,
+            "annual_volatility_pct": 0.0,
+            "calmar_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "profit_factor": 0.0,
+            "sharpe_ratio": 0.0,
+            "sortino_ratio": 0.0,
+            "total_return_pct": 0.0,
+            "trade_count": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        {
+          "avg_abs_correlation": 0.0,
+          "baseline_weight_pct": 9.8684,
+          "category": "volatility",
+          "display_name": "Volatility Squeeze",
+          "optimized_weight_pct": 1.5923,
+          "quality_score": -0.35,
+          "strategy_id": "volatility_squeeze",
+          "summary": {
+            "annual_return_pct": 0.0,
+            "annual_volatility_pct": 0.0,
+            "calmar_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "profit_factor": 0.0,
+            "sharpe_ratio": 0.0,
+            "sortino_ratio": 0.0,
+            "total_return_pct": 0.0,
+            "trade_count": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        {
+          "avg_abs_correlation": 0.2098,
+          "baseline_weight_pct": 6.5789,
+          "category": "sentiment",
+          "display_name": "Funding Sentiment",
+          "optimized_weight_pct": 1.5923,
+          "quality_score": -2.988763,
+          "strategy_id": "funding_sentiment",
+          "summary": {
+            "annual_return_pct": -43.7155,
+            "annual_volatility_pct": 33.5906,
+            "calmar_ratio": -2.1735,
+            "max_drawdown_pct": -20.1127,
+            "profit_factor": 0.5815,
+            "sharpe_ratio": -1.5286,
+            "sortino_ratio": -0.738,
+            "total_return_pct": -15.2394,
+            "trade_count": 5,
+            "win_rate_pct": 51.6129
+          }
+        },
+        {
+          "avg_abs_correlation": 0.0,
+          "baseline_weight_pct": 3.2895,
+          "category": "macro",
+          "display_name": "Macro Trend Stack",
+          "optimized_weight_pct": 1.5923,
+          "quality_score": -0.35,
+          "strategy_id": "macro_trend",
+          "summary": {
+            "annual_return_pct": 0.0,
+            "annual_volatility_pct": 0.0,
+            "calmar_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "profit_factor": 0.0,
+            "sharpe_ratio": 0.0,
+            "sortino_ratio": 0.0,
+            "total_return_pct": 0.0,
+            "trade_count": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        {
+          "avg_abs_correlation": 0.0627,
+          "baseline_weight_pct": 6.5789,
+          "category": "seasonality",
+          "display_name": "Time Window Effect",
+          "optimized_weight_pct": 3.1377,
+          "quality_score": 2.246725,
+          "strategy_id": "time_window",
+          "summary": {
+            "annual_return_pct": 19.4416,
+            "annual_volatility_pct": 19.9422,
+            "calmar_ratio": 4.6237,
+            "max_drawdown_pct": -4.2047,
+            "profit_factor": 1.3684,
+            "sharpe_ratio": 0.9887,
+            "sortino_ratio": 1.441,
+            "total_return_pct": 5.2435,
+            "trade_count": 0,
+            "win_rate_pct": 40.0
+          }
+        },
+        {
+          "avg_abs_correlation": 0.2702,
+          "baseline_weight_pct": 6.5789,
+          "category": "mean_reversion",
+          "display_name": "Dynamic Grid",
+          "optimized_weight_pct": 6.4212,
+          "quality_score": 1.092943,
+          "strategy_id": "dynamic_grid",
+          "summary": {
+            "annual_return_pct": 20.7757,
+            "annual_volatility_pct": 36.2526,
+            "calmar_ratio": 1.6326,
+            "max_drawdown_pct": -12.7255,
+            "profit_factor": 1.1997,
+            "sharpe_ratio": 0.6944,
+            "sortino_ratio": 1.1041,
+            "total_return_pct": 5.5804,
+            "trade_count": 4,
+            "win_rate_pct": 36.5854
+          }
+        },
+        {
+          "avg_abs_correlation": 0.3331,
+          "baseline_weight_pct": 7.8947,
+          "category": "momentum",
+          "display_name": "Trend Momentum (US)",
+          "optimized_weight_pct": 13.6711,
+          "quality_score": 3.225513,
+          "strategy_id": "trend_momentum",
+          "summary": {
+            "annual_return_pct": 60.658,
+            "annual_volatility_pct": 31.1363,
+            "calmar_ratio": 4.7945,
+            "max_drawdown_pct": -12.6516,
+            "profit_factor": 1.4477,
+            "sharpe_ratio": 1.6758,
+            "sortino_ratio": 2.2559,
+            "total_return_pct": 14.6126,
+            "trade_count": 4,
+            "win_rate_pct": 64.1509
+          }
+        },
+        {
+          "avg_abs_correlation": 0.2438,
+          "baseline_weight_pct": 6.5789,
+          "category": "mean_reversion",
+          "display_name": "Short Reversion (US)",
+          "optimized_weight_pct": 21.9388,
+          "quality_score": 5.505738,
+          "strategy_id": "short_reversion",
+          "summary": {
+            "annual_return_pct": 133.0233,
+            "annual_volatility_pct": 25.9306,
+            "calmar_ratio": 13.1781,
+            "max_drawdown_pct": -10.0943,
+            "profit_factor": 2.456,
+            "sharpe_ratio": 3.3918,
+            "sortino_ratio": 5.7675,
+            "total_return_pct": 27.5529,
+            "trade_count": 3,
+            "win_rate_pct": 56.7568
+          }
+        },
+        {
+          "avg_abs_correlation": 0.3276,
+          "baseline_weight_pct": 6.5789,
+          "category": "momentum",
+          "display_name": "Factor Rank (US)",
+          "optimized_weight_pct": 4.6248,
+          "quality_score": 1.136293,
+          "strategy_id": "factor_rank",
+          "summary": {
+            "annual_return_pct": 23.5548,
+            "annual_volatility_pct": 35.5671,
+            "calmar_ratio": 1.6729,
+            "max_drawdown_pct": -14.0801,
+            "profit_factor": 1.148,
+            "sharpe_ratio": 0.7696,
+            "sortino_ratio": 1.1453,
+            "total_return_pct": 6.2736,
+            "trade_count": 5,
+            "win_rate_pct": 55.4217
+          }
+        },
+        {
+          "avg_abs_correlation": 0.2561,
+          "baseline_weight_pct": 6.5789,
+          "category": "event",
+          "display_name": "Earnings Drift (US)",
+          "optimized_weight_pct": 1.5923,
+          "quality_score": -1.551708,
+          "strategy_id": "earnings_drift",
+          "summary": {
+            "annual_return_pct": -23.7784,
+            "annual_volatility_pct": 34.6125,
+            "calmar_ratio": -1.3174,
+            "max_drawdown_pct": -18.0498,
+            "profit_factor": 0.897,
+            "sharpe_ratio": -0.609,
+            "sortino_ratio": -0.6703,
+            "total_return_pct": -7.5137,
+            "trade_count": 4,
+            "win_rate_pct": 46.5753
+          }
+        },
+        {
+          "avg_abs_correlation": 0.3298,
+          "baseline_weight_pct": 6.5789,
+          "category": "momentum",
+          "display_name": "ETF Rotation (US)",
+          "optimized_weight_pct": 5.1297,
+          "quality_score": 1.279717,
+          "strategy_id": "etf_rotation",
+          "summary": {
+            "annual_return_pct": 23.3238,
+            "annual_volatility_pct": 32.138,
+            "calmar_ratio": 1.8435,
+            "max_drawdown_pct": -12.6516,
+            "profit_factor": 1.1749,
+            "sharpe_ratio": 0.8098,
+            "sortino_ratio": 1.207,
+            "total_return_pct": 6.2164,
+            "trade_count": 4,
+            "win_rate_pct": 59.375
+          }
+        }
+      ]
+    }
+  },
+  "gate_version": "2.0.0",
+  "gates": [
+    {
+      "message": "\u6570\u636e\u53ef\u7528\u6027\u3001\u8986\u76d6\u7387\u548c\u5f02\u5e38\u68c0\u67e5\u3002",
+      "metrics": {
+        "coverage_pct": 95.4545,
+        "data_version": "qs-yfinance-AAPL-1d-a20d972fbaca",
+        "missing_bars": 5,
+        "quality_score": 95.4545
+      },
+      "name": "data_quality",
+      "status": "warn",
+      "threshold": "usable=true, coverage>=95%, score>=95 for pass; coverage<85% = fail"
+    },
+    {
+      "message": "\u6570\u636e manifest \u53ef\u7528\uff0c\u4f46\u5b58\u5728\u7f3a\u5931 K \u7ebf\u7b49\u9700\u8981\u8bb0\u5f55\u7684\u975e\u963b\u65ad\u8b66\u544a\u3002",
+      "metrics": {
+        "adjustment_policy": "raw",
+        "asset_class": "equity",
+        "checksum": "a20d972fbaca9cfb332aedb7572de745ff89a4181171e72fe1fce7651a71f42d",
+        "coverage_pct": 95.4545,
+        "data_version": "qs-yfinance-AAPL-1d-a20d972fbaca",
+        "expected_rows": 110,
+        "interval": "1d",
+        "quality_score": 95.4545,
+        "quality_summary": {
+          "cleaning_loss_rows": 0,
+          "corporate_action_flags": 0,
+          "duplicate_bars": 0,
+          "duplicate_timestamps_removed": 0,
+          "invalid_ohlc_rows": 0,
+          "missing_bars": 5,
+          "non_positive_price_rows": 0,
+          "price_jump_bars": 0,
+          "total_issue_count": 0,
+          "zero_volume_bars": 0
+        },
+        "reasons": [],
+        "row_count": 105,
+        "source": "yfinance",
+        "survivorship_bias_risk": "clean",
+        "symbol": "AAPL",
+        "universe_id": "single-symbol-AAPL-1d-cfc7a5bbc81b",
+        "universe_source": "auto_lineage:single_symbol_request:v1:yfinance:AAPL:1d:2024-01-02T20:59:00Z:2024-05-31T19:59:00Z",
+        "warnings": [
+          "missing_bars:5"
+        ]
+      },
+      "name": "data_manifest",
+      "status": "warn",
+      "threshold": "source in {yfinance, alpaca, sqlite}; equity only; UTC; checksum/fingerprint present; coverage>=90%; quality>=80%; no duplicate/invalid/non-positive bars or future timestamps"
+    },
+    {
+      "message": "\u664b\u7ea7\u8bc1\u636e\u9650\u5b9a\u5728 US equity \u6570\u636e\u8c31\u7cfb\u5185\uff0c\u4e14\u672a\u4f7f\u7528 fixture\u3002",
+      "metrics": {
+        "actual_source": "yfinance",
+        "allowed_actual_sources": [
+          "alpaca",
+          "sqlite",
+          "yfinance"
+        ],
+        "asset_class": "equity",
+        "fixture_used": false,
+        "requested_source": "yfinance",
+        "symbol": "AAPL"
+      },
+      "name": "evidence_scope",
+      "status": "pass",
+      "threshold": "paper candidate requires US equity evidence and no fixture fallback; auto/sqlite evidence stays research_iteration until explicitly governed"
+    },
+    {
+      "message": "\u57fa\u7840\u6536\u76ca\u8d28\u91cf\u3001\u4ea4\u6613\u8fb9\u9645\u3001\u6700\u5927\u56de\u64a4\u548c\u6700\u5c0f\u4ea4\u6613\u6b21\u6570\u68c0\u67e5\u3002",
+      "metrics": {
+        "frequency_profile": "low_frequency",
+        "max_drawdown_pct": -2.8758,
+        "profit_factor": 1.1956,
+        "sharpe_ratio": 1.0423,
+        "signal_count": 4,
+        "total_return_pct": 1.6095,
+        "trade_count": 4
+      },
+      "name": "backtest_survival",
+      "status": "warn",
+      "threshold": "low_frequency_profile: return>0,sharpe>=0,pf>=0.5,mdd>-25%,trades>=3 (interval=1d)"
+    },
+    {
+      "message": "\u4ea4\u6613\u6210\u672c\u62d6\u7d2f\u548c\u6362\u624b\u7387\u68c0\u67e5\u3002",
+      "metrics": {
+        "annual_turnover_pct": 39.3359,
+        "cost_drag_pct": 0.066,
+        "orders": 4
+      },
+      "name": "execution_cost",
+      "status": "pass",
+      "threshold": "cost drag <= max(2%, 50% of |return|), turnover <= 5000% for pass; cost drag must not exceed total return"
+    },
+    {
+      "message": "\u56de\u64a4\u548c\u6700\u5927\u603b\u655e\u53e3\u68c0\u67e5\u3002",
+      "metrics": {
+        "max_drawdown_pct": -2.8758,
+        "max_gross_exposure_pct": 59.7855
+      },
+      "name": "portfolio_risk",
+      "status": "pass",
+      "threshold": "mdd>-20%, max gross exposure<=300%; pass wants mdd>-12%, exposure<=200%"
+    },
+    {
+      "message": "\u7ec4\u5408\u76f8\u5173\u6027\u3001\u98ce\u9669\u9884\u7b97\u548c\u4f18\u5316\u6743\u91cd\u68c0\u67e5\u3002",
+      "metrics": {
+        "active_gross_pct": 95.0,
+        "max_pair_abs_correlation": 0.9671,
+        "sharpe_delta": 3.214
+      },
+      "name": "portfolio_allocation",
+      "status": "fail",
+      "threshold": "max pair abs correlation<0.75 for pass, <0.95 for warn"
+    }
+  ],
+  "generated_at": "2026-05-10T03:46:29.382664+00:00",
+  "manifest_id": "7a4fa8b7847e2b91253a0e3e",
+  "mode": "portfolio",
+  "next_stage": "blocked",
+  "promotion_authority": {
+    "automation_gate_required": true,
+    "message": "research_gate \u53ea\u8f93\u51fa\u670d\u52a1\u5c42\u7814\u7a76\u8bc4\u4f30\u7ed3\u679c\uff1bpaper_candidate/next_stage \u4e0d\u7b49\u4e8e paper review approval\uff0c\u66f4\u4e0d\u7b49\u4e8e paper execution authorization\u3002",
+    "paper_candidate": false,
+    "paper_review_required": true,
+    "paper_runtime_approved": false,
+    "service_layer_only": true,
+    "service_layer_stage": "blocked"
+  },
+  "request": {
+    "capital": 100000.0,
+    "cash_reserve_pct": 5.0,
+    "commission_rate": 0.0001,
+    "correlation_penalty": 0.75,
+    "data_db_path": "",
+    "end": "2024-06-01T23:59:59+00:00",
+    "experiment_name": "",
+    "interval": "1d",
+    "leverage": 1.0,
+    "max_candidates": 1,
+    "max_scenarios": 2,
+    "max_single_weight": 0.35,
+    "mode": "portfolio",
+    "notes": "",
+    "persist_manifest": true,
+    "position_basis": "equity",
+    "register_experiment": false,
+    "skip_deep_checks": false,
+    "slippage": 1.0,
+    "source": "yfinance",
+    "start": "2024-01-01T00:00:00+00:00",
+    "strategy_id": "trend_macd",
+    "strategy_params": {},
+    "symbol": "AAPL",
+    "symbols": [],
+    "weights": [],
+    "windows": 2
+  },
+  "strategy_version": "strategy_0b04649cd562b7fe",
+  "summary": {
+    "annual_return_pct": 5.7073,
+    "annual_volatility_pct": 5.469,
+    "calmar_ratio": 1.9846,
+    "max_drawdown_pct": -2.8758,
+    "profit_factor": 1.1956,
+    "sharpe_ratio": 1.0423,
+    "sortino_ratio": 1.1938,
+    "total_return_pct": 1.6095,
+    "trade_count": 4,
+    "win_rate_pct": 60.8696
+  }
+}

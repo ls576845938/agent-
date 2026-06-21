@@ -1,0 +1,63 @@
+{
+  "commit_hash": "af2ef8d7381d4b0263a18d48059af1d76859af4c",
+  "cost_model": {
+    "close_cost": 0.0015,
+    "min_cost": 5,
+    "open_cost": 0.0005
+  },
+  "created_at": "2026-05-11T03:38:15.007460+00:00",
+  "data_versions": [
+    "qs-yfinance-AAPL-1d-d901e2b00523",
+    "qs-yfinance-MSFT-1d-a5a88bf14005"
+  ],
+  "dataset_manifest_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_smoke_aapl_msft_build/qlib_input/dataset_manifest.json",
+  "evidence": {
+    "pred_score_import_result_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_smoke_aapl_msft_build/pred_score_import_result.json",
+    "pred_score_rows": 4,
+    "source_manifest_count": 2,
+    "workflow_status": "failed"
+  },
+  "feature_set": "Alpha158",
+  "imported_recorder_metrics_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_smoke_aapl_msft_build/imported_recorder_metrics.json",
+  "label": "Ref($close, -5) / $close - 1",
+  "manifest_id": "qlib_manifest_1cb3f9cbbb7f4823",
+  "mode": "research_only",
+  "model_id": "lgbm_alpha158",
+  "params": {
+    "colsample_bytree": 0.8879,
+    "lambda_l1": 205.6999,
+    "lambda_l2": 580.9768,
+    "learning_rate": 0.2,
+    "loss": "mse",
+    "max_depth": 8,
+    "num_leaves": 210,
+    "num_threads": 20,
+    "subsample": 0.8789
+  },
+  "pred_score_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_smoke_aapl_msft_build/pred_score.parquet",
+  "promotion_status": "candidate",
+  "qlib_backtest_summary_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_smoke_aapl_msft_build/qlib_backtest_summary.json",
+  "qlib_config_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/configs/qlib/us_lgbm_alpha158_daily.yaml",
+  "recorder_metrics_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_smoke_aapl_msft_build/recorder_metrics.json",
+  "research_model_scores_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_smoke_aapl_msft_build/research_model_scores.parquet",
+  "restrictions": [
+    "research_only",
+    "candidate_only",
+    "requires_internal_event_driven_backtest",
+    "requires_promotion_gate_before_paper_review"
+  ],
+  "run_id": "qlib_smoke_aapl_msft_build",
+  "slippage_model": {
+    "deal_price": "close",
+    "limit_threshold": 0.095
+  },
+  "source": "qlib",
+  "status": "candidate",
+  "strategy_version": "qlib_lgbm_alpha158_daily_v1",
+  "symbols": [
+    "AAPL",
+    "MSFT"
+  ],
+  "timeframe": "1d",
+  "universe_id": "smoke_daily_only"
+}

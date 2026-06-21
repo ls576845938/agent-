@@ -1,0 +1,40 @@
+{
+  "backtest_manifest_path": "data/research/backtests/cand_20b90fd795cd4c1d/run_manifest.json",
+  "candidate_id": "cand_20b90fd795cd4c1d",
+  "cost_stress_result_path": "data/research/cost_stress/cand_20b90fd795cd4c1d/result.json",
+  "next_commands": [
+    "PYTHONPATH=. venv/bin/python -c \"from quant_us.research.automation.evidence_materializer import ResearchEvidenceMaterializer; ResearchEvidenceMaterializer('data').materialize_candidate('cand_20b90fd795cd4c1d')\"",
+    "PYTHONPATH=. venv/bin/python scripts/run_walk_forward.py --symbol SPY --start 2024-01-01 --end 2024-12-31 --bar-size 1d --data-root data",
+    "PYTHONPATH=. venv/bin/python scripts/run_research_experiment.py --experiment-name rerun-exp_8a9c08aac46c4994 --symbols SPY --start 2024-01-01 --end 2024-12-31 --strategy-id trend_momentum --strategy-params-json '{\"entry_threshold\": 0.03, \"lookback_bars\": 20}' --bar-size 1d --data-root data --vendor yfinance"
+  ],
+  "paths_written": [
+    "data/research/scorecards/cand_20b90fd795cd4c1d.json",
+    "data/research/walk_forward/cand_20b90fd795cd4c1d/result.json",
+    "data/research/cost_stress/cand_20b90fd795cd4c1d/result.json"
+  ],
+  "promotion_gate_decision": "BLOCKED",
+  "promotion_gate_reasons": [
+    "strategy_manifest_contract_incomplete:sman_d3e10b1422d245b2:purge_embargo,pbo,dsr,cpcv,style_exposure,capacity",
+    "missing_deflated_sharpe_ratio: promotion requires DSR evidence after trial counting",
+    "missing_pbo_evidence: promotion requires CPCV/PBO path statistics, not a single best-path summary",
+    "validation_cv_method_not_allowed: method=unknown (need cpcv, purged_kfold, or embargoed_walk_forward)",
+    "validation_purge_embargo_missing: promotion requires purged or embargoed out-of-sample validation",
+    "single_path_validation_not_allowed: candidate cannot promote on a single validation path even with high Sharpe",
+    "insufficient_effective_trials: promotion requires at least 2 effective and independent trials",
+    "multiple_testing_missing: promotion requires family-wise multiple-testing statistics",
+    "max_drawdown_too_high: 79.1% (>= 50% threshold)",
+    "missing_monte_carlo_survival_rate: promotion requires Monte Carlo survival evidence",
+    "missing_param_stability_score: promotion requires parameter stability evidence",
+    "stress_survival_low: survival_rate=0.000 (<= 0.70 threshold)"
+  ],
+  "scorecard_path": "data/research/scorecards/cand_20b90fd795cd4c1d.json",
+  "strategy_manifest_id": "sman_d3e10b1422d245b2",
+  "strategy_manifest_status": "BLOCKED",
+  "walk_forward_result_path": "data/research/walk_forward/cand_20b90fd795cd4c1d/result.json",
+  "warnings": [
+    "strategy_manifest_blocked: Candidate cand_20b90fd795cd4c1d did not pass promotion gate (decision=BLOCKED). Reasons: ['strategy_manifest_contract_incomplete:sman_d3e10b1422d245b2:purge_embargo,pbo,dsr,cpcv,style_exposure,capacity', 'missing_deflated_sharpe_ratio: promotion requires DSR evidence after trial counting', 'missing_pbo_evidence: promotion requires CPCV/PBO path statistics, not a single best-path summary', 'validation_cv_method_not_allowed: method=unknown (need cpcv, purged_kfold, or embargoed_walk_forward)', 'validation_purge_embargo_missing: promotion requires purged or embargoed out-of-sample validation', 'single_path_validation_not_allowed: candidate cannot promote on a single validation path even with high Sharpe', 'insufficient_effective_trials: promotion requires at least 2 effective and independent trials', 'multiple_testing_missing: promotion requires family-wise multiple-testing statistics', 'max_drawdown_too_high: 79.1% (>= 50% threshold)', 'missing_monte_carlo_survival_rate: promotion requires Monte Carlo survival evidence', 'missing_param_stability_score: promotion requires parameter stability evidence', 'stress_survival_low: survival_rate=0.000 (<= 0.70 threshold)']. Warnings: ['validation_cv_summary_missing: walk-forward evidence should declare purged/embargoed CV or CPCV metadata', 'validation_statistics_partial: promotion evidence is missing one or more validation statistics', 'missing_alpha_decay_half_life_days: promotion evidence is missing alpha decay half-life metadata']. Manifest creation requires READY_FOR_PAPER_REVIEW.",
+    "validation_cv_summary_missing: walk-forward evidence should declare purged/embargoed CV or CPCV metadata",
+    "validation_statistics_partial: promotion evidence is missing one or more validation statistics",
+    "missing_alpha_decay_half_life_days: promotion evidence is missing alpha decay half-life metadata"
+  ]
+}

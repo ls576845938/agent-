@@ -1,0 +1,247 @@
+{
+  "acceptance_gates": {
+    "cost_stress_required_before_candidate": true,
+    "event_ledger_backtest_required_before_candidate": true,
+    "fill_ledger_pnl_required_before_paper": true,
+    "manifest_required": true,
+    "regime_required_before_candidate": true,
+    "walk_forward_required_before_candidate": true
+  },
+  "alpha_distribution_observed": false,
+  "asset": "btc",
+  "best_family": {
+    "best_horizon": "60m",
+    "best_net_mean_bps": -8.103324,
+    "candidate_generation_allowed": false,
+    "event_count": 5659,
+    "family_id": "orderflow_confirmed_momentum_intraday_v0",
+    "status": "distribution_sample_ready_no_net_edge"
+  },
+  "blockers": [
+    "btc_intraday_probe_no_net_positive_distribution_edge",
+    "btc_intraday_probe_candidate_generation_blocked_until_event_ledger_backtest",
+    "btc_intraday_probe_requires_walk_forward_regime_cost_stress",
+    "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+    "btc_intraday_probe_paper_live_locked"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "cost_context": {
+    "cost_is_diagnostic_not_fill_ledger_pnl": true,
+    "cost_model_status": "pass",
+    "round_trip_taker_cost_bps": 10.0,
+    "taker_fee_bps": 5.0
+  },
+  "data_context": {
+    "data_status": "partial",
+    "data_status_blockers": [
+      "btc_regime_contract_not_pass"
+    ],
+    "db_exists": true,
+    "db_path": "data/market_data.sqlite",
+    "exchange": "binance_spot",
+    "intervals": {
+      "15m": {
+        "row_count": 82756,
+        "sample_end": "2026-05-12T00:45:00+00:00",
+        "sample_start": "2024-01-01T00:00:00+00:00"
+      },
+      "5m": {
+        "row_count": 248270,
+        "sample_end": "2026-05-12T01:05:00+00:00",
+        "sample_start": "2024-01-01T00:00:00+00:00"
+      }
+    },
+    "market_type": "usds_m_perpetual",
+    "source_type": "sqlite_binance_spot_klines",
+    "symbol": "BTCUSDT"
+  },
+  "decision": "continue_intraday_alpha_research",
+  "distribution_probe_completed": true,
+  "family_results": [
+    {
+      "alpha_distribution_observed": false,
+      "best_horizon": "30m",
+      "best_net_mean_bps": -9.68145,
+      "distribution_sample_ready": true,
+      "event_count": 2722,
+      "family_id": "volatility_compression_reclaim_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "gross_positive_hit_rate": 0.459589,
+          "mean_gross_bps": -1.617554,
+          "mean_net_bps": -11.617554,
+          "median_gross_bps": -4.071033,
+          "median_net_bps": -14.071033,
+          "net_positive_hit_rate": 0.369581,
+          "p25_gross_bps": -35.819765,
+          "p75_gross_bps": 27.006801
+        },
+        "30m": {
+          "gross_positive_hit_rate": 0.450037,
+          "mean_gross_bps": 0.31855,
+          "mean_net_bps": -9.68145,
+          "median_gross_bps": -2.272721,
+          "median_net_bps": -12.272721,
+          "net_positive_hit_rate": 0.310066,
+          "p25_gross_bps": -18.480944,
+          "p75_gross_bps": 15.439022
+        },
+        "60m": {
+          "gross_positive_hit_rate": 0.445261,
+          "mean_gross_bps": -0.523551,
+          "mean_net_bps": -10.523551,
+          "median_gross_bps": -3.478903,
+          "median_net_bps": -13.478903,
+          "net_positive_hit_rate": 0.335415,
+          "p25_gross_bps": -25.897867,
+          "p75_gross_bps": 19.012042
+        }
+      },
+      "notes": [],
+      "status": "distribution_sample_ready_no_net_edge"
+    },
+    {
+      "alpha_distribution_observed": false,
+      "best_horizon": "30m",
+      "best_net_mean_bps": -8.159597,
+      "distribution_sample_ready": false,
+      "event_count": 4,
+      "family_id": "liquidation_exhaustion_reclaim_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "gross_positive_hit_rate": 0.5,
+          "mean_gross_bps": -95.673815,
+          "mean_net_bps": -105.673815,
+          "median_gross_bps": -73.947309,
+          "median_net_bps": -83.947309,
+          "net_positive_hit_rate": 0.5,
+          "p25_gross_bps": -215.065397,
+          "p75_gross_bps": 45.444273
+        },
+        "30m": {
+          "gross_positive_hit_rate": 0.5,
+          "mean_gross_bps": 1.840403,
+          "mean_net_bps": -8.159597,
+          "median_gross_bps": -2.885587,
+          "median_net_bps": -12.885587,
+          "net_positive_hit_rate": 0.5,
+          "p25_gross_bps": -60.959739,
+          "p75_gross_bps": 59.914554
+        },
+        "60m": {
+          "gross_positive_hit_rate": 0.5,
+          "mean_gross_bps": -53.019621,
+          "mean_net_bps": -63.019621,
+          "median_gross_bps": -55.289269,
+          "median_net_bps": -65.289269,
+          "net_positive_hit_rate": 0.5,
+          "p25_gross_bps": -141.054837,
+          "p75_gross_bps": 32.745947
+        }
+      },
+      "notes": [],
+      "status": "sample_too_sparse"
+    },
+    {
+      "alpha_distribution_observed": false,
+      "best_horizon": "60m",
+      "best_net_mean_bps": -8.103324,
+      "distribution_sample_ready": true,
+      "event_count": 5659,
+      "family_id": "orderflow_confirmed_momentum_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "gross_positive_hit_rate": 0.469518,
+          "mean_gross_bps": 1.491052,
+          "mean_net_bps": -8.508948,
+          "median_gross_bps": -3.147925,
+          "median_net_bps": -13.147925,
+          "net_positive_hit_rate": 0.388054,
+          "p25_gross_bps": -39.237863,
+          "p75_gross_bps": 34.982689
+        },
+        "30m": {
+          "gross_positive_hit_rate": 0.463509,
+          "mean_gross_bps": 1.352726,
+          "mean_net_bps": -8.647274,
+          "median_gross_bps": -1.877926,
+          "median_net_bps": -11.877926,
+          "net_positive_hit_rate": 0.338929,
+          "p25_gross_bps": -21.53768,
+          "p75_gross_bps": 20.319655
+        },
+        "60m": {
+          "gross_positive_hit_rate": 0.461036,
+          "mean_gross_bps": 1.896676,
+          "mean_net_bps": -8.103324,
+          "median_gross_bps": -3.158912,
+          "median_net_bps": -13.158912,
+          "net_positive_hit_rate": 0.362785,
+          "p25_gross_bps": -29.211922,
+          "p75_gross_bps": 25.51609
+        }
+      },
+      "notes": [],
+      "status": "distribution_sample_ready_no_net_edge"
+    },
+    {
+      "alpha_distribution_observed": false,
+      "best_horizon": null,
+      "best_net_mean_bps": null,
+      "distribution_sample_ready": false,
+      "event_count": 0,
+      "family_id": "funding_premium_reversion_intraday_v0",
+      "horizon_stats": {},
+      "notes": [
+        "funding/premium can be an intraday context overlay, but current 5m probe has no intraday funding/premium series"
+      ],
+      "status": "context_blocked_missing_intraday_funding_premium"
+    }
+  ],
+  "generated_at": "2026-06-20T11:32:37Z",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "candidate_generation_allowed": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "pnl_from_fill_ledger_required_for_promotion": true,
+    "private_endpoints_allowed": false,
+    "research_only": true,
+    "strategy_skeleton_generation_allowed": false,
+    "sub_minute_or_tick_scalping_allowed": false,
+    "true_scalping_allowed": false
+  },
+  "interpretation": [
+    "short-cycle events have enough samples but no net-positive distribution edge after diagnostic taker cost",
+    "refine event definitions or add missing public context before any event-ledger candidate work",
+    "candidate generation, paper review, live trading, and true scalping remain locked"
+  ],
+  "next_required_action": "refine_short_cycle_event_definitions_before_candidate",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "probe_parameters": {
+    "context_interval": "15m",
+    "event_bar_interval": "5m",
+    "forward_return_horizons": [
+      "30m",
+      "60m",
+      "120m"
+    ],
+    "future_returns_used_only_as_labels": true,
+    "lookahead_used_for_signal": false,
+    "min_alpha_net_mean_bps": 0.0,
+    "min_event_count_for_distribution": 300
+  },
+  "promotion_allowed": false,
+  "schema_version": "btc_intraday_short_cycle_alpha_probe_report_v1",
+  "scope": "research_only_distribution_probe_no_candidate_no_paper_no_live",
+  "source_cost_model": "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+  "source_data_status": "artifacts/btc_data_status/latest/btc_data_status_report.json",
+  "source_intraday_short_cycle_alpha_plan": "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_plan_report.json",
+  "status": "probe_completed_no_distribution_edge",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false
+}

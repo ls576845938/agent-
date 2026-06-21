@@ -1,0 +1,416 @@
+{
+  "blockers": [
+    "btc_compression_expansion_regime_drag_unresolved"
+  ],
+  "by_regime": [
+    {
+      "downside_tail_5pct": -0.0042810536,
+      "event_count": 39,
+      "event_pf": 0.0,
+      "max_adverse_event": -0.0047603634,
+      "max_favorable_event": -5.67558e-05,
+      "mean_return": -0.0016298793,
+      "median_return": -0.0011832248,
+      "negative_sum": -0.0635652931,
+      "positive_event_rate": 0.0,
+      "positive_sum": 0.0,
+      "regime": "liquidation_shock"
+    },
+    {
+      "downside_tail_5pct": -0.0012315783,
+      "event_count": 364,
+      "event_pf": 0.72982,
+      "max_adverse_event": -0.0019574039,
+      "max_favorable_event": 0.0034680471,
+      "mean_return": -6.35189e-05,
+      "median_return": 2.945e-07,
+      "negative_sum": -0.0855756352,
+      "positive_event_rate": 0.5,
+      "positive_sum": 0.0624547713,
+      "regime": "trending_down"
+    },
+    {
+      "downside_tail_5pct": -0.0011695193,
+      "event_count": 749,
+      "event_pf": 1.020154,
+      "max_adverse_event": -0.002356807,
+      "max_favorable_event": 0.0029107693,
+      "mean_return": 5.3766e-06,
+      "median_return": 9.418e-06,
+      "negative_sum": -0.199813164,
+      "positive_event_rate": 0.508678,
+      "positive_sum": 0.2038402418,
+      "regime": "low_vol_chop"
+    },
+    {
+      "downside_tail_5pct": -0.001100238,
+      "event_count": 507,
+      "event_pf": 1.109479,
+      "max_adverse_event": -0.0029071791,
+      "max_favorable_event": 0.003208107,
+      "mean_return": 2.24759e-05,
+      "median_return": -5.4062e-06,
+      "negative_sum": -0.1040863094,
+      "positive_event_rate": 0.47929,
+      "positive_sum": 0.1154816109,
+      "regime": "mean_reverting_chop"
+    },
+    {
+      "downside_tail_5pct": -0.0003889744,
+      "event_count": 712,
+      "event_pf": 1.141176,
+      "max_adverse_event": -0.0006756068,
+      "max_favorable_event": 0.0016803085,
+      "mean_return": 1.21653e-05,
+      "median_return": 8.4018e-06,
+      "negative_sum": -0.0613535459,
+      "positive_event_rate": 0.523876,
+      "positive_sum": 0.0700152184,
+      "regime": "compression"
+    },
+    {
+      "downside_tail_5pct": -0.0012676289,
+      "event_count": 48,
+      "event_pf": 1.524411,
+      "max_adverse_event": -0.0023862722,
+      "max_favorable_event": 0.0033210294,
+      "mean_return": 0.0001773185,
+      "median_return": 3.79047e-05,
+      "negative_sum": -0.0162301706,
+      "positive_event_rate": 0.520833,
+      "positive_sum": 0.0247414567,
+      "regime": "expansion"
+    },
+    {
+      "downside_tail_5pct": -0.0009138976,
+      "event_count": 1385,
+      "event_pf": 1.764889,
+      "max_adverse_event": -0.00446644,
+      "max_favorable_event": 0.0053850709,
+      "mean_return": 0.0001423868,
+      "median_return": 6.05496e-05,
+      "negative_sum": -0.2578227649,
+      "positive_event_rate": 0.548736,
+      "positive_sum": 0.4550285399,
+      "regime": "trending_up"
+    },
+    {
+      "downside_tail_5pct": -0.0009328299,
+      "event_count": 21,
+      "event_pf": 2.254757,
+      "max_adverse_event": -0.00093869,
+      "max_favorable_event": 0.0030496122,
+      "mean_return": 0.0003073095,
+      "median_return": 0.0001241809,
+      "negative_sum": -0.0051432275,
+      "positive_event_rate": 0.571429,
+      "positive_sum": 0.0115967261,
+      "regime": "high_vol_trend"
+    }
+  ],
+  "generated_at": "2026-06-20T09:17:05.804509+00:00",
+  "promotion_ready": false,
+  "regime_contract": {
+    "classifier": "quant_us.research.btc_alpha_hardening.classify_btc_regimes",
+    "diagnostic_regimes": [
+      "compression",
+      "expansion",
+      "high_vol_trend",
+      "liquidation_shock",
+      "low_vol_chop",
+      "mean_reverting_chop",
+      "trending_down",
+      "trending_up"
+    ],
+    "diagnostic_source": "bar_level_event_ledger_attribution",
+    "dragging_regimes": [
+      "compression",
+      "expansion",
+      "high_vol_trend",
+      "mean_reverting_chop",
+      "trending_down"
+    ],
+    "gate_eligible_regimes": [
+      "compression",
+      "mean_reverting_chop",
+      "trending_down",
+      "high_vol_trend",
+      "expansion",
+      "low_vol_chop",
+      "trending_up"
+    ],
+    "gate_source": "entry_regime_from_ledger_segments",
+    "pass_rate": 0.285714,
+    "status": "fail"
+  },
+  "regime_drag": {
+    "active_bar_level_regime_stats": [
+      {
+        "downside_tail_5pct": -0.0042810536,
+        "event_count": 39,
+        "event_pf": 0.0,
+        "mean_return": -0.0016298793,
+        "median_return": -0.0011832248,
+        "negative_sum": -0.0635652931,
+        "positive_event_rate": 0.0,
+        "positive_sum": 0.0,
+        "regime": "liquidation_shock"
+      },
+      {
+        "downside_tail_5pct": -0.0012315783,
+        "event_count": 364,
+        "event_pf": 0.72982,
+        "mean_return": -6.35189e-05,
+        "median_return": 2.945e-07,
+        "negative_sum": -0.0855756352,
+        "positive_event_rate": 0.5,
+        "positive_sum": 0.0624547713,
+        "regime": "trending_down"
+      },
+      {
+        "downside_tail_5pct": -0.0011695193,
+        "event_count": 749,
+        "event_pf": 1.020154,
+        "mean_return": 5.3766e-06,
+        "median_return": 9.418e-06,
+        "negative_sum": -0.199813164,
+        "positive_event_rate": 0.508678,
+        "positive_sum": 0.2038402418,
+        "regime": "low_vol_chop"
+      },
+      {
+        "downside_tail_5pct": -0.001100238,
+        "event_count": 507,
+        "event_pf": 1.109479,
+        "mean_return": 2.24759e-05,
+        "median_return": -5.4062e-06,
+        "negative_sum": -0.1040863094,
+        "positive_event_rate": 0.47929,
+        "positive_sum": 0.1154816109,
+        "regime": "mean_reverting_chop"
+      },
+      {
+        "downside_tail_5pct": -0.0003889744,
+        "event_count": 712,
+        "event_pf": 1.141176,
+        "mean_return": 1.21653e-05,
+        "median_return": 8.4018e-06,
+        "negative_sum": -0.0613535459,
+        "positive_event_rate": 0.523876,
+        "positive_sum": 0.0700152184,
+        "regime": "compression"
+      },
+      {
+        "downside_tail_5pct": -0.0012676289,
+        "event_count": 48,
+        "event_pf": 1.524411,
+        "mean_return": 0.0001773185,
+        "median_return": 3.79047e-05,
+        "negative_sum": -0.0162301706,
+        "positive_event_rate": 0.520833,
+        "positive_sum": 0.0247414567,
+        "regime": "expansion"
+      },
+      {
+        "downside_tail_5pct": -0.0009138976,
+        "event_count": 1385,
+        "event_pf": 1.764889,
+        "mean_return": 0.0001423868,
+        "median_return": 6.05496e-05,
+        "negative_sum": -0.2578227649,
+        "positive_event_rate": 0.548736,
+        "positive_sum": 0.4550285399,
+        "regime": "trending_up"
+      },
+      {
+        "downside_tail_5pct": -0.0009328299,
+        "event_count": 21,
+        "event_pf": 2.254757,
+        "mean_return": 0.0003073095,
+        "median_return": 0.0001241809,
+        "negative_sum": -0.0051432275,
+        "positive_event_rate": 0.571429,
+        "positive_sum": 0.0115967261,
+        "regime": "high_vol_trend"
+      }
+    ],
+    "contract_note": "Regime gate is entry-regime trade level; this section is bar-level diagnostic attribution.",
+    "gate_dragging_regimes": [
+      "compression",
+      "expansion",
+      "high_vol_trend",
+      "mean_reverting_chop",
+      "trending_down"
+    ],
+    "worst_regime_fold_pairs": [
+      {
+        "downside_tail_5pct": -0.0042504345,
+        "event_count": 33,
+        "event_pf": 0.0,
+        "fold_id": "pre_wf",
+        "mean_return": -0.0013205713,
+        "median_return": -0.0006944592,
+        "negative_sum": -0.0435788527,
+        "positive_event_rate": 0.0,
+        "positive_sum": 0.0,
+        "regime": "liquidation_shock"
+      },
+      {
+        "downside_tail_5pct": -0.0042230985,
+        "event_count": 4,
+        "event_pf": 0.0,
+        "fold_id": "1",
+        "mean_return": -0.0036724016,
+        "median_return": -0.003945378,
+        "negative_sum": -0.0146896064,
+        "positive_event_rate": 0.0,
+        "positive_sum": 0.0,
+        "regime": "liquidation_shock"
+      },
+      {
+        "downside_tail_5pct": -0.0020858582,
+        "event_count": 1,
+        "event_pf": 0.0,
+        "fold_id": "3",
+        "mean_return": -0.0020858582,
+        "median_return": -0.0020858582,
+        "negative_sum": -0.0020858582,
+        "positive_event_rate": 0.0,
+        "positive_sum": 0.0,
+        "regime": "liquidation_shock"
+      },
+      {
+        "downside_tail_5pct": -0.0032109758,
+        "event_count": 1,
+        "event_pf": 0.0,
+        "fold_id": "4",
+        "mean_return": -0.0032109758,
+        "median_return": -0.0032109758,
+        "negative_sum": -0.0032109758,
+        "positive_event_rate": 0.0,
+        "positive_sum": 0.0,
+        "regime": "liquidation_shock"
+      },
+      {
+        "downside_tail_5pct": -0.0012471088,
+        "event_count": 83,
+        "event_pf": 0.638561,
+        "fold_id": "4",
+        "mean_return": -0.0001026434,
+        "median_return": -1.66362e-05,
+        "negative_sum": -0.0235707875,
+        "positive_event_rate": 0.493976,
+        "positive_sum": 0.0150513891,
+        "regime": "trending_down"
+      },
+      {
+        "downside_tail_5pct": -0.0012632955,
+        "event_count": 47,
+        "event_pf": 0.669051,
+        "fold_id": "1",
+        "mean_return": -9.41258e-05,
+        "median_return": -3.913e-07,
+        "negative_sum": -0.0133673511,
+        "positive_event_rate": 0.489362,
+        "positive_sum": 0.0089434372,
+        "regime": "trending_down"
+      },
+      {
+        "downside_tail_5pct": -0.0012470821,
+        "event_count": 142,
+        "event_pf": 0.708074,
+        "fold_id": "pre_wf",
+        "mean_return": -8.21722e-05,
+        "median_return": -1.11733e-05,
+        "negative_sum": -0.0399705663,
+        "positive_event_rate": 0.492958,
+        "positive_sum": 0.028302118,
+        "regime": "trending_down"
+      },
+      {
+        "downside_tail_5pct": -0.000935467,
+        "event_count": 12,
+        "event_pf": 0.834799,
+        "fold_id": "3",
+        "mean_return": -5.03467e-05,
+        "median_return": -9.963e-07,
+        "negative_sum": -0.0036571246,
+        "positive_event_rate": 0.5,
+        "positive_sum": 0.0030529646,
+        "regime": "high_vol_trend"
+      },
+      {
+        "downside_tail_5pct": -0.0011145742,
+        "event_count": 96,
+        "event_pf": 0.882308,
+        "fold_id": "1",
+        "mean_return": -3.13437e-05,
+        "median_return": -1.66604e-05,
+        "negative_sum": -0.0255667787,
+        "positive_event_rate": 0.5,
+        "positive_sum": 0.0225577799,
+        "regime": "low_vol_chop"
+      },
+      {
+        "downside_tail_5pct": -0.0005217055,
+        "event_count": 37,
+        "event_pf": 0.88332,
+        "fold_id": "3",
+        "mean_return": -1.40642e-05,
+        "median_return": 2.8564e-06,
+        "negative_sum": -0.0044598425,
+        "positive_event_rate": 0.513514,
+        "positive_sum": 0.0039394679,
+        "regime": "compression"
+      },
+      {
+        "downside_tail_5pct": -0.0001383818,
+        "event_count": 46,
+        "event_pf": 0.955989,
+        "fold_id": "2",
+        "mean_return": -1.321e-06,
+        "median_return": -4.369e-07,
+        "negative_sum": -0.0013807018,
+        "positive_event_rate": 0.5,
+        "positive_sum": 0.0013199356,
+        "regime": "trending_down"
+      },
+      {
+        "downside_tail_5pct": -0.0007922047,
+        "event_count": 99,
+        "event_pf": 0.980078,
+        "fold_id": "3",
+        "mean_return": -3.9709e-06,
+        "median_return": -2.8975e-05,
+        "negative_sum": -0.0197333027,
+        "positive_event_rate": 0.434343,
+        "positive_sum": 0.0193401841,
+        "regime": "mean_reverting_chop"
+      }
+    ]
+  },
+  "regime_status": {
+    "bar_counts": {
+      "compression": 2790,
+      "expansion": 857,
+      "high_vol_trend": 1263,
+      "liquidation_shock": 160,
+      "low_vol_chop": 2199,
+      "mean_reverting_chop": 4710,
+      "trending_down": 3670,
+      "trending_up": 5040
+    },
+    "classifier": "classify_btc_regimes",
+    "dragging_regimes": [
+      "compression",
+      "expansion",
+      "high_vol_trend",
+      "mean_reverting_chop",
+      "trending_down"
+    ],
+    "gate_pass_rate": 0.285714,
+    "status": "fail"
+  },
+  "schema_version": "btc_compression_expansion_regime_drag_report_v1",
+  "source_run_dir": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger"
+}

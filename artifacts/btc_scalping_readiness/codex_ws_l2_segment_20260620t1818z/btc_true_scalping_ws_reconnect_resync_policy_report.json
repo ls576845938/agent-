@@ -1,0 +1,129 @@
+{
+  "asset": "btc",
+  "blockers": [
+    "btc_ws_l2_reconnect_resync_not_exercised_on_actual_disconnect_or_gap",
+    "btc_ws_l2_reconnect_resync_research_capture_duration_below_contract",
+    "btc_ws_l2_reconnect_resync_history_missing_for_event_ledger_window",
+    "btc_execution_latency_model_missing_ws_resync_receive_latency_is_not_execution_latency",
+    "btc_queue_model_missing_resync_depth_is_proxy_only",
+    "btc_ws_l2_replay_research_capture_duration_below_contract",
+    "btc_ws_l2_replay_history_missing_for_event_ledger_window",
+    "btc_execution_latency_model_missing_ws_replay_receive_latency_is_not_execution_latency",
+    "btc_queue_model_missing_replay_depth_is_proxy_only"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "contract_satisfied": false,
+  "decision": "extend_public_ws_l2_capture_with_resync_policy_then_measure_latency_and_queue",
+  "event_ledger_feature_validation_allowed": false,
+  "generated_at": "2026-06-20T18:23:00.710910Z",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "future_label_used_for_signal": false,
+    "live": "FROZEN",
+    "lookahead_used_for_signal": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_usable": false,
+    "paper_queue": "LOCKED",
+    "private_endpoints_allowed": false,
+    "production_ready": false,
+    "real_orders_created": false,
+    "research_only": true
+  },
+  "next_required_action": "run_long_public_ws_capture_with_forced_disconnect_resync_test_before_event_ledger_features",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "resync_policy": {
+    "failure_actions": [
+      {
+        "action": "discard_local_book_wait_for_next_snapshot",
+        "ledger_effect": "mark_segment_invalid_no_features_emitted",
+        "trigger": "update_before_snapshot"
+      },
+      {
+        "action": "quarantine_segment_discard_book_and_resubscribe",
+        "ledger_effect": "close_segment_with_sequence_gap_no_features_after_gap",
+        "trigger": "prev_seq_id_mismatch"
+      },
+      {
+        "action": "quarantine_segment_discard_book_and_resubscribe",
+        "ledger_effect": "close_segment_with_book_integrity_error",
+        "trigger": "crossed_book_detected"
+      },
+      {
+        "action": "start_new_segment_wait_for_snapshot",
+        "ledger_effect": "record_transport_gap_and_suspend_features",
+        "trigger": "transport_disconnect_or_stale_heartbeat"
+      }
+    ],
+    "feature_emission_policy": {
+      "drop_features_after_gap_until_next_snapshot": true,
+      "emit_features_only_from_active_valid_segment": true,
+      "never_forward_partial_book_after_gap": true
+    },
+    "integrity_source": "seqId_prevSeqId_continuity",
+    "local_book_state_machine": [
+      {
+        "feature_emission_allowed": false,
+        "state": "waiting_for_snapshot"
+      },
+      {
+        "feature_emission_allowed": true,
+        "state": "active_segment"
+      },
+      {
+        "feature_emission_allowed": false,
+        "state": "quarantined_segment"
+      }
+    ],
+    "policy_id": "btc_okx_public_ws_l2_reconnect_resync_policy_v1",
+    "valid_segment_requires": [
+      "snapshot_before_updates",
+      "prevSeqId_equals_last_seqId_for_every_update",
+      "best_bid_less_than_best_ask",
+      "local_receive_ts_and_monotonic_ns_present"
+    ]
+  },
+  "resync_policy_ready": true,
+  "schema_version": "btc_true_scalping_ws_reconnect_resync_policy_report_v1",
+  "scope": "research_only_ws_reconnect_resync_policy_no_candidate_no_paper_no_live",
+  "source_replay_summary": {
+    "applied_update_count": 85,
+    "connection_count": 1,
+    "crossed_book_count": 0,
+    "forced_reconnect_count": 0,
+    "prev_seq_id_observed_count": 86,
+    "replay_sequence_ready": true,
+    "seq_id_observed_count": 86,
+    "sequence_gap_count": 0,
+    "snapshot_count": 1,
+    "status": "ws_order_book_replay_sequence_policy_verified_research_only_history_insufficient",
+    "transport_gap_count": 0
+  },
+  "source_reports": {
+    "ws_order_book_replay_report": "artifacts/btc_scalping_readiness/codex_ws_l2_segment_20260620t1818z/btc_true_scalping_ws_order_book_replay_report.json"
+  },
+  "status": "ws_reconnect_resync_policy_documented_research_only_not_exercised_history_latency_queue_insufficient",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false,
+  "validation": {
+    "actual_reconnect_or_gap_exercised": false,
+    "crossed_book_handling_documented": true,
+    "execution_latency_model_ready": false,
+    "feature_emission_guard_documented": true,
+    "minimum_event_ledger_history_days_satisfied": false,
+    "minimum_research_capture_seconds_satisfied": false,
+    "public_source_boundary_satisfied": true,
+    "queue_model_ready": false,
+    "resync_policy_ready": true,
+    "sequence_gap_handling_documented": true,
+    "snapshot_before_updates_policy_documented": true,
+    "source_replay_report_ready": true,
+    "source_replay_sequence_ready": true,
+    "transport_disconnect_handling_documented": true
+  },
+  "venue_symbol": "BTC-USDT-SWAP"
+}

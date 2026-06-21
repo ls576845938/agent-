@@ -1,0 +1,69 @@
+{
+  "capital": 100000.0,
+  "commit_hash": "ab6e2e4",
+  "cost_model": {
+    "commission_model": {
+      "model": "PercentCommission",
+      "rate": 0.0004,
+      "realized_total": 58.737498
+    },
+    "commission_rate": 0.0004
+  },
+  "data_version": "kraken_spot:BTCUSD:1h:2024-01-01:2026-05-12",
+  "diagnostics": {
+    "determinism_verified": false,
+    "fills": 3,
+    "fills_hash": "e094b3c75c1ddd502694fdc1f32766e6c267d69440fb4cbc3e74fea82ded5485",
+    "ledger_artifact_hash": "101fe68144226e376348b30c836180d2a3382fbe016a272e905ff1212040a35a",
+    "ledger_consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000000)",
+    "ledger_equity_consistent": true,
+    "ledger_hash": "38c61f9628fb7e88ef7f6d0f4e6c4cf12c3b36ae4b4fef31f3ef0824e59c3860",
+    "ledger_total_fees": 58.737498,
+    "orders": 3
+  },
+  "end": "2026-05-12T00:00:00+00:00",
+  "engine": "event_driven",
+  "event_metrics": {
+    "closed_trade_realized_pnl": -296.382327,
+    "event_count": 1,
+    "event_profit_factor": 0.0,
+    "event_win_rate_pct": 0.0,
+    "open_position_quantity": 1.10729606
+  },
+  "generated_at": "2026-05-23T02:36:44.296711+00:00",
+  "interval": "1h",
+  "pnl_source": "ledger_fills",
+  "run_id": "kraken_btc_trend_pullback_base",
+  "schema_version": "btc_us_spot_research_backtest_manifest_v1",
+  "scope": "research_only_not_for_promotion",
+  "slippage_model": {
+    "slippage_bps": 4.0,
+    "slippage_model": {
+      "bps": 4.0,
+      "model": "BpsSlippage",
+      "realized_total": 181.873226
+    }
+  },
+  "source": {
+    "exchange": "kraken_spot",
+    "id": "kraken",
+    "label": "Kraken \u73b0\u8d27\uff08\u7f8e\u56fd\u53ef\u8bbf\u95ee\uff09",
+    "symbol": "BTCUSD"
+  },
+  "start": "2024-01-01T00:00:00+00:00",
+  "strategy_params": {},
+  "strategy_version": "btc_trend_pullback:us_spot_source_comparison_v1",
+  "summary": {
+    "annual_return_pct": 3.5442,
+    "annual_volatility_pct": 5.2679,
+    "calmar_ratio": 3.3748,
+    "max_drawdown_pct": -1.0502,
+    "profit_factor": 1.0485,
+    "sharpe_ratio": 0.6875,
+    "sortino_ratio": 0.5157,
+    "total_return_pct": 0.1791,
+    "trade_count": 3,
+    "win_rate_pct": 50.0
+  },
+  "symbol": "BTCUSD"
+}

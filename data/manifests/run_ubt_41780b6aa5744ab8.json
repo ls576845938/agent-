@@ -1,0 +1,164 @@
+{
+  "canonical_for_promotion": true,
+  "commission_model": {
+    "model": "PercentCommission",
+    "rate": 0.0001,
+    "realized_total": 5.619654
+  },
+  "commit_hash": "47097d2",
+  "config": {
+    "commission_rate": 0.0001,
+    "gap_config": null,
+    "initial_cash": 500000.0,
+    "max_daily_turnover_pct": 200.0,
+    "slippage_bps": 1.0
+  },
+  "cost_model": {
+    "commission_rate": 0.0001,
+    "fill_ratio": 0.95,
+    "realized_commission": 5.619654,
+    "realized_slippage_cost": 5.619198,
+    "slippage_bps": 1.0,
+    "total_fees": 5.619654,
+    "volume_participation_cap_pct": 5.0
+  },
+  "data_version": "test_v1",
+  "end_time": "2026-05-09T03:19:44.593642+00:00",
+  "engine": "event_driven",
+  "evidence": {
+    "approximate_scan_engine": false,
+    "canonical_for_promotion": true,
+    "cash": {
+      "cash_consistent": true,
+      "final_snapshot_cash": 454466.104327,
+      "initial_cash": 500000.0,
+      "ledger_cash_at_final_snapshot": 454466.104327
+    },
+    "commission": {
+      "model": "PercentCommission",
+      "rate": 0.0001,
+      "realized_total": 5.619654
+    },
+    "commit_hash": "47097d2",
+    "completeness": {
+      "missing_required_fields": [],
+      "promotion_evidence_complete": true
+    },
+    "costs": {
+      "commission_rate": 0.0001,
+      "fill_ratio": 0.95,
+      "realized_commission": 5.619654,
+      "realized_slippage_cost": 5.619198,
+      "slippage_bps": 1.0,
+      "total_fees": 5.619654,
+      "volume_participation_cap_pct": 5.0
+    },
+    "data_version": "test_v1",
+    "engine": "event_driven",
+    "equity": {
+      "consistency_msg": "Consistent within 0.01% tolerance (max diff: 0.0000%)",
+      "consistent": true,
+      "consistent_at_final_snapshot": true,
+      "ledger_curve_points": 30,
+      "ledger_final_equity": 510344.118649,
+      "snapshot_final_equity": 510344.118649
+    },
+    "events": {
+      "account_update": 0,
+      "broker_order": 30,
+      "fill": 30,
+      "market": 120,
+      "order_intent": 96,
+      "risk": 96,
+      "signal": 100,
+      "target_position": 100,
+      "total": 572
+    },
+    "fees": {
+      "fees_from_fills": true,
+      "ledger_total_fees": 5.619654,
+      "total_commission": 5.619654
+    },
+    "fills": {
+      "all_fills_match_orders": true,
+      "count": 30,
+      "filled_order_count": 30
+    },
+    "orders": {
+      "all_orders_created_by_oms": true,
+      "all_orders_have_risk_check_id": true,
+      "count": 30,
+      "oms_order_count": 30,
+      "status_counts": {
+        "filled": 9,
+        "partially_filled": 21
+      }
+    },
+    "pnl": {
+      "final_equity": 510344.118649,
+      "final_pnl": 10344.118649,
+      "initial_cash": 500000.0,
+      "source": "ledger_fills",
+      "total_return_pct": 2.068824
+    },
+    "positions": {
+      "final_position_value": 55878.014322,
+      "final_positions": {
+        "AAPL": 292.98966032
+      },
+      "position_count": 1
+    },
+    "risk": {
+      "approved": 30,
+      "rejected": 66,
+      "rejection_reasons": {
+        "session_not_allowed": 66
+      },
+      "risk_check_count": 96
+    },
+    "run_id": "ubt_41780b6aa5744ab8",
+    "slippage": {
+      "bps": 1.0,
+      "model": "BpsSlippage",
+      "realized_total": 5.619198
+    },
+    "strategy": {
+      "strategies": [
+        {
+          "params": {
+            "allow_short": false,
+            "entry_threshold": 0.03,
+            "exit_threshold": 0.0,
+            "lookback_bars": 20,
+            "strategy_id": "trend_momentum"
+          },
+          "strategy_id": "trend_momentum",
+          "version": "0.1.0"
+        }
+      ],
+      "strategy_version": "trend_momentum@0.1.0"
+    }
+  },
+  "manifest_schema_version": "backtest_run_v2",
+  "run_id": "ubt_41780b6aa5744ab8",
+  "slippage_model": {
+    "bps": 1.0,
+    "model": "BpsSlippage",
+    "realized_total": 5.619198
+  },
+  "start_time": "2026-05-09T03:19:44.539039+00:00",
+  "strategy_params": [
+    {
+      "params": {
+        "allow_short": false,
+        "entry_threshold": 0.03,
+        "exit_threshold": 0.0,
+        "lookback_bars": 20,
+        "strategy_id": "trend_momentum"
+      },
+      "strategy_id": "trend_momentum",
+      "version": "0.1.0"
+    }
+  ],
+  "strategy_version": "trend_momentum@0.1.0"
+}

@@ -1,0 +1,73 @@
+{
+  "generated_utc": "2026-05-12T04:00:49.658486+00:00",
+  "strategy_id": "volatility_squeeze",
+  "params": {
+    "boll_window": 20,
+    "boll_dev": 1.8,
+    "width_threshold": 0.03
+  },
+  "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+  "symbols_tested": [
+    "BTCUSDT"
+  ],
+  "insufficient_data": false,
+  "aggregate": {
+    "total_windows": 2,
+    "windows_consistent": 2,
+    "oos_total_return_pct": -0.2402,
+    "oos_avg_sharpe": -0.1088,
+    "oos_avg_max_dd": -1.5278,
+    "oos_avg_turnover_pct": 0.0,
+    "oos_win_rate": 0.0,
+    "fold_pass_rate_pct": 50.0,
+    "symbol_coverage_pct": 100.0
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "train_end": "2025-07-14T06:00:00+00:00",
+      "test_start": "2025-07-14T07:00:00+00:00",
+      "test_end": "2025-12-12T03:00:00+00:00",
+      "strategy_id": "volatility_squeeze",
+      "params": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.03
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "result": {
+        "total_return_pct": -0.7315,
+        "sharpe_ratio": -0.2534,
+        "max_drawdown_pct": -1.1613,
+        "turnover_pct": 744.7719,
+        "trade_count": 339
+      },
+      "equity_consistent": true,
+      "pass": false
+    },
+    {
+      "fold": 1,
+      "train_start": "2024-05-30T21:00:00+00:00",
+      "train_end": "2025-12-12T03:00:00+00:00",
+      "test_start": "2025-12-12T04:00:00+00:00",
+      "test_end": "2026-05-12T00:00:00+00:00",
+      "strategy_id": "volatility_squeeze",
+      "params": {
+        "boll_window": 20,
+        "boll_dev": 1.8,
+        "width_threshold": 0.03
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "result": {
+        "total_return_pct": 0.2511,
+        "sharpe_ratio": 0.0359,
+        "max_drawdown_pct": -1.5278,
+        "turnover_pct": 1961.1134,
+        "trade_count": 361
+      },
+      "equity_consistent": true,
+      "pass": true
+    }
+  ]
+}

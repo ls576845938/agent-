@@ -1544,6 +1544,18 @@ def create_app():
 
         return build_global_registry(repo_root=settings.repo_root)
 
+    @router.get("/research/btc/scalping-backtest")
+    def get_btc_scalping_research_backtest():
+        """Return the latest research-only BTC scalping backtest summary."""
+        path = (
+            settings.repo_root
+            / "artifacts/btc_research_backtests/latest/btc_scalping_research_backtest_report.json"
+        )
+        payload = _json_file(path)
+        if not payload:
+            raise HTTPException(status_code=404, detail=f"BTC scalping research backtest report not found: {path}")
+        return payload
+
     @router.post("/research/evidence-registry/rebuild")
     async def rebuild_research_evidence_registry(request: dict | None = None):
         """Rebuild and save the research evidence registry."""

@@ -1,0 +1,1526 @@
+{
+  "acceptance_gates": {
+    "cost_stress_required_before_candidate": true,
+    "event_ledger_backtest_required_before_candidate": true,
+    "fill_ledger_pnl_required_before_paper": true,
+    "manifest_required": true,
+    "regime_required_before_candidate": true,
+    "walk_forward_required_before_candidate": true
+  },
+  "asset": "btc",
+  "best_variant": {
+    "best_horizon": "60m",
+    "best_net_mean_bps": 5.754492,
+    "candidate_generation_allowed": false,
+    "event_count": 558,
+    "family_id": "pullback_reclaim_intraday_v0",
+    "positive_net_fold_count": 4,
+    "status": "robust_distribution_observed",
+    "variant_id": "pullback_reclaim_24_dd100_4htrend100_v1"
+  },
+  "blockers": [
+    "btc_intraday_refinement_candidate_generation_blocked_until_event_ledger_backtest",
+    "btc_intraday_refinement_requires_walk_forward_regime_cost_stress",
+    "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+    "btc_intraday_refinement_paper_live_locked"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "cost_context": {
+    "cost_is_diagnostic_not_fill_ledger_pnl": true,
+    "cost_model_status": "pass",
+    "round_trip_taker_cost_bps": 10.0,
+    "taker_fee_bps": 5.0
+  },
+  "data_context": {
+    "data_status": "partial",
+    "data_status_blockers": [
+      "btc_regime_contract_not_pass"
+    ],
+    "db_exists": true,
+    "db_path": "data/market_data.sqlite",
+    "exchange": "binance_spot",
+    "market_type": "usds_m_perpetual",
+    "source_type": "sqlite_binance_spot_klines",
+    "symbol": "BTCUSDT"
+  },
+  "decision": "design_research_only_event_ledger_backtest_for_refined_alpha",
+  "generated_at": "2026-06-20T11:32:42Z",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "candidate_generation_allowed": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "pnl_from_fill_ledger_required_for_promotion": true,
+    "private_endpoints_allowed": false,
+    "research_only": true,
+    "strategy_skeleton_generation_allowed": false,
+    "sub_minute_or_tick_scalping_allowed": false,
+    "true_scalping_allowed": false
+  },
+  "interpretation": [
+    "pullback_reclaim_24_dd100_4htrend100_v1 passed the bounded distribution refinement screen after diagnostic taker cost",
+    "this only authorizes research-only event-ledger backtest design; it does not authorize a candidate or trading path",
+    "true scalping remains blocked until 1m/tick/orderbook/spread/latency/queue evidence exists"
+  ],
+  "next_required_action": "build_event_ledger_backtest_for_best_refined_variant",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "refinement_completed": true,
+  "refinement_parameters": {
+    "bounded_search_only": true,
+    "fold_count": 6,
+    "forward_return_horizons": [
+      "30m",
+      "60m",
+      "120m"
+    ],
+    "future_returns_used_only_as_labels": true,
+    "lookahead_used_for_signal": false,
+    "min_fold_events": 30,
+    "min_net_mean_bps": 0.0,
+    "min_net_median_bps": -10.0,
+    "min_net_positive_hit_rate": 0.45,
+    "min_positive_folds": 4,
+    "min_total_events": 300,
+    "variant_count": 8
+  },
+  "robust_alpha_distribution_observed": true,
+  "schema_version": "btc_intraday_short_cycle_alpha_refinement_report_v1",
+  "scope": "research_only_bounded_refinement_no_candidate_no_paper_no_live",
+  "source_cost_model": "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+  "source_data_status": "artifacts/btc_data_status/latest/btc_data_status_report.json",
+  "source_intraday_short_cycle_alpha_probe": "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_probe_report.json",
+  "status": "refinement_completed_event_ledger_backtest_ready_candidate_blocked",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false,
+  "variant_results": [
+    {
+      "best_horizon": "60m",
+      "best_net_mean_bps": -5.335009,
+      "best_net_median_bps": -12.131648,
+      "best_net_positive_hit_rate": 0.401391,
+      "candidate_generation_allowed": false,
+      "event_count": 3164,
+      "family_id": "orderflow_confirmed_momentum_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "event_count": 3164,
+          "folds": [
+            {
+              "event_count": 712,
+              "fold_id": 0,
+              "mean_net_bps": 1.795759,
+              "net_positive_hit_rate": 0.455056
+            },
+            {
+              "event_count": 520,
+              "fold_id": 1,
+              "mean_net_bps": -9.13348,
+              "net_positive_hit_rate": 0.405769
+            },
+            {
+              "event_count": 638,
+              "fold_id": 2,
+              "mean_net_bps": 1.543382,
+              "net_positive_hit_rate": 0.42163
+            },
+            {
+              "event_count": 531,
+              "fold_id": 3,
+              "mean_net_bps": -12.485231,
+              "net_positive_hit_rate": 0.423729
+            },
+            {
+              "event_count": 373,
+              "fold_id": 4,
+              "mean_net_bps": -8.137111,
+              "net_positive_hit_rate": 0.394102
+            },
+            {
+              "event_count": 390,
+              "fold_id": 5,
+              "mean_net_bps": -13.534821,
+              "net_positive_hit_rate": 0.389744
+            }
+          ],
+          "mean_gross_bps": 4.491298,
+          "mean_net_bps": -5.508702,
+          "median_gross_bps": -0.770871,
+          "median_net_bps": -10.770871,
+          "min_fold_event_count": 373,
+          "net_positive_hit_rate": 0.419722,
+          "p25_gross_bps": -41.377638,
+          "p75_gross_bps": 43.30036,
+          "positive_net_fold_count": 2,
+          "valid_fold_count": 6
+        },
+        "30m": {
+          "event_count": 3164,
+          "folds": [
+            {
+              "event_count": 712,
+              "fold_id": 0,
+              "mean_net_bps": 0.493219,
+              "net_positive_hit_rate": 0.445225
+            },
+            {
+              "event_count": 520,
+              "fold_id": 1,
+              "mean_net_bps": -5.111145,
+              "net_positive_hit_rate": 0.390385
+            },
+            {
+              "event_count": 638,
+              "fold_id": 2,
+              "mean_net_bps": -3.60194,
+              "net_positive_hit_rate": 0.393417
+            },
+            {
+              "event_count": 531,
+              "fold_id": 3,
+              "mean_net_bps": -11.766929,
+              "net_positive_hit_rate": 0.320151
+            },
+            {
+              "event_count": 373,
+              "fold_id": 4,
+              "mean_net_bps": -8.898439,
+              "net_positive_hit_rate": 0.353887
+            },
+            {
+              "event_count": 390,
+              "fold_id": 5,
+              "mean_net_bps": -13.775424,
+              "net_positive_hit_rate": 0.348718
+            }
+          ],
+          "mean_gross_bps": 3.822872,
+          "mean_net_bps": -6.177128,
+          "median_gross_bps": -0.6422,
+          "median_net_bps": -10.6422,
+          "min_fold_event_count": 373,
+          "net_positive_hit_rate": 0.382111,
+          "p25_gross_bps": -23.755803,
+          "p75_gross_bps": 26.466769,
+          "positive_net_fold_count": 1,
+          "valid_fold_count": 6
+        },
+        "60m": {
+          "event_count": 3164,
+          "folds": [
+            {
+              "event_count": 712,
+              "fold_id": 0,
+              "mean_net_bps": 2.081028,
+              "net_positive_hit_rate": 0.456461
+            },
+            {
+              "event_count": 520,
+              "fold_id": 1,
+              "mean_net_bps": -7.202073,
+              "net_positive_hit_rate": 0.365385
+            },
+            {
+              "event_count": 638,
+              "fold_id": 2,
+              "mean_net_bps": -2.883761,
+              "net_positive_hit_rate": 0.415361
+            },
+            {
+              "event_count": 531,
+              "fold_id": 3,
+              "mean_net_bps": -10.626532,
+              "net_positive_hit_rate": 0.361582
+            },
+            {
+              "event_count": 373,
+              "fold_id": 4,
+              "mean_net_bps": -6.510511,
+              "net_positive_hit_rate": 0.38874
+            },
+            {
+              "event_count": 390,
+              "fold_id": 5,
+              "mean_net_bps": -12.065731,
+              "net_positive_hit_rate": 0.392308
+            }
+          ],
+          "mean_gross_bps": 4.664991,
+          "mean_net_bps": -5.335009,
+          "median_gross_bps": -2.131648,
+          "median_net_bps": -12.131648,
+          "min_fold_event_count": 373,
+          "net_positive_hit_rate": 0.401391,
+          "p25_gross_bps": -32.447772,
+          "p75_gross_bps": 34.07521,
+          "positive_net_fold_count": 1,
+          "valid_fold_count": 6
+        }
+      },
+      "min_fold_event_count": 373,
+      "parameters": {
+        "kind": "momentum",
+        "lookback": 24,
+        "trend_key": "trend_4h",
+        "trend_min": 0.005,
+        "volume_multiple": 2.0
+      },
+      "positive_net_fold_count": 1,
+      "robust_distribution_observed": false,
+      "status": "sample_ready_no_robust_edge",
+      "valid_fold_count": 6,
+      "variant_id": "momentum_breakout_24_vol2_4htrend50_v1"
+    },
+    {
+      "best_horizon": "60m",
+      "best_net_mean_bps": -3.027681,
+      "best_net_median_bps": -10.958471,
+      "best_net_positive_hit_rate": 0.427027,
+      "candidate_generation_allowed": false,
+      "event_count": 1665,
+      "family_id": "orderflow_confirmed_momentum_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "event_count": 1665,
+          "folds": [
+            {
+              "event_count": 425,
+              "fold_id": 0,
+              "mean_net_bps": 3.291034,
+              "net_positive_hit_rate": 0.465882
+            },
+            {
+              "event_count": 270,
+              "fold_id": 1,
+              "mean_net_bps": -9.950918,
+              "net_positive_hit_rate": 0.422222
+            },
+            {
+              "event_count": 346,
+              "fold_id": 2,
+              "mean_net_bps": 10.202189,
+              "net_positive_hit_rate": 0.450867
+            },
+            {
+              "event_count": 240,
+              "fold_id": 3,
+              "mean_net_bps": -16.445546,
+              "net_positive_hit_rate": 0.404167
+            },
+            {
+              "event_count": 170,
+              "fold_id": 4,
+              "mean_net_bps": -10.667173,
+              "net_positive_hit_rate": 0.376471
+            },
+            {
+              "event_count": 214,
+              "fold_id": 5,
+              "mean_net_bps": -13.244304,
+              "net_positive_hit_rate": 0.401869
+            }
+          ],
+          "mean_gross_bps": 6.184545,
+          "mean_net_bps": -3.815455,
+          "median_gross_bps": -0.727026,
+          "median_net_bps": -10.727026,
+          "min_fold_event_count": 170,
+          "net_positive_hit_rate": 0.429429,
+          "p25_gross_bps": -48.376527,
+          "p75_gross_bps": 55.207055,
+          "positive_net_fold_count": 2,
+          "valid_fold_count": 6
+        },
+        "30m": {
+          "event_count": 1665,
+          "folds": [
+            {
+              "event_count": 425,
+              "fold_id": 0,
+              "mean_net_bps": 4.572953,
+              "net_positive_hit_rate": 0.475294
+            },
+            {
+              "event_count": 270,
+              "fold_id": 1,
+              "mean_net_bps": -4.218445,
+              "net_positive_hit_rate": 0.414815
+            },
+            {
+              "event_count": 346,
+              "fold_id": 2,
+              "mean_net_bps": 2.415705,
+              "net_positive_hit_rate": 0.427746
+            },
+            {
+              "event_count": 240,
+              "fold_id": 3,
+              "mean_net_bps": -13.943379,
+              "net_positive_hit_rate": 0.3
+            },
+            {
+              "event_count": 170,
+              "fold_id": 4,
+              "mean_net_bps": -6.040024,
+              "net_positive_hit_rate": 0.376471
+            },
+            {
+              "event_count": 214,
+              "fold_id": 5,
+              "mean_net_bps": -10.815184,
+              "net_positive_hit_rate": 0.378505
+            }
+          ],
+          "mean_gross_bps": 6.968585,
+          "mean_net_bps": -3.031415,
+          "median_gross_bps": -0.064716,
+          "median_net_bps": -10.064716,
+          "min_fold_event_count": 170,
+          "net_positive_hit_rate": 0.407808,
+          "p25_gross_bps": -26.341903,
+          "p75_gross_bps": 34.710826,
+          "positive_net_fold_count": 2,
+          "valid_fold_count": 6
+        },
+        "60m": {
+          "event_count": 1665,
+          "folds": [
+            {
+              "event_count": 425,
+              "fold_id": 0,
+              "mean_net_bps": 5.406695,
+              "net_positive_hit_rate": 0.482353
+            },
+            {
+              "event_count": 270,
+              "fold_id": 1,
+              "mean_net_bps": -8.257442,
+              "net_positive_hit_rate": 0.381481
+            },
+            {
+              "event_count": 346,
+              "fold_id": 2,
+              "mean_net_bps": 3.903443,
+              "net_positive_hit_rate": 0.450867
+            },
+            {
+              "event_count": 240,
+              "fold_id": 3,
+              "mean_net_bps": -13.351544,
+              "net_positive_hit_rate": 0.3625
+            },
+            {
+              "event_count": 170,
+              "fold_id": 4,
+              "mean_net_bps": -9.808389,
+              "net_positive_hit_rate": 0.394118
+            },
+            {
+              "event_count": 214,
+              "fold_id": 5,
+              "mean_net_bps": -7.421584,
+              "net_positive_hit_rate": 0.434579
+            }
+          ],
+          "mean_gross_bps": 6.972319,
+          "mean_net_bps": -3.027681,
+          "median_gross_bps": -0.958471,
+          "median_net_bps": -10.958471,
+          "min_fold_event_count": 170,
+          "net_positive_hit_rate": 0.427027,
+          "p25_gross_bps": -38.680755,
+          "p75_gross_bps": 43.562996,
+          "positive_net_fold_count": 2,
+          "valid_fold_count": 6
+        }
+      },
+      "min_fold_event_count": 170,
+      "parameters": {
+        "kind": "momentum",
+        "lookback": 24,
+        "trend_key": "trend_4h",
+        "trend_min": 0.01,
+        "volume_multiple": 2.5
+      },
+      "positive_net_fold_count": 2,
+      "robust_distribution_observed": false,
+      "status": "sample_ready_no_robust_edge",
+      "valid_fold_count": 6,
+      "variant_id": "momentum_breakout_24_vol25_4htrend100_v1"
+    },
+    {
+      "best_horizon": "60m",
+      "best_net_mean_bps": -6.673296,
+      "best_net_median_bps": -12.918435,
+      "best_net_positive_hit_rate": 0.383805,
+      "candidate_generation_allowed": false,
+      "event_count": 4174,
+      "family_id": "orderflow_confirmed_momentum_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "event_count": 4174,
+          "folds": [
+            {
+              "event_count": 950,
+              "fold_id": 0,
+              "mean_net_bps": -1.524678,
+              "net_positive_hit_rate": 0.421053
+            },
+            {
+              "event_count": 673,
+              "fold_id": 1,
+              "mean_net_bps": -11.425855,
+              "net_positive_hit_rate": 0.375929
+            },
+            {
+              "event_count": 775,
+              "fold_id": 2,
+              "mean_net_bps": -0.132258,
+              "net_positive_hit_rate": 0.416774
+            },
+            {
+              "event_count": 718,
+              "fold_id": 3,
+              "mean_net_bps": -13.111924,
+              "net_positive_hit_rate": 0.410864
+            },
+            {
+              "event_count": 521,
+              "fold_id": 4,
+              "mean_net_bps": -6.400811,
+              "net_positive_hit_rate": 0.397313
+            },
+            {
+              "event_count": 537,
+              "fold_id": 5,
+              "mean_net_bps": -13.053995,
+              "net_positive_hit_rate": 0.387337
+            }
+          ],
+          "mean_gross_bps": 3.052294,
+          "mean_net_bps": -6.947706,
+          "median_gross_bps": -2.727591,
+          "median_net_bps": -12.727591,
+          "min_fold_event_count": 521,
+          "net_positive_hit_rate": 0.403929,
+          "p25_gross_bps": -41.383143,
+          "p75_gross_bps": 39.353832,
+          "positive_net_fold_count": 0,
+          "valid_fold_count": 6
+        },
+        "30m": {
+          "event_count": 4174,
+          "folds": [
+            {
+              "event_count": 950,
+              "fold_id": 0,
+              "mean_net_bps": -1.694335,
+              "net_positive_hit_rate": 0.414737
+            },
+            {
+              "event_count": 673,
+              "fold_id": 1,
+              "mean_net_bps": -6.459891,
+              "net_positive_hit_rate": 0.38633
+            },
+            {
+              "event_count": 775,
+              "fold_id": 2,
+              "mean_net_bps": -5.317943,
+              "net_positive_hit_rate": 0.374194
+            },
+            {
+              "event_count": 718,
+              "fold_id": 3,
+              "mean_net_bps": -11.835975,
+              "net_positive_hit_rate": 0.303621
+            },
+            {
+              "event_count": 521,
+              "fold_id": 4,
+              "mean_net_bps": -10.420087,
+              "net_positive_hit_rate": 0.322457
+            },
+            {
+              "event_count": 537,
+              "fold_id": 5,
+              "mean_net_bps": -15.919544,
+              "net_positive_hit_rate": 0.327747
+            }
+          ],
+          "mean_gross_bps": 2.200666,
+          "mean_net_bps": -7.799334,
+          "median_gross_bps": -1.942972,
+          "median_net_bps": -11.942972,
+          "min_fold_event_count": 521,
+          "net_positive_hit_rate": 0.360805,
+          "p25_gross_bps": -23.240475,
+          "p75_gross_bps": 24.064358,
+          "positive_net_fold_count": 0,
+          "valid_fold_count": 6
+        },
+        "60m": {
+          "event_count": 4174,
+          "folds": [
+            {
+              "event_count": 950,
+              "fold_id": 0,
+              "mean_net_bps": 1.177218,
+              "net_positive_hit_rate": 0.434737
+            },
+            {
+              "event_count": 673,
+              "fold_id": 1,
+              "mean_net_bps": -8.421464,
+              "net_positive_hit_rate": 0.36107
+            },
+            {
+              "event_count": 775,
+              "fold_id": 2,
+              "mean_net_bps": -3.941006,
+              "net_positive_hit_rate": 0.402581
+            },
+            {
+              "event_count": 718,
+              "fold_id": 3,
+              "mean_net_bps": -11.563778,
+              "net_positive_hit_rate": 0.345404
+            },
+            {
+              "event_count": 521,
+              "fold_id": 4,
+              "mean_net_bps": -7.706591,
+              "net_positive_hit_rate": 0.378119
+            },
+            {
+              "event_count": 537,
+              "fold_id": 5,
+              "mean_net_bps": -14.772523,
+              "net_positive_hit_rate": 0.351955
+            }
+          ],
+          "mean_gross_bps": 3.326704,
+          "mean_net_bps": -6.673296,
+          "median_gross_bps": -2.918435,
+          "median_net_bps": -12.918435,
+          "min_fold_event_count": 521,
+          "net_positive_hit_rate": 0.383805,
+          "p25_gross_bps": -31.149696,
+          "p75_gross_bps": 30.636124,
+          "positive_net_fold_count": 1,
+          "valid_fold_count": 6
+        }
+      },
+      "min_fold_event_count": 521,
+      "parameters": {
+        "kind": "momentum",
+        "lookback": 48,
+        "trend_key": "trend_2h",
+        "trend_min": 0.0025,
+        "volume_multiple": 1.5
+      },
+      "positive_net_fold_count": 1,
+      "robust_distribution_observed": false,
+      "status": "sample_ready_no_robust_edge",
+      "valid_fold_count": 6,
+      "variant_id": "momentum_breakout_48_vol15_2htrend25_v1"
+    },
+    {
+      "best_horizon": "30m",
+      "best_net_mean_bps": -7.052861,
+      "best_net_median_bps": -11.45766,
+      "best_net_positive_hit_rate": 0.330247,
+      "candidate_generation_allowed": false,
+      "event_count": 648,
+      "family_id": "volatility_compression_reclaim_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "event_count": 648,
+          "folds": [
+            {
+              "event_count": 135,
+              "fold_id": 0,
+              "mean_net_bps": -2.625372,
+              "net_positive_hit_rate": 0.422222
+            },
+            {
+              "event_count": 96,
+              "fold_id": 1,
+              "mean_net_bps": -7.315252,
+              "net_positive_hit_rate": 0.364583
+            },
+            {
+              "event_count": 113,
+              "fold_id": 2,
+              "mean_net_bps": -3.836847,
+              "net_positive_hit_rate": 0.424779
+            },
+            {
+              "event_count": 137,
+              "fold_id": 3,
+              "mean_net_bps": -6.794563,
+              "net_positive_hit_rate": 0.445255
+            },
+            {
+              "event_count": 68,
+              "fold_id": 4,
+              "mean_net_bps": -16.384202,
+              "net_positive_hit_rate": 0.338235
+            },
+            {
+              "event_count": 99,
+              "fold_id": 5,
+              "mean_net_bps": -19.848155,
+              "net_positive_hit_rate": 0.323232
+            }
+          ],
+          "mean_gross_bps": 1.512035,
+          "mean_net_bps": -8.487965,
+          "median_gross_bps": -1.694348,
+          "median_net_bps": -11.694348,
+          "min_fold_event_count": 68,
+          "net_positive_hit_rate": 0.395062,
+          "p25_gross_bps": -35.554895,
+          "p75_gross_bps": 30.773093,
+          "positive_net_fold_count": 0,
+          "valid_fold_count": 6
+        },
+        "30m": {
+          "event_count": 648,
+          "folds": [
+            {
+              "event_count": 135,
+              "fold_id": 0,
+              "mean_net_bps": 0.659939,
+              "net_positive_hit_rate": 0.414815
+            },
+            {
+              "event_count": 96,
+              "fold_id": 1,
+              "mean_net_bps": -3.989089,
+              "net_positive_hit_rate": 0.364583
+            },
+            {
+              "event_count": 113,
+              "fold_id": 2,
+              "mean_net_bps": -3.57325,
+              "net_positive_hit_rate": 0.327434
+            },
+            {
+              "event_count": 137,
+              "fold_id": 3,
+              "mean_net_bps": -11.634835,
+              "net_positive_hit_rate": 0.270073
+            },
+            {
+              "event_count": 68,
+              "fold_id": 4,
+              "mean_net_bps": -11.878633,
+              "net_positive_hit_rate": 0.323529
+            },
+            {
+              "event_count": 99,
+              "fold_id": 5,
+              "mean_net_bps": -14.857541,
+              "net_positive_hit_rate": 0.272727
+            }
+          ],
+          "mean_gross_bps": 2.947139,
+          "mean_net_bps": -7.052861,
+          "median_gross_bps": -1.45766,
+          "median_net_bps": -11.45766,
+          "min_fold_event_count": 68,
+          "net_positive_hit_rate": 0.330247,
+          "p25_gross_bps": -18.379821,
+          "p75_gross_bps": 17.405644,
+          "positive_net_fold_count": 1,
+          "valid_fold_count": 6
+        },
+        "60m": {
+          "event_count": 648,
+          "folds": [
+            {
+              "event_count": 135,
+              "fold_id": 0,
+              "mean_net_bps": 0.151935,
+              "net_positive_hit_rate": 0.385185
+            },
+            {
+              "event_count": 96,
+              "fold_id": 1,
+              "mean_net_bps": -5.007834,
+              "net_positive_hit_rate": 0.385417
+            },
+            {
+              "event_count": 113,
+              "fold_id": 2,
+              "mean_net_bps": -8.814618,
+              "net_positive_hit_rate": 0.389381
+            },
+            {
+              "event_count": 137,
+              "fold_id": 3,
+              "mean_net_bps": -8.728351,
+              "net_positive_hit_rate": 0.408759
+            },
+            {
+              "event_count": 68,
+              "fold_id": 4,
+              "mean_net_bps": -15.567141,
+              "net_positive_hit_rate": 0.397059
+            },
+            {
+              "event_count": 99,
+              "fold_id": 5,
+              "mean_net_bps": -20.256041,
+              "net_positive_hit_rate": 0.222222
+            }
+          ],
+          "mean_gross_bps": 1.179027,
+          "mean_net_bps": -8.820973,
+          "median_gross_bps": -1.389892,
+          "median_net_bps": -11.389892,
+          "min_fold_event_count": 68,
+          "net_positive_hit_rate": 0.367284,
+          "p25_gross_bps": -28.442775,
+          "p75_gross_bps": 21.627974,
+          "positive_net_fold_count": 1,
+          "valid_fold_count": 6
+        }
+      },
+      "min_fold_event_count": 68,
+      "parameters": {
+        "base_window": 72,
+        "kind": "compression",
+        "lookback": 12,
+        "range_ratio_max": 0.25,
+        "trend_key": "trend_2h",
+        "trend_min": 0.0025,
+        "volume_multiple": 1.5
+      },
+      "positive_net_fold_count": 1,
+      "robust_distribution_observed": false,
+      "status": "sample_ready_no_robust_edge",
+      "valid_fold_count": 6,
+      "variant_id": "compression_reclaim_12x72_ratio25_vol15_uptrend_v1"
+    },
+    {
+      "best_horizon": "30m",
+      "best_net_mean_bps": -4.700083,
+      "best_net_median_bps": -10.190236,
+      "best_net_positive_hit_rate": 0.356846,
+      "candidate_generation_allowed": false,
+      "event_count": 964,
+      "family_id": "volatility_compression_reclaim_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "event_count": 964,
+          "folds": [
+            {
+              "event_count": 233,
+              "fold_id": 0,
+              "mean_net_bps": -1.694892,
+              "net_positive_hit_rate": 0.433476
+            },
+            {
+              "event_count": 155,
+              "fold_id": 1,
+              "mean_net_bps": -7.530334,
+              "net_positive_hit_rate": 0.412903
+            },
+            {
+              "event_count": 189,
+              "fold_id": 2,
+              "mean_net_bps": 7.396051,
+              "net_positive_hit_rate": 0.439153
+            },
+            {
+              "event_count": 186,
+              "fold_id": 3,
+              "mean_net_bps": -8.353242,
+              "net_positive_hit_rate": 0.5
+            },
+            {
+              "event_count": 89,
+              "fold_id": 4,
+              "mean_net_bps": -2.024169,
+              "net_positive_hit_rate": 0.393258
+            },
+            {
+              "event_count": 112,
+              "fold_id": 5,
+              "mean_net_bps": -24.859148,
+              "net_positive_hit_rate": 0.330357
+            }
+          ],
+          "mean_gross_bps": 5.142804,
+          "mean_net_bps": -4.857196,
+          "median_gross_bps": 2.444003,
+          "median_net_bps": -7.555997,
+          "min_fold_event_count": 89,
+          "net_positive_hit_rate": 0.428423,
+          "p25_gross_bps": -35.452768,
+          "p75_gross_bps": 39.736156,
+          "positive_net_fold_count": 1,
+          "valid_fold_count": 6
+        },
+        "30m": {
+          "event_count": 964,
+          "folds": [
+            {
+              "event_count": 233,
+              "fold_id": 0,
+              "mean_net_bps": 1.964538,
+              "net_positive_hit_rate": 0.416309
+            },
+            {
+              "event_count": 155,
+              "fold_id": 1,
+              "mean_net_bps": -5.944844,
+              "net_positive_hit_rate": 0.36129
+            },
+            {
+              "event_count": 189,
+              "fold_id": 2,
+              "mean_net_bps": 3.287935,
+              "net_positive_hit_rate": 0.396825
+            },
+            {
+              "event_count": 186,
+              "fold_id": 3,
+              "mean_net_bps": -12.934468,
+              "net_positive_hit_rate": 0.295699
+            },
+            {
+              "event_count": 89,
+              "fold_id": 4,
+              "mean_net_bps": -8.924462,
+              "net_positive_hit_rate": 0.314607
+            },
+            {
+              "event_count": 112,
+              "fold_id": 5,
+              "mean_net_bps": -13.290163,
+              "net_positive_hit_rate": 0.294643
+            }
+          ],
+          "mean_gross_bps": 5.299917,
+          "mean_net_bps": -4.700083,
+          "median_gross_bps": -0.190236,
+          "median_net_bps": -10.190236,
+          "min_fold_event_count": 89,
+          "net_positive_hit_rate": 0.356846,
+          "p25_gross_bps": -19.554507,
+          "p75_gross_bps": 22.453458,
+          "positive_net_fold_count": 2,
+          "valid_fold_count": 6
+        },
+        "60m": {
+          "event_count": 964,
+          "folds": [
+            {
+              "event_count": 233,
+              "fold_id": 0,
+              "mean_net_bps": -0.714315,
+              "net_positive_hit_rate": 0.412017
+            },
+            {
+              "event_count": 155,
+              "fold_id": 1,
+              "mean_net_bps": -5.750898,
+              "net_positive_hit_rate": 0.354839
+            },
+            {
+              "event_count": 189,
+              "fold_id": 2,
+              "mean_net_bps": 2.507095,
+              "net_positive_hit_rate": 0.428571
+            },
+            {
+              "event_count": 186,
+              "fold_id": 3,
+              "mean_net_bps": -11.582696,
+              "net_positive_hit_rate": 0.354839
+            },
+            {
+              "event_count": 89,
+              "fold_id": 4,
+              "mean_net_bps": -8.364884,
+              "net_positive_hit_rate": 0.382022
+            },
+            {
+              "event_count": 112,
+              "fold_id": 5,
+              "mean_net_bps": -19.006964,
+              "net_positive_hit_rate": 0.3125
+            }
+          ],
+          "mean_gross_bps": 4.178818,
+          "mean_net_bps": -5.821182,
+          "median_gross_bps": -2.600838,
+          "median_net_bps": -12.600838,
+          "min_fold_event_count": 89,
+          "net_positive_hit_rate": 0.380705,
+          "p25_gross_bps": -26.917065,
+          "p75_gross_bps": 27.251878,
+          "positive_net_fold_count": 1,
+          "valid_fold_count": 6
+        }
+      },
+      "min_fold_event_count": 89,
+      "parameters": {
+        "base_window": 144,
+        "kind": "compression",
+        "lookback": 24,
+        "range_ratio_max": 0.35,
+        "trend_key": "trend_4h",
+        "trend_min": 0.005,
+        "volume_multiple": 2.0
+      },
+      "positive_net_fold_count": 2,
+      "robust_distribution_observed": false,
+      "status": "sample_ready_no_robust_edge",
+      "valid_fold_count": 6,
+      "variant_id": "compression_reclaim_24x144_ratio35_vol2_uptrend_v1"
+    },
+    {
+      "best_horizon": "120m",
+      "best_net_mean_bps": -2.801785,
+      "best_net_median_bps": -9.696543,
+      "best_net_positive_hit_rate": 0.447271,
+      "candidate_generation_allowed": false,
+      "event_count": 1887,
+      "family_id": "pullback_reclaim_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "event_count": 1887,
+          "folds": [
+            {
+              "event_count": 438,
+              "fold_id": 0,
+              "mean_net_bps": -16.181565,
+              "net_positive_hit_rate": 0.408676
+            },
+            {
+              "event_count": 311,
+              "fold_id": 1,
+              "mean_net_bps": 0.959968,
+              "net_positive_hit_rate": 0.4791
+            },
+            {
+              "event_count": 396,
+              "fold_id": 2,
+              "mean_net_bps": 16.799638,
+              "net_positive_hit_rate": 0.484848
+            },
+            {
+              "event_count": 203,
+              "fold_id": 3,
+              "mean_net_bps": -6.132457,
+              "net_positive_hit_rate": 0.458128
+            },
+            {
+              "event_count": 219,
+              "fold_id": 4,
+              "mean_net_bps": -2.812323,
+              "net_positive_hit_rate": 0.43379
+            },
+            {
+              "event_count": 320,
+              "fold_id": 5,
+              "mean_net_bps": -10.280817,
+              "net_positive_hit_rate": 0.425
+            }
+          ],
+          "mean_gross_bps": 7.198215,
+          "mean_net_bps": -2.801785,
+          "median_gross_bps": 0.303457,
+          "median_net_bps": -9.696543,
+          "min_fold_event_count": 203,
+          "net_positive_hit_rate": 0.447271,
+          "p25_gross_bps": -45.466863,
+          "p75_gross_bps": 53.556834,
+          "positive_net_fold_count": 2,
+          "valid_fold_count": 6
+        },
+        "30m": {
+          "event_count": 1887,
+          "folds": [
+            {
+              "event_count": 438,
+              "fold_id": 0,
+              "mean_net_bps": -2.757773,
+              "net_positive_hit_rate": 0.458904
+            },
+            {
+              "event_count": 311,
+              "fold_id": 1,
+              "mean_net_bps": -3.683655,
+              "net_positive_hit_rate": 0.392283
+            },
+            {
+              "event_count": 396,
+              "fold_id": 2,
+              "mean_net_bps": 2.085193,
+              "net_positive_hit_rate": 0.424242
+            },
+            {
+              "event_count": 203,
+              "fold_id": 3,
+              "mean_net_bps": -7.764642,
+              "net_positive_hit_rate": 0.384236
+            },
+            {
+              "event_count": 219,
+              "fold_id": 4,
+              "mean_net_bps": -6.073868,
+              "net_positive_hit_rate": 0.374429
+            },
+            {
+              "event_count": 320,
+              "fold_id": 5,
+              "mean_net_bps": -9.212085,
+              "net_positive_hit_rate": 0.40625
+            }
+          ],
+          "mean_gross_bps": 6.087943,
+          "mean_net_bps": -3.912057,
+          "median_gross_bps": -0.004257,
+          "median_net_bps": -10.004257,
+          "min_fold_event_count": 203,
+          "net_positive_hit_rate": 0.413884,
+          "p25_gross_bps": -26.431006,
+          "p75_gross_bps": 31.952285,
+          "positive_net_fold_count": 1,
+          "valid_fold_count": 6
+        },
+        "60m": {
+          "event_count": 1887,
+          "folds": [
+            {
+              "event_count": 438,
+              "fold_id": 0,
+              "mean_net_bps": -6.15701,
+              "net_positive_hit_rate": 0.422374
+            },
+            {
+              "event_count": 311,
+              "fold_id": 1,
+              "mean_net_bps": 1.763672,
+              "net_positive_hit_rate": 0.430868
+            },
+            {
+              "event_count": 396,
+              "fold_id": 2,
+              "mean_net_bps": 2.754427,
+              "net_positive_hit_rate": 0.439394
+            },
+            {
+              "event_count": 203,
+              "fold_id": 3,
+              "mean_net_bps": -4.860048,
+              "net_positive_hit_rate": 0.44335
+            },
+            {
+              "event_count": 219,
+              "fold_id": 4,
+              "mean_net_bps": -8.385944,
+              "net_positive_hit_rate": 0.388128
+            },
+            {
+              "event_count": 320,
+              "fold_id": 5,
+              "mean_net_bps": -10.765776,
+              "net_positive_hit_rate": 0.421875
+            }
+          ],
+          "mean_gross_bps": 6.117819,
+          "mean_net_bps": -3.882181,
+          "median_gross_bps": -0.20431,
+          "median_net_bps": -10.20431,
+          "min_fold_event_count": 203,
+          "net_positive_hit_rate": 0.425543,
+          "p25_gross_bps": -34.328649,
+          "p75_gross_bps": 39.455658,
+          "positive_net_fold_count": 2,
+          "valid_fold_count": 6
+        }
+      },
+      "min_fold_event_count": 203,
+      "parameters": {
+        "kind": "pullback",
+        "lookback": 12,
+        "prior_high_window": 36,
+        "pullback_depth_min": 0.005,
+        "trend_key": "trend_4h",
+        "trend_min": 0.005,
+        "volume_multiple": 1.0
+      },
+      "positive_net_fold_count": 2,
+      "robust_distribution_observed": false,
+      "status": "sample_ready_no_robust_edge",
+      "valid_fold_count": 6,
+      "variant_id": "pullback_reclaim_12_dd50_4htrend50_v1"
+    },
+    {
+      "best_horizon": "60m",
+      "best_net_mean_bps": 5.754492,
+      "best_net_median_bps": -7.475294,
+      "best_net_positive_hit_rate": 0.473118,
+      "candidate_generation_allowed": false,
+      "event_count": 558,
+      "family_id": "pullback_reclaim_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "event_count": 558,
+          "folds": [
+            {
+              "event_count": 150,
+              "fold_id": 0,
+              "mean_net_bps": -11.453288,
+              "net_positive_hit_rate": 0.386667
+            },
+            {
+              "event_count": 85,
+              "fold_id": 1,
+              "mean_net_bps": 15.508717,
+              "net_positive_hit_rate": 0.552941
+            },
+            {
+              "event_count": 111,
+              "fold_id": 2,
+              "mean_net_bps": 64.822719,
+              "net_positive_hit_rate": 0.630631
+            },
+            {
+              "event_count": 61,
+              "fold_id": 3,
+              "mean_net_bps": -43.869448,
+              "net_positive_hit_rate": 0.278689
+            },
+            {
+              "event_count": 50,
+              "fold_id": 4,
+              "mean_net_bps": 10.70931,
+              "net_positive_hit_rate": 0.5
+            },
+            {
+              "event_count": 101,
+              "fold_id": 5,
+              "mean_net_bps": -17.764433,
+              "net_positive_hit_rate": 0.356436
+            }
+          ],
+          "mean_gross_bps": 15.126865,
+          "mean_net_bps": 5.126865,
+          "median_gross_bps": 0.891495,
+          "median_net_bps": -9.108505,
+          "min_fold_event_count": 50,
+          "net_positive_hit_rate": 0.453405,
+          "p25_gross_bps": -49.337195,
+          "p75_gross_bps": 70.939607,
+          "positive_net_fold_count": 3,
+          "valid_fold_count": 6
+        },
+        "30m": {
+          "event_count": 558,
+          "folds": [
+            {
+              "event_count": 150,
+              "fold_id": 0,
+              "mean_net_bps": -1.113629,
+              "net_positive_hit_rate": 0.44
+            },
+            {
+              "event_count": 85,
+              "fold_id": 1,
+              "mean_net_bps": 13.224491,
+              "net_positive_hit_rate": 0.588235
+            },
+            {
+              "event_count": 111,
+              "fold_id": 2,
+              "mean_net_bps": 22.276211,
+              "net_positive_hit_rate": 0.567568
+            },
+            {
+              "event_count": 61,
+              "fold_id": 3,
+              "mean_net_bps": -10.669599,
+              "net_positive_hit_rate": 0.327869
+            },
+            {
+              "event_count": 50,
+              "fold_id": 4,
+              "mean_net_bps": 2.123504,
+              "net_positive_hit_rate": 0.44
+            },
+            {
+              "event_count": 101,
+              "fold_id": 5,
+              "mean_net_bps": -7.52152,
+              "net_positive_hit_rate": 0.435644
+            }
+          ],
+          "mean_gross_bps": 13.808876,
+          "mean_net_bps": 3.808876,
+          "median_gross_bps": 4.929789,
+          "median_net_bps": -5.070211,
+          "min_fold_event_count": 50,
+          "net_positive_hit_rate": 0.47491,
+          "p25_gross_bps": -33.385992,
+          "p75_gross_bps": 51.119863,
+          "positive_net_fold_count": 3,
+          "valid_fold_count": 6
+        },
+        "60m": {
+          "event_count": 558,
+          "folds": [
+            {
+              "event_count": 150,
+              "fold_id": 0,
+              "mean_net_bps": 0.056794,
+              "net_positive_hit_rate": 0.466667
+            },
+            {
+              "event_count": 85,
+              "fold_id": 1,
+              "mean_net_bps": 12.756545,
+              "net_positive_hit_rate": 0.541176
+            },
+            {
+              "event_count": 111,
+              "fold_id": 2,
+              "mean_net_bps": 34.547263,
+              "net_positive_hit_rate": 0.603604
+            },
+            {
+              "event_count": 61,
+              "fold_id": 3,
+              "mean_net_bps": -19.25773,
+              "net_positive_hit_rate": 0.360656
+            },
+            {
+              "event_count": 50,
+              "fold_id": 4,
+              "mean_net_bps": 2.925823,
+              "net_positive_hit_rate": 0.46
+            },
+            {
+              "event_count": 101,
+              "fold_id": 5,
+              "mean_net_bps": -6.813217,
+              "net_positive_hit_rate": 0.356436
+            }
+          ],
+          "mean_gross_bps": 15.754492,
+          "mean_net_bps": 5.754492,
+          "median_gross_bps": 2.524706,
+          "median_net_bps": -7.475294,
+          "min_fold_event_count": 50,
+          "net_positive_hit_rate": 0.473118,
+          "p25_gross_bps": -38.982613,
+          "p75_gross_bps": 65.308634,
+          "positive_net_fold_count": 4,
+          "valid_fold_count": 6
+        }
+      },
+      "min_fold_event_count": 50,
+      "parameters": {
+        "kind": "pullback",
+        "lookback": 24,
+        "prior_high_window": 48,
+        "pullback_depth_min": 0.01,
+        "trend_key": "trend_4h",
+        "trend_min": 0.01,
+        "volume_multiple": 1.25
+      },
+      "positive_net_fold_count": 4,
+      "robust_distribution_observed": true,
+      "status": "robust_distribution_observed",
+      "valid_fold_count": 6,
+      "variant_id": "pullback_reclaim_24_dd100_4htrend100_v1"
+    },
+    {
+      "best_horizon": "120m",
+      "best_net_mean_bps": 8.266417,
+      "best_net_median_bps": -14.190602,
+      "best_net_positive_hit_rate": 0.460526,
+      "candidate_generation_allowed": false,
+      "event_count": 76,
+      "family_id": "liquidation_exhaustion_reclaim_intraday_v0",
+      "horizon_stats": {
+        "120m": {
+          "event_count": 76,
+          "folds": [
+            {
+              "event_count": 9,
+              "fold_id": 0,
+              "mean_net_bps": 16.334984,
+              "net_positive_hit_rate": 0.666667
+            },
+            {
+              "event_count": 4,
+              "fold_id": 1,
+              "mean_net_bps": 132.04089,
+              "net_positive_hit_rate": 0.5
+            },
+            {
+              "event_count": 12,
+              "fold_id": 2,
+              "mean_net_bps": 37.82755,
+              "net_positive_hit_rate": 0.583333
+            },
+            {
+              "event_count": 11,
+              "fold_id": 3,
+              "mean_net_bps": -26.480829,
+              "net_positive_hit_rate": 0.272727
+            },
+            {
+              "event_count": 30,
+              "fold_id": 4,
+              "mean_net_bps": 3.1517,
+              "net_positive_hit_rate": 0.466667
+            },
+            {
+              "event_count": 10,
+              "fold_id": 5,
+              "mean_net_bps": -30.41232,
+              "net_positive_hit_rate": 0.3
+            }
+          ],
+          "mean_gross_bps": 18.266417,
+          "mean_net_bps": 8.266417,
+          "median_gross_bps": -4.190602,
+          "median_net_bps": -14.190602,
+          "min_fold_event_count": 4,
+          "net_positive_hit_rate": 0.460526,
+          "p25_gross_bps": -39.565855,
+          "p75_gross_bps": 56.54147,
+          "positive_net_fold_count": 1,
+          "valid_fold_count": 1
+        },
+        "30m": {
+          "event_count": 76,
+          "folds": [
+            {
+              "event_count": 9,
+              "fold_id": 0,
+              "mean_net_bps": 0.725651,
+              "net_positive_hit_rate": 0.555556
+            },
+            {
+              "event_count": 4,
+              "fold_id": 1,
+              "mean_net_bps": 50.836696,
+              "net_positive_hit_rate": 0.5
+            },
+            {
+              "event_count": 12,
+              "fold_id": 2,
+              "mean_net_bps": -14.953239,
+              "net_positive_hit_rate": 0.416667
+            },
+            {
+              "event_count": 11,
+              "fold_id": 3,
+              "mean_net_bps": 13.605325,
+              "net_positive_hit_rate": 0.363636
+            },
+            {
+              "event_count": 30,
+              "fold_id": 4,
+              "mean_net_bps": -8.326697,
+              "net_positive_hit_rate": 0.3
+            },
+            {
+              "event_count": 10,
+              "fold_id": 5,
+              "mean_net_bps": -13.323381,
+              "net_positive_hit_rate": 0.5
+            }
+          ],
+          "mean_gross_bps": 7.329771,
+          "mean_net_bps": -2.670229,
+          "median_gross_bps": -0.014961,
+          "median_net_bps": -10.014961,
+          "min_fold_event_count": 4,
+          "net_positive_hit_rate": 0.394737,
+          "p25_gross_bps": -32.747658,
+          "p75_gross_bps": 38.679342,
+          "positive_net_fold_count": 0,
+          "valid_fold_count": 1
+        },
+        "60m": {
+          "event_count": 76,
+          "folds": [
+            {
+              "event_count": 9,
+              "fold_id": 0,
+              "mean_net_bps": 34.618928,
+              "net_positive_hit_rate": 0.777778
+            },
+            {
+              "event_count": 4,
+              "fold_id": 1,
+              "mean_net_bps": 61.842448,
+              "net_positive_hit_rate": 0.5
+            },
+            {
+              "event_count": 12,
+              "fold_id": 2,
+              "mean_net_bps": -8.780089,
+              "net_positive_hit_rate": 0.416667
+            },
+            {
+              "event_count": 11,
+              "fold_id": 3,
+              "mean_net_bps": -19.19442,
+              "net_positive_hit_rate": 0.454545
+            },
+            {
+              "event_count": 30,
+              "fold_id": 4,
+              "mean_net_bps": -4.704835,
+              "net_positive_hit_rate": 0.3
+            },
+            {
+              "event_count": 10,
+              "fold_id": 5,
+              "mean_net_bps": -52.010058,
+              "net_positive_hit_rate": 0.5
+            }
+          ],
+          "mean_gross_bps": 4.489406,
+          "mean_net_bps": -5.510594,
+          "median_gross_bps": -4.414166,
+          "median_net_bps": -14.414166,
+          "min_fold_event_count": 4,
+          "net_positive_hit_rate": 0.434211,
+          "p25_gross_bps": -43.974753,
+          "p75_gross_bps": 45.361671,
+          "positive_net_fold_count": 0,
+          "valid_fold_count": 1
+        }
+      },
+      "min_fold_event_count": 4,
+      "parameters": {
+        "kind": "shock_reclaim",
+        "shock_return_bps_max": -35.0,
+        "trend_key": "trend_2h",
+        "trend_min": -0.01,
+        "volume_multiple": 1.5
+      },
+      "positive_net_fold_count": 1,
+      "robust_distribution_observed": false,
+      "status": "sample_too_sparse",
+      "valid_fold_count": 1,
+      "variant_id": "shock_reclaim_relaxed_35bps_vol15_v1"
+    }
+  ]
+}

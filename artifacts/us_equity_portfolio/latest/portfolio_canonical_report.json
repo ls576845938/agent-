@@ -1,0 +1,108 @@
+{
+  "asset": "us_equity",
+  "blockers": [
+    "us_equity_sector_exposure_missing",
+    "us_equity_style_exposure_missing",
+    "us_equity_portfolio_cost_stress_required",
+    "us_equity_fixture_ledger_not_promotion_evidence",
+    "us_equity_event_ledger_portfolio_backtest_required",
+    "us_equity_ledger_pnl_required",
+    "us_equity_portfolio_walk_forward_required",
+    "us_equity_promotion_gate_required"
+  ],
+  "branch": "main",
+  "commit": "ab6e2e4",
+  "constraints_hash": "66c89cc0847c3204",
+  "cost_stress_report_path": "artifacts/us_equity_portfolio/latest/cost_stress_report.json",
+  "dependency_available": true,
+  "event_ledger_status": {
+    "blocker": "us_equity_event_ledger_portfolio_backtest_required",
+    "required": true,
+    "status": "missing"
+  },
+  "exposure_report_path": "artifacts/us_equity_portfolio/latest/exposure_report.json",
+  "factor_evidence_pack": "artifacts/us_equity_factor_evidence/latest/factor_evidence_pack.json",
+  "fallback_used": true,
+  "generated_at": "2026-05-22T16:48:53.198158+00:00",
+  "ledger_validation": {
+    "blockers": [
+      "production_data_required",
+      "production_event_ledger_required",
+      "event_ledger_candidate_required",
+      "source_type_fixture_not_promotion_evidence"
+    ],
+    "cash_conservation_pass": true,
+    "cost_model_available": true,
+    "event_ledger_candidate": false,
+    "fills_available": true,
+    "ledger_pnl_available": true,
+    "position_conservation_pass": true,
+    "production_data_required": true,
+    "source_type": "fixture"
+  },
+  "live_status": "frozen",
+  "optimizer": "max_sharpe",
+  "paper_queue_status": "locked",
+  "portfolio_evidence_maturity": {
+    "contract_ready": true,
+    "cost_stress_available": false,
+    "event_ledger_validated": false,
+    "exposure_report_available": true,
+    "fixture_ledger_available": true,
+    "production_ledger_available": false,
+    "promotion_ready": false,
+    "sample_ledger_available": false,
+    "walk_forward_available": false
+  },
+  "portfolio_fixture_event_ledger_report": "artifacts/us_equity_portfolio_fixture_ledger/latest/portfolio_fixture_event_ledger_report.json",
+  "portfolio_run_id": "pypfopt_us_core_max_sharpe_2025",
+  "promotion_ready": false,
+  "rebalance_drift_report_path": "artifacts/us_equity_portfolio/latest/rebalance_drift_report.json",
+  "required_evidence": [
+    "factor_evidence_pack",
+    "target_weights",
+    "exposure_report",
+    "cost_stress_report",
+    "rebalance_drift_report",
+    "event_ledger_portfolio_backtest",
+    "ledger_pnl",
+    "walk_forward",
+    "promotion_gate"
+  ],
+  "schema_version": "us_equity_portfolio_canonical_report_v1",
+  "source_run_manifest": "artifacts/portfolio_runs/pypfopt_us_core_max_sharpe_2025/run_manifest.json",
+  "source_score_run_id": "qlib_us_core_daily_2020_2025",
+  "status": "partial",
+  "target_positions_path": "artifacts/portfolio_runs/pypfopt_us_core_max_sharpe_2025/target_positions.parquet",
+  "target_weights_path": "artifacts/portfolio_runs/pypfopt_us_core_max_sharpe_2025/target_weights.parquet",
+  "weight_summary": {
+    "cash_weight_estimate": 0.25,
+    "gross_weight": 0.75,
+    "max_symbol_weight": 0.15,
+    "net_weight": 0.75,
+    "symbol_count": 5,
+    "timestamp": "2025-12-31T00:00:00+00:00",
+    "top_symbols": [
+      {
+        "symbol": "AAPL",
+        "target_weight": 0.15
+      },
+      {
+        "symbol": "AMZN",
+        "target_weight": 0.15
+      },
+      {
+        "symbol": "DIA",
+        "target_weight": 0.15
+      },
+      {
+        "symbol": "GOOGL",
+        "target_weight": 0.15
+      },
+      {
+        "symbol": "IWM",
+        "target_weight": 0.15
+      }
+    ]
+  }
+}

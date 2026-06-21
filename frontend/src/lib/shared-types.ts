@@ -31,6 +31,86 @@ export type CryptoBlockerGroup = {
   tone: 'good' | 'neutral' | 'warn' | 'bad';
 };
 
+export type BtcScalpingResearchBacktest = {
+  label: string;
+  timeframe: '1m' | '5m';
+  status: string;
+  strategy_id: string;
+  variant_id: string;
+  scope: string;
+  report_path: string | null;
+  run_dir: string | null;
+  artifacts: Record<string, string | null>;
+  metrics: {
+    event_count?: number | null;
+    trade_count?: number | null;
+    fill_count?: number | null;
+    profit_factor?: number | null;
+    hit_rate?: number | null;
+    mean_trade_return_bps?: number | null;
+    total_return_pct?: number | null;
+    max_drawdown?: number | null;
+    walk_forward_pass_rate?: number | null;
+    regime_pass_rate?: number | null;
+  };
+  gate_passed: boolean;
+  gate_status: string;
+  blockers: string[];
+  manifest: {
+    path: string | null;
+    present: boolean;
+    required_fields_present: Record<string, boolean>;
+    complete: boolean;
+    paper_queue: string | null;
+    live: string | null;
+  };
+  research_only_lock: {
+    candidate_generation_allowed: false;
+    strategy_skeleton_generation_allowed: false;
+    paper_or_live_unlock_allowed: false;
+    true_scalping_allowed: false;
+  };
+};
+
+export type BtcScalpingResearchBacktestReport = {
+  schema_version: 'btc_scalping_research_backtest_report_v1';
+  generated_at: string;
+  asset: 'btc';
+  symbol: 'BTCUSDT';
+  scope: string;
+  status: string;
+  decision: string;
+  next_required_action: string;
+  recommended_research_track: 'five_minute_drift_guarded_intraday' | 'one_minute_proxy_scalping' | 'none';
+  operator_summary: {
+    current_research_answer: string;
+    run_command: string;
+    direct_command: string;
+  };
+  backtests: {
+    one_minute_proxy_scalping: BtcScalpingResearchBacktest;
+    five_minute_drift_guarded_intraday: BtcScalpingResearchBacktest;
+  };
+  manifest_contract: {
+    required_fields: string[];
+    one_minute_proxy_scalping_complete: boolean;
+    five_minute_drift_guarded_intraday_complete: boolean;
+  };
+  guardrails: {
+    research_only: boolean;
+    strategy_outputs_only: string[];
+    broker_calls_allowed: false;
+    private_endpoints_allowed: false;
+    order_endpoints_allowed: false;
+    real_orders_created: false;
+    candidate_generation_allowed: false;
+    paper_or_live_unlock_allowed: false;
+    paper_queue: 'LOCKED';
+    live: 'FROZEN';
+    pnl_from_fill_or_trade_ledger: boolean;
+  };
+};
+
 export type SystemOverviewResponse = {
   status: string;
   stage: string;

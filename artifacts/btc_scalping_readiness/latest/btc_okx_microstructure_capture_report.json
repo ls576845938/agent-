@@ -1,0 +1,62 @@
+{
+  "api_key_used": false,
+  "blockers": [],
+  "errors": [],
+  "files": [
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/agg_trades.csv",
+      "sha256": "a668ec09fa0ae93850dacd9bf017347b97206d14e61bc520bd74676a18cf33d9",
+      "size_bytes": 11501
+    },
+    {
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/order_book_depth.csv",
+      "sha256": "39602393afbba46964ed4d378a44f7bd7a63dde5ba2147d64805b3380fac6131",
+      "size_bytes": 12043
+    }
+  ],
+  "generated_at": "2026-06-20T13:13:18Z",
+  "latency_samples": [
+    {
+      "duration_ms": 306.8702749442309,
+      "endpoint": "/api/v5/market/history-trades",
+      "network_called": true,
+      "url": "https://www.okx.com/api/v5/market/history-trades?instId=BTC-USDT-SWAP&limit=100"
+    },
+    {
+      "duration_ms": 278.88927003368735,
+      "endpoint": "/api/v5/market/books",
+      "network_called": true,
+      "url": "https://www.okx.com/api/v5/market/books?instId=BTC-USDT-SWAP&sz=50"
+    }
+  ],
+  "manifest_path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/btc_perpetual_bundle_manifest.json",
+  "network_called": true,
+  "order_endpoint_used": false,
+  "planned_requests": [
+    {
+      "dry_run": true,
+      "endpoint": "/api/v5/market/history-trades",
+      "network_called": false,
+      "params": {
+        "instId": "BTC-USDT-SWAP",
+        "limit": "100"
+      },
+      "url": "https://www.okx.com/api/v5/market/history-trades?instId=BTC-USDT-SWAP&limit=100"
+    },
+    {
+      "dry_run": true,
+      "endpoint": "/api/v5/market/books",
+      "network_called": false,
+      "params": {
+        "instId": "BTC-USDT-SWAP",
+        "sz": "50"
+      },
+      "url": "https://www.okx.com/api/v5/market/books?instId=BTC-USDT-SWAP&sz=50"
+    }
+  ],
+  "private_endpoint_used": false,
+  "public_rest_only": true,
+  "schema_version": "btc_okx_microstructure_capture_report_v1",
+  "selected_bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1",
+  "status": "verified"
+}

@@ -12,7 +12,9 @@ from typing import Any, Mapping
 
 
 DEFAULT_OUTPUT_ROOT = Path("artifacts/btc_data_status/latest")
-DEFAULT_SOURCE_RUN_DIR = Path("artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger")
+DEFAULT_SOURCE_RUN_DIR = Path(
+    "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger"
+)
 DEFAULT_BUNDLE_PREFLIGHT = Path("artifacts/btc_data_status/latest/btc_perpetual_bundle_preflight_report.json")
 DEFAULT_PROVIDER_VERIFICATION = Path("artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json")
 DIAGNOSTIC_ONLY_WARNINGS = {

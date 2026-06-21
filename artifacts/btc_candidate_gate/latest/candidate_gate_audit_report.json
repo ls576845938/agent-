@@ -1,0 +1,129 @@
+{
+  "asset": "btc",
+  "best_available_candidate": {
+    "failed_metrics": [
+      "event_profit_factor",
+      "walk_forward_pass_rate"
+    ],
+    "metrics": {
+      "dsr": 1.0,
+      "event_profit_factor": 1.0205,
+      "fill_count": 49,
+      "max_drawdown": -7.835,
+      "pbo": 0.5,
+      "profit_factor": 1.631439,
+      "regime_pass_rate": 1.0,
+      "trade_count": 24,
+      "walk_forward_pass_rate": 0.5
+    },
+    "passed_metric_count": 6,
+    "required_metric_count": 8,
+    "source_run_dir": "artifacts/btc_canonical/20260516T080000Z_eventpf_wf/btc_perp_dual_trend_v4_eventpf_wf",
+    "status": "candidate_gate_failed",
+    "strategy_id": "btc_perp_dual_trend_v4_eventpf_wf",
+    "thresholds": {
+      "event_profit_factor": 1.15,
+      "regime_pass_rate": 0.75,
+      "walk_forward_pass_rate": 0.8
+    }
+  },
+  "blockers": [
+    "btc_candidate_gate_event_pf_failed",
+    "btc_candidate_gate_walk_forward_failed",
+    "btc_candidate_gate_regime_failed"
+  ],
+  "branch": "main",
+  "candidate_gate_metric_checks": {
+    "cost_stress_pass": true,
+    "event_pf_pass": false,
+    "ordinary_pf_diagnostic_only": true,
+    "regime_pass": false,
+    "signal_equity_diagnostic_only": true,
+    "target_active_return_diagnostic_only": true,
+    "walk_forward_pass": false
+  },
+  "candidate_gate_perpetual_evidence": {
+    "contract_type": "usds_m_perpetual_contract",
+    "cost_model_report": "artifacts/btc_cost_model/latest/btc_cost_model_report.json",
+    "cost_model_status": "pass",
+    "data_status_report": "artifacts/btc_data_status/latest/btc_data_status_report.json",
+    "funding_ledger_report": "artifacts/btc_cost_model/latest/btc_funding_ledger_report.json",
+    "funding_payment_in_ledger": true,
+    "market_type": "usds_m_perpetual",
+    "perpetual_evidence_ready": true,
+    "provider_verification_report": "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json",
+    "tail_dependency_pass": true,
+    "tail_dependency_report": "artifacts/btc_tail_dependency/latest/tail_dependency_report.json"
+  },
+  "candidate_gate_required_artifacts": {
+    "PBO_DSR_report": true,
+    "canonical_backtest_report": true,
+    "cost_stress_report": true,
+    "fee_pnl": true,
+    "fills": true,
+    "funding_pnl": true,
+    "ledger_pnl": true,
+    "no_lookahead_report": true,
+    "regime_report": true,
+    "slippage_pnl": true,
+    "tail_dependency_report": true,
+    "walk_forward_report": true
+  },
+  "candidate_gate_thresholds": {
+    "cost_stress_required": true,
+    "event_profit_factor": 1.15,
+    "regime_pass_rate": 0.75,
+    "walk_forward_pass_rate": 0.8
+  },
+  "candidate_passed_internal_gate": 0,
+  "candidate_repair_plan": {
+    "best_available_candidate_strategy_id": "btc_perp_dual_trend_v4_eventpf_wf",
+    "next_required_action": "repair_btc_candidate_metric_gate",
+    "stages": [
+      {
+        "action": "complete_manual_metadata_fee_tier_and_perpetual_provider_evidence",
+        "blockers": [],
+        "name": "perpetual_data_cost_evidence",
+        "status": "complete"
+      },
+      {
+        "action": "repair_event_pf_walk_forward_regime_or_select_better_candidate",
+        "blockers": [
+          "event_profit_factor",
+          "walk_forward_pass_rate",
+          "regime_pass_rate"
+        ],
+        "name": "internal_metric_gate",
+        "status": "blocked"
+      },
+      {
+        "action": "create_record_only_human_paper_review_after_candidate_pass",
+        "blockers": [
+          "btc_candidate_gate_not_pass"
+        ],
+        "name": "paper_review_queue",
+        "status": "blocked"
+      }
+    ]
+  },
+  "commit": "cbe4b54",
+  "diagnostic_warnings": [
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_agg_trades_missing",
+    "btc_liquidation_snapshot_missing_diagnostic_only"
+  ],
+  "generated_at": "2026-06-20T09:16:46.180491+00:00",
+  "live_status": "frozen",
+  "metric_failures": [
+    "event_profit_factor",
+    "walk_forward_pass_rate",
+    "regime_pass_rate"
+  ],
+  "paper_queue_status": "locked",
+  "paper_review_pending_allowed": false,
+  "schema_version": "btc_candidate_gate_audit_report_v1",
+  "source_run_dir": "artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger",
+  "status": "fail",
+  "strategy_id": "btc_compression_expansion_breakout_v1",
+  "symbol": "BTCUSDT"
+}

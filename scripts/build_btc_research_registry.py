@@ -61,6 +61,33 @@ BTC_INTRADAY_SHORT_CYCLE_ALPHA_PROBE = Path(
 BTC_INTRADAY_SHORT_CYCLE_ALPHA_REFINEMENT = Path(
     "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_alpha_refinement_report.json"
 )
+BTC_INTRADAY_SHORT_CYCLE_EVENT_LEDGER = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_event_ledger_report.json"
+)
+BTC_INTRADAY_SHORT_CYCLE_EVENT_DEFINITION_REPAIR = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_event_definition_repair_report.json"
+)
+BTC_INTRADAY_SHORT_CYCLE_REPAIRED_EVENT_LEDGER = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_repaired_event_ledger_report.json"
+)
+BTC_INTRADAY_SHORT_CYCLE_DRIFT_GUARDED_EVENT_LEDGER = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_drift_guarded_event_ledger_report.json"
+)
+BTC_INTRADAY_SHORT_CYCLE_PROMOTION_GATE = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_promotion_gate_report.json"
+)
+BTC_INTRADAY_SHORT_CYCLE_MANUAL_REVIEW_PACKET = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_manual_review_packet.json"
+)
+BTC_INTRADAY_SHORT_CYCLE_RESEARCH_CANDIDATE_DEFINITION_PREFLIGHT = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_research_candidate_definition_preflight.json"
+)
+BTC_INTRADAY_SHORT_CYCLE_RESEARCH_CANDIDATE_DEFINITION_MANIFEST = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_research_candidate_definition_manifest.json"
+)
+BTC_INTRADAY_SHORT_CYCLE_REMAINING_EXTERNAL_EVIDENCE_STATUS = Path(
+    "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_remaining_external_evidence_status_report.json"
+)
 BTC_TAIL_DEPENDENCY = Path("artifacts/btc_tail_dependency/latest/tail_dependency_report.json")
 BTC_COMPRESSION_ATTRIBUTION = Path(
     "artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/attribution_report.json"
@@ -128,6 +155,21 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
     intraday_short_cycle = _intraday_short_cycle_alpha_plan_status(root)
     intraday_short_cycle_probe = _intraday_short_cycle_alpha_probe_status(root)
     intraday_short_cycle_refinement = _intraday_short_cycle_alpha_refinement_status(root)
+    intraday_short_cycle_event_ledger = _intraday_short_cycle_event_ledger_status(root)
+    intraday_short_cycle_event_definition_repair = _intraday_short_cycle_event_definition_repair_status(root)
+    intraday_short_cycle_repaired_event_ledger = _intraday_short_cycle_repaired_event_ledger_status(root)
+    intraday_short_cycle_drift_guarded_event_ledger = _intraday_short_cycle_drift_guarded_event_ledger_status(root)
+    intraday_short_cycle_promotion_gate = _intraday_short_cycle_promotion_gate_status(root)
+    intraday_short_cycle_manual_review_packet = _intraday_short_cycle_manual_review_packet_status(root)
+    intraday_short_cycle_research_candidate_definition_preflight = (
+        _intraday_short_cycle_research_candidate_definition_preflight_status(root)
+    )
+    intraday_short_cycle_research_candidate_definition_manifest = (
+        _intraday_short_cycle_research_candidate_definition_manifest_status(root)
+    )
+    intraday_short_cycle_remaining_external_evidence_status = (
+        _intraday_short_cycle_remaining_external_evidence_status(root)
+    )
     tail = _read_json(root / BTC_TAIL_DEPENDENCY)
     attribution = _read_json(root / BTC_COMPRESSION_ATTRIBUTION)
     candidate_passed_internal_gate = int(gate.get("candidate_passed_internal_gate", 0) or 0)
@@ -152,6 +194,15 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
         intraday_short_cycle.get("blockers", []),
         intraday_short_cycle_probe.get("blockers", []),
         intraday_short_cycle_refinement.get("blockers", []),
+        intraday_short_cycle_event_ledger.get("blockers", []),
+        intraday_short_cycle_event_definition_repair.get("blockers", []),
+        intraday_short_cycle_repaired_event_ledger.get("blockers", []),
+        intraday_short_cycle_drift_guarded_event_ledger.get("blockers", []),
+        intraday_short_cycle_promotion_gate.get("blockers", []),
+        intraday_short_cycle_manual_review_packet.get("blockers", []),
+        intraday_short_cycle_research_candidate_definition_preflight.get("blockers", []),
+        intraday_short_cycle_research_candidate_definition_manifest.get("blockers", []),
+        intraday_short_cycle_remaining_external_evidence_status.get("blockers", []),
         tail.get("blockers", []),
         attribution.get("blockers", []),
     )
@@ -194,6 +245,33 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
             "latest_intraday_short_cycle_alpha_refinement_report": _maybe_path(
                 root, BTC_INTRADAY_SHORT_CYCLE_ALPHA_REFINEMENT
             ),
+            "latest_intraday_short_cycle_event_ledger_report": _maybe_path(
+                root, BTC_INTRADAY_SHORT_CYCLE_EVENT_LEDGER
+            ),
+            "latest_intraday_short_cycle_event_definition_repair_report": _maybe_path(
+                root, BTC_INTRADAY_SHORT_CYCLE_EVENT_DEFINITION_REPAIR
+            ),
+            "latest_intraday_short_cycle_repaired_event_ledger_report": _maybe_path(
+                root, BTC_INTRADAY_SHORT_CYCLE_REPAIRED_EVENT_LEDGER
+            ),
+            "latest_intraday_short_cycle_drift_guarded_event_ledger_report": _maybe_path(
+                root, BTC_INTRADAY_SHORT_CYCLE_DRIFT_GUARDED_EVENT_LEDGER
+            ),
+            "latest_intraday_short_cycle_promotion_gate_report": _maybe_path(
+                root, BTC_INTRADAY_SHORT_CYCLE_PROMOTION_GATE
+            ),
+            "latest_intraday_short_cycle_manual_review_packet": _maybe_path(
+                root, BTC_INTRADAY_SHORT_CYCLE_MANUAL_REVIEW_PACKET
+            ),
+            "latest_intraday_short_cycle_research_candidate_definition_preflight": _maybe_path(
+                root, BTC_INTRADAY_SHORT_CYCLE_RESEARCH_CANDIDATE_DEFINITION_PREFLIGHT
+            ),
+            "latest_intraday_short_cycle_research_candidate_definition_manifest": _maybe_path(
+                root, BTC_INTRADAY_SHORT_CYCLE_RESEARCH_CANDIDATE_DEFINITION_MANIFEST
+            ),
+            "latest_intraday_short_cycle_remaining_external_evidence_status": _maybe_path(
+                root, BTC_INTRADAY_SHORT_CYCLE_REMAINING_EXTERNAL_EVIDENCE_STATUS
+            ),
             "latest_tail_dependency": _maybe_path(root, BTC_TAIL_DEPENDENCY),
             "latest_compression_attribution": _maybe_path(root, BTC_COMPRESSION_ATTRIBUTION),
             "manual_metadata_capture_status": manual_metadata,
@@ -208,6 +286,23 @@ def build_btc_research_registry(*, repo_root: Path | None = None, generated_at: 
             "intraday_short_cycle_alpha_plan_status": intraday_short_cycle,
             "intraday_short_cycle_alpha_probe_status": intraday_short_cycle_probe,
             "intraday_short_cycle_alpha_refinement_status": intraday_short_cycle_refinement,
+            "intraday_short_cycle_event_ledger_status": intraday_short_cycle_event_ledger,
+            "intraday_short_cycle_event_definition_repair_status": intraday_short_cycle_event_definition_repair,
+            "intraday_short_cycle_repaired_event_ledger_status": intraday_short_cycle_repaired_event_ledger,
+            "intraday_short_cycle_drift_guarded_event_ledger_status": (
+                intraday_short_cycle_drift_guarded_event_ledger
+            ),
+            "intraday_short_cycle_promotion_gate_status": intraday_short_cycle_promotion_gate,
+            "intraday_short_cycle_manual_review_packet_status": intraday_short_cycle_manual_review_packet,
+            "intraday_short_cycle_research_candidate_definition_preflight_status": (
+                intraday_short_cycle_research_candidate_definition_preflight
+            ),
+            "intraday_short_cycle_research_candidate_definition_manifest_status": (
+                intraday_short_cycle_research_candidate_definition_manifest
+            ),
+            "intraday_short_cycle_remaining_external_evidence_status": (
+                intraday_short_cycle_remaining_external_evidence_status
+            ),
             "current_candidates": current_candidates,
             "attribution_only": [],
             "compression_boundary": {
@@ -576,6 +671,386 @@ def _intraday_short_cycle_alpha_refinement_status(root: Path) -> dict[str, Any]:
     }
 
 
+def _intraday_short_cycle_event_ledger_status(root: Path) -> dict[str, Any]:
+    path = root / BTC_INTRADAY_SHORT_CYCLE_EVENT_LEDGER
+    payload = _read_json(path)
+    metrics = _mapping(payload.get("metrics"))
+    gate = _mapping(payload.get("gate"))
+    event_definition = _mapping(payload.get("event_definition"))
+    cost = _mapping(payload.get("cost_context"))
+    blockers = []
+    if not path.exists():
+        blockers.append("btc_intraday_short_cycle_event_ledger_report_missing")
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "event_ledger_completed": bool(payload.get("event_ledger_completed", False)),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "variant_id": str(payload.get("variant_id", "")),
+        "family_id": str(payload.get("family_id", "")),
+        "event_count": int(event_definition.get("event_count", 0) or 0),
+        "trade_count": int(metrics.get("trade_count", 0) or 0),
+        "fill_count": int(metrics.get("fill_count", 0) or 0),
+        "profit_factor": _float_or_none(metrics.get("profit_factor")),
+        "event_profit_factor": _float_or_none(metrics.get("event_profit_factor")),
+        "walk_forward_pass_rate": _float_or_none(metrics.get("walk_forward_pass_rate")),
+        "regime_pass_rate": _float_or_none(metrics.get("regime_pass_rate")),
+        "gate_passed": bool(gate.get("passed", False)),
+        "gate_status": str(gate.get("status", "")),
+        "failed_metrics": _list_of_strings(payload.get("failed_metrics")),
+        "stress_scenario_count": int(cost.get("stress_scenario_count", 0) or 0),
+        "required_scenarios_present": bool(cost.get("required_scenarios_present", False)),
+        "blockers": _merge(blockers),
+    }
+
+
+def _intraday_short_cycle_event_definition_repair_status(root: Path) -> dict[str, Any]:
+    path = root / BTC_INTRADAY_SHORT_CYCLE_EVENT_DEFINITION_REPAIR
+    payload = _read_json(path)
+    best = _mapping(payload.get("best_repair_variant"))
+    thresholds = _mapping(payload.get("repair_thresholds"))
+    blockers = []
+    if not path.exists():
+        blockers.append("btc_intraday_short_cycle_event_definition_repair_report_missing")
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "repair_scan_completed": bool(payload.get("repair_scan_completed", False)),
+        "repair_screen_is_promotion_evidence": bool(payload.get("repair_screen_is_promotion_evidence", False)),
+        "full_event_ledger_retest_required": bool(payload.get("full_event_ledger_retest_required", True)),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "best_variant_id": str(best.get("variant_id", "")),
+        "best_trade_count": int(best.get("trade_count", 0) or 0),
+        "best_profit_factor": _float_or_none(best.get("profit_factor")),
+        "best_median_net_pnl": _float_or_none(best.get("median_net_pnl")),
+        "best_regime_pass_rate": _float_or_none(best.get("regime_pass_rate")),
+        "best_tail_dependency_pass": bool(best.get("tail_dependency_pass", False)),
+        "best_repair_screen_pass": bool(best.get("repair_screen_pass", False)),
+        "variant_count": len(payload.get("variant_results", []))
+        if isinstance(payload.get("variant_results"), list)
+        else 0,
+        "min_trade_count": int(thresholds.get("min_trade_count", 0) or 0),
+        "blockers": _merge(blockers),
+    }
+
+
+def _intraday_short_cycle_repaired_event_ledger_status(root: Path) -> dict[str, Any]:
+    return _intraday_short_cycle_variant_event_ledger_status(
+        root,
+        path=BTC_INTRADAY_SHORT_CYCLE_REPAIRED_EVENT_LEDGER,
+        missing_blocker="btc_intraday_short_cycle_repaired_event_ledger_report_missing",
+    )
+
+
+def _intraday_short_cycle_drift_guarded_event_ledger_status(root: Path) -> dict[str, Any]:
+    return _intraday_short_cycle_variant_event_ledger_status(
+        root,
+        path=BTC_INTRADAY_SHORT_CYCLE_DRIFT_GUARDED_EVENT_LEDGER,
+        missing_blocker="btc_intraday_short_cycle_drift_guarded_event_ledger_report_missing",
+    )
+
+
+def _intraday_short_cycle_promotion_gate_status(root: Path) -> dict[str, Any]:
+    path = root / BTC_INTRADAY_SHORT_CYCLE_PROMOTION_GATE
+    payload = _read_json(path)
+    metrics = _mapping(payload.get("metrics"))
+    gate = _mapping(payload.get("gate"))
+    checks = _mapping(payload.get("checks"))
+    manifest = _mapping(payload.get("manifest"))
+    blockers = []
+    if not path.exists():
+        blockers.append("btc_intraday_short_cycle_promotion_gate_report_missing")
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "manual_candidate_review_allowed": bool(payload.get("manual_candidate_review_allowed", False)),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "strategy_id": str(payload.get("strategy_id", "")),
+        "variant_id": str(payload.get("variant_id", "")),
+        "family_id": str(payload.get("family_id", "")),
+        "trade_count": int(metrics.get("trade_count", 0) or 0),
+        "fill_count": int(metrics.get("fill_count", 0) or 0),
+        "profit_factor": _float_or_none(metrics.get("profit_factor")),
+        "event_profit_factor": _float_or_none(metrics.get("event_profit_factor")),
+        "walk_forward_pass_rate": _float_or_none(metrics.get("walk_forward_pass_rate")),
+        "regime_pass_rate": _float_or_none(metrics.get("regime_pass_rate")),
+        "gate_passed": bool(gate.get("passed", False)),
+        "gate_status": str(gate.get("status", "")),
+        "manifest_data_version_present": bool(checks.get("manifest_data_version_present", False)),
+        "manifest_strategy_version_present": bool(checks.get("manifest_strategy_version_present", False)),
+        "manifest_params_present": bool(checks.get("manifest_params_present", False)) and bool(_mapping(manifest.get("params"))),
+        "manifest_cost_model_present": bool(checks.get("manifest_cost_model_present", False)),
+        "manifest_slippage_model_present": bool(checks.get("manifest_slippage_model_present", False)),
+        "manifest_commit_hash_present": bool(checks.get("manifest_commit_hash_present", False)),
+        "private_order_broker_paths_locked": bool(checks.get("private_order_broker_paths_locked", False)),
+        "paper_live_still_locked": bool(checks.get("paper_live_still_locked", False)),
+        "true_scalping_still_locked": bool(checks.get("true_scalping_still_locked", False)),
+        "blockers": _merge(blockers),
+    }
+
+
+def _intraday_short_cycle_manual_review_packet_status(root: Path) -> dict[str, Any]:
+    path = root / BTC_INTRADAY_SHORT_CYCLE_MANUAL_REVIEW_PACKET
+    payload = _read_json(path)
+    subject = _mapping(payload.get("review_subject"))
+    approval = _mapping(payload.get("approval"))
+    approval_detail = _mapping(approval.get("approval"))
+    blockers = []
+    if not path.exists():
+        blockers.append("btc_intraday_short_cycle_manual_review_packet_missing")
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "review_id": str(payload.get("review_id", "")),
+        "strategy_id": str(subject.get("strategy_id", "")),
+        "variant_id": str(subject.get("variant_id", "")),
+        "family_id": str(subject.get("family_id", "")),
+        "manual_review_packet_ready": bool(payload.get("manual_review_packet_ready", False)),
+        "recorded_manual_review_approved": bool(payload.get("recorded_manual_review_approved", False)),
+        "research_candidate_definition_allowed": bool(payload.get("research_candidate_definition_allowed", False)),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "approval_path": str(approval.get("path", "")),
+        "approval_exists": bool(approval.get("exists", False)),
+        "approval_status": str(approval.get("status", "missing") or "missing"),
+        "approval_valid": bool(approval_detail.get("valid", False)),
+        "approval_source_sha256": str(approval_detail.get("source_sha256", "")),
+        "blockers": _merge(blockers),
+    }
+
+
+def _intraday_short_cycle_research_candidate_definition_preflight_status(root: Path) -> dict[str, Any]:
+    path = root / BTC_INTRADAY_SHORT_CYCLE_RESEARCH_CANDIDATE_DEFINITION_PREFLIGHT
+    payload = _read_json(path)
+    subject = _mapping(payload.get("review_subject"))
+    blueprint = _mapping(payload.get("candidate_definition_blueprint"))
+    checks = _mapping(payload.get("checks"))
+    blockers = []
+    if not path.exists():
+        blockers.append("btc_intraday_short_cycle_research_candidate_definition_preflight_missing")
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "strategy_id": str(subject.get("strategy_id", "")),
+        "variant_id": str(subject.get("variant_id", "")),
+        "family_id": str(subject.get("family_id", "")),
+        "candidate_id": str(blueprint.get("candidate_id", "")),
+        "research_candidate_definition_manifest_allowed": bool(
+            payload.get("research_candidate_definition_manifest_allowed", False)
+        ),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "manual_review_packet_approved": bool(checks.get("manual_review_packet_approved", False)),
+        "recorded_manual_review_approved": bool(checks.get("recorded_manual_review_approved", False)),
+        "broker_private_order_paths_locked": bool(checks.get("broker_private_order_paths_locked", False)),
+        "paper_live_still_locked": bool(checks.get("paper_live_still_locked", False)),
+        "true_scalping_still_locked": bool(checks.get("true_scalping_still_locked", False)),
+        "blockers": _merge(blockers),
+    }
+
+
+def _intraday_short_cycle_research_candidate_definition_manifest_status(root: Path) -> dict[str, Any]:
+    path = root / BTC_INTRADAY_SHORT_CYCLE_RESEARCH_CANDIDATE_DEFINITION_MANIFEST
+    payload = _read_json(path)
+    definition = _mapping(payload.get("candidate_definition"))
+    checks = _mapping(payload.get("checks"))
+    summary = _mapping(payload.get("remaining_blocker_summary"))
+    remaining = _list_of_mappings(payload.get("remaining_manual_or_external_blockers"))
+    blockers = []
+    if not path.exists():
+        blockers.append("btc_intraday_short_cycle_research_candidate_definition_manifest_missing")
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "strategy_id": str(definition.get("strategy_id", "")),
+        "variant_id": str(definition.get("variant_id", "")),
+        "family_id": str(definition.get("family_id", "")),
+        "candidate_id": str(definition.get("candidate_id", "")),
+        "research_candidate_definition_manifest_ready": bool(
+            payload.get("research_candidate_definition_manifest_ready", False)
+        ),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "preflight_ready_for_definition_manifest": bool(
+            checks.get("preflight_ready_for_definition_manifest", False)
+        ),
+        "manual_review_packet_approved": bool(checks.get("manual_review_packet_approved", False)),
+        "recorded_manual_review_approved": bool(checks.get("recorded_manual_review_approved", False)),
+        "broker_private_order_paths_locked": bool(checks.get("broker_private_order_paths_locked", False)),
+        "paper_live_still_locked": bool(checks.get("paper_live_still_locked", False)),
+        "true_scalping_still_locked": bool(checks.get("true_scalping_still_locked", False)),
+        "only_manual_or_external_blockers_remain": bool(
+            summary.get("only_manual_or_external_blockers_remain", False)
+        ),
+        "automated_engineering_blockers": _list_of_strings(summary.get("automated_engineering_blockers")),
+        "remaining_manual_or_external_blockers": [
+            str(item.get("blocker", "")) for item in remaining if str(item.get("blocker", ""))
+        ],
+        "remaining_manual_or_external_categories": _dedupe(
+            [str(item.get("category", "")) for item in remaining if str(item.get("category", ""))]
+        ),
+        "blockers": _merge(blockers),
+    }
+
+
+def _intraday_short_cycle_remaining_external_evidence_status(root: Path) -> dict[str, Any]:
+    path = root / BTC_INTRADAY_SHORT_CYCLE_REMAINING_EXTERNAL_EVIDENCE_STATUS
+    payload = _read_json(path)
+    definition = _mapping(payload.get("candidate_definition"))
+    checks = _mapping(payload.get("checks"))
+    summary = _mapping(payload.get("remaining_blocker_summary"))
+    blockers = []
+    if not path.exists():
+        blockers.append("btc_intraday_short_cycle_remaining_external_evidence_status_missing")
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "strategy_id": str(definition.get("strategy_id", "")),
+        "variant_id": str(definition.get("variant_id", "")),
+        "family_id": str(definition.get("family_id", "")),
+        "candidate_id": str(definition.get("candidate_id", "")),
+        "manual_approval_satisfied": bool(checks.get("manual_approval_satisfied", False)),
+        "research_candidate_definition_manifest_ready": bool(
+            checks.get("research_candidate_definition_manifest_ready", False)
+        ),
+        "only_external_evidence_blockers_remain": bool(
+            summary.get("only_external_evidence_blockers_remain", False)
+        ),
+        "automated_engineering_blockers": _list_of_strings(summary.get("automated_engineering_blockers")),
+        "remaining_external_evidence_categories": _list_of_strings(
+            payload.get("remaining_external_evidence_categories")
+        ),
+        "remaining_external_evidence_blockers": _list_of_strings(payload.get("remaining_external_evidence_blockers")),
+        "ws_l2_coverage_contract_satisfied": bool(checks.get("ws_l2_coverage_contract_satisfied", False)),
+        "ws_proxy_diagnostics_ready": bool(checks.get("ws_proxy_diagnostics_ready", False)),
+        "execution_queue_external_evidence_contract_satisfied": bool(
+            checks.get("execution_queue_external_evidence_contract_satisfied", False)
+        ),
+        "execution_latency_evidence_contract_satisfied": bool(
+            checks.get("execution_latency_evidence_contract_satisfied", False)
+        ),
+        "queue_position_evidence_contract_satisfied": bool(
+            checks.get("queue_position_evidence_contract_satisfied", False)
+        ),
+        "private_order_execution_latency_model_ready": bool(
+            checks.get("private_order_execution_latency_model_ready", False)
+        ),
+        "exchange_queue_position_model_ready": bool(checks.get("exchange_queue_position_model_ready", False)),
+        "paper_gate_ready": bool(checks.get("paper_gate_ready", False)),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "blockers": _merge(blockers),
+    }
+
+
+def _intraday_short_cycle_variant_event_ledger_status(
+    root: Path,
+    *,
+    path: Path,
+    missing_blocker: str,
+) -> dict[str, Any]:
+    path = root / path
+    payload = _read_json(path)
+    metrics = _mapping(payload.get("metrics"))
+    gate = _mapping(payload.get("gate"))
+    event_definition = _mapping(payload.get("event_definition"))
+    entry_filters = _mapping(event_definition.get("entry_filters"))
+    cost = _mapping(payload.get("cost_context"))
+    tail = _mapping(payload.get("tail_dependency"))
+    blockers = []
+    if not path.exists():
+        blockers.append(missing_blocker)
+    blockers.extend(_list_of_strings(payload.get("blockers")))
+    return {
+        "status": str(payload.get("status", "missing") or "missing"),
+        "report_path": _relpath(path, root) if path.exists() else None,
+        "decision": str(payload.get("decision", "")),
+        "next_required_action": str(payload.get("next_required_action", "")),
+        "event_ledger_completed": bool(payload.get("event_ledger_completed", False)),
+        "source_event_definition_repair_report": payload.get("source_event_definition_repair_report"),
+        "candidate_generation_allowed": bool(payload.get("candidate_generation_allowed", False)),
+        "strategy_skeleton_generation_allowed": bool(payload.get("strategy_skeleton_generation_allowed", False)),
+        "promotion_allowed": bool(payload.get("promotion_allowed", False)),
+        "paper_review_pending_allowed": bool(payload.get("paper_review_pending_allowed", False)),
+        "paper_or_live_unlock_allowed": bool(payload.get("paper_or_live_unlock_allowed", False)),
+        "true_scalping_allowed": bool(payload.get("true_scalping_allowed", False)),
+        "variant_id": str(payload.get("variant_id", "")),
+        "family_id": str(payload.get("family_id", "")),
+        "allowed_regimes": _list_of_strings(entry_filters.get("allowed_regimes")),
+        "volatility_states": _list_of_strings(entry_filters.get("volatility_states")),
+        "min_trend_by_regime": {
+            str(key): float(value)
+            for key, value in _mapping(entry_filters.get("min_trend_by_regime")).items()
+        },
+        "event_count": int(event_definition.get("event_count", 0) or 0),
+        "trade_count": int(metrics.get("trade_count", 0) or 0),
+        "fill_count": int(metrics.get("fill_count", 0) or 0),
+        "profit_factor": _float_or_none(metrics.get("profit_factor")),
+        "event_profit_factor": _float_or_none(metrics.get("event_profit_factor")),
+        "walk_forward_pass_rate": _float_or_none(metrics.get("walk_forward_pass_rate")),
+        "regime_pass_rate": _float_or_none(metrics.get("regime_pass_rate")),
+        "tail_dependency_status": str(tail.get("status", "")),
+        "gate_passed": bool(gate.get("passed", False)),
+        "gate_status": str(gate.get("status", "")),
+        "failed_metrics": _list_of_strings(payload.get("failed_metrics")),
+        "stress_scenario_count": int(cost.get("stress_scenario_count", 0) or 0),
+        "required_scenarios_present": bool(cost.get("required_scenarios_present", False)),
+        "blockers": _merge(blockers),
+    }
+
+
 def _repair_action_summaries(value: object) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         return []
@@ -882,6 +1357,20 @@ def _list_of_strings(value: object) -> list[str]:
     if not isinstance(value, list):
         return []
     return [str(item) for item in value if str(item)]
+
+
+def _list_of_mappings(value: object) -> list[Mapping[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, Mapping)]
+
+
+def _dedupe(items: list[str]) -> list[str]:
+    result = []
+    for item in items:
+        if item and item not in result:
+            result.append(item)
+    return result
 
 
 def _list_of_ints(value: object) -> list[int]:

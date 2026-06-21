@@ -1,0 +1,158 @@
+{
+  "adapter_contract": {
+    "adapter_code_enabled": true,
+    "adapter_enabled": false,
+    "adapter_factory_present": false,
+    "adapter_ready": false,
+    "allowed_base_urls": [
+      "https://paper-api.alpaca.markets"
+    ],
+    "approved_evidence": true,
+    "base_url_valid": false,
+    "capabilities": {
+      "cancel_order": true,
+      "poll_orders": true,
+      "readiness_report": true,
+      "submit_order": true,
+      "sync_account": true,
+      "sync_fills": true,
+      "sync_positions": true
+    },
+    "contract_version": "paper_adapter_contract_v4",
+    "credentials_present": true,
+    "dry_run_no_submit_proof_required": false,
+    "effective_backend": "simulated",
+    "endpoint_kind": "unset",
+    "env_requested": false,
+    "explicit_paper_submit_gate_required": false,
+    "fail_closed": false,
+    "read_only_sync_capable": false,
+    "readiness_reasons": [],
+    "reason": "simulated_paper_backend",
+    "requested_backend": "simulated",
+    "submit_blocked_reason": "",
+    "submit_capable": false
+  },
+  "allow_live_orders": false,
+  "artifact_path": "data/paper_ledger/audit/paper_session_manifest.json",
+  "artifact_type": "paper_session_manifest",
+  "artifact_version": "paper_session_manifest_v1",
+  "broker_backend": "simulated",
+  "broker_state_recovery_status": {
+    "artifact_path": "data/paper_ledger/audit/paper_broker_state_recovery.json",
+    "broker_state_restored": true,
+    "broker_state_verified": true,
+    "operationally_complete": true,
+    "resume_detected": true,
+    "status": "restored"
+  },
+  "canonical_runtime": "PaperRuntime",
+  "created_at": "2026-05-10T05:04:59.119544+00:00",
+  "explicit_paper_submit": false,
+  "halt_reconciliation": false,
+  "history_artifact_path": "data/paper_ledger/audit/paper_session_manifests/paper_session_89e46644d54741e6.json",
+  "market_data_symbols_evidence": {
+    "bar_size": "1m",
+    "cache_pattern": "raw/vendor={source}/asset_class=equity/bar_size={bar_size}/symbol={symbol}/date=*.parquet",
+    "data_root": "data",
+    "source": "yfinance",
+    "symbols": [
+      "SPY",
+      "QQQ"
+    ]
+  },
+  "mode": "paper",
+  "no_real_order_submission_proof": {
+    "allow_live_orders": false,
+    "broker_backend": "simulated",
+    "canonical_runtime": "PaperRuntime",
+    "mode": "paper",
+    "real_broker_backend": false,
+    "real_order_submission": false,
+    "startup_sync_no_submit": true,
+    "startup_sync_submit_call_count_delta": null,
+    "status": "PASS",
+    "submit_order_path": "disabled",
+    "submit_orders": false
+  },
+  "paper_broker": "simulated",
+  "portfolio": {
+    "cash_reserve_weight": 0.05,
+    "max_daily_turnover": 1.0,
+    "max_gross_exposure": 0.95,
+    "max_symbol_weight": 0.1,
+    "portfolio_id": "portfolio",
+    "strategy_weights": {
+      "short_reversion": 0.2,
+      "trend_macd": 0.25,
+      "trend_momentum": 0.35,
+      "volatility_squeeze": 0.2
+    }
+  },
+  "reduce_only": false,
+  "registry_evidence": {
+    "allowed": true,
+    "evidence_id": "",
+    "evidence_pack_path": "",
+    "path": "",
+    "reason": "not_required_for_simulated_paper_backend",
+    "registry_integrity_status": "not_required",
+    "registry_path": "data/research/evidence_registry.json",
+    "registry_status": "not_required",
+    "required": false
+  },
+  "registry_evidence_id": "",
+  "registry_evidence_path": "",
+  "runtime_mode": "paper",
+  "session_id": "paper_session_89e46644d54741e6",
+  "startup_sync_status": {
+    "artifact_path": "",
+    "no_submit": true,
+    "reason": "non_alpaca_paper_backend",
+    "status": "skipped"
+  },
+  "strategies": [
+    {
+      "class": "CompositeStrategy",
+      "strategy_id": "trend_momentum",
+      "timeframe": "1d",
+      "version": "",
+      "weight": 0.35
+    },
+    {
+      "class": "CompositeStrategy",
+      "strategy_id": "trend_macd",
+      "timeframe": "1d",
+      "version": "",
+      "weight": 0.25
+    },
+    {
+      "class": "CompositeStrategy",
+      "strategy_id": "short_reversion",
+      "timeframe": "1d",
+      "version": "",
+      "weight": 0.2
+    },
+    {
+      "class": "CompositeStrategy",
+      "strategy_id": "volatility_squeeze",
+      "timeframe": "1d",
+      "version": "",
+      "weight": 0.2
+    }
+  ],
+  "strategy_id": "portfolio",
+  "strategy_ids": [
+    "portfolio",
+    "trend_momentum",
+    "trend_macd",
+    "short_reversion",
+    "volatility_squeeze",
+    "multi_strategy"
+  ],
+  "submit_orders": false,
+  "symbols": [
+    "SPY",
+    "QQQ"
+  ]
+}

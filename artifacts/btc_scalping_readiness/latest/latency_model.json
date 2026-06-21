@@ -1,0 +1,33 @@
+{
+  "asset": "btc",
+  "blockers": [],
+  "duration_ms": {
+    "max": 306.8702749442309,
+    "mean": 292.87977248895913,
+    "median": 292.87977248895913,
+    "min": 278.88927003368735
+  },
+  "evidence_grade": "public_rest_market_data_latency_research_only",
+  "generated_at": "2026-06-20T16:34:01.887761+00:00",
+  "latency_scope": "public_rest_market_data_observation_not_order_latency",
+  "model_id": "btc_okx_public_rest_latency_model_v1",
+  "model_type": "latency_model",
+  "paper_or_live_usable": false,
+  "private_order_latency_verified": false,
+  "production_ready": false,
+  "sample_count": 2,
+  "samples": [
+    {
+      "duration_ms": 306.8702749442309,
+      "endpoint": "/api/v5/market/history-trades"
+    },
+    {
+      "duration_ms": 278.88927003368735,
+      "endpoint": "/api/v5/market/books"
+    }
+  ],
+  "schema_version": "btc_true_scalping_microstructure_model_v1",
+  "source_file": "artifacts/btc_scalping_readiness/latest/btc_okx_microstructure_capture_report.json",
+  "status": "pass",
+  "symbol": "BTCUSDT"
+}

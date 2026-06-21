@@ -1,0 +1,380 @@
+{
+  "asset": "btc",
+  "base_failure_context": {
+    "blockers": [
+      "btc_intraday_event_ledger_gate_failed_regime_pass_rate",
+      "btc_intraday_tail_dependency_right_tail_concentrated",
+      "btc_intraday_event_ledger_candidate_generation_locked_pending_review",
+      "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+      "btc_intraday_event_ledger_paper_live_locked"
+    ],
+    "decision": "return_to_event_definition",
+    "failed_metrics": [
+      "regime_pass_rate"
+    ],
+    "regime_pass_rate": 0.333333,
+    "status": "event_ledger_completed_research_only",
+    "tail_dependency_status": "fail"
+  },
+  "best_repair_variant": {
+    "blockers": [],
+    "description": "Require high realized-volatility state and exclude expansion/trending_down entry regimes.",
+    "filters": {
+      "allowed_regimes": [
+        "high_vol_trend",
+        "mean_reverting_chop",
+        "trending_up"
+      ],
+      "volatility_states": [
+        "high_vol"
+      ]
+    },
+    "full_event_ledger_retest_required": true,
+    "hit_rate": 0.533981,
+    "mean_net_pnl": 13.033451,
+    "median_net_pnl": 2.371603,
+    "net_pnl": 1342.44543,
+    "profit_factor": 1.859701,
+    "regime_breakdown": [
+      {
+        "median_net_pnl": 4.159844,
+        "net_pnl": 157.309764,
+        "passed": true,
+        "profit_factor": 12.158595,
+        "regime": "mean_reverting_chop",
+        "trade_count": 8
+      },
+      {
+        "median_net_pnl": 8.864861,
+        "net_pnl": 382.92344,
+        "passed": true,
+        "profit_factor": 5.244219,
+        "regime": "trending_up",
+        "trade_count": 22
+      },
+      {
+        "median_net_pnl": -0.694176,
+        "net_pnl": 802.212226,
+        "passed": true,
+        "profit_factor": 1.550514,
+        "regime": "high_vol_trend",
+        "trade_count": 73
+      }
+    ],
+    "regime_pass_rate": 1.0,
+    "repair_screen_is_promotion_evidence": false,
+    "repair_screen_pass": true,
+    "tail_dependency_pass": true,
+    "top5_positive_share": 0.333214,
+    "top_decile_positive_share": 0.516276,
+    "trade_count": 103,
+    "variant_id": "high_vol_non_expansion_repair_v1"
+  },
+  "blockers": [
+    "btc_intraday_event_ledger_gate_failed_regime_pass_rate",
+    "btc_intraday_tail_dependency_right_tail_concentrated",
+    "btc_intraday_event_ledger_candidate_generation_locked_pending_review",
+    "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+    "btc_intraday_event_ledger_paper_live_locked",
+    "btc_intraday_repair_full_event_ledger_retest_required",
+    "btc_intraday_repair_candidate_generation_locked",
+    "btc_intraday_repair_paper_live_locked"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "decision": "run_full_event_ledger_retest_for_repaired_definition",
+  "full_event_ledger_retest_required": true,
+  "generated_at": "2026-06-21T03:21:15Z",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "candidate_generation_allowed": false,
+    "full_event_ledger_retest_required": true,
+    "order_endpoints_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoints_allowed": false,
+    "repair_screen_is_promotion_evidence": false,
+    "research_only": true,
+    "strategy_skeleton_generation_allowed": false,
+    "sub_minute_or_tick_scalping_allowed": false,
+    "true_scalping_allowed": false
+  },
+  "next_required_action": "run_research_only_event_ledger_retest_for_high_vol_non_expansion_repair_v1",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "repair_scan_completed": true,
+  "repair_screen_is_promotion_evidence": false,
+  "repair_thresholds": {
+    "max_top5_positive_share": 0.5,
+    "max_top_decile_positive_share": 0.75,
+    "min_median_net_pnl": 0.0,
+    "min_profit_factor": 1.15,
+    "min_regime_pass_rate": 0.75,
+    "min_trade_count": 50
+  },
+  "schema_version": "btc_intraday_short_cycle_event_definition_repair_report_v1",
+  "scope": "research_only_event_definition_repair_no_candidate_no_paper_no_live",
+  "source_event_ledger_report": "artifacts/btc_candidate_gate/latest/btc_intraday_short_cycle_event_ledger_report.json",
+  "source_trade_attribution": "artifacts/btc_intraday_event_ledger/20260620T000000Z_pullback_reclaim_intraday_eventledger/trade_attribution.csv",
+  "source_trade_ledger": "artifacts/btc_intraday_event_ledger/20260620T000000Z_pullback_reclaim_intraday_eventledger/trade_ledger.csv",
+  "status": "repair_candidate_identified_retest_required",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false,
+  "variant_results": [
+    {
+      "blockers": [],
+      "description": "Require high realized-volatility state and exclude expansion/trending_down entry regimes.",
+      "filters": {
+        "allowed_regimes": [
+          "high_vol_trend",
+          "mean_reverting_chop",
+          "trending_up"
+        ],
+        "volatility_states": [
+          "high_vol"
+        ]
+      },
+      "full_event_ledger_retest_required": true,
+      "hit_rate": 0.533981,
+      "mean_net_pnl": 13.033451,
+      "median_net_pnl": 2.371603,
+      "net_pnl": 1342.44543,
+      "profit_factor": 1.859701,
+      "regime_breakdown": [
+        {
+          "median_net_pnl": 4.159844,
+          "net_pnl": 157.309764,
+          "passed": true,
+          "profit_factor": 12.158595,
+          "regime": "mean_reverting_chop",
+          "trade_count": 8
+        },
+        {
+          "median_net_pnl": 8.864861,
+          "net_pnl": 382.92344,
+          "passed": true,
+          "profit_factor": 5.244219,
+          "regime": "trending_up",
+          "trade_count": 22
+        },
+        {
+          "median_net_pnl": -0.694176,
+          "net_pnl": 802.212226,
+          "passed": true,
+          "profit_factor": 1.550514,
+          "regime": "high_vol_trend",
+          "trade_count": 73
+        }
+      ],
+      "regime_pass_rate": 1.0,
+      "repair_screen_is_promotion_evidence": false,
+      "repair_screen_pass": true,
+      "tail_dependency_pass": true,
+      "top5_positive_share": 0.333214,
+      "top_decile_positive_share": 0.516276,
+      "trade_count": 103,
+      "variant_id": "high_vol_non_expansion_repair_v1"
+    },
+    {
+      "blockers": [
+        "repair_regime_pass_rate_below_threshold"
+      ],
+      "description": "Require high realized-volatility state only.",
+      "filters": {
+        "allowed_regimes": [],
+        "volatility_states": [
+          "high_vol"
+        ]
+      },
+      "full_event_ledger_retest_required": true,
+      "hit_rate": 0.52,
+      "mean_net_pnl": 6.030656,
+      "median_net_pnl": 0.302307,
+      "net_pnl": 904.598461,
+      "profit_factor": 1.328334,
+      "regime_breakdown": [
+        {
+          "median_net_pnl": -0.196603,
+          "net_pnl": -437.617587,
+          "passed": false,
+          "profit_factor": 0.633289,
+          "regime": "expansion",
+          "trade_count": 46
+        },
+        {
+          "median_net_pnl": -0.229382,
+          "net_pnl": -0.229382,
+          "passed": false,
+          "profit_factor": 0.0,
+          "regime": "trending_down",
+          "trade_count": 1
+        },
+        {
+          "median_net_pnl": 4.159844,
+          "net_pnl": 157.309764,
+          "passed": true,
+          "profit_factor": 12.158595,
+          "regime": "mean_reverting_chop",
+          "trade_count": 8
+        },
+        {
+          "median_net_pnl": 8.864861,
+          "net_pnl": 382.92344,
+          "passed": true,
+          "profit_factor": 5.244219,
+          "regime": "trending_up",
+          "trade_count": 22
+        },
+        {
+          "median_net_pnl": -0.694176,
+          "net_pnl": 802.212226,
+          "passed": true,
+          "profit_factor": 1.550514,
+          "regime": "high_vol_trend",
+          "trade_count": 73
+        }
+      ],
+      "regime_pass_rate": 0.6,
+      "repair_screen_is_promotion_evidence": false,
+      "repair_screen_pass": false,
+      "tail_dependency_pass": true,
+      "top5_positive_share": 0.264763,
+      "top_decile_positive_share": 0.542816,
+      "trade_count": 150,
+      "variant_id": "high_vol_all_regimes_repair_v1"
+    },
+    {
+      "blockers": [
+        "repair_trade_count_below_threshold",
+        "repair_tail_dependency_not_pass"
+      ],
+      "description": "Keep only trending_up regime entries.",
+      "filters": {
+        "allowed_regimes": [
+          "trending_up"
+        ],
+        "volatility_states": []
+      },
+      "full_event_ledger_retest_required": true,
+      "hit_rate": 0.586207,
+      "mean_net_pnl": 9.861166,
+      "median_net_pnl": 2.779502,
+      "net_pnl": 285.973827,
+      "profit_factor": 2.357,
+      "regime_breakdown": [
+        {
+          "median_net_pnl": 2.779502,
+          "net_pnl": 285.973827,
+          "passed": true,
+          "profit_factor": 2.357,
+          "regime": "trending_up",
+          "trade_count": 29
+        }
+      ],
+      "regime_pass_rate": 1.0,
+      "repair_screen_is_promotion_evidence": false,
+      "repair_screen_pass": false,
+      "tail_dependency_pass": false,
+      "top5_positive_share": 0.621459,
+      "top_decile_positive_share": 0.31906,
+      "trade_count": 29,
+      "variant_id": "trending_up_only_repair_v1"
+    },
+    {
+      "blockers": [
+        "repair_trade_count_below_threshold",
+        "repair_tail_dependency_not_pass"
+      ],
+      "description": "Require high realized-volatility state and trending_up entries.",
+      "filters": {
+        "allowed_regimes": [
+          "trending_up"
+        ],
+        "volatility_states": [
+          "high_vol"
+        ]
+      },
+      "full_event_ledger_retest_required": true,
+      "hit_rate": 0.727273,
+      "mean_net_pnl": 17.405611,
+      "median_net_pnl": 8.864861,
+      "net_pnl": 382.92344,
+      "profit_factor": 5.244219,
+      "regime_breakdown": [
+        {
+          "median_net_pnl": 8.864861,
+          "net_pnl": 382.92344,
+          "passed": true,
+          "profit_factor": 5.244219,
+          "regime": "trending_up",
+          "trade_count": 22
+        }
+      ],
+      "regime_pass_rate": 1.0,
+      "repair_screen_is_promotion_evidence": false,
+      "repair_screen_pass": false,
+      "tail_dependency_pass": false,
+      "top5_positive_share": 0.652414,
+      "top_decile_positive_share": 0.334952,
+      "trade_count": 22,
+      "variant_id": "high_vol_trending_up_only_repair_v1"
+    },
+    {
+      "blockers": [
+        "repair_median_net_pnl_below_threshold",
+        "repair_tail_dependency_not_pass"
+      ],
+      "description": "Exclude expansion and trending_down regimes without volatility filtering.",
+      "filters": {
+        "allowed_regimes": [
+          "high_vol_trend",
+          "mean_reverting_chop",
+          "trending_up"
+        ],
+        "volatility_states": []
+      },
+      "full_event_ledger_retest_required": true,
+      "hit_rate": 0.5,
+      "mean_net_pnl": 9.278066,
+      "median_net_pnl": -0.048834,
+      "net_pnl": 1094.811758,
+      "profit_factor": 1.565888,
+      "regime_breakdown": [
+        {
+          "median_net_pnl": 0.17919,
+          "net_pnl": 24.063899,
+          "passed": true,
+          "profit_factor": 1.096527,
+          "regime": "mean_reverting_chop",
+          "trade_count": 15
+        },
+        {
+          "median_net_pnl": 2.779502,
+          "net_pnl": 285.973827,
+          "passed": true,
+          "profit_factor": 2.357,
+          "regime": "trending_up",
+          "trade_count": 29
+        },
+        {
+          "median_net_pnl": -1.729555,
+          "net_pnl": 784.774032,
+          "passed": true,
+          "profit_factor": 1.532178,
+          "regime": "high_vol_trend",
+          "trade_count": 74
+        }
+      ],
+      "regime_pass_rate": 1.0,
+      "repair_screen_is_promotion_evidence": false,
+      "repair_screen_pass": false,
+      "tail_dependency_pass": false,
+      "top5_positive_share": 0.319408,
+      "top_decile_positive_share": 0.526691,
+      "trade_count": 118,
+      "variant_id": "remove_expansion_down_repair_v1"
+    }
+  ]
+}

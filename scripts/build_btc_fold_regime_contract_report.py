@@ -11,7 +11,9 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
-DEFAULT_SOURCE_RUN_DIR = Path("artifacts/btc_candidate_validation/20260516T133000Z_compression_expansion_eventledger")
+DEFAULT_SOURCE_RUN_DIR = Path(
+    "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger"
+)
 DEFAULT_OUTPUT_ROOT = Path("artifacts/btc_fold_regime/latest")
 FOLD_DEFINITION_VERSION = "btc_walk_forward_fold_contract_v1"
 REGIME_CLASSIFIER_VERSION = "classify_btc_regimes_v1"

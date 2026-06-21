@@ -1,0 +1,175 @@
+{
+  "base": {
+    "engine": "event_driven",
+    "label": "10 bps taker round trip",
+    "ledger_equity_consistent": true,
+    "manifest_path": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/manifests/run_btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1_cost_base_10bps_taker_round_trip.json",
+    "name": "base_10bps_taker_round_trip",
+    "passed": true,
+    "pnl_source": "ledger_fills",
+    "required_type": "base_10bps",
+    "summary": {
+      "annual_return_pct": 23730699.2586,
+      "annual_volatility_pct": 52.6316,
+      "calmar_ratio": 13563461.1308,
+      "max_drawdown_pct": -1.7496,
+      "profit_factor": 1.4397,
+      "sharpe_ratio": 23.7805,
+      "sortino_ratio": 27.7443,
+      "total_return_pct": 3.7663,
+      "trade_count": 156,
+      "win_rate_pct": 54.3689
+    },
+    "survives": true
+  },
+  "harsh": {
+    "engine": "event_driven",
+    "label": "Conservative slippage",
+    "ledger_equity_consistent": true,
+    "manifest_path": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/manifests/run_btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1_cost_conservative_slippage_5bps_each_fill.json",
+    "name": "conservative_slippage_5bps_each_fill",
+    "passed": true,
+    "pnl_source": "ledger_fills",
+    "required_type": "conservative_slippage",
+    "summary": {
+      "annual_return_pct": 16428964.3321,
+      "annual_volatility_pct": 52.638,
+      "calmar_ratio": 9351834.3599,
+      "max_drawdown_pct": -1.7568,
+      "profit_factor": 1.4241,
+      "sharpe_ratio": 23.079,
+      "sortino_ratio": 27.0385,
+      "total_return_pct": 3.6524,
+      "trade_count": 156,
+      "win_rate_pct": 53.4426
+    },
+    "survives": true
+  },
+  "required_scenarios": [
+    "base_10bps",
+    "conservative_slippage",
+    "delayed_entry",
+    "double_taker",
+    "missed_fill"
+  ],
+  "required_scenarios_present": true,
+  "scenario_count": 5,
+  "scenarios": [
+    {
+      "engine": "event_driven",
+      "label": "10 bps taker round trip",
+      "ledger_equity_consistent": true,
+      "manifest_path": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/manifests/run_btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1_cost_base_10bps_taker_round_trip.json",
+      "name": "base_10bps_taker_round_trip",
+      "passed": true,
+      "pnl_source": "ledger_fills",
+      "required_type": "base_10bps",
+      "summary": {
+        "annual_return_pct": 23730699.2586,
+        "annual_volatility_pct": 52.6316,
+        "calmar_ratio": 13563461.1308,
+        "max_drawdown_pct": -1.7496,
+        "profit_factor": 1.4397,
+        "sharpe_ratio": 23.7805,
+        "sortino_ratio": 27.7443,
+        "total_return_pct": 3.7663,
+        "trade_count": 156,
+        "win_rate_pct": 54.3689
+      },
+      "survives": true
+    },
+    {
+      "engine": "event_driven",
+      "label": "Double taker cost",
+      "ledger_equity_consistent": true,
+      "manifest_path": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/manifests/run_btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1_cost_double_taker_20bps_round_trip.json",
+      "name": "double_taker_20bps_round_trip",
+      "passed": true,
+      "pnl_source": "ledger_fills",
+      "required_type": "double_taker",
+      "summary": {
+        "annual_return_pct": 16428971.7477,
+        "annual_volatility_pct": 52.638,
+        "calmar_ratio": 9351839.0427,
+        "max_drawdown_pct": -1.7568,
+        "profit_factor": 1.4241,
+        "sharpe_ratio": 23.079,
+        "sortino_ratio": 27.1156,
+        "total_return_pct": 3.6524,
+        "trade_count": 156,
+        "win_rate_pct": 53.7217
+      },
+      "survives": true
+    },
+    {
+      "engine": "event_driven",
+      "label": "Conservative slippage",
+      "ledger_equity_consistent": true,
+      "manifest_path": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/manifests/run_btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1_cost_conservative_slippage_5bps_each_fill.json",
+      "name": "conservative_slippage_5bps_each_fill",
+      "passed": true,
+      "pnl_source": "ledger_fills",
+      "required_type": "conservative_slippage",
+      "summary": {
+        "annual_return_pct": 16428964.3321,
+        "annual_volatility_pct": 52.638,
+        "calmar_ratio": 9351834.3599,
+        "max_drawdown_pct": -1.7568,
+        "profit_factor": 1.4241,
+        "sharpe_ratio": 23.079,
+        "sortino_ratio": 27.0385,
+        "total_return_pct": 3.6524,
+        "trade_count": 156,
+        "win_rate_pct": 53.4426
+      },
+      "survives": true
+    },
+    {
+      "engine": "event_driven",
+      "label": "Deterministic missed fills",
+      "ledger_equity_consistent": true,
+      "manifest_path": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/manifests/run_btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1_cost_missed_fill_every_fourth_entry.json",
+      "name": "missed_fill_every_fourth_entry",
+      "passed": true,
+      "pnl_source": "ledger_fills",
+      "required_type": "missed_fill",
+      "summary": {
+        "annual_return_pct": 15085363.6311,
+        "annual_volatility_pct": 70.4821,
+        "calmar_ratio": 8328203.7923,
+        "max_drawdown_pct": -1.8114,
+        "profit_factor": 1.3284,
+        "sharpe_ratio": 17.2698,
+        "sortino_ratio": 20.5443,
+        "total_return_pct": 2.7365,
+        "trade_count": 118,
+        "win_rate_pct": 55.794
+      },
+      "survives": true
+    },
+    {
+      "engine": "event_driven",
+      "label": "One-bar delayed entry and exit",
+      "ledger_equity_consistent": true,
+      "manifest_path": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/manifests/run_btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1_cost_delayed_entry_one_5m_bar.json",
+      "name": "delayed_entry_one_5m_bar",
+      "passed": true,
+      "pnl_source": "ledger_fills",
+      "required_type": "delayed_entry",
+      "summary": {
+        "annual_return_pct": 4046.0484,
+        "annual_volatility_pct": 70.1762,
+        "calmar_ratio": 1397.2932,
+        "max_drawdown_pct": -2.8956,
+        "profit_factor": 1.122,
+        "sharpe_ratio": 5.657,
+        "sortino_ratio": 6.1773,
+        "total_return_pct": 1.1188,
+        "trade_count": 156,
+        "win_rate_pct": 54.7855
+      },
+      "survives": true
+    }
+  ],
+  "survival_rate": 1.0
+}

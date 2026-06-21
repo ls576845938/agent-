@@ -1,0 +1,158 @@
+{
+  "asset": "btc",
+  "backtests": {
+    "five_minute_drift_guarded_intraday": {
+      "artifacts": {
+        "canonical_backtest_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/canonical_backtest_report.json",
+        "cost_stress_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/cost_stress_report.json",
+        "event_objects": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/event_objects.csv",
+        "promotion_decision": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/promotion_decision.json",
+        "regime_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/regime_report.json",
+        "run_manifest": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/run_manifest.json",
+        "tail_dependency_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/tail_dependency_report.json",
+        "trade_ledger": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/trade_ledger.csv",
+        "walk_forward_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/walk_forward_report.json"
+      },
+      "blockers": [
+        "btc_intraday_event_ledger_candidate_generation_locked_pending_review",
+        "btc_true_scalping_blocked_until_1m_tick_orderbook_spread_latency_queue_model",
+        "btc_intraday_event_ledger_paper_live_locked"
+      ],
+      "gate_passed": true,
+      "gate_status": "candidate_passed_internal_gate",
+      "label": "5m drift-guarded intraday scalping research",
+      "manifest": {
+        "complete": true,
+        "live": "FROZEN",
+        "paper_queue": "LOCKED",
+        "path": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/run_manifest.json",
+        "present": true,
+        "required_fields_present": {
+          "commit_hash": true,
+          "cost_model": true,
+          "data_version": true,
+          "params": true,
+          "slippage_model": true,
+          "strategy_version": true
+        }
+      },
+      "metrics": {
+        "fill_count": 156,
+        "max_drawdown": -1.7496,
+        "profit_factor": 2.647434,
+        "regime_pass_rate": 0.8,
+        "total_return_pct": 3.7663,
+        "trade_count": 78,
+        "walk_forward_pass_rate": 0.833333
+      },
+      "report_path": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/btc_intraday_short_cycle_drift_guarded_event_ledger_report.json",
+      "research_only_lock": {
+        "candidate_generation_allowed": false,
+        "paper_or_live_unlock_allowed": false,
+        "strategy_skeleton_generation_allowed": false,
+        "true_scalping_allowed": false
+      },
+      "run_dir": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger",
+      "scope": "research_only_event_ledger_no_candidate_no_paper_no_live_no_true_scalping",
+      "status": "event_ledger_passed_internal_research_gate_candidate_still_locked",
+      "strategy_id": "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1",
+      "timeframe": "5m",
+      "variant_id": "high_vol_non_expansion_trend_guard_repair_v1"
+    },
+    "one_minute_proxy_scalping": {
+      "artifacts": {
+        "event_objects": "artifacts/btc_scalping_event_ledger/latest/prototype_run/event_objects.csv",
+        "fill_ledger": "artifacts/btc_scalping_event_ledger/latest/prototype_run/fill_ledger.csv",
+        "run_manifest": "artifacts/btc_scalping_event_ledger/latest/prototype_run/run_manifest.json"
+      },
+      "blockers": [
+        "btc_true_scalping_event_ledger_gate_failed_profit_factor",
+        "btc_true_scalping_event_ledger_gate_failed_hit_rate",
+        "btc_true_scalping_event_ledger_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_event_ledger_candidate_generation_locked",
+        "btc_true_scalping_event_ledger_paper_live_locked"
+      ],
+      "gate_passed": false,
+      "gate_status": "candidate_gate_failed",
+      "label": "1m public microstructure proxy scalping",
+      "manifest": {
+        "complete": true,
+        "live": "FROZEN",
+        "paper_queue": "LOCKED",
+        "path": "artifacts/btc_scalping_event_ledger/latest/prototype_run/run_manifest.json",
+        "present": true,
+        "required_fields_present": {
+          "commit_hash": true,
+          "cost_model": true,
+          "data_version": true,
+          "params": true,
+          "slippage_model": true,
+          "strategy_version": true
+        }
+      },
+      "metrics": {
+        "event_count": 448,
+        "fill_count": 896,
+        "hit_rate": 0.30357142857142855,
+        "mean_trade_return_bps": -9.876537264205313,
+        "profit_factor": 0.3853317909627279,
+        "trade_count": 448
+      },
+      "report_path": null,
+      "research_only_lock": {
+        "candidate_generation_allowed": false,
+        "paper_or_live_unlock_allowed": false,
+        "strategy_skeleton_generation_allowed": false,
+        "true_scalping_allowed": false
+      },
+      "run_dir": "artifacts/btc_scalping_event_ledger/latest/prototype_run",
+      "scope": "research_only_1m_scalping_event_ledger_no_candidate_no_paper_no_live",
+      "status": "event_ledger_research_gate_failed",
+      "strategy_id": "btc_true_scalp_liquidity_reclaim_research_v0",
+      "timeframe": "1m",
+      "variant_id": "pullback_reclaim_1m_public_microstructure_proxy_v0"
+    }
+  },
+  "decision": "use_5m_drift_guarded_for_research_iteration_redesign_1m_proxy_scalping",
+  "generated_at": "2026-06-21T06:10:03Z",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "candidate_generation_allowed": false,
+    "live": "FROZEN",
+    "order_endpoints_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "paper_queue": "LOCKED",
+    "pnl_from_fill_or_trade_ledger": true,
+    "private_endpoints_allowed": false,
+    "real_orders_created": false,
+    "research_only": true,
+    "strategy_outputs_only": [
+      "Signal",
+      "OrderIntent",
+      "TargetPosition"
+    ]
+  },
+  "manifest_contract": {
+    "five_minute_drift_guarded_intraday_complete": true,
+    "one_minute_proxy_scalping_complete": true,
+    "required_fields": [
+      "data_version",
+      "strategy_version",
+      "params",
+      "cost_model",
+      "slippage_model",
+      "commit_hash"
+    ]
+  },
+  "next_required_action": "inspect_research_backtest_outputs_or_adjust_params_then_rerun",
+  "operator_summary": {
+    "current_research_answer": "5m drift-guarded BTC intraday research backtest is the usable research track now; 1m proxy scalping runs but fails after costs.",
+    "direct_command": "python3 scripts/run_btc_scalping_research_backtest.py",
+    "run_command": "make run-btc-scalping-research-backtest"
+  },
+  "recommended_research_track": "five_minute_drift_guarded_intraday",
+  "schema_version": "btc_scalping_research_backtest_report_v1",
+  "scope": "research_only_btc_scalping_backtest_no_candidate_no_paper_no_live",
+  "status": "research_backtest_completed",
+  "symbol": "BTCUSDT"
+}

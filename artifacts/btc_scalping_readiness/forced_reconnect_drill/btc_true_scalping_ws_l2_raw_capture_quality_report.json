@@ -1,0 +1,108 @@
+{
+  "asset": "btc",
+  "blockers": [
+    "btc_ws_l2_research_capture_duration_below_contract",
+    "btc_ws_l2_history_missing_for_event_ledger_window",
+    "btc_ws_l2_order_book_replay_not_validated",
+    "btc_execution_latency_model_missing_ws_receive_latency_is_not_execution_latency",
+    "btc_queue_model_missing_raw_l2_requires_replay_before_queue_proxy"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "capture_quality": {
+    "book_message_count": 26,
+    "capture_duration_seconds": 8.214919194,
+    "channel_counts": {
+      "books": 26,
+      "trades": 6
+    },
+    "data_message_count": 32,
+    "event_ledger_history_days": 9.508008326388888e-05,
+    "exchange_ts_observed": true,
+    "local_receive_timestamp_present": true,
+    "message_count": 40,
+    "minimum_event_ledger_history_days_satisfied": false,
+    "minimum_research_capture_seconds_satisfied": false,
+    "monotonic_order_pass": true,
+    "monotonic_timestamp_present": true,
+    "required_channels_observed": true,
+    "sequence_or_checksum_observed": true,
+    "trade_message_count": 6
+  },
+  "commit": "03cad6a",
+  "contract_satisfied": false,
+  "decision": "continue_public_ws_l2_capture_then_build_order_book_replay_and_resync_policy_before_true_scalping",
+  "event_ledger_feature_validation_allowed": false,
+  "format_contract_satisfied": true,
+  "generated_at": "2026-06-20T18:01:18.795149+00:00",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "future_label_used_for_signal": false,
+    "live": "FROZEN",
+    "lookahead_used_for_signal": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_usable": false,
+    "paper_queue": "LOCKED",
+    "private_endpoints_allowed": false,
+    "production_ready": false,
+    "real_orders_created": false,
+    "research_only": true
+  },
+  "next_required_action": "extend_public_ws_l2_capture_and_build_replay_resync_queue_latency_reports",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "schema_version": "btc_true_scalping_ws_l2_raw_capture_quality_report_v1",
+  "scope": "research_only_ws_l2_raw_capture_quality_no_candidate_no_paper_no_live",
+  "selected_bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1_ws_forced_reconnect_drill",
+  "source_files": {
+    "raw_capture_manifest": {
+      "exists": true,
+      "missing_fields": [],
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1_ws_forced_reconnect_drill/okx_public_ws_l2_raw_capture_manifest.json",
+      "public_channel_count": 2,
+      "public_data_only": true,
+      "required_fields_present": true,
+      "row_count": 1
+    },
+    "raw_messages": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1_ws_forced_reconnect_drill/okx_public_ws_l2_raw_messages.jsonl",
+      "required_fields_present": true,
+      "row_count": 40
+    }
+  },
+  "source_reports": {
+    "ws_capture_report": "artifacts/btc_scalping_readiness/forced_reconnect_drill/btc_okx_public_ws_l2_raw_capture_report.json"
+  },
+  "status": "ws_l2_raw_capture_format_verified_research_only_history_insufficient",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "thresholds": {
+    "minimum_data_messages": 1,
+    "minimum_event_ledger_history_days": 30,
+    "minimum_research_capture_seconds": 3600,
+    "required_channels": [
+      "trades",
+      "books"
+    ]
+  },
+  "true_scalping_allowed": false,
+  "validation": {
+    "capture_report_status": "verified_preflight",
+    "execution_latency_model_ready": false,
+    "files_ready": true,
+    "format_contract_satisfied": true,
+    "manifest_public_ws_only": true,
+    "minimum_event_ledger_history_days_satisfied": false,
+    "minimum_research_capture_seconds_satisfied": false,
+    "order_book_replay_ready": false,
+    "public_source_boundary_satisfied": true,
+    "queue_model_ready": false,
+    "raw_l2_capture_format_satisfied": true,
+    "raw_l2_sequence_or_checksum_observed": true,
+    "raw_message_timestamps_ready": true,
+    "required_channels_observed": true
+  },
+  "venue_symbol": "BTC-USDT-SWAP"
+}

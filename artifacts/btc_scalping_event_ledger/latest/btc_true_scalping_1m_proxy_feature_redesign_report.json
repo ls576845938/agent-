@@ -1,0 +1,767 @@
+{
+  "artifacts": {
+    "best_variant_event_objects": "artifacts/btc_scalping_event_ledger/latest/proxy_feature_redesign_run/best_variant_event_objects.csv",
+    "best_variant_fill_ledger": "artifacts/btc_scalping_event_ledger/latest/proxy_feature_redesign_run/best_variant_fill_ledger.csv",
+    "proxy_feature_redesign_manifest": "artifacts/btc_scalping_event_ledger/latest/proxy_feature_redesign_run/proxy_feature_redesign_manifest.json",
+    "variant_summary": "artifacts/btc_scalping_event_ledger/latest/proxy_feature_redesign_run/variant_summary.csv"
+  },
+  "asset": "btc",
+  "best_variant": {
+    "blockers": [
+      "btc_true_scalping_proxy_redesign_gate_failed_minimum_trade_count",
+      "btc_true_scalping_proxy_redesign_gate_failed_minimum_fill_count",
+      "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+      "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+      "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+      "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+    ],
+    "family": "long_absorption_reversal",
+    "gate": {
+      "checks": {
+        "hit_rate": false,
+        "mean_trade_return_bps": false,
+        "minimum_fill_count": false,
+        "minimum_trade_count": false,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": false,
+        "walk_forward_pass_rate": false
+      },
+      "passed": false,
+      "status": "candidate_gate_failed",
+      "thresholds": {
+        "hit_rate": 0.45,
+        "mean_trade_return_bps": 0.0,
+        "minimum_fill_count": 200,
+        "minimum_trade_count": 100,
+        "profit_factor": 1.1,
+        "walk_forward_pass_rate": 0.6
+      }
+    },
+    "metrics": {
+      "event_count": 80,
+      "fill_count": 160,
+      "gross_loss": 10766.3607148085,
+      "gross_profit": 6680.126399758563,
+      "hit_rate": 0.3125,
+      "mean_trade_return_bps": -4.7308780718017145,
+      "median_trade_return_bps": -10.605438327702064,
+      "net_pnl": -4086.2343150499364,
+      "pnl_from_fill_ledger": true,
+      "profit_factor": 0.6204628078799589,
+      "trade_count": 80
+    },
+    "params": {
+      "close_location_threshold": 0.7,
+      "hold_minutes": 2,
+      "min_gap_bars": 2,
+      "return_threshold": 0.004,
+      "volume_ratio_threshold": 1.5,
+      "wick_fraction_threshold": 0.45
+    },
+    "params_hash": "98c84ed7303b1673d0bdd3922a88a7a4eb1275319c52e3e83913989781c8fe04",
+    "side": "long",
+    "variant_id": "long_absorption_reversal_thr0p004_vol1p5_hold2_v1",
+    "walk_forward": {
+      "pass_count": 1,
+      "pass_rate": 0.3333333333333333,
+      "valid_fold_count": 3
+    }
+  },
+  "blockers": [
+    "btc_true_scalping_proxy_redesign_no_variant_passed_research_gate",
+    "btc_true_scalping_proxy_redesign_gate_failed_minimum_trade_count",
+    "btc_true_scalping_proxy_redesign_gate_failed_minimum_fill_count",
+    "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+    "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+    "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+    "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate",
+    "btc_true_scalping_proxy_redesign_not_true_l2_scalping",
+    "btc_true_scalping_proxy_redesign_candidate_generation_locked",
+    "btc_true_scalping_proxy_redesign_paper_live_locked"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "data_context": {
+    "data_version": "qs-sqlite-BTCUSDT-1m-de803eef69af",
+    "end": "2026-05-12T01:12:00+00:00",
+    "exchange": "binance_spot",
+    "history_days": 365,
+    "interval": "1m",
+    "row_count": 525601,
+    "source": "sqlite_market_klines",
+    "start": "2025-05-12T01:12:00+00:00"
+  },
+  "decision": "reject_current_1m_proxy_feature_redesign_set",
+  "event_ledger_feature_validation_allowed": false,
+  "generated_at": "2026-06-20T16:50:00+00:00",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "completed_bar_features_only": true,
+    "future_label_used_for_signal": false,
+    "live": "FROZEN",
+    "lookahead_used_for_signal": false,
+    "order_endpoints_allowed": false,
+    "paper_queue": "LOCKED",
+    "pnl_from_fill_ledger": true,
+    "private_endpoints_allowed": false,
+    "real_orders_created": false,
+    "research_only": true
+  },
+  "manifest": {
+    "commit_hash": "03cad6a",
+    "cost_model": {
+      "fee_bps_each_side": 5.0,
+      "latency_penalty_bps_each_side": 0.29287977248895913,
+      "name": "public_microstructure_proxy_taker_10bps_round_trip",
+      "spread_bps": 0.0157311236357491
+    },
+    "data_version": "qs-sqlite-BTCUSDT-1m-de803eef69af",
+    "generated_at": "2026-06-20T16:50:00+00:00",
+    "live": "FROZEN",
+    "not_true_l2_scalping": true,
+    "paper_queue": "LOCKED",
+    "params": {
+      "families": [
+        "long_absorption_reversal",
+        "long_compression_break",
+        "long_wick_reclaim",
+        "short_absorption_reversal",
+        "short_compression_break",
+        "short_wick_reject"
+      ],
+      "history_days": 365,
+      "variant_count": 144
+    },
+    "schema_version": "btc_true_scalping_1m_proxy_feature_redesign_manifest_v1",
+    "slippage_model": {
+      "name": "spread_half_plus_public_rest_latency_penalty",
+      "slippage_bps_each_side": 0.30287977248895914
+    },
+    "strategy_id": "btc_true_scalping_1m_proxy_feature_redesign_research_v0",
+    "strategy_version": "btc_true_scalping_1m_proxy_feature_redesign_research_v0:proxy_feature_redesign_v1"
+  },
+  "next_required_action": "collect_timestamp_aligned_l2_history_before_true_scalping",
+  "not_true_l2_scalping": true,
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "research_gate_passed": false,
+  "run_dir": "artifacts/btc_scalping_event_ledger/latest/proxy_feature_redesign_run",
+  "schema_version": "btc_true_scalping_1m_proxy_feature_redesign_report_v1",
+  "scope": "research_only_1m_proxy_feature_redesign_no_true_l2_no_candidate_no_paper_no_live",
+  "source_reports": {
+    "l2_feature_diagnostics": "artifacts/btc_scalping_readiness/latest/btc_true_scalping_l2_feature_diagnostics_report.json",
+    "latency_model": "artifacts/btc_scalping_readiness/latest/latency_model.json",
+    "previous_event_definition_redesign": "artifacts/btc_scalping_event_ledger/latest/btc_true_scalping_event_definition_redesign_report.json",
+    "spread_model": "artifacts/btc_scalping_readiness/latest/spread_model.json"
+  },
+  "status": "proxy_feature_redesign_completed_no_viable_event",
+  "strategy_id": "btc_true_scalping_1m_proxy_feature_redesign_research_v0",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "top_variants": [
+    {
+      "blockers": [
+        "btc_true_scalping_proxy_redesign_gate_failed_minimum_trade_count",
+        "btc_true_scalping_proxy_redesign_gate_failed_minimum_fill_count",
+        "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+        "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+        "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+      ],
+      "family": "long_absorption_reversal",
+      "gate": {
+        "checks": {
+          "hit_rate": false,
+          "mean_trade_return_bps": false,
+          "minimum_fill_count": false,
+          "minimum_trade_count": false,
+          "pnl_from_fill_ledger": true,
+          "profit_factor": false,
+          "walk_forward_pass_rate": false
+        },
+        "passed": false,
+        "status": "candidate_gate_failed",
+        "thresholds": {
+          "hit_rate": 0.45,
+          "mean_trade_return_bps": 0.0,
+          "minimum_fill_count": 200,
+          "minimum_trade_count": 100,
+          "profit_factor": 1.1,
+          "walk_forward_pass_rate": 0.6
+        }
+      },
+      "metrics": {
+        "event_count": 80,
+        "fill_count": 160,
+        "gross_loss": 10766.3607148085,
+        "gross_profit": 6680.126399758563,
+        "hit_rate": 0.3125,
+        "mean_trade_return_bps": -4.7308780718017145,
+        "median_trade_return_bps": -10.605438327702064,
+        "net_pnl": -4086.2343150499364,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": 0.6204628078799589,
+        "trade_count": 80
+      },
+      "params": {
+        "close_location_threshold": 0.7,
+        "hold_minutes": 2,
+        "min_gap_bars": 2,
+        "return_threshold": 0.004,
+        "volume_ratio_threshold": 1.5,
+        "wick_fraction_threshold": 0.45
+      },
+      "params_hash": "98c84ed7303b1673d0bdd3922a88a7a4eb1275319c52e3e83913989781c8fe04",
+      "side": "long",
+      "variant_id": "long_absorption_reversal_thr0p004_vol1p5_hold2_v1",
+      "walk_forward": {
+        "pass_count": 1,
+        "pass_rate": 0.3333333333333333,
+        "valid_fold_count": 3
+      }
+    },
+    {
+      "blockers": [
+        "btc_true_scalping_proxy_redesign_gate_failed_minimum_trade_count",
+        "btc_true_scalping_proxy_redesign_gate_failed_minimum_fill_count",
+        "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+        "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+        "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+      ],
+      "family": "long_absorption_reversal",
+      "gate": {
+        "checks": {
+          "hit_rate": false,
+          "mean_trade_return_bps": false,
+          "minimum_fill_count": false,
+          "minimum_trade_count": false,
+          "pnl_from_fill_ledger": true,
+          "profit_factor": false,
+          "walk_forward_pass_rate": false
+        },
+        "passed": false,
+        "status": "candidate_gate_failed",
+        "thresholds": {
+          "hit_rate": 0.45,
+          "mean_trade_return_bps": 0.0,
+          "minimum_fill_count": 200,
+          "minimum_trade_count": 100,
+          "profit_factor": 1.1,
+          "walk_forward_pass_rate": 0.6
+        }
+      },
+      "metrics": {
+        "event_count": 81,
+        "fill_count": 162,
+        "gross_loss": 10870.858428769745,
+        "gross_profit": 6680.126399758563,
+        "hit_rate": 0.30864197530864196,
+        "mean_trade_return_bps": -4.805231994653018,
+        "median_trade_return_bps": -10.605438327702416,
+        "net_pnl": -4190.732029011182,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": 0.6144985185419761,
+        "trade_count": 81
+      },
+      "params": {
+        "close_location_threshold": 0.7,
+        "hold_minutes": 2,
+        "min_gap_bars": 2,
+        "return_threshold": 0.004,
+        "volume_ratio_threshold": 1.2,
+        "wick_fraction_threshold": 0.45
+      },
+      "params_hash": "76641794163320c676b5bf3a79c6ec12e6c27365deb6b27b264291703afae00a",
+      "side": "long",
+      "variant_id": "long_absorption_reversal_thr0p004_vol1p2_hold2_v1",
+      "walk_forward": {
+        "pass_count": 1,
+        "pass_rate": 0.3333333333333333,
+        "valid_fold_count": 3
+      }
+    },
+    {
+      "blockers": [
+        "btc_true_scalping_proxy_redesign_gate_failed_minimum_trade_count",
+        "btc_true_scalping_proxy_redesign_gate_failed_minimum_fill_count",
+        "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+        "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+        "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+      ],
+      "family": "long_absorption_reversal",
+      "gate": {
+        "checks": {
+          "hit_rate": false,
+          "mean_trade_return_bps": false,
+          "minimum_fill_count": false,
+          "minimum_trade_count": false,
+          "pnl_from_fill_ledger": true,
+          "profit_factor": false,
+          "walk_forward_pass_rate": false
+        },
+        "passed": false,
+        "status": "candidate_gate_failed",
+        "thresholds": {
+          "hit_rate": 0.45,
+          "mean_trade_return_bps": 0.0,
+          "minimum_fill_count": 200,
+          "minimum_trade_count": 100,
+          "profit_factor": 1.1,
+          "walk_forward_pass_rate": 0.6
+        }
+      },
+      "metrics": {
+        "event_count": 78,
+        "fill_count": 156,
+        "gross_loss": 12619.338942639923,
+        "gross_profit": 6892.652154868469,
+        "hit_rate": 0.358974358974359,
+        "mean_trade_return_bps": -6.640007466612768,
+        "median_trade_return_bps": -10.198113555646856,
+        "net_pnl": -5726.686787771454,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": 0.5461975612350538,
+        "trade_count": 78
+      },
+      "params": {
+        "close_location_threshold": 0.7,
+        "hold_minutes": 5,
+        "min_gap_bars": 5,
+        "return_threshold": 0.004,
+        "volume_ratio_threshold": 1.5,
+        "wick_fraction_threshold": 0.45
+      },
+      "params_hash": "009afdccd6fdc70d6faea97dc2ff14cefa4156fb66bf6d5f30632ad1ea175d12",
+      "side": "long",
+      "variant_id": "long_absorption_reversal_thr0p004_vol1p5_hold5_v1",
+      "walk_forward": {
+        "pass_count": 1,
+        "pass_rate": 0.3333333333333333,
+        "valid_fold_count": 3
+      }
+    },
+    {
+      "blockers": [
+        "btc_true_scalping_proxy_redesign_gate_failed_minimum_trade_count",
+        "btc_true_scalping_proxy_redesign_gate_failed_minimum_fill_count",
+        "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+        "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+        "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+      ],
+      "family": "long_absorption_reversal",
+      "gate": {
+        "checks": {
+          "hit_rate": false,
+          "mean_trade_return_bps": false,
+          "minimum_fill_count": false,
+          "minimum_trade_count": false,
+          "pnl_from_fill_ledger": true,
+          "profit_factor": false,
+          "walk_forward_pass_rate": false
+        },
+        "passed": false,
+        "status": "candidate_gate_failed",
+        "thresholds": {
+          "hit_rate": 0.45,
+          "mean_trade_return_bps": 0.0,
+          "minimum_fill_count": 200,
+          "minimum_trade_count": 100,
+          "profit_factor": 1.1,
+          "walk_forward_pass_rate": 0.6
+        }
+      },
+      "metrics": {
+        "event_count": 79,
+        "fill_count": 158,
+        "gross_loss": 12655.352990895713,
+        "gross_profit": 6892.652154868469,
+        "hit_rate": 0.35443037974683544,
+        "mean_trade_return_bps": -6.60286936597721,
+        "median_trade_return_bps": -10.19135457721486,
+        "net_pnl": -5762.700836027245,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": 0.544643216181094,
+        "trade_count": 79
+      },
+      "params": {
+        "close_location_threshold": 0.7,
+        "hold_minutes": 5,
+        "min_gap_bars": 5,
+        "return_threshold": 0.004,
+        "volume_ratio_threshold": 1.2,
+        "wick_fraction_threshold": 0.45
+      },
+      "params_hash": "761fef8467502c6f1d78e0403626e7bf20c82725970848a2adab637b4204d11c",
+      "side": "long",
+      "variant_id": "long_absorption_reversal_thr0p004_vol1p2_hold5_v1",
+      "walk_forward": {
+        "pass_count": 1,
+        "pass_rate": 0.3333333333333333,
+        "valid_fold_count": 3
+      }
+    },
+    {
+      "blockers": [
+        "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+        "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+        "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+      ],
+      "family": "long_absorption_reversal",
+      "gate": {
+        "checks": {
+          "hit_rate": false,
+          "mean_trade_return_bps": false,
+          "minimum_fill_count": true,
+          "minimum_trade_count": true,
+          "pnl_from_fill_ledger": true,
+          "profit_factor": false,
+          "walk_forward_pass_rate": false
+        },
+        "passed": false,
+        "status": "candidate_gate_failed",
+        "thresholds": {
+          "hit_rate": 0.45,
+          "mean_trade_return_bps": 0.0,
+          "minimum_fill_count": 200,
+          "minimum_trade_count": 100,
+          "profit_factor": 1.1,
+          "walk_forward_pass_rate": 0.6
+        }
+      },
+      "metrics": {
+        "event_count": 649,
+        "fill_count": 1298,
+        "gross_loss": 72239.40424122947,
+        "gross_profit": 57982.0650045574,
+        "hit_rate": 0.41140215716486905,
+        "mean_trade_return_bps": -1.994361284126421,
+        "median_trade_return_bps": -9.746945984479149,
+        "net_pnl": -14257.339236672073,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": 0.802637640960293,
+        "trade_count": 649
+      },
+      "params": {
+        "close_location_threshold": 0.7,
+        "hold_minutes": 5,
+        "min_gap_bars": 5,
+        "return_threshold": 0.0025,
+        "volume_ratio_threshold": 1.2,
+        "wick_fraction_threshold": 0.45
+      },
+      "params_hash": "5670772292dbc5c2aec716794e91096976ce6e5d12808c5b511a6f9d537bb831",
+      "side": "long",
+      "variant_id": "long_absorption_reversal_thr0p0025_vol1p2_hold5_v1",
+      "walk_forward": {
+        "pass_count": 1,
+        "pass_rate": 0.2,
+        "valid_fold_count": 5
+      }
+    },
+    {
+      "blockers": [
+        "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+        "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+        "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+      ],
+      "family": "long_absorption_reversal",
+      "gate": {
+        "checks": {
+          "hit_rate": false,
+          "mean_trade_return_bps": false,
+          "minimum_fill_count": true,
+          "minimum_trade_count": true,
+          "pnl_from_fill_ledger": true,
+          "profit_factor": false,
+          "walk_forward_pass_rate": false
+        },
+        "passed": false,
+        "status": "candidate_gate_failed",
+        "thresholds": {
+          "hit_rate": 0.45,
+          "mean_trade_return_bps": 0.0,
+          "minimum_fill_count": 200,
+          "minimum_trade_count": 100,
+          "profit_factor": 1.1,
+          "walk_forward_pass_rate": 0.6
+        }
+      },
+      "metrics": {
+        "event_count": 640,
+        "fill_count": 1280,
+        "gross_loss": 71598.06683137678,
+        "gross_profit": 57360.118828020364,
+        "hit_rate": 0.4109375,
+        "mean_trade_return_bps": -2.0091657019420457,
+        "median_trade_return_bps": -9.808543697773569,
+        "net_pnl": -14237.94800335641,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": 0.801140608490328,
+        "trade_count": 640
+      },
+      "params": {
+        "close_location_threshold": 0.7,
+        "hold_minutes": 5,
+        "min_gap_bars": 5,
+        "return_threshold": 0.0025,
+        "volume_ratio_threshold": 1.5,
+        "wick_fraction_threshold": 0.45
+      },
+      "params_hash": "1b7cca609353369ba728335fa40b554e46e50b2e47952502f2e0adc08c2991b0",
+      "side": "long",
+      "variant_id": "long_absorption_reversal_thr0p0025_vol1p5_hold5_v1",
+      "walk_forward": {
+        "pass_count": 1,
+        "pass_rate": 0.2,
+        "valid_fold_count": 5
+      }
+    },
+    {
+      "blockers": [
+        "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+        "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+        "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+      ],
+      "family": "long_absorption_reversal",
+      "gate": {
+        "checks": {
+          "hit_rate": false,
+          "mean_trade_return_bps": false,
+          "minimum_fill_count": true,
+          "minimum_trade_count": true,
+          "pnl_from_fill_ledger": true,
+          "profit_factor": false,
+          "walk_forward_pass_rate": false
+        },
+        "passed": false,
+        "status": "candidate_gate_failed",
+        "thresholds": {
+          "hit_rate": 0.45,
+          "mean_trade_return_bps": 0.0,
+          "minimum_fill_count": 200,
+          "minimum_trade_count": 100,
+          "profit_factor": 1.1,
+          "walk_forward_pass_rate": 0.6
+        }
+      },
+      "metrics": {
+        "event_count": 652,
+        "fill_count": 1304,
+        "gross_loss": 75744.7942114553,
+        "gross_profit": 45025.43953034725,
+        "hit_rate": 0.3374233128834356,
+        "mean_trade_return_bps": -4.673073770656225,
+        "median_trade_return_bps": -10.558187832985684,
+        "net_pnl": -30719.354681108052,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": 0.5944360929234369,
+        "trade_count": 652
+      },
+      "params": {
+        "close_location_threshold": 0.7,
+        "hold_minutes": 3,
+        "min_gap_bars": 3,
+        "return_threshold": 0.0025,
+        "volume_ratio_threshold": 1.2,
+        "wick_fraction_threshold": 0.45
+      },
+      "params_hash": "9624af533537c6a57e97841357bf917f51f81c0e2d2652a49d4d8e849423f691",
+      "side": "long",
+      "variant_id": "long_absorption_reversal_thr0p0025_vol1p2_hold3_v1",
+      "walk_forward": {
+        "pass_count": 0,
+        "pass_rate": 0.0,
+        "valid_fold_count": 5
+      }
+    },
+    {
+      "blockers": [
+        "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+        "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+        "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+      ],
+      "family": "long_absorption_reversal",
+      "gate": {
+        "checks": {
+          "hit_rate": false,
+          "mean_trade_return_bps": false,
+          "minimum_fill_count": true,
+          "minimum_trade_count": true,
+          "pnl_from_fill_ledger": true,
+          "profit_factor": false,
+          "walk_forward_pass_rate": false
+        },
+        "passed": false,
+        "status": "candidate_gate_failed",
+        "thresholds": {
+          "hit_rate": 0.45,
+          "mean_trade_return_bps": 0.0,
+          "minimum_fill_count": 200,
+          "minimum_trade_count": 100,
+          "profit_factor": 1.1,
+          "walk_forward_pass_rate": 0.6
+        }
+      },
+      "metrics": {
+        "event_count": 643,
+        "fill_count": 1286,
+        "gross_loss": 74936.7765922678,
+        "gross_profit": 44437.51666038772,
+        "hit_rate": 0.33748055987558323,
+        "mean_trade_return_bps": -4.698434609245634,
+        "median_trade_return_bps": -10.559246548015748,
+        "net_pnl": -30499.25993188007,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": 0.593000108640554,
+        "trade_count": 643
+      },
+      "params": {
+        "close_location_threshold": 0.7,
+        "hold_minutes": 3,
+        "min_gap_bars": 3,
+        "return_threshold": 0.0025,
+        "volume_ratio_threshold": 1.5,
+        "wick_fraction_threshold": 0.45
+      },
+      "params_hash": "20848009d52111c32bd73198a01ea84ccd6a66633cb13049dc94e812e0a8e994",
+      "side": "long",
+      "variant_id": "long_absorption_reversal_thr0p0025_vol1p5_hold3_v1",
+      "walk_forward": {
+        "pass_count": 0,
+        "pass_rate": 0.0,
+        "valid_fold_count": 5
+      }
+    },
+    {
+      "blockers": [
+        "btc_true_scalping_proxy_redesign_gate_failed_minimum_trade_count",
+        "btc_true_scalping_proxy_redesign_gate_failed_minimum_fill_count",
+        "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+        "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+        "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+      ],
+      "family": "short_compression_break",
+      "gate": {
+        "checks": {
+          "hit_rate": false,
+          "mean_trade_return_bps": false,
+          "minimum_fill_count": false,
+          "minimum_trade_count": false,
+          "pnl_from_fill_ledger": true,
+          "profit_factor": false,
+          "walk_forward_pass_rate": false
+        },
+        "passed": false,
+        "status": "candidate_gate_failed",
+        "thresholds": {
+          "hit_rate": 0.45,
+          "mean_trade_return_bps": 0.0,
+          "minimum_fill_count": 200,
+          "minimum_trade_count": 100,
+          "profit_factor": 1.1,
+          "walk_forward_pass_rate": 0.6
+        }
+      },
+      "metrics": {
+        "event_count": 37,
+        "fill_count": 74,
+        "gross_loss": 6466.199222364026,
+        "gross_profit": 3647.38137409764,
+        "hit_rate": 0.32432432432432434,
+        "mean_trade_return_bps": -7.994460821342347,
+        "median_trade_return_bps": -14.399684241538866,
+        "net_pnl": -2818.817848266386,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": 0.5640688213692504,
+        "trade_count": 37
+      },
+      "params": {
+        "close_location_threshold": 0.7,
+        "hold_minutes": 5,
+        "min_gap_bars": 5,
+        "return_threshold": 0.004,
+        "volume_ratio_threshold": 1.2,
+        "wick_fraction_threshold": 0.45
+      },
+      "params_hash": "761fef8467502c6f1d78e0403626e7bf20c82725970848a2adab637b4204d11c",
+      "side": "short",
+      "variant_id": "short_compression_break_thr0p004_vol1p2_hold5_v1",
+      "walk_forward": {
+        "pass_count": 0,
+        "pass_rate": 0.0,
+        "valid_fold_count": 0
+      }
+    },
+    {
+      "blockers": [
+        "btc_true_scalping_proxy_redesign_gate_failed_profit_factor",
+        "btc_true_scalping_proxy_redesign_gate_failed_hit_rate",
+        "btc_true_scalping_proxy_redesign_gate_failed_mean_trade_return_bps",
+        "btc_true_scalping_proxy_redesign_gate_failed_walk_forward_pass_rate"
+      ],
+      "family": "long_absorption_reversal",
+      "gate": {
+        "checks": {
+          "hit_rate": false,
+          "mean_trade_return_bps": false,
+          "minimum_fill_count": true,
+          "minimum_trade_count": true,
+          "pnl_from_fill_ledger": true,
+          "profit_factor": false,
+          "walk_forward_pass_rate": false
+        },
+        "passed": false,
+        "status": "candidate_gate_failed",
+        "thresholds": {
+          "hit_rate": 0.45,
+          "mean_trade_return_bps": 0.0,
+          "minimum_fill_count": 200,
+          "minimum_trade_count": 100,
+          "profit_factor": 1.1,
+          "walk_forward_pass_rate": 0.6
+        }
+      },
+      "metrics": {
+        "event_count": 1362,
+        "fill_count": 2724,
+        "gross_loss": 160179.60654156614,
+        "gross_profit": 87319.9261762032,
+        "hit_rate": 0.36270190895741555,
+        "mean_trade_return_bps": -5.449905721180491,
+        "median_trade_return_bps": -10.220532366039587,
+        "net_pnl": -72859.68036536295,
+        "pnl_from_fill_ledger": true,
+        "profit_factor": 0.5451375993581551,
+        "trade_count": 1362
+      },
+      "params": {
+        "close_location_threshold": 0.7,
+        "hold_minutes": 5,
+        "min_gap_bars": 5,
+        "return_threshold": 0.0015,
+        "volume_ratio_threshold": 1.2,
+        "wick_fraction_threshold": 0.45
+      },
+      "params_hash": "6147bc6bafbd51fe833796273a3ac4833ab3b4abedd8d2e71eb9463fed4346a0",
+      "side": "long",
+      "variant_id": "long_absorption_reversal_thr0p0015_vol1p2_hold5_v1",
+      "walk_forward": {
+        "pass_count": 0,
+        "pass_rate": 0.0,
+        "valid_fold_count": 6
+      }
+    }
+  ],
+  "true_scalping_allowed": false,
+  "variant_count": 144
+}

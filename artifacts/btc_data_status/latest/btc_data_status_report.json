@@ -1,0 +1,306 @@
+{
+  "asset": "btc",
+  "blockers": [],
+  "branch": "main",
+  "commit": "03cad6a",
+  "coverage": {
+    "bar_count_by_interval": {
+      "15m": 82753,
+      "1d": 862,
+      "1h": 20689,
+      "1m": 1241281,
+      "4h": 5172,
+      "5m": 248257
+    },
+    "completeness_ratio_by_interval": {
+      "15m": 1.0,
+      "1d": 1.0,
+      "1h": 1.0,
+      "1m": 1.0,
+      "4h": 1.0,
+      "5m": 1.0
+    },
+    "duplicate_bar_count_by_interval": {
+      "15m": 0,
+      "1d": 0,
+      "1h": 0,
+      "1m": 0,
+      "4h": 0,
+      "5m": 0
+    },
+    "intervals_available": [
+      "1m",
+      "5m",
+      "15m",
+      "1h",
+      "4h",
+      "1d"
+    ],
+    "missing_bar_count_by_interval": {
+      "15m": 0,
+      "1d": 0,
+      "1h": 0,
+      "1m": 0,
+      "4h": 0,
+      "5m": 0
+    },
+    "sample_end": "2026-05-12T00:00:00+00:00",
+    "sample_start": "2024-01-01T00:00:00+00:00"
+  },
+  "data_quality": {
+    "blockers": [],
+    "data_path": "data/market_data.sqlite",
+    "interval_grid_pass": true,
+    "manifest_hash": "3ddcf29d24ef3d888fec53faa07dc4215981b3eb553ffe7cadd841af982033da",
+    "monotonic_time_pass": true,
+    "sqlite_path": "data/market_data.sqlite",
+    "stale_data_check_pass": true,
+    "symbol_consistency_pass": true,
+    "utc_alignment_pass": true
+  },
+  "data_sources": {
+    "agg_trades_available": false,
+    "exchange_info_available": true,
+    "funding_info_available": true,
+    "funding_rate_available": true,
+    "klines_available": true,
+    "liquidation_snapshot_available": false,
+    "liquidation_snapshot_gate_eligible": false,
+    "liquidation_snapshot_status": "diagnostic_missing_not_complete_history",
+    "mark_price_klines_available": true,
+    "open_interest_available": false,
+    "open_interest_coverage_type": "current_only",
+    "premium_index_klines_available": true
+  },
+  "diagnostic_warnings": [
+    "btc_open_interest_history_not_verified_diagnostic_partial",
+    "btc_agg_trades_missing",
+    "btc_liquidation_snapshot_missing_diagnostic_only"
+  ],
+  "dragging_regimes": [
+    "expansion"
+  ],
+  "fee_model_status": "required",
+  "fold_contract_status": "pass",
+  "fold_count": 6,
+  "fold_definition_version": "btc_walk_forward_fold_contract_v1",
+  "folds": [
+    {
+      "fold_id": "1",
+      "passed": true,
+      "validation_end": "2024-05-23T16:05:00+00:00",
+      "validation_rows": 41378,
+      "validation_start": "2024-01-01T00:00:00+00:00"
+    },
+    {
+      "fold_id": "2",
+      "passed": true,
+      "validation_end": "2024-10-14T08:15:00+00:00",
+      "validation_rows": 41378,
+      "validation_start": "2024-05-23T16:10:00+00:00"
+    },
+    {
+      "fold_id": "3",
+      "passed": true,
+      "validation_end": "2025-03-07T00:25:00+00:00",
+      "validation_rows": 41378,
+      "validation_start": "2024-10-14T08:20:00+00:00"
+    },
+    {
+      "fold_id": "4",
+      "passed": true,
+      "validation_end": "2025-07-28T16:35:00+00:00",
+      "validation_rows": 41378,
+      "validation_start": "2025-03-07T00:30:00+00:00"
+    },
+    {
+      "fold_id": "5",
+      "passed": false,
+      "validation_end": "2025-12-19T08:45:00+00:00",
+      "validation_rows": 41378,
+      "validation_start": "2025-07-28T16:40:00+00:00"
+    },
+    {
+      "fold_id": "6",
+      "passed": true,
+      "validation_end": "2026-05-12T01:05:00+00:00",
+      "validation_rows": 41380,
+      "validation_start": "2025-12-19T08:50:00+00:00"
+    }
+  ],
+  "funding_model_status": "required",
+  "generated_at": "2026-06-21T03:26:33.129853+00:00",
+  "instrument": {
+    "contract_type": "usds_m_perpetual_contract",
+    "exchange": "okx_swap",
+    "margin_asset": "USDT",
+    "market_type": "usds_m_perpetual",
+    "quote_asset": "USDT",
+    "symbol": "BTCUSDT",
+    "timezone": "UTC"
+  },
+  "intervals": [
+    {
+      "data_version": "qs-sqlite-BTCUSDT-1m-de803eef69af",
+      "duplicate_rows": 0,
+      "end": "2026-05-12T00:00:00+00:00",
+      "expected_rows": 1241281,
+      "interval": "1m",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-1m-de803eef69af.json",
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 1241281,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    },
+    {
+      "data_version": "qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5",
+      "duplicate_rows": 0,
+      "end": "2026-05-12T00:00:00+00:00",
+      "expected_rows": 248257,
+      "interval": "5m",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5.json",
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 248257,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    },
+    {
+      "data_version": "qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4",
+      "duplicate_rows": 0,
+      "end": "2026-05-12T00:00:00+00:00",
+      "expected_rows": 82753,
+      "interval": "15m",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4.json",
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 82753,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    },
+    {
+      "data_version": "qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31",
+      "duplicate_rows": 0,
+      "end": "2026-05-12T00:00:00+00:00",
+      "expected_rows": 20689,
+      "interval": "1h",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 20689,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    },
+    {
+      "data_version": "qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d",
+      "duplicate_rows": 0,
+      "end": "2026-05-11T20:00:00+00:00",
+      "expected_rows": 5172,
+      "interval": "4h",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d.json",
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 5172,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    },
+    {
+      "data_version": "qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4",
+      "duplicate_rows": 0,
+      "end": "2026-05-11T00:00:00+00:00",
+      "expected_rows": 862,
+      "interval": "1d",
+      "latest_manifest_path": "data/manifests/qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4.json",
+      "manifest_status": "pass",
+      "missing_rows": 0,
+      "row_count": 862,
+      "start": "2024-01-01T00:00:00+00:00",
+      "status": "pass"
+    }
+  ],
+  "live_status": "frozen",
+  "manifest_lineage": {
+    "latest_manifests": [
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4",
+        "interval": "15m",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-15m-20240101T000000-6af9de75d6c4.json",
+        "quality_score": 100.0
+      },
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4",
+        "interval": "1d",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-1d-20240101T000000-c2f297aaeea4.json",
+        "quality_score": 100.0
+      },
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31",
+        "interval": "1h",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+        "quality_score": 100.0
+      },
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-1m-de803eef69af",
+        "interval": "1m",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-1m-de803eef69af.json",
+        "quality_score": 100.0
+      },
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d",
+        "interval": "4h",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-4h-20240101T000000-15e65a22b06d.json",
+        "quality_score": 100.0
+      },
+      {
+        "coverage_pct": 100.0,
+        "data_version": "qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5",
+        "interval": "5m",
+        "manifest_path": "data/manifests/qs-sqlite-BTCUSDT-5m-20240101T000000-794d24e228b5.json",
+        "quality_score": 100.0
+      }
+    ],
+    "status": "pass"
+  },
+  "metadata": {
+    "branch": "main",
+    "commit": "03cad6a",
+    "generated_at": "2026-06-21T03:26:33.129853+00:00",
+    "is_data_dependent": true,
+    "is_placeholder": false,
+    "source_type": "sqlite_binance_spot_klines"
+  },
+  "paper_queue_status": "locked",
+  "perpetual_bundle_preflight_report": "artifacts/btc_data_status/latest/btc_perpetual_bundle_preflight_report.json",
+  "perpetual_provider_verification": {
+    "blockers": [],
+    "data_lineage_grade_candidate": "L4_perpetual_evidence_ready",
+    "perpetual_evidence_ready": true,
+    "preflight_pass": true,
+    "selected_bundle_id": "btc_okx_swap_btcusdt_history_365d_v1",
+    "selected_provider": "okx_swap",
+    "source_type": "production"
+  },
+  "perpetual_provider_verification_report": "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json",
+  "promotion_ready": false,
+  "regime_classifier_version": "classify_btc_regimes_v1",
+  "regime_contract_status": "pass",
+  "regime_gate_pass_rate": 0.8,
+  "schema_version": "btc_data_status_report_v1",
+  "source_data_fold_regime_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/btc_data_fold_regime_status_report.json",
+  "source_fold_regime_contract_audit": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/fold_regime_contract_audit.json",
+  "source_run_dir": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger",
+  "sqlite": {
+    "db_path": "data/market_data.sqlite",
+    "exchange": "binance_spot",
+    "status": "pass",
+    "symbol": "BTCUSDT"
+  },
+  "status": "pass",
+  "symbol": "BTCUSDT"
+}

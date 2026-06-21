@@ -1,4 +1,5 @@
 import { apiGet, apiPost } from './api';
+import type {BtcScalpingResearchBacktestReport} from './shared-types';
 
 function query(params: Record<string, string | number | boolean | undefined>): string {
   const entries = Object.entries(params)
@@ -29,6 +30,8 @@ export const researchApi = {
     apiGet<any>(`/api/research/evidence-registry${query({data_root: dataRoot, rebuild})}`),
   getGlobalRegistry: () =>
     apiGet<any>('/api/research/global-registry'),
+  getBtcScalpingBacktest: () =>
+    apiGet<BtcScalpingResearchBacktestReport>('/api/research/btc/scalping-backtest'),
   rebuildEvidenceRegistry: (dataRoot = 'data') =>
     apiPost<any>('/api/research/evidence-registry/rebuild', {data_root: dataRoot}),
   listFactors: (dataRoot = 'data') => apiGet<any[]>(`/api/research/factors${query({data_root: dataRoot})}`),

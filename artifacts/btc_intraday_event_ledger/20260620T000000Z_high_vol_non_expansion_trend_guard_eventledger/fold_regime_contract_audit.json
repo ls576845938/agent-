@@ -1,0 +1,114 @@
+{
+  "cleanup_required": [
+    "Use the drift-guarded event-ledger run as current BTC intraday regime gate evidence.",
+    "Keep paper/live/true-scalping locked until provider, paper gate, and scalping microstructure evidence pass."
+  ],
+  "fold_contract": {
+    "event_table_fold_counts": {
+      "1": 24,
+      "2": 15,
+      "3": 17,
+      "4": 7,
+      "5": 6,
+      "6": 9
+    },
+    "fold_count": 6,
+    "folds": [
+      {
+        "fold_id": "1",
+        "passed": true,
+        "validation_end": "2024-05-23T16:05:00+00:00",
+        "validation_rows": 41378,
+        "validation_start": "2024-01-01T00:00:00+00:00"
+      },
+      {
+        "fold_id": "2",
+        "passed": true,
+        "validation_end": "2024-10-14T08:15:00+00:00",
+        "validation_rows": 41378,
+        "validation_start": "2024-05-23T16:10:00+00:00"
+      },
+      {
+        "fold_id": "3",
+        "passed": true,
+        "validation_end": "2025-03-07T00:25:00+00:00",
+        "validation_rows": 41378,
+        "validation_start": "2024-10-14T08:20:00+00:00"
+      },
+      {
+        "fold_id": "4",
+        "passed": true,
+        "validation_end": "2025-07-28T16:35:00+00:00",
+        "validation_rows": 41378,
+        "validation_start": "2025-03-07T00:30:00+00:00"
+      },
+      {
+        "fold_id": "5",
+        "passed": false,
+        "validation_end": "2025-12-19T08:45:00+00:00",
+        "validation_rows": 41378,
+        "validation_start": "2025-07-28T16:40:00+00:00"
+      },
+      {
+        "fold_id": "6",
+        "passed": true,
+        "validation_end": "2026-05-12T01:05:00+00:00",
+        "validation_rows": 41380,
+        "validation_start": "2025-12-19T08:50:00+00:00"
+      }
+    ],
+    "gate_source": "walk_forward_report.json",
+    "hypothesis_label_fold_counts": {
+      "1": 24,
+      "2": 15,
+      "3": 17,
+      "4": 7,
+      "5": 6,
+      "6": 9
+    },
+    "label_trimmed_rows_due_to_forward_horizon": 0,
+    "method": "rolling_event_ledger_fixed_params_intraday_5m",
+    "status": "pass"
+  },
+  "generated_at": "2026-06-21T03:26:28.061929+00:00",
+  "promotion_contract": {
+    "event_pf_required": 1.15,
+    "live_enabled_allowed": false,
+    "live_ready_allowed": false,
+    "paper_ready_allowed": false,
+    "paper_review_pending_requires_all_three": true,
+    "regime_pass_required": 0.75,
+    "walk_forward_pass_required": 0.8
+  },
+  "regime_contract": {
+    "classifier": "quant_us.research.btc_alpha_hardening.classify_btc_regimes",
+    "diagnostic_regimes": [
+      "compression",
+      "mean_reverting_chop",
+      "trending_down",
+      "high_vol_trend",
+      "expansion",
+      "low_vol_chop",
+      "trending_up",
+      "liquidation_shock"
+    ],
+    "diagnostic_source": "bar_level_event_ledger_attribution",
+    "dragging_regimes": [
+      "expansion"
+    ],
+    "gate_eligible_regimes": [
+      "expansion",
+      "liquidation_shock",
+      "mean_reverting_chop",
+      "trending_up",
+      "high_vol_trend"
+    ],
+    "gate_source": "entry_regime_from_ledger_segments",
+    "pass_rate": 0.8,
+    "status": "pass"
+  },
+  "run_id": "20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger",
+  "schema_version": "btc_fold_regime_contract_audit_v1",
+  "source_event_ledger_report": "artifacts/btc_intraday_event_ledger/20260620T000000Z_high_vol_non_expansion_trend_guard_eventledger/btc_intraday_short_cycle_drift_guarded_event_ledger_report.json",
+  "strategy_id": "btc_pullback_reclaim_intraday_high_vol_non_expansion_trend_guard_v1"
+}

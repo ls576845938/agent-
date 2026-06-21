@@ -1,0 +1,64 @@
+{
+  "candidate_gate_results": [
+    {
+      "checks": {
+        "annual_turnover": true,
+        "canonical_source": true,
+        "cost_stress_base": true,
+        "cost_stress_harsh": true,
+        "dsr": true,
+        "event_ledger": true,
+        "event_profit_factor": false,
+        "max_drawdown": true,
+        "no_lookahead": true,
+        "pbo": true,
+        "profit_factor": true,
+        "regime_pass_rate": true,
+        "signal_equity_diagnostic_only": true,
+        "walk_forward_pass_rate": false
+      },
+      "evidence_source": "canonical_backtest_report",
+      "fail_reasons": [
+        "event_profit_factor",
+        "walk_forward_pass_rate"
+      ],
+      "passed": false,
+      "status": "candidate_gate_failed",
+      "strategy_id": "btc_perp_dual_trend_v4_eventpf_wf",
+      "thresholds": {
+        "annual_turnover": 10.0,
+        "dsr": 0.1,
+        "event_profit_factor": 1.15,
+        "max_drawdown_pct_floor": -15.0,
+        "pbo": 0.5,
+        "profit_factor": 1.15,
+        "regime_pass_rate": 0.75,
+        "walk_forward_pass_rate": 0.8
+      }
+    }
+  ],
+  "evidence_source": "canonical_event_pf_wf_gate_inputs",
+  "forbidden_states": [
+    "paper_ready",
+    "live_ready",
+    "live_enabled"
+  ],
+  "live_frozen": true,
+  "paper_auto_start": false,
+  "paper_review": {
+    "evidence_source": "canonical_gate_inputs",
+    "forbidden_states": [
+      "live_enabled",
+      "live_ready",
+      "paper_ready"
+    ],
+    "live_frozen": true,
+    "max_state": "candidate_gate_failed",
+    "paper_auto_start": false,
+    "paper_review_pending": [],
+    "paper_review_queue_locked": true,
+    "reason": "requires_1_to_3_internal_gate_passes"
+  },
+  "run_id": "20260604T132400Z_okx_bounded_retest",
+  "schema_version": "btc_eventpf_wf_promotion_decision_v1"
+}

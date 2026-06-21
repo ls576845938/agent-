@@ -1,0 +1,73 @@
+{
+  "generated_utc": "2026-05-11T23:56:08.141304+00:00",
+  "strategy_id": "trend_macd",
+  "params": {
+    "fast_window": 20,
+    "slow_window": 60,
+    "signal_window": 9
+  },
+  "data_version": "",
+  "symbols_tested": [
+    "BTCUSDT"
+  ],
+  "insufficient_data": false,
+  "aggregate": {
+    "total_windows": 2,
+    "windows_consistent": 2,
+    "oos_total_return_pct": -0.7568,
+    "oos_avg_sharpe": -1.2319,
+    "oos_avg_max_dd": -1.5381,
+    "oos_avg_turnover_pct": 0.0,
+    "oos_win_rate": 0.0,
+    "fold_pass_rate_pct": 0.0,
+    "symbol_coverage_pct": 100.0
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "train_end": "2024-01-30T20:00:00+00:00",
+      "test_start": "2024-01-30T21:00:00+00:00",
+      "test_end": "2024-02-07T21:00:00+00:00",
+      "strategy_id": "trend_macd",
+      "params": {
+        "fast_window": 20,
+        "slow_window": 60,
+        "signal_window": 9
+      },
+      "data_version": "",
+      "result": {
+        "total_return_pct": -1.2361,
+        "sharpe_ratio": -1.5435,
+        "max_drawdown_pct": -1.5381,
+        "turnover_pct": 360.823,
+        "trade_count": 4
+      },
+      "equity_consistent": true,
+      "pass": false
+    },
+    {
+      "fold": 1,
+      "train_start": "2024-01-09T01:00:00+00:00",
+      "train_end": "2024-02-07T21:00:00+00:00",
+      "test_start": "2024-02-07T22:00:00+00:00",
+      "test_end": "2024-02-15T22:00:00+00:00",
+      "strategy_id": "trend_macd",
+      "params": {
+        "fast_window": 20,
+        "slow_window": 60,
+        "signal_window": 9
+      },
+      "data_version": "",
+      "result": {
+        "total_return_pct": -0.2774,
+        "sharpe_ratio": -0.9203,
+        "max_drawdown_pct": -0.3655,
+        "turnover_pct": 180.2501,
+        "trade_count": 2
+      },
+      "equity_consistent": true,
+      "pass": false
+    }
+  ]
+}

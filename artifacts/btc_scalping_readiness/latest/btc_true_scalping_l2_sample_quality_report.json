@@ -1,0 +1,82 @@
+{
+  "asset": "btc",
+  "blockers": [],
+  "bounded_public_rest_sample_only": true,
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "capture_status": "verified",
+  "commit": "03cad6a",
+  "decision": "use_l2_sample_for_microstructure_feature_diagnostics_only",
+  "generated_at": "2026-06-20T17:27:20.348327+00:00",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "live": "FROZEN",
+    "order_endpoints_allowed": false,
+    "paper_or_live_usable": false,
+    "paper_queue": "LOCKED",
+    "private_endpoints_allowed": false,
+    "production_ready": false,
+    "real_orders_created": false,
+    "research_only": true
+  },
+  "network_called": true,
+  "next_required_action": "design_new_microstructure_features_with_event_ledger_validation",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "public_rest_only": true,
+  "sample_quality": {
+    "book_level_row_count": 500,
+    "book_sample_count_with_rows": 5,
+    "book_side_counts": {
+      "ask": 250,
+      "bid": 250
+    },
+    "completed_sample_count": 5,
+    "latency_ms": {
+      "max": 327.3520020302385,
+      "mean": 282.4225075542927,
+      "median": 278.8722744444385,
+      "min": 260.0314498413354
+    },
+    "latency_sample_count": 10,
+    "max_book_level": 50,
+    "requested_sample_count": 5,
+    "spread_bps": {
+      "max": 0.01564723618932605,
+      "mean": 0.015647001152649977,
+      "median": 0.015646844461532597,
+      "min": 0.015646844461532597
+    },
+    "trade_row_count": 500,
+    "trade_sample_count_with_rows": 5,
+    "unique_book_timestamps": 5,
+    "unique_trade_timestamps": 21,
+    "valid_top_of_book_snapshot_count": 5
+  },
+  "schema_version": "btc_true_scalping_l2_sample_quality_report_v1",
+  "scope": "research_only_public_l2_tick_sample_quality_no_candidate_no_paper_no_live",
+  "selected_bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1",
+  "source_capture_report": "artifacts/btc_scalping_readiness/latest/btc_okx_l2_microstructure_sample_capture_report.json",
+  "source_files": {
+    "agg_trades_samples": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/agg_trades_samples.csv",
+      "row_count": 500
+    },
+    "order_book_depth_samples": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/order_book_depth_samples.csv",
+      "row_count": 500
+    }
+  },
+  "status": "public_l2_sample_evidence_ready_research_only",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "thresholds": {
+    "min_completed_samples": 3,
+    "min_latency_samples": 2,
+    "min_valid_book_snapshots": 1
+  },
+  "true_scalping_allowed": false
+}

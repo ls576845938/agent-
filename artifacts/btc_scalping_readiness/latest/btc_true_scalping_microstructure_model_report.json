@@ -1,0 +1,74 @@
+{
+  "asset": "btc",
+  "blockers": [],
+  "branch": "main",
+  "commit": "03cad6a",
+  "decision": "models_ready_for_manual_review_research_only",
+  "generated_at": "2026-06-20T16:34:01.887761+00:00",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_usable": false,
+    "private_endpoints_allowed": false,
+    "production_ready": false,
+    "research_only": true
+  },
+  "models": {
+    "latency_model": {
+      "blockers": [],
+      "evidence_grade": "public_rest_market_data_latency_research_only",
+      "model_id": "btc_okx_public_rest_latency_model_v1",
+      "paper_or_live_usable": false,
+      "path": "artifacts/btc_scalping_readiness/latest/latency_model.json",
+      "production_ready": false,
+      "sample_count": 2,
+      "schema_version": "btc_true_scalping_microstructure_model_v1",
+      "status": "pass"
+    },
+    "queue_position_model": {
+      "blockers": [],
+      "evidence_grade": "visible_book_depth_research_only",
+      "model_id": "btc_okx_public_rest_queue_position_model_v1",
+      "paper_or_live_usable": false,
+      "path": "artifacts/btc_scalping_readiness/latest/queue_position_model.json",
+      "production_ready": false,
+      "sample_count": 1,
+      "schema_version": "btc_true_scalping_microstructure_model_v1",
+      "status": "pass"
+    },
+    "spread_model": {
+      "blockers": [],
+      "evidence_grade": "public_rest_micro_sample_research_only",
+      "model_id": "btc_okx_public_rest_spread_model_v1",
+      "paper_or_live_usable": false,
+      "path": "artifacts/btc_scalping_readiness/latest/spread_model.json",
+      "production_ready": false,
+      "sample_count": 1,
+      "schema_version": "btc_true_scalping_microstructure_model_v1",
+      "status": "pass"
+    }
+  },
+  "schema_version": "btc_true_scalping_microstructure_model_report_v1",
+  "selected_bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1",
+  "selected_bundle_id": "btc_okx_swap_btcusdt_history_365d_v1",
+  "selected_provider": "okx_swap",
+  "source_files": {
+    "agg_trades": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/agg_trades.csv",
+      "row_count": 100
+    },
+    "capture_report": {
+      "exists": true,
+      "path": "artifacts/btc_scalping_readiness/latest/btc_okx_microstructure_capture_report.json",
+      "row_count": null
+    },
+    "order_book_depth": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/order_book_depth.csv",
+      "row_count": 100
+    }
+  },
+  "status": "pass",
+  "symbol": "BTCUSDT"
+}

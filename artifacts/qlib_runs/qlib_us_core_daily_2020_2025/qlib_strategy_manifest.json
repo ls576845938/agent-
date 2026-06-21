@@ -1,0 +1,149 @@
+{
+  "commit_hash": "af2ef8d7381d4b0263a18d48059af1d76859af4c",
+  "cost_model": {
+    "close_cost": 0.0015,
+    "min_cost": 5,
+    "open_cost": 0.0005
+  },
+  "created_at": "2026-05-11T05:10:20.352155+00:00",
+  "data_versions": [
+    "qs-yfinance-AAPL-1d-118291186a68",
+    "qs-yfinance-AMZN-1d-59fd924e4042",
+    "qs-yfinance-DIA-1d-e8665c6228e6",
+    "qs-yfinance-GOOGL-1d-8091982e2ff2",
+    "qs-yfinance-IWM-1d-60bcf3e456b7",
+    "qs-yfinance-META-1d-336f94bd5e02",
+    "qs-yfinance-MSFT-1d-e228d6e62d4b",
+    "qs-yfinance-NVDA-1d-d542408d1cb9",
+    "qs-yfinance-QQQ-1d-d16155b5d1f8",
+    "qs-yfinance-SPY-1d-2e22cf333832",
+    "qs-yfinance-XLE-1d-2855cbbb552a",
+    "qs-yfinance-XLF-1d-7340ee701941",
+    "qs-yfinance-XLK-1d-95133bacbe89"
+  ],
+  "dataset_manifest_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_us_core_daily_2020_2025/qlib_input/dataset_manifest.json",
+  "decommission_rules_placeholder": [
+    "Disable if internal event-driven backtest fails.",
+    "Disable if cost stress or walk-forward robustness fails.",
+    "Disable if paper review reconciliation fails."
+  ],
+  "evidence": {
+    "pred_score_import_result_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_us_core_daily_2020_2025/pred_score_import_result.json",
+    "pred_score_rows": 3250,
+    "source_manifest_count": 13,
+    "workflow_status": "completed"
+  },
+  "execution_freq": "deferred_to_system",
+  "feature_set": "Alpha158",
+  "imported_recorder_metrics_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_us_core_daily_2020_2025/imported_recorder_metrics.json",
+  "label": "Ref($close, -5) / $close - 1",
+  "manifest_id": "qlib_manifest_c3eaed5359584a01",
+  "mode": "research_only",
+  "model_id": "lgbm_alpha158",
+  "model_type": "LightGBM",
+  "params": {
+    "colsample_bytree": 0.8879,
+    "lambda_l1": 205.6999,
+    "lambda_l2": 580.9768,
+    "learning_rate": 0.2,
+    "loss": "mse",
+    "max_depth": 8,
+    "num_leaves": 210,
+    "num_threads": 20,
+    "subsample": 0.8789
+  },
+  "pred_score_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_us_core_daily_2020_2025/pred_score.parquet",
+  "promotion_status": "candidate",
+  "qlib_backtest_summary_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_us_core_daily_2020_2025/qlib_backtest_summary.json",
+  "qlib_config_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/configs/qlib/us_lgbm_alpha158_daily.yaml",
+  "reason": "Qlib research completed; pending internal event-driven backtest, cost stress, walk-forward, paper review.",
+  "recorder_metrics_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_us_core_daily_2020_2025/recorder_metrics.json",
+  "research_model_scores_path": "/home/lishuonewbing/agent\u6d4b\u8bd5/artifacts/qlib_runs/qlib_us_core_daily_2020_2025/research_model_scores.parquet",
+  "restrictions": [
+    "research_only",
+    "candidate_only",
+    "requires_internal_event_driven_backtest",
+    "requires_promotion_gate_before_paper_review"
+  ],
+  "risk_limits_placeholder": {
+    "long_only": true,
+    "max_symbol_weight": 0.15,
+    "requires_internal_risk_gate": true
+  },
+  "run_id": "qlib_us_core_daily_2020_2025",
+  "signal_freq": "1d",
+  "slippage_model": {
+    "deal_price": "close",
+    "limit_threshold": 0.095
+  },
+  "source": "qlib",
+  "status": "candidate",
+  "strategy_id": "qlib_lgbm_alpha158_us_daily_v1",
+  "strategy_version": "qlib_lgbm_alpha158_us_daily_v1",
+  "symbols": [
+    "SPY",
+    "QQQ",
+    "IWM",
+    "DIA",
+    "XLK",
+    "XLF",
+    "XLE",
+    "AAPL",
+    "MSFT",
+    "NVDA",
+    "META",
+    "AMZN",
+    "GOOGL"
+  ],
+  "timeframe": "1d",
+  "universe_id": "us_core_liquid_v1",
+  "validation_metrics": {
+    "artifacts": [
+      "code_cached.txt",
+      "code_diff.txt",
+      "code_status.txt",
+      "label.pkl",
+      "pred.pkl",
+      "sig_analysis"
+    ],
+    "id": "86817728010f4f84b586bbe3fb9670c9",
+    "metrics": {
+      "l2.train": 0.9230769257301209,
+      "l2.valid": 0.9230769221655507
+    },
+    "name": "mlflow_recorder",
+    "params": {
+      "cmd-sys.argv": "/home/lishuonewbing/agent\u6d4b\u8bd5/integrations/qlib_adapter/run_qlib_workflow.py --config configs/qlib/us_lgbm_alpha158_daily.yaml --run-id qlib_us_core_daily_2020_2025",
+      "dataset.class": "DatasetH",
+      "dataset.kwargs.handler.class": "Alpha158",
+      "dataset.kwargs.handler.kwargs.end_time": "2025-12-31",
+      "dataset.kwargs.handler.kwargs.fit_end_time": "2023-12-31",
+      "dataset.kwargs.handler.kwargs.fit_start_time": "2020-01-01",
+      "dataset.kwargs.handler.kwargs.instruments": "all",
+      "dataset.kwargs.handler.kwargs.start_time": "2020-01-01",
+      "dataset.kwargs.handler.module_path": "qlib.contrib.data.handler",
+      "dataset.kwargs.segments.test": "[datetime.date(2025, 1, 1), datetime.date(2025, 12, 31)]",
+      "dataset.kwargs.segments.train": "[datetime.date(2020, 1, 1), datetime.date(2023, 12, 31)]",
+      "dataset.kwargs.segments.valid": "[datetime.date(2024, 1, 1), datetime.date(2024, 12, 31)]",
+      "dataset.module_path": "qlib.data.dataset",
+      "model.class": "LGBModel",
+      "model.kwargs.colsample_bytree": "0.8879",
+      "model.kwargs.lambda_l1": "205.6999",
+      "model.kwargs.lambda_l2": "580.9768",
+      "model.kwargs.learning_rate": "0.2",
+      "model.kwargs.loss": "mse",
+      "model.kwargs.max_depth": "8",
+      "model.kwargs.num_leaves": "210",
+      "model.kwargs.num_threads": "20",
+      "model.kwargs.subsample": "0.8789",
+      "model.module_path": "qlib.contrib.model.gbdt"
+    },
+    "tags": {
+      "mlflow.runName": "mlflow_recorder",
+      "mlflow.source.git.commit": "af2ef8d7381d4b0263a18d48059af1d76859af4c",
+      "mlflow.source.name": "/home/lishuonewbing/agent\u6d4b\u8bd5/integrations/qlib_adapter/run_qlib_workflow.py",
+      "mlflow.source.type": "LOCAL",
+      "mlflow.user": "lishuonewbing"
+    }
+  }
+}

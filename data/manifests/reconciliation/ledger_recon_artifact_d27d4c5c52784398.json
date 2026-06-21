@@ -1,0 +1,158 @@
+{
+  "artifact_hash": "d27d4c5c5278439839968ab99bc7bdaf16b4b90e7bff1c8abce7306da846bcf1",
+  "artifact_version": "ledger_reconciliation_v1",
+  "as_of_utc": "2024-01-02T14:34:00+00:00",
+  "cash": {
+    "cash_change": 0.0,
+    "final_cash": 100000.0,
+    "initial_cash": 100000
+  },
+  "fees": {
+    "total_fees": 0.0
+  },
+  "fills": {
+    "by_side": {
+      "buy": 2,
+      "sell": 2
+    },
+    "conflict_fill_count": 0,
+    "conflict_fill_keys": [],
+    "duplicate_fill_count": 0,
+    "duplicate_fill_keys": [],
+    "effective_fill_count": 4,
+    "empty_identity_count": 0,
+    "first_fill_at": "2024-01-02T14:31:00+00:00",
+    "last_fill_at": "2024-01-02T14:34:00+00:00",
+    "passed": true,
+    "raw_fill_count": 4,
+    "total_notional": 4000.0
+  },
+  "generated_at": "2024-01-02T14:34:00+00:00",
+  "hashes": {
+    "effective_fills_hash": "d58b5e3215cab5a2a2cf515d031a6ab152e33b7815cb43a0e7d7ebd87f407c4a",
+    "fills_hash": "d58b5e3215cab5a2a2cf515d031a6ab152e33b7815cb43a0e7d7ebd87f407c4a",
+    "ledger_hash": "3e85795ce25ee7d748aed1b3531f38da9486a9061a39e3dc8b6bd9507ce3b521",
+    "orders_hash": "2ebb4d898e64cac49033890ffe42d23397e475d97511ac810b8dc3facb5dfca7",
+    "portfolio_snapshots_hash": "f35ac3c3e769b0eb0c71eeb87720d0e023f2c11db377f7dfc8ee6ab7e5600cb4"
+  },
+  "initial_cash": 100000,
+  "integrity": {
+    "fills": {
+      "conflict_fill_count": 0,
+      "conflict_fill_keys": [],
+      "duplicate_fill_count": 0,
+      "duplicate_fill_keys": [],
+      "effective_fill_count": 4,
+      "empty_identity_count": 0,
+      "passed": true,
+      "raw_fill_count": 4
+    },
+    "passed": true
+  },
+  "orders": {
+    "by_side": {
+      "buy": 2,
+      "sell": 2
+    },
+    "by_status": {
+      "filled": 1,
+      "partially_filled": 3
+    },
+    "total_orders": 4
+  },
+  "pnl": {
+    "final_equity": 100000.0,
+    "initial_equity": 100000,
+    "net_pnl": 0.0,
+    "position_value": 0,
+    "source": "ledger_fills"
+  },
+  "positions": {},
+  "reconciliation": {
+    "adjustment_cross_check": null,
+    "snapshots": [
+      {
+        "diff": {
+          "cash": 0,
+          "equity": 0
+        },
+        "ledger_cash": 100000,
+        "ledger_equity": 100000,
+        "max_abs_diff": 0,
+        "max_pct_diff": 0.0,
+        "passed": true,
+        "snapshot_cash": 100000,
+        "snapshot_equity": 100000,
+        "timestamp_utc": "2024-01-02T14:30:00+00:00"
+      },
+      {
+        "diff": {
+          "cash": 0.0,
+          "equity": 0.0
+        },
+        "ledger_cash": 99000.0,
+        "ledger_equity": 100000.0,
+        "max_abs_diff": 0.0,
+        "max_pct_diff": 0.0,
+        "passed": true,
+        "snapshot_cash": 99000.0,
+        "snapshot_equity": 100000.0,
+        "timestamp_utc": "2024-01-02T14:31:00+00:00"
+      },
+      {
+        "diff": {
+          "cash": 0.0,
+          "equity": 0.0
+        },
+        "ledger_cash": 98000.0,
+        "ledger_equity": 100000.0,
+        "max_abs_diff": 0.0,
+        "max_pct_diff": 0.0,
+        "passed": true,
+        "snapshot_cash": 98000.0,
+        "snapshot_equity": 100000.0,
+        "timestamp_utc": "2024-01-02T14:32:00+00:00"
+      },
+      {
+        "diff": {
+          "cash": 0.0,
+          "equity": 0.0
+        },
+        "ledger_cash": 99000.0,
+        "ledger_equity": 100000.0,
+        "max_abs_diff": 0.0,
+        "max_pct_diff": 0.0,
+        "passed": true,
+        "snapshot_cash": 99000.0,
+        "snapshot_equity": 100000.0,
+        "timestamp_utc": "2024-01-02T14:33:00+00:00"
+      },
+      {
+        "diff": {
+          "cash": 0.0,
+          "equity": 0.0
+        },
+        "ledger_cash": 100000.0,
+        "ledger_equity": 100000.0,
+        "max_abs_diff": 0.0,
+        "max_pct_diff": 0.0,
+        "passed": true,
+        "snapshot_cash": 100000.0,
+        "snapshot_equity": 100000.0,
+        "timestamp_utc": "2024-01-02T14:34:00+00:00"
+      }
+    ],
+    "summary": {
+      "absolute_tolerance": 1e-06,
+      "max_abs_diff": 0.0,
+      "max_pct_diff": 0.0,
+      "message": "Consistent within 0.01% tolerance (max diff: 0.0000%, max abs: 0.000000)",
+      "passed": true,
+      "snapshot_count": 5,
+      "tolerance_pct": 0.01
+    }
+  },
+  "slippage": {
+    "realized_slippage_cost": 0.0
+  }
+}

@@ -1,0 +1,304 @@
+{
+  "asset": "btc",
+  "blockers": [
+    "btc_ws_l2_replay_research_capture_duration_below_contract",
+    "btc_ws_l2_replay_history_missing_for_event_ledger_window",
+    "btc_execution_latency_model_missing_ws_replay_receive_latency_is_not_execution_latency",
+    "btc_queue_model_missing_replay_depth_is_proxy_only"
+  ],
+  "branch": "main",
+  "candidate_generation_allowed": false,
+  "commit": "03cad6a",
+  "contract_satisfied": false,
+  "decision": "continue_public_ws_l2_capture_with_sequence_reconnect_latency_queue_validation_before_true_scalping",
+  "event_ledger_feature_validation_allowed": false,
+  "generated_at": "2026-06-20T18:09:17.787464+00:00",
+  "guardrails": {
+    "broker_calls_allowed": false,
+    "future_label_used_for_signal": false,
+    "live": "FROZEN",
+    "lookahead_used_for_signal": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_usable": false,
+    "paper_queue": "LOCKED",
+    "private_endpoints_allowed": false,
+    "production_ready": false,
+    "real_orders_created": false,
+    "research_only": true
+  },
+  "independent_checksum_validated": false,
+  "next_required_action": "extend_public_ws_l2_capture_then_add_reconnect_resync_latency_and_queue_reports",
+  "okx_checksum_deprecation_policy": {
+    "affected_channels": [
+      "books",
+      "books-l2-tbt",
+      "books50-l2-tbt"
+    ],
+    "announced_date": "2026-06-09",
+    "post_deprecation_checksum_value": 0,
+    "production_deprecation_date": "2026-06-23",
+    "required_integrity_check": "seqId_prevSeqId_continuity",
+    "source_url": "https://www.okx.com/docs-v5/log_en/"
+  },
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "replay_metrics": {
+    "final_ask_top5_notional": 27912046.645,
+    "final_bid_top5_notional": 28024992.845000003,
+    "spread_bps": {
+      "max": 0.015664933341564442,
+      "mean": 0.015664933341564442,
+      "median": 0.015664933341564442,
+      "min": 0.015664933341564442
+    },
+    "top1_depth_imbalance": {
+      "max": 0.09227145037467863,
+      "mean": -0.030254027396984816,
+      "median": -0.043852297995110825,
+      "min": -0.04452565133363481
+    },
+    "top5_depth_imbalance": {
+      "max": 0.11126947105536494,
+      "mean": -0.02859891177247506,
+      "median": -0.04351699123370048,
+      "min": -0.044187325345643055
+    }
+  },
+  "replay_sequence_ready": true,
+  "replay_summary": {
+    "applied_update_count": 13,
+    "book_message_count": 14,
+    "checksum_observed_count": 14,
+    "checksum_validation_status": "checksum_observed_deprecated_by_okx_sequence_policy_required",
+    "connection_count": 1,
+    "crossed_book_count": 0,
+    "delete_count": 54,
+    "final_ask_level_count": 400,
+    "final_best_ask": 63836.9,
+    "final_best_bid": 63836.8,
+    "final_bid_level_count": 400,
+    "forced_reconnect_after_messages": 0,
+    "forced_reconnect_count": 0,
+    "prev_seq_id_observed_count": 14,
+    "raw_message_count": 20,
+    "replayed_steps_sample": [
+      {
+        "action": "snapshot",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 3,
+        "checksum": -1544073543,
+        "prev_seq_id": -1,
+        "seq_id": 325022984688,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 4,
+        "checksum": 1669702762,
+        "prev_seq_id": 325022984688,
+        "seq_id": 325022984895,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 5,
+        "checksum": 420744781,
+        "prev_seq_id": 325022984895,
+        "seq_id": 325022984960,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 8,
+        "checksum": 1685990107,
+        "prev_seq_id": 325022984960,
+        "seq_id": 325022985037,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 9,
+        "checksum": -180560234,
+        "prev_seq_id": 325022985037,
+        "seq_id": 325022985055,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 10,
+        "checksum": -1985486299,
+        "prev_seq_id": 325022985055,
+        "seq_id": 325022985075,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 11,
+        "checksum": -2065938614,
+        "prev_seq_id": 325022985075,
+        "seq_id": 325022985098,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 12,
+        "checksum": 349972893,
+        "prev_seq_id": 325022985098,
+        "seq_id": 325022985119,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 13,
+        "checksum": 349972893,
+        "prev_seq_id": 325022985119,
+        "seq_id": 325022985152,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 14,
+        "checksum": 349972893,
+        "prev_seq_id": 325022985152,
+        "seq_id": 325022985199,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 17,
+        "checksum": 1575048384,
+        "prev_seq_id": 325022985199,
+        "seq_id": 325022985295,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 18,
+        "checksum": 1575048384,
+        "prev_seq_id": 325022985295,
+        "seq_id": 325022985312,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 19,
+        "checksum": 450329730,
+        "prev_seq_id": 325022985312,
+        "seq_id": 325022985377,
+        "spread_bps": 0.015664933341564442
+      },
+      {
+        "action": "update",
+        "ask_level_count": 400,
+        "best_ask": 63836.9,
+        "best_bid": 63836.8,
+        "bid_level_count": 400,
+        "capture_sequence": 20,
+        "checksum": -586911458,
+        "prev_seq_id": 325022985377,
+        "seq_id": 325022985493,
+        "spread_bps": 0.015664933341564442
+      }
+    ],
+    "seq_id_observed_count": 14,
+    "sequence_continuity_pass": true,
+    "sequence_gap_count": 0,
+    "sequence_issues": [],
+    "snapshot_count": 1,
+    "transport_gap_count": 0,
+    "update_count": 13
+  },
+  "schema_version": "btc_true_scalping_ws_order_book_replay_report_v1",
+  "scope": "research_only_ws_order_book_replay_no_candidate_no_paper_no_live",
+  "selected_bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1",
+  "source_files": {
+    "raw_capture_manifest": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/okx_public_ws_l2_raw_capture_manifest.json",
+      "row_count": 1
+    },
+    "raw_messages": {
+      "exists": true,
+      "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/okx_public_ws_l2_raw_messages.jsonl",
+      "row_count": 20
+    }
+  },
+  "source_reports": {
+    "ws_capture_report": "artifacts/btc_scalping_readiness/latest/btc_okx_public_ws_l2_raw_capture_report.json"
+  },
+  "status": "ws_order_book_replay_sequence_policy_verified_research_only_history_insufficient",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT",
+  "true_scalping_allowed": false,
+  "validation": {
+    "checksum_deprecation_policy_recorded": true,
+    "checksum_observed": true,
+    "execution_latency_model_ready": false,
+    "independent_checksum_validated": false,
+    "minimum_event_ledger_history_days_satisfied": false,
+    "minimum_research_capture_seconds_satisfied": false,
+    "non_crossed_book_pass": true,
+    "public_source_boundary_satisfied": true,
+    "queue_model_ready": false,
+    "raw_capture_ready": true,
+    "replay_sequence_ready": true,
+    "sequence_continuity_pass": true,
+    "sequence_integrity_policy_satisfied": true,
+    "snapshot_observed": true,
+    "spread_observed": true,
+    "updates_observed": true
+  },
+  "venue_symbol": "BTC-USDT-SWAP"
+}

@@ -1,0 +1,88 @@
+{
+  "generated_utc": "2026-05-12T05:06:06.400190+00:00",
+  "strategy_id": "btc_low_turnover_trend",
+  "params": {
+    "fast_ma": 48,
+    "slow_ma": 168,
+    "trend_ma": 336,
+    "vol_window": 72,
+    "min_volatility": 0.003,
+    "max_volatility": 0.06,
+    "trend_strength": 0.04,
+    "exit_buffer": 0.02
+  },
+  "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+  "symbols_tested": [
+    "BTCUSDT"
+  ],
+  "insufficient_data": false,
+  "aggregate": {
+    "total_windows": 2,
+    "windows_consistent": 2,
+    "oos_total_return_pct": -4.2404,
+    "oos_avg_sharpe": -0.1798,
+    "oos_avg_max_dd": -8.2379,
+    "oos_avg_turnover_pct": 0.0,
+    "oos_win_rate": 0.0,
+    "fold_pass_rate_pct": 0.0,
+    "symbol_coverage_pct": 100.0
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "train_start": "2024-01-01T00:00:00+00:00",
+      "train_end": "2025-07-14T06:00:00+00:00",
+      "test_start": "2025-07-14T07:00:00+00:00",
+      "test_end": "2025-12-12T03:00:00+00:00",
+      "strategy_id": "btc_low_turnover_trend",
+      "params": {
+        "fast_ma": 48,
+        "slow_ma": 168,
+        "trend_ma": 336,
+        "vol_window": 72,
+        "min_volatility": 0.003,
+        "max_volatility": 0.06,
+        "trend_strength": 0.04,
+        "exit_buffer": 0.02
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "result": {
+        "total_return_pct": -3.0525,
+        "sharpe_ratio": -0.1778,
+        "max_drawdown_pct": -4.0943,
+        "turnover_pct": 850.2444,
+        "trade_count": 213
+      },
+      "equity_consistent": true,
+      "pass": false
+    },
+    {
+      "fold": 1,
+      "train_start": "2024-05-30T21:00:00+00:00",
+      "train_end": "2025-12-12T03:00:00+00:00",
+      "test_start": "2025-12-12T04:00:00+00:00",
+      "test_end": "2026-05-12T00:00:00+00:00",
+      "strategy_id": "btc_low_turnover_trend",
+      "params": {
+        "fast_ma": 48,
+        "slow_ma": 168,
+        "trend_ma": 336,
+        "vol_window": 72,
+        "min_volatility": 0.003,
+        "max_volatility": 0.06,
+        "trend_strength": 0.04,
+        "exit_buffer": 0.02
+      },
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "result": {
+        "total_return_pct": -5.4282,
+        "sharpe_ratio": -0.1817,
+        "max_drawdown_pct": -8.2379,
+        "turnover_pct": 1799.5309,
+        "trade_count": 488
+      },
+      "equity_consistent": true,
+      "pass": false
+    }
+  ]
+}

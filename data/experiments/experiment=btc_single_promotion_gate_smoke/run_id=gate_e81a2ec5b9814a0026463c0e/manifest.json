@@ -1,0 +1,77 @@
+{
+  "artifacts": [
+    {
+      "artifact_type": "json",
+      "metadata": {
+        "data_version": "qs-sqlite-BTCUSDT-1h-5d6e1dfa7731",
+        "decision": "fail",
+        "manifest_id": "e81a2ec5b9814a0026463c0e",
+        "next_stage": "blocked"
+      },
+      "name": "promotion_manifest",
+      "path": "/home/lishuonewbing/agent\u6d4b\u8bd5/reports/research_gates/e81a2ec5b9814a0026463c0e.json"
+    }
+  ],
+  "completed_at": "2026-05-11T07:32:52.657948+00:00",
+  "created_at": "2026-05-11T07:32:52.657948+00:00",
+  "error": null,
+  "experiment_id": "exp_4fc1e8ec1a2f4678",
+  "metrics": {
+    "annual_return_pct": 54.9767,
+    "annual_volatility_pct": 20.5067,
+    "calmar_ratio": 10.5885,
+    "data_coverage_pct": 100.0,
+    "data_quality_score": 100.0,
+    "gate_fail_count": 2,
+    "gate_pass_count": 5,
+    "gate_warn_count": 1,
+    "max_drawdown_pct": -5.1921,
+    "profit_factor": 1.1577,
+    "promotion_score": 7.5,
+    "sharpe_ratio": 2.2389,
+    "sortino_ratio": 1.8895,
+    "total_return_pct": 5.6766,
+    "trade_count": 237,
+    "win_rate_pct": 47.3684
+  },
+  "run_id": "gate_e81a2ec5b9814a0026463c0e",
+  "spec": {
+    "asset_class": "crypto",
+    "bar_size": "1h",
+    "data_vendor": "sqlite",
+    "data_version": "qs-sqlite-BTCUSDT-1h-5d6e1dfa7731",
+    "dataset_run_id": "",
+    "end": "2024-02-15T23:00:00+00:00",
+    "experiment_name": "btc_single_promotion_gate_smoke",
+    "feature_version": "",
+    "model_id": "",
+    "notes": "BTC event-driven smoke from Codex integration.",
+    "parameters": {
+      "capital": 100000.0,
+      "commission_rate": 0.0004,
+      "leverage": 1.0,
+      "mode": "single",
+      "position_basis": "equity",
+      "skip_deep_checks": false,
+      "slippage": 4.0,
+      "strategy_params": {},
+      "weights": []
+    },
+    "promotion_decision": "fail",
+    "promotion_manifest_id": "e81a2ec5b9814a0026463c0e",
+    "promotion_stage": "blocked",
+    "run_type": "research_promotion_gate",
+    "start": "2024-01-01T00:00:00+00:00",
+    "strategy_id": "trend_macd",
+    "strategy_version": "strategy_78a21c9a41741e77",
+    "symbols": [
+      "BTCUSDT"
+    ],
+    "tags": [
+      "promotion_gate",
+      "single",
+      "fail"
+    ]
+  },
+  "status": "completed"
+}

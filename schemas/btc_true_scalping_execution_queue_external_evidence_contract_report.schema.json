@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_execution_queue_external_evidence_contract_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "venue_symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "import_manifest_root",
+    "thresholds",
+    "manifests",
+    "coverage_totals",
+    "validation",
+    "blockers",
+    "contract_satisfied",
+    "execution_latency_evidence_contract_satisfied",
+    "queue_position_evidence_contract_satisfied",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "true_scalping_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_execution_queue_external_evidence_contract_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "venue_symbol": {"const": "BTC-USDT-SWAP"},
+    "scope": {"const": "research_only_execution_queue_external_evidence_contract_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "execution_queue_external_evidence_contract_missing_or_invalid_research_only",
+        "execution_queue_external_evidence_contract_satisfied_research_only"
+      ]
+    },
+    "decision": {"type": "string"},
+    "next_required_action": {"type": "string"},
+    "import_manifest_root": {"type": "string"},
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_execution_latency_observations",
+        "minimum_queue_position_observations",
+        "required_execution_roles",
+        "required_queue_roles"
+      ],
+      "properties": {
+        "minimum_execution_latency_observations": {"type": "integer", "minimum": 100},
+        "minimum_queue_position_observations": {"type": "integer", "minimum": 100},
+        "required_execution_roles": {"type": "array", "items": {"type": "string"}},
+        "required_queue_roles": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "manifests": {"type": "array", "items": {"$ref": "#/$defs/importManifestSummary"}},
+    "coverage_totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_count",
+        "valid_manifest_count",
+        "valid_file_count",
+        "execution_latency_observation_file_count",
+        "execution_latency_model_file_count",
+        "queue_position_observation_file_count",
+        "queue_position_model_file_count",
+        "execution_latency_observation_count",
+        "queue_position_observation_count",
+        "remaining_execution_latency_observations",
+        "remaining_queue_position_observations"
+      ],
+      "properties": {
+        "manifest_count": {"type": "integer", "minimum": 0},
+        "valid_manifest_count": {"type": "integer", "minimum": 0},
+        "valid_file_count": {"type": "integer", "minimum": 0},
+        "execution_latency_observation_file_count": {"type": "integer", "minimum": 0},
+        "execution_latency_model_file_count": {"type": "integer", "minimum": 0},
+        "queue_position_observation_file_count": {"type": "integer", "minimum": 0},
+        "queue_position_model_file_count": {"type": "integer", "minimum": 0},
+        "execution_latency_observation_count": {"type": "integer", "minimum": 0},
+        "queue_position_observation_count": {"type": "integer", "minimum": 0},
+        "remaining_execution_latency_observations": {"type": "integer", "minimum": 0},
+        "remaining_queue_position_observations": {"type": "integer", "minimum": 0}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "import_manifests_present",
+        "read_only_export_boundary_satisfied",
+        "importer_private_order_broker_boundary_satisfied",
+        "file_integrity_satisfied",
+        "clock_sync_evidence_present",
+        "exchange_order_ids_present",
+        "queue_position_labels_present",
+        "execution_latency_observations_present",
+        "execution_latency_model_present",
+        "minimum_execution_latency_observations_satisfied",
+        "queue_position_observations_present",
+        "queue_position_model_present",
+        "minimum_queue_position_observations_satisfied",
+        "execution_latency_evidence_contract_satisfied",
+        "queue_position_evidence_contract_satisfied",
+        "contract_satisfied"
+      ],
+      "properties": {
+        "import_manifests_present": {"type": "boolean"},
+        "read_only_export_boundary_satisfied": {"type": "boolean"},
+        "importer_private_order_broker_boundary_satisfied": {"type": "boolean"},
+        "file_integrity_satisfied": {"type": "boolean"},
+        "clock_sync_evidence_present": {"type": "boolean"},
+        "exchange_order_ids_present": {"type": "boolean"},
+        "queue_position_labels_present": {"type": "boolean"},
+        "execution_latency_observations_present": {"type": "boolean"},
+        "execution_latency_model_present": {"type": "boolean"},
+        "minimum_execution_latency_observations_satisfied": {"type": "boolean"},
+        "queue_position_observations_present": {"type": "boolean"},
+        "queue_position_model_present": {"type": "boolean"},
+        "minimum_queue_position_observations_satisfied": {"type": "boolean"},
+        "execution_latency_evidence_contract_satisfied": {"type": "boolean"},
+        "queue_position_evidence_contract_satisfied": {"type": "boolean"},
+        "contract_satisfied": {"type": "boolean"}
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "contract_satisfied": {"type": "boolean"},
+    "execution_latency_evidence_contract_satisfied": {"type": "boolean"},
+    "queue_position_evidence_contract_satisfied": {"type": "boolean"},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "status_report_only",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed",
+        "real_orders_created",
+        "paper_queue",
+        "live",
+        "true_scalping_claim_allowed"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "status_report_only": {"const": true},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"},
+        "true_scalping_claim_allowed": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "importManifestSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_path",
+        "manifest_id",
+        "source_type",
+        "venue",
+        "venue_symbol",
+        "symbol",
+        "read_only_export",
+        "importer_private_endpoint_used",
+        "importer_order_endpoint_used",
+        "broker_calls_used",
+        "real_orders_created_for_this_import",
+        "clock_sync_evidence",
+        "exchange_order_ids_present",
+        "queue_position_labels_present",
+        "files",
+        "roles_present",
+        "blockers",
+        "valid_for_contract"
+      ],
+      "properties": {
+        "manifest_path": {"type": "string"},
+        "manifest_id": {"type": "string"},
+        "source_type": {"type": "string"},
+        "venue": {"type": "string"},
+        "venue_symbol": {"type": "string"},
+        "symbol": {"type": "string"},
+        "read_only_export": {"type": "boolean"},
+        "importer_private_endpoint_used": {"type": "boolean"},
+        "importer_order_endpoint_used": {"type": "boolean"},
+        "broker_calls_used": {"type": "boolean"},
+        "real_orders_created_for_this_import": {"type": "boolean"},
+        "clock_sync_evidence": {"type": "boolean"},
+        "exchange_order_ids_present": {"type": "boolean"},
+        "queue_position_labels_present": {"type": "boolean"},
+        "files": {"type": "array", "items": {"$ref": "#/$defs/importFileSummary"}},
+        "roles_present": {"type": "array", "items": {"type": "string"}},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "valid_for_contract": {"type": "boolean"}
+      }
+    },
+    "importFileSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "path",
+        "format",
+        "source_export",
+        "sample_count",
+        "sample_start",
+        "sample_end",
+        "sha256",
+        "actual_sha256",
+        "blockers",
+        "valid"
+      ],
+      "properties": {
+        "role": {"type": "string"},
+        "path": {"type": "string"},
+        "format": {"type": "string"},
+        "source_export": {"type": "string"},
+        "sample_count": {"type": "integer", "minimum": 0},
+        "sample_start": {"type": "string"},
+        "sample_end": {"type": "string"},
+        "sha256": {"type": "string"},
+        "actual_sha256": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "valid": {"type": "boolean"}
+      }
+    }
+  }
+}

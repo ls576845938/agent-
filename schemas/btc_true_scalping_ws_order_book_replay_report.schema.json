@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_ws_order_book_replay_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "venue_symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_reports",
+    "source_files",
+    "selected_bundle_dir",
+    "okx_checksum_deprecation_policy",
+    "replay_summary",
+    "replay_metrics",
+    "validation",
+    "blockers",
+    "replay_sequence_ready",
+    "independent_checksum_validated",
+    "contract_satisfied",
+    "event_ledger_feature_validation_allowed",
+    "true_scalping_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_ws_order_book_replay_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "venue_symbol": {"const": "BTC-USDT-SWAP"},
+    "scope": {"const": "research_only_ws_order_book_replay_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "ws_order_book_replay_sequence_policy_verified_research_only_history_insufficient",
+        "ws_order_book_replay_missing_or_invalid_research_only"
+      ]
+    },
+    "decision": {"const": "continue_public_ws_l2_capture_with_sequence_reconnect_latency_queue_validation_before_true_scalping"},
+    "next_required_action": {"type": "string"},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ws_capture_report"],
+      "properties": {
+        "ws_capture_report": {"type": ["string", "null"]}
+      }
+    },
+    "source_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw_messages", "raw_capture_manifest"],
+      "properties": {
+        "raw_messages": {"$ref": "#/$defs/sourceFile"},
+        "raw_capture_manifest": {"$ref": "#/$defs/sourceFile"}
+      }
+    },
+    "selected_bundle_dir": {"type": "string"},
+    "okx_checksum_deprecation_policy": {"$ref": "#/$defs/okxChecksumDeprecationPolicy"},
+    "replay_summary": {"$ref": "#/$defs/replaySummary"},
+    "replay_metrics": {"$ref": "#/$defs/replayMetrics"},
+    "validation": {"$ref": "#/$defs/validation"},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "replay_sequence_ready": {"type": "boolean"},
+    "independent_checksum_validated": {"const": false},
+    "contract_satisfied": {"const": false},
+    "event_ledger_feature_validation_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "guardrails": {"$ref": "#/$defs/guardrails"}
+  },
+  "$defs": {
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "exists", "row_count"],
+      "properties": {
+        "path": {"type": ["string", "null"]},
+        "exists": {"type": "boolean"},
+        "row_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "replaySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw_message_count",
+        "book_message_count",
+        "snapshot_count",
+        "update_count",
+        "applied_update_count",
+        "delete_count",
+        "final_bid_level_count",
+        "final_ask_level_count",
+        "sequence_continuity_pass",
+        "sequence_gap_count",
+        "sequence_issues",
+        "crossed_book_count",
+        "checksum_observed_count",
+        "seq_id_observed_count",
+        "prev_seq_id_observed_count",
+        "connection_count",
+        "forced_reconnect_after_messages",
+        "forced_reconnect_count",
+        "transport_gap_count",
+        "checksum_validation_status",
+        "final_best_bid",
+        "final_best_ask",
+        "replayed_steps_sample"
+      ],
+      "properties": {
+        "raw_message_count": {"type": "integer", "minimum": 0},
+        "book_message_count": {"type": "integer", "minimum": 0},
+        "snapshot_count": {"type": "integer", "minimum": 0},
+        "update_count": {"type": "integer", "minimum": 0},
+        "applied_update_count": {"type": "integer", "minimum": 0},
+        "delete_count": {"type": "integer", "minimum": 0},
+        "final_bid_level_count": {"type": "integer", "minimum": 0},
+        "final_ask_level_count": {"type": "integer", "minimum": 0},
+        "sequence_continuity_pass": {"type": "boolean"},
+        "sequence_gap_count": {"type": "integer", "minimum": 0},
+        "sequence_issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "crossed_book_count": {"type": "integer", "minimum": 0},
+        "checksum_observed_count": {"type": "integer", "minimum": 0},
+        "seq_id_observed_count": {"type": "integer", "minimum": 0},
+        "prev_seq_id_observed_count": {"type": "integer", "minimum": 0},
+        "connection_count": {"type": "integer", "minimum": 0},
+        "forced_reconnect_after_messages": {"type": "integer", "minimum": 0},
+        "forced_reconnect_count": {"type": "integer", "minimum": 0},
+        "transport_gap_count": {"type": "integer", "minimum": 0},
+        "checksum_validation_status": {"type": "string"},
+        "final_best_bid": {"type": ["number", "null"]},
+        "final_best_ask": {"type": ["number", "null"]},
+        "replayed_steps_sample": {
+          "type": "array",
+          "items": {"type": "object", "additionalProperties": true}
+        }
+      }
+    },
+    "replayMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "spread_bps",
+        "top1_depth_imbalance",
+        "top5_depth_imbalance",
+        "final_bid_top5_notional",
+        "final_ask_top5_notional"
+      ],
+      "properties": {
+        "spread_bps": {"$ref": "#/$defs/stats"},
+        "top1_depth_imbalance": {"$ref": "#/$defs/stats"},
+        "top5_depth_imbalance": {"$ref": "#/$defs/stats"},
+        "final_bid_top5_notional": {"type": "number", "minimum": 0},
+        "final_ask_top5_notional": {"type": "number", "minimum": 0}
+      }
+    },
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max", "mean", "median"],
+      "properties": {
+        "min": {"type": ["number", "null"]},
+        "max": {"type": ["number", "null"]},
+        "mean": {"type": ["number", "null"]},
+        "median": {"type": ["number", "null"]}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw_capture_ready",
+        "public_source_boundary_satisfied",
+        "snapshot_observed",
+        "updates_observed",
+        "sequence_continuity_pass",
+        "non_crossed_book_pass",
+        "spread_observed",
+        "checksum_observed",
+        "checksum_deprecation_policy_recorded",
+        "sequence_integrity_policy_satisfied",
+        "independent_checksum_validated",
+        "minimum_research_capture_seconds_satisfied",
+        "minimum_event_ledger_history_days_satisfied",
+        "execution_latency_model_ready",
+        "queue_model_ready",
+        "replay_sequence_ready"
+      ],
+      "properties": {
+        "raw_capture_ready": {"type": "boolean"},
+        "public_source_boundary_satisfied": {"type": "boolean"},
+        "snapshot_observed": {"type": "boolean"},
+        "updates_observed": {"type": "boolean"},
+        "sequence_continuity_pass": {"type": "boolean"},
+        "non_crossed_book_pass": {"type": "boolean"},
+        "spread_observed": {"type": "boolean"},
+        "checksum_observed": {"type": "boolean"},
+        "checksum_deprecation_policy_recorded": {"const": true},
+        "sequence_integrity_policy_satisfied": {"type": "boolean"},
+        "independent_checksum_validated": {"const": false},
+        "minimum_research_capture_seconds_satisfied": {"type": "boolean"},
+        "minimum_event_ledger_history_days_satisfied": {"type": "boolean"},
+        "execution_latency_model_ready": {"const": false},
+        "queue_model_ready": {"const": false},
+        "replay_sequence_ready": {"type": "boolean"}
+      }
+    },
+    "okxChecksumDeprecationPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_url",
+        "announced_date",
+        "production_deprecation_date",
+        "affected_channels",
+        "post_deprecation_checksum_value",
+        "required_integrity_check"
+      ],
+      "properties": {
+        "source_url": {"const": "https://www.okx.com/docs-v5/log_en/"},
+        "announced_date": {"const": "2026-06-09"},
+        "production_deprecation_date": {"const": "2026-06-23"},
+        "affected_channels": {
+          "type": "array",
+          "items": {"type": "string"},
+          "contains": {"const": "books"}
+        },
+        "post_deprecation_checksum_value": {"const": 0},
+        "required_integrity_check": {"const": "seqId_prevSeqId_continuity"}
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "production_ready",
+        "paper_or_live_usable",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed",
+        "real_orders_created",
+        "future_label_used_for_signal",
+        "lookahead_used_for_signal",
+        "paper_queue",
+        "live"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "production_ready": {"const": false},
+        "paper_or_live_usable": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "future_label_used_for_signal": {"const": false},
+        "lookahead_used_for_signal": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"}
+      }
+    }
+  }
+}

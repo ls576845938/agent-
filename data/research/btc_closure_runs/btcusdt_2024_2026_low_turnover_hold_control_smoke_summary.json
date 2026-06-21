@@ -1,0 +1,346 @@
+{
+  "status": "completed",
+  "decision": "fail",
+  "next_stage": "blocked",
+  "blocker_count": 15,
+  "first_blockers": [
+    "no BTC candidate passed cost stress, walk-forward, CPCV/DSR/PBO gates",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: validation total_return is not positive",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: validation sharpe < 1.0",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: validation profit_factor < 1.15",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: validation max_drawdown < -15.0%",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: validation trade_count < 10",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: cost survival_rate < 100.0%",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: walk_forward pass_rate < 80.0%",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: regime pass_rate < 75.0%",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: CPCV/DSR/PBO promotion contract blocked",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: DSR below promotion threshold",
+    "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72: multiple testing control did not pass"
+  ],
+  "candidate_count": 4,
+  "validated_candidate_count": 1,
+  "candidate": {
+    "strategy_id": "btc_low_turnover_trend",
+    "parameters": {
+      "fast_ma": 48,
+      "slow_ma": 168,
+      "trend_ma": 336,
+      "vol_window": 72,
+      "min_volatility": 0.002,
+      "max_volatility": 0.05,
+      "trend_strength": 0.03,
+      "exit_buffer": 0.02,
+      "entry_confirm_bars": 3,
+      "exit_confirm_bars": 6,
+      "min_hold_bars": 72,
+      "cooldown_bars": 24
+    },
+    "score": -3.072753,
+    "validation": {
+      "total_return_pct": -15.3549,
+      "annual_return_pct": -18.2615,
+      "annual_volatility_pct": 18.3925,
+      "sharpe_ratio": -1.0043,
+      "sortino_ratio": -0.57,
+      "max_drawdown_pct": -26.012,
+      "calmar_ratio": -0.702,
+      "win_rate_pct": 48.924,
+      "profit_factor": 0.9287,
+      "trade_count": 0,
+      "annual_turnover_pct": 0.0,
+      "avg_holding_bars": 77.5,
+      "cost_sensitivity": 0.0
+    },
+    "train": {
+      "total_return_pct": 56.1514,
+      "annual_return_pct": 33.6856,
+      "annual_volatility_pct": 34.3869,
+      "sharpe_ratio": 1.0167,
+      "sortino_ratio": 0.6843,
+      "max_drawdown_pct": -26.3413,
+      "calmar_ratio": 1.2788,
+      "win_rate_pct": 50.9126,
+      "profit_factor": 1.0668,
+      "trade_count": 0
+    },
+    "overfit_gap": 2.021,
+    "candidate_count": 4,
+    "optimizer_rank": 1,
+    "metrics": {
+      "annual_turnover_pct": 0.0,
+      "avg_holding_bars": 77.5,
+      "cost_sensitivity": 0.0
+    },
+    "turnover": {},
+    "holding_period": {},
+    "research_metadata": {
+      "runtime_hints": {
+        "max_annual_turnover_pct": 1500.0,
+        "min_holding_bars": 24,
+        "cost_aware_filter": true
+      }
+    },
+    "recommendations": [
+      "优先用最优参数进入下一轮 walk-forward，当前候选明显优于默认参数。",
+      "样本外回撤仍偏高，参数优化后还需要降低杠杆或增加回撤降仓规则。",
+      "样本外 Profit Factor 仍不足，优化方向应从入场过滤转向交易边际和成本控制。"
+    ],
+    "rank": 1,
+    "audit": {
+      "data_version": "qs-sqlite-BTCUSDT-1h-5cfb8d5f45d5",
+      "data_manifest_path": "/home/lishuonewbing/agent测试/data/manifests/qs-sqlite-BTCUSDT-1h-20240101T000000-23e70ff50f31.json",
+      "data_fingerprint": "5cfb8d5f45d542a75b1da342bd6820564b6b5c598065db66f4949525ac440fe4",
+      "strategy_version": "btc_low_turnover_trend:registry_signal_replay_v1",
+      "run_id_prefix": "btc_closure_btcusdt_1h_93bcde6e08fa",
+      "event_run_id": "btc_closure_btcusdt_1h_93bcde6e08fa_event",
+      "manifest_root": "data/manifests",
+      "data_root": "data",
+      "candidate_evidence_path": "data/research/btc_closure_runs/btc_closure_btcusdt_1h_93bcde6e08fa_strict_evidence.json"
+    },
+    "event_backtest_summary": {
+      "total_return_pct": 7.518,
+      "annual_return_pct": 3.1168,
+      "annual_volatility_pct": 19.2176,
+      "sharpe_ratio": 0.2559,
+      "sortino_ratio": 0.2399,
+      "max_drawdown_pct": -26.3302,
+      "calmar_ratio": 0.1184,
+      "win_rate_pct": 50.6076,
+      "profit_factor": 1.016,
+      "trade_count": 3056
+    },
+    "cost_stress_summary": {
+      "survival_rate_pct": 0.0,
+      "ledger_consistency_pct": 100.0,
+      "scenario_count": 2
+    },
+    "walk_forward_summary": {
+      "total_folds": 2,
+      "valid_folds": 2,
+      "passing_folds": 0,
+      "fold_pass_rate_pct": 0.0,
+      "pass_rate_pct": 0.0,
+      "window_count": 2,
+      "avg_oos_return_pct": -9.6085,
+      "median_oos_sharpe": -0.3069,
+      "worst_oos_drawdown_pct": -17.0458,
+      "parameter_stability_pct": 100.0,
+      "regime_pass_rate_pct": 0.0,
+      "ledger_equity_consistent_windows": 2,
+      "ledger_consistency_pct": 100.0,
+      "symbol_count": 1,
+      "symbols_covered": 1,
+      "symbols_insufficient": 0,
+      "symbol_details": {
+        "BTCUSDT": {
+          "folds": 2,
+          "passes": 0,
+          "bar_count": 20689
+        }
+      },
+      "manifest_path": "data/reports/walk_forward/walk_forward_btc_low_turnover_trend_20260512T051314.json"
+    },
+    "cpcv_summary": {
+      "status": "completed",
+      "path_count": 2,
+      "trial_count": 4,
+      "fold_sharpes": [
+        1.1361,
+        0.172
+      ]
+    },
+    "validation_statistics": {
+      "candidate_id": "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72",
+      "status": "complete",
+      "available_components": {
+        "cv_summary": true,
+        "trial_counting": true,
+        "deflated_sharpe_ratio": true,
+        "pbo": true,
+        "multiple_testing": true,
+        "lookahead_controls": true,
+        "net_return_distribution": true,
+        "cost_before_after": true
+      },
+      "cv_summary": {
+        "method": "cpcv",
+        "purged": true,
+        "purge_steps": 1,
+        "purge_recorded": true,
+        "embargoed": true,
+        "embargo_steps": 1,
+        "embargo_recorded": true,
+        "fold_count": 2,
+        "path_count": 2,
+        "train_window_count": 3,
+        "test_window_count": 1,
+        "pass_rate": 0.0,
+        "mean_oos_sharpe": 0.65405,
+        "median_oos_sharpe": 0.65405
+      },
+      "lookahead_controls": {
+        "recorded": true,
+        "guard": "event_driven_signal_replay_no_future_features",
+        "violations": [],
+        "passed": true
+      },
+      "trial_counting": {
+        "declared_trial_count": 4,
+        "param_grid_trial_count": 2,
+        "cv_path_count": 2,
+        "cv_fold_count": 2,
+        "cost_level_count": 2,
+        "trial_sharpe_count": 4,
+        "pbo_split_count": 2,
+        "independent_trial_count": 4,
+        "effective_trial_count": 4
+      },
+      "deflated_sharpe_ratio": {
+        "observed_sharpe": -1.0043,
+        "benchmark_sharpe": 0.934391,
+        "trial_count": 4,
+        "returns_count": 2,
+        "skew": 0.0,
+        "excess_kurtosis": 0.0,
+        "psr": 0.206441,
+        "dsr": 0.056977,
+        "passed": false
+      },
+      "pbo": {
+        "mode": "grouped_trials",
+        "group_count": 2,
+        "overfit_group_count": 0,
+        "pbo": 0.0,
+        "logit_mean": 1.098612,
+        "logit_median": 1.098612,
+        "passed": true
+      },
+      "multiple_testing": {
+        "mode": "familywise_error_control",
+        "familywise_alpha": 0.05,
+        "effective_trial_count": 4,
+        "independent_trial_count": 4,
+        "raw_p_value": 0.793559,
+        "bonferroni_alpha": 0.0125,
+        "sidak_alpha": 0.012741,
+        "dsr_p_value": 0.943023,
+        "passed": false
+      },
+      "net_return_distribution": {
+        "count": 2,
+        "mean": 13.46475,
+        "std": 20.968898,
+        "median": 13.46475,
+        "min": -1.3625,
+        "max": 28.292,
+        "p05": 0.120225,
+        "p25": 6.051125,
+        "p75": 20.878375,
+        "p95": 26.809275,
+        "negative_share": 0.5
+      },
+      "cost_before_after": {
+        "mode": "stress_curve",
+        "gross_return": null,
+        "net_return": -15.3549,
+        "gross_sharpe": null,
+        "net_sharpe": -1.0043,
+        "cost_drag_return": null,
+        "cost_drag_sharpe": null,
+        "baseline_multiplier": 1.0,
+        "worst_multiplier": 2.0,
+        "worst_return": 7.4266,
+        "worst_sharpe": 0.2544,
+        "stress_return_delta": -22.7815,
+        "surviving_levels": 2,
+        "level_count": 2
+      },
+      "promotion_gate_contract": {
+        "status": "blocked",
+        "required": {
+          "allowed_cv_methods": [
+            "cpcv",
+            "purged_kfold",
+            "embargoed_walk_forward"
+          ],
+          "required_cv_method": "cpcv",
+          "min_validation_paths": 2,
+          "min_effective_trial_count": 2,
+          "min_independent_trial_count": 2,
+          "min_dsr": 0.1,
+          "max_pbo": 0.5,
+          "familywise_alpha": 0.05,
+          "lookahead_guard_recorded": true
+        },
+        "observed": {
+          "cv_method": "cpcv",
+          "validation_paths": 2,
+          "purged": true,
+          "purge_recorded": true,
+          "embargoed": true,
+          "embargo_recorded": true,
+          "effective_trial_count": 4,
+          "independent_trial_count": 4,
+          "dsr": 0.056977,
+          "pbo": 0.0,
+          "multiple_testing_mode": "familywise_error_control",
+          "lookahead_guard_recorded": true,
+          "lookahead_violations": []
+        },
+        "checks": {
+          "cv_method_allowed": true,
+          "cpcv_available": true,
+          "purged_or_embargoed": true,
+          "purge_embargo_recorded": true,
+          "multi_path_validation": true,
+          "trial_count_sufficient": true,
+          "dsr_available": true,
+          "dsr_passed": false,
+          "pbo_available": true,
+          "pbo_passed": true,
+          "multiple_testing_complete": true,
+          "multiple_testing_passed": false,
+          "lookahead_guard_recorded": true,
+          "lookahead_guard_passed": true
+        }
+      }
+    },
+    "statistical_validation_blockers": [
+      "CPCV/DSR/PBO promotion contract blocked",
+      "DSR below promotion threshold",
+      "multiple testing control did not pass"
+    ],
+    "candidate_key": "btc_low_turnover_trend|cooldown_bars=24,entry_confirm_bars=3,exit_buffer=0.02,exit_confirm_bars=6,fast_ma=48,max_volatility=0.05,min_hold_bars=72,min_volatility=0.002,slow_ma=168,trend_ma=336,trend_strength=0.03,vol_window=72",
+    "qualified": false,
+    "selected": false,
+    "screening_metrics": {
+      "annual_turnover_pct": 0.0,
+      "avg_holding_bars": 77.5,
+      "cost_sensitivity": 0.0
+    },
+    "qualification_blockers": [
+      "validation total_return is not positive",
+      "validation sharpe < 1.0",
+      "validation profit_factor < 1.15",
+      "validation max_drawdown < -15.0%",
+      "validation trade_count < 10",
+      "cost survival_rate < 100.0%",
+      "walk_forward pass_rate < 80.0%",
+      "regime pass_rate < 75.0%",
+      "CPCV/DSR/PBO promotion contract blocked",
+      "DSR below promotion threshold",
+      "multiple testing control did not pass"
+    ]
+  },
+  "selected_candidate": null,
+  "closure_evidence_paths": [
+    "data/research/btc_closure_runs/btc_closure_btcusdt_1h_93bcde6e08fa_strict_evidence.json"
+  ],
+  "progress_stages": [
+    "data_integrity",
+    "candidate_screen",
+    "candidate_validation",
+    "promotion_gate",
+    "completed"
+  ]
+}

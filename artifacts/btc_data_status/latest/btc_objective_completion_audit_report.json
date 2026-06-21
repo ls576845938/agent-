@@ -1,0 +1,232 @@
+{
+  "blockers": [],
+  "generated_at": "2026-06-20T09:16:44Z",
+  "goal_complete": true,
+  "incomplete_requirements": [],
+  "next_required_action": "none",
+  "requirements": {
+    "archive_compression_expansion_breakout": {
+      "allowed_next_action": "archive_only",
+      "archive_recommended": true,
+      "archived_or_rejected": [
+        "perp_dual_trend",
+        "low_vol_uptrend",
+        "liquidation_shock_recovery",
+        "range_reclaim_momentum",
+        "compression_expansion_breakout"
+      ],
+      "attribution_status": "archived",
+      "blockers": [],
+      "evidence": {
+        "btc_research_registry": "artifacts/btc_research_registry/research_registry.json",
+        "compression_attribution_report": "artifacts/btc_candidate_attribution/latest_compression_expansion_attribution/attribution_report.json"
+      },
+      "limited_retest_allowed": false,
+      "live": "FROZEN",
+      "paper_queue": "LOCKED",
+      "paper_review_pending_allowed": false,
+      "paper_review_pending_created": false,
+      "promotion_ready": false,
+      "registry_next_action": "do_not_retest_without_new_hypothesis",
+      "registry_status": "archived",
+      "status": "complete"
+    },
+    "btc_hypothesis_lab_v2_controlled_search": {
+      "allowed_output_level": "hypothesis",
+      "blockers": [],
+      "candidate_generated": false,
+      "candidate_generation_allowed": false,
+      "decision": "hypothesis_rejected",
+      "evidence": {
+        "hypothesis_v2_decision": "artifacts/btc_hypothesis/20260517T020000Z_hypothesis_lab_v2_lifecycle/hypothesis_decision_v2.json",
+        "hypothesis_v2_manifest": "artifacts/btc_hypothesis/20260517T020000Z_hypothesis_lab_v2_lifecycle/run_manifest.json"
+      },
+      "forbidden_outputs": [
+        "strategy_skeleton",
+        "candidate_config",
+        "paper_order",
+        "live_order",
+        "broker_call"
+      ],
+      "generated_artifacts": [
+        "lifecycle_aware_distribution_report.json",
+        "compression_expansion_lifecycle_report.json",
+        "hypothesis_decision_v2.json",
+        "compression_expansion_hypothesis_decision_v2.json",
+        "paper_live_safety_status.json",
+        "run_manifest.json"
+      ],
+      "live": "FROZEN",
+      "mode": "hypothesis_level_only",
+      "paper_or_live_side_effects_allowed": false,
+      "paper_queue": "LOCKED",
+      "status": "complete",
+      "strategy_skeleton_generated": false,
+      "strategy_skeleton_generation_allowed": false,
+      "strategy_skeleton_path": ""
+    },
+    "funding_info_endpoint_policy_repair": {
+      "blockers": [],
+      "completion_criteria": [
+        "provider_metadata_verified=true",
+        "manual_metadata_import_report.schema_version=btc_manual_metadata_import_report_v1",
+        "manual_metadata_import_report.status=verified",
+        "manual_metadata_import_report.writes_performed=true",
+        "manual_metadata_import_report.bundle_dir matches selected BTC bundle",
+        "manual_metadata_import_report.bundle_dir contains exchange_info.json and funding_info.json",
+        "manual_metadata_import_report.exchange_info_output_sha256 matches selected bundle exchange_info.json",
+        "manual_metadata_import_report.funding_info_output_sha256 matches selected bundle funding_info.json",
+        "manual_metadata_import_report.captured_at=UTC ISO-8601",
+        "manual_metadata_import_report.post_import_validation_command=make validate-btc-public-data-bundle",
+        "exchange_info_raw.exists=true with path, size_bytes, and sha256",
+        "funding_info_raw.exists=true with path, size_bytes, and sha256",
+        "exchange_info_raw.http_status=200 and funding_info_raw.http_status=200",
+        "raw_input_files.current_file_verified=true when import report is used for completion"
+      ],
+      "endpoint_response_available": true,
+      "evidence": {
+        "manual_capture_operator_packet": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_operator_packet.json",
+        "manual_metadata_import_report": "artifacts/btc_data_status/latest/btc_manual_metadata_import_report.json",
+        "manual_readiness_report": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_readiness_report.json",
+        "provider_verification_report": "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json",
+        "public_capture_attempt_report": "artifacts/btc_data_status/latest/btc_public_metadata_capture_attempt_report.json"
+      },
+      "import_bundle_dir": {
+        "exchange_info_exists": true,
+        "exchange_info_output_hash_verified": true,
+        "exists": true,
+        "funding_info_exists": true,
+        "funding_info_output_hash_verified": true,
+        "matches_selected_bundle": true,
+        "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1",
+        "selected_bundle_configured": true,
+        "selected_bundle_path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1"
+      },
+      "import_captured_at": "2026-06-05T04:52:31Z",
+      "import_status": "verified",
+      "import_writes_performed": true,
+      "last_capture_status": "not_executed",
+      "last_http_status": null,
+      "manual_capture_required": false,
+      "operator_action": "no_manual_capture_required",
+      "raw_input_files": {
+        "exchange_info_raw": {
+          "current_file_verified": true,
+          "exists": true,
+          "http_status": 200,
+          "http_status_file": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/exchange_info_http_status.txt",
+          "http_status_verified": true,
+          "path": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/exchange_info_raw.json",
+          "sha256": "3e28c1cbf9de5caa182499fe2c55aed4afe9fda5c78c74ae4ea91a12bdf66c86",
+          "size_bytes": 1439
+        },
+        "funding_info_raw": {
+          "current_file_verified": true,
+          "exists": true,
+          "http_status": 200,
+          "http_status_file": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/funding_info_http_status.txt",
+          "http_status_verified": true,
+          "path": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/funding_info_raw.json",
+          "sha256": "7fb901c04c2abe7900cfd02c69d3b0737c5d05c2605447838dfe9766511ffbfc",
+          "size_bytes": 687
+        }
+      },
+      "status": "complete",
+      "verified": true
+    },
+    "funding_ledger_net_pnl_integration": {
+      "blockers": [],
+      "evidence": {
+        "funding_ledger_report": "artifacts/btc_cost_model/latest/btc_funding_ledger_report.json"
+      },
+      "expected_funding_adjusted_net_pnl_total": 6942.355122006122,
+      "funding_adjusted_ledger_exists": true,
+      "funding_adjusted_ledger_funding_pnl_total": -3.268677993883,
+      "funding_adjusted_ledger_net_pnl_after_total": 6942.355122006117,
+      "funding_adjusted_ledger_net_pnl_before_total": 6945.6238,
+      "funding_adjusted_ledger_path": "artifacts/btc_cost_model/latest/funding_adjusted_trade_ledger.csv",
+      "funding_adjusted_ledger_reconciled_to_report": true,
+      "funding_adjusted_ledger_trade_count": 80,
+      "funding_adjusted_net_pnl_reconciled": true,
+      "funding_adjusted_net_pnl_reconciliation_delta": 0.0,
+      "funding_adjusted_net_pnl_total": 6942.355122006117,
+      "funding_events_count": 284,
+      "funding_merged_into_net_ledger": true,
+      "funding_payment_count": 284,
+      "funding_payment_in_ledger": true,
+      "funding_pnl_total": -3.268677993879,
+      "status": "complete",
+      "trade_ledger_net_pnl_total": 6945.6238
+    },
+    "manual_exchange_info_capture": {
+      "blockers": [],
+      "completion_criteria": [
+        "provider_metadata_verified=true",
+        "manual_metadata_import_report.schema_version=btc_manual_metadata_import_report_v1",
+        "manual_metadata_import_report.status=verified",
+        "manual_metadata_import_report.writes_performed=true",
+        "manual_metadata_import_report.bundle_dir matches selected BTC bundle",
+        "manual_metadata_import_report.bundle_dir contains exchange_info.json and funding_info.json",
+        "manual_metadata_import_report.exchange_info_output_sha256 matches selected bundle exchange_info.json",
+        "manual_metadata_import_report.funding_info_output_sha256 matches selected bundle funding_info.json",
+        "manual_metadata_import_report.captured_at=UTC ISO-8601",
+        "manual_metadata_import_report.post_import_validation_command=make validate-btc-public-data-bundle",
+        "exchange_info_raw.exists=true with path, size_bytes, and sha256",
+        "funding_info_raw.exists=true with path, size_bytes, and sha256",
+        "exchange_info_raw.http_status=200 and funding_info_raw.http_status=200",
+        "raw_input_files.current_file_verified=true when import report is used for completion"
+      ],
+      "evidence": {
+        "manual_capture_operator_packet": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_operator_packet.json",
+        "manual_metadata_import_report": "artifacts/btc_data_status/latest/btc_manual_metadata_import_report.json",
+        "manual_readiness_report": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_readiness_report.json",
+        "provider_verification_report": "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json",
+        "public_capture_attempt_report": "artifacts/btc_data_status/latest/btc_public_metadata_capture_attempt_report.json"
+      },
+      "import_bundle_dir": {
+        "exchange_info_exists": true,
+        "exchange_info_output_hash_verified": true,
+        "exists": true,
+        "funding_info_exists": true,
+        "funding_info_output_hash_verified": true,
+        "matches_selected_bundle": true,
+        "path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1",
+        "selected_bundle_configured": true,
+        "selected_bundle_path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1"
+      },
+      "import_captured_at": "2026-06-05T04:52:31Z",
+      "import_status": "verified",
+      "import_writes_performed": true,
+      "last_capture_status": "not_executed",
+      "last_http_status": null,
+      "manual_capture_required": false,
+      "operator_action": "no_manual_capture_required",
+      "raw_input_files": {
+        "exchange_info_raw": {
+          "current_file_verified": true,
+          "exists": true,
+          "http_status": 200,
+          "http_status_file": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/exchange_info_http_status.txt",
+          "http_status_verified": true,
+          "path": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/exchange_info_raw.json",
+          "sha256": "3e28c1cbf9de5caa182499fe2c55aed4afe9fda5c78c74ae4ea91a12bdf66c86",
+          "size_bytes": 1439
+        },
+        "funding_info_raw": {
+          "current_file_verified": true,
+          "exists": true,
+          "http_status": 200,
+          "http_status_file": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/funding_info_http_status.txt",
+          "http_status_verified": true,
+          "path": "artifacts/btc_data_status/latest/okx_public_metadata_raw_capture/funding_info_raw.json",
+          "sha256": "7fb901c04c2abe7900cfd02c69d3b0737c5d05c2605447838dfe9766511ffbfc",
+          "size_bytes": 687
+        }
+      },
+      "status": "complete",
+      "verified": true
+    }
+  },
+  "schema_version": "btc_objective_completion_audit_report_v1",
+  "status": "complete"
+}

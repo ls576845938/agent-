@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_ws_reconnect_resync_policy_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "venue_symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_reports",
+    "source_replay_summary",
+    "resync_policy",
+    "validation",
+    "blockers",
+    "resync_policy_ready",
+    "contract_satisfied",
+    "event_ledger_feature_validation_allowed",
+    "true_scalping_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_ws_reconnect_resync_policy_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "venue_symbol": {"const": "BTC-USDT-SWAP"},
+    "scope": {"const": "research_only_ws_reconnect_resync_policy_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "ws_reconnect_resync_policy_exercised_research_only_history_latency_queue_insufficient",
+        "ws_reconnect_resync_policy_documented_research_only_not_exercised_history_latency_queue_insufficient",
+        "ws_reconnect_resync_policy_missing_or_replay_not_ready_research_only"
+      ]
+    },
+    "decision": {"const": "extend_public_ws_l2_capture_with_resync_policy_then_measure_latency_and_queue"},
+    "next_required_action": {"type": "string"},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ws_order_book_replay_report"],
+      "properties": {
+        "ws_order_book_replay_report": {"type": ["string", "null"]}
+      }
+    },
+    "source_replay_summary": {"$ref": "#/$defs/sourceReplaySummary"},
+    "resync_policy": {"$ref": "#/$defs/resyncPolicy"},
+    "validation": {"$ref": "#/$defs/validation"},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "resync_policy_ready": {"type": "boolean"},
+    "contract_satisfied": {"const": false},
+    "event_ledger_feature_validation_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "guardrails": {"$ref": "#/$defs/guardrails"}
+  },
+  "$defs": {
+    "sourceReplaySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "replay_sequence_ready",
+        "snapshot_count",
+        "applied_update_count",
+        "sequence_gap_count",
+        "crossed_book_count",
+        "seq_id_observed_count",
+        "prev_seq_id_observed_count",
+        "connection_count",
+        "forced_reconnect_count",
+        "transport_gap_count"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "replay_sequence_ready": {"type": "boolean"},
+        "snapshot_count": {"type": "integer", "minimum": 0},
+        "applied_update_count": {"type": "integer", "minimum": 0},
+        "sequence_gap_count": {"type": "integer", "minimum": 0},
+        "crossed_book_count": {"type": "integer", "minimum": 0},
+        "seq_id_observed_count": {"type": "integer", "minimum": 0},
+        "prev_seq_id_observed_count": {"type": "integer", "minimum": 0},
+        "connection_count": {"type": "integer", "minimum": 0},
+        "forced_reconnect_count": {"type": "integer", "minimum": 0},
+        "transport_gap_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "resyncPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "integrity_source",
+        "local_book_state_machine",
+        "valid_segment_requires",
+        "failure_actions",
+        "feature_emission_policy"
+      ],
+      "properties": {
+        "policy_id": {"const": "btc_okx_public_ws_l2_reconnect_resync_policy_v1"},
+        "integrity_source": {"const": "seqId_prevSeqId_continuity"},
+        "local_book_state_machine": {
+          "type": "array",
+          "items": {"type": "object", "additionalProperties": true},
+          "minItems": 3
+        },
+        "valid_segment_requires": {
+          "type": "array",
+          "items": {"type": "string"},
+          "contains": {"const": "prevSeqId_equals_last_seqId_for_every_update"}
+        },
+        "failure_actions": {
+          "type": "array",
+          "items": {"type": "object", "additionalProperties": true},
+          "minItems": 4
+        },
+        "feature_emission_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "emit_features_only_from_active_valid_segment",
+            "drop_features_after_gap_until_next_snapshot",
+            "never_forward_partial_book_after_gap"
+          ],
+          "properties": {
+            "emit_features_only_from_active_valid_segment": {"const": true},
+            "drop_features_after_gap_until_next_snapshot": {"const": true},
+            "never_forward_partial_book_after_gap": {"const": true}
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_replay_report_ready",
+        "source_replay_sequence_ready",
+        "public_source_boundary_satisfied",
+        "snapshot_before_updates_policy_documented",
+        "sequence_gap_handling_documented",
+        "crossed_book_handling_documented",
+        "transport_disconnect_handling_documented",
+        "feature_emission_guard_documented",
+        "actual_reconnect_or_gap_exercised",
+        "minimum_research_capture_seconds_satisfied",
+        "minimum_event_ledger_history_days_satisfied",
+        "execution_latency_model_ready",
+        "queue_model_ready",
+        "resync_policy_ready"
+      ],
+      "properties": {
+        "source_replay_report_ready": {"type": "boolean"},
+        "source_replay_sequence_ready": {"type": "boolean"},
+        "public_source_boundary_satisfied": {"type": "boolean"},
+        "snapshot_before_updates_policy_documented": {"const": true},
+        "sequence_gap_handling_documented": {"const": true},
+        "crossed_book_handling_documented": {"const": true},
+        "transport_disconnect_handling_documented": {"const": true},
+        "feature_emission_guard_documented": {"const": true},
+        "actual_reconnect_or_gap_exercised": {"type": "boolean"},
+        "minimum_research_capture_seconds_satisfied": {"type": "boolean"},
+        "minimum_event_ledger_history_days_satisfied": {"type": "boolean"},
+        "execution_latency_model_ready": {"const": false},
+        "queue_model_ready": {"const": false},
+        "resync_policy_ready": {"type": "boolean"}
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "production_ready",
+        "paper_or_live_usable",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed",
+        "real_orders_created",
+        "future_label_used_for_signal",
+        "lookahead_used_for_signal",
+        "paper_queue",
+        "live"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "production_ready": {"const": false},
+        "paper_or_live_usable": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "future_label_used_for_signal": {"const": false},
+        "lookahead_used_for_signal": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"}
+      }
+    }
+  }
+}

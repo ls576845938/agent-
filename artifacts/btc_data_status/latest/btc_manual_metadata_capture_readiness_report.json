@@ -1,0 +1,95 @@
+{
+  "blockers": [],
+  "branch": "main",
+  "bundle_dir": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1",
+  "commit": "cbe4b54",
+  "exchange_info": {
+    "allowed_endpoint": "GET /api/v5/public/instruments",
+    "blockers": [],
+    "current_overlay_path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/exchange_info.json",
+    "forbidden_endpoint_families": [
+      "account",
+      "order",
+      "trade",
+      "position",
+      "listenKey",
+      "userData",
+      "leverage",
+      "margin",
+      "transfer",
+      "broker",
+      "income",
+      "balance",
+      "withdrawal"
+    ],
+    "manual_capture_required": false,
+    "required_fields": [
+      "raw_symbol_info.instId=BTC-USDT-SWAP",
+      "raw_symbol_info.instType=SWAP",
+      "raw_symbol_info.state=live",
+      "tickSz",
+      "lotSz",
+      "minSz",
+      "ctVal",
+      "api_key_used=false",
+      "private_endpoint_used=false",
+      "auth_headers_present=false"
+    ],
+    "source_url": "https://www.okx.com/api/v5/public/instruments?instType=SWAP",
+    "validate_command": "python3 scripts/build_btc_exchange_info_overlay.py --bundle-dir data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1 --validate-only",
+    "verified": true,
+    "wrapper_command": "atomic_importer_only: use post_capture_commands[0]"
+  },
+  "funding_info": {
+    "allowed_endpoint": "GET /api/v5/public/funding-rate",
+    "blockers": [],
+    "current_overlay_path": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/funding_info.json",
+    "empty_response_allowed": false,
+    "endpoint_response_available": true,
+    "funding_interval_hours": 8.0,
+    "funding_interval_inference_confidence": "high",
+    "funding_interval_source": "funding_info_endpoint",
+    "manual_capture_required": false,
+    "source_method": "public_rest_response",
+    "source_url": "https://www.okx.com/api/v5/public/funding-rate?instId=BTC-USDT-SWAP",
+    "validate_command": "python3 scripts/build_btc_funding_info_overlay.py --bundle-dir data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1 --validate-only",
+    "verified": true,
+    "wrapper_command": "atomic_importer_only: use post_capture_commands[0]"
+  },
+  "generated_at": "2026-06-20T09:16:44Z",
+  "last_public_metadata_capture_status": {
+    "blockers": [
+      "btc_public_metadata_exchange_info_capture_not_executed",
+      "btc_public_metadata_funding_info_capture_not_executed",
+      "btc_public_metadata_capture_not_executed"
+    ],
+    "exchange_info_capture_status": "not_executed",
+    "exchange_info_http_status": null,
+    "funding_info_capture_status": "not_executed",
+    "funding_info_http_status": null,
+    "network_called": false,
+    "next_required_action": "manual_capture_from_allowed_network",
+    "status": "capture_incomplete"
+  },
+  "latest_public_metadata_capture_attempt": "artifacts/btc_data_status/latest/btc_public_metadata_capture_attempt_report.json",
+  "manual_capture_operator_packet": "artifacts/btc_data_status/latest/btc_manual_metadata_capture_operator_packet.json",
+  "perpetual_evidence_ready": true,
+  "post_capture_commands": [
+    "make apply-btc-manual-metadata-import EXCHANGE_INFO_RAW=exchange_info_raw.json FUNDING_INFO_RAW=funding_info_raw.json EXCHANGE_INFO_HTTP_STATUS=exchange_info_http_status.txt FUNDING_INFO_HTTP_STATUS=funding_info_http_status.txt BTC_MANUAL_METADATA_CAPTURED_AT=<UTC_CAPTURE_TIME>",
+    "python3 scripts/build_btc_perpetual_data_bundle_manifest.py --bundle-dir data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1 --bundle-id btc_okx_swap_btcusdt_history_365d_v1 --source-type production --promotion-clean-allowed --source-provider okx_swap --exchange okx_swap --symbol BTCUSDT --market-type usds_m_perpetual --license-note \"OKX public swap market data local archive and manual public metadata capture.\"",
+    "make validate-btc-public-data-bundle",
+    "make validate-btc-public-data-bundle-strict",
+    "make rebuild-btc-paper-readiness-chain"
+  ],
+  "provider_verification_report": "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json",
+  "safety": {
+    "api_key_required": false,
+    "compression_expansion_state": "archived",
+    "order_endpoints_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoints_allowed": false,
+    "strategy_retest_allowed": false
+  },
+  "schema_version": "btc_manual_metadata_capture_readiness_report_v1",
+  "status": "metadata_verified"
+}

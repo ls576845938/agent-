@@ -1,0 +1,41 @@
+{
+  "adopted_in_v4": false,
+  "best_by_profit_factor": {
+    "manifest_path": "artifacts/btc_canonical/20260516T061000Z_attribution/manifests/run_btc_perp_dual_trend_v3_sizing_only_orderflow_ablation.json",
+    "max_drawdown_pct": -8.5566,
+    "mode": "sizing_only",
+    "orderflow_entry_trigger_allowed": false,
+    "profit_factor": 1.0219,
+    "sharpe": 0.6198,
+    "signal_changed_bars": 1959,
+    "signal_nonzero_bars": 3970,
+    "total_return_pct": 8.3285,
+    "trade_count": 448,
+    "veto_count": 20034
+  },
+  "no_orderflow": {
+    "manifest_path": "artifacts/btc_canonical/20260516T061000Z_attribution/manifests/run_btc_perp_dual_trend_v3_no_orderflow_orderflow_ablation.json",
+    "max_drawdown_pct": -8.5324,
+    "mode": "no_orderflow",
+    "orderflow_entry_trigger_allowed": false,
+    "profit_factor": 1.0176,
+    "sharpe": 0.4216,
+    "signal_changed_bars": 58,
+    "signal_nonzero_bars": 3970,
+    "total_return_pct": 3.848,
+    "trade_count": 47,
+    "veto_count": 20034
+  },
+  "orderflow_entry_trigger_allowed": false,
+  "orderflow_forced_into_v4": false,
+  "reasons": [
+    "previous ablation conclusion was do_not_force_orderflow",
+    "sizing modes increased fill activity and signal changes without solving event_PF",
+    "v4 keeps order-flow diagnostic-only unless both event_PF and WF improve"
+  ],
+  "run_id": "20260604T132400Z_okx_bounded_retest",
+  "schema_version": "btc_orderflow_keepout_confirmation_v1",
+  "source_conclusion": "do_not_force_orderflow",
+  "source_run_id": "20260516T061000Z_attribution",
+  "v4_orderflow_mode": "diagnostic_only"
+}

@@ -1,0 +1,176 @@
+{
+  "archived_or_rejected_families": [
+    {
+      "family_id": "compression_expansion_breakout",
+      "last_run_id": "20260516T133000Z_compression_expansion_eventledger",
+      "next_action": "do_not_retest_without_new_hypothesis",
+      "reason": "hypothesis layer passed but full-lifecycle event-ledger candidate failed event_PF, walk-forward, and regime gates; v2 lifecycle gate rejected the raw/target-active edge",
+      "status": "archived"
+    },
+    {
+      "family_id": "liquidation_shock_recovery",
+      "last_run_id": "20260517T010000Z_liquidation_shock_attribution",
+      "next_action": "do_not_generate_v2_or_v3",
+      "reason": "full-ledger event_PF 0.998; lifecycle drag; no ablation passed",
+      "status": "archived"
+    },
+    {
+      "family_id": "low_vol_uptrend",
+      "last_run_id": "20260516T120000Z_lowvol_uptrend",
+      "next_action": "do_not_optimize_rejected_hypothesis",
+      "reason": "event_PF_proxy 0.979469; fold stability failed",
+      "status": "hypothesis_rejected"
+    },
+    {
+      "family_id": "perp_dual_trend",
+      "last_run_id": "20260516T100000Z_eventreturn_alpha",
+      "next_action": "do_not_resurrect_without_new_hypothesis",
+      "reason": "event_PF stuck near 1.01-1.02; no stable repair pattern",
+      "status": "archived"
+    },
+    {
+      "family_id": "range_reclaim_momentum",
+      "last_run_id": "20260518T010000Z_range_reclaim_lifecycle",
+      "next_action": "do_not_generate_skeleton",
+      "reason": "full_lifecycle_event_PF_proxy=1.098985; fold_pass_rate_lifecycle=0.250000",
+      "status": "hypothesis_rejected"
+    }
+  ],
+  "archived_or_rejected_family_count": 5,
+  "asset": "btc",
+  "blockers": [
+    "btc_strategy_family_dual_trend_micro_surgery_rejected",
+    "btc_strategy_family_selected_okx_bundle_history_too_short",
+    "btc_strategy_family_selected_okx_1h_klines_too_short",
+    "btc_strategy_family_selected_okx_funding_history_too_short",
+    "btc_strategy_family_candidate_generation_blocked_until_okx_history_extended"
+  ],
+  "branch": "main",
+  "candidate_families": [
+    {
+      "family": "funding_carry_reversion",
+      "family_id": "funding_carry_reversion_v0",
+      "primary_edge_inputs": [
+        "funding_rate",
+        "premium_index",
+        "mark_price",
+        "perpetual_ohlcv"
+      ],
+      "priority": 1,
+      "selection_status": "selected_next"
+    },
+    {
+      "family": "basis_premium_convergence",
+      "family_id": "basis_premium_convergence_v0",
+      "primary_edge_inputs": [
+        "premium_index",
+        "mark_price",
+        "index_price"
+      ],
+      "priority": 2,
+      "selection_status": "backlog"
+    },
+    {
+      "family": "funding_window_execution_overlay",
+      "family_id": "funding_window_flattening_v0",
+      "primary_edge_inputs": [
+        "funding_rate",
+        "funding_interval",
+        "position_lifecycle"
+      ],
+      "priority": 3,
+      "selection_status": "overlay_only_not_standalone_alpha"
+    }
+  ],
+  "candidate_generation_allowed": false,
+  "commit": "cbe4b54",
+  "data_prerequisites": {
+    "data_status": "partial",
+    "funding_rate_record_count": 284,
+    "klines_1h_record_count": 2266,
+    "min_required_1h_bars": 8760,
+    "min_required_funding_events": 1095,
+    "min_required_history_days": 365.0,
+    "present_roles": [
+      "exchange_info",
+      "funding_info",
+      "funding_rate",
+      "klines_1d",
+      "klines_1h",
+      "klines_4h",
+      "mark_price_klines_1h",
+      "open_interest_current",
+      "premium_index_klines_1h"
+    ],
+    "provider_perpetual_evidence_ready": true,
+    "provider_preflight_pass": true,
+    "required_roles": [
+      "exchange_info",
+      "funding_info",
+      "funding_rate",
+      "klines_1h",
+      "mark_price_klines_1h",
+      "premium_index_klines_1h"
+    ],
+    "selected_bundle_duration_days": 94.333333,
+    "selected_bundle_id": "btc_okx_swap_btcusdt_history_365d_v1",
+    "selected_bundle_manifest": "data/external/btc_perpetual/okx_swap/bundles/btc_okx_swap_btcusdt_history_365d_v1/btc_perpetual_bundle_manifest.json",
+    "selected_provider": "okx_swap"
+  },
+  "decision": "select_funding_carry_reversion_hypothesis",
+  "generated_at": "2026-06-20T09:16:55Z",
+  "guardrails": {
+    "binance_disabled_for_current_provider_policy": true,
+    "broker_calls_allowed": false,
+    "candidate_generation_allowed": false,
+    "hypothesis_distribution_allowed": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoints_allowed": false,
+    "research_only": true,
+    "reuse_archived_price_action_families_allowed": false,
+    "strategy_skeleton_generation_allowed": false
+  },
+  "hypothesis_distribution_allowed": false,
+  "interpretation": [
+    "selected next family funding_carry_reversion_v0 is materially different from dual-trend",
+    "current selected OKX bundle btc_okx_swap_btcusdt_history_365d_v1 covers only 94.333333 days",
+    "extend OKX public history before any funding/carry hypothesis distribution, candidate generation, or paper review"
+  ],
+  "next_hypothesis_decision": "reject_same_family_micro_surgery",
+  "next_hypothesis_status": "dual_trend_micro_surgery_rejected",
+  "next_required_action": "extend_okx_public_history_before_hypothesis_or_candidate_generation",
+  "paper_or_live_unlock_allowed": false,
+  "paper_review_pending_allowed": false,
+  "promotion_allowed": false,
+  "schema_version": "btc_strategy_family_roadmap_report_v1",
+  "scope": "research_only_no_candidate_no_paper_no_live",
+  "selected_next_family": {
+    "core_hypothesis": "extreme funding and premium can identify crowded perpetual positioning; the strategy should earn or avoid carry while trading only when lifecycle risk is bounded",
+    "family": "funding_carry_reversion",
+    "family_id": "funding_carry_reversion_v0",
+    "forbidden_shortcuts": [
+      "do not reuse dual-trend entry logic as the primary edge",
+      "do not optimize Sharpe before event_PF, cost, and walk-forward pass",
+      "do not use Binance-disabled provider data as OKX promotion evidence"
+    ],
+    "priority": 1,
+    "required_public_data": [
+      "1h perpetual klines",
+      "1h mark price klines",
+      "1h premium/index proxy",
+      "8h funding rate history",
+      "exchange rules",
+      "maker/taker fee tier"
+    ],
+    "status": "data_blocked",
+    "why_materially_different": "uses funding, premium, and mark/index structure as primary inputs instead of price-trend continuation"
+  },
+  "source_data_status": "artifacts/btc_data_status/latest/btc_data_status_report.json",
+  "source_next_hypothesis_decision_report": "artifacts/btc_candidate_gate/latest/btc_next_hypothesis_decision_report.json",
+  "source_provider_verification": "artifacts/btc_data_status/latest/btc_perpetual_provider_verification_report.json",
+  "source_research_registry": "artifacts/btc_research_registry/research_registry.json",
+  "status": "family_design_data_blocked",
+  "strategy_skeleton_generation_allowed": false,
+  "symbol": "BTCUSDT"
+}

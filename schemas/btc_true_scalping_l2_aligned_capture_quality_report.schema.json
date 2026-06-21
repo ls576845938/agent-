@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_l2_aligned_capture_quality_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "venue_symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_reports",
+    "selected_bundle_dir",
+    "thresholds",
+    "source_files",
+    "alignment_quality",
+    "validation",
+    "blockers",
+    "format_contract_satisfied",
+    "contract_satisfied",
+    "event_ledger_feature_validation_allowed",
+    "true_scalping_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_l2_aligned_capture_quality_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "venue_symbol": {"const": "BTC-USDT-SWAP"},
+    "scope": {"const": "research_only_l2_aligned_capture_quality_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "aligned_l2_capture_format_verified_research_only_history_insufficient",
+        "aligned_l2_capture_missing_or_invalid_research_only"
+      ]
+    },
+    "decision": {"const": "continue_public_l2_capture_until_research_and_event_history_thresholds_are_met"},
+    "next_required_action": {"type": "string"},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["data_contract", "capture_report"],
+      "properties": {
+        "data_contract": {"type": ["string", "null"]},
+        "capture_report": {"type": ["string", "null"]}
+      }
+    },
+    "selected_bundle_dir": {"type": "string"},
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_research_capture_seconds",
+        "minimum_event_ledger_history_days",
+        "minimum_book_depth_levels",
+        "required_alignment_max_clock_skew_ms",
+        "minimum_trade_rows",
+        "minimum_book_rows"
+      ],
+      "properties": {
+        "minimum_research_capture_seconds": {"type": "integer", "minimum": 3600},
+        "minimum_event_ledger_history_days": {"type": "integer", "minimum": 30},
+        "minimum_book_depth_levels": {"type": "integer", "minimum": 50},
+        "required_alignment_max_clock_skew_ms": {"type": "integer", "minimum": 1},
+        "minimum_trade_rows": {"type": "integer", "minimum": 1},
+        "minimum_book_rows": {"type": "integer", "minimum": 1}
+      }
+    },
+    "source_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agg_trades_aligned", "order_book_depth_aligned", "l2_alignment_manifest"],
+      "properties": {
+        "agg_trades_aligned": {"$ref": "#/$defs/fileQuality"},
+        "order_book_depth_aligned": {"$ref": "#/$defs/fileQuality"},
+        "l2_alignment_manifest": {"$ref": "#/$defs/manifestQuality"}
+      }
+    },
+    "alignment_quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trade_row_count",
+        "book_level_row_count",
+        "trade_sequence_count",
+        "book_sequence_count",
+        "same_capture_sequence_count",
+        "aligned_sequence_count",
+        "sequence_receive_gaps_ms",
+        "capture_duration_seconds",
+        "event_ledger_history_days",
+        "max_book_level",
+        "spread_bps_observed",
+        "depth_notional_observed",
+        "trade_aggressor_flow_observed",
+        "minimum_research_capture_seconds_satisfied",
+        "minimum_event_ledger_history_days_satisfied",
+        "minimum_book_depth_levels_satisfied"
+      ],
+      "properties": {
+        "trade_row_count": {"type": "integer", "minimum": 0},
+        "book_level_row_count": {"type": "integer", "minimum": 0},
+        "trade_sequence_count": {"type": "integer", "minimum": 0},
+        "book_sequence_count": {"type": "integer", "minimum": 0},
+        "same_capture_sequence_count": {"type": "integer", "minimum": 0},
+        "aligned_sequence_count": {"type": "integer", "minimum": 0},
+        "sequence_receive_gaps_ms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["capture_sequence", "local_receive_gap_ms"],
+            "properties": {
+              "capture_sequence": {"type": "integer"},
+              "local_receive_gap_ms": {"type": "number", "minimum": 0}
+            }
+          }
+        },
+        "capture_duration_seconds": {"type": "number", "minimum": 0},
+        "event_ledger_history_days": {"type": "number", "minimum": 0},
+        "max_book_level": {"type": "integer", "minimum": 0},
+        "spread_bps_observed": {"type": "boolean"},
+        "depth_notional_observed": {"type": "boolean"},
+        "trade_aggressor_flow_observed": {"type": "boolean"},
+        "minimum_research_capture_seconds_satisfied": {"type": "boolean"},
+        "minimum_event_ledger_history_days_satisfied": {"type": "boolean"},
+        "minimum_book_depth_levels_satisfied": {"type": "boolean"}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "files_ready",
+        "public_source_boundary_satisfied",
+        "same_window_trade_book_alignment_satisfied",
+        "spread_slippage_queue_replay_inputs_partial",
+        "minimum_research_capture_seconds_satisfied",
+        "minimum_event_ledger_history_days_satisfied",
+        "execution_latency_model_ready",
+        "queue_model_ready",
+        "format_contract_satisfied",
+        "manifest_public_rest_only",
+        "capture_report_status"
+      ],
+      "properties": {
+        "files_ready": {"type": "boolean"},
+        "public_source_boundary_satisfied": {"type": "boolean"},
+        "same_window_trade_book_alignment_satisfied": {"type": "boolean"},
+        "spread_slippage_queue_replay_inputs_partial": {"type": "boolean"},
+        "minimum_research_capture_seconds_satisfied": {"type": "boolean"},
+        "minimum_event_ledger_history_days_satisfied": {"type": "boolean"},
+        "execution_latency_model_ready": {"const": false},
+        "queue_model_ready": {"const": false},
+        "format_contract_satisfied": {"type": "boolean"},
+        "manifest_public_rest_only": {"type": "boolean"},
+        "capture_report_status": {"type": "string"}
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "format_contract_satisfied": {"type": "boolean"},
+    "contract_satisfied": {"const": false},
+    "event_ledger_feature_validation_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "guardrails": {"$ref": "#/$defs/guardrails"}
+  },
+  "$defs": {
+    "fileQuality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "exists", "row_count", "required_fields_present", "missing_fields"],
+      "properties": {
+        "path": {"type": ["string", "null"]},
+        "exists": {"type": "boolean"},
+        "row_count": {"type": "integer", "minimum": 0},
+        "required_fields_present": {"type": "boolean"},
+        "missing_fields": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "manifestQuality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "exists",
+        "row_count",
+        "required_fields_present",
+        "missing_fields",
+        "public_data_only",
+        "public_channel_count"
+      ],
+      "properties": {
+        "path": {"type": ["string", "null"]},
+        "exists": {"type": "boolean"},
+        "row_count": {"type": "integer", "minimum": 0},
+        "required_fields_present": {"type": "boolean"},
+        "missing_fields": {"type": "array", "items": {"type": "string"}},
+        "public_data_only": {"type": "boolean"},
+        "public_channel_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "production_ready",
+        "paper_or_live_usable",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed",
+        "real_orders_created",
+        "future_label_used_for_signal",
+        "lookahead_used_for_signal",
+        "paper_queue",
+        "live"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "production_ready": {"const": false},
+        "paper_or_live_usable": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "future_label_used_for_signal": {"const": false},
+        "lookahead_used_for_signal": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"}
+      }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "allowed_endpoints": {
+    "exchange_info": "GET /fapi/v1/exchangeInfo",
+    "funding_info": "GET /fapi/v1/fundingInfo"
+  },
+  "blockers": [
+    "btc_public_metadata_exchange_info_capture_not_executed",
+    "btc_public_metadata_funding_info_capture_not_executed",
+    "btc_public_metadata_capture_not_executed"
+  ],
+  "endpoint_results": {
+    "exchange_info": {
+      "blockers": [
+        "btc_public_metadata_exchange_info_capture_not_executed"
+      ],
+      "capture_status": "not_executed",
+      "endpoint": "GET /fapi/v1/exchangeInfo",
+      "http_status": null,
+      "network_called": false,
+      "record_count": 0,
+      "required_for": "exchange_info_verification",
+      "response_error_excerpt": "",
+      "url": "https://fapi.binance.com/fapi/v1/exchangeInfo?symbol=BTCUSDT"
+    },
+    "funding_info": {
+      "blockers": [
+        "btc_public_metadata_funding_info_capture_not_executed"
+      ],
+      "capture_status": "not_executed",
+      "endpoint": "GET /fapi/v1/fundingInfo",
+      "http_status": null,
+      "network_called": false,
+      "record_count": 0,
+      "required_for": "funding_info_endpoint_verification",
+      "response_error_excerpt": "",
+      "url": "https://fapi.binance.com/fapi/v1/fundingInfo"
+    }
+  },
+  "generated_at": "2026-06-20T09:16:44Z",
+  "network_called": false,
+  "next_required_action": "manual_capture_from_allowed_network",
+  "raw_capture_artifacts": {
+    "apply_import_command": "",
+    "blockers": [],
+    "dry_run_import_command": "",
+    "enabled": false,
+    "exchange_info_http_status": null,
+    "exchange_info_raw": null,
+    "funding_info_http_status": null,
+    "funding_info_raw": null,
+    "output_root": null,
+    "writes_performed": false
+  },
+  "safety": {
+    "api_key_required": false,
+    "order_endpoints_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoints_allowed": false,
+    "strategy_retest_allowed": false,
+    "writes_bundle_files": false
+  },
+  "schema_version": "btc_public_metadata_capture_attempt_report_v1",
+  "status": "capture_incomplete",
+  "symbol": "BTCUSDT"
+}

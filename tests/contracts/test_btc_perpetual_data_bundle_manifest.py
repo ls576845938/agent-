@@ -85,6 +85,29 @@ def test_open_interest_and_liquidation_are_diagnostic_not_required(tmp_path: Pat
     assert "btc_liquidation_snapshots_missing_diagnostic_only" in payload["blockers"]
 
 
+def test_microstructure_diagnostic_files_are_recorded_when_present(tmp_path: Path) -> None:
+    bundle = tmp_path / "bundle"
+    _write_required_files(bundle)
+    (bundle / "agg_trades.csv").write_text("timestamp,price,size\n2026-01-01T00:00:00Z,1,1\n", encoding="utf-8")
+    (bundle / "order_book_depth.csv").write_text(
+        "timestamp,side,level,price,size\n2026-01-01T00:00:00Z,bid,1,1,1\n",
+        encoding="utf-8",
+    )
+
+    payload = build_btc_perpetual_data_bundle_manifest(
+        bundle_dir=bundle,
+        bundle_id="fixture_bundle",
+        source_type="fixture",
+        source_provider="okx_swap",
+        license_note="test fixture",
+    )
+    by_role = {item["role"]: item for item in payload["files"]}
+
+    assert by_role["agg_trades"]["source_endpoint_or_archive"] == "/api/v5/market/history-trades"
+    assert by_role["order_book_depth"]["source_endpoint_or_archive"] == "/api/v5/market/books"
+    assert by_role["order_book_depth"]["record_count"] == 1
+
+
 def _write_required_files(bundle: Path) -> None:
     bundle.mkdir(parents=True, exist_ok=True)
     for filename in REQUIRED_FILES:

@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_microstructure_readiness_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_data_status",
+    "selected_provider",
+    "selected_bundle_id",
+    "selected_bundle_dir",
+    "evidence",
+    "blockers",
+    "true_scalping_research_design_allowed",
+    "true_scalping_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "guardrails",
+    "allowed_next_actions"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_microstructure_readiness_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "status": {
+      "enum": [
+        "blocked_microstructure_evidence_missing",
+        "microstructure_evidence_ready_research_only"
+      ]
+    },
+    "decision": {"type": "string"},
+    "next_required_action": {"type": "string"},
+    "source_data_status": {"type": ["string", "null"]},
+    "selected_provider": {"type": "string"},
+    "selected_bundle_id": {"type": "string"},
+    "selected_bundle_dir": {"type": "string"},
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "one_minute_klines",
+        "tick_or_agg_trade_history",
+        "order_book_depth_history",
+        "spread_model",
+        "latency_model",
+        "queue_position_model"
+      ],
+      "properties": {
+        "one_minute_klines": {"$ref": "#/$defs/oneMinuteEvidence"},
+        "tick_or_agg_trade_history": {"$ref": "#/$defs/fileEvidence"},
+        "order_book_depth_history": {"$ref": "#/$defs/fileEvidence"},
+        "spread_model": {"$ref": "#/$defs/modelEvidence"},
+        "latency_model": {"$ref": "#/$defs/modelEvidence"},
+        "queue_position_model": {"$ref": "#/$defs/modelEvidence"}
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "true_scalping_research_design_allowed": {"type": "boolean"},
+    "true_scalping_allowed": {"const": false},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "read_only",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed",
+        "real_orders_created",
+        "paper_queue",
+        "live"
+      ],
+      "properties": {
+        "read_only": {"const": true},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"}
+      }
+    },
+    "allowed_next_actions": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "$defs": {
+    "oneMinuteEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "data_version",
+        "manifest_path",
+        "row_count",
+        "expected_rows",
+        "coverage_pct",
+        "quality_score",
+        "start",
+        "end"
+      ],
+      "properties": {
+        "status": {"enum": ["pass", "fail", "missing"]},
+        "data_version": {"type": ["string", "null"]},
+        "manifest_path": {"type": ["string", "null"]},
+        "row_count": {"type": "integer", "minimum": 0},
+        "expected_rows": {"type": "integer", "minimum": 0},
+        "coverage_pct": {"type": "number", "minimum": 0},
+        "quality_score": {"type": "number", "minimum": 0},
+        "start": {"type": ["string", "null"]},
+        "end": {"type": ["string", "null"]}
+      }
+    },
+    "fileEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence_id", "bundle_dir", "required_any_of", "files"],
+      "properties": {
+        "status": {"enum": ["pass", "missing"]},
+        "evidence_id": {"type": "string"},
+        "bundle_dir": {"type": "string"},
+        "required_any_of": {"type": "array", "items": {"type": "string"}},
+        "files": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "modelEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence_id", "required_any_of", "files"],
+      "properties": {
+        "status": {"enum": ["pass", "fail", "missing"]},
+        "evidence_id": {"type": "string"},
+        "required_any_of": {"type": "array", "items": {"type": "string"}},
+        "files": {"type": "array", "items": {"type": "string"}},
+        "model_status": {"type": "string"},
+        "model_schema_version": {"type": "string"},
+        "model_id": {"type": "string"},
+        "evidence_grade": {"type": "string"},
+        "sample_count": {"type": "integer", "minimum": 0},
+        "model_blockers": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

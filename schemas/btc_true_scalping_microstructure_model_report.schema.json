@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_microstructure_model_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "status",
+    "decision",
+    "selected_provider",
+    "selected_bundle_id",
+    "selected_bundle_dir",
+    "source_files",
+    "models",
+    "blockers",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_microstructure_model_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "status": {"enum": ["pass", "fail"]},
+    "decision": {"type": "string"},
+    "selected_provider": {"type": "string"},
+    "selected_bundle_id": {"type": "string"},
+    "selected_bundle_dir": {"type": "string"},
+    "source_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agg_trades", "order_book_depth", "capture_report"],
+      "properties": {
+        "agg_trades": {"$ref": "#/$defs/sourceFile"},
+        "order_book_depth": {"$ref": "#/$defs/sourceFile"},
+        "capture_report": {"$ref": "#/$defs/sourceFile"}
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spread_model", "latency_model", "queue_position_model"],
+      "properties": {
+        "spread_model": {"$ref": "#/$defs/modelSummary"},
+        "latency_model": {"$ref": "#/$defs/modelSummary"},
+        "queue_position_model": {"$ref": "#/$defs/modelSummary"}
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "production_ready",
+        "paper_or_live_usable",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "production_ready": {"const": false},
+        "paper_or_live_usable": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "exists", "row_count"],
+      "properties": {
+        "path": {"type": ["string", "null"]},
+        "exists": {"type": "boolean"},
+        "row_count": {"type": ["integer", "null"], "minimum": 0}
+      }
+    },
+    "modelSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "schema_version",
+        "status",
+        "model_id",
+        "evidence_grade",
+        "sample_count",
+        "production_ready",
+        "paper_or_live_usable",
+        "blockers"
+      ],
+      "properties": {
+        "path": {"type": "string"},
+        "schema_version": {"const": "btc_true_scalping_microstructure_model_v1"},
+        "status": {"enum": ["pass", "fail", "missing"]},
+        "model_id": {"type": "string"},
+        "evidence_grade": {"type": "string"},
+        "sample_count": {"type": "integer", "minimum": 0},
+        "production_ready": {"const": false},
+        "paper_or_live_usable": {"const": false},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}
