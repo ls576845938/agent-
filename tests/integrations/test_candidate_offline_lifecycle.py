@@ -1,5 +1,6 @@
 """Real default composition + real HTTP routes, complete sealed synthetic inputs."""
-from dataclasses import asdict
+from dataclasses import asdict, replace
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 from pathlib import Path
@@ -20,9 +21,24 @@ from backend.app.api.candidate_offline import build_candidate_offline_router
 from backend.app.core.backend_access_policy import evaluate_backend_access
 
 KEY = "synthetic-local-management-only"
+_CANDIDATE_OFFLINE_V1_OBSERVATION_FIELDS = (
+    "event_time_utc", "close_price", "mark_price", "index_price", "delayed_open_price",
+    "funding_rate", "funding_cashflow_usdt", "blockers", "end_of_window", "maintenance_facts",
+)
 
 
-def default_fixture(tmp_path, case, *, enabled=True, profile="candidate_management"):
+def _serialize_candidate_offline_v1_observation(observation):
+    """Emit the exact synthetic v1 wire shape; never discard v2 funding facts."""
+    raw = asdict(observation)
+    settlements = raw.get("funding_settlements")
+    if settlements:
+        raise ValueError("synthetic_v1_fixture_cannot_drop_funding_settlements")
+    if set(raw) != {*_CANDIDATE_OFFLINE_V1_OBSERVATION_FIELDS, "funding_settlements"}:
+        raise ValueError("synthetic_v1_fixture_wire_fields_invalid")
+    return {name: raw[name] for name in _CANDIDATE_OFFLINE_V1_OBSERVATION_FIELDS}
+
+
+def default_fixture(tmp_path, case, *, enabled=True, profile="candidate_management", guarded_archive=False):
     old, oldrow, kw, _ = prepared(tmp_path, case)
     management = tmp_path / "new-management"; management.mkdir()
     (management / "accounts.json").write_bytes(old.accounts.path.read_bytes())
@@ -40,7 +56,8 @@ def default_fixture(tmp_path, case, *, enabled=True, profile="candidate_manageme
     frozen_ref = write("frozen.json", frozen)
     input_row = {"input_revision_id": "synthetic-input-v1", "evidence_kind": "synthetic_fixture", "input_head": old.head,
         "bars": write("bars.json", json.loads(kw["bars"].to_json(orient="records", date_format="iso", double_precision=15))),
-        "observations": write("observations.json", [asdict(o) for o in kw["observations"]]),
+        "observations": write("observations.json", [_serialize_candidate_offline_v1_observation(o)
+            for o in kw["observations"]]),
         "manifest": write("manifest.json", kw["market_manifest"])}
     input_row["content_digest"] = digest(input_row)
     catalog = {"schema_version": "candidate_offline_catalog_v1", "repository_owner": digest({"repository": str(ROOT.resolve())}),
@@ -54,7 +71,18 @@ def default_fixture(tmp_path, case, *, enabled=True, profile="candidate_manageme
         candidate_offline_catalog=str(tmp_path / ref["path"]), candidate_offline_catalog_sha256=ref["sha256"],
         candidate_offline_catalog_revision="fixture-v1", candidate_offline_enabled=enabled, backend_evidence_profile=profile)
     before = sorted(str(p) for p in tmp_path.rglob("*"))
-    delivery = build_delivery_service(settings, archive=ResearchArchiveCatalog(repo_root=ROOT), qlib_root=tmp_path, head=old.head)
+    archive = ResearchArchiveCatalog(repo_root=ROOT)
+    research_roots = None
+    if guarded_archive:
+        from backend.app.services.candidate_delivery_bootstrap import (
+            CandidateResearchArchiveGuard,
+            resolve_candidate_research_roots,
+        )
+
+        research_roots = resolve_candidate_research_roots(settings, qlib_root=tmp_path)
+        archive = CandidateResearchArchiveGuard(research_roots, archive)
+    delivery = build_delivery_service(settings, archive=archive, qlib_root=tmp_path,
+        head=old.head, research_roots=research_roots)
     offline = build_offline_service(settings, delivery)
     assert before == sorted(str(p) for p in tmp_path.rglob("*"))
     app = FastAPI()
@@ -67,6 +95,80 @@ def default_fixture(tmp_path, case, *, enabled=True, profile="candidate_manageme
         operator="operator", management_key=KEY), prefix="/api")
     app.include_router(build_candidate_offline_router(offline), prefix="/api")
     return app, delivery, offline, input_row, kw, settings
+
+
+def test_candidate_offline_v1_fixture_wire_is_exact_and_refuses_funding_downgrade():
+    from quant_crypto.application.qlib_offline_replay import CandidateMarketObservation, FundingSettlementFact
+
+    observation = CandidateMarketObservation(
+        event_time_utc=datetime(2026, 1, 1, tzinfo=timezone.utc),
+        close_price=100.0,
+        mark_price=100.1,
+        index_price=99.9,
+        delayed_open_price=100.0,
+        funding_rate=0.0001,
+    )
+    wire = _serialize_candidate_offline_v1_observation(observation)
+    assert tuple(wire) == _CANDIDATE_OFFLINE_V1_OBSERVATION_FIELDS
+    assert "funding_settlements" not in wire
+
+    settlement = FundingSettlementFact(
+        event_id="synthetic-v2-funding-fact",
+        event_time_utc=observation.event_time_utc + timedelta(hours=1),
+        rate=0.0001,
+        source_record_id="synthetic-v2-funding-record",
+        source_dataset="synthetic-v2-funding-dataset",
+        source_version="synthetic-v2-funding-version",
+        source_sha256="0" * 64,
+    )
+    with pytest.raises(ValueError, match="synthetic_v1_fixture_cannot_drop_funding_settlements"):
+        _serialize_candidate_offline_v1_observation(replace(
+            observation, funding_settlements=(settlement,)))
+
+
+def test_candidate_offline_production_loader_keeps_v1_v2_rejection_boundaries(tmp_path):
+    from backend.app.services.candidate_delivery_store import DeliveryError
+    from backend.app.services.candidate_offline_inputs import OfflineInputs
+    from quant_crypto.application.qlib_offline_replay import CandidateMarketObservation
+
+    catalog_path = tmp_path / "offline-catalog.json"
+
+    def write(name, value):
+        path = tmp_path / name
+        raw = json.dumps(value, default=str, ensure_ascii=False).encode()
+        path.write_bytes(raw)
+        return {"path": name, "sha256": hashlib.sha256(raw).hexdigest()}
+
+    def inputs_for(row):
+        catalog = {"schema_version": "candidate_offline_catalog_v1",
+            "repository_owner": digest({"repository": str(ROOT.resolve())}), "revision": "fixture-v1",
+            "factory_root": "factory", "qlib_root": ".", "sources": [], "inputs": [row]}
+        raw = json.dumps(catalog, default=str, ensure_ascii=False).encode()
+        catalog_path.write_bytes(raw)
+        return OfflineInputs(catalog_path, hashlib.sha256(raw).hexdigest(), "fixture-v1", repo=ROOT)
+
+    observation = CandidateMarketObservation(
+        event_time_utc=datetime(2026, 1, 1, tzinfo=timezone.utc), close_price=100.0,
+        mark_price=100.1, index_price=99.9, delayed_open_price=100.0, funding_rate=0.0001)
+    v1_with_extra = asdict(observation)
+    assert v1_with_extra["funding_settlements"] == ()
+    row = {"input_revision_id": "synthetic-input-v1", "evidence_kind": "synthetic_fixture",
+        "input_head": "a" * 40,
+        "manifest": write("manifest.json", {"schema_version": "synthetic_fixture_manifest_v1"}),
+        "bars": write("bars.json", [{"event_time": "2026-01-01T00:00:00+00:00",
+            "available_time": "2026-01-01T01:00:00+00:00", "decision_time": "2026-01-01T01:00:00+00:00"}]),
+        "observations": write("observations.json", [v1_with_extra])}
+    row["content_digest"] = digest({key: value for key, value in row.items() if key != "content_digest"})
+    with pytest.raises(DeliveryError, match="offline_observation_facts_missing_or_extra"):
+        inputs_for(row).load(row["input_revision_id"], row["content_digest"])
+
+    v2_missing_required_references = {**row, "schema_version": "candidate_offline_input_v2",
+        "observations": write("observations-v1.json", [_serialize_candidate_offline_v1_observation(observation)])}
+    v2_missing_required_references["content_digest"] = digest({key: value
+        for key, value in v2_missing_required_references.items() if key != "content_digest"})
+    with pytest.raises(DeliveryError, match="offline_input_revision_mismatch"):
+        inputs_for(v2_missing_required_references).load(
+            v2_missing_required_references["input_revision_id"], v2_missing_required_references["content_digest"])
 
 
 def publish_register(client, source):
@@ -151,6 +253,146 @@ def test_default_bootstrap_publish_http_start_result_and_idempotency(tmp_path, c
             assert code == 0 and repeated == first.json()
             code, linked = cli(url, KEY, "result", identity)
             assert code == 0 and linked["result"] == result["result"]
+
+
+def test_external_catalog_guard_reaches_registered_worker(tmp_path, cases):
+    app, delivery, offline, input_row, _, _ = default_fixture(
+        tmp_path, cases[0], guarded_archive=True)
+    with TestClient(app, headers={"X-API-Key": KEY}) as client:
+        row = publish_register(client, cases[0][0]["source"])
+        body = {"registration_id": row["id"], "content_digest": row["content_digest"],
+            "expected_revision": row["revision"], "input_revision_id": input_row["input_revision_id"],
+            "input_digest": input_row["content_digest"]}
+        response = client.post("/api/candidate-offline/jobs", json=body,
+            headers={"Idempotency-Key": "guarded-start1"})
+        assert response.status_code == 202, response.text
+        terminal = wait_terminal(client, response.json()["job_id"])
+        assert terminal["status"] == "complete", terminal
+        result = offline.result(terminal["id"])
+        assert_sealed_identity(result, row, input_row, delivery, offline)
+        assert result["result"]["fill_count"] == 2
+        assert result["result"]["ledger"]["reconciled"] is True
+        assert not any(result["permissions"].values())
+
+
+def test_external_catalog_guard_trust_graph_is_exact_and_bare_catalog_stays_compatible(tmp_path, cases):
+    _, delivery, _, _, kw, _ = default_fixture(tmp_path, cases[0], guarded_archive=True)
+    from backend.app.services.candidate_delivery_bootstrap import (
+        CandidateResearchArchiveGuard,
+        CandidateResearchRoots,
+    )
+    from backend.app.services.candidate_offline_inputs import OfflineInputs
+    from integrations.qlib_adapter.factory_delivery import FactoryDeliveryReader
+    from quant_crypto.application.btc_registered_candidate import _require_trusted_service
+    from quant_shared.strategy_delivery.models import DeliveryError
+    from tools.agent_governance.shared_data import load_manifest_from_git, resolve_manifest_payload
+
+    sources = delivery.sources
+    guard = sources.archive
+    roots = guard.roots
+    inputs = roots.inputs
+    archive = guard.archive
+    wrapper = sources.factory_reader
+    factory = wrapper.factory_reader
+    assert _require_trusted_service(delivery) is delivery
+    assert not kw["state_dir"].exists()
+
+    def rejected(change, restore, expected="registered_trusted_source_required"):
+        change()
+        try:
+            with pytest.raises(DeliveryError, match=expected):
+                _require_trusted_service(delivery)
+            assert not kw["state_dir"].exists()
+        finally:
+            restore()
+        assert _require_trusted_service(delivery) is delivery
+
+    original_catalog = inputs.path.read_bytes()
+    rejected(lambda: inputs.path.write_bytes(original_catalog + b"\n"),
+        lambda: inputs.path.write_bytes(original_catalog), "offline_input_hash_mismatch")
+    rejected(lambda: object.__setattr__(roots, "factory_root", tmp_path / "changed-factory"),
+        lambda: object.__setattr__(roots, "factory_root", factory.root), "offline_catalog_root_changed")
+
+    fake_guard = object()
+    rejected(lambda: (setattr(sources, "archive", fake_guard), setattr(factory, "readonly_archive", fake_guard)),
+        lambda: (setattr(sources, "archive", guard), setattr(factory, "readonly_archive", guard)))
+
+    class GuardSubclass(CandidateResearchArchiveGuard):
+        pass
+    subclass_guard = GuardSubclass(roots, archive)
+    rejected(lambda: (setattr(sources, "archive", subclass_guard), setattr(factory, "readonly_archive", subclass_guard)),
+        lambda: (setattr(sources, "archive", guard), setattr(factory, "readonly_archive", guard)))
+
+    class RootsSubclass(CandidateResearchRoots):
+        pass
+    subclass_roots = RootsSubclass(roots.factory_root, roots.qlib_root, inputs)
+    roots_guard = CandidateResearchArchiveGuard(subclass_roots, archive)
+    rejected(lambda: (setattr(sources, "archive", roots_guard), setattr(factory, "readonly_archive", roots_guard)),
+        lambda: (setattr(sources, "archive", guard), setattr(factory, "readonly_archive", guard)))
+
+    class InputsSubclass(OfflineInputs):
+        pass
+    subclass_inputs = InputsSubclass(inputs.path, inputs.checksum, inputs.revision, repo=inputs.repo)
+    inputs_guard = CandidateResearchArchiveGuard(
+        CandidateResearchRoots(roots.factory_root, roots.qlib_root, subclass_inputs), archive)
+    rejected(lambda: (setattr(sources, "archive", inputs_guard), setattr(factory, "readonly_archive", inputs_guard)),
+        lambda: (setattr(sources, "archive", guard), setattr(factory, "readonly_archive", guard)))
+
+    replaced_archive_guard = CandidateResearchArchiveGuard(roots, object())
+    rejected(lambda: (setattr(sources, "archive", replaced_archive_guard),
+        setattr(factory, "readonly_archive", replaced_archive_guard)),
+        lambda: (setattr(sources, "archive", guard), setattr(factory, "readonly_archive", guard)))
+
+    called = []
+    rejected(lambda: setattr(guard, "_validated", lambda: called.append(True)),
+        lambda: delattr(guard, "_validated"))
+    assert called == []
+    rejected(lambda: object.__setattr__(roots, "revalidate", lambda: called.append(True) or roots),
+        lambda: object.__delattr__(roots, "revalidate"))
+    assert called == []
+    rejected(lambda: setattr(inputs, "catalog", lambda: called.append(True) or {}),
+        lambda: delattr(inputs, "catalog"))
+    assert called == []
+    rejected(lambda: setattr(archive, "resolve_qlib_run", lambda *_: called.append(True)),
+        lambda: delattr(archive, "resolve_qlib_run"))
+    assert called == []
+
+    rejected(lambda: setattr(archive, "_manifest_loader", lambda *_: {}),
+        lambda: setattr(archive, "_manifest_loader", load_manifest_from_git))
+    rejected(lambda: setattr(archive, "_manifest_resolver", lambda *_args, **_kwargs: tmp_path),
+        lambda: setattr(archive, "_manifest_resolver", resolve_manifest_payload))
+    rejected(lambda: setattr(sources, "repo", tmp_path),
+        lambda: setattr(sources, "repo", inputs.repo))
+    rejected(lambda: setattr(sources, "qlib_root", tmp_path / "changed-qlib"),
+        lambda: setattr(sources, "qlib_root", roots.qlib_root))
+    rejected(lambda: setattr(factory, "root", tmp_path / "changed-factory"),
+        lambda: setattr(factory, "root", roots.factory_root))
+    rejected(lambda: setattr(factory, "qlib_root", tmp_path / "changed-qlib"),
+        lambda: setattr(factory, "qlib_root", roots.qlib_root))
+    rejected(lambda: setattr(factory, "readonly_archive", archive),
+        lambda: setattr(factory, "readonly_archive", guard))
+    recursive_wrapper = FactoryDeliveryReader(wrapper, ())
+    rejected(lambda: setattr(sources, "factory_reader", recursive_wrapper),
+        lambda: setattr(sources, "factory_reader", wrapper))
+    rejected(lambda: setattr(wrapper, "factory_reader", object()),
+        lambda: setattr(wrapper, "factory_reader", factory))
+    rejected(lambda: setattr(wrapper, "get", lambda *_args, **_kwargs: {}),
+        lambda: delattr(wrapper, "get"))
+
+    custom_loader = lambda *_args: {}
+    custom_resolver = lambda *_args, **_kwargs: tmp_path
+    archive._manifest_loader = custom_loader
+    archive._manifest_resolver = custom_resolver
+    sources.archive = archive
+    factory.readonly_archive = archive
+    try:
+        assert _require_trusted_service(delivery) is delivery
+        assert not kw["state_dir"].exists()
+    finally:
+        archive._manifest_loader = load_manifest_from_git
+        archive._manifest_resolver = resolve_manifest_payload
+        sources.archive = guard
+        factory.readonly_archive = guard
 
 
 def test_stop_at_committed_boundary_resume_same_job_across_service_restart(tmp_path,cases,monkeypatch):

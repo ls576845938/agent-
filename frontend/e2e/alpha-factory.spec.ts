@@ -10,6 +10,10 @@ async function fixture(page:Page, options:{response?:Record<string,unknown>; uns
   page.on('request',r=>{if(r.method()==='POST')posts.push(new URL(r.url()).pathname);if(/private|\/orders?(\/|$)/.test(new URL(r.url()).pathname))privateRequests.push(r.url());});
   await page.route('**/api/**',async route=>{
     const path=new URL(route.request().url()).pathname;
+    // Test-only capability fixture. The real formal deployment remains
+    // research_readonly; these tests exercise the existing bounded research
+    // actions without changing runtime permissions.
+    if(path==='/api/health')return route.fulfill({json:{evidence_profile:'promotion_strict',read_only:false,controls_disabled:false}});
     if(path==='/api/research/alpha-factory')return route.fulfill({json:{profiles,runs:[],...safety,...(options.unsafeOverview?{live:true}:{})}});
     if(path.startsWith('/api/research/alpha-factory/runs/'))return route.fulfill({json:options.response||detail(path.split('/').at(-1)!)});
     if(path==='/api/tasks/research/alpha-factory'){
@@ -82,4 +86,68 @@ test('switching run hides previous facts before the delayed replacement arrives'
   await console.getByRole('button',{name:/^second /}).click();await expect(page).toHaveURL(/factoryRun=second/);
   await expect(console.getByRole('heading',{name:'second',exact:true})).toBeVisible();
   await expect(console.getByText('42 / 40')).toHaveCount(0);release();
+});
+
+test('StrictMode never overlaps Alpha overview reads and a cancelled old run cannot overwrite the current result',async({page})=>{
+  let overviewCalls=0;let activeOverview=0;let maxConcurrentOverview=0;let oldCalls=0;let currentCalls=0;
+  const overviewEvents:{call:number;phase:'start'|'fulfill';at:number}[]=[];
+  let releaseOverview:()=>void=()=>{};let markOverviewStarted:()=>void=()=>{};
+  const overviewStarted=new Promise<void>(resolve=>{markOverviewStarted=resolve;});
+  const overviewRelease=new Promise<void>(resolve=>{releaseOverview=resolve;});
+  let releaseOld:()=>void=()=>{};let markOldStarted:()=>void=()=>{};
+  const oldStarted=new Promise<void>(resolve=>{markOldStarted=resolve;});
+  const oldRelease=new Promise<void>(resolve=>{releaseOld=resolve;});
+  let markCurrentStarted:()=>void=()=>{};
+  const currentStarted=new Promise<void>(resolve=>{markCurrentStarted=resolve;});
+  await page.route('**/api/**',async route=>{
+    const path=new URL(route.request().url()).pathname;
+    if(path==='/api/health')return route.fulfill({json:{evidence_profile:'research_readonly',read_only:true,controls_disabled:true}});
+    if(path==='/api/research/alpha-factory'){
+      overviewCalls+=1;activeOverview+=1;maxConcurrentOverview=Math.max(maxConcurrentOverview,activeOverview);
+      const call=overviewCalls;overviewEvents.push({call,phase:'start',at:Date.now()});markOverviewStarted();await overviewRelease;
+      overviewEvents.push({call,phase:'fulfill',at:Date.now()});
+      activeOverview-=1;
+      return route.fulfill({json:{profiles,runs:[detail('old-run'),detail('current-run')],...safety}});
+    }
+    if(path==='/api/research/alpha-factory/runs/old-run'){
+      oldCalls+=1;markOldStarted();await oldRelease;
+      try{return await route.fulfill({status:408,json:{detail:'obsolete read'}});}catch{return;}
+    }
+    if(path==='/api/research/alpha-factory/runs/current-run'){
+      currentCalls+=1;markCurrentStarted();return route.fulfill({json:detail('current-run')});
+    }
+    return route.fulfill({status:503,json:{detail:'synthetic_ui_test_unrelated_read_unavailable'}});
+  });
+  await page.goto('/research?view=alpha-factory&factoryRun=old-run');
+  const console=page.getByTestId('alpha-factory-console');await overviewStarted;
+  await expect(console).toBeVisible();releaseOverview();await oldStarted;
+  await console.getByRole('button',{name:/^current-run /}).click();
+  releaseOld();await currentStarted;
+  await expect(console.getByRole('heading',{name:'current-run',exact:true})).toBeVisible();
+  await expect(console.getByRole('alert')).toHaveCount(0);
+  expect({oldCalls,currentCalls,maxConcurrentOverview}).toEqual({oldCalls:1,currentCalls:1,maxConcurrentOverview:1});
+  expect(overviewCalls).toBeLessThanOrEqual(2);
+  if(overviewCalls===2)expect(overviewEvents[2].at).toBeGreaterThanOrEqual(overviewEvents[1].at);
+});
+
+test('leaving Alpha while the shared overview is pending never starts selected detail',async({page})=>{
+  let releaseOverview:()=>void=()=>{};let markOverviewStarted:()=>void=()=>{};let detailCalls=0;
+  const overviewStarted=new Promise<void>(resolve=>{markOverviewStarted=resolve;});
+  const overviewRelease=new Promise<void>(resolve=>{releaseOverview=resolve;});
+  await page.route('**/api/**',async route=>{
+    const path=new URL(route.request().url()).pathname;
+    if(path==='/api/health')return route.fulfill({json:{evidence_profile:'research_readonly',read_only:true,controls_disabled:true}});
+    if(path==='/api/research/alpha-factory'){
+      markOverviewStarted();await overviewRelease;
+      try{return await route.fulfill({json:{profiles,runs:[detail('pending-run')],...safety}});}catch{return;}
+    }
+    if(path==='/api/research/alpha-factory/runs/pending-run'){
+      detailCalls+=1;return route.fulfill({json:detail('pending-run')});
+    }
+    return route.fulfill({status:503,json:{detail:'synthetic_ui_test_unrelated_read_unavailable'}});
+  });
+  await page.goto('/research?view=alpha-factory&factoryRun=pending-run');await overviewStarted;
+  await page.getByRole('link',{name:'架构地图'}).click();
+  await expect(page).toHaveURL(/\/architecture/);releaseOverview();await page.waitForTimeout(50);
+  expect(detailCalls).toBe(0);
 });

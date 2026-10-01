@@ -1,6 +1,12 @@
 import {useEffect, useRef, useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
-import {alphaFactoryApi, type FactoryRecord} from '../../lib/alpha-factory-api';
+import {
+  acquireAlphaFactoryDetail,
+  acquireAlphaFactoryOverview,
+  alphaFactoryApi,
+  alphaFactoryReadDeadlineMs,
+  type FactoryRecord,
+} from '../../lib/alpha-factory-api';
 import {researchRunLink} from './research-run-links';
 import {parseWorkspaceContext} from './workspace-links';
 import {versionEvidenceErrors} from './workspace-evidence';
@@ -39,11 +45,14 @@ export default function AlphaFactoryConsole({externalBusy, onWorking, readOnly=f
   const [profileId, setProfileId] = useState('okx_btc_trend_1h');
   const [budget, setBudget] = useState({population:12,generations:2,max_features:6,model_trials:2,seed:17});
   const [generators, setGenerators] = useState(['registered','template','genetic']);
-  const [error, setError] = useState('');
+  const [overviewError, setOverviewError] = useState('');
+  const [detailError, setDetailError] = useState('');
+  const [actionError, setActionError] = useState('');
   const [posting, setPosting] = useState(false);
   const [filter, setFilter] = useState('all');
   const submitLock = useRef(false);
   const fetchSequence = useRef(0);
+  const overviewSequence = useRef(0);
   const alive = useRef(true);
   const callback = useRef(onWorking); callback.current = onWorking;
   const profile = (overview?.profiles || []).find((p: FactoryRecord) => p.profile_id === profileId);
@@ -58,36 +67,85 @@ export default function AlphaFactoryConsole({externalBusy, onWorking, readOnly=f
   const factorTrials = result?.factor_search?.trials || visibleEvents.filter((event: FactoryRecord) => event.stage === 'generate' && event.status === 'trial').map((event: FactoryRecord) => event.detail) || [];
   const selectedFactorIds = new Set<string>((result?.factor_specs || []).map((spec: FactoryRecord) => spec.factor_id));
   const selectionRejections = result?.factor_search?.selection_rejections || [];
-  const loadOverview = async () => {
-    const value = await alphaFactoryApi.overview();
+  const error = actionError || detailError || overviewError;
+  const validateOverview = (value: FactoryRecord) => {
     if (!safe(value) || !Array.isArray(value.profiles) || !Array.isArray(value.runs)) throw new Error('控制台合同或安全旗标异常，操作已锁定。');
-    if (alive.current) setOverview(value);
+    return value;
+  };
+  const loadOverview = async () => {
+    const lease = acquireAlphaFactoryOverview();
+    try {
+      const value = validateOverview(await lease.promise);
+      if (alive.current) {setOverview(value);setOverviewError('');}
+      return value;
+    } finally {
+      lease.release();
+    }
   };
   useEffect(() => {
+    const sequence = ++overviewSequence.current;
+    let effectActive = true;
     alive.current = true;
-    if (!readOnly) void loadOverview().catch(e => {if(alive.current) {setOverview(null);setError(String(e));}});
-    return () => {alive.current = false; callback.current(false);};
+    setOverviewError('');
+    const lease = readOnly ? null : acquireAlphaFactoryOverview();
+    if (lease) void lease.promise.then(value => {
+      const validated = validateOverview(value);
+      if (effectActive && overviewSequence.current === sequence) {setOverview(validated);setOverviewError('');}
+    }).catch(e => {
+      if(effectActive && overviewSequence.current === sequence) {setOverview(null);setOverviewError(String(e));}
+    });
+    return () => {
+      effectActive = false;
+      lease?.release();
+      if (overviewSequence.current === sequence) alive.current = false;
+      callback.current(false);
+    };
   }, [readOnly]);
   useEffect(() => {
     const sequence = ++fetchSequence.current;
-    setDetail(null); setError('');
+    setDetail(null); setDetailError('');
     if (readOnly) return;
     if (!selected) return;
-    if (!validRun(selected)) {setError('运行引用无效；未读取其他路径。');return;}
+    if (!validRun(selected)) {setDetailError('运行引用无效；未读取其他路径。');return;}
     let timer: ReturnType<typeof setTimeout>;
     let stopped = false;
-    const poll = async () => {
+    const initialReadStartedAt = performance.now();
+    let detailLease: ReturnType<typeof acquireAlphaFactoryDetail> | null = null;
+    const overviewLease = storedOverview ? null : acquireAlphaFactoryOverview();
+    let observedActive = !!storedOverview?.runs?.some(
+      (row: FactoryRecord) => row.run_id === selected && ['running','queued'].includes(row.status),
+    );
+    const poll = async (deadlineMs=alphaFactoryReadDeadlineMs) => {
+      detailLease = acquireAlphaFactoryDetail(selected, deadlineMs);
       try {
-        const value = await alphaFactoryApi.detail(selected);
+        const value = await detailLease.promise;
         if (stopped || fetchSequence.current !== sequence) return;
         if (!safe(value) || value.run_id !== selected) throw new Error('运行身份或安全合同不匹配。');
-        setDetail(value);
-        if (['running','queued'].includes(value.status)) timer = setTimeout(poll, 2000);
-        else void loadOverview().catch(() => undefined);
-      } catch (e) {if(!stopped) {setDetail(null);setError(String(e));}}
+        setDetail(value);setDetailError('');
+        if (['running','queued'].includes(value.status)) {observedActive = true;timer = setTimeout(poll, 2000);}
+        else if (observedActive) void loadOverview().catch(e => {if(alive.current) setOverviewError(String(e));});
+      } catch (e) {
+        if(!stopped && fetchSequence.current === sequence) {setDetail(null);setDetailError(String(e));}
+      } finally {
+        detailLease?.release();detailLease = null;
+      }
     };
-    void poll();
-    return () => {stopped = true;clearTimeout(timer);};
+    if (overviewLease) void overviewLease.promise.then(value => {
+      observedActive = !!value.runs?.some(
+        (row: FactoryRecord) => row.run_id === selected && ['running','queued'].includes(row.status),
+      );
+    }).catch(() => undefined).finally(() => {
+      overviewLease.release();
+      if (stopped || fetchSequence.current !== sequence) return;
+      const remainingMs = alphaFactoryReadDeadlineMs - (performance.now() - initialReadStartedAt);
+      if (remainingMs <= 0) {
+        setDetailError(`Alpha 工厂详情未在 ${alphaFactoryReadDeadlineMs}ms 页面预算内启动。`);
+        return;
+      }
+      void poll(remainingMs);
+    });
+    else void poll();
+    return () => {stopped = true;overviewLease?.release();detailLease?.release();clearTimeout(timer);};
   }, [readOnly, selected]);
   useEffect(() => {callback.current(posting || active);}, [posting, active]);
   const chooseRun = (runId: string) => {
@@ -100,13 +158,13 @@ export default function AlphaFactoryConsole({externalBusy, onWorking, readOnly=f
     if (readOnly || commandsDisabled || submitLock.current || externalBusy || posting || active || !safe(overview)) return;
     if (!resume && (!profile?.training_enabled || !safe(profile) || invalidBudget || !generators.length)) return;
     if (resume && (!selectedIdentityMatches || detail?.source_stale || !detail?.recovery?.explicit_resume_required || detail?.integrity_status === 'blocked')) return;
-    submitLock.current = true;setPosting(true);setError('');
+    submitLock.current = true;setPosting(true);setActionError('');
     try {
       const receipt = resume ? await alphaFactoryApi.resume(selected) : await alphaFactoryApi.submit({
         profile_id:profileId,run_id:'af-'+crypto.randomUUID().replaceAll('-',''),...budget,generators});
       if(!safe(receipt) || !validRun(receipt.run_id)) throw new Error('提交回执无效，请刷新运行记录；不要盲目重试。');
       chooseRun(receipt.run_id);
-    } catch(e) {setError(String(e));}
+    } catch(e) {setActionError(String(e));}
     finally {submitLock.current = false;setPosting(false);}
   };
   return <div className={'alpha-factory' + (readOnly ? ' af-readonly' : '')} data-testid="alpha-factory-console">
@@ -141,7 +199,7 @@ export default function AlphaFactoryConsole({externalBusy, onWorking, readOnly=f
           onClick={()=>void run()}>{posting ? '提交中…' : active ? '研究计算进行中' : '启动统一研究批次'}</button>
       </section></div></details>}
     <div className="af-grid">
-      {!readOnly && <aside className="af-controls"><section><div className="af-row"><h4>持久运行记录</h4><button disabled={posting} onClick={()=>void loadOverview().catch(e=>setError(String(e)))}>刷新</button></div>
+      {!readOnly && <aside className="af-controls"><section><div className="af-row"><h4>持久运行记录</h4><button disabled={posting} onClick={()=>{setOverviewError('');void loadOverview().catch(e=>setOverviewError(String(e)));}}>刷新</button></div>
         {(overview?.runs || []).map((row: FactoryRecord)=><button className="af-run" key={row.run_id} aria-pressed={selected===row.run_id} onClick={()=>chooseRun(row.run_id)}>
           <strong>{row.run_id}</strong><span>{row.profile_id} · {text(row.status)}</span><small>{text(row.decision)}{row.source_stale ? ' · 代码版本已变化' : ''}</small></button>)}
         {overview && !overview.runs.length && <p className="af-note">暂无工厂运行。旧 Qlib 固定特征实验不冒充工厂结果。</p>}

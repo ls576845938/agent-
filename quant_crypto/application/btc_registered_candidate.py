@@ -10,29 +10,79 @@ _ISSUE_KEY = object()
 _ISSUED_CONTEXTS = WeakSet()
 
 
+def _has_instance_method_override(value):
+    return any(callable(getattr(type(value), name, None)) for name in vars(value))
+
+
 def _require_trusted_service(service):
     """Supported public composition boundary, not an arbitrary-code sandbox."""
+    from pathlib import Path
     from quant_shared.strategy_delivery.service import DeliveryService
     from backend.app.services.candidate_delivery_sources import ResearchDeliverySources
     from backend.app.services.candidate_delivery_accounts import DeliveryAccounts
     from backend.app.services.candidate_delivery_store import DeliveryStore
     from backend.app.services.alpha_factory import AlphaFactoryService
     from backend.app.services.research_archive_discovery import ResearchArchiveCatalog
+    from backend.app.services.candidate_delivery_bootstrap import (
+        CandidateResearchArchiveGuard,
+        CandidateResearchRoots,
+    )
+    from backend.app.services.candidate_offline_inputs import OfflineInputs
     from integrations.qlib_adapter.factory_delivery import FactoryDeliveryReader
     for obj,cls in ((service,DeliveryService),(getattr(service,"sources",None),ResearchDeliverySources),
             (getattr(service,"accounts",None),DeliveryAccounts),(getattr(service,"store",None),DeliveryStore)):
-        if type(obj) is not cls or any(callable(getattr(cls,k,None)) for k in vars(obj)):
+        if type(obj) is not cls or _has_instance_method_override(obj):
             raise DeliveryError("registered_trusted_service_required")
-    reader=service.sources.factory_reader
-    if type(reader) is FactoryDeliveryReader:
-        if any(callable(getattr(FactoryDeliveryReader,k,None)) for k in vars(reader)):
+    sources=service.sources
+    configured_reader=sources.factory_reader
+    reader=configured_reader
+    if type(configured_reader) is FactoryDeliveryReader:
+        if _has_instance_method_override(configured_reader):
             raise DeliveryError("registered_trusted_source_required")
-        reader=reader.factory_reader
-    if type(reader) is not AlphaFactoryService or type(service.sources.archive) is not ResearchArchiveCatalog:
+        reader=configured_reader.factory_reader
+    if (type(reader) is not AlphaFactoryService or _has_instance_method_override(reader)
+        or getattr(sources,"legacy_factory_reader",None) is not reader):
         raise DeliveryError("registered_trusted_source_required")
-    for obj in (reader,service.sources.archive):
-        if any(callable(getattr(type(obj),k,None)) for k in vars(obj)):
+    archive=sources.archive
+    if type(archive) is ResearchArchiveCatalog:
+        # The legacy bare catalogue keeps its supported constructor injection
+        # semantics; only method shadowing is rejected as before.
+        if _has_instance_method_override(archive):
             raise DeliveryError("registered_trusted_source_required")
+        return service
+    if type(archive) is not CandidateResearchArchiveGuard or _has_instance_method_override(archive):
+        raise DeliveryError("registered_trusted_source_required")
+    roots=getattr(archive,"roots",None)
+    inputs=getattr(roots,"inputs",None)
+    internal_archive=getattr(archive,"archive",None)
+    if (type(roots) is not CandidateResearchRoots or roots.configured is not True
+        or type(inputs) is not OfflineInputs or type(internal_archive) is not ResearchArchiveCatalog
+        or any(_has_instance_method_override(obj) for obj in (roots,inputs,internal_archive))):
+        raise DeliveryError("registered_trusted_source_required")
+    from tools.agent_governance.shared_data import load_manifest_from_git, resolve_manifest_payload
+    if (getattr(internal_archive,"_manifest_loader",None) is not load_manifest_from_git
+        or getattr(internal_archive,"_manifest_resolver",None) is not resolve_manifest_payload):
+        raise DeliveryError("registered_trusted_source_required")
+    if (not all(isinstance(value,Path) for value in (
+            roots.factory_root,roots.qlib_root,inputs.path,inputs.repo,sources.repo,
+            sources.qlib_root,reader.root,reader.qlib_root,internal_archive.repo_root))
+        or type(inputs.checksum) is not str or type(inputs.revision) is not str):
+        raise DeliveryError("registered_trusted_source_required")
+    # This is the authoritative owner/revision/hash/path check. It is invoked
+    # only after rejecting instance method overrides, so a supplied callable
+    # cannot replace the official revalidation implementation.
+    if roots.revalidate() is not roots:
+        raise DeliveryError("registered_trusted_source_required")
+    try:
+        repo=sources.repo.resolve()
+        factory_root=roots.factory_root.resolve()
+        qlib_root=roots.qlib_root.resolve()
+        if (inputs.repo.resolve()!=repo or internal_archive.repo_root.resolve()!=repo
+            or sources.qlib_root.resolve()!=qlib_root or reader.root.resolve()!=factory_root
+            or reader.qlib_root.resolve()!=qlib_root or reader.readonly_archive is not archive):
+            raise DeliveryError("registered_trusted_source_required")
+    except (OSError,RuntimeError,TypeError) as exc:
+        raise DeliveryError("registered_trusted_source_required") from exc
     return service
 
 

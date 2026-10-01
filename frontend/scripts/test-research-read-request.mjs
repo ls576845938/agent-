@@ -22,6 +22,27 @@ async function importTypeScript(relativePath) {
   return import(moduleUrl);
 }
 
+async function importCommonJsTypeScript(relativePath, dependencies) {
+  const sourceUrl = new URL(relativePath, import.meta.url);
+  const source = await readFile(sourceUrl, 'utf8');
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+    },
+    fileName: pathToFileURL(sourceUrl.pathname).href,
+  }).outputText;
+  const module = {exports: {}};
+  vm.runInNewContext(
+    `(function(require,module,exports){${compiled}\n})`,
+    {},
+  )((id) => {
+    if (id in dependencies) return dependencies[id];
+    throw new Error(`Unexpected dependency: ${id}`);
+  }, module, module.exports);
+  return module.exports;
+}
+
 async function importViteConfigForTest() {
   const sourceUrl = new URL('../vite.config.ts', import.meta.url);
   const source = await readFile(sourceUrl, 'utf8');
@@ -53,6 +74,98 @@ const {
   summarizeResearchRegistry,
 } = await importTypeScript('../src/lib/research-read-request.ts');
 const {apiGet} = await importTypeScript('../src/lib/api.ts');
+
+{
+  const pending = deferred();
+  const calls = [];
+  const alphaFactory = await importCommonJsTypeScript('../src/lib/alpha-factory-api.ts', {
+    './api': {
+      apiGet: (path, options) => {
+        calls.push({path, options});
+        return pending.promise;
+      },
+      apiPost: () => { throw new Error('unexpected write'); },
+    },
+    './research-read-request': {acquireResearchRead},
+  });
+  assert.equal(typeof alphaFactory.acquireAlphaFactoryOverview, 'function');
+  const firstMount = alphaFactory.acquireAlphaFactoryOverview();
+  await Promise.resolve();
+  firstMount.release();
+  const secondMount = alphaFactory.acquireAlphaFactoryOverview();
+  await Promise.resolve();
+  assert.equal(calls.length, 1, 'Alpha StrictMode remount must share one verified overview GET');
+  assert.equal(calls[0].path, '/api/research/alpha-factory');
+  assert.equal(calls[0].options.timeoutMs, 20_000, 'Alpha keeps its existing 20 second budget');
+  assert.equal(calls[0].options.signal.aborted, false);
+  pending.resolve({runs: []});
+  assert.deepEqual(await secondMount.promise, {runs: []});
+  secondMount.release();
+}
+
+{
+  const calls = [];
+  const pending = new Map();
+  const alphaFactory = await importCommonJsTypeScript('../src/lib/alpha-factory-api.ts', {
+    './api': {
+      apiGet: (path, options) => {
+        calls.push({path, options});
+        const result = deferred();
+        pending.set(path, result);
+        options.signal.addEventListener(
+          'abort',
+          () => result.reject(new DOMException('aborted', 'AbortError')),
+          {once: true},
+        );
+        return result.promise;
+      },
+      apiPost: () => { throw new Error('unexpected write'); },
+    },
+    './research-read-request': {acquireResearchRead},
+  });
+  const oldRead = alphaFactory.acquireAlphaFactoryDetail('old-run');
+  const oldRejected = assert.rejects(oldRead.promise, {name: 'AbortError'});
+  await Promise.resolve();
+  oldRead.release();
+  await new Promise(resolve => setTimeout(resolve, 5));
+  await oldRejected;
+  assert.equal(calls[0].options.signal.aborted, true, 'released Alpha detail must abort its GET');
+
+  const currentRead = alphaFactory.acquireAlphaFactoryDetail('current-run');
+  await Promise.resolve();
+  pending.get('/api/research/alpha-factory/runs/current-run').resolve({run_id: 'current-run'});
+  assert.deepEqual(await currentRead.promise, {run_id: 'current-run'});
+  currentRead.release();
+  assert.deepEqual(
+    calls.map(call => call.path),
+    ['/api/research/alpha-factory/runs/old-run', '/api/research/alpha-factory/runs/current-run'],
+    'switching run must not reuse a stale detail read',
+  );
+}
+
+{
+  const calls = [];
+  const alphaFactory = await importCommonJsTypeScript('../src/lib/alpha-factory-api.ts', {
+    './api': {
+      apiGet: (path, options) => {
+        calls.push({path, options});
+        return Promise.resolve({run_id: 'budgeted-run'});
+      },
+      apiPost: () => { throw new Error('unexpected write'); },
+    },
+    './research-read-request': {acquireResearchRead},
+  });
+  const remainingBudgetMs = 12_345;
+  const detailRead = alphaFactory.acquireAlphaFactoryDetail('budgeted-run', remainingBudgetMs);
+  assert.deepEqual(await detailRead.promise, {run_id: 'budgeted-run'});
+  detailRead.release();
+  assert.equal(calls.length, 1);
+  assert.equal(
+    calls[0].options.timeoutMs,
+    remainingBudgetMs,
+    'serialized initial detail must use the remaining Alpha page budget',
+  );
+}
 
 function deferred() {
   let resolve;
@@ -303,4 +416,4 @@ function fakeClock() {
   }
 }
 
-console.log(JSON.stringify({status: 'passed', tests: 14}));
+console.log(JSON.stringify({status: 'passed', tests: 17}));
