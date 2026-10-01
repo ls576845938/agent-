@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_strategy_validation_gate_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Strategy Validation Gate Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "strategy_id",
+    "candidate_variant",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "allowed_next_action",
+    "paper_ready",
+    "live_ready",
+    "paper_simulation_allowed",
+    "live_order_allowed",
+    "private_endpoint_used",
+    "order_endpoint_used",
+    "real_order_submitted",
+    "forward_observation_allowed",
+    "strategy_validation_gate_is_not_execution_permission",
+    "checks",
+    "blockers",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_strategy_validation_gate_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": ["string", "null"]},
+    "branch": {"type": ["string", "null"]},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"const": "us_etf_rotation_min_adv_10m_vol_target_20pct_cap1_5x"},
+    "candidate_variant": {"type": "string", "minLength": 1},
+    "status": {
+      "enum": [
+        "research_only",
+        "validation_passed_for_forward_observation",
+        "rejected",
+        "blocked_data_quality"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "research_only",
+          "validation_passed_for_forward_observation",
+          "rejected",
+          "blocked_data_quality"
+        ]
+      },
+      "minItems": 4,
+      "uniqueItems": true
+    },
+    "decision": {
+      "enum": [
+        "do_not_claim_strategy_validated_until_data_quality_gate_passes",
+        "continue_research_do_not_promote",
+        "allow_or_continue_forward_observation_only"
+      ]
+    },
+    "allowed_next_action": {"enum": ["forward_observation_only", "fix_blockers"]},
+    "paper_ready": {"const": false},
+    "live_ready": {"const": false},
+    "paper_simulation_allowed": {"const": false},
+    "live_order_allowed": {"const": false},
+    "private_endpoint_used": {"const": false},
+    "order_endpoint_used": {"const": false},
+    "real_order_submitted": {"const": false},
+    "forward_observation_allowed": {"type": "boolean"},
+    "strategy_validation_gate_is_not_execution_permission": {"const": true},
+    "checks": {
+      "type": "object",
+      "required": [
+        "data_coverage_and_quality",
+        "no_future_function",
+        "original_strategy_semantics",
+        "benchmark_coverage",
+        "standard_metrics",
+        "cost_stress",
+        "walk_forward",
+        "parameter_stability",
+        "capacity",
+        "return_attribution",
+        "strategy_card",
+        "guardrails"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["passed"],
+        "properties": {"passed": {"type": "boolean"}},
+        "additionalProperties": true
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "source_reports": {
+      "type": "object",
+      "required": [
+        "research_report",
+        "top_validation_report",
+        "cost_stress_report",
+        "walk_forward_report",
+        "year_attribution_report",
+        "tiingo_report",
+        "data_freshness_report",
+        "kline_quality_report",
+        "fred_preflight_report",
+        "pit_intake_status_report",
+        "pit_bundle_acceptance_report",
+        "strategy_card"
+      ],
+      "additionalProperties": {"type": "string"}
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "research_only_until_gate_passes",
+        "validation_gate_only_allows_forward_observation",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "research_only_until_gate_passes": {"type": "boolean"},
+        "validation_gate_only_allows_forward_observation": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,251 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_vendor_drop_operator_progress_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Vendor Drop Operator Progress Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "incoming_drop_dir",
+    "completed_count",
+    "blocked_count",
+    "pending_count",
+    "step_count",
+    "next_step_id",
+    "next_action",
+    "operator_copy_contract",
+    "copy_readiness_checks",
+    "required_file_progress",
+    "missing_required_files",
+    "ready_required_files",
+    "steps",
+    "source_reports",
+    "blockers",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_vendor_drop_operator_progress_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "operator_drop_blocked",
+        "operator_drop_ready_for_import",
+        "operator_drop_complete_for_manual_review"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "operator_drop_blocked",
+          "operator_drop_ready_for_import",
+          "operator_drop_complete_for_manual_review"
+        ]
+      },
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "incoming_drop_dir": {"const": "data/external/us_equity_lineage/incoming/manual_vendor_drop"},
+    "completed_count": {"type": "integer", "minimum": 0},
+    "blocked_count": {"type": "integer", "minimum": 0},
+    "pending_count": {"type": "integer", "minimum": 0},
+    "step_count": {"type": "integer", "minimum": 1},
+    "next_step_id": {"type": "string"},
+    "next_action": {"type": "string", "minLength": 1},
+    "operator_copy_contract": {
+      "type": "object",
+      "required": [
+        "incoming_drop_dir",
+        "required_file_count",
+        "required_files",
+        "required_filenames",
+        "forbidden_substitutes",
+        "post_copy_commands",
+        "guardrails"
+      ],
+      "properties": {
+        "incoming_drop_dir": {"const": "data/external/us_equity_lineage/incoming/manual_vendor_drop"},
+        "required_file_count": {"type": "integer", "minimum": 6},
+        "required_files": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "object",
+            "required": [
+              "table",
+              "filename",
+              "minimum_record_count",
+              "required_fields",
+              "empty_template_is_not_valid_drop"
+            ],
+            "properties": {
+              "table": {"type": "string", "minLength": 1},
+              "filename": {"type": "string", "pattern": "^[A-Za-z0-9_]+\\.csv$"},
+              "minimum_record_count": {"type": "integer", "minimum": 1},
+              "required_fields": {"type": "array", "items": {"type": "string"}},
+              "empty_template_is_not_valid_drop": {"const": true}
+            },
+            "additionalProperties": false
+          }
+        },
+        "required_filenames": {
+          "type": "array",
+          "minItems": 6,
+          "items": {"type": "string", "pattern": "^[A-Za-z0-9_]+\\.csv$"},
+          "uniqueItems": true
+        },
+        "forbidden_substitutes": {
+          "type": "array",
+          "minItems": 4,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "post_copy_commands": {
+          "type": "array",
+          "minItems": 4,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "guardrails": {
+          "type": "object",
+          "required": [
+            "contract_only",
+            "contains_vendor_data",
+            "empty_templates_are_not_valid_evidence",
+            "copy_contract_does_not_unlock_paper_or_live"
+          ],
+          "properties": {
+            "contract_only": {"const": true},
+            "contains_vendor_data": {"const": false},
+            "empty_templates_are_not_valid_evidence": {"const": true},
+            "copy_contract_does_not_unlock_paper_or_live": {"const": true}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "copy_readiness_checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["check_id", "command", "expected_result", "failure_means", "blocks_import"],
+        "properties": {
+          "check_id": {"type": "string", "minLength": 1},
+          "command": {"type": "string", "minLength": 1},
+          "expected_result": {"type": "string", "minLength": 1},
+          "failure_means": {"type": "string", "minLength": 1},
+          "blocks_import": {"const": true}
+        },
+        "additionalProperties": false
+      }
+    },
+    "required_file_progress": {
+      "type": "object",
+      "required": ["required_file_count", "ready_file_count", "missing_file_count", "blocked_file_count"],
+      "properties": {
+        "required_file_count": {"type": "integer", "minimum": 0},
+        "ready_file_count": {"type": "integer", "minimum": 0},
+        "missing_file_count": {"type": "integer", "minimum": 0},
+        "blocked_file_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "missing_required_files": {"type": "array", "items": {"$ref": "#/$defs/required_file"}},
+    "ready_required_files": {"type": "array", "items": {"$ref": "#/$defs/required_file"}},
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["step_id", "label", "status", "first_blocker", "command", "expected_evidence", "action"],
+        "properties": {
+          "step_id": {"type": "string", "minLength": 1},
+          "label": {"type": "string"},
+          "status": {"enum": ["completed", "blocked", "pending"]},
+          "first_blocker": {"type": "string"},
+          "command": {"type": "string"},
+          "expected_evidence": {"type": "string"},
+          "action": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["path", "exists", "status"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "exists": {"type": "boolean"},
+          "status": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "operator_progress_only",
+        "contains_vendor_data",
+        "source_vendor_data_modified",
+        "production_bundle_written",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "operator_progress_only": {"const": true},
+        "contains_vendor_data": {"const": false},
+        "source_vendor_data_modified": {"const": false},
+        "production_bundle_written": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "required_file": {
+      "type": "object",
+      "required": ["table", "filename", "exists", "record_count", "first_blocker"],
+      "properties": {
+        "table": {"type": "string"},
+        "filename": {"type": "string"},
+        "exists": {"type": "boolean"},
+        "record_count": {"type": "integer", "minimum": 0},
+        "first_blocker": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

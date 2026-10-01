@@ -1,0 +1,68 @@
+{
+  "schema_version": "us_application_service_boundary_v1",
+  "goal_id": "US-V3-APPLICATION-SERVICE-BOUNDARY-01",
+  "application_layer": {
+    "service": "quant_us.application.service.USApplicationService",
+    "ports": "quant_us.application.ports.USApplicationUnitOfWork",
+    "adapter": "quant_us.compat.application_adapters.LegacyUSApplicationUnitOfWork",
+    "clock": "injected_callable_utc_clock"
+  },
+  "entrypoint_facades": [
+    {
+      "entrypoint": "backend.app.services.us_quant.USQuantService",
+      "facade": "backend.app.services.us_application_facade.USApplicationFacade",
+      "compatible_contract": true
+    },
+    {
+      "entrypoint": "quant_us.cli.cmd_research_promotion_gate",
+      "facade": "quant_us.compat.application_adapters.build_us_application_service",
+      "compatible_contract": true
+    }
+  ],
+  "legacy_builder_matrix": [
+    {
+      "path": "quant_us/cli.py",
+      "boundary_state": "compat_facade",
+      "next_condition": "Migrate one command family per approved goal while retaining historical command names."
+    },
+    {
+      "path": "backend/app/services/us_quant.py",
+      "boundary_state": "compat_facade",
+      "next_condition": "Integrator may inject USApplicationFacade through the US-only router without modifying shared API schemas."
+    },
+    {
+      "path": "quant_us/research/evidence_registry.py",
+      "boundary_state": "deferred_builder_extraction",
+      "next_condition": "Add a dedicated evidence repository port after immutable registry write semantics receive characterization coverage."
+    },
+    {
+      "path": "quant_us/research/automation/promotion_gate.py",
+      "boundary_state": "compat_adapter",
+      "next_condition": "Move gate rule clusters behind pure evaluators in later approved goals; current decision schema remains unchanged."
+    },
+    {
+      "path": "quant_us/data/minute_quality_gate.py",
+      "boundary_state": "compat_adapter",
+      "next_condition": "Keep dataset discovery and US session semantics in the US adapter while service orchestration stays path-free."
+    },
+    {
+      "path": "quant_us/monitoring/strategy_production_line.py",
+      "boundary_state": "deferred_builder_extraction",
+      "next_condition": "Introduce report repositories after artifact-heavy current-HEAD rebuild is separately authorized."
+    }
+  ],
+  "integrator_wiring": {
+    "app_factory_modified": false,
+    "facade": "backend.app.services.us_application_facade.USApplicationFacade",
+    "next_action": "Wire the US-only facade through a dedicated router ticket; do not alter shared app_factory schemas in this goal."
+  },
+  "safety": {
+    "promotion_eligible": false,
+    "promotion_unlock_allowed": false,
+    "paper_order_allowed": false,
+    "live_order_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

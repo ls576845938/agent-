@@ -1,0 +1,46 @@
+{
+  "schema_version": "strategy_v1_offline_fixture_v2",
+  "evidence_kind": "offline_execution",
+  "instrument_id": "BTC-USDT-SWAP",
+  "contract_value_btc": "0.01",
+  "lot_size_contracts": "0.01",
+  "target_contracts": "0.01",
+  "fee_rate": "-0.0005",
+  "funding_rate": "0.0001",
+  "mark_price": "60000",
+  "index_price": "60000",
+  "scenario": {
+    "observation_time_utc": "2026-09-15T00:00:00+00:00",
+    "start_utc": "2023-01-01T00:00:00+00:00",
+    "interval": "1h",
+    "segments": {
+      "flat_warmup_rows": 5200,
+      "rising_rows": 5200,
+      "falling_rows": 5200,
+      "rebound_rows": 1600
+    },
+    "checkpoint_offsets": {
+      "open_long": 5207,
+      "hold_long": 5208,
+      "reverse_to_short": 12575,
+      "exit_short": 15611
+    }
+  },
+  "expected": {
+    "submit_count": 4,
+    "fill_count": 4,
+    "cancel_algo_count": 2,
+    "fee_per_fill_usdt": "-0.003",
+    "total_fees_usdt": "-0.012",
+    "actual_funding_cashflow_usdt": "0",
+    "final_position_contracts": "0.00",
+    "final_equity_usdt": "4999.988"
+  },
+  "decision_evidence_schema": "strategy_decision_evidence_v2",
+  "market_data_usage": "signal_input_only",
+  "simulated_execution_price": "60000",
+  "runtime_observed": false,
+  "demo_enabled": false,
+  "paper_enabled": false,
+  "live_enabled": false
+}

@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_ibkr_paper_reconciliation_report.schema.json",
+  "title": "US Equity IBKR Paper Four-Way Reconciliation Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "current_head",
+    "run_id",
+    "account_hash",
+    "status",
+    "decision",
+    "fail_closed",
+    "block_new_orders",
+    "snapshot",
+    "orders",
+    "fills",
+    "positions",
+    "cash",
+    "restart_blockers",
+    "replay_blockers",
+    "blockers",
+    "safety_flags"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "us_equity_ibkr_paper_reconciliation_v1"
+    },
+    "current_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "account_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": ["clean", "blocked_fail_closed"]
+    },
+    "decision": {
+      "enum": ["allow_new_orders", "block_new_orders"]
+    },
+    "fail_closed": {
+      "type": "boolean"
+    },
+    "block_new_orders": {
+      "type": "boolean"
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "snapshot_id",
+        "sequence",
+        "captured_at",
+        "age_seconds",
+        "max_age_seconds",
+        "stale",
+        "stale_snapshot",
+        "missing_sequence",
+        "complete",
+        "reconnect",
+        "replay",
+        "sequence_blockers"
+      ],
+      "properties": {
+        "snapshot_id": {"type": "string"},
+        "sequence": {"type": ["integer", "null"]},
+        "captured_at": {"type": ["string", "null"], "format": "date-time"},
+        "age_seconds": {"type": ["number", "null"]},
+        "max_age_seconds": {"type": "number", "minimum": 0},
+        "stale": {"type": "boolean"},
+        "stale_snapshot": {"type": "boolean"},
+        "missing_sequence": {"type": "boolean"},
+        "complete": {"type": "boolean"},
+        "reconnect": {"type": "boolean"},
+        "replay": {"type": "boolean"},
+        "sequence_blockers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "orders": {
+      "$ref": "#/$defs/reconciliationBuckets"
+    },
+    "fills": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matched",
+        "unmatched_local",
+        "unmatched_broker",
+        "duplicates",
+        "conflicts",
+        "out_of_order"
+      ],
+      "properties": {
+        "matched": {"type": "array", "items": {"type": "object"}},
+        "unmatched_local": {"type": "array", "items": {"type": "object"}},
+        "unmatched_broker": {"type": "array", "items": {"type": "object"}},
+        "duplicates": {"type": "array", "items": {"type": "object"}},
+        "conflicts": {"type": "array", "items": {"type": "object"}},
+        "out_of_order": {"type": "boolean"}
+      }
+    },
+    "positions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["matched", "drifts", "ledger_consistency"],
+      "properties": {
+        "matched": {"type": "array", "items": {"type": "object"}},
+        "drifts": {"type": "array", "items": {"type": "object"}},
+        "ledger_consistency": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "cash": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matched",
+        "broker_cash",
+        "local_cash",
+        "cash_drift",
+        "broker_commission",
+        "local_commission",
+        "commission_drift",
+        "cash_matched",
+        "commission_matched"
+      ],
+      "properties": {
+        "matched": {"type": "boolean"},
+        "broker_cash": {"type": ["number", "null"]},
+        "local_cash": {"type": ["number", "null"]},
+        "cash_drift": {"type": ["number", "null"]},
+        "broker_commission": {"type": ["number", "null"]},
+        "local_commission": {"type": ["number", "null"]},
+        "commission_drift": {"type": ["number", "null"]},
+        "cash_matched": {"type": "boolean"},
+        "commission_matched": {"type": "boolean"}
+      }
+    },
+    "restart_blockers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "replay_blockers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "blockers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "safety_flags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "broker_called",
+        "broker_endpoint_used",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "network_used",
+        "order_submitted",
+        "order_cancelled",
+        "ledger_mutated",
+        "paper_order_allowed",
+        "live_order_allowed",
+        "secret_read"
+      ],
+      "properties": {
+        "broker_called": {"const": false},
+        "broker_endpoint_used": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "network_used": {"const": false},
+        "order_submitted": {"const": false},
+        "order_cancelled": {"const": false},
+        "ledger_mutated": {"const": false},
+        "paper_order_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "secret_read": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "reconciliationBuckets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matched",
+        "unmatched_local",
+        "unmatched_broker",
+        "status_drift",
+        "duplicates"
+      ],
+      "properties": {
+        "matched": {"type": "array", "items": {"type": "object"}},
+        "unmatched_local": {"type": "array", "items": {"type": "object"}},
+        "unmatched_broker": {"type": "array", "items": {"type": "object"}},
+        "status_drift": {"type": "array", "items": {"type": "object"}},
+        "duplicates": {"type": "array", "items": {"type": "object"}}
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/universe_manifest.schema.json",
+  "title": "US Equity Universe Manifest Filename Compatibility Schema",
+  "type": "object",
+  "required": ["schema_version", "asset", "status", "promotion_ready", "point_in_time", "symbols", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_universe_manifest_v1"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["partial", "promotion_clean"]},
+    "promotion_ready": {"const": false},
+    "point_in_time": {"type": "boolean"},
+    "symbols": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

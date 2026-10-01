@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_live_risk_limits.schema.json",
+  "title": "QuantStation VNEXT US Equity Live Risk Limits Config",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "account_capital_usd",
+    "max_live_principal_usd",
+    "manual_reviewer",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_live_risk_limits_v1"},
+    "account_capital_usd": {"type": "number", "const": 10000.0},
+    "max_live_principal_usd": {"type": "number", "minimum": 0, "maximum": 1000.0},
+    "manual_reviewer": {"type": "string"},
+    "notes": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

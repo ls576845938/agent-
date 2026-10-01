@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_intraday_short_cycle_event_definition_repair_report.schema.json",
+  "title": "BTC Intraday Short-Cycle Event Definition Repair Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "repair_scan_completed",
+    "repair_screen_is_promotion_evidence",
+    "full_event_ledger_retest_required",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "true_scalping_allowed",
+    "source_event_ledger_report",
+    "source_trade_attribution",
+    "source_trade_ledger",
+    "base_failure_context",
+    "repair_thresholds",
+    "variant_results",
+    "best_repair_variant",
+    "guardrails",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_intraday_short_cycle_event_definition_repair_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "scope": {"const": "research_only_event_definition_repair_no_candidate_no_paper_no_live"},
+    "status": {"enum": ["repair_candidate_identified_retest_required", "repair_scan_no_candidate"]},
+    "decision": {"enum": ["run_full_event_ledger_retest_for_repaired_definition", "return_to_event_definition"]},
+    "next_required_action": {"type": "string"},
+    "repair_scan_completed": {"type": "boolean"},
+    "repair_screen_is_promotion_evidence": {"const": false},
+    "full_event_ledger_retest_required": {"const": true},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "source_event_ledger_report": {"type": ["string", "null"]},
+    "source_trade_attribution": {"type": ["string", "null"]},
+    "source_trade_ledger": {"type": ["string", "null"]},
+    "base_failure_context": {
+      "type": "object",
+      "required": ["status", "decision", "failed_metrics", "blockers", "regime_pass_rate", "tail_dependency_status"],
+      "properties": {
+        "status": {"type": "string"},
+        "decision": {"type": "string"},
+        "failed_metrics": {"type": "array", "items": {"type": "string"}},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "regime_pass_rate": {"type": ["number", "null"]},
+        "tail_dependency_status": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "repair_thresholds": {
+      "type": "object",
+      "required": [
+        "min_trade_count",
+        "min_profit_factor",
+        "min_median_net_pnl",
+        "min_regime_pass_rate",
+        "max_top5_positive_share",
+        "max_top_decile_positive_share"
+      ],
+      "properties": {
+        "min_trade_count": {"const": 50},
+        "min_profit_factor": {"const": 1.15},
+        "min_median_net_pnl": {"const": 0.0},
+        "min_regime_pass_rate": {"const": 0.75},
+        "max_top5_positive_share": {"const": 0.5},
+        "max_top_decile_positive_share": {"const": 0.75}
+      },
+      "additionalProperties": false
+    },
+    "variant_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/repairVariant"}
+    },
+    "best_repair_variant": {
+      "anyOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/repairVariant"}
+      ]
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "research_only",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "paper_or_live_unlock_allowed",
+        "candidate_generation_allowed",
+        "strategy_skeleton_generation_allowed",
+        "true_scalping_allowed",
+        "sub_minute_or_tick_scalping_allowed",
+        "repair_screen_is_promotion_evidence",
+        "full_event_ledger_retest_required"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "candidate_generation_allowed": {"const": false},
+        "strategy_skeleton_generation_allowed": {"const": false},
+        "true_scalping_allowed": {"const": false},
+        "sub_minute_or_tick_scalping_allowed": {"const": false},
+        "repair_screen_is_promotion_evidence": {"const": false},
+        "full_event_ledger_retest_required": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "repairVariant": {
+      "type": "object",
+      "required": [
+        "variant_id",
+        "description",
+        "filters",
+        "trade_count",
+        "net_pnl",
+        "mean_net_pnl",
+        "median_net_pnl",
+        "profit_factor",
+        "hit_rate",
+        "regime_pass_rate",
+        "tail_dependency_pass",
+        "top5_positive_share",
+        "top_decile_positive_share",
+        "repair_screen_pass",
+        "repair_screen_is_promotion_evidence",
+        "full_event_ledger_retest_required",
+        "regime_breakdown",
+        "blockers"
+      ],
+      "properties": {
+        "variant_id": {"type": "string"},
+        "description": {"type": "string"},
+        "filters": {
+          "type": "object",
+          "required": ["volatility_states", "allowed_regimes"],
+          "properties": {
+            "volatility_states": {"type": "array", "items": {"type": "string"}},
+            "allowed_regimes": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": false
+        },
+        "trade_count": {"type": "integer", "minimum": 0},
+        "net_pnl": {"type": "number"},
+        "mean_net_pnl": {"type": "number"},
+        "median_net_pnl": {"type": "number"},
+        "profit_factor": {"type": "number"},
+        "hit_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "regime_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "tail_dependency_pass": {"type": "boolean"},
+        "top5_positive_share": {"type": ["number", "null"]},
+        "top_decile_positive_share": {"type": ["number", "null"]},
+        "repair_screen_pass": {"type": "boolean"},
+        "repair_screen_is_promotion_evidence": {"const": false},
+        "full_event_ledger_retest_required": {"const": true},
+        "regime_breakdown": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["regime", "trade_count", "net_pnl", "median_net_pnl", "profit_factor", "passed"],
+            "properties": {
+              "regime": {"type": "string"},
+              "trade_count": {"type": "integer", "minimum": 0},
+              "net_pnl": {"type": "number"},
+              "median_net_pnl": {"type": "number"},
+              "profit_factor": {"type": "number"},
+              "passed": {"type": "boolean"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

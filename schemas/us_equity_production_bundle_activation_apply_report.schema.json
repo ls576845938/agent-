@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_production_bundle_activation_apply_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Production Bundle Activation Apply Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "activation_report_path",
+    "activation_status",
+    "bundle_id",
+    "candidate_config_path",
+    "target_config_path",
+    "backup_config_path",
+    "configuration_mutated",
+    "config_changed",
+    "pre_apply_audit",
+    "blockers",
+    "post_apply_validation_commands",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_production_bundle_activation_apply_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["activation_apply_blocked", "activation_applied"]},
+    "activation_report_path": {"type": "string", "minLength": 1},
+    "activation_status": {"type": ["string", "null"]},
+    "bundle_id": {"type": ["string", "null"]},
+    "candidate_config_path": {"type": ["string", "null"]},
+    "target_config_path": {"type": "string", "minLength": 1},
+    "backup_config_path": {"type": ["string", "null"]},
+    "configuration_mutated": {"type": "boolean"},
+    "config_changed": {"type": "boolean"},
+    "pre_apply_audit": {
+      "type": "object",
+      "required": [
+        "activation_report_exists",
+        "activation_report_ready",
+        "bundle_id",
+        "manual_confirm_apply_present",
+        "candidate_config_exists",
+        "candidate_config_inside_allowed_dir",
+        "target_config_exists_before",
+        "target_config_would_change",
+        "backup_required_before_overwrite",
+        "backup_will_be_written_on_apply",
+        "unsafe_activation_guardrail_keys",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "activation_report_exists": {"type": "boolean"},
+        "activation_report_ready": {"type": "boolean"},
+        "bundle_id": {"type": ["string", "null"]},
+        "manual_confirm_apply_present": {"type": "boolean"},
+        "candidate_config_exists": {"type": "boolean"},
+        "candidate_config_inside_allowed_dir": {"type": "boolean"},
+        "target_config_exists_before": {"type": "boolean"},
+        "target_config_would_change": {"type": "boolean"},
+        "backup_required_before_overwrite": {"type": "boolean"},
+        "backup_will_be_written_on_apply": {"type": "boolean"},
+        "unsafe_activation_guardrail_keys": {"type": "array", "items": {"type": "string"}},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "post_apply_validation_commands": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "activation_apply_only",
+        "requires_ready_activation_report",
+        "requires_confirm_apply",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "activation_apply_only": {"const": true},
+        "requires_ready_activation_report": {"const": true},
+        "requires_confirm_apply": {"const": true},
+        "configuration_mutated_by_this_report": {"type": "boolean"},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "activation_applied"}}},
+      "then": {
+        "properties": {
+          "configuration_mutated": {"const": true},
+          "config_changed": {"const": true},
+          "blockers": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "activation_apply_blocked"}}},
+      "then": {
+        "properties": {
+          "configuration_mutated": {"const": false}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

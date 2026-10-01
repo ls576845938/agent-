@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "us_etf_26_candidate_execution_envelope_report.schema.json",
+  "title": "US ETF26 Candidate Execution Envelope Report",
+  "type": "object",
+  "required": ["schema_version", "run_id", "generated_at", "status", "decision", "code_commit", "code_tree_hash", "candidate_id", "strategy_id", "portfolio_dependency", "execution_drill", "reconciliation", "execution_quality", "paper_ledger_uow", "broker_credential_metadata_contract", "paper_simulation_readiness", "counts", "hashes", "blockers", "guardrails", "artifacts"],
+  "properties": {
+    "schema_version": {"const": "us_etf_26_candidate_execution_envelope_report_v1"},
+    "run_id": {"type": "string", "pattern": "^us-etf26-execution-[0-9a-f]{16}$"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "engineering_execution_complete_paper_blocked"},
+    "decision": {"const": "local_execution_plumbing_pass_paper_fail_closed"},
+    "code_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "code_tree_hash": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "candidate_id": {"const": "us-etf26-complete-return-qqq-1d-v1"},
+    "portfolio_dependency": {
+      "type": "object",
+      "required": ["run_id", "manifest_sha256", "report_sha256", "promotion_credit_allowed"],
+      "properties": {"promotion_credit_allowed": {"const": false}},
+      "additionalProperties": true
+    },
+    "execution_drill": {
+      "type": "object",
+      "required": ["status", "scenario_count", "passed_count", "blocked_count", "scenarios", "append_only_lifecycle", "deterministic_client_order_ids", "fill_idempotency", "behavior_source", "local_fixture_state_hash", "broker_calls_used"],
+      "properties": {
+        "status": {"const": "engineering_execution_drill_pass"},
+        "scenario_count": {"type": "integer", "minimum": 20},
+        "passed_count": {"type": "integer", "minimum": 20},
+        "blocked_count": {"const": 0},
+        "scenarios": {
+          "type": "array",
+          "minItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["scenario_id", "status", "observations", "behavior_assertion_passed", "fixture_only", "broker_submit_attempted", "private_or_order_endpoint_used"],
+            "properties": {
+              "status": {"const": "pass_local_fixture"},
+              "observations": {"type": "object", "minProperties": 1},
+              "behavior_assertion_passed": {"const": true},
+              "fixture_only": {"const": true},
+              "broker_submit_attempted": {"const": false},
+              "private_or_order_endpoint_used": {"const": false}
+            },
+            "additionalProperties": true
+          }
+        },
+        "append_only_lifecycle": {"const": true},
+        "deterministic_client_order_ids": {"const": true},
+        "fill_idempotency": {"const": true},
+        "behavior_source": {"const": "local_fixture_oms_observed_state_transitions"},
+        "local_fixture_state_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "reconciliation": {
+      "type": "object",
+      "required": ["status", "passed", "order_fill_quantity_delta", "fill_position_quantity_delta", "fill_cash_balance_delta", "position_chain_max_delta", "cash_chain_max_delta", "missing_position_fill_count", "missing_cash_fill_count", "duplicate_fill_id_count", "orphan_fill_count", "deterministic_replay_hash_match", "local_fixture_state_reconciliation", "local_fixture_state_reconciliation_passed", "broker_state_reconciliation", "paper_state_reconciliation"],
+      "properties": {
+        "status": {"const": "pass"},
+        "passed": {"const": true},
+        "order_fill_quantity_delta": {"const": 0.0},
+        "fill_position_quantity_delta": {"const": 0.0},
+        "fill_cash_balance_delta": {"type": "number", "minimum": -0.00000001, "maximum": 0.00000001},
+        "duplicate_fill_id_count": {"const": 0},
+        "orphan_fill_count": {"const": 0},
+        "position_chain_max_delta": {"type": "number", "minimum": 0, "maximum": 0.00000001},
+        "cash_chain_max_delta": {"type": "number", "minimum": 0, "maximum": 0.00000001},
+        "missing_position_fill_count": {"const": 0},
+        "missing_cash_fill_count": {"const": 0},
+        "deterministic_replay_hash_match": {"const": true},
+        "local_fixture_state_reconciliation": {"const": "passed"},
+        "local_fixture_state_reconciliation_passed": {"const": true},
+        "broker_state_reconciliation": {"const": "unproven"},
+        "paper_state_reconciliation": {"const": "blocked_unproven"}
+      },
+      "additionalProperties": true
+    },
+    "execution_quality": {
+      "type": "object",
+      "required": ["status", "fill_rate", "implementation_shortfall_usd", "quantity_weighted_effective_spread_bps", "promotion_credit_allowed"],
+      "properties": {"status": {"const": "pass_local_fixture"}, "promotion_credit_allowed": {"const": false}},
+      "additionalProperties": true
+    },
+    "paper_ledger_uow": {
+      "type": "object",
+      "required": ["status", "commit_status", "commit_operation_count", "forced_atomic_failure_exercised", "rollback_status", "rollback_succeeded", "original_state_restored", "broker_calls_used"],
+      "properties": {
+        "status": {"const": "pass"},
+        "commit_status": {"const": "COMMITTED"},
+        "commit_operation_count": {"const": 7},
+        "forced_atomic_failure_exercised": {"const": true},
+        "rollback_status": {"const": "ROLLED_BACK"},
+        "rollback_succeeded": {"const": true},
+        "original_state_restored": {"const": true},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "broker_credential_metadata_contract": {
+      "type": "object",
+      "required": ["status", "allowed_metadata_fields", "metadata", "human_review_proven", "sample_metadata_treated_as_proven", "secret_value_present", "secret_path_present", "can_unlock_paper_or_live", "blockers"],
+      "properties": {
+        "status": {"const": "blocked_missing_human_review"},
+        "human_review_proven": {"const": false},
+        "sample_metadata_treated_as_proven": {"const": false},
+        "secret_value_present": {"const": false},
+        "secret_path_present": {"const": false},
+        "can_unlock_paper_or_live": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "paper_simulation_readiness": {
+      "type": "object",
+      "required": ["status", "engineering_execution_drill_passed", "local_simulator_only", "fixture_only", "paper_runner_status", "paper_queue_status", "broker_access_status", "order_submission_status", "promotion_credit_allowed", "paper_order_allowed", "blockers"],
+      "properties": {
+        "status": {"const": "paper_simulation_blocked_fail_closed"},
+        "engineering_execution_drill_passed": {"const": true},
+        "local_simulator_only": {"const": true},
+        "fixture_only": {"const": true},
+        "paper_runner_status": {"const": "blocked"},
+        "paper_queue_status": {"const": "blocked"},
+        "broker_access_status": {"const": "blocked"},
+        "order_submission_status": {"const": "blocked"},
+        "promotion_credit_allowed": {"const": false},
+        "paper_order_allowed": {"const": false},
+        "blockers": {"type": "array", "minItems": 1, "uniqueItems": true}
+      },
+      "additionalProperties": true
+    },
+    "counts": {"type": "object"},
+    "hashes": {"type": "object"},
+    "blockers": {"type": "array", "minItems": 1, "uniqueItems": true},
+    "guardrails": {
+      "type": "object",
+      "required": ["research_only", "fail_closed", "fixture_only", "local_simulator_used", "old_latest_artifact_consumed", "source_portfolio_artifact_modified", "promotion_credit_allowed", "promotion_unlock_allowed", "paper_or_live_unlock_allowed", "paper_order_allowed", "paper_runner_allowed", "paper_queue_write_allowed", "broker_access_allowed", "live_order_allowed", "private_endpoint_used", "order_endpoint_used", "paper_endpoint_used", "live_endpoint_used", "broker_endpoint_used", "network_used", "secret_read", "real_order_submitted"],
+      "properties": {
+        "research_only": {"const": true},
+        "fail_closed": {"const": true},
+        "fixture_only": {"const": true},
+        "local_simulator_used": {"const": true},
+        "old_latest_artifact_consumed": {"const": false},
+        "source_portfolio_artifact_modified": {"const": false},
+        "promotion_credit_allowed": {"const": false},
+        "promotion_unlock_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_order_allowed": {"const": false},
+        "paper_runner_allowed": {"const": false},
+        "paper_queue_write_allowed": {"const": false},
+        "broker_access_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "paper_endpoint_used": {"const": false},
+        "live_endpoint_used": {"const": false},
+        "broker_endpoint_used": {"const": false},
+        "network_used": {"const": false},
+        "secret_read": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {"type": "array", "minItems": 13, "uniqueItems": true}
+  },
+  "additionalProperties": true
+}

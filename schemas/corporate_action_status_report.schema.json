@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/corporate_action_status_report.schema.json",
+  "title": "US Equity Corporate Action Status Report Filename Compatibility Schema",
+  "type": "object",
+  "required": ["schema_version", "promotion_clean", "corporate_action_event_source_available", "adjustment_reproducible", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_corporate_action_status_report_v1"},
+    "promotion_clean": {"type": "boolean"},
+    "corporate_action_event_source_available": {"type": "boolean"},
+    "adjustment_reproducible": {"type": "boolean"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

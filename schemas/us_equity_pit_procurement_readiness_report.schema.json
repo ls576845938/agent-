@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_pit_procurement_readiness_report.schema.json",
+  "title": "QuantStation VNEXT US Equity PIT Procurement Readiness Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "summary",
+    "required_files",
+    "missing_filenames",
+    "ready_filenames",
+    "acceptable_source_routes",
+    "supplemental_source_routes",
+    "unacceptable_sources",
+    "minimum_delivery_requirements",
+    "source_reports",
+    "blockers",
+    "operator_next_actions",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_pit_procurement_readiness_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "pit_procurement_blocked",
+        "pit_procurement_ready_for_vendor_order",
+        "pit_procurement_ready_for_manual_license_review"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "enum": [
+          "pit_procurement_blocked",
+          "pit_procurement_ready_for_vendor_order",
+          "pit_procurement_ready_for_manual_license_review"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "decision": {"type": "string", "minLength": 1},
+    "summary": {
+      "type": "object",
+      "required": [
+        "required_file_count",
+        "ready_for_manual_license_review_count",
+        "missing_file_count",
+        "acceptable_source_route_count",
+        "supplemental_source_route_count",
+        "unacceptable_source_count",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "required_file_count": {"const": 6},
+        "ready_for_manual_license_review_count": {"type": "integer", "minimum": 0, "maximum": 6},
+        "missing_file_count": {"type": "integer", "minimum": 0, "maximum": 6},
+        "acceptable_source_route_count": {"type": "integer", "minimum": 1},
+        "supplemental_source_route_count": {"type": "integer", "minimum": 1},
+        "unacceptable_source_count": {"type": "integer", "minimum": 1},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "required_files": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": [
+          "table",
+          "filename",
+          "required_fields",
+          "target_path",
+          "readiness_status",
+          "ready_candidate_count",
+          "excluded_candidate_count",
+          "first_ready_candidate_path"
+        ],
+        "properties": {
+          "table": {"type": "string", "minLength": 1},
+          "filename": {"type": "string", "pattern": "^[a-z_]+\\.csv$"},
+          "required_fields": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "target_path": {"type": "string", "minLength": 1},
+          "readiness_status": {"enum": ["ready_for_manual_license_review", "missing_vendor_export"]},
+          "ready_candidate_count": {"type": "integer", "minimum": 0},
+          "excluded_candidate_count": {"type": "integer", "minimum": 0},
+          "first_ready_candidate_path": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "missing_filenames": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "ready_filenames": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "acceptable_source_routes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["route_id", "label", "mapping_doc"],
+        "properties": {
+          "route_id": {"type": "string", "minLength": 1},
+          "label": {"type": "string", "minLength": 1},
+          "mapping_doc": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "supplemental_source_routes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["route_id", "label", "usable_for", "not_sufficient_for"],
+        "properties": {
+          "route_id": {"type": "string", "minLength": 1},
+          "label": {"type": "string", "minLength": 1},
+          "usable_for": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "not_sufficient_for": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "unacceptable_sources": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "minimum_delivery_requirements": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "source_reports": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
+    "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "operator_next_actions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "procurement_readiness_only",
+        "files_copied",
+        "vendor_data_imported",
+        "configuration_mutated_by_this_report",
+        "license_reviewed_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "procurement_readiness_only": {"const": true},
+        "files_copied": {"const": false},
+        "vendor_data_imported": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "license_reviewed_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

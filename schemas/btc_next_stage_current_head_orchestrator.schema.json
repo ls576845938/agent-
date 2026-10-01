@@ -1,0 +1,349 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "btc_next_stage_current_head_orchestrator.schema.json",
+  "title": "BTC Next-Stage Current-HEAD Orchestrator",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source_head",
+    "code_commit",
+    "aggregation_batch_id",
+    "generated_at_utc",
+    "status",
+    "decision",
+    "readiness_class",
+    "step_order",
+    "build_state_start",
+    "build_state_end",
+    "input_hashes",
+    "outputs",
+    "snapshot",
+    "blockers",
+    "required_blockers",
+    "required_blocker_count",
+    "required_blockers_sha256",
+    "required_blockers_missing",
+    "required_blockers_preserved",
+    "promotion_evidence_ready",
+    "paper_ready",
+    "live_ready",
+    "safety"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "btc_next_stage_current_head_orchestrator_v1"
+    },
+    "source_head": {
+      "$ref": "#/$defs/gitSha"
+    },
+    "code_commit": {
+      "$ref": "#/$defs/gitSha"
+    },
+    "aggregation_batch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "const": "complete_blocked"
+    },
+    "decision": {
+      "const": "blocked_fail_closed_no_paper_no_live"
+    },
+    "readiness_class": {
+      "const": "quality_checked"
+    },
+    "step_order": {
+      "const": [
+        "validate_head_and_source",
+        "validate_manifest_and_handoffs",
+        "resolve_shared_data",
+        "strategy",
+        "oms",
+        "ledger",
+        "replay",
+        "domain_read_model",
+        "engineering_evidence_v2",
+        "promotion_evidence",
+        "gate_decision",
+        "validate_safety",
+        "atomic_per_file_latest",
+        "immutable_snapshot",
+        "pointer_atomic_last",
+        "reload_verify"
+      ]
+    },
+    "build_state_start": {
+      "$ref": "#/$defs/buildState"
+    },
+    "build_state_end": {
+      "$ref": "#/$defs/buildState"
+    },
+    "input_hashes": {
+      "type": "object",
+      "minProperties": 3,
+      "additionalProperties": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "required": [
+        "strategy",
+        "oms",
+        "ledger",
+        "replay",
+        "domain",
+        "engineering",
+        "promotion",
+        "gate",
+        "orchestrator"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^artifacts/"
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "required": [
+        "runs_root",
+        "manifest_path",
+        "pointer_path",
+        "pointer_contains_blockers"
+      ],
+      "properties": {
+        "runs_root": {
+          "const": "artifacts/btc_gate_runs"
+        },
+        "manifest_path": {
+          "type": "string",
+          "pattern": "^artifacts/btc_gate_runs/[^/]+/manifest\\.json$"
+        },
+        "pointer_path": {
+          "const": "artifacts/btc_gate_runs/latest_pointer.json"
+        },
+        "pointer_contains_blockers": {
+          "const": false
+        }
+      }
+    },
+    "blockers": {
+      "$ref": "#/$defs/blockers"
+    },
+    "required_blockers": {
+      "$ref": "#/$defs/requiredBlockers"
+    },
+    "required_blocker_count": {
+      "enum": [15, 17]
+    },
+    "required_blockers_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "required_blockers_missing": {
+      "const": []
+    },
+    "required_blockers_preserved": {
+      "const": true
+    },
+    "promotion_evidence_ready": {
+      "const": false
+    },
+    "paper_ready": {
+      "const": false
+    },
+    "live_ready": {
+      "const": false
+    },
+    "safety": {
+      "$ref": "#/$defs/safety"
+    }
+  },
+  "$defs": {
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "buildState": {
+      "type": "object",
+      "required": [
+        "code_commit",
+        "input_snapshot_hash"
+      ],
+      "properties": {
+        "code_commit": {
+          "$ref": "#/$defs/gitSha"
+        },
+        "input_snapshot_hash": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "minItems": 15,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "requiredBlockers": {
+      "oneOf": [
+        {
+          "const": [
+            "btc_okx_public_ws_primary_connection_reset_10054",
+            "real_timestamp_aligned_l2_missing",
+            "btc_okx_l2_sequence_continuity_unverified",
+            "btc_okx_native:effective_sample_regime_coverage_prereg_evidence_incomplete",
+            "btc_okx_native:active_strategy_family_dependency_scope_missing",
+            "btc_okx_server_time_offset_exceeds_threshold",
+            "manifest_data_schema_mismatch",
+            "manifest_quality_status_not_pass",
+            "l2_manifest_attestation_readiness_mismatch",
+            "runtime_pointer_immutable_snapshot_not_published",
+            "btc_okx_native:active_criteria_pointer_lineage_mismatch",
+            "not_promotion_evidence",
+            "btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+            "btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+            "btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+            "btc_okx_native:25_hour_demo_observation_window_incomplete",
+            "btc_okx_native:manual_promotion_approval_missing"
+          ]
+        },
+        {
+          "const": [
+            "btc_okx_native:effective_sample_regime_coverage_prereg_evidence_incomplete",
+            "btc_okx_native:active_strategy_family_dependency_scope_missing",
+            "btc_okx_native:active_criteria_pointer_lineage_mismatch",
+            "btc_execution_latency_model_missing",
+            "btc_queue_model_missing",
+            "btc_okx_l2_natural_execution_observation_missing",
+            "btc_okx_l2_two_sided_coverage_incomplete",
+            "not_promotion_evidence",
+            "btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+            "btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+            "btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+            "btc_okx_native:25_hour_demo_observation_window_incomplete",
+            "btc_okx_native:manual_promotion_approval_missing",
+            "btc_next_stage:ledger_positions_cash_pnl_receipts_missing",
+            "btc_next_stage:replay_observe_only_offline_no_paper_queue"
+          ]
+        }
+      ]
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "api_key_permission_reviewed",
+        "approval_granted",
+        "broker_access_allowed",
+        "broker_calls_used",
+        "broker_endpoint_accessed",
+        "broker_endpoint_allowed",
+        "broker_or_order_allowed",
+        "credential_permissions_verified",
+        "demo_allowed",
+        "demo_order_submitted",
+        "demo_trading_enabled",
+        "live_allowed",
+        "live_enabled",
+        "live_order_allowed",
+        "live_ready",
+        "live_unlock_allowed",
+        "manual_approval_recorded",
+        "micro_live_allowed",
+        "network_accessed",
+        "oms_access_allowed",
+        "order_endpoint_accessed",
+        "order_endpoint_allowed",
+        "order_endpoint_used",
+        "order_submission_allowed",
+        "paper_allowed",
+        "paper_candidate_allowed",
+        "paper_candidate_created",
+        "paper_execution_authorized",
+        "paper_order_intake_allowed",
+        "paper_order_submitted",
+        "paper_or_live_unlock_allowed",
+        "paper_queue_write_allowed",
+        "paper_queue_write_enabled",
+        "paper_ready",
+        "paper_start_allowed",
+        "permission_evidence_ready",
+        "permission_granted",
+        "position_increase_allowed",
+        "private_endpoint_accessed",
+        "private_endpoint_allowed",
+        "private_endpoint_used",
+        "promotion_allowed",
+        "promotion_evidence_ready",
+        "real_order_submitted",
+        "real_orders_enabled",
+        "secret_access_allowed",
+        "secrets_read",
+        "strategy_skeleton_generated",
+        "withdraw_allowed"
+      ],
+      "properties": {
+        "api_key_permission_reviewed": {"const": false},
+        "approval_granted": {"const": false},
+        "broker_access_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "broker_endpoint_accessed": {"const": false},
+        "broker_endpoint_allowed": {"const": false},
+        "broker_or_order_allowed": {"const": false},
+        "credential_permissions_verified": {"const": false},
+        "demo_allowed": {"const": false},
+        "demo_order_submitted": {"const": false},
+        "demo_trading_enabled": {"const": false},
+        "live_allowed": {"const": false},
+        "live_enabled": {"const": false},
+        "live_order_allowed": {"const": false},
+        "live_ready": {"const": false},
+        "live_unlock_allowed": {"const": false},
+        "manual_approval_recorded": {"const": false},
+        "micro_live_allowed": {"const": false},
+        "network_accessed": {"const": false},
+        "oms_access_allowed": {"const": false},
+        "order_endpoint_accessed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "order_submission_allowed": {"const": false},
+        "paper_allowed": {"const": false},
+        "paper_candidate_allowed": {"const": false},
+        "paper_candidate_created": {"const": false},
+        "paper_execution_authorized": {"const": false},
+        "paper_order_intake_allowed": {"const": false},
+        "paper_order_submitted": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_queue_write_allowed": {"const": false},
+        "paper_queue_write_enabled": {"const": false},
+        "paper_ready": {"const": false},
+        "paper_start_allowed": {"const": false},
+        "permission_evidence_ready": {"const": false},
+        "permission_granted": {"const": false},
+        "position_increase_allowed": {"const": false},
+        "private_endpoint_accessed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "promotion_allowed": {"const": false},
+        "promotion_evidence_ready": {"const": false},
+        "real_order_submitted": {"const": false},
+        "real_orders_enabled": {"const": false},
+        "secret_access_allowed": {"const": false},
+        "secrets_read": {"const": false},
+        "strategy_skeleton_generated": {"const": false},
+        "withdraw_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  }
+}

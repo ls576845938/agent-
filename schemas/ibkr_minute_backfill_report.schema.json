@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/ibkr_minute_backfill_report.schema.json",
+  "title": "QuantStation VNEXT US Equity IBKR Minute Backfill Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "provider",
+    "source_type",
+    "status",
+    "research_ready_status",
+    "guardrails",
+    "raw_data_blockers",
+    "research_blockers",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_ibkr_minute_backfill_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "provider": {"const": "ibkr"},
+    "source_type": {"const": "broker_historical_market_data_backfill_raw"},
+    "status": {"enum": ["dry_run", "pass", "partial", "blocked"]},
+    "research_ready_status": {"enum": ["pass", "blocked"]},
+    "network_called": {"type": "boolean"},
+    "writes_performed": {"type": "boolean"},
+    "attempted_new_chunk_count": {"type": "integer", "minimum": 0},
+    "symbols": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "symbol_count": {"type": "integer", "minimum": 0},
+    "available_symbols": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "missing_symbols": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "raw_data_blockers": {"type": "array", "items": {"type": "string"}},
+    "research_blockers": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "adjustment_controls": {
+      "type": "object",
+      "required": [
+        "raw_intraday_retained",
+        "pit_adjustment_replay_required_before_research_use",
+        "back_adjusted_for_signal_use_allowed"
+      ],
+      "properties": {
+        "raw_intraday_retained": {"const": true},
+        "pit_adjustment_replay_required_before_research_use": {"const": true},
+        "back_adjusted_for_signal_use_allowed": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "data_limitations": {
+      "type": "object",
+      "required": [
+        "ibkr_role",
+        "minute_bars_are_raw",
+        "point_in_time_adjustment_replay_included",
+        "research_clean_approval_granted",
+        "account_or_order_endpoint_used"
+      ],
+      "properties": {
+        "ibkr_role": {"type": "string", "minLength": 1},
+        "minute_bars_are_raw": {"const": true},
+        "point_in_time_adjustment_replay_included": {"const": false},
+        "research_clean_approval_granted": {"const": false},
+        "account_or_order_endpoint_used": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "guardrails": {"$ref": "#/$defs/guardrails"}
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "live_order_allowed",
+        "paper_or_live_unlock_allowed",
+        "private_account_endpoint_used",
+        "order_endpoint_used",
+        "broker_order_endpoint_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "live_order_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "private_account_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "broker_order_endpoint_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": true
+    }
+  }
+}

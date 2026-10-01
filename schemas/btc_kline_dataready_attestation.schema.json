@@ -1,0 +1,654 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_kline_dataready_attestation.schema.json",
+  "title": "BTC Immutable K-line DataReady Attestation",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "exporter_version",
+    "producer_role",
+    "dataset_id",
+    "dataset_version",
+    "source_head",
+    "generated_at",
+    "timezone",
+    "event_time_field",
+    "available_time_field",
+    "finalized_field",
+    "source_time_semantics",
+    "partition_selection",
+    "source_partition_inventory",
+    "source_partition_inventory_sha256",
+    "pit_available_time_enforced",
+    "in_progress_excluded_from_consumption",
+    "coverage_start",
+    "coverage_end",
+    "common_end",
+    "freshness_sla_hours",
+    "freshness_age_hours",
+    "intervals",
+    "lineage",
+    "files",
+    "aggregate_table_sha256",
+    "quality_checked",
+    "promotion_evidence_ready",
+    "promotion_blockers",
+    "readiness",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "btc_kline_dataready_attestation_v1"
+    },
+    "exporter_version": {
+      "const": "btc_kline_immutable_export_v1"
+    },
+    "producer_role": {
+      "const": "data_steward"
+    },
+    "dataset_id": {
+      "const": "btc-market-data-sqlite-snapshot"
+    },
+    "dataset_version": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "source_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "timezone": {
+      "const": "UTC"
+    },
+    "event_time_field": {
+      "const": "event_time"
+    },
+    "available_time_field": {
+      "const": "available_time"
+    },
+    "finalized_field": {
+      "const": "is_finalized"
+    },
+    "source_time_semantics": {
+      "enum": [
+        "explicit_event_available_finalized_fields",
+        "derived_from_close_time"
+      ]
+    },
+    "partition_selection": {
+      "$ref": "#/$defs/partitionSelection"
+    },
+    "source_partition_inventory": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/sourcePartitionInventory"
+      }
+    },
+    "source_partition_inventory_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "pit_available_time_enforced": {
+      "const": true
+    },
+    "in_progress_excluded_from_consumption": {
+      "const": true
+    },
+    "coverage_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "coverage_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "common_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "freshness_sla_hours": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "freshness_age_hours": {
+      "type": "number",
+      "minimum": 0
+    },
+    "intervals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/intervalAttestation"
+      }
+    },
+    "lineage": {
+      "$ref": "#/$defs/lineage"
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    },
+    "aggregate_table_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "quality_checked": {
+      "const": true
+    },
+    "promotion_evidence_ready": {
+      "const": false
+    },
+    "promotion_blockers": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "contains": {
+        "const": "btc_execution_latency_model_missing"
+      }
+    },
+    "readiness": {
+      "$ref": "#/$defs/readiness"
+    },
+    "guardrails": {
+      "$ref": "#/$defs/guardrails"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "partition": {
+      "type": "object",
+      "required": [
+        "venue",
+        "instrument_id",
+        "interval"
+      ],
+      "properties": {
+        "venue": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "instrument_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "interval": {
+          "enum": [
+            "1m",
+            "5m",
+            "15m",
+            "1h",
+            "4h",
+            "1d"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "excludedPartition": {
+      "type": "object",
+      "required": [
+        "venue",
+        "instrument_id",
+        "interval",
+        "reason"
+      ],
+      "properties": {
+        "venue": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "instrument_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "interval": {
+          "enum": [
+            "1m",
+            "5m",
+            "15m",
+            "1h",
+            "4h",
+            "1d"
+          ]
+        },
+        "reason": {
+          "const": "excluded_non_required"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sourcePartitionInventory": {
+      "type": "object",
+      "required": [
+        "venue",
+        "instrument_id",
+        "interval",
+        "total_row_count",
+        "finalized_count",
+        "in_progress_count",
+        "coverage_start",
+        "common_end",
+        "freshness_age_hours",
+        "selection_status",
+        "selection_policy",
+        "source_sha256",
+        "partition_inventory_sha256"
+      ],
+      "properties": {
+        "venue": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "instrument_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "interval": {
+          "enum": [
+            "1m",
+            "5m",
+            "15m",
+            "1h",
+            "4h",
+            "1d"
+          ]
+        },
+        "total_row_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "finalized_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "in_progress_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coverage_start": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "common_end": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "freshness_age_hours": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "selection_status": {
+          "enum": [
+            "included_required",
+            "excluded_non_required"
+          ]
+        },
+        "selection_policy": {
+          "enum": [
+            "all_source_partitions_strict_v1",
+            "explicit_required_partitions_v1",
+            "btc_v3_current_main_binance_spot_required_v1"
+          ]
+        },
+        "source_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "partition_inventory_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "partitionSelection": {
+      "type": "object",
+      "required": [
+        "mode",
+        "policy_id",
+        "required_partitions",
+        "included_partitions",
+        "excluded_partitions"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "all_source_partitions",
+            "explicit_required_partitions"
+          ]
+        },
+        "policy_id": {
+          "enum": [
+            "all_source_partitions_strict_v1",
+            "explicit_required_partitions_v1",
+            "btc_v3_current_main_binance_spot_required_v1"
+          ]
+        },
+        "required_partitions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/partition"
+          }
+        },
+        "included_partitions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/partition"
+          }
+        },
+        "excluded_partitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/excludedPartition"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "file": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "bytes",
+        "row_count"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^exchange=[A-Za-z0-9._-]+/symbol=[A-Za-z0-9._-]+/interval=[A-Za-z0-9._-]+/part-[0-9]{5}\\.jsonl$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "intervalAttestation": {
+      "type": "object",
+      "required": [
+        "venue",
+        "instrument_id",
+        "interval",
+        "coverage_start",
+        "coverage_end",
+        "coverage_pct",
+        "missing_count",
+        "duplicate_count",
+        "finalized_count",
+        "in_progress_count",
+        "in_progress_excluded",
+        "common_end"
+      ],
+      "properties": {
+        "venue": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instrument_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "interval": {
+          "enum": [
+            "1m",
+            "5m",
+            "15m",
+            "1h",
+            "4h",
+            "1d"
+          ]
+        },
+        "coverage_start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "coverage_end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "coverage_pct": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 100
+        },
+        "missing_count": {
+          "const": 0
+        },
+        "duplicate_count": {
+          "const": 0
+        },
+        "finalized_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "in_progress_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "in_progress_excluded": {
+          "const": true
+        },
+        "common_end": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "lineage": {
+      "type": "object",
+      "required": [
+        "source_kind",
+        "source_file_name",
+        "source_table",
+        "source_sha256",
+        "source_bytes",
+        "sqlite_integrity_check",
+        "sqlite_open_mode",
+        "sort_order",
+        "explicit_time_derivation_used",
+        "explicit_finalized_derivation_used",
+        "source_event_time_field",
+        "source_available_time_field",
+        "source_finalized_policy",
+        "source_close_time_ms_field",
+        "source_close_time_validation_policy",
+        "source_open_time_ms_field",
+        "source_open_close_duration_policy"
+      ],
+      "properties": {
+        "source_kind": {
+          "const": "read_only_consistent_sqlite_snapshot"
+        },
+        "source_file_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_table": {
+          "const": "market_klines"
+        },
+        "source_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sqlite_integrity_check": {
+          "const": "ok"
+        },
+        "sqlite_open_mode": {
+          "const": "mode=ro&immutable=1"
+        },
+        "sort_order": {
+          "const": [
+            "exchange",
+            "symbol",
+            "interval",
+            "event_time",
+            "available_time"
+          ]
+        },
+        "explicit_time_derivation_used": {
+          "type": "boolean"
+        },
+        "explicit_finalized_derivation_used": {
+          "type": "boolean"
+        },
+        "source_event_time_field": {
+          "enum": [
+            "event_time",
+            "close_time"
+          ]
+        },
+        "source_available_time_field": {
+          "enum": [
+            "available_time",
+            "close_time"
+          ]
+        },
+        "source_finalized_policy": {
+          "enum": [
+            "explicit_is_finalized",
+            "close_time_lte_generated_at"
+          ]
+        },
+        "source_close_time_ms_field": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "close_time_ms",
+            null
+          ]
+        },
+        "source_close_time_validation_policy": {
+          "enum": [
+            "close_time_ms_equals_iso_epoch_ms_and_inclusive_interval_end",
+            "not_applicable_explicit_time_contract"
+          ]
+        },
+        "source_open_time_ms_field": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "open_time_ms",
+            null
+          ]
+        },
+        "source_open_close_duration_policy": {
+          "enum": [
+            "open_aligned_close_minus_open_equals_interval_ms_minus_one",
+            "not_applicable_open_time_ms_missing"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "source_sqlite_mutated",
+        "sqlite_payload_emitted",
+        "network_collection_used",
+        "shared_data_published",
+        "promotion_unlock_allowed",
+        "paper_or_live_unlock_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "broker_call_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "source_sqlite_mutated": {
+          "const": false
+        },
+        "sqlite_payload_emitted": {
+          "const": false
+        },
+        "network_collection_used": {
+          "const": false
+        },
+        "shared_data_published": {
+          "const": false
+        },
+        "promotion_unlock_allowed": {
+          "const": false
+        },
+        "paper_or_live_unlock_allowed": {
+          "const": false
+        },
+        "private_endpoint_used": {
+          "const": false
+        },
+        "order_endpoint_used": {
+          "const": false
+        },
+        "broker_call_used": {
+          "const": false
+        },
+        "real_order_submitted": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quality_checked",
+        "research_ready",
+        "backtest_ready",
+        "promotion_evidence_ready"
+      ],
+      "properties": {
+        "quality_checked": {
+          "const": true
+        },
+        "research_ready": {
+          "const": false
+        },
+        "backtest_ready": {
+          "const": false
+        },
+        "promotion_evidence_ready": {
+          "const": false
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

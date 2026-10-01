@@ -1,0 +1,85 @@
+{
+  "schema_version": "strategy_v3_qlib_offline_contract_v1",
+  "usage": "offline_acceptance_only",
+  "offline_event_ordering": {
+    "version": "qlib_offline_event_order_v1",
+    "observation_step_ms": 1,
+    "maximum_prior_boundary_offset_ms": 2,
+    "phases": ["previous_fill_and_ledger", "market_observation", "next_decision"],
+    "source_and_forecast_times": "unchanged"
+  },
+  "v2_source_head": "b6b4b14c37bd6ae3d201b56f64eba439ec428399",
+  "v2_contract_path": "tests/fixtures/strategy_v2/contract.json",
+  "v2_contract_sha256": "dc5797ab23abcb27b4a41953f1249e1a4fdc4528789b4c9d68dfdd518033b3c6",
+  "candidate": {
+    "run_id": "m1-okx-qlib",
+    "candidate_id": "qlib_manifest_0de835a36fc243c1",
+    "strategy_id": "qlib_time_series_trend_v1",
+    "strategy_version": "qlib_time_series_trend_v1",
+    "model_sha256": "8b44ef4bc97be069c21240cbf70a78b7e2f29fc182b057925328503196e16b74",
+    "data_version": "btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1",
+    "decision_count": 1392,
+    "expected_simulated_fill_count": 0,
+    "expected_blockers": [
+      "no_simulated_fills"
+    ]
+  },
+  "policy": {
+    "policy_version": "qlib_candidate_policy_v1",
+    "volatility_target_applied": false,
+    "cost_per_side_bps": {
+      "fee": 5,
+      "slippage": 3,
+      "half_spread": 1,
+      "impact": 2
+    }
+  },
+  "venue": {
+    "instrument_id": "BTC-USDT-SWAP",
+    "quantity_input_unit": "BTC",
+    "execution_quantity_unit": "OKX_contracts",
+    "contract_value_btc": "0.01",
+    "lot_size_contracts": "0.01",
+    "minimum_size_contracts": "0.01",
+    "tick_size_usdt": "0.1",
+    "maximum_absolute_contracts": "0.01",
+    "conversion_policy": "exact_only_no_round_up_no_truncate"
+  },
+  "fixture_namespace": "strategy-v3-nonzero-fixture-only",
+  "fixture": {
+    "strategy_id": "qlib_fixture_strategy_v3",
+    "data_version": "strategy-v3-explicit-fixture-v1",
+    "initial_equity_usdt": "5000",
+    "target_contracts": "0.01",
+    "expected_sequence": [
+      "open_long",
+      "hold_long",
+      "reversal_close"
+    ],
+    "separate_short_sequence": ["open_short", "hard_exit_short"],
+    "same_account_reverse_reopen": "expected_reject_inexact_lot_after_fees_and_funding",
+    "truth_kind": "explicit_fixture_not_candidate_effectiveness"
+  },
+  "permissions": {
+    "promotion": false,
+    "paper": false,
+    "live": false,
+    "private": false,
+    "order": false,
+    "real_order": false,
+    "transfer": false,
+    "withdraw": false,
+    "execution_permission": false,
+    "runtime_observed": false
+  },
+  "non_goals": [
+    "no_training",
+    "no_search",
+    "no_model_change",
+    "no_second_oms",
+    "no_demo_or_live",
+    "no_account_or_exchange",
+    "no_frontend_or_service",
+    "no_promotion"
+  ]
+}

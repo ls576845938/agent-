@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "shared_platform_v3_compatibility.schema.json",
+  "title": "Shared Platform V3 Compatibility Matrix",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "contract_version",
+    "source_of_truth",
+    "compatibility_window",
+    "capabilities",
+    "delivery_sequence",
+    "boundaries",
+    "domains",
+    "safety_flags"
+  ],
+  "properties": {
+    "schema_version": {"const": "shared_platform_v3_compatibility_v1"},
+    "contract_version": {"const": "shared_platform_v3"},
+    "source_of_truth": {"const": "machine_readable_json"},
+    "compatibility_window": {
+      "type": "object",
+      "required": ["v2", "v3"],
+      "properties": {
+        "v2": {
+          "type": "object",
+          "required": ["status", "consumer_action", "breaking_change"],
+          "properties": {
+            "status": {"const": "supported"},
+            "consumer_action": {"const": "keep_existing_imports"},
+            "breaking_change": {"const": false}
+          },
+          "additionalProperties": false
+        },
+        "v3": {
+          "type": "object",
+          "required": ["status", "consumer_action", "breaking_change"],
+          "properties": {
+            "status": {"const": "additive_discoverable"},
+            "consumer_action": {"const": "opt_in"},
+            "breaking_change": {"const": false}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "capabilities": {
+      "type": "array",
+      "const": [
+        "runtime_state",
+        "action_authorization",
+        "audit_event",
+        "read_model_envelope"
+      ]
+    },
+    "delivery_sequence": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "prefixItems": [
+        {
+          "type": "object",
+          "required": ["sequence", "ticket_id", "owner_scope", "acceptance"],
+          "properties": {
+            "sequence": {"const": 0},
+            "ticket_id": {"const": "BTC-SHARED-PLATFORM-V3-01"},
+            "owner_scope": {"const": "shared developer + independent integrator"},
+            "acceptance": {"const": "ADR/schema/compatibility matrix and shared safety-kernel BTC/US/CN import boundary"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["sequence", "ticket_id", "owner_scope", "acceptance"],
+          "properties": {
+            "sequence": {"const": 1},
+            "ticket_id": {"const": "BTC-SHARED-PLATFORM-V3-T1"},
+            "owner_scope": {"const": "quant_shared/runtime"},
+            "acceptance": {"const": "reverse the first three failed probes; after kill allow only proven reduction, opening-order removal, and protection addition"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["sequence", "ticket_id", "owner_scope", "acceptance"],
+          "properties": {
+            "sequence": {"const": 2},
+            "ticket_id": {"const": "BTC-SHARED-PLATFORM-V3-T2"},
+            "owner_scope": {"const": "quant_crypto/risk"},
+            "acceptance": {"const": "risk constitution, ActionRiskEffect, portfolio loss, leverage, and protection feasibility pure functions"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["sequence", "ticket_id", "owner_scope", "acceptance"],
+          "properties": {
+            "sequence": {"const": 3},
+            "ticket_id": {"const": "BTC-SHARED-PLATFORM-V3-T3"},
+            "owner_scope": {"const": "quant_crypto/portfolio"},
+            "acceptance": {"const": "reuse Forecast/TargetPosition; independent RiskReductionPlan on limits; research and runtime exit share the contract"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["sequence", "ticket_id", "owner_scope", "acceptance"],
+          "properties": {
+            "sequence": {"const": 4},
+            "ticket_id": {"const": "BTC-SHARED-PLATFORM-V3-T4"},
+            "owner_scope": {"const": "quant_crypto/application"},
+            "acceptance": {"const": "pure guardian, single-writer supervisor, durable sticky latch; human confirmation alone cannot restore"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["sequence", "ticket_id", "owner_scope", "acceptance"],
+          "properties": {
+            "sequence": {"const": 5},
+            "ticket_id": {"const": "BTC-SHARED-PLATFORM-V3-T5"},
+            "owner_scope": {"const": "quant_crypto/oms"},
+            "acceptance": {"const": "progressive OMS migration that retains the large runtime facade and delegates incrementally"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["sequence", "ticket_id", "owner_scope", "acceptance"],
+          "properties": {
+            "sequence": {"const": 6},
+            "ticket_id": {"const": "BTC-SHARED-PLATFORM-V3-T6"},
+            "owner_scope": {"const": "BTC application schema -> backend adapter -> integrator"},
+            "acceptance": {"const": "per-action server authorization, stable blockers, idempotency, and operation read model"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["sequence", "ticket_id", "owner_scope", "acceptance"],
+          "properties": {
+            "sequence": {"const": 7},
+            "ticket_id": {"const": "BTC-SHARED-PLATFORM-V3-T7"},
+            "owner_scope": {"const": "frontend/src"},
+            "acceptance": {"const": "split the giant workspace without deriving permissions or hardcoded risk values; stopped emergency and accessibility"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["sequence", "ticket_id", "owner_scope", "acceptance"],
+          "properties": {
+            "sequence": {"const": 8},
+            "ticket_id": {"const": "BTC-SHARED-PLATFORM-V3-T8"},
+            "owner_scope": {"const": "researcher review + integrator"},
+            "acceptance": {"const": "rebuild current-HEAD immutable evidence and deterministic replay with cost/exit consistency while retaining the human gate"}
+          },
+          "additionalProperties": false
+        }
+      ],
+      "items": false
+    },
+    "boundaries": {
+      "type": "object",
+      "required": ["owns", "does_not_own", "dependency_direction", "fail_closed"],
+      "properties": {
+        "owns": {"type": "array", "minItems": 4, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "does_not_own": {"type": "array", "minItems": 6, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "dependency_direction": {"const": "asset_domain_to_quant_shared_only"},
+        "fail_closed": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "domains": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "domain",
+          "current_version",
+          "allowed_imports",
+          "forbidden_reverse_imports",
+          "v3_adoption",
+          "migration_condition",
+          "deletion_condition"
+        ],
+        "properties": {
+          "domain": {"enum": ["quant_shared", "quant_crypto", "quant_us", "quant_cn"]},
+          "current_version": {"pattern": "^shared_platform_v[0-9]+$"},
+          "allowed_imports": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "forbidden_reverse_imports": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "v3_adoption": {"enum": ["adopted", "discoverable", "not_started"]},
+          "migration_condition": {"type": "string", "minLength": 1},
+          "deletion_condition": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "safety_flags": {
+      "type": "object",
+      "required": [
+        "promotion",
+        "paper",
+        "live",
+        "private",
+        "order",
+        "real_order",
+        "transfer",
+        "withdraw"
+      ],
+      "properties": {
+        "promotion": {"const": false},
+        "paper": {"const": false},
+        "live": {"const": false},
+        "private": {"const": false},
+        "order": {"const": false},
+        "real_order": {"const": false},
+        "transfer": {"const": false},
+        "withdraw": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

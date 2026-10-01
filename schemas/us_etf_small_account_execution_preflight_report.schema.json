@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_small_account_execution_preflight_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Small Account Execution Preflight Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "strategy_id",
+    "candidate_variant",
+    "timestamp",
+    "status",
+    "account_equity",
+    "min_trade_amount_usd",
+    "slippage_bps",
+    "annual_financing_rate",
+    "initial_margin_requirement",
+    "maintenance_margin_requirement",
+    "latest_target",
+    "scenarios",
+    "blockers",
+    "source_files",
+    "outputs",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_small_account_execution_preflight_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"const": "us_etf_rotation_min_adv_10m_vol_target_20pct_cap1_5x"},
+    "candidate_variant": {"type": "string"},
+    "timestamp": {"type": ["string", "null"]},
+    "status": {"enum": ["pass_observation_only", "blocked"]},
+    "account_equity": {"type": "number", "exclusiveMinimum": 0},
+    "min_trade_amount_usd": {"type": "number", "minimum": 0},
+    "slippage_bps": {"type": "number", "minimum": 0},
+    "annual_financing_rate": {"type": "number", "minimum": 0},
+    "initial_margin_requirement": {"type": "number", "minimum": 0, "maximum": 1},
+    "maintenance_margin_requirement": {"type": "number", "minimum": 0, "maximum": 1},
+    "latest_target": {
+      "type": "object",
+      "required": ["gross_exposure", "net_exposure", "symbols"],
+      "properties": {
+        "gross_exposure": {"type": "number", "minimum": 0},
+        "net_exposure": {"type": "number"},
+        "symbols": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      },
+      "additionalProperties": false
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 3,
+      "items": {"$ref": "#/$defs/scenario"}
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "source_files": {
+      "type": "object",
+      "required": ["ledger_root", "target_positions"],
+      "properties": {
+        "ledger_root": {"type": "string", "minLength": 1},
+        "target_positions": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "simulated_only",
+        "not_a_broker_order",
+        "forward_or_paper_only",
+        "research_cap_1_5x_not_live_default",
+        "initial_live_leverage_default",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "live_order_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "simulated_only": {"const": true},
+        "not_a_broker_order": {"const": true},
+        "forward_or_paper_only": {"const": true},
+        "research_cap_1_5x_not_live_default": {"const": true},
+        "initial_live_leverage_default": {"const": 1.0},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "scenario": {
+      "type": "object",
+      "required": [
+        "scenario_id",
+        "description",
+        "gross_cap",
+        "allow_margin",
+        "raw_target_gross",
+        "effective_gross",
+        "scale_applied",
+        "passes_preflight",
+        "blockers",
+        "fractional_share_allowed_model",
+        "whole_share_model"
+      ],
+      "properties": {
+        "scenario_id": {
+          "enum": ["one_x_cash_only", "low_leverage_1_25x_research", "research_cap_1_5x"]
+        },
+        "description": {"type": "string", "minLength": 1},
+        "gross_cap": {"type": "number", "minimum": 0, "maximum": 1.5},
+        "allow_margin": {"type": "boolean"},
+        "raw_target_gross": {"type": "number", "minimum": 0},
+        "effective_gross": {"type": "number", "minimum": 0},
+        "scale_applied": {"type": "number", "minimum": 0, "maximum": 1},
+        "passes_preflight": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "fractional_share_allowed_model": {"$ref": "#/$defs/execution_model"},
+        "whole_share_model": {"$ref": "#/$defs/execution_model"}
+      },
+      "additionalProperties": false
+    },
+    "execution_model": {
+      "type": "object",
+      "required": [
+        "cash_after_orders",
+        "estimated_slippage",
+        "estimated_financing_daily",
+        "gross_notional",
+        "borrow_notional",
+        "initial_margin_required",
+        "initial_margin_surplus",
+        "maintenance_margin_required",
+        "maintenance_margin_surplus",
+        "orders"
+      ],
+      "properties": {
+        "cash_after_orders": {"type": "number"},
+        "estimated_financing_daily": {"type": "number", "minimum": 0},
+        "estimated_slippage": {"type": "number", "minimum": 0},
+        "gross_notional": {"type": "number", "minimum": 0},
+        "borrow_notional": {"type": "number", "minimum": 0},
+        "initial_margin_required": {"type": "number", "minimum": 0},
+        "initial_margin_surplus": {"type": "number"},
+        "maintenance_margin_required": {"type": "number", "minimum": 0},
+        "maintenance_margin_surplus": {"type": "number"},
+        "orders": {"type": "array", "items": {"$ref": "#/$defs/order"}}
+      },
+      "additionalProperties": false
+    },
+    "order": {
+      "type": "object",
+      "required": [
+        "symbol",
+        "side",
+        "quantity",
+        "price",
+        "target_notional",
+        "target_weight",
+        "trade_amount_pass"
+      ],
+      "properties": {
+        "symbol": {"type": "string", "minLength": 1},
+        "side": {"enum": ["buy", "sell"]},
+        "quantity": {"type": "number", "minimum": 0},
+        "price": {"type": "number", "exclusiveMinimum": 0},
+        "target_notional": {"type": "number", "minimum": 0},
+        "target_weight": {"type": "number"},
+        "trade_amount_pass": {"type": "boolean"},
+        "rounding_residual": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,64 @@
+providers:
+  yfinance:
+    enabled: true
+    role: research_price_bars
+    promotion_clean_allowed: false
+
+  tiingo:
+    enabled: true
+    role: research_price_bars
+    root: data/external/us_equity_etf
+    promotion_clean_allowed: false
+
+  ibkr:
+    enabled: false
+    role: broker_execution_and_recent_market_data
+    promotion_clean_allowed: false
+
+  hf_data_library:
+    enabled: true
+    role: research_adjusted_minute_bars
+    version: clean
+    credential_env: HF_DATA_LIBRARY_API_KEY
+    cache_root_env: HF_DATA_LIBRARY_CACHE_DIR
+    batch_manifest_env: HF_DATA_LIBRARY_BATCH_MANIFEST
+    source_boundary: pitrading_consolidated_before_2022_03_then_iex_single_venue
+    promotion_clean_allowed: false
+
+  local_csv:
+    enabled: false
+    root: data/external/us_equity_lineage/
+    selected_bundle_id: null
+    require_explicit_bundle_selection: true
+    allow_sample_for_research: false
+    allow_fixture_for_tests_only: true
+    bundle_manifest: null
+    files:
+      price_bars: null
+      universe_membership_events: null
+      delisted_symbols: null
+      corporate_actions: null
+      symbol_mapping: null
+      adjustment_replay: null
+      macro_release_calendar: null
+    promotion_clean_allowed: false
+
+  crsp:
+    enabled: false
+    root: data/external/crsp/
+    promotion_clean_allowed: false
+
+  sharadar:
+    enabled: false
+    root: data/external/sharadar/
+    promotion_clean_allowed: false
+
+  polygon:
+    enabled: false
+    root: data/external/polygon/
+    promotion_clean_allowed: false
+
+  norgate:
+    enabled: false
+    root: data/external/norgate/
+    promotion_clean_allowed: false

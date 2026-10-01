@@ -1,0 +1,59 @@
+{
+  "schema_version": "m2_input_admission_note_v1",
+  "ticket_id": "M1-CLOSEOUT-M2-VALIDATION-20260912",
+  "checked_at_utc": "2026-09-12T12:56:37Z",
+  "source_head": "2eafaf5220a5527962874e02fc04c1674e379ce8",
+  "evidence_kind": "committed_metadata_review_not_payload_quality_certificate",
+  "status": "blocked",
+  "protocol": "docs/research/m2-trend-environment-protocol-20260912.md",
+  "requested_market": {"venue": "okx", "instrument": "BTC-USDT-SWAP", "bar_size": "1h"},
+  "eligible_confirmation_manifest": null,
+  "frozen_confirmation_segments": null,
+  "fit_count": 0,
+  "performance_evaluated": false,
+  "new_holdout_values_opened": false,
+  "network_downloads": false,
+  "findings": [
+    {
+      "source": ".agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1.json",
+      "existing_use": "ordinary Qlib, M1 ordinary run and four Alpha Factory folds",
+      "metadata_coverage_utc": ["2025-12-21T13:00:00Z", "2026-07-30T11:00:00Z"],
+      "funding_start_utc": "2026-04-29T16:00:00Z",
+      "eligibility": "not_a_verified_new_confirmation_window",
+      "limitations": ["historical_reconstructed_availability", "insufficient_unverified_remaining_tail", "funding_not_full_history", "oi_and_liquidation_unverified"]
+    },
+    {
+      "source": "configs/qlib/okx_btc_trend_1h.yaml",
+      "git_blob": "9d496d5898b9857e0705b545e0049130a8eeb099",
+      "already_used_test": ["2026-06-01 00:00:00", "2026-07-28 23:00:00"],
+      "eligibility": "observed_not_new_holdout"
+    },
+    {
+      "source": "integrations/qlib_adapter/factory_data.py",
+      "git_blob": "b4b7e8c0f302f71a57d7c4972e259db1025ad8e0",
+      "finding": "default and registered profiles retain previously_observed_audit=True; config cannot claim independent confirmation"
+    },
+    {
+      "source": "BTC-HIGH-YIELD-5M-QCV2R1-FROZEN-HOLDOUT-GA-01 and BTC-5M-QCV2R1-SELECTION-PREFIX-01 committed handoffs",
+      "metadata_only": true,
+      "finding": "another Binance spot 5m task reports a preserved tail; ownership, purpose and whole-system exposure not verified for this M2",
+      "eligibility": "different_market_frequency_and_existing_candidate_lock_not_consumed"
+    },
+    {
+      "source": "committed Binance spot metadata with coverage through 2026-08-26",
+      "finding": "newer date alone does not make it an eligible OKX perpetual confirmation dataset",
+      "eligibility": "different_market_not_substituted"
+    }
+  ],
+  "blockers": [
+    "independent_okx_1h_confirmation_window_not_verified",
+    "exact_immutable_confirmation_binding_and_segments_missing",
+    "historical_reconstructed_availability",
+    "no_shared_environment_ab_evaluator_yet"
+  ],
+  "secondary_limits": ["funding_coverage_starts_20260429", "not_a_claim_that_all_btc_holdouts_are_absent"],
+  "next_owner": "independent data steward and research reviewer before any confirmation fitting",
+  "next_action": "publish exact same-market immutable input and usage/visibility evidence, freeze segments before opening outcomes, then independently review the minimal offline A/B binding",
+  "safety_flags": {"promotion": false, "paper": false, "live": false, "private": false, "order": false, "real_order": false, "transfer": false, "withdraw": false, "execution_permission": false, "runtime_observed": false},
+  "m3_m4_started": false
+}

@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_strategy_production_line_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Strategy Production Line Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "decision",
+    "architecture_layer_contract",
+    "production_line_order",
+    "registry_path",
+    "strategy_count",
+    "primary_strategy_id",
+    "primary_evidence_chain",
+    "paper_simulation_allowed",
+    "live_order_allowed",
+    "private_endpoint_allowed",
+    "order_endpoint_allowed",
+    "real_order_submitted",
+    "strategies",
+    "unsafe_flags",
+    "blockers",
+    "pipeline_progress",
+    "development_plan_audit",
+    "remediation_tickets",
+    "remediation_ticket_closure",
+    "next_actions",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_strategy_production_line_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "production_line_registry_missing",
+        "production_line_registry_blocked",
+        "production_line_blocked_before_paper_or_live",
+        "production_line_observing_manual_review_required"
+      ]
+    },
+    "decision": {"type": "string", "minLength": 1},
+    "architecture_layer_contract": {
+      "type": "object",
+      "required": ["status", "paper_or_live_unlock_allowed", "allowed_flow", "layers", "guardrails"],
+      "properties": {
+        "status": {"const": "defined_fail_closed"},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "allowed_flow": {
+          "type": "array",
+          "const": [
+            "data",
+            "signal",
+            "portfolio",
+            "risk",
+            "order_intent",
+            "simulated_fill",
+            "ledger",
+            "report"
+          ]
+        },
+        "layers": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "object",
+            "required": ["layer_id", "module_roots", "contract"],
+            "properties": {
+              "layer_id": {
+                "enum": ["strategy", "portfolio", "risk", "backtest", "execution", "entrypoints"]
+              },
+              "module_roots": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+              "allowed_inputs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "allowed_outputs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "forbidden_dependencies": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "required_controls": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "required_position": {"type": "string", "minLength": 1},
+              "required_sequence": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "pnl_source": {"type": "string", "minLength": 1},
+              "oms_responsibilities": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "allowed_responsibilities": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "forbidden_responsibilities": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "contract": {"type": "string", "minLength": 1}
+            },
+            "additionalProperties": false
+          }
+        },
+        "guardrails": {
+          "type": "object",
+          "required": [
+            "strategy_broker_adapter_allowed",
+            "portfolio_can_bypass_risk",
+            "risk_decision_required_before_order_intent",
+            "backtest_price_only_pnl_allowed",
+            "execution_accepts_unapproved_intents",
+            "scripts_own_core_business_rules"
+          ],
+          "properties": {
+            "strategy_broker_adapter_allowed": {"const": false},
+            "portfolio_can_bypass_risk": {"const": false},
+            "risk_decision_required_before_order_intent": {"const": true},
+            "backtest_price_only_pnl_allowed": {"const": false},
+            "execution_accepts_unapproved_intents": {"const": false},
+            "scripts_own_core_business_rules": {"const": false}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "production_line_order": {
+      "type": "array",
+      "minItems": 12,
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "stage_labels": {
+      "type": "object",
+      "minProperties": 12,
+      "additionalProperties": {"type": "string"}
+    },
+    "registry_path": {"type": "string", "minLength": 1},
+    "strategy_count": {"type": "integer", "minimum": 0},
+    "primary_strategy_id": {"type": ["string", "null"]},
+    "primary_evidence_chain": {
+      "type": "object",
+      "required": [
+        "status",
+        "strategy_id",
+        "chain_complete_for_manual_review",
+        "paper_or_live_unlock_allowed",
+        "nodes",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"enum": ["missing_primary_strategy", "evidence_chain_incomplete", "manual_review_required"]},
+        "strategy_id": {"type": ["string", "null"]},
+        "chain_complete_for_manual_review": {"type": "boolean"},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["node_id", "status", "evidence", "blockers"],
+            "properties": {
+              "node_id": {
+                "enum": ["strategy_card", "strategy_validation_gate", "forward_observation", "manual_review"]
+              },
+              "status": {"type": ["string", "null"]},
+              "evidence": {"type": "object"},
+              "blockers": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false
+          }
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "paper_simulation_allowed": {"const": false},
+    "live_order_allowed": {"const": false},
+    "private_endpoint_allowed": {"const": false},
+    "order_endpoint_allowed": {"const": false},
+    "real_order_submitted": {"const": false},
+    "strategies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "strategy_id",
+          "family",
+          "registry_status",
+          "current_stage",
+          "primary_candidate",
+          "stage_summary",
+          "stages",
+          "source_reports",
+          "unsafe_flags",
+          "blockers",
+          "paper_ready",
+          "live_ready",
+          "live_order_allowed",
+          "allowed_next_action"
+        ],
+        "properties": {
+          "strategy_id": {"type": "string", "minLength": 1},
+          "family": {"type": "string"},
+          "registry_status": {"type": "string"},
+          "current_stage": {"type": "string"},
+          "primary_candidate": {"type": "boolean"},
+          "stage_summary": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+          "stages": {
+            "type": "array",
+            "minItems": 12,
+            "items": {
+              "type": "object",
+              "required": ["stage_id", "label", "status", "evidence", "blockers"],
+              "properties": {
+                "stage_id": {"type": "string", "minLength": 1},
+                "label": {"type": "string", "minLength": 1},
+                "status": {
+                  "enum": [
+                    "pass",
+                    "blocked",
+                    "observing",
+                    "manual_review_required",
+                    "defined",
+                    "not_started"
+                  ]
+                },
+                "evidence": {"type": "object"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            }
+          },
+          "source_reports": {"type": "object", "additionalProperties": {"type": "string"}},
+          "unsafe_flags": {"type": "array", "items": {"type": "string"}},
+          "blockers": {"type": "array", "items": {"type": "string"}},
+          "paper_ready": {"const": false},
+          "live_ready": {"const": false},
+          "live_order_allowed": {"const": false},
+          "allowed_next_action": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "unsafe_flags": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "pipeline_progress": {
+      "type": "object",
+      "required": [
+        "status",
+        "strategy_count",
+        "primary_strategy_id",
+        "stage_counts",
+        "primary_stage_counts",
+        "development_plan_summary",
+        "development_phase_progress",
+        "remediation_closure",
+        "blocker_count",
+        "blocker_sample",
+        "next_action",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "status": {"type": "string", "minLength": 1},
+        "strategy_count": {"type": "integer", "minimum": 0},
+        "primary_strategy_id": {"type": ["string", "null"]},
+        "stage_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "primary_stage_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "development_plan_summary": {
+          "type": "object",
+          "required": ["phase_count", "complete_count", "blocked_count", "observing_count", "action_required_count"],
+          "properties": {
+            "phase_count": {"type": "integer", "minimum": 0},
+            "complete_count": {"type": "integer", "minimum": 0},
+            "blocked_count": {"type": "integer", "minimum": 0},
+            "observing_count": {"type": "integer", "minimum": 0},
+            "action_required_count": {"type": "integer", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "development_phase_progress": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "phase_id",
+              "status",
+              "first_blocker",
+              "blocker_count",
+              "evidence_count",
+              "observation_days",
+              "minimum_complete_days",
+              "next_step_id"
+            ],
+            "properties": {
+              "phase_id": {"type": "string", "minLength": 1},
+              "status": {"type": "string", "minLength": 1},
+              "first_blocker": {"type": "string"},
+              "blocker_count": {"type": "integer", "minimum": 0},
+              "evidence_count": {"type": "integer", "minimum": 0},
+              "observation_days": {"type": ["integer", "null"], "minimum": 0},
+              "minimum_complete_days": {"type": ["integer", "null"], "minimum": 0},
+              "next_step_id": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "remediation_closure": {
+          "type": "object",
+          "required": ["status", "ticket_count", "open_count", "closed_count", "missing_source_count", "open_ticket_ids"],
+          "properties": {
+            "status": {"type": "string", "minLength": 1},
+            "ticket_count": {"type": "integer", "minimum": 0},
+            "open_count": {"type": "integer", "minimum": 0},
+            "closed_count": {"type": "integer", "minimum": 0},
+            "missing_source_count": {"type": "integer", "minimum": 0},
+            "open_ticket_ids": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": false
+        },
+        "blocker_count": {"type": "integer", "minimum": 0},
+        "blocker_sample": {"type": "array", "items": {"type": "string"}},
+        "next_action": {"type": "string"},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "development_plan_audit": {
+      "type": "object",
+      "required": ["status", "summary", "blockers"],
+      "properties": {
+        "status": {"type": "string"},
+        "summary": {"type": "object"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "remediation_tickets": {
+      "type": "object",
+      "required": [
+        "source_status",
+        "ticket_count",
+        "external_or_time_dependency_count",
+        "engineering_dependency_count",
+        "manual_dependency_count",
+        "by_dependency_type",
+        "by_status",
+        "tickets"
+      ],
+      "properties": {
+        "source_status": {"type": "string"},
+        "ticket_count": {"type": "integer", "minimum": 0},
+        "external_or_time_dependency_count": {"type": "integer", "minimum": 0},
+        "engineering_dependency_count": {"type": "integer", "minimum": 0},
+        "manual_dependency_count": {"type": "integer", "minimum": 0},
+        "by_dependency_type": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "by_status": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "tickets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "ticket_id",
+              "category",
+              "owner",
+              "dependency_type",
+              "status",
+              "blocker_count",
+              "source_reports",
+              "next_action",
+              "acceptance_evidence"
+            ],
+            "properties": {
+              "ticket_id": {"type": "string", "pattern": "^us_equity_remediate_[a-z_]+$"},
+              "category": {"type": "string", "minLength": 1},
+              "owner": {"type": "string", "minLength": 1},
+              "dependency_type": {"type": "string", "minLength": 1},
+              "status": {"type": "string", "minLength": 1},
+              "blocker_count": {"type": "integer", "minimum": 1},
+              "source_reports": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "next_action": {"type": "string", "minLength": 1},
+              "acceptance_evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "remediation_ticket_closure": {
+      "type": "object",
+      "required": [
+        "status",
+        "ticket_count",
+        "open_count",
+        "closed_count",
+        "missing_source_count",
+        "open_ticket_ids"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "missing",
+            "remediation_tickets_open",
+            "remediation_tickets_closed",
+            "remediation_ticket_closure_source_missing"
+          ]
+        },
+        "ticket_count": {"type": "integer", "minimum": 0},
+        "open_count": {"type": "integer", "minimum": 0},
+        "closed_count": {"type": "integer", "minimum": 0},
+        "missing_source_count": {"type": "integer", "minimum": 0},
+        "open_ticket_ids": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "next_actions": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "strategy_expansion_before_pipeline_gate_allowed",
+        "unregistered_strategy_promotion_allowed",
+        "paper_or_live_unlocked_by_this_report",
+        "paper_simulation_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "strategy_expansion_before_pipeline_gate_allowed": {"const": false},
+        "unregistered_strategy_promotion_allowed": {"const": false},
+        "forward_observation_is_not_strategy_validation": {"const": true},
+        "paper_or_live_unlocked_by_this_report": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1},
+        "development_plan_audit": {"type": "string", "minLength": 1},
+        "blocker_taxonomy": {"type": "string", "minLength": 1},
+        "remediation_ticket_closure": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

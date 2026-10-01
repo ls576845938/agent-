@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_local_csv_macro_release_calendar.schema.json",
+  "title": "QuantStation VNEXT US Equity Local CSV Macro Release Calendar",
+  "type": "object",
+  "required": [
+    "series_id",
+    "observation_period_start",
+    "observation_period_end",
+    "release_date",
+    "available_time_utc",
+    "source_record_id"
+  ],
+  "properties": {
+    "series_id": {"type": "string", "minLength": 1},
+    "observation_period_start": {"type": "string", "format": "date"},
+    "observation_period_end": {"type": "string", "format": "date"},
+    "release_date": {"type": "string", "format": "date"},
+    "available_time_utc": {"type": "string", "minLength": 20},
+    "source_record_id": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}

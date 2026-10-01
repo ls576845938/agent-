@@ -1,0 +1,372 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_v3_canonical_backtest_portfolio_evidence.schema.json",
+  "title": "US V3 Canonical Backtest Portfolio Evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "decision",
+    "code_commit",
+    "code_tree_hash",
+    "candidate",
+    "version_bindings",
+    "chain",
+    "engineering_checks",
+    "calendar_evidence",
+    "no_lookahead",
+    "corporate_actions",
+    "survivorship",
+    "ledger_reconciliation",
+    "pnl",
+    "portfolio",
+    "cost_model",
+    "fixture_isolation",
+    "g06_dependency",
+    "artifacts",
+    "blockers",
+    "guardrails",
+    "artifact_identity_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "us_v3_canonical_backtest_portfolio_evidence_v1"
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "status": {"const": "complete_research_only_blocked"},
+    "decision": {
+      "const": "canonical_engineering_evidence_complete_promotion_blocked_external_production_pit"
+    },
+    "code_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "code_tree_hash": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "artifact_identity_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "candidate_id",
+        "strategy_version",
+        "symbol",
+        "timeframe",
+        "params_hash",
+        "parameter_tuning_performed",
+        "symbol_or_timeframe_reselection_performed",
+        "frozen_candidate_source_sha256"
+      ],
+      "properties": {
+        "candidate_id": {"const": "us-etf26-complete-return-qqq-1d-v1"},
+        "symbol": {"const": "QQQ"},
+        "timeframe": {"const": "1D"},
+        "params_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "parameter_tuning_performed": {"const": false},
+        "symbol_or_timeframe_reselection_performed": {"const": false},
+        "frozen_candidate_source_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": true
+    },
+    "version_bindings": {
+      "type": "object",
+      "required": [
+        "data_version",
+        "data_manifest_sha256",
+        "data_aggregate_sha256",
+        "strategy_version",
+        "params_hash",
+        "cost_model_hash",
+        "slippage_model_hash",
+        "canonical_run_id",
+        "canonical_run_inputs_hash",
+        "portfolio_run_id",
+        "portfolio_run_inputs_hash",
+        "code_commit",
+        "code_tree_hash"
+      ],
+      "properties": {
+        "data_version": {"type": "string", "minLength": 1},
+        "data_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "data_aggregate_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "strategy_version": {"type": "string", "minLength": 1},
+        "params_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "cost_model_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "slippage_model_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "canonical_run_id": {"type": "string", "minLength": 1},
+        "canonical_run_inputs_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "portfolio_run_id": {"type": "string", "minLength": 1},
+        "portfolio_run_inputs_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "code_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "code_tree_hash": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      },
+      "additionalProperties": false
+    },
+    "chain": {
+      "type": "object",
+      "required": ["sequence", "complete", "layers"],
+      "properties": {
+        "sequence": {
+          "const": [
+            "data",
+            "signal",
+            "forecast",
+            "target_portfolio",
+            "risk",
+            "order_intent",
+            "simulated_fill",
+            "position_cash_ledger",
+            "pnl",
+            "report"
+          ]
+        },
+        "complete": {"const": true},
+        "layers": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "items": {
+            "type": "object",
+            "required": [
+              "layer",
+              "data_version",
+              "strategy_version",
+              "params_hash",
+              "cost_model_hash",
+              "run_id",
+              "code_version",
+              "content_sha256"
+            ],
+            "properties": {
+              "layer": {"type": "string", "minLength": 1},
+              "data_version": {"type": "string", "minLength": 1},
+              "strategy_version": {"type": "string", "minLength": 1},
+              "params_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "cost_model_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "run_id": {"type": "string", "minLength": 1},
+              "code_version": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+              "content_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "engineering_checks": {
+      "type": "object",
+      "minProperties": 8,
+      "additionalProperties": {"const": true}
+    },
+    "calendar_evidence": {
+      "type": "object",
+      "required": [
+        "calendar",
+        "decision_rule",
+        "execution_rule",
+        "calendar_month_end_label_used",
+        "schedule_count",
+        "all_t_plus_one",
+        "rows"
+      ],
+      "properties": {
+        "calendar": {"const": "XNYS"},
+        "decision_rule": {"const": "last_actual_trading_session_of_month"},
+        "execution_rule": {"const": "next_actual_trading_session_open"},
+        "calendar_month_end_label_used": {"const": false},
+        "schedule_count": {"type": "integer", "minimum": 1},
+        "all_t_plus_one": {"const": true}
+      },
+      "additionalProperties": true
+    },
+    "corporate_actions": {
+      "type": "object",
+      "required": [
+        "engineering_ledger_present",
+        "production_status",
+        "adjustment_available_time_replay",
+        "delisted_symbol_events_available",
+        "production_pit_accepted",
+        "promotion_credit_allowed"
+      ],
+      "properties": {
+        "engineering_ledger_present": {"const": true},
+        "production_status": {"const": "blocked_external_data"},
+        "adjustment_available_time_replay": {"const": false},
+        "delisted_symbol_events_available": {"const": false},
+        "production_pit_accepted": {"const": false},
+        "promotion_credit_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "survivorship": {
+      "type": "object",
+      "required": [
+        "production_universe_membership_available",
+        "delisted_symbol_history_available",
+        "survivorship_clean",
+        "research_universe_only",
+        "promotion_credit_allowed"
+      ],
+      "properties": {
+        "production_universe_membership_available": {"const": false},
+        "delisted_symbol_history_available": {"const": false},
+        "survivorship_clean": {"const": false},
+        "research_universe_only": {"const": true},
+        "promotion_credit_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "ledger_reconciliation": {
+      "type": "object",
+      "required": ["passed", "deterministic_replay_hash_match"],
+      "properties": {
+        "passed": {"const": true},
+        "deterministic_replay_hash_match": {"const": true}
+      },
+      "additionalProperties": true
+    },
+    "cost_model": {
+      "type": "object",
+      "required": [
+        "commission_bps",
+        "spread_bps",
+        "slippage_bps",
+        "impact_bps",
+        "delay_cost",
+        "cost_model_hash"
+      ],
+      "properties": {
+        "delay_cost": {
+          "type": "object",
+          "required": [
+            "modeled",
+            "method",
+            "embedded_in_fill_settlement_and_ledger_pnl",
+            "double_charged",
+            "attributed_fill_count",
+            "total_delay_cost",
+            "absolute_delay_cost"
+          ],
+          "properties": {
+            "modeled": {"const": true},
+            "embedded_in_fill_settlement_and_ledger_pnl": {"const": true},
+            "double_charged": {"const": false}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "fixture_isolation": {
+      "type": "object",
+      "required": [
+        "fixture_ledger_can_validate_plumbing",
+        "fixture_ledger_can_be_production_event_ledger",
+        "fixture_ledger_can_unlock_promotion",
+        "canonical_fills_simulated_only",
+        "production_event_ledger_present"
+      ],
+      "properties": {
+        "fixture_ledger_can_validate_plumbing": {"const": true},
+        "fixture_ledger_can_be_production_event_ledger": {"const": false},
+        "fixture_ledger_can_unlock_promotion": {"const": false},
+        "canonical_fills_simulated_only": {"const": true},
+        "production_event_ledger_present": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "g06_dependency": {
+      "type": "object",
+      "required": [
+        "status",
+        "decision",
+        "production_pit_accepted",
+        "research_ready",
+        "promotion_evidence_ready",
+        "artifact_identity_sha256"
+      ],
+      "properties": {
+        "status": {"const": "blocked_external_data"},
+        "decision": {"type": "string", "minLength": 1},
+        "production_pit_accepted": {"const": false},
+        "research_ready": {"const": true},
+        "promotion_evidence_ready": {"const": false},
+        "artifact_identity_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "blockers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string"},
+      "contains": {"const": "production_pit_required_for_promotion"}
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "research_only",
+        "fail_closed",
+        "production_pit_accepted",
+        "promotion_evidence_ready",
+        "promotion_credit_allowed",
+        "promotion_unlock_allowed",
+        "paper_allowed",
+        "paper_or_live_unlock_allowed",
+        "paper_order_allowed",
+        "live_allowed",
+        "live_order_allowed",
+        "paper_queue_write_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "broker_endpoint_used",
+        "network_used",
+        "secret_read",
+        "withdraw_allowed",
+        "demo_allowed",
+        "real_order_submitted",
+        "source_data_modified",
+        "strategy_parameters_mutated"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "fail_closed": {"const": true},
+        "production_pit_accepted": {"const": false},
+        "promotion_evidence_ready": {"const": false},
+        "promotion_credit_allowed": {"const": false},
+        "promotion_unlock_allowed": {"const": false},
+        "paper_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_order_allowed": {"const": false},
+        "live_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "paper_queue_write_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "broker_endpoint_used": {"const": false},
+        "network_used": {"const": false},
+        "secret_read": {"const": false},
+        "withdraw_allowed": {"const": false},
+        "demo_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "source_data_modified": {"const": false},
+        "strategy_parameters_mutated": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "no_lookahead": {"type": "object"},
+    "pnl": {"type": "object"},
+    "portfolio": {"type": "object"},
+    "artifacts": {"type": "object"}
+  },
+  "additionalProperties": false
+}

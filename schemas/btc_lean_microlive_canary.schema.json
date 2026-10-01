@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "btc_lean_microlive_canary.schema.json",
+  "title": "BTC Lean Micro-Live Authorization Canary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "decision",
+    "authorization",
+    "runtime_data_budget",
+    "safety",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "btc_lean_microlive_authorization_v1"
+    },
+    "status": {
+      "enum": ["quality_checked_candidate", "blocked_fail_closed"]
+    },
+    "decision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authorization": {
+      "type": "object"
+    },
+    "runtime_data_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "market_ring_window_minutes",
+        "market_ring_hard_cap_bytes",
+        "l2_disk_persistence_enabled",
+        "sampled_event_types",
+        "sampled_event_rolling_hard_cap_bytes",
+        "runtime_warning_bytes",
+        "runtime_stop_raw_market_writes_bytes",
+        "runtime_total_hard_cap_bytes",
+        "quota_can_delete_protected_state",
+        "protected_state"
+      ],
+      "properties": {
+        "market_ring_window_minutes": {"type": "integer", "minimum": 10, "maximum": 15},
+        "market_ring_hard_cap_bytes": {"type": "integer", "maximum": 268435456},
+        "l2_disk_persistence_enabled": {"const": false},
+        "sampled_event_types": {
+          "type": "array",
+          "items": {"enum": ["signal", "order", "error"]},
+          "uniqueItems": true
+        },
+        "sampled_event_rolling_hard_cap_bytes": {"type": "integer", "maximum": 1073741824},
+        "runtime_warning_bytes": {"const": 4294967296},
+        "runtime_stop_raw_market_writes_bytes": {"const": 5368709120},
+        "runtime_total_hard_cap_bytes": {"const": 5368709120},
+        "quota_can_delete_protected_state": {"const": false},
+        "protected_state": {
+          "type": "array",
+          "allOf": [
+            {"contains": {"const": "order"}},
+            {"contains": {"const": "fill"}},
+            {"contains": {"const": "position"}},
+            {"contains": {"const": "cash"}},
+            {"contains": {"const": "funding"}},
+            {"contains": {"const": "ledger"}},
+            {"contains": {"const": "audit"}},
+            {"contains": {"const": "error"}},
+            {"contains": {"const": "checkpoint"}}
+          ]
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "network_accessed",
+        "socket_created",
+        "http_client_created",
+        "private_endpoint_accessed",
+        "order_endpoint_accessed",
+        "demo_order_submitted",
+        "real_order_submitted",
+        "paper_queue_written",
+        "paper_allowed",
+        "live_allowed",
+        "live_ready",
+        "live_enabled",
+        "live_unlock_allowed",
+        "withdraw_allowed",
+        "secrets_read",
+        "secrets_output"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "network_accessed": {"const": false},
+        "socket_created": {"const": false},
+        "http_client_created": {"const": false},
+        "private_endpoint_accessed": {"const": false},
+        "order_endpoint_accessed": {"const": false},
+        "demo_order_submitted": {"const": false},
+        "real_order_submitted": {"const": false},
+        "paper_queue_written": {"const": false},
+        "paper_allowed": {"const": false},
+        "live_allowed": {"const": false},
+        "live_ready": {"const": false},
+        "live_enabled": {"const": false},
+        "live_unlock_allowed": {"const": false},
+        "withdraw_allowed": {"const": false},
+        "secrets_read": {"const": false},
+        "secrets_output": {"const": false}
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}

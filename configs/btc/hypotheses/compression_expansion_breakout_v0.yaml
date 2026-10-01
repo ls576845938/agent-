@@ -1,0 +1,52 @@
+hypothesis_id: compression_expansion_breakout_v0
+mode: research_only
+timeframes:
+  base: 1h
+horizons:
+  - 1h
+  - 4h
+  - 12h
+  - 24h
+  - 48h
+fold_config:
+  method: existing_walk_forward_or_time_split
+  fold_count: 4
+feature_config:
+  no_lookahead: true
+compression_config:
+  vol_window: 96
+  vol_quantile_threshold: 0.25
+  range_window: 96
+  range_quantile_threshold: 0.25
+  atr_window: 96
+  atr_quantile_threshold: 0.25
+  band_window: 96
+  band_quantile_threshold: 0.25
+  box_window: 48
+  min_compression_score: 3
+expansion_config:
+  breakout_confirmed_on_close: true
+  range_expansion_multiple: 1.5
+  volatility_expansion_required: false
+direction_config:
+  analyze_upside: true
+  analyze_downside: true
+  analyze_combined: true
+regime_exclusions:
+  - liquidation_shock
+sample_thresholds:
+  min_active_events: 200
+  min_direction_events: 80
+acceptance_gate:
+  min_event_pf_proxy: 1.15
+  min_fold_pass_rate: 0.75
+  min_fold_event_pf_proxy: 1.05
+  min_median_return: 0.0
+  max_top5_positive_contribution: 0.35
+  min_multi_horizon_pass_count: 2
+  min_horizon_event_pf_proxy: 1.10
+safety:
+  paper_queue: LOCKED
+  live: FROZEN
+  real_broker_api_allowed: false
+  real_orders_allowed: false

@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_standard_report_schema_audit_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Standard Report Schema Audit",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "strategy_id",
+    "candidate_variant",
+    "status",
+    "decision",
+    "required_fields",
+    "field_checks",
+    "coverage_summary",
+    "blockers",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_standard_report_schema_audit_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"type": "string"},
+    "candidate_variant": {"type": "string"},
+    "status": {"enum": ["schema_audit_pass", "schema_audit_action_required"]},
+    "decision": {"enum": ["standard_schema_ready_for_manual_review", "repair_standard_schema_evidence"]},
+    "required_fields": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "strategy_id",
+          "candidate_variant",
+          "data_status",
+          "metrics",
+          "benchmarks",
+          "cost_stress",
+          "liquidity",
+          "attribution",
+          "walk_forward",
+          "parameter_stability",
+          "pit_operator_handoff_schema",
+          "production_control_schema",
+          "guardrails",
+          "decision"
+        ]
+      },
+      "minItems": 14,
+      "uniqueItems": true
+    },
+    "field_checks": {
+      "type": "object",
+      "required": [
+        "strategy_id",
+        "candidate_variant",
+        "data_status",
+        "metrics",
+        "benchmarks",
+        "cost_stress",
+        "liquidity",
+        "attribution",
+        "walk_forward",
+        "parameter_stability",
+        "pit_operator_handoff_schema",
+        "production_control_schema",
+        "guardrails",
+        "decision"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["passed", "sources"],
+        "properties": {
+          "passed": {"type": "boolean"},
+          "sources": {"type": "array", "items": {"type": "string"}},
+          "required": {"type": "array", "items": {"type": "string"}},
+          "present": {"type": "array", "items": {"type": "string"}},
+          "missing_by_row": {"type": "object"},
+          "schema_version": {"type": "string"},
+          "schema_versions": {"type": "object", "additionalProperties": {"type": "string"}},
+          "errors": {"type": "object", "additionalProperties": {"type": "string"}},
+          "error": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "coverage_summary": {
+      "type": "object",
+      "required": [
+        "required_field_count",
+        "passed_field_count",
+        "missing_input_count",
+        "unsafe_flag_count"
+      ],
+      "properties": {
+        "required_field_count": {"const": 14},
+        "passed_field_count": {"type": "integer", "minimum": 0, "maximum": 14},
+        "missing_input_count": {"type": "integer", "minimum": 0},
+        "unsafe_flag_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "source_reports": {
+      "type": "object",
+      "required": [
+        "research_report",
+        "validation_report",
+        "walk_forward_report",
+        "strategy_gate_report",
+        "forward_evaluation_report",
+        "small_account_report",
+        "live_readiness_report",
+        "pit_operator_handoff_report",
+        "pit_operator_handoff_schema",
+        "daily_production_line_report",
+        "daily_production_line_schema",
+        "completion_dependency_report",
+        "completion_dependency_schema",
+        "completion_audit_report",
+        "completion_audit_schema",
+        "next_action_queue_report",
+        "next_action_queue_schema"
+      ],
+      "additionalProperties": {"type": "string"}
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "schema_audit_only",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "schema_audit_only": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

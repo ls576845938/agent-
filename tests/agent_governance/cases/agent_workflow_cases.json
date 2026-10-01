@@ -1,0 +1,97 @@
+{
+  "schema_version": "agent_workflow_eval_cases_v1",
+  "cases": [
+    {
+      "id": "architect-btc-gate-review",
+      "role": "architect",
+      "scopes": ["btc", "gate", "risk"],
+      "required_rule_ids": ["ARCH-READONLY-001", "BTC-PERP-001", "QSYS-GATE-001"],
+      "forbidden_capabilities": ["business_code_write", "private_endpoint", "live_order"]
+    },
+    {
+      "id": "data-btc-l2-refresh",
+      "role": "data_steward",
+      "scopes": ["btc", "data"],
+      "required_rule_ids": ["DATA-BTC-FINAL-001", "DATA-VERSION-001", "QSYS-SECURITY-001"],
+      "forbidden_capabilities": ["strategy_write", "order_endpoint", "secret_read"]
+    },
+    {
+      "id": "data-us-ibkr-import",
+      "role": "data_steward",
+      "scopes": ["us_equity", "data"],
+      "required_rule_ids": ["DATA-US-PIT-001", "DATA-FRESHNESS-001", "QSYS-SECURITY-001"],
+      "forbidden_capabilities": ["promotion_unlock", "live_order"]
+    },
+    {
+      "id": "us-schema-report-change",
+      "role": "super_developer",
+      "scopes": ["us_equity", "monitoring", "gate"],
+      "required_rule_ids": ["QSYS-ARTIFACT-001", "US-QUEUE-FRESHNESS-001", "US-SERVICE-BOUNDARY-001"],
+      "forbidden_capabilities": ["raw_data_write", "btc_oms_write"]
+    },
+    {
+      "id": "btc-nonflat-evidence",
+      "role": "btc_developer",
+      "scopes": ["btc", "execution", "gate"],
+      "required_rule_ids": ["BTC-NONFLAT-001", "BTC-OMS-001", "QSYS-GATE-001"],
+      "forbidden_capabilities": ["private_endpoint", "real_order"]
+    },
+    {
+      "id": "cn-equity-backtest-foundation",
+      "role": "a_share_developer",
+      "scopes": ["cn_equity", "data", "backtest", "execution"],
+      "required_rule_ids": ["CN-BOUNDARY-001", "CN-DATA-PIT-001", "CN-MARKET-001", "BACKTEST-COST-001"],
+      "forbidden_capabilities": ["raw_data_write", "us_equity_semantics_reuse", "private_endpoint", "live_order"]
+    },
+    {
+      "id": "research-holdout-review",
+      "role": "researcher",
+      "scopes": ["research", "backtest", "btc"],
+      "required_rule_ids": ["RESEARCH-HOLDOUT-001", "BACKTEST-COST-001"],
+      "forbidden_capabilities": ["production_code_write", "parameter_tuning_on_holdout"]
+    },
+    {
+      "id": "monitoring-replay-audit",
+      "role": "super_developer",
+      "scopes": ["monitoring", "execution"],
+      "required_rule_ids": ["REPLAY-ISOLATION-001", "MONITOR-AUDIT-001"],
+      "forbidden_capabilities": ["latest_state_read_during_replay"]
+    },
+    {
+      "id": "wrapper-gate-diagnosis",
+      "role": "architect",
+      "scopes": ["gate", "monitoring"],
+      "required_rule_ids": ["QSYS-GATE-001", "QSYS-ARTIFACT-001"],
+      "forbidden_capabilities": ["promotion_by_wrapper_exit"]
+    },
+    {
+      "id": "architect-runtime-operation-circuit-breaker",
+      "role": "architect",
+      "scopes": ["architecture", "governance", "monitoring"],
+      "required_rule_ids": ["GOV-OBJECTIVE-001", "GOV-ENGINEERING-CIRCUIT-001", "ARCH-READONLY-001"],
+      "forbidden_capabilities": ["automatic_backlog_expansion", "runtime_blocker_engineering_ticket", "safety_gate_relaxation"]
+    },
+    {
+      "id": "agent-governance-update",
+      "role": "architect",
+      "scopes": ["governance"],
+      "required_rule_ids": ["GOV-ROOT-001", "GOV-PITFALL-001", "GOV-PROMPT-001", "GOV-CONCURRENCY-001", "GOV-OBJECTIVE-001", "GOV-ENGINEERING-CIRCUIT-001"],
+      "forbidden_capabilities": ["business_code_write"]
+    },
+    {
+      "id": "btc-demo-public-tail-hotfix",
+      "role": "btc_developer",
+      "scopes": ["btc", "data", "execution"],
+      "change_risk": "demo_transport_hotfix",
+      "required_rule_ids": ["GOV-WORKTREE-001", "GOV-DIRTY-001", "QSYS-SECURITY-001", "DATA-BTC-FINAL-001", "BTC-WS-001"],
+      "forbidden_capabilities": ["strategy_change", "risk_change", "order_construction_change", "private_ws_reconciliation_change", "ledger_change", "live_permission_change", "promotion_artifact_rebuild"]
+    },
+    {
+      "id": "credential-evidence-review",
+      "role": "architect",
+      "scopes": ["security", "execution", "gate"],
+      "required_rule_ids": ["QSYS-SECURITY-001", "QSYS-GATE-001"],
+      "forbidden_capabilities": ["secret_read", "private_endpoint", "live_order"]
+    }
+  ]
+}

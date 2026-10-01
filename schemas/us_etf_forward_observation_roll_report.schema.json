@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_forward_observation_roll_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Forward Observation Roll Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "cycle_status",
+    "strategy_id",
+    "candidate_variant",
+    "ledger_root",
+    "readiness",
+    "observation_scope",
+    "alpha_validation",
+    "operational_checks",
+    "guardrails",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_rotation_forward_observation_roll_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"enum": ["PASS", "BLOCKED"]},
+    "cycle_status": {"enum": ["COMPLETED", "SKIPPED_ALREADY_COMPLETED", "OPERATIONAL_CHECK_FAILED", "NOT_RUN"]},
+    "strategy_id": {"const": "us_etf_rotation_min_adv_10m_vol_target_20pct_cap1_5x"},
+    "base_strategy_id": {"const": "top1_higher_vol__vol_target_20pct_cap1.5x"},
+    "candidate_variant": {"const": "min_adv_10m_to_shv"},
+    "ledger_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "account_equity": {"type": "number", "exclusiveMinimum": 0},
+    "target_position": {"$ref": "#/$defs/position"},
+    "current_position": {"type": "object"},
+    "rebalance": {"$ref": "#/$defs/rebalance"},
+    "fills": {"type": "array", "items": {"type": "object"}},
+    "portfolio_snapshot": {"type": "object"},
+    "validation_state_path": {"type": "string"},
+    "readiness": {
+      "type": "object",
+      "required": ["status", "readiness_type", "readiness_is_not_alpha_validation", "paper_or_live_unlock_allowed", "ledger_root", "blockers"],
+      "properties": {
+        "status": {"enum": ["PASS", "BLOCKED"]},
+        "readiness_type": {"const": "us_etf_forward_observation_operational_only"},
+        "readiness_is_not_alpha_validation": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "validation_report": {"type": "string"},
+        "data_freshness_report": {"type": "string"},
+        "kline_quality_report": {"type": "string"},
+        "fred_preflight_report": {"type": "string"},
+        "ledger_root": {"type": "string", "minLength": 1},
+        "data_gate": {"type": "object"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "reconciliation": {
+      "type": "object",
+      "required": ["status", "passed"],
+      "properties": {
+        "status": {"type": "string"},
+        "passed": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "observation_scope": {
+      "type": "object",
+      "required": [
+        "scope",
+        "not_alpha_validation",
+        "cannot_prove_long_term_positive_expectancy",
+        "cannot_auto_unlock_paper_or_live",
+        "allowed_claims",
+        "forbidden_claims"
+      ],
+      "properties": {
+        "scope": {"const": "operational_quality_only"},
+        "not_alpha_validation": {"const": true},
+        "cannot_prove_long_term_positive_expectancy": {"const": true},
+        "cannot_auto_unlock_paper_or_live": {"const": true},
+        "allowed_claims": {"type": "array", "items": {"type": "string"}},
+        "forbidden_claims": {
+          "type": "array",
+          "contains": {"const": "paper_or_live_is_auto_unlocked"},
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "alpha_validation": {
+      "type": "object",
+      "required": ["status", "alpha_validated", "long_term_positive_expectancy_proven", "strategy_validation_gate_required", "unlock_effect"],
+      "properties": {
+        "status": {"const": "not_evaluated"},
+        "alpha_validated": {"const": false},
+        "long_term_positive_expectancy_proven": {"const": false},
+        "strategy_validation_gate_required": {"const": true},
+        "unlock_effect": {"const": "none"}
+      },
+      "additionalProperties": false
+    },
+    "operational_checks": {
+      "type": "object",
+      "required": ["status", "scope", "blockers", "not_alpha_validation", "long_term_positive_expectancy_proven", "paper_or_live_unlock_allowed"],
+      "properties": {
+        "status": {"enum": ["PASS", "BLOCKED", "NOT_RUN"]},
+        "scope": {"const": "operational_quality_only"},
+        "checks": {"type": "object"},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "not_alpha_validation": {"const": true},
+        "long_term_positive_expectancy_proven": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "simulated_only",
+        "forward_observation_is_not_strategy_validation",
+        "forward_observation_is_not_alpha_validation",
+        "long_term_positive_expectancy_proven",
+        "paper_candidate_ready_not_implied",
+        "paper_or_live_unlock_allowed",
+        "paper_runner_started",
+        "broker_calls_used",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "live_order_allowed",
+        "real_order_submitted",
+        "initial_live_leverage_recommended",
+        "one_x_or_low_leverage_first_if_live",
+        "forward_observation_min_days"
+      ],
+      "properties": {
+        "simulated_only": {"const": true},
+        "forward_observation_is_not_strategy_validation": {"const": true},
+        "forward_observation_is_not_alpha_validation": {"const": true},
+        "long_term_positive_expectancy_proven": {"const": false},
+        "paper_candidate_ready_not_implied": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_runner_started": {"const": false},
+        "broker_calls_used": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "live_order_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "initial_live_leverage_recommended": {"const": false},
+        "one_x_or_low_leverage_first_if_live": {"const": true},
+        "forward_observation_min_days": {"type": "integer", "minimum": 30}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "output": {"type": "string"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "position": {
+      "type": "object",
+      "required": ["date", "gross_exposure", "net_exposure", "weights", "prices", "shares", "notionals", "target_count"],
+      "properties": {
+        "date": {"type": "string", "minLength": 1},
+        "gross_exposure": {"type": "number", "minimum": 0},
+        "net_exposure": {"type": "number"},
+        "weights": {"type": "object", "additionalProperties": {"type": "number"}},
+        "prices": {"type": "object", "additionalProperties": {"type": "number"}},
+        "shares": {"type": "object", "additionalProperties": {"type": "number"}},
+        "notionals": {"type": "object", "additionalProperties": {"type": "number"}},
+        "target_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "rebalance": {
+      "type": "object",
+      "required": [
+        "deltas",
+        "turnover",
+        "estimated_trade_notional",
+        "slippage_bps",
+        "estimated_slippage",
+        "estimated_financing_daily",
+        "simulated_only"
+      ],
+      "properties": {
+        "deltas": {"type": "object", "additionalProperties": {"type": "number"}},
+        "turnover": {"type": "number", "minimum": 0},
+        "estimated_trade_notional": {"type": "number", "minimum": 0},
+        "slippage_bps": {"type": "number", "minimum": 0},
+        "estimated_slippage": {"type": "number", "minimum": 0},
+        "estimated_financing_daily": {"type": "number", "minimum": 0},
+        "simulated_only": {"const": true},
+        "layer": {"const": "execution_simulation"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

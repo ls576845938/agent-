@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_daily_monitoring_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Daily Monitoring Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "summary",
+    "monitoring_rules_applied",
+    "source_reports",
+    "replay_diff",
+    "blocked_gate_coverage",
+    "incident_review_template",
+    "operator_queue",
+    "retained_artifacts",
+    "blockers",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_daily_monitoring_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "daily_monitoring_blocked",
+        "daily_monitoring_observing",
+        "daily_monitoring_clear"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "daily_monitoring_blocked",
+          "daily_monitoring_observing",
+          "daily_monitoring_clear"
+        ]
+      },
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "decision": {"const": "operate_queue_keep_paper_live_locked"},
+    "summary": {
+      "type": "object",
+      "required": [
+        "source_count",
+        "missing_source_count",
+        "status_diff_count",
+        "operator_action_count",
+        "blocker_count",
+        "blocked_gate_count",
+        "covered_blocked_gate_count",
+        "uncovered_blocked_gate_count",
+        "blocked_gate_record_count",
+        "incident_template_ready",
+        "incident_action_item_count",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "source_count": {"type": "integer", "minimum": 1},
+        "missing_source_count": {"type": "integer", "minimum": 0},
+        "status_diff_count": {"type": "integer", "minimum": 0},
+        "operator_action_count": {"type": "integer", "minimum": 0},
+        "blocker_count": {"type": "integer", "minimum": 0},
+        "blocked_gate_count": {"type": "integer", "minimum": 0},
+        "covered_blocked_gate_count": {"type": "integer", "minimum": 0},
+        "uncovered_blocked_gate_count": {"type": "integer", "minimum": 0},
+        "blocked_gate_record_count": {"type": "integer", "minimum": 0},
+        "incident_template_ready": {"type": "boolean"},
+        "incident_action_item_count": {"type": "integer", "minimum": 0},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "monitoring_rules_applied": {
+      "type": "object",
+      "required": ["rules_status", "monitor_count", "rules_source"],
+      "properties": {
+        "rules_status": {"type": "string"},
+        "monitor_count": {"type": "integer", "minimum": 0},
+        "rules_source": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "source_reports": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/source_report"}
+    },
+    "replay_diff": {
+      "type": "object",
+      "required": ["mode", "diff_count", "source_statuses", "diffs"],
+      "properties": {
+        "mode": {"const": "fixed_clock_no_realtime_access"},
+        "diff_count": {"type": "integer", "minimum": 0},
+        "source_statuses": {"type": "array", "items": {"$ref": "#/$defs/source_status"}},
+        "diffs": {"type": "array", "items": {"$ref": "#/$defs/replay_diff"}}
+      },
+      "additionalProperties": false
+    },
+    "blocked_gate_coverage": {
+      "type": "object",
+      "required": [
+        "required",
+        "gate_count",
+        "covered_gate_count",
+        "uncovered_gate_count",
+        "uncovered_sources",
+        "rows"
+      ],
+      "properties": {
+        "required": {"const": true},
+        "gate_count": {"type": "integer", "minimum": 0},
+        "covered_gate_count": {"type": "integer", "minimum": 0},
+        "uncovered_gate_count": {"type": "integer", "minimum": 0},
+        "uncovered_sources": {"type": "array", "items": {"type": "string"}},
+        "rows": {"type": "array", "items": {"$ref": "#/$defs/blocked_gate_coverage_row"}}
+      },
+      "additionalProperties": false
+    },
+    "incident_review_template": {
+      "type": "object",
+      "required": [
+        "template_id",
+        "trigger_candidates",
+        "template_fields",
+        "required_template_fields",
+        "retention_path",
+        "source_evidence_paths",
+        "incident_action_items",
+        "incident_action_item_count",
+        "operator_queue_item_count",
+        "replay_diff_count",
+        "incident_review_must_create_test_or_rule_update"
+      ],
+      "properties": {
+        "template_id": {"const": "us_equity_daily_monitoring_incident_review_v1"},
+        "trigger_candidates": {"type": "array", "items": {"type": "string"}},
+        "template_fields": {"type": "object", "additionalProperties": {"type": "string"}},
+        "required_template_fields": {"type": "array", "items": {"type": "string"}},
+        "retention_path": {"type": "string", "minLength": 1},
+        "source_evidence_paths": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "incident_action_items": {"type": "array", "items": {"$ref": "#/$defs/incident_action_item"}},
+        "incident_action_item_count": {"type": "integer", "minimum": 0},
+        "operator_queue_item_count": {"type": "integer", "minimum": 0},
+        "replay_diff_count": {"type": "integer", "minimum": 0},
+        "incident_review_must_create_test_or_rule_update": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "operator_queue": {"type": "array", "items": {"$ref": "#/$defs/operator_item"}},
+    "retained_artifacts": {
+      "type": "object",
+      "required": ["replay_diff", "incident_review_template", "operator_queue_snapshot"],
+      "properties": {
+        "replay_diff": {"$ref": "#/$defs/retained_artifact"},
+        "incident_review_template": {"$ref": "#/$defs/retained_artifact"},
+        "operator_queue_snapshot": {"$ref": "#/$defs/retained_artifact"}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "monitoring_only",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_calls_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "monitoring_only": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "source_report": {
+      "type": "object",
+      "required": ["path", "exists", "status", "blockers"],
+      "properties": {
+        "path": {"type": "string"},
+        "exists": {"type": "boolean"},
+        "status": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "source_status": {
+      "type": "object",
+      "required": [
+        "source_id",
+        "path",
+        "exists",
+        "expected_statuses",
+        "actual_status",
+        "passed",
+        "blockers"
+      ],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "exists": {"type": "boolean"},
+        "expected_statuses": {"type": "array", "items": {"type": "string"}},
+        "actual_status": {"type": "string"},
+        "passed": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "replay_diff": {
+      "type": "object",
+      "required": ["source_id", "reason", "expected_statuses", "actual_status", "evidence_path"],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "reason": {"enum": ["missing_source", "unexpected_status"]},
+        "expected_statuses": {"type": "array", "items": {"type": "string"}},
+        "actual_status": {"type": "string"},
+        "evidence_path": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "operator_item": {
+      "type": "object",
+      "required": [
+        "item_id",
+        "owner",
+        "severity",
+        "reason",
+        "next_action",
+        "recommended_command",
+        "evidence_path",
+        "source_report",
+        "blocked_gate_record_count",
+        "blocked_gate_records"
+      ],
+      "properties": {
+        "item_id": {"type": "string", "minLength": 1},
+        "owner": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["block", "manual_review", "observe"]},
+        "reason": {"type": "string", "minLength": 1},
+        "next_action": {"type": "string", "minLength": 1},
+        "recommended_command": {"type": "string", "minLength": 1},
+        "evidence_path": {"type": "string", "minLength": 1},
+        "source_report": {"type": "string", "minLength": 1},
+        "blocked_gate_record_count": {"type": "integer", "minimum": 0},
+        "blocked_gate_records": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/blocked_gate_record"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "incident_action_item": {
+      "type": "object",
+      "required": [
+        "action_item_id",
+        "operator_item_id",
+        "record_id",
+        "gate_id",
+        "blocker",
+        "owner",
+        "reason",
+        "next_action",
+        "recommended_command",
+        "evidence_path",
+        "source_report",
+        "regression_test_or_rule_update_required"
+      ],
+      "properties": {
+        "action_item_id": {"type": "string", "minLength": 1},
+        "operator_item_id": {"type": "string", "minLength": 1},
+        "record_id": {"type": "string", "minLength": 1},
+        "gate_id": {"type": "string", "minLength": 1},
+        "blocker": {"type": "string", "minLength": 1},
+        "owner": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "next_action": {"type": "string", "minLength": 1},
+        "recommended_command": {"type": "string", "minLength": 1},
+        "evidence_path": {"type": "string", "minLength": 1},
+        "source_report": {"type": "string"},
+        "regression_test_or_rule_update_required": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "blocked_gate_record": {
+      "type": "object",
+      "required": [
+        "record_id",
+        "milestone_id",
+        "gate_id",
+        "blocker",
+        "owner",
+        "reason",
+        "next_action",
+        "evidence_path",
+        "source_report",
+        "actionability",
+        "dependency_type"
+      ],
+      "properties": {
+        "record_id": {"type": "string", "minLength": 1},
+        "milestone_id": {"type": "string", "minLength": 1},
+        "gate_id": {"type": "string", "minLength": 1},
+        "blocker": {"type": "string", "minLength": 1},
+        "owner": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "next_action": {"type": "string", "minLength": 1},
+        "evidence_path": {"type": "string", "minLength": 1},
+        "source_report": {"type": "string"},
+        "actionability": {"type": "string"},
+        "dependency_type": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "blocked_gate_coverage_row": {
+      "type": "object",
+      "required": [
+        "source_id",
+        "gate_id",
+        "status",
+        "exists",
+        "reason",
+        "owner",
+        "next_action",
+        "recommended_command",
+        "evidence_path",
+        "operator_item_id",
+        "covered"
+      ],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "gate_id": {"type": "string", "minLength": 1},
+        "status": {"type": "string"},
+        "exists": {"type": "boolean"},
+        "reason": {"type": "string", "minLength": 1},
+        "owner": {"type": "string", "minLength": 1},
+        "next_action": {"type": "string", "minLength": 1},
+        "recommended_command": {"type": "string", "minLength": 1},
+        "evidence_path": {"type": "string", "minLength": 1},
+        "operator_item_id": {"type": "string", "minLength": 1},
+        "covered": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "retained_artifact": {
+      "type": "object",
+      "required": ["artifact_id", "path", "written"],
+      "properties": {
+        "artifact_id": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "written": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  }
+}

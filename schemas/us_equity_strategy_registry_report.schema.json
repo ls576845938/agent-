@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_strategy_registry_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Strategy Registry Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "asset",
+    "registry_path",
+    "strategy_count",
+    "primary_candidate_count",
+    "required_families",
+    "missing_required_families",
+    "formal_candidate_count",
+    "formal_candidate_source_report_contract",
+    "strategy_rows",
+    "blockers",
+    "warnings",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_strategy_registry_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"enum": ["pass", "blocked"]},
+    "asset": {"const": "us_equity"},
+    "registry_path": {"type": "string", "minLength": 1},
+    "strategy_count": {"type": "integer", "minimum": 0},
+    "primary_candidate_count": {"type": "integer", "minimum": 0, "maximum": 1},
+    "required_families": {
+      "type": "array",
+      "minItems": 6,
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "missing_required_families": {"type": "array", "items": {"type": "string"}},
+    "formal_candidate_count": {"type": "integer", "minimum": 0},
+    "formal_candidate_source_report_contract": {
+      "type": "object",
+      "required": [
+        "required_keys",
+        "candidate_count",
+        "passed_count",
+        "missing_required_keys_by_strategy",
+        "missing_paths_by_strategy",
+        "passed"
+      ],
+      "properties": {
+        "required_keys": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "candidate_count": {"type": "integer", "minimum": 0},
+        "passed_count": {"type": "integer", "minimum": 0},
+        "missing_required_keys_by_strategy": {
+          "type": "object",
+          "additionalProperties": {"type": "array", "items": {"type": "string"}}
+        },
+        "missing_paths_by_strategy": {
+          "type": "object",
+          "additionalProperties": {"type": "array", "items": {"type": "string"}}
+        },
+        "passed": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "strategy_rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "index",
+          "strategy_id",
+          "family",
+          "status",
+          "current_stage",
+          "primary_candidate",
+          "strategy_card",
+          "strategy_card_exists",
+          "design_spec_report",
+          "design_spec_exists",
+          "design_spec_registry_id_matches",
+          "source_report_count",
+          "missing_required_source_report_keys",
+          "source_report_contract_passed",
+          "missing_source_report_keys",
+          "blockers",
+          "warnings"
+        ],
+        "properties": {
+          "index": {"type": "integer", "minimum": 0},
+          "strategy_id": {"type": "string"},
+          "family": {"type": "string"},
+          "status": {"type": "string"},
+          "current_stage": {"type": "string"},
+          "primary_candidate": {"type": "boolean"},
+          "strategy_card": {"type": "string"},
+          "strategy_card_exists": {"type": "boolean"},
+          "design_spec_report": {"type": "string"},
+          "design_spec_exists": {"type": "boolean"},
+          "design_spec_registry_id_matches": {"type": "boolean"},
+          "source_report_count": {"type": "integer", "minimum": 0},
+          "missing_required_source_report_keys": {"type": "array", "items": {"type": "string"}},
+          "source_report_contract_passed": {"type": "boolean"},
+          "missing_source_report_keys": {"type": "array", "items": {"type": "string"}},
+          "blockers": {"type": "array", "items": {"type": "string"}},
+          "warnings": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "unregistered_strategy_promotion_allowed",
+        "paper_or_live_unlock_allowed_by_registry",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed"
+      ],
+      "properties": {
+        "unregistered_strategy_promotion_allowed": {"const": false},
+        "paper_or_live_unlock_allowed_by_registry": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

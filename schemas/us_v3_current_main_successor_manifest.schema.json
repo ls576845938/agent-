@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "us_v3_current_main_successor_manifest.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "goal_id",
+    "base_commit",
+    "historical_source_ref",
+    "historical_audit_head",
+    "historical_deliverable_commit",
+    "historical_handoff_event",
+    "integration_method",
+    "whole_branch_merge_authorized",
+    "range_cherry_pick_authorized",
+    "dependency_closure",
+    "inspected_projection_path_count",
+    "delivery_file_count",
+    "excluded_projection_path_count",
+    "deliverables",
+    "excluded_projection_paths",
+    "tests_by_relationship",
+    "decision",
+    "gate_impact",
+    "safety"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_v3_current_main_successor_manifest_v1"},
+    "goal_id": {"const": "US-V3-CURRENT-MAIN-SUCCESSOR-01"},
+    "base_commit": {"const": "07e32a043a3fd48e5b50f67dd90ed59679bf6af7"},
+    "historical_source_ref": {"const": "agent/super_developer/us-development-v2"},
+    "historical_audit_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "historical_deliverable_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "historical_handoff_event": {"type": "string", "minLength": 1},
+    "integration_method": {"const": "selective_exact_path_projection_no_merge_no_cherry_pick"},
+    "whole_branch_merge_authorized": {"const": false},
+    "range_cherry_pick_authorized": {"const": false},
+    "dependency_closure": {
+      "type": "object",
+      "required": ["checked_python_files", "unresolved_repository_imports", "forbidden_domain_imports"],
+      "properties": {
+        "checked_python_files": {"const": 27},
+        "unresolved_repository_imports": {"const": 0},
+        "forbidden_domain_imports": {"const": 0}
+      },
+      "additionalProperties": false
+    },
+    "inspected_projection_path_count": {"const": 40},
+    "delivery_file_count": {"const": 35},
+    "excluded_projection_path_count": {"const": 5},
+    "deliverables": {
+      "type": "array",
+      "minItems": 35,
+      "maxItems": 35,
+      "items": {"$ref": "#/$defs/deliverable"}
+    },
+    "excluded_projection_paths": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "allOf": [
+          {"$ref": "#/$defs/deliverable"},
+          {
+            "type": "object",
+            "required": ["reason"],
+            "properties": {
+              "port_action": {"const": "excluded"},
+              "reason": {"const": "historical_branch_audit_tooling_superseded_by_current_main_successor_manifest"}
+            }
+          }
+        ]
+      }
+    },
+    "tests_by_relationship": {"type": "object", "minProperties": 7},
+    "decision": {"const": "research_only"},
+    "gate_impact": {
+      "type": "object",
+      "required": ["promotion_ready", "paper_ready", "live_ready", "reason"],
+      "properties": {
+        "promotion_ready": {"const": false},
+        "paper_ready": {"const": false},
+        "live_ready": {"const": false},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "minProperties": 8,
+      "additionalProperties": {"const": false}
+    }
+  },
+  "$defs": {
+    "deliverable": {
+      "type": "object",
+      "required": [
+        "path",
+        "kind",
+        "relationship",
+        "historical_commits",
+        "historical_sha256",
+        "successor_sha256",
+        "base_state",
+        "base_sha256",
+        "port_action",
+        "test_bindings"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["config", "source", "schema", "script", "test"]},
+        "relationship": {"type": "string", "minLength": 1},
+        "historical_commits": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+        },
+        "historical_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "successor_sha256": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          ]
+        },
+        "base_state": {"enum": ["missing", "different", "equivalent"]},
+        "base_sha256": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          ]
+        },
+        "port_action": {
+          "enum": [
+            "ported_exact_new_path",
+            "ported_exact_after_additive_diff_review",
+            "retained_current_main_equivalent",
+            "adapted_fixture_only_current_main_contract",
+            "excluded"
+          ]
+        },
+        "test_bindings": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_compression_expansion_attribution_bundle.schema.json",
+  "title": "QuantStation VNEXT BTC Compression Expansion Attribution Bundle",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "strategy_id",
+    "status",
+    "allowed_next_action",
+    "archive_recommended",
+    "stable_repair_pattern_found",
+    "paper_review_pending_allowed",
+    "source_run_dir",
+    "source_reports",
+    "candidate_metrics",
+    "gate_status",
+    "gate_fail_reasons",
+    "root_cause_summary",
+    "attribution_answers",
+    "decision",
+    "paper_queue",
+    "live",
+    "paper_review_pending_created",
+    "promotion_ready",
+    "child_reports",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_compression_expansion_attribution_bundle_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "strategy_id": {"type": "string"},
+    "status": {"const": "archived"},
+    "allowed_next_action": {"const": "archive_only"},
+    "archive_recommended": {"type": "boolean"},
+    "stable_repair_pattern_found": {"type": "boolean"},
+    "paper_review_pending_allowed": {"const": false},
+    "source_run_dir": {"type": "string"},
+    "source_reports": {"type": "object"},
+    "candidate_metrics": {"type": "object"},
+    "gate_status": {"type": "string"},
+    "gate_fail_reasons": {"type": "array", "items": {"type": "string"}},
+    "root_cause_summary": {"type": "array", "items": {"type": "string"}},
+    "attribution_answers": {
+      "type": "object",
+      "required": [
+        "hypothesis_layer",
+        "event_ledger_candidate_failure",
+        "event_pf_failure_sources",
+        "failed_folds_concentrated",
+        "failed_regimes",
+        "target_active_vs_full_ledger_gap",
+        "stable_repair_pattern"
+      ],
+      "properties": {
+        "hypothesis_layer": {"type": "string"},
+        "event_ledger_candidate_failure": {"type": "string"},
+        "event_pf_failure_sources": {"type": "array", "items": {"type": "string"}},
+        "failed_folds_concentrated": {"type": "array", "items": {"type": "string"}},
+        "failed_regimes": {"type": "array", "items": {"type": "string"}},
+        "target_active_vs_full_ledger_gap": {"type": "number"},
+        "stable_repair_pattern": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "decision": {"type": "object"},
+    "paper_queue": {"const": "LOCKED"},
+    "live": {"const": "FROZEN"},
+    "paper_review_pending_created": {"const": false},
+    "promotion_ready": {"const": false},
+    "child_reports": {
+      "type": "object",
+      "required": [
+        "fold_failure_report",
+        "regime_drag_report",
+        "entry_exit_timing_report",
+        "active_vs_full_ledger_report",
+        "cost_funding_drag_report"
+      ],
+      "properties": {
+        "fold_failure_report": {"type": "string"},
+        "regime_drag_report": {"type": "string"},
+        "entry_exit_timing_report": {"type": "string"},
+        "active_vs_full_ledger_report": {"type": "string"},
+        "cost_funding_drag_report": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

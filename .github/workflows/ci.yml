@@ -1,0 +1,66 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  backend-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -e ".[dev]" || pip install pytest pandas numpy
+      - run: python -m pytest backend/tests/ -q -m "not integration_live and not slow" --tb=short
+
+  backend-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -e ".[dev]" || pip install pytest pandas numpy
+      - run: python -m pytest backend/tests/ -q -m "integration and not integration_live" --tb=short
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: cd frontend && npm ci
+      - run: cd frontend && npx tsc --noEmit
+      - run: cd frontend && npm run build
+
+  safety-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install pytest pandas numpy
+      - run: |
+          python -m pytest backend/tests/ -q -k "no_live or no_submit or no_real or no_broker or no_auto or safety or gate or lock or freeze or reduce_only" --tb=short
+
+  research-evidence-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -e ".[dev]" || pip install pytest pandas numpy PyYAML
+      - run: |
+          python -m pytest \
+            tests/research/test_btc_hypothesis_lab_config_schema.py \
+            tests/research/test_btc_data_fold_regime_status_report.py \
+            tests/research/test_btc_fold_regime_contract_audit.py \
+            tests/research/test_compression_expansion_distribution_report.py \
+            tests/research/test_compression_expansion_event_ledger_artifacts.py \
+            tests/research/test_compression_expansion_event_ledger_attribution_artifact.py \
+            tests/research/test_compression_expansion_failure_mode_report.py \
+            tests/research/test_ci_evidence_gate_workflow.py \
+            tests/research/test_liquidation_shock_recovery_artifacts.py \
+            tests/research/test_liquidation_shock_recovery_no_lookahead.py \
+            tests/research/test_liquidation_shock_event_ledger_validation.py \
+            tests/reports/test_compression_expansion_eventledger_attribution_html.py \
+            tests/reports/test_hypothesis_lab_html_generation.py \
+            tests/reports/test_liquidation_shock_recovery_html_generation.py \
+            tests/reports/test_liquidation_shock_eventledger_html_generation.py \
+            -q --tb=short

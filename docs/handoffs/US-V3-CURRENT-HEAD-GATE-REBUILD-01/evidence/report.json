@@ -1,0 +1,88 @@
+{
+  "schema_version": "us_v3_current_head_gate_rebuild_evidence_v1",
+  "goal_id": "US-V3-CURRENT-HEAD-GATE-REBUILD-01",
+  "generated_at_utc": "2026-07-24T14:49:51Z",
+  "source_head": "74322c6be906e81e523a879a50a243e46645b3c5",
+  "status": "complete_quality_checked_blocked",
+  "decision": "blocked_fail_closed_no_paper_no_live",
+  "wrapper_status": "success",
+  "artifact_health": {
+    "output_count": 12,
+    "current_head_count": 12,
+    "stale_count": 0,
+    "missing_count": 0,
+    "all_output_hashes_verified": true,
+    "all_declared_input_hashes_verified": true
+  },
+  "blocker_taxonomy": {
+    "root_blocker_count": 8,
+    "derived_reference_count": 320,
+    "root_blockers": [
+      "current_head_artifact_evidence_unavailable",
+      "execution_control_evidence_unavailable",
+      "forward_observation_incomplete",
+      "manual_approval_unavailable",
+      "paper_runtime_evidence_unavailable",
+      "production_pit_evidence_unavailable",
+      "promotion_evidence_incomplete",
+      "unclassified_fail_closed_evidence"
+    ]
+  },
+  "artifacts": {
+    "receipt": {
+      "path": "artifacts/us_equity_gate_rebuild/latest/us_equity_current_head_gate_rebuild.json",
+      "sha256": "97d2770ce63a51a24294dfb1103aa4b79b6afd36c7b02f6ca59b6293349fbe10"
+    },
+    "root_blocker_taxonomy": {
+      "path": "artifacts/us_equity_gate_rebuild/latest/us_equity_current_head_blocker_taxonomy.json",
+      "sha256": "bafd2629e5574c2cc1507d8c115e7446cb4f386cb28023d631344fe747d69dd4"
+    },
+    "run_manifest": {
+      "path": "artifacts/us_equity_gate_rebuild/runs/us-g10-business-74322c6be906/manifest.json",
+      "sha256": "aa735db0f143f3ae9b0a43d3dd997df60d00c4f642c9cf2d3d519900dfc841de"
+    }
+  },
+  "tests": [
+    {
+      "scope": "G10 core, dependency chain, portfolio, paper, live, domain and schema coverage",
+      "result": "83 passed"
+    },
+    {
+      "scope": "US paper OMS ledger reconciliation expansion",
+      "result": "135 passed, 1 pre-existing durable-path assertion drift"
+    },
+    {
+      "scope": "historical artifact-heavy standard report suite",
+      "result": "5 retained failures because required historical latest artifacts are absent"
+    },
+    {
+      "scope": "known collection blockers",
+      "result": "DEFAULT_TEMPLATE import drift and sparse quant_crypto dependency retained as independent follow-ups"
+    }
+  ],
+  "gate_impact": {
+    "valid_blocked_artifact_preferred_over_missing_or_stale": true,
+    "wrapper_success_substitutes_for_decision": false,
+    "promotion_unlocked": false,
+    "paper_unlocked": false,
+    "live_unlocked": false
+  },
+  "safety": {
+    "promotion_allowed": false,
+    "paper_allowed": false,
+    "paper_runner_allowed": false,
+    "paper_runner_started": false,
+    "paper_queue_write_allowed": false,
+    "live_allowed": false,
+    "live_order_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "broker_access_allowed": false,
+    "broker_calls_used": false,
+    "withdraw_allowed": false,
+    "demo_allowed": false,
+    "real_order_submitted": false,
+    "network_used": false,
+    "secret_accessed": false
+  }
+}

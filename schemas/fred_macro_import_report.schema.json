@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/fred_macro_import_report.schema.json",
+  "title": "QuantStation VNEXT FRED Macro Import Report Filename Compatibility Schema",
+  "type": "object",
+  "required": ["schema_version", "status", "provider", "source_type", "series", "blockers", "guardrails"],
+  "properties": {
+    "schema_version": {"const": "us_equity_fred_macro_import_report_v1"},
+    "status": {"enum": ["pass", "blocked"]},
+    "provider": {"const": "FRED"},
+    "source_type": {"enum": ["fred_api", "fred_api_observations", "public_graph_csv", "offline_fixture"]},
+    "series": {
+      "oneOf": [
+        {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        {"type": "object", "additionalProperties": {"type": "string"}}
+      ]
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": ["token_written_to_artifacts", "live_order_allowed", "private_endpoint_used", "order_endpoint_used"],
+      "properties": {
+        "token_written_to_artifacts": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

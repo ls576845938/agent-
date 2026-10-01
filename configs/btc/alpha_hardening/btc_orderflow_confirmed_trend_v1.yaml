@@ -1,0 +1,45 @@
+schema_version: btc_alpha_hardening_candidate_v1
+strategy_id: btc_orderflow_confirmed_trend_v1
+base_strategy_id: btc_orderflow_pressure
+asset_class: crypto
+symbol: BTCUSDT
+timeframe: 1h
+pnl_source: ledger_fills
+paper_auto_start: false
+live_enabled: false
+live_frozen: true
+orderflow_role: confirmation_only
+params:
+  fast_ma: 96
+  slow_ma: 336
+  regime_ma: 720
+  momentum_window: 168
+  momentum_threshold: 0.025
+  vol_window: 168
+  max_volatility: 0.055
+  buy_ratio_threshold: 0.535
+  sell_ratio_threshold: 0.465
+  pressure_threshold: 0.01
+  orderflow_window: 144
+  activity_window: 144
+  min_quote_intensity: 0.80
+  min_trade_intensity: 0.70
+  signal_persistence_bars: 4
+  exit_hysteresis_bars: 4
+  min_hold_bars: 120
+  cooldown_bars: 72
+  max_hold_bars: 720
+  signal_scale: 0.20
+  blocked_regimes:
+    - low_vol_chop
+    - mean_reverting_chop
+    - liquidation_shock
+gates:
+  profit_factor: 1.15
+  event_profit_factor: 1.15
+  walk_forward_pass_rate: 0.80
+  regime_pass_rate: 0.75
+  annual_turnover: 15.0
+  max_drawdown_pct_floor: -15.0
+  dsr: 0.10
+  pbo: 0.50

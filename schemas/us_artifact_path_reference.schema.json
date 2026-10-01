@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "us_artifact_path_reference.schema.json",
+  "title": "US Artifact Path Reference",
+  "type": "object",
+  "required": ["schema_version", "path_kind", "path", "stable_identity"],
+  "properties": {
+    "schema_version": {"const": "us_artifact_path_reference_v1"},
+    "path_kind": {"enum": ["durable_relative", "external_absolute"]},
+    "path": {"type": "string", "minLength": 1},
+    "stable_identity": {"type": "boolean"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"path_kind": {"const": "durable_relative"}}},
+      "then": {
+        "properties": {
+          "path": {
+            "pattern": "^(?!/)(?![A-Za-z]:/)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+          },
+          "stable_identity": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"path_kind": {"const": "external_absolute"}}},
+      "then": {
+        "properties": {
+          "path": {"pattern": "^(?:/|[A-Za-z]:/).+$"},
+          "stable_identity": {"const": false}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

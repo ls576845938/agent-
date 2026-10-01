@@ -1,0 +1,2281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/global_research_registry.schema.json",
+  "title": "QuantStation VNEXT Global Research Registry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "paper_queue_status",
+    "live_status",
+    "candidate_passed_internal_gate",
+    "assets",
+    "failure_explanations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "global_research_registry_v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "commit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "paper_queue_status": {
+      "enum": ["locked", "pending_review", "approved"]
+    },
+    "live_status": {
+      "const": "frozen"
+    },
+    "candidate_passed_internal_gate": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "assets": {
+      "type": "object",
+      "required": ["us_equity", "btc"],
+      "properties": {
+        "us_equity": {
+          "type": "object",
+          "required": [
+            "status",
+            "latest_data_status",
+            "latest_factor_evidence",
+            "latest_portfolio_report",
+            "latest_etf_macro_rotation_report",
+            "factor_evidence_status",
+            "factor_count",
+            "factor_pass_count",
+            "factor_fail_count",
+            "current_factor_candidates",
+            "blocker_reasons",
+            "data_lineage",
+            "factor_evidence",
+            "etf_macro_rotation",
+            "portfolio_evidence",
+            "blockers",
+            "allowed_next_actions",
+            "current_candidates"
+          ],
+          "properties": {
+            "status": {
+              "const": "mainline"
+            },
+            "latest_data_status": {
+              "type": ["string", "null"]
+            },
+            "latest_factor_evidence": {
+              "type": ["string", "null"]
+            },
+            "latest_portfolio_report": {
+              "type": ["string", "null"]
+            },
+            "latest_etf_macro_rotation_report": {
+              "type": ["string", "null"]
+            },
+            "factor_evidence_status": {
+              "enum": ["missing", "failed", "passed"]
+            },
+            "factor_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "factor_pass_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "factor_fail_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "current_factor_candidates": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "blocker_reasons": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "data_lineage": {
+              "type": "object",
+              "required": [
+                "status",
+                "data_status_report",
+                "latest_data_manifest",
+                "manifest_count",
+                "data_versions",
+                "symbols",
+                "universe_manifest",
+                "corporate_action_report",
+                "data_lineage_grade",
+                "promotion_clean",
+                "universe_snapshot_manifest",
+                "corporate_action_status_report",
+                "survivorship_audit_report",
+                "provider_capability_matrix",
+                "production_bundle_preflight_report",
+                "provider_verification_report",
+                "selected_provider",
+                "source_type",
+                "bundle_id",
+                "production_bundle_preflight_pass",
+                "explicit_bundle_selection_confirmed",
+                "promotion_clean_allowed_by_config",
+                "promotion_clean_allowed_by_manifest",
+                "provider_verified_for_promotion",
+                "point_in_time_universe_confirmed",
+                "delisting_coverage_confirmed",
+                "corporate_action_event_source_available",
+                "identifier_mapping_available",
+                "adjustment_reproducibility_confirmed",
+                "survivorship_clean",
+                "survivorship_status",
+                "adjustment_policies",
+                "blockers"
+              ],
+              "properties": {
+                "status": {
+                  "enum": ["missing", "partial", "complete"]
+                },
+                "data_status_report": {
+                  "type": ["string", "null"]
+                },
+                "latest_data_manifest": {
+                  "type": ["string", "null"]
+                },
+                "manifest_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "data_versions": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "symbols": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "universe_manifest": {
+                  "type": ["string", "null"]
+                },
+                "corporate_action_report": {
+                  "type": ["string", "null"]
+                },
+                "data_lineage_grade": {
+                  "type": "object",
+                  "required": ["value", "reason"],
+                  "properties": {
+                    "value": {
+                      "enum": [
+                        "L0_fixture",
+                        "L1_sample_non_pit",
+                        "L2_static_snapshot",
+                        "L3_point_in_time_universe",
+                        "L4_promotion_clean"
+                      ]
+                    },
+                    "reason": {"type": "string"}
+                  },
+                  "additionalProperties": false
+                },
+                "promotion_clean": {
+                  "type": "boolean"
+                },
+                "universe_snapshot_manifest": {
+                  "type": ["string", "null"]
+                },
+                "corporate_action_status_report": {
+                  "type": ["string", "null"]
+                },
+                "survivorship_audit_report": {
+                  "type": ["string", "null"]
+                },
+                "provider_capability_matrix": {
+                  "type": ["string", "null"]
+                },
+                "production_bundle_preflight_report": {
+                  "type": ["string", "null"]
+                },
+                "provider_verification_report": {
+                  "type": ["string", "null"]
+                },
+                "selected_provider": {
+                  "enum": ["yfinance", "local_csv", "crsp", "sharadar", "polygon", "norgate", "none"]
+                },
+                "source_type": {
+                  "enum": ["fixture", "sample", "production", "research_price_bars", "none"]
+                },
+                "bundle_id": {
+                  "type": ["string", "null"]
+                },
+                "production_bundle_preflight_pass": {
+                  "type": "boolean"
+                },
+                "explicit_bundle_selection_confirmed": {
+                  "type": "boolean"
+                },
+                "promotion_clean_allowed_by_config": {
+                  "type": "boolean"
+                },
+                "promotion_clean_allowed_by_manifest": {
+                  "type": "boolean"
+                },
+                "provider_verified_for_promotion": {
+                  "type": "boolean"
+                },
+                "point_in_time_universe_confirmed": {
+                  "type": "boolean"
+                },
+                "delisting_coverage_confirmed": {
+                  "type": "boolean"
+                },
+                "corporate_action_event_source_available": {
+                  "type": "boolean"
+                },
+                "identifier_mapping_available": {
+                  "type": "boolean"
+                },
+                "adjustment_reproducibility_confirmed": {
+                  "type": "boolean"
+                },
+                "survivorship_clean": {
+                  "type": "boolean"
+                },
+                "survivorship_status": {
+                  "type": "string"
+                },
+                "adjustment_policies": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "blockers": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              },
+              "additionalProperties": false
+            },
+            "factor_evidence": {
+              "type": "object",
+              "required": [
+                "status",
+                "factor_evidence_status",
+                "latest_factor_evidence",
+                "factor_evidence_pack",
+                "latest_factor_mining_report",
+                "generated_factors_path",
+                "generated_strategy_count",
+                "factor_count",
+                "factor_pass_count",
+                "factor_fail_count",
+                "current_factor_candidates",
+                "inherited_data_blockers",
+                "inherited_provider_blockers",
+                "allowed_next_action_summary",
+                "selected_factor_count",
+                "selected_factor_ids",
+                "blocker_reasons",
+                "blockers"
+              ],
+              "properties": {
+                "status": {
+                  "enum": ["missing", "partial", "complete"]
+                },
+                "factor_evidence_status": {
+                  "enum": ["missing", "failed", "passed"]
+                },
+                "latest_factor_evidence": {
+                  "type": ["string", "null"]
+                },
+                "factor_evidence_pack": {
+                  "type": ["string", "null"]
+                },
+                "latest_factor_mining_report": {
+                  "type": ["string", "null"]
+                },
+                "generated_factors_path": {
+                  "type": ["string", "null"]
+                },
+                "generated_strategy_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "factor_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "factor_pass_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "factor_fail_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "current_factor_candidates": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "inherited_data_blockers": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "inherited_provider_blockers": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "allowed_next_action_summary": {
+                  "enum": ["research_only", "rerun_required", "portfolio_candidate_review"]
+                },
+                "selected_factor_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "selected_factor_ids": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "blocker_reasons": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "blockers": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              },
+              "additionalProperties": false
+            },
+            "etf_macro_rotation": {
+              "type": "object",
+              "required": [
+                "status",
+                "strategy_id",
+                "report_path",
+                "allowed_next_action",
+                "promotion_ready",
+                "paper_ready",
+                "live_ready",
+                "missing_symbols",
+                "macro_status",
+                "blockers"
+              ],
+              "properties": {
+                "status": {
+                  "enum": ["missing", "blocked", "partial", "complete"]
+                },
+                "strategy_id": {
+                  "type": "string"
+                },
+                "report_path": {
+                  "type": ["string", "null"]
+                },
+                "allowed_next_action": {
+                  "enum": ["research_only", "rerun_required", "manual_review_required"]
+                },
+                "promotion_ready": {
+                  "type": "boolean"
+                },
+                "paper_ready": {
+                  "type": "boolean"
+                },
+                "live_ready": {
+                  "type": "boolean"
+                },
+                "missing_symbols": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "macro_status": {
+                  "type": "string"
+                },
+                "blockers": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              },
+              "additionalProperties": false
+            },
+            "portfolio_evidence": {
+              "type": "object",
+              "required": [
+                "status",
+                "portfolio_canonical_report",
+                "latest_portfolio_run_manifest",
+                "portfolio_run_count",
+                "event_ledger_status",
+                "promotion_ready",
+                "blockers"
+              ],
+              "properties": {
+                "status": {
+                  "enum": ["missing", "research_only", "partial", "complete"]
+                },
+                "portfolio_canonical_report": {
+                  "type": ["string", "null"]
+                },
+                "latest_portfolio_run_manifest": {
+                  "type": ["string", "null"]
+                },
+                "portfolio_run_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "event_ledger_status": {
+                  "type": "string"
+                },
+                "promotion_ready": {
+                  "type": "boolean"
+                },
+                "blockers": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              },
+              "additionalProperties": false
+            },
+            "blockers": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "allowed_next_actions": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "build_us_equity_data_status_report",
+                  "standardize_factor_evidence_pack",
+                  "build_us_etf_macro_rotation_research_report",
+                  "internal_event_backtest_required"
+                ]
+              }
+            },
+            "current_candidates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "source",
+                  "status",
+                  "evidence_path",
+                  "data_versions",
+                  "blockers",
+                  "allowed_next_action"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "enum": ["evidence_candidate", "factor_evidence_candidate", "portfolio_research_artifact"]
+                  },
+                  "evidence_path": {
+                    "type": "string"
+                  },
+                  "data_versions": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                  },
+                  "blockers": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                  },
+                  "allowed_next_action": {
+                    "const": "internal_event_backtest_required"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "btc": {
+          "type": "object",
+          "required": [
+            "status",
+            "paper_queue_status",
+            "live_status",
+            "candidate_passed_internal_gate",
+            "latest_registry",
+            "latest_data_status",
+            "latest_funding_rate_gap_report",
+            "latest_bundle_preflight",
+            "latest_provider_verification",
+            "latest_manual_metadata_capture_readiness",
+            "latest_manual_metadata_capture_operator_packet",
+            "latest_manual_metadata_import_report",
+            "latest_objective_completion_audit",
+            "latest_cost_model",
+            "latest_funding_ledger",
+            "latest_fold_regime_contract",
+            "latest_candidate_gate_audit",
+            "latest_candidate_metric_repair_report",
+            "latest_candidate_bounded_retest_plan",
+            "latest_next_hypothesis_decision_report",
+            "latest_strategy_family_roadmap_report",
+            "latest_intraday_short_cycle_alpha_plan_report",
+            "latest_intraday_short_cycle_alpha_probe_report",
+            "latest_intraday_short_cycle_alpha_refinement_report",
+            "latest_intraday_short_cycle_event_ledger_report",
+            "latest_intraday_short_cycle_event_definition_repair_report",
+            "latest_intraday_short_cycle_repaired_event_ledger_report",
+            "latest_intraday_short_cycle_drift_guarded_event_ledger_report",
+            "latest_intraday_short_cycle_promotion_gate_report",
+            "latest_intraday_short_cycle_manual_review_packet",
+            "latest_intraday_short_cycle_research_candidate_definition_preflight",
+            "latest_intraday_short_cycle_research_candidate_definition_manifest",
+            "latest_intraday_short_cycle_remaining_external_evidence_status",
+            "latest_ga_factor_mining_report",
+            "latest_ga_candidate_review_packet",
+            "latest_timesfm_shared_readiness",
+            "latest_btc_timesfm_smoke",
+            "latest_btc_timesfm_vs_trend_baseline",
+            "latest_tail_dependency",
+            "latest_compression_attribution",
+            "data_status",
+            "bundle_preflight_status",
+            "provider_verification_status",
+            "manual_metadata_capture_status",
+            "manual_metadata_capture_operator_packet_status",
+            "manual_metadata_import_status",
+            "objective_completion_status",
+            "cost_model_status",
+            "funding_ledger_status",
+            "fold_regime_status",
+            "candidate_gate_audit",
+            "candidate_metric_repair_status",
+            "candidate_bounded_retest_status",
+            "next_hypothesis_decision_status",
+            "strategy_family_roadmap_status",
+            "intraday_short_cycle_alpha_plan_status",
+            "intraday_short_cycle_alpha_probe_status",
+            "intraday_short_cycle_alpha_refinement_status",
+            "intraday_short_cycle_event_ledger_status",
+            "intraday_short_cycle_event_definition_repair_status",
+            "intraday_short_cycle_repaired_event_ledger_status",
+            "intraday_short_cycle_drift_guarded_event_ledger_status",
+            "intraday_short_cycle_promotion_gate_status",
+            "intraday_short_cycle_manual_review_packet_status",
+            "intraday_short_cycle_research_candidate_definition_preflight_status",
+            "intraday_short_cycle_research_candidate_definition_manifest_status",
+            "intraday_short_cycle_remaining_external_evidence_status",
+            "ga_factor_mining_status",
+            "timesfm_research_status",
+            "tail_dependency_status",
+            "current_candidates",
+            "attribution_only",
+            "compression_boundary",
+            "archived_or_rejected",
+            "blockers"
+          ],
+          "properties": {
+            "status": {
+              "const": "research_sandbox"
+            },
+            "paper_queue_status": {"enum": ["locked", "pending_review", "approved"]},
+            "live_status": {"const": "frozen"},
+            "candidate_passed_internal_gate": {"type": "integer", "minimum": 0},
+            "latest_registry": {
+              "type": "string"
+            },
+            "latest_data_status": {
+              "type": ["string", "null"]
+            },
+            "latest_funding_rate_gap_report": {
+              "type": ["string", "null"]
+            },
+            "latest_bundle_preflight": {
+              "type": ["string", "null"]
+            },
+            "latest_provider_verification": {
+              "type": ["string", "null"]
+            },
+            "latest_manual_metadata_capture_readiness": {
+              "type": ["string", "null"]
+            },
+            "latest_manual_metadata_capture_operator_packet": {
+              "type": ["string", "null"]
+            },
+            "latest_manual_metadata_import_report": {
+              "type": ["string", "null"]
+            },
+            "latest_objective_completion_audit": {
+              "type": ["string", "null"]
+            },
+            "latest_cost_model": {
+              "type": ["string", "null"]
+            },
+            "latest_funding_ledger": {
+              "type": ["string", "null"]
+            },
+            "latest_fold_regime_contract": {
+              "type": ["string", "null"]
+            },
+            "latest_candidate_gate_audit": {
+              "type": ["string", "null"]
+            },
+            "latest_candidate_metric_repair_report": {
+              "type": ["string", "null"]
+            },
+            "latest_candidate_bounded_retest_plan": {
+              "type": ["string", "null"]
+            },
+            "latest_next_hypothesis_decision_report": {
+              "type": ["string", "null"]
+            },
+            "latest_strategy_family_roadmap_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_alpha_plan_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_alpha_probe_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_alpha_refinement_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_event_ledger_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_event_definition_repair_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_repaired_event_ledger_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_drift_guarded_event_ledger_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_promotion_gate_report": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_manual_review_packet": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_research_candidate_definition_preflight": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_research_candidate_definition_manifest": {
+              "type": ["string", "null"]
+            },
+            "latest_intraday_short_cycle_remaining_external_evidence_status": {
+              "type": ["string", "null"]
+            },
+            "latest_ga_factor_mining_report": {
+              "type": ["string", "null"]
+            },
+            "latest_ga_candidate_review_packet": {
+              "type": ["string", "null"]
+            },
+            "latest_timesfm_shared_readiness": {
+              "type": ["string", "null"]
+            },
+            "latest_btc_timesfm_smoke": {
+              "type": ["string", "null"]
+            },
+            "latest_btc_timesfm_vs_trend_baseline": {
+              "type": ["string", "null"]
+            },
+            "latest_tail_dependency": {
+              "type": ["string", "null"]
+            },
+            "latest_compression_attribution": {
+              "type": ["string", "null"]
+            },
+            "data_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "symbol",
+                "exchange",
+                "market_type",
+                "fold_definition_version",
+                "regime_classifier_version",
+                "fold_contract_status",
+                "regime_contract_status",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "symbol": {"type": "string"},
+                "exchange": {"type": "string"},
+                "market_type": {"type": "string"},
+                "fold_definition_version": {"type": "string"},
+                "regime_classifier_version": {"type": "string"},
+                "fold_contract_status": {"type": "string"},
+                "regime_contract_status": {"type": "string"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "bundle_preflight_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "selected_bundle_id",
+                "source_type",
+                "preflight_pass",
+                "required_files_present",
+                "sha256_present",
+                "record_counts_present",
+                "sample_range_present",
+                "license_note_present",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "selected_bundle_id": {"type": ["string", "null"]},
+                "source_type": {"type": ["string", "null"]},
+                "preflight_pass": {"type": "boolean"},
+                "required_files_present": {"type": "boolean"},
+                "sha256_present": {"type": "boolean"},
+                "record_counts_present": {"type": "boolean"},
+                "sample_range_present": {"type": "boolean"},
+                "license_note_present": {"type": "boolean"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "provider_verification_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "selected_provider",
+                "selected_bundle_id",
+                "source_type",
+                "preflight_pass",
+                "perpetual_evidence_ready",
+                "klines_verified",
+                "mark_price_klines_verified",
+                "premium_index_klines_verified",
+                "funding_rate_verified",
+                "funding_info_verified",
+                "exchange_info_verified",
+                "open_interest_coverage_type",
+                "liquidation_snapshot_gate_eligible",
+                "interval_grid_pass",
+                "utc_alignment_pass",
+                "sample_range_alignment_pass",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "selected_provider": {"type": "string"},
+                "selected_bundle_id": {"type": ["string", "null"]},
+                "source_type": {"type": ["string", "null"]},
+                "preflight_pass": {"type": "boolean"},
+                "perpetual_evidence_ready": {"type": "boolean"},
+                "klines_verified": {"type": "boolean"},
+                "mark_price_klines_verified": {"type": "boolean"},
+                "premium_index_klines_verified": {"type": "boolean"},
+                "funding_rate_verified": {"type": "boolean"},
+                "funding_info_verified": {"type": "boolean"},
+                "exchange_info_verified": {"type": "boolean"},
+                "open_interest_coverage_type": {"type": "string"},
+                "liquidation_snapshot_gate_eligible": {"const": false},
+                "interval_grid_pass": {"type": "boolean"},
+                "utc_alignment_pass": {"type": "boolean"},
+                "sample_range_alignment_pass": {"type": "boolean"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "manual_metadata_capture_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "latest_public_metadata_capture_attempt",
+                "last_public_metadata_capture_status",
+                "last_public_metadata_capture_network_called",
+                "last_exchange_info_capture_status",
+                "last_exchange_info_http_status",
+                "last_funding_info_capture_status",
+                "last_funding_info_http_status",
+                "last_public_metadata_next_required_action",
+                "exchange_info_manual_capture_required",
+                "funding_info_manual_capture_required",
+                "exchange_info_allowed_endpoint",
+                "funding_info_allowed_endpoint",
+                "api_key_required",
+                "private_endpoints_allowed",
+                "order_endpoints_allowed",
+                "strategy_retest_allowed",
+                "paper_or_live_unlock_allowed",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "latest_public_metadata_capture_attempt": {"type": ["string", "null"]},
+                "last_public_metadata_capture_status": {"type": "string"},
+                "last_public_metadata_capture_network_called": {"type": "boolean"},
+                "last_exchange_info_capture_status": {"type": "string"},
+                "last_exchange_info_http_status": {"type": ["integer", "null"]},
+                "last_funding_info_capture_status": {"type": "string"},
+                "last_funding_info_http_status": {"type": ["integer", "null"]},
+                "last_public_metadata_next_required_action": {"type": "string"},
+                "exchange_info_manual_capture_required": {"type": "boolean"},
+                "funding_info_manual_capture_required": {"type": "boolean"},
+                "exchange_info_allowed_endpoint": {"type": "string"},
+                "funding_info_allowed_endpoint": {"type": "string"},
+                "api_key_required": {"const": false},
+                "private_endpoints_allowed": {"const": false},
+                "order_endpoints_allowed": {"const": false},
+                "strategy_retest_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "manual_metadata_capture_operator_packet_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "operator_action",
+                "manual_inputs_status",
+                "paper_gate_manual_inputs_complete",
+                "required_manual_input_count",
+                "required_manual_inputs",
+                "capture_request_count",
+                "dry_run_import_available",
+                "last_exchange_info_http_status",
+                "last_funding_info_http_status",
+                "fee_tier_status",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "operator_action": {"type": "string"},
+                "manual_inputs_status": {"enum": ["awaiting_manual_inputs", "manual_inputs_verified"]},
+                "paper_gate_manual_inputs_complete": {"type": "boolean"},
+                "required_manual_input_count": {"type": "integer", "minimum": 0},
+                "required_manual_inputs": {
+                  "type": "array",
+                  "items": {"$ref": "#/$defs/manualInputStatus"}
+                },
+                "capture_request_count": {"type": "integer", "minimum": 0},
+                "dry_run_import_available": {"type": "boolean"},
+                "last_exchange_info_http_status": {"type": ["integer", "null"]},
+                "last_funding_info_http_status": {"type": ["integer", "null"]},
+                "fee_tier_status": {"$ref": "#/$defs/feeTierPacketStatus"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "manual_metadata_import_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "dry_run",
+                "captured_at",
+                "bundle_dir",
+                "bundle_dir_exists",
+                "bundle_dir_matches_selected",
+                "bundle_exchange_info_exists",
+                "bundle_funding_info_exists",
+                "bundle_exchange_info_output_hash_verified",
+                "bundle_funding_info_output_hash_verified",
+                "writes_performed",
+                "exchange_info_verified",
+                "funding_info_verified",
+                "valid_for_completion",
+                "raw_input_files",
+                "post_import_validation_command",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "dry_run": {"type": "boolean"},
+                "captured_at": {"type": ["string", "null"]},
+                "bundle_dir": {
+                  "anyOf": [
+                    {"type": "null"},
+                    {"type": "string", "pattern": "\\S"}
+                  ]
+                },
+                "bundle_dir_exists": {"type": "boolean"},
+                "bundle_dir_matches_selected": {"type": "boolean"},
+                "bundle_exchange_info_exists": {"type": "boolean"},
+                "bundle_funding_info_exists": {"type": "boolean"},
+                "bundle_exchange_info_output_hash_verified": {"type": "boolean"},
+                "bundle_funding_info_output_hash_verified": {"type": "boolean"},
+                "writes_performed": {"type": "boolean"},
+                "exchange_info_verified": {"type": "boolean"},
+                "funding_info_verified": {"type": "boolean"},
+                "valid_for_completion": {"type": "boolean"},
+                "raw_input_files": {
+                  "type": "object",
+                  "required": ["exchange_info_raw", "funding_info_raw"],
+                  "properties": {
+                    "exchange_info_raw": {"$ref": "#/$defs/rawInputFileStatus"},
+                    "funding_info_raw": {"$ref": "#/$defs/rawInputFileStatus"}
+                  },
+                  "additionalProperties": false
+                },
+                "post_import_validation_command": {
+                  "anyOf": [
+                    {"type": "null"},
+                    {"type": "string", "pattern": "\\S"}
+                  ]
+                },
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "objective_completion_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "goal_complete",
+                "complete_requirements",
+                "incomplete_requirements",
+                "next_required_action",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "goal_complete": {"type": "boolean"},
+                "complete_requirements": {"type": "array", "items": {"type": "string"}},
+                "incomplete_requirements": {"type": "array", "items": {"type": "string"}},
+                "next_required_action": {"type": "string"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "cost_model_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "funding_payment_in_ledger",
+                "fee_in_ledger",
+                "slippage_in_ledger",
+                "mark_price_available",
+                "exchange_rules_available",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "funding_payment_in_ledger": {"type": "boolean"},
+                "fee_in_ledger": {"type": "boolean"},
+                "slippage_in_ledger": {"type": "boolean"},
+                "mark_price_available": {"type": "boolean"},
+                "exchange_rules_available": {"type": "boolean"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "funding_ledger_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "funding_payment_in_ledger",
+                "funding_payment_count",
+                "funding_pnl_total",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "funding_payment_in_ledger": {"type": "boolean"},
+                "funding_payment_count": {"type": "integer", "minimum": 0},
+                "funding_pnl_total": {"type": "number"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "fold_regime_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "fold_definition_version",
+                "fold_count",
+                "regime_classifier_version",
+                "gate_regimes",
+                "diagnostic_regimes",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "fold_definition_version": {"type": "string"},
+                "fold_count": {"type": "integer", "minimum": 0},
+                "regime_classifier_version": {"type": "string"},
+                "gate_regimes": {"type": "array", "items": {"type": "string"}},
+                "diagnostic_regimes": {"type": "array", "items": {"type": "string"}},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "tail_dependency_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "tail_event_count",
+                "tail_dependency_pass",
+                "single_event_pnl_contribution_ratio",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "tail_event_count": {"type": "integer", "minimum": 0},
+                "tail_dependency_pass": {"type": "boolean"},
+                "single_event_pnl_contribution_ratio": {"type": "number"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "candidate_gate_audit": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "fills_available",
+                "ledger_pnl_available",
+                "funding_pnl_available",
+                "fee_pnl_available",
+                "slippage_pnl_available",
+                "cost_stress_available",
+                "walk_forward_available",
+                "regime_available",
+                "pbo_dsr_available",
+                "no_lookahead_available",
+                "tail_dependency_available",
+                "candidate_passed_internal_gate",
+                "paper_review_pending_allowed",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "fills_available": {"type": "boolean"},
+                "ledger_pnl_available": {"type": "boolean"},
+                "funding_pnl_available": {"type": "boolean"},
+                "fee_pnl_available": {"type": "boolean"},
+                "slippage_pnl_available": {"type": "boolean"},
+                "cost_stress_available": {"type": "boolean"},
+                "walk_forward_available": {"type": "boolean"},
+                "regime_available": {"type": "boolean"},
+                "pbo_dsr_available": {"type": "boolean"},
+                "no_lookahead_available": {"type": "boolean"},
+                "tail_dependency_available": {"type": "boolean"},
+                "candidate_passed_internal_gate": {"type": "integer", "minimum": 0},
+                "paper_review_pending_allowed": {"type": "boolean"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "candidate_metric_repair_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "best_candidate_strategy_id",
+                "failed_metrics",
+                "event_profit_factor",
+                "walk_forward_pass_rate",
+                "regime_pass_rate",
+                "recommended_repair_actions",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "promotion_allowed": {"type": "boolean"},
+                "paper_review_pending_allowed": {"type": "boolean"},
+                "best_candidate_strategy_id": {"type": "string"},
+                "failed_metrics": {"type": "array", "items": {"type": "string"}},
+                "event_profit_factor": {"type": ["number", "null"]},
+                "walk_forward_pass_rate": {"type": ["number", "null"]},
+                "regime_pass_rate": {"type": ["number", "null"]},
+                "recommended_repair_actions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["name", "priority", "status"],
+                    "properties": {
+                      "name": {"type": "string"},
+                      "priority": {"type": "integer", "minimum": 0},
+                      "status": {"type": "string"}
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "candidate_bounded_retest_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "retest_allowed",
+                "bounded_parameter_search_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "candidate_strategy_id",
+                "failed_metrics",
+                "focus_failed_folds",
+                "ordinary_profit_factor_diagnostic_only",
+                "paper_or_live_unlock_allowed",
+                "broker_calls_allowed",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "retest_allowed": {"type": "boolean"},
+                "bounded_parameter_search_allowed": {"type": "boolean"},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "candidate_strategy_id": {"type": "string"},
+                "failed_metrics": {"type": "array", "items": {"type": "string"}},
+                "focus_failed_folds": {"type": "array", "items": {"type": "integer"}},
+                "ordinary_profit_factor_diagnostic_only": {"const": true},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "broker_calls_allowed": {"const": false},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "next_hypothesis_decision_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "same_family_micro_search_allowed",
+                "mode_count",
+                "event_profit_factor_pass_count",
+                "walk_forward_pass_rate_pass_count",
+                "best_event_mode",
+                "best_event_profit_factor",
+                "best_event_walk_forward_pass_rate",
+                "best_wf_mode",
+                "best_wf_event_profit_factor",
+                "best_wf_pass_rate",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "same_family_micro_search_allowed": {"const": false},
+                "mode_count": {"type": "integer", "minimum": 0},
+                "event_profit_factor_pass_count": {"type": "integer", "minimum": 0},
+                "walk_forward_pass_rate_pass_count": {"type": "integer", "minimum": 0},
+                "best_event_mode": {"type": "string"},
+                "best_event_profit_factor": {"type": ["number", "null"]},
+                "best_event_walk_forward_pass_rate": {"type": ["number", "null"]},
+                "best_wf_mode": {"type": "string"},
+                "best_wf_event_profit_factor": {"type": ["number", "null"]},
+                "best_wf_pass_rate": {"type": ["number", "null"]},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "strategy_family_roadmap_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "selected_family_id",
+                "selected_family",
+                "selected_provider",
+                "selected_bundle_id",
+                "selected_bundle_duration_days",
+                "min_required_history_days",
+                "funding_rate_record_count",
+                "min_required_funding_events",
+                "hypothesis_distribution_allowed",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "selected_family_id": {"type": "string"},
+                "selected_family": {"type": "string"},
+                "selected_provider": {"type": "string"},
+                "selected_bundle_id": {"type": "string"},
+                "selected_bundle_duration_days": {"type": ["number", "null"]},
+                "min_required_history_days": {"type": ["number", "null"]},
+                "funding_rate_record_count": {"type": "integer", "minimum": 0},
+                "min_required_funding_events": {"type": "integer", "minimum": 0},
+                "hypothesis_distribution_allowed": {"type": "boolean"},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_alpha_plan_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "selected_style_id",
+                "primary_timeframes",
+                "intraday_research_distribution_allowed",
+                "short_cycle_probe_allowed",
+                "true_scalping_allowed",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "sample_days",
+                "min_sample_days",
+                "interval_bar_counts",
+                "candidate_family_count",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "selected_style_id": {"type": "string"},
+                "primary_timeframes": {"type": "array", "items": {"type": "string"}},
+                "intraday_research_distribution_allowed": {"type": "boolean"},
+                "short_cycle_probe_allowed": {"type": "boolean"},
+                "true_scalping_allowed": {"const": false},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "sample_days": {"type": ["number", "null"], "minimum": 0},
+                "min_sample_days": {"type": ["number", "null"], "minimum": 0},
+                "interval_bar_counts": {
+                  "type": "object",
+                  "required": ["5m", "15m"],
+                  "properties": {
+                    "5m": {"type": "integer", "minimum": 0},
+                    "15m": {"type": "integer", "minimum": 0}
+                  },
+                  "additionalProperties": false
+                },
+                "candidate_family_count": {"type": "integer", "minimum": 0},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_alpha_probe_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "distribution_probe_completed",
+                "alpha_distribution_observed",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "best_family_id",
+                "best_family_status",
+                "best_family_event_count",
+                "best_horizon",
+                "best_net_mean_bps",
+                "family_count",
+                "round_trip_taker_cost_bps",
+                "interval_row_counts",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "distribution_probe_completed": {"type": "boolean"},
+                "alpha_distribution_observed": {"type": "boolean"},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "best_family_id": {"type": "string"},
+                "best_family_status": {"type": "string"},
+                "best_family_event_count": {"type": "integer", "minimum": 0},
+                "best_horizon": {"type": ["string", "null"]},
+                "best_net_mean_bps": {"type": ["number", "null"]},
+                "family_count": {"type": "integer", "minimum": 0},
+                "round_trip_taker_cost_bps": {"type": ["number", "null"], "minimum": 0},
+                "interval_row_counts": {
+                  "type": "object",
+                  "required": ["5m", "15m"],
+                  "properties": {
+                    "5m": {"type": "integer", "minimum": 0},
+                    "15m": {"type": "integer", "minimum": 0}
+                  },
+                  "additionalProperties": false
+                },
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_alpha_refinement_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "refinement_completed",
+                "robust_alpha_distribution_observed",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "best_variant_id",
+                "best_family_id",
+                "best_variant_status",
+                "best_variant_event_count",
+                "best_horizon",
+                "best_net_mean_bps",
+                "positive_net_fold_count",
+                "variant_count",
+                "round_trip_taker_cost_bps",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "refinement_completed": {"type": "boolean"},
+                "robust_alpha_distribution_observed": {"type": "boolean"},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "best_variant_id": {"type": "string"},
+                "best_family_id": {"type": "string"},
+                "best_variant_status": {"type": "string"},
+                "best_variant_event_count": {"type": "integer", "minimum": 0},
+                "best_horizon": {"type": ["string", "null"]},
+                "best_net_mean_bps": {"type": ["number", "null"]},
+                "positive_net_fold_count": {"type": "integer", "minimum": 0},
+                "variant_count": {"type": "integer", "minimum": 0},
+                "round_trip_taker_cost_bps": {"type": ["number", "null"], "minimum": 0},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_event_ledger_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "event_ledger_completed",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "variant_id",
+                "family_id",
+                "event_count",
+                "trade_count",
+                "fill_count",
+                "profit_factor",
+                "event_profit_factor",
+                "walk_forward_pass_rate",
+                "regime_pass_rate",
+                "gate_passed",
+                "gate_status",
+                "failed_metrics",
+                "stress_scenario_count",
+                "required_scenarios_present",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "event_ledger_completed": {"type": "boolean"},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "variant_id": {"type": "string"},
+                "family_id": {"type": "string"},
+                "event_count": {"type": "integer", "minimum": 0},
+                "trade_count": {"type": "integer", "minimum": 0},
+                "fill_count": {"type": "integer", "minimum": 0},
+                "profit_factor": {"type": ["number", "null"]},
+                "event_profit_factor": {"type": ["number", "null"]},
+                "walk_forward_pass_rate": {"type": ["number", "null"]},
+                "regime_pass_rate": {"type": ["number", "null"]},
+                "gate_passed": {"type": "boolean"},
+                "gate_status": {"type": "string"},
+                "failed_metrics": {"type": "array", "items": {"type": "string"}},
+                "stress_scenario_count": {"type": "integer", "minimum": 0},
+                "required_scenarios_present": {"type": "boolean"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_event_definition_repair_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "repair_scan_completed",
+                "repair_screen_is_promotion_evidence",
+                "full_event_ledger_retest_required",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "best_variant_id",
+                "best_trade_count",
+                "best_profit_factor",
+                "best_median_net_pnl",
+                "best_regime_pass_rate",
+                "best_tail_dependency_pass",
+                "best_repair_screen_pass",
+                "variant_count",
+                "min_trade_count",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "repair_scan_completed": {"type": "boolean"},
+                "repair_screen_is_promotion_evidence": {"const": false},
+                "full_event_ledger_retest_required": {"const": true},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "best_variant_id": {"type": "string"},
+                "best_trade_count": {"type": "integer", "minimum": 0},
+                "best_profit_factor": {"type": ["number", "null"]},
+                "best_median_net_pnl": {"type": ["number", "null"]},
+                "best_regime_pass_rate": {"type": ["number", "null"]},
+                "best_tail_dependency_pass": {"type": "boolean"},
+                "best_repair_screen_pass": {"type": "boolean"},
+                "variant_count": {"type": "integer", "minimum": 0},
+                "min_trade_count": {"type": "integer", "minimum": 0},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_repaired_event_ledger_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "event_ledger_completed",
+                "source_event_definition_repair_report",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "variant_id",
+                "family_id",
+                "allowed_regimes",
+                "volatility_states",
+                "min_trend_by_regime",
+                "event_count",
+                "trade_count",
+                "fill_count",
+                "profit_factor",
+                "event_profit_factor",
+                "walk_forward_pass_rate",
+                "regime_pass_rate",
+                "tail_dependency_status",
+                "gate_passed",
+                "gate_status",
+                "failed_metrics",
+                "stress_scenario_count",
+                "required_scenarios_present",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "event_ledger_completed": {"type": "boolean"},
+                "source_event_definition_repair_report": {"type": ["string", "null"]},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "variant_id": {"type": "string"},
+                "family_id": {"type": "string"},
+                "allowed_regimes": {"type": "array", "items": {"type": "string"}},
+                "volatility_states": {"type": "array", "items": {"type": "string"}},
+                "min_trend_by_regime": {
+                  "type": "object",
+                  "additionalProperties": {"type": "number"}
+                },
+                "event_count": {"type": "integer", "minimum": 0},
+                "trade_count": {"type": "integer", "minimum": 0},
+                "fill_count": {"type": "integer", "minimum": 0},
+                "profit_factor": {"type": ["number", "null"]},
+                "event_profit_factor": {"type": ["number", "null"]},
+                "walk_forward_pass_rate": {"type": ["number", "null"]},
+                "regime_pass_rate": {"type": ["number", "null"]},
+                "tail_dependency_status": {"type": "string"},
+                "gate_passed": {"type": "boolean"},
+                "gate_status": {"type": "string"},
+                "failed_metrics": {"type": "array", "items": {"type": "string"}},
+                "stress_scenario_count": {"type": "integer", "minimum": 0},
+                "required_scenarios_present": {"type": "boolean"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_drift_guarded_event_ledger_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "event_ledger_completed",
+                "source_event_definition_repair_report",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "variant_id",
+                "family_id",
+                "allowed_regimes",
+                "volatility_states",
+                "min_trend_by_regime",
+                "event_count",
+                "trade_count",
+                "fill_count",
+                "profit_factor",
+                "event_profit_factor",
+                "walk_forward_pass_rate",
+                "regime_pass_rate",
+                "tail_dependency_status",
+                "gate_passed",
+                "gate_status",
+                "failed_metrics",
+                "stress_scenario_count",
+                "required_scenarios_present",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "event_ledger_completed": {"type": "boolean"},
+                "source_event_definition_repair_report": {"type": ["string", "null"]},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "variant_id": {"type": "string"},
+                "family_id": {"type": "string"},
+                "allowed_regimes": {"type": "array", "items": {"type": "string"}},
+                "volatility_states": {"type": "array", "items": {"type": "string"}},
+                "min_trend_by_regime": {
+                  "type": "object",
+                  "additionalProperties": {"type": "number"}
+                },
+                "event_count": {"type": "integer", "minimum": 0},
+                "trade_count": {"type": "integer", "minimum": 0},
+                "fill_count": {"type": "integer", "minimum": 0},
+                "profit_factor": {"type": ["number", "null"]},
+                "event_profit_factor": {"type": ["number", "null"]},
+                "walk_forward_pass_rate": {"type": ["number", "null"]},
+                "regime_pass_rate": {"type": ["number", "null"]},
+                "tail_dependency_status": {"type": "string"},
+                "gate_passed": {"type": "boolean"},
+                "gate_status": {"type": "string"},
+                "failed_metrics": {"type": "array", "items": {"type": "string"}},
+                "stress_scenario_count": {"type": "integer", "minimum": 0},
+                "required_scenarios_present": {"type": "boolean"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_promotion_gate_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "manual_candidate_review_allowed",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "strategy_id",
+                "variant_id",
+                "family_id",
+                "trade_count",
+                "fill_count",
+                "profit_factor",
+                "event_profit_factor",
+                "walk_forward_pass_rate",
+                "regime_pass_rate",
+                "gate_passed",
+                "gate_status",
+                "manifest_data_version_present",
+                "manifest_strategy_version_present",
+                "manifest_params_present",
+                "manifest_cost_model_present",
+                "manifest_slippage_model_present",
+                "manifest_commit_hash_present",
+                "private_order_broker_paths_locked",
+                "paper_live_still_locked",
+                "true_scalping_still_locked",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "manual_candidate_review_allowed": {"type": "boolean"},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "strategy_id": {"type": "string"},
+                "variant_id": {"type": "string"},
+                "family_id": {"type": "string"},
+                "trade_count": {"type": "integer", "minimum": 0},
+                "fill_count": {"type": "integer", "minimum": 0},
+                "profit_factor": {"type": ["number", "null"]},
+                "event_profit_factor": {"type": ["number", "null"]},
+                "walk_forward_pass_rate": {"type": ["number", "null"]},
+                "regime_pass_rate": {"type": ["number", "null"]},
+                "gate_passed": {"type": "boolean"},
+                "gate_status": {"type": "string"},
+                "manifest_data_version_present": {"type": "boolean"},
+                "manifest_strategy_version_present": {"type": "boolean"},
+                "manifest_params_present": {"type": "boolean"},
+                "manifest_cost_model_present": {"type": "boolean"},
+                "manifest_slippage_model_present": {"type": "boolean"},
+                "manifest_commit_hash_present": {"type": "boolean"},
+                "private_order_broker_paths_locked": {"type": "boolean"},
+                "paper_live_still_locked": {"type": "boolean"},
+                "true_scalping_still_locked": {"type": "boolean"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_manual_review_packet_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "review_id",
+                "strategy_id",
+                "variant_id",
+                "family_id",
+                "manual_review_packet_ready",
+                "recorded_manual_review_approved",
+                "research_candidate_definition_allowed",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "approval_path",
+                "approval_exists",
+                "approval_status",
+                "approval_valid",
+                "approval_source_sha256",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "review_id": {"type": "string"},
+                "strategy_id": {"type": "string"},
+                "variant_id": {"type": "string"},
+                "family_id": {"type": "string"},
+                "manual_review_packet_ready": {"type": "boolean"},
+                "recorded_manual_review_approved": {"type": "boolean"},
+                "research_candidate_definition_allowed": {"type": "boolean"},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "approval_path": {"type": "string"},
+                "approval_exists": {"type": "boolean"},
+                "approval_status": {"type": "string"},
+                "approval_valid": {"type": "boolean"},
+                "approval_source_sha256": {"type": "string"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_research_candidate_definition_preflight_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "strategy_id",
+                "variant_id",
+                "family_id",
+                "candidate_id",
+                "research_candidate_definition_manifest_allowed",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "manual_review_packet_approved",
+                "recorded_manual_review_approved",
+                "broker_private_order_paths_locked",
+                "paper_live_still_locked",
+                "true_scalping_still_locked",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "strategy_id": {"type": "string"},
+                "variant_id": {"type": "string"},
+                "family_id": {"type": "string"},
+                "candidate_id": {"type": "string"},
+                "research_candidate_definition_manifest_allowed": {"type": "boolean"},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "manual_review_packet_approved": {"type": "boolean"},
+                "recorded_manual_review_approved": {"type": "boolean"},
+                "broker_private_order_paths_locked": {"type": "boolean"},
+                "paper_live_still_locked": {"type": "boolean"},
+                "true_scalping_still_locked": {"type": "boolean"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_research_candidate_definition_manifest_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "strategy_id",
+                "variant_id",
+                "family_id",
+                "candidate_id",
+                "research_candidate_definition_manifest_ready",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "preflight_ready_for_definition_manifest",
+                "manual_review_packet_approved",
+                "recorded_manual_review_approved",
+                "broker_private_order_paths_locked",
+                "paper_live_still_locked",
+                "true_scalping_still_locked",
+                "only_manual_or_external_blockers_remain",
+                "automated_engineering_blockers",
+                "remaining_manual_or_external_blockers",
+                "remaining_manual_or_external_categories",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "strategy_id": {"type": "string"},
+                "variant_id": {"type": "string"},
+                "family_id": {"type": "string"},
+                "candidate_id": {"type": "string"},
+                "research_candidate_definition_manifest_ready": {"type": "boolean"},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "preflight_ready_for_definition_manifest": {"type": "boolean"},
+                "manual_review_packet_approved": {"type": "boolean"},
+                "recorded_manual_review_approved": {"type": "boolean"},
+                "broker_private_order_paths_locked": {"type": "boolean"},
+                "paper_live_still_locked": {"type": "boolean"},
+                "true_scalping_still_locked": {"type": "boolean"},
+                "only_manual_or_external_blockers_remain": {"type": "boolean"},
+                "automated_engineering_blockers": {"type": "array", "items": {"type": "string"}},
+                "remaining_manual_or_external_blockers": {"type": "array", "items": {"type": "string"}},
+                "remaining_manual_or_external_categories": {"type": "array", "items": {"type": "string"}},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "intraday_short_cycle_remaining_external_evidence_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "report_path",
+                "decision",
+                "next_required_action",
+                "strategy_id",
+                "variant_id",
+                "family_id",
+                "candidate_id",
+                "manual_approval_satisfied",
+                "research_candidate_definition_manifest_ready",
+                "only_external_evidence_blockers_remain",
+                "automated_engineering_blockers",
+                "remaining_external_evidence_categories",
+                "remaining_external_evidence_blockers",
+                "ws_l2_coverage_contract_satisfied",
+                "ws_proxy_diagnostics_ready",
+                "execution_queue_external_evidence_contract_satisfied",
+                "execution_latency_evidence_contract_satisfied",
+                "queue_position_evidence_contract_satisfied",
+                "private_order_execution_latency_model_ready",
+                "exchange_queue_position_model_ready",
+                "paper_gate_ready",
+                "candidate_generation_allowed",
+                "strategy_skeleton_generation_allowed",
+                "promotion_allowed",
+                "paper_review_pending_allowed",
+                "paper_or_live_unlock_allowed",
+                "true_scalping_allowed",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "decision": {"type": "string"},
+                "next_required_action": {"type": "string"},
+                "strategy_id": {"type": "string"},
+                "variant_id": {"type": "string"},
+                "family_id": {"type": "string"},
+                "candidate_id": {"type": "string"},
+                "manual_approval_satisfied": {"type": "boolean"},
+                "research_candidate_definition_manifest_ready": {"type": "boolean"},
+                "only_external_evidence_blockers_remain": {"type": "boolean"},
+                "automated_engineering_blockers": {"type": "array", "items": {"type": "string"}},
+                "remaining_external_evidence_categories": {"type": "array", "items": {"type": "string"}},
+                "remaining_external_evidence_blockers": {"type": "array", "items": {"type": "string"}},
+                "ws_l2_coverage_contract_satisfied": {"type": "boolean"},
+                "ws_proxy_diagnostics_ready": {"type": "boolean"},
+                "execution_queue_external_evidence_contract_satisfied": {"type": "boolean"},
+                "execution_latency_evidence_contract_satisfied": {"type": "boolean"},
+                "queue_position_evidence_contract_satisfied": {"type": "boolean"},
+                "private_order_execution_latency_model_ready": {"type": "boolean"},
+                "exchange_queue_position_model_ready": {"type": "boolean"},
+                "paper_gate_ready": {"type": "boolean"},
+                "candidate_generation_allowed": {"const": false},
+                "strategy_skeleton_generation_allowed": {"const": false},
+                "promotion_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "true_scalping_allowed": {"const": false},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "ga_factor_mining_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "decision",
+                "review_status",
+                "review_decision",
+                "report_path",
+                "review_packet_path",
+                "run_id",
+                "candidate_count",
+                "baseline_comparison_policy",
+                "next_allowed_state",
+                "paper_candidate_generated",
+                "paper_queue_write_allowed",
+                "paper_or_live_unlock_allowed",
+                "live_unlock_allowed",
+                "allowed_next_action",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "decision": {"type": "string"},
+                "review_status": {"type": "string"},
+                "review_decision": {"type": "string"},
+                "report_path": {"type": ["string", "null"]},
+                "review_packet_path": {"type": ["string", "null"]},
+                "run_id": {"type": "string"},
+                "candidate_count": {"type": "integer", "minimum": 0},
+                "baseline_comparison_policy": {"type": "string"},
+                "next_allowed_state": {"type": "string"},
+                "paper_candidate_generated": {"const": false},
+                "paper_queue_write_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "live_unlock_allowed": {"const": false},
+                "allowed_next_action": {"const": "extended_research_only"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "timesfm_research_status": {
+              "type": "object",
+              "required": [
+                "status",
+                "readiness_status",
+                "smoke_status",
+                "comparison_status",
+                "readiness_report_path",
+                "smoke_report_path",
+                "comparison_report_path",
+                "scope",
+                "model_family",
+                "default_checkpoint",
+                "timesfm_python_package_present",
+                "decision_count",
+                "evaluation_rows",
+                "paper_candidate_allowed",
+                "paper_queue_write_allowed",
+                "paper_or_live_unlock_allowed",
+                "live_unlock_allowed",
+                "allowed_next_action",
+                "blockers"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "readiness_status": {"type": "string"},
+                "smoke_status": {"type": "string"},
+                "comparison_status": {"type": "string"},
+                "readiness_report_path": {"type": ["string", "null"]},
+                "smoke_report_path": {"type": ["string", "null"]},
+                "comparison_report_path": {"type": ["string", "null"]},
+                "scope": {"type": "string"},
+                "model_family": {"type": "string"},
+                "default_checkpoint": {"type": "string"},
+                "timesfm_python_package_present": {"type": "boolean"},
+                "decision_count": {"type": "integer", "minimum": 0},
+                "evaluation_rows": {"type": "integer", "minimum": 0},
+                "paper_candidate_allowed": {"const": false},
+                "paper_queue_write_allowed": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "live_unlock_allowed": {"const": false},
+                "allowed_next_action": {"const": "research_only_risk_auxiliary_review"},
+                "blockers": {"type": "array", "items": {"type": "string"}}
+              },
+              "additionalProperties": false
+            },
+            "current_candidates": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "attribution_only": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "compression_boundary": {
+              "type": "object",
+              "required": [
+                "status",
+                "allowed_next_action",
+                "archive_recommended",
+                "limited_retest_allowed",
+                "paper_review_pending_allowed"
+              ],
+              "properties": {
+                "status": {"type": "string"},
+                "allowed_next_action": {"type": "string"},
+                "archive_recommended": {"type": "boolean"},
+                "limited_retest_allowed": {"const": false},
+                "paper_review_pending_allowed": {"const": false}
+              },
+              "additionalProperties": false
+            },
+            "archived_or_rejected": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "blockers": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "failure_explanations": {
+      "type": "object",
+      "required": ["data_lineage", "factor_evidence", "portfolio", "btc", "paper_live"],
+      "properties": {
+        "data_lineage": {"$ref": "#/$defs/failureExplanation"},
+        "factor_evidence": {"$ref": "#/$defs/failureExplanation"},
+        "portfolio": {"$ref": "#/$defs/failureExplanation"},
+        "btc": {"$ref": "#/$defs/btcFailureExplanation"},
+        "paper_live": {"$ref": "#/$defs/failureExplanation"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"paper_queue_status": {"const": "pending_review"}}, "required": ["paper_queue_status"]},
+      "then": {
+        "properties": {
+          "candidate_passed_internal_gate": {"type": "integer", "minimum": 1},
+          "assets": {
+            "properties": {
+              "btc": {
+                "properties": {
+                  "paper_queue_status": {"const": "pending_review"},
+                  "candidate_passed_internal_gate": {"type": "integer", "minimum": 1},
+                  "current_candidates": {"type": "array", "minItems": 1}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"paper_queue_status": {"const": "locked"}}, "required": ["paper_queue_status"]},
+      "then": {
+        "properties": {
+          "assets": {
+            "properties": {
+              "btc": {
+                "properties": {
+                  "paper_queue_status": {"const": "locked"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"paper_queue_status": {"const": "approved"}}, "required": ["paper_queue_status"]},
+      "then": {
+        "properties": {
+          "candidate_passed_internal_gate": {"type": "integer", "minimum": 1},
+          "assets": {
+            "properties": {
+              "btc": {
+                "properties": {
+                  "paper_queue_status": {"const": "approved"},
+                  "candidate_passed_internal_gate": {"type": "integer", "minimum": 1},
+                  "current_candidates": {"type": "array", "minItems": 1},
+                  "live_status": {"const": "frozen"}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "failureExplanation": {
+      "type": "object",
+      "required": ["status", "top_reasons", "next_required_action"],
+      "properties": {
+        "status": {"type": "string"},
+        "top_reasons": {"type": "array", "items": {"type": "string"}},
+        "next_required_action": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "rawInputFileStatus": {
+      "type": "object",
+      "required": ["path", "exists", "size_bytes", "sha256", "http_status_file", "http_status", "http_status_verified"],
+      "properties": {
+        "path": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "\\S"}
+          ]
+        },
+        "exists": {"type": "boolean"},
+        "size_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "http_status_file": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "\\S"}
+          ]
+        },
+        "http_status": {"type": ["integer", "null"]},
+        "http_status_verified": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "manualInputStatus": {
+      "type": "object",
+      "required": ["name", "required_for", "status", "action", "blockers"],
+      "properties": {
+        "name": {"enum": ["exchange_info", "funding_info", "fee_tier_overlay"]},
+        "required_for": {"type": "string"},
+        "status": {"enum": ["awaiting_capture", "verified"]},
+        "action": {
+          "enum": ["manual_capture_from_allowed_network", "capture_public_fee_schedule_and_import", "none"]
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "feeTierPacketStatus": {
+      "type": "object",
+      "required": [
+        "cost_model_report",
+        "cost_model_status",
+        "fee_tier_verified",
+        "manual_capture_required",
+        "maker_fee_bps",
+        "taker_fee_bps",
+        "fee_tier_import_report_verified",
+        "fee_blockers"
+      ],
+      "properties": {
+        "cost_model_report": {"type": ["string", "null"]},
+        "cost_model_status": {"type": "string"},
+        "fee_tier_verified": {"type": "boolean"},
+        "manual_capture_required": {"type": "boolean"},
+        "maker_fee_bps": {"type": ["number", "null"], "minimum": 0},
+        "taker_fee_bps": {"type": ["number", "null"], "minimum": 0},
+        "fee_tier_import_report_verified": {"type": "boolean"},
+        "fee_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "btcFailureExplanation": {
+      "type": "object",
+      "required": [
+        "status",
+        "top_reasons",
+        "next_required_action",
+        "complete_requirements",
+        "incomplete_requirements"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "top_reasons": {"type": "array", "items": {"type": "string"}},
+        "next_required_action": {"type": "string"},
+        "complete_requirements": {"type": "array", "items": {"type": "string"}},
+        "incomplete_requirements": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

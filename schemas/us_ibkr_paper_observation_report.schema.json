@@ -1,0 +1,282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quant-system.local/schemas/us_ibkr_paper_observation_report.schema.json",
+  "title": "US IBKR paper observation report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "decision",
+    "generated_at_utc",
+    "current_head",
+    "required_natural_days",
+    "current_run",
+    "historical_accumulation",
+    "all_time_audit_only",
+    "segments",
+    "ledger_integrity",
+    "readiness",
+    "blockers",
+    "safety_flags",
+    "report_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "us_ibkr_paper_observation_report_v1"
+    },
+    "status": {
+      "enum": [
+        "blocked_fail_closed",
+        "complete_operational_paper_stability_observation"
+      ]
+    },
+    "decision": {
+      "enum": [
+        "continue_or_await_authorized_paper_observation",
+        "operational_paper_stability_observed_not_alpha_promotion"
+      ]
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "current_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40,64}$"
+    },
+    "required_natural_days": {
+      "const": 30
+    },
+    "current_run": {
+      "$ref": "#/$defs/currentRun"
+    },
+    "historical_accumulation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["excluded_from_current_run", "metrics"],
+      "properties": {
+        "excluded_from_current_run": {"const": true},
+        "metrics": {"$ref": "#/$defs/metrics"}
+      }
+    },
+    "all_time_audit_only": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["never_used_for_current_run_window", "metrics"],
+      "properties": {
+        "never_used_for_current_run_window": {"const": true},
+        "metrics": {"$ref": "#/$defs/metrics"}
+      }
+    },
+    "segments": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/segment"}
+    },
+    "ledger_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "valid",
+        "receipt_count",
+        "ledger_sha256",
+        "last_receipt_sha256",
+        "blockers"
+      ],
+      "properties": {
+        "valid": {"type": "boolean"},
+        "receipt_count": {"type": "integer", "minimum": 0},
+        "ledger_sha256": {"$ref": "#/$defs/sha256"},
+        "last_receipt_sha256": {
+          "oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+        },
+        "blockers": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operational_paper_stability_observed",
+        "strategy_alpha_promotion_ready",
+        "independent_252_trading_day_confirmation_complete",
+        "promotion_evidence_ready",
+        "live_ready"
+      ],
+      "properties": {
+        "operational_paper_stability_observed": {"type": "boolean"},
+        "strategy_alpha_promotion_ready": {"const": false},
+        "independent_252_trading_day_confirmation_complete": {"const": false},
+        "promotion_evidence_ready": {"const": false},
+        "live_ready": {"const": false}
+      }
+    },
+    "blockers": {"$ref": "#/$defs/stringList"},
+    "safety_flags": {"$ref": "#/$defs/safetyFlags"},
+    "report_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "stringList": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code_head",
+        "strategy_hash",
+        "data_identity",
+        "account_hash",
+        "parameters_hash",
+        "risk_hash",
+        "oms_hash",
+        "ledger_contract_hash"
+      ],
+      "properties": {
+        "code_head": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40,64}$"
+        },
+        "strategy_hash": {"$ref": "#/$defs/sha256"},
+        "data_identity": {"$ref": "#/$defs/sha256"},
+        "account_hash": {"$ref": "#/$defs/sha256"},
+        "parameters_hash": {"$ref": "#/$defs/sha256"},
+        "risk_hash": {"$ref": "#/$defs/sha256"},
+        "oms_hash": {"$ref": "#/$defs/sha256"},
+        "ledger_contract_hash": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receipt_days",
+        "eligible_days",
+        "signals",
+        "targets",
+        "intents",
+        "orders",
+        "fills",
+        "partial_fills",
+        "rejects",
+        "cancels",
+        "reconnects",
+        "unmatched",
+        "duplicates",
+        "commission",
+        "slippage"
+      ],
+      "properties": {
+        "receipt_days": {"type": "integer", "minimum": 0},
+        "eligible_days": {"type": "integer", "minimum": 0},
+        "signals": {"type": "integer", "minimum": 0},
+        "targets": {"type": "integer", "minimum": 0},
+        "intents": {"type": "integer", "minimum": 0},
+        "orders": {"type": "integer", "minimum": 0},
+        "fills": {"type": "integer", "minimum": 0},
+        "partial_fills": {"type": "integer", "minimum": 0},
+        "rejects": {"type": "integer", "minimum": 0},
+        "cancels": {"type": "integer", "minimum": 0},
+        "reconnects": {"type": "integer", "minimum": 0},
+        "unmatched": {"type": "integer", "minimum": 0},
+        "duplicates": {"type": "integer", "minimum": 0},
+        "commission": {"type": "number"},
+        "slippage": {"type": "number"}
+      }
+    },
+    "currentRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_run_id",
+        "segment_found",
+        "consecutive_eligible_natural_days",
+        "window_complete",
+        "first_date",
+        "latest_date",
+        "identity",
+        "metrics"
+      ],
+      "properties": {
+        "observation_run_id": {"type": "string", "minLength": 1},
+        "segment_found": {"type": "boolean"},
+        "consecutive_eligible_natural_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "window_complete": {"type": "boolean"},
+        "first_date": {
+          "oneOf": [{"type": "string", "format": "date"}, {"type": "null"}]
+        },
+        "latest_date": {
+          "oneOf": [{"type": "string", "format": "date"}, {"type": "null"}]
+        },
+        "identity": {
+          "oneOf": [{"$ref": "#/$defs/identity"}, {"type": "null"}]
+        },
+        "metrics": {"$ref": "#/$defs/metrics"}
+      }
+    },
+    "segment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "segment_index",
+        "reset_reason",
+        "observation_run_id",
+        "identity",
+        "first_date",
+        "latest_date",
+        "receipt_count",
+        "eligible_receipt_count",
+        "consecutive_eligible_natural_days"
+      ],
+      "properties": {
+        "segment_index": {"type": "integer", "minimum": 1},
+        "reset_reason": {"type": "string"},
+        "observation_run_id": {"type": "string"},
+        "identity": {"$ref": "#/$defs/identity"},
+        "first_date": {"type": "string", "format": "date"},
+        "latest_date": {"type": "string", "format": "date"},
+        "receipt_count": {"type": "integer", "minimum": 1},
+        "eligible_receipt_count": {"type": "integer", "minimum": 0},
+        "consecutive_eligible_natural_days": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "safetyFlags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accumulator_network_used",
+        "accumulator_broker_called",
+        "accumulator_private_endpoint_called",
+        "accumulator_order_submitted",
+        "accumulator_order_cancelled",
+        "paper_queue_written",
+        "promotion_ready",
+        "live_ready",
+        "withdraw_enabled"
+      ],
+      "properties": {
+        "accumulator_network_used": {"const": false},
+        "accumulator_broker_called": {"const": false},
+        "accumulator_private_endpoint_called": {"const": false},
+        "accumulator_order_submitted": {"const": false},
+        "accumulator_order_cancelled": {"const": false},
+        "paper_queue_written": {"const": false},
+        "promotion_ready": {"const": false},
+        "live_ready": {"const": false},
+        "withdraw_enabled": {"const": false}
+      }
+    }
+  }
+}

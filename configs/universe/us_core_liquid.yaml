@@ -1,0 +1,29 @@
+universe_id: us_core_liquid_v1
+description: Daily-only US equity research universe for Qlib and PyPortfolioOpt.
+market: us
+asset_class: equity
+bar_size: 1d
+timezone: UTC
+source: yfinance
+research_only: true
+allow_live: false
+allow_minute_data: false
+allow_implicit_downloads: false
+strict_missing_symbols: true
+strict_calendar_coverage: true
+expected_symbol_count: 13
+survivorship_bias_risk: clean
+symbols:
+  - SPY
+  - QQQ
+  - IWM
+  - DIA
+  - XLK
+  - XLF
+  - XLE
+  - AAPL
+  - MSFT
+  - NVDA
+  - META
+  - AMZN
+  - GOOGL

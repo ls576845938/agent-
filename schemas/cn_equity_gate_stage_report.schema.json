@@ -1,0 +1,353 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cn_equity_gate_stage_report.schema.json",
+  "title": "CN Equity Current-HEAD Gate Stage Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "domain",
+    "stage_id",
+    "stage_ordinal",
+    "generated_at_utc",
+    "source_head",
+    "data_version",
+    "status",
+    "decision",
+    "freshness",
+    "readiness_class",
+    "source_evidence",
+    "dependencies",
+    "input_hashes",
+    "input_set_sha256",
+    "root_blockers",
+    "inherited_blocker_codes",
+    "effective_blocker_codes",
+    "root_blocker_count",
+    "effective_blocker_count",
+    "builder_contract",
+    "safety_flags"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "cn_equity_gate_stage_report_v1"
+    },
+    "domain": {
+      "const": "cn_equity"
+    },
+    "stage_id": {
+      "enum": [
+        "dataready",
+        "market_rules",
+        "research_backtest",
+        "risk_oms_ledger",
+        "replay",
+        "qmt_broker",
+        "paper_readiness"
+      ]
+    },
+    "stage_ordinal": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 7
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_head": {
+      "$ref": "#/$defs/commit"
+    },
+    "data_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "blocked",
+        "quality_checked"
+      ]
+    },
+    "decision": {
+      "enum": [
+        "blocked_fail_closed",
+        "manual_review_required"
+      ]
+    },
+    "freshness": {
+      "const": "current_head"
+    },
+    "readiness_class": {
+      "const": "quality_checked"
+    },
+    "source_evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/dependency"
+      }
+    },
+    "input_hashes": {
+      "type": "object",
+      "minProperties": 2,
+      "additionalProperties": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "input_set_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "root_blockers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/blocker"
+      }
+    },
+    "inherited_blocker_codes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "effective_blocker_codes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "root_blocker_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "effective_blocker_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "builder_contract": {
+      "type": "object",
+      "required": [
+        "builder_id",
+        "read_only_inputs",
+        "network_used",
+        "secret_used",
+        "paper_queue_written",
+        "real_order_submitted"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "builder_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "read_only_inputs": {
+          "const": true
+        },
+        "network_used": {
+          "const": false
+        },
+        "secret_used": {
+          "const": false
+        },
+        "paper_queue_written": {
+          "const": false
+        },
+        "real_order_submitted": {
+          "const": false
+        }
+      }
+    },
+    "safety_flags": {
+      "$ref": "#/$defs/safety"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "layer",
+        "event_id",
+        "path",
+        "sha256",
+        "deliverable_commit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "layer": {
+          "enum": [
+            "data",
+            "market_rules",
+            "backtest",
+            "oms",
+            "replay",
+            "qmt"
+          ]
+        },
+        "event_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^[^\\\\]+$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "deliverable_commit": {
+          "$ref": "#/$defs/commit"
+        }
+      }
+    },
+    "dependency": {
+      "type": "object",
+      "required": [
+        "stage_id",
+        "path",
+        "sha256",
+        "source_head",
+        "decision"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "stage_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^[^\\\\]+$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_head": {
+          "$ref": "#/$defs/commit"
+        },
+        "decision": {
+          "enum": [
+            "blocked_fail_closed",
+            "manual_review_required"
+          ]
+        }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "required": [
+        "code",
+        "owner",
+        "next_action",
+        "source_layer",
+        "detail"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_layer": {
+          "enum": [
+            "data",
+            "market_rules",
+            "backtest",
+            "oms",
+            "replay",
+            "qmt",
+            "gate"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "promotion_allowed",
+        "paper_allowed",
+        "live_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_access_allowed",
+        "withdraw_allowed",
+        "demo_allowed",
+        "paper_queue_allowed",
+        "real_order_allowed",
+        "network_allowed",
+        "secret_access_allowed",
+        "qmt_sdk_allowed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "promotion_allowed": {
+          "const": false
+        },
+        "paper_allowed": {
+          "const": false
+        },
+        "live_allowed": {
+          "const": false
+        },
+        "private_endpoint_allowed": {
+          "const": false
+        },
+        "order_endpoint_allowed": {
+          "const": false
+        },
+        "broker_access_allowed": {
+          "const": false
+        },
+        "withdraw_allowed": {
+          "const": false
+        },
+        "demo_allowed": {
+          "const": false
+        },
+        "paper_queue_allowed": {
+          "const": false
+        },
+        "real_order_allowed": {
+          "const": false
+        },
+        "network_allowed": {
+          "const": false
+        },
+        "secret_access_allowed": {
+          "const": false
+        },
+        "qmt_sdk_allowed": {
+          "const": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,442 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cn_equity_operator_read_model.schema.json",
+  "title": "CN Equity Operator Read Model",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "domain",
+    "owner",
+    "code_commit",
+    "source_head",
+    "generated_at_utc",
+    "input_sha256",
+    "generation_hash",
+    "generation_inputs",
+    "data_version",
+    "status",
+    "decision",
+    "readiness_class",
+    "promotion_evidence_ready",
+    "paper_ready",
+    "live_ready",
+    "current_stage",
+    "layers",
+    "evidence",
+    "blockers",
+    "blocker_count",
+    "gate",
+    "safety",
+    "api_contract",
+    "team_context_contract",
+    "shared_snapshot"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "cn_equity_operator_read_model_v1"
+    },
+    "domain": {
+      "const": "cn_equity"
+    },
+    "owner": {
+      "const": "a_share_developer"
+    },
+    "code_commit": {
+      "$ref": "#/$defs/commit"
+    },
+    "source_head": {
+      "$ref": "#/$defs/commit"
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "generation_hash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "generation_inputs": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "runtime_metadata_schema_version",
+        "code_commit",
+        "generated_at_utc",
+        "input_sha256",
+        "source_events"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "cn_equity_operator_read_model_v1"
+        },
+        "runtime_metadata_schema_version": {
+          "const": "cn_equity_operator_read_model_runtime_metadata_v1"
+        },
+        "code_commit": {
+          "$ref": "#/$defs/commit"
+        },
+        "generated_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "input_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_events": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "data_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "blocked",
+        "current_read_only"
+      ]
+    },
+    "decision": {
+      "enum": [
+        "fail_closed",
+        "read_only_review"
+      ]
+    },
+    "readiness_class": {
+      "const": "quality_checked"
+    },
+    "promotion_evidence_ready": {
+      "const": false
+    },
+    "paper_ready": {
+      "const": false
+    },
+    "live_ready": {
+      "const": false
+    },
+    "current_stage": {
+      "enum": [
+        "blocked_read_only",
+        "manual_review"
+      ]
+    },
+    "layers": {
+      "type": "object",
+      "required": [
+        "data",
+        "market_rules",
+        "backtest",
+        "oms",
+        "replay",
+        "qmt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/layer"
+        },
+        "market_rules": {
+          "$ref": "#/$defs/layer"
+        },
+        "backtest": {
+          "$ref": "#/$defs/layer"
+        },
+        "oms": {
+          "$ref": "#/$defs/layer"
+        },
+        "replay": {
+          "$ref": "#/$defs/layer"
+        },
+        "qmt": {
+          "$ref": "#/$defs/layer"
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "required": [
+          "layer",
+          "event_id",
+          "path",
+          "sha256",
+          "deliverable_commit"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "layer": {
+            "enum": [
+              "data",
+              "market_rules",
+              "backtest",
+              "oms",
+              "replay",
+              "qmt"
+            ]
+          },
+          "event_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "$ref": "#/$defs/sha256"
+          },
+          "deliverable_commit": {
+            "$ref": "#/$defs/commit"
+          }
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/blocker"
+      }
+    },
+    "blocker_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "gate": {
+      "type": "object",
+      "required": [
+        "decision",
+        "owner",
+        "next_action",
+        "first_blocker"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "enum": [
+            "blocked_fail_closed",
+            "manual_review_required"
+          ]
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "first_blocker": {
+          "type": "string"
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "broker_access_allowed",
+        "live_allowed",
+        "order_endpoint_allowed",
+        "paper_allowed",
+        "paper_queue_allowed",
+        "private_endpoint_allowed",
+        "promotion_allowed",
+        "qmt_sdk_allowed",
+        "real_order_allowed",
+        "withdraw_allowed"
+      ],
+      "additionalProperties": {
+        "const": false
+      }
+    },
+    "api_contract": {
+      "type": "object",
+      "required": [
+        "method",
+        "path",
+        "cache_control",
+        "read_only",
+        "side_effects",
+        "builder_triggered",
+        "order_path_registered"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "GET"
+        },
+        "path": {
+          "const": "/api/research/cn-equity/domain-read-model"
+        },
+        "cache_control": {
+          "const": "no-store"
+        },
+        "read_only": {
+          "const": true
+        },
+        "side_effects": {
+          "const": false
+        },
+        "builder_triggered": {
+          "const": false
+        },
+        "order_path_registered": {
+          "const": false
+        }
+      }
+    },
+    "team_context_contract": {
+      "type": "object",
+      "required": [
+        "discovery_path",
+        "code_commit_field",
+        "shared_entry_wiring_owner"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "discovery_path": {
+          "const": "artifacts/cn_equity_operator_read_model/latest/cn_equity_operator_read_model.json"
+        },
+        "code_commit_field": {
+          "const": "code_commit"
+        },
+        "shared_entry_wiring_owner": {
+          "const": "integrator"
+        }
+      }
+    },
+    "shared_snapshot": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "layer": {
+      "type": "object",
+      "required": [
+        "status",
+        "readiness_class",
+        "source_event",
+        "source_path",
+        "source_sha256",
+        "deliverable_commit",
+        "gate_impact",
+        "promotion_eligible",
+        "blockers",
+        "classifications"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "blocked",
+            "quality_checked"
+          ]
+        },
+        "readiness_class": {
+          "enum": [
+            "quality_checked",
+            "research_ready",
+            "backtest_ready",
+            "promotion_evidence_ready"
+          ]
+        },
+        "source_event": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "deliverable_commit": {
+          "$ref": "#/$defs/commit"
+        },
+        "gate_impact": {
+          "enum": [
+            "none",
+            "evidence_only",
+            "requires_gate_rebuild",
+            "blocks_gate"
+          ]
+        },
+        "promotion_eligible": {
+          "const": false
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "classifications": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "required": [
+        "code",
+        "owner",
+        "next_action",
+        "layer",
+        "detail"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "layer": {
+          "enum": [
+            "data",
+            "market_rules",
+            "backtest",
+            "oms",
+            "replay",
+            "qmt",
+            "gate"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

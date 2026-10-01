@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_top1_higher_vol_20pct_15x_validation_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Top1 Higher Vol 20pct 1.5x Validation Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "live_ready",
+    "paper_ready",
+    "strategy_id",
+    "base_strategy_id",
+    "rebalance_semantics",
+    "primary_parameters",
+    "overlay",
+    "financing_model",
+    "slippage_model",
+    "tradability_constraints",
+    "margin_model",
+    "tradability",
+    "capacity_tests",
+    "constrained_tradability",
+    "constrained_capacity_tests",
+    "small_account_10k_profile",
+    "metrics",
+    "comparison",
+    "standardized_report_schema",
+    "yearly_breakdown",
+    "cost_stress",
+    "walk_forward",
+    "extreme_year_attribution",
+    "source_attribution",
+    "decision",
+    "methodology"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_top1_higher_vol_20pct_15x_validation_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "research_only_manual_review_required"},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "strategy_id": {"const": "top1_higher_vol__vol_target_20pct_cap1.5x"},
+    "base_strategy_id": {"const": "top1_higher_vol"},
+    "rebalance_semantics": {"const": "calendar_month_end_only_skip_if_not_trading_day"},
+    "primary_parameters": {"type": "object"},
+    "overlay": {
+      "type": "object",
+      "required": ["type", "target_vol", "max_leverage", "realized_vol_window_days", "exposure_timing"],
+      "properties": {
+        "type": {"const": "portfolio_level_volatility_target"},
+        "target_vol": {"const": 0.2},
+        "max_leverage": {"const": 1.5},
+        "realized_vol_window_days": {"type": "integer", "minimum": 1},
+        "exposure_timing": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "financing_model": {
+      "type": "object",
+      "required": ["type", "base_rate_column", "broker_spread", "charged_only_above_1x", "average_annual_rate", "max_annual_rate"],
+      "properties": {
+        "type": {"const": "time_varying_DGS2_plus_broker_spread"},
+        "base_rate_column": {"const": "DGS2"},
+        "broker_spread": {"type": "number", "minimum": 0},
+        "charged_only_above_1x": {"const": true},
+        "average_annual_rate": {"type": "number", "minimum": 0},
+        "max_annual_rate": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "slippage_model": {
+      "type": "object",
+      "required": ["reference_aum", "capacity_aums", "stress_bps", "implementation"],
+      "properties": {
+        "reference_aum": {"const": 100000.0},
+        "capacity_aums": {"type": "array", "contains": {"const": 10000.0}, "items": {"type": "number"}},
+        "stress_bps": {
+          "type": "array",
+          "contains": {"const": 50.0},
+          "items": {"enum": [0.0, 10.0, 25.0, 50.0]}
+        },
+        "implementation": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "tradability_constraints": {
+      "type": "object",
+      "required": ["dbmf_max_weight", "min_20d_adv_usd", "replacement_asset", "selected_constrained_variant", "candidates"],
+      "properties": {
+        "dbmf_max_weight": {"const": 0.1},
+        "min_20d_adv_usd": {"const": 10000000.0},
+        "replacement_asset": {"const": "SHV"},
+        "selected_constrained_variant": {"const": "min_adv_10m_to_shv"},
+        "candidates": {"type": "array", "minItems": 3, "items": {"type": "object"}}
+      },
+      "additionalProperties": false
+    },
+    "margin_model": {
+      "type": "object",
+      "required": ["passes_margin_constraint", "observed_max_leverage"],
+      "properties": {
+        "passes_margin_constraint": {"type": "boolean"},
+        "observed_max_leverage": {"type": "number", "maximum": 1.5}
+      },
+      "additionalProperties": true
+    },
+    "tradability": {"$ref": "#/$defs/tradability"},
+    "capacity_tests": {"$ref": "#/$defs/capacity_tests"},
+    "constrained_tradability": {"$ref": "#/$defs/tradability"},
+    "constrained_capacity_tests": {"$ref": "#/$defs/capacity_tests"},
+    "small_account_10k_profile": {
+      "type": "object",
+      "required": [
+        "account_equity",
+        "positioning",
+        "original_strategy_capacity_pass",
+        "constrained_strategy_capacity_pass",
+        "recommended_research_variant",
+        "financing_note",
+        "whole_share_warning",
+        "original_latest_target",
+        "constrained_latest_target"
+      ],
+      "properties": {
+        "account_equity": {"const": 10000.0},
+        "positioning": {"const": "small_account_research_profile"},
+        "original_strategy_capacity_pass": {"type": "boolean"},
+        "constrained_strategy_capacity_pass": {"type": "boolean"},
+        "recommended_research_variant": {"const": "min_adv_10m_to_shv"},
+        "financing_note": {"type": "object"},
+        "whole_share_warning": {"type": "object"},
+        "original_latest_target": {"type": "object"},
+        "constrained_latest_target": {"type": "object"}
+      },
+      "additionalProperties": true
+    },
+    "metrics": {"type": "object", "required": ["selected_variant", "selected_tradability_constrained_variant", "unlevered_top1_higher_vol", "original_v8_2_semantics"]},
+    "comparison": {
+      "type": "object",
+      "required": [
+        "selected_vol_target_20pct_cap1.5x",
+        "SPY",
+        "QQQ",
+        "60_40_SPY_IEF",
+        "SHV",
+        "original_v8_2_semantics",
+        "top1_higher_vol_unlevered"
+      ],
+      "additionalProperties": {"$ref": "#/$defs/full_metrics"}
+    },
+    "standardized_report_schema": {
+      "type": "object",
+      "required": ["schema_version", "required_fields", "rows"],
+      "properties": {
+        "schema_version": {"const": "us_etf_standardized_comparison_schema_v1"},
+        "required_fields": {
+          "const": ["CAGR", "Vol", "Sharpe", "MDD", "Calmar", "Turnover", "CostStressedReturn", "LiquidityPass"]
+        },
+        "rows": {"type": "array", "minItems": 7, "items": {"$ref": "#/$defs/standard_row"}}
+      },
+      "additionalProperties": false
+    },
+    "yearly_breakdown": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["year", "selected_return", "max_drawdown"]}},
+    "cost_stress": {
+      "type": "object",
+      "required": ["0bps", "10bps", "25bps", "50bps"],
+      "properties": {
+        "0bps": {"$ref": "#/$defs/cost_stress_row"},
+        "10bps": {"$ref": "#/$defs/cost_stress_row"},
+        "25bps": {"$ref": "#/$defs/cost_stress_row"},
+        "50bps": {"$ref": "#/$defs/cost_stress_row"}
+      },
+      "additionalProperties": false
+    },
+    "walk_forward": {
+      "type": "object",
+      "required": ["fold_count", "aggregate_oos"],
+      "properties": {
+        "fold_count": {"type": "integer", "minimum": 1},
+        "aggregate_oos": {"type": "object"}
+      },
+      "additionalProperties": true
+    },
+    "extreme_year_attribution": {
+      "type": "object",
+      "required": ["selected_years", "worst_return_year"],
+      "properties": {
+        "selected_years": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+        "worst_return_year": {"type": "object"}
+      },
+      "additionalProperties": true
+    },
+    "source_attribution": {
+      "type": "object",
+      "required": [
+        "asset_selection_and_parameter_effect_cagr",
+        "gross_leverage_effect_cagr",
+        "financing_effect_cagr",
+        "slippage_25bps_effect_cagr",
+        "net_selected_cagr"
+      ],
+      "additionalProperties": true
+    },
+    "decision": {
+      "type": "object",
+      "required": [
+        "clears_qqq_cagr_with_lower_drawdown",
+        "tradability_pass",
+        "constrained_tradability_pass",
+        "status",
+        "live_ready",
+        "paper_ready"
+      ],
+      "properties": {
+        "clears_qqq_cagr_with_lower_drawdown": {"type": "boolean"},
+        "tradability_pass": {"type": "boolean"},
+        "constrained_tradability_pass": {"type": "boolean"},
+        "status": {"const": "research_concerns"},
+        "live_ready": {"const": false},
+        "paper_ready": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "methodology": {
+      "type": "object",
+      "required": ["goal", "asset_selection_bias_guard", "benchmark_set", "constraint"],
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "full_metrics": {
+      "type": "object",
+      "required": ["true_cagr", "annualized_volatility", "sharpe_no_risk_free", "max_drawdown", "calmar", "total_return"],
+      "additionalProperties": {"type": "number"}
+    },
+    "standard_row": {
+      "type": "object",
+      "required": ["id", "CAGR", "Vol", "Sharpe", "MDD", "Calmar", "Turnover", "CostStressedReturn", "LiquidityPass"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "CAGR": {"type": "number"},
+        "Vol": {"type": "number"},
+        "Sharpe": {"type": "number"},
+        "MDD": {"type": "number"},
+        "Calmar": {"type": "number"},
+        "Turnover": {"type": "number", "minimum": 0},
+        "CostStressedReturn": {"type": "number"},
+        "LiquidityPass": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "cost_stress_row": {
+      "type": "object",
+      "required": ["metrics", "total_slippage_drag"],
+      "properties": {
+        "metrics": {"$ref": "#/$defs/full_metrics"},
+        "total_slippage_drag": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": true
+    },
+    "tradability": {
+      "type": "object",
+      "required": [
+        "reference_aum",
+        "passes_reference_aum_liquidity_check",
+        "missing_volume_symbols",
+        "max_single_name_participation",
+        "worst_participation_events"
+      ],
+      "properties": {
+        "reference_aum": {"type": "number", "exclusiveMinimum": 0},
+        "passes_reference_aum_liquidity_check": {"type": "boolean"},
+        "missing_volume_symbols": {"type": "array", "items": {"type": "string"}},
+        "max_single_name_participation": {"type": "number", "minimum": 0},
+        "worst_participation_events": {"type": "array", "items": {"type": "object"}}
+      },
+      "additionalProperties": true
+    },
+    "capacity_tests": {
+      "type": "object",
+      "required": ["aums", "all_requested_aums_pass", "max_passing_aum"],
+      "properties": {
+        "aums": {
+          "type": "object",
+          "required": ["10000", "50000", "100000", "500000", "1000000"],
+          "additionalProperties": {"type": "object"}
+        },
+        "all_requested_aums_pass": {"type": "boolean"},
+        "max_passing_aum": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "schema_version": "data_btc_l2_timestamp_precision_quality_receipt_v1",
+  "ticket_id": "DATA-BTC-L2-TIMESTAMP-PRECISION-07",
+  "generated_at": "2026-07-28T23:33:25Z",
+  "status": "quality_checked",
+  "decision": "real_public_l2_timestamp_sequence_recovery_and_clock_quality_checked_research_only_no_paper_no_live",
+  "base_commit": "62974d6472033021ddd12591de8244be76322e5a",
+  "producer_code_commit": "e3471caf3717cc43f86443543368b1a6b4fa6613",
+  "producer_role": "data_steward",
+  "scope": {
+    "venue": "okx",
+    "instrument_id": "BTC-USDT-SWAP",
+    "channel": "books",
+    "public_only": true,
+    "credentials_used": false,
+    "source_changes": [
+      "scripts/fetch_btc_okx_public_ws_l2_raw_capture.py"
+    ],
+    "test_changes": [
+      "tests/contracts/test_btc_okx_public_collector_boundaries.py"
+    ],
+    "exporter_changed": false,
+    "schema_changed": false,
+    "reconnect_or_gapfill_semantics_changed": false
+  },
+  "timestamp_precision_fix": {
+    "wall_clock_format": "microseconds_explicit_utc_z",
+    "rows_present_capture_window_policy": "first_to_last_persisted_message_wall_and_monotonic_anchors",
+    "rows_absent_capture_window_policy": "socket_lifecycle_window_fail_closed",
+    "socket_handshake_or_close_time_counted_as_observed_history": false,
+    "endpoint_anchor_tolerance_seconds": 0.1,
+    "endpoint_gap_count": 0,
+    "clock_span_drift_seconds": 0.0014084,
+    "event_snapshot_time_order_valid": true
+  },
+  "runtime_environment": {
+    "python_implementation": "CPython",
+    "python_version": "3.14.4",
+    "websocket_client_version": "1.9.0",
+    "proxy_authorization": "user_approved_process_local_official_okx_public_only",
+    "proxy_endpoint": "http://127.0.0.1:12334",
+    "hiddify_ipv4_listener": true,
+    "hiddify_ipv6_loopback_listener": true,
+    "okx_in_no_proxy": false,
+    "system_proxy_modified": false,
+    "firewall_modified_by_agent": false,
+    "dns_or_hosts_modified": false,
+    "certificate_store_modified": false,
+    "tls": [
+      {
+        "target": "www.okx.com:443",
+        "connect_status": "HTTP/1.1 200 Connection established",
+        "protocol": "Tls13",
+        "certificate_dns_name": "www.okx.com",
+        "validation": "system_default_chain_and_hostname_enabled"
+      },
+      {
+        "target": "ws.okx.com:8443",
+        "connect_status": "HTTP/1.1 200 Connection established",
+        "protocol": "Tls13",
+        "certificate_dns_name": "ws.okx.com",
+        "validation": "system_default_chain_and_hostname_enabled"
+      }
+    ],
+    "windows_time_read_only_observation": {
+      "service_state": "Running",
+      "start_mode": "Auto",
+      "leap_indicator": 0,
+      "stratum": 3,
+      "source": "ntp.aliyun.com,0x9",
+      "source_ip": "203.107.6.88",
+      "poll_interval_seconds": 1024,
+      "last_successful_sync_local": "2026-07-29 07:04:34",
+      "latest_poll_result": 2,
+      "latest_poll_note": "w32time_reported_only_stale_time_data; current_okx_public_clock_samples_are_authoritative_for_this_ticket_threshold"
+    }
+  },
+  "okx_public_clock": {
+    "endpoint": "https://www.okx.com/api/v5/public/time",
+    "requested_sample_count": 11,
+    "valid_sample_count": 11,
+    "capture_error_count": 0,
+    "selection_method": "minimum_round_trip_sample",
+    "selected_offset_ms": 55.925,
+    "abs_offset_p50_ms": 80.192,
+    "abs_offset_p95_ms": 182.826,
+    "abs_offset_max_ms": 188.132,
+    "round_trip_p50_ms": 1289.936,
+    "round_trip_p95_ms": 1510.071,
+    "round_trip_max_ms": 1529.049,
+    "max_allowed_abs_offset_ms": 2000.0,
+    "verified": true,
+    "report_sha256": "bc8e7d1de0a2c0cdd619cdafcc66f49318d1c009c6c0490c0e57598b2d471b00"
+  },
+  "real_l2_capture": {
+    "capture_start_utc": "2026-07-28T23:29:47.707608Z",
+    "capture_end_utc": "2026-07-28T23:29:59.390751Z",
+    "capture_duration_seconds": 11.6845514,
+    "message_count": 60,
+    "data_message_count": 57,
+    "subscription_ack_count": 3,
+    "snapshot_count": 3,
+    "update_count": 54,
+    "book_record_count": 57,
+    "connection_count": 3,
+    "forced_reconnect_after_messages": 20,
+    "forced_reconnect_count": 2,
+    "two_sided_snapshot_count": 57,
+    "raw_replayed_two_sided_rows": 57,
+    "time_weighted_two_sided_coverage_pct": 41.651865427,
+    "observed_history_seconds": 4.866247,
+    "history_window_days": 0.000056322,
+    "coverage_not_overstated": true,
+    "raw_sha256": "57b5b6bfcae2a370d5924bd32607d03146b604acfb42560234fd582ac478243e",
+    "capture_manifest_sha256": "a6a5de9e0762ea7fcae449e45604c9c18c1b79f0d57fdd2cc9a8f17bc628e076"
+  },
+  "sequence_and_recovery": {
+    "validation_status": "pass",
+    "continuous_update_links": 54,
+    "expected_update_links": 54,
+    "sequence_gap_count": 0,
+    "duplicate_sequence_count": 0,
+    "out_of_order_sequence_count": 0,
+    "reconnect_count": 2,
+    "resync_snapshot_count": 2,
+    "unrecovered_gap_count": 0,
+    "recovery_contract_pass": true,
+    "recovery_method": "fresh_public_snapshot_reinitialization",
+    "events_backfilled": 0,
+    "event_backfill_claimed": false,
+    "gap_windows": [
+      {
+        "from_connection_sequence": 1,
+        "to_connection_sequence": 2,
+        "gap_start": "2026-07-28T23:29:52.687Z",
+        "gap_end": "2026-07-28T23:29:52.952Z",
+        "duration_seconds": 0.264797,
+        "recovered": true
+      },
+      {
+        "from_connection_sequence": 2,
+        "to_connection_sequence": 3,
+        "gap_start": "2026-07-28T23:29:57.523Z",
+        "gap_end": "2026-07-28T23:29:57.765Z",
+        "duration_seconds": 0.242414,
+        "recovered": true
+      }
+    ]
+  },
+  "checksum": {
+    "observed_count": 57,
+    "validated_nonzero_count": 0,
+    "policy": "nonzero_crc32_validated_zero_accepted_after_okx_deprecation",
+    "zero_checksum_quality_blocker": false,
+    "independent_checksum_validation_claimed": false
+  },
+  "immutable_export": {
+    "status": "quality_checked",
+    "exit_code": 0,
+    "attestation_sha256": "ba55b5d0ac4e2453a36ec78bd25989e50cdcf880ece6bea7a9ca7471abcac06",
+    "aggregate_table_sha256": "84dae5bb3499612470c346e7d15908c213c4e74d815a63be45b207abdfb67c5b",
+    "source_aggregate_sha256": "f23e2206acf972193096899a5b2977d2662232c0dd91f382027b332b2d053bca"
+  },
+  "publication": {
+    "dataset_id": "btc-okx-real-l2-attestation",
+    "dataset_version": "btc-okx-real-l2-attestation-20260728T232947Z-e3471caf3-timestamp-precision07-quality1",
+    "shared_root": "D:/vibe coding/Obsidian/量化系统/shared-data-data-btc-l2-timestamp-precision-07",
+    "storage_relative_path": "datasets/btc-okx-real-l2-attestation/btc-okx-real-l2-attestation-20260728T232947Z-e3471caf3-timestamp-precision07-quality1",
+    "manifest_path": ".agent/data_manifests/btc-okx-real-l2-attestation/btc-okx-real-l2-attestation-20260728T232947Z-e3471caf3-timestamp-precision07-quality1.json",
+    "aggregate_sha256": "965bfbca8ae9de8f7f7558896ac001e6291221307c12038e7165620e5334119f",
+    "file_count": 22,
+    "total_bytes": 1089180,
+    "readiness_class": "quality_checked",
+    "quality_status": "pass_with_research_only_warnings",
+    "manifest_resolved": true,
+    "immutable": true
+  },
+  "successor_lineage": {
+    "predecessor_ticket_id": "DATA-BTC-PUBLIC-WS-HIDDIFY-CLOCK-CAPTURE-06",
+    "predecessor_handoff_event": "published-data-btc-public-ws-hiddify-clock-capture-06-8a140dee2",
+    "predecessor_dataset_version": "btc-okx-real-l2-attestation-20260728T230854Z-62974d647-hiddify-w32time06-blocked1",
+    "predecessor_aggregate_sha256": "270325b2e69d9ea5cb2dc3109e76544b84ee7dd773d56c1b254544e5cd3b48ed",
+    "predecessor_mutated": false,
+    "predecessor_raw_reused_as_success_data": false
+  },
+  "tests": [
+    {
+      "command": "py -3 -m pytest -q tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_server_time_preflight.py tests/contracts/test_btc_okx_l2_immutable_export.py tests/agent_governance/test_shared_data.py tests/agent_governance/test_handoff.py --basetemp <unique-system-temp>",
+      "exit_code": 0,
+      "result": "90 passed in 23.32s"
+    },
+    {
+      "command": "py -3 tools/agent_governance/shared_data.py resolve --manifest <07-manifest> --shared-root <07-shared-root>",
+      "exit_code": 0,
+      "result": "resolved"
+    }
+  ],
+  "readiness": {
+    "quality_checked": true,
+    "research_ready": false,
+    "backtest_ready": false,
+    "promotion_evidence_ready": false,
+    "promotion_eligible": false
+  },
+  "promotion_blockers": [
+    "btc_okx_l2_history_below_30_natural_days",
+    "btc_execution_latency_model_missing",
+    "btc_queue_model_missing",
+    "btc_okx_l2_natural_execution_observation_missing",
+    "btc_okx_l2_two_sided_coverage_incomplete",
+    "btc_private_ws_evidence_missing",
+    "btc_real_funding_nonflat_fill_evidence_missing",
+    "btc_paper_live_manual_approval_missing"
+  ],
+  "safety": {
+    "promotion_eligible": false,
+    "paper_ready": false,
+    "live_ready": false,
+    "private_endpoint_used": false,
+    "account_endpoint_used": false,
+    "order_endpoint_used": false,
+    "broker_used": false,
+    "secret_read": false,
+    "withdraw_used": false,
+    "real_order_submitted": false,
+    "paper_queue_written": false
+  }
+}

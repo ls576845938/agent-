@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/agent_handoff_envelope.schema.json",
+  "title": "QuantStation Cross-Agent Handoff Envelope",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "event_id",
+    "ticket_id",
+    "event_type",
+    "producer_role",
+    "consumer_roles",
+    "domain",
+    "producer_branch",
+    "base_commit",
+    "deliverable_commit",
+    "created_at",
+    "expires_at",
+    "depends_on",
+    "supersedes",
+    "transition_for",
+    "deliverables",
+    "tests",
+    "blockers",
+    "gate_impact",
+    "promotion_eligible",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "agent_handoff_envelope_v1"},
+    "event_id": {"$ref": "#/$defs/id"},
+    "ticket_id": {"$ref": "#/$defs/id"},
+    "event_type": {"enum": ["published", "acknowledged", "integrated", "rejected", "superseded"]},
+    "producer_role": {"enum": ["a_share_developer", "btc_developer", "data_steward", "integrator", "super_developer"]},
+    "consumer_roles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["a_share_developer", "architect", "btc_developer", "data_steward", "integrator", "researcher", "super_developer"]}
+    },
+    "domain": {"enum": ["btc", "cn_equity", "data", "governance", "research", "shared", "us_equity"]},
+    "producer_branch": {"type": "string", "pattern": "^agent/[A-Za-z0-9_]+/[A-Za-z0-9._/-]+$"},
+    "base_commit": {"$ref": "#/$defs/commit"},
+    "deliverable_commit": {"$ref": "#/$defs/commit"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string"},
+    "depends_on": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+    "supersedes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+    "transition_for": {"type": "string"},
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "path", "sha256", "schema_version", "readiness_class"],
+        "properties": {
+          "type": {"enum": ["artifact", "code", "data_manifest", "document", "report", "schema", "test_evidence"]},
+          "path": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "schema_version": {"type": "string", "minLength": 1},
+          "readiness_class": {"enum": ["quality_checked", "research_ready", "backtest_ready", "promotion_evidence_ready"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["command", "result", "evidence_path"],
+        "properties": {
+          "command": {"type": "string", "minLength": 1},
+          "result": {"enum": ["passed", "failed", "not_run"]},
+          "evidence_path": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "gate_impact": {"enum": ["none", "evidence_only", "requires_gate_rebuild", "blocks_gate"]},
+    "promotion_eligible": {"type": "boolean"},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "handoff_only",
+        "promotion_unlock_allowed",
+        "paper_or_live_unlock_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "handoff_only": {"const": true},
+        "promotion_unlock_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"event_type": {"const": "published"}}},
+      "then": {"properties": {"deliverables": {"minItems": 1}, "transition_for": {"maxLength": 0}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"enum": ["acknowledged", "integrated", "rejected"]}}},
+      "then": {"properties": {"transition_for": {"$ref": "#/$defs/id"}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "superseded"}}},
+      "then": {"properties": {"supersedes": {"minItems": 1}, "transition_for": {"maxLength": 0}}}
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+  },
+  "additionalProperties": false
+}

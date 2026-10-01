@@ -1,0 +1,309 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_manual_decision_record_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Manual Decision Record Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "record_path",
+    "template_path",
+    "local_record_write_policy",
+    "record_readiness",
+    "record_summary",
+    "evidence_path_details",
+    "evidence_classification",
+    "operator_decision_guidance",
+    "paper_start_dependency",
+    "blockers",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_manual_decision_record_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["manual_decision_record_missing_or_invalid", "manual_decision_record_valid"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["manual_decision_record_missing_or_invalid", "manual_decision_record_valid"]},
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "decision": {"enum": ["manual_decision_record_required", "manual_decision_record_validated_no_unlock"]},
+    "record_path": {"type": "string", "minLength": 1},
+    "template_path": {"type": "string", "minLength": 1},
+    "local_record_write_policy": {
+      "type": "object",
+      "required": [
+        "local_record_path",
+        "should_not_commit_local_record",
+        "local_record_gitignore_present",
+        "allowed_template_path",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "secrets_allowed"
+      ],
+      "properties": {
+        "local_record_path": {"const": "configs/reviews/us_equity_manual_decision_record.local.json"},
+        "should_not_commit_local_record": {"const": true},
+        "local_record_gitignore_present": {"type": "boolean"},
+        "allowed_template_path": {"const": "configs/reviews/us_equity_manual_decision_record.template.json"},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "secrets_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "record_readiness": {
+      "type": "object",
+      "required": [
+        "record_exists",
+        "template_exists",
+        "schema_version_valid",
+        "missing_required_fields",
+        "decision_allowed",
+        "paper_candidate_decision_recorded",
+        "evidence_paths_recorded",
+        "evidence_paths_missing_count",
+        "forbidden_unlock_flags_present",
+        "ready_for_manual_review_packet",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "record_exists": {"type": "boolean"},
+        "template_exists": {"type": "boolean"},
+        "schema_version_valid": {"type": "boolean"},
+        "missing_required_fields": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "decision_allowed": {"type": "boolean"},
+        "paper_candidate_decision_recorded": {"type": "boolean"},
+        "evidence_paths_recorded": {"type": "boolean"},
+        "evidence_paths_missing_count": {"type": "integer", "minimum": 0},
+        "forbidden_unlock_flags_present": {"type": "boolean"},
+        "ready_for_manual_review_packet": {"type": "boolean"},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "record_summary": {
+      "type": "object",
+      "required": [
+        "strategy_id",
+        "review_id",
+        "reviewed_at",
+        "reviewer_recorded",
+        "decision",
+        "reason_recorded",
+        "evidence_path_count",
+        "missing_evidence_paths",
+        "follow_up_ticket_ids",
+        "parameter_or_strategy_id_change_required"
+      ],
+      "properties": {
+        "strategy_id": {"type": "string"},
+        "review_id": {"type": "string"},
+        "reviewed_at": {"type": "string"},
+        "reviewer_recorded": {"type": "boolean"},
+        "decision": {"type": "string"},
+        "reason_recorded": {"type": "boolean"},
+        "evidence_path_count": {"type": "integer", "minimum": 0},
+        "missing_evidence_paths": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "follow_up_ticket_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "parameter_or_strategy_id_change_required": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "evidence_path_details": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "exists",
+          "within_repo",
+          "is_json_report",
+          "is_us_equity_artifact",
+          "traceable_report_artifact",
+          "reported_status"
+        ],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "exists": {"type": "boolean"},
+          "within_repo": {"type": "boolean"},
+          "is_json_report": {"type": "boolean"},
+          "is_us_equity_artifact": {"type": "boolean"},
+          "traceable_report_artifact": {"type": "boolean"},
+          "reported_status": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "evidence_classification": {
+      "type": "object",
+      "required": [
+        "classification",
+        "status",
+        "manual_record_can_unlock_paper_by_itself",
+        "manual_record_can_unlock_live_by_itself",
+        "required_next_gate_for_paper",
+        "contains_secret_values",
+        "broker_calls_used",
+        "private_endpoint_used",
+        "order_endpoint_used"
+      ],
+      "properties": {
+        "classification": {"const": "manual_decision_metadata_only"},
+        "status": {"enum": ["manual_decision_record_missing_or_invalid", "manual_decision_record_valid"]},
+        "manual_record_can_unlock_paper_by_itself": {"const": false},
+        "manual_record_can_unlock_live_by_itself": {"const": false},
+        "required_next_gate_for_paper": {"const": "manual_review_packet_then_paper_simulation_readiness"},
+        "contains_secret_values": {"const": false},
+        "broker_calls_used": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "operator_decision_guidance": {
+      "type": "object",
+      "required": [
+        "status",
+        "local_record_path",
+        "template_path",
+        "missing_required_fields",
+        "allowed_decisions",
+        "required_evidence_path_rules",
+        "missing_evidence_paths",
+        "non_traceable_evidence_paths",
+        "outside_repo_evidence_paths",
+        "forbidden_unlock_flags",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed",
+        "operator_next_actions"
+      ],
+      "properties": {
+        "status": {"enum": ["manual_decision_required", "record_complete"]},
+        "local_record_path": {"const": "configs/reviews/us_equity_manual_decision_record.local.json"},
+        "template_path": {"const": "configs/reviews/us_equity_manual_decision_record.template.json"},
+        "missing_required_fields": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "allowed_decisions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "continue_observation",
+              "freeze_strategy",
+              "retire_strategy",
+              "new_strategy_id_required",
+              "paper_simulation_review_candidate"
+            ]
+          },
+          "minItems": 5,
+          "uniqueItems": true
+        },
+        "required_evidence_path_rules": {
+          "type": "object",
+          "required": ["must_exist", "must_be_within_repo", "required_prefix", "required_suffix"],
+          "properties": {
+            "must_exist": {"const": true},
+            "must_be_within_repo": {"const": true},
+            "required_prefix": {"const": "artifacts/us_equity"},
+            "required_suffix": {"const": ".json"}
+          },
+          "additionalProperties": false
+        },
+        "missing_evidence_paths": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "non_traceable_evidence_paths": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "outside_repo_evidence_paths": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "forbidden_unlock_flags": {
+          "type": "array",
+          "items": {
+            "enum": ["paper_or_live_unlock_allowed", "paper_simulation_allowed", "live_order_allowed"]
+          },
+          "uniqueItems": true
+        },
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "operator_next_actions": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1}
+      },
+      "additionalProperties": false
+    },
+    "paper_start_dependency": {
+      "type": "object",
+      "required": [
+        "manual_record_valid",
+        "paper_candidate_decision_recorded",
+        "manual_record_can_start_paper_by_itself",
+        "manual_record_can_unlock_live_by_itself",
+        "paper_start_dependency_status",
+        "required_next_gate_for_paper",
+        "required_next_reports",
+        "required_runner_condition",
+        "required_evidence_traceability",
+        "paper_simulation_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "manual_record_valid": {"type": "boolean"},
+        "paper_candidate_decision_recorded": {"type": "boolean"},
+        "manual_record_can_start_paper_by_itself": {"const": false},
+        "manual_record_can_unlock_live_by_itself": {"const": false},
+        "paper_start_dependency_status": {"enum": ["blocked", "ready_for_next_gate"]},
+        "required_next_gate_for_paper": {"const": "manual_review_packet_then_paper_simulation_readiness"},
+        "required_next_reports": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 3,
+          "uniqueItems": true
+        },
+        "required_runner_condition": {"const": "run_us_equity_paper_simulation_roll(..., manual_start_approved=True)"},
+        "required_evidence_traceability": {"type": "string", "minLength": 1},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "decision_record_validator_only",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "secrets_allowed"
+      ],
+      "properties": {
+        "decision_record_validator_only": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "secrets_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

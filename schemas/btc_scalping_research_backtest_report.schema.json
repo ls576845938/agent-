@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_scalping_research_backtest_report.schema.json",
+  "title": "BTC Scalping Research Backtest Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "recommended_research_track",
+    "operator_summary",
+    "backtests",
+    "manifest_contract",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_scalping_research_backtest_report_v1"},
+    "generated_at": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "scope": {"const": "research_only_btc_scalping_backtest_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "research_backtest_completed",
+        "research_backtest_completed_with_1m_proxy_blocked",
+        "research_backtest_incomplete"
+      ]
+    },
+    "decision": {"type": "string"},
+    "next_required_action": {"type": "string"},
+    "recommended_research_track": {
+      "enum": ["five_minute_drift_guarded_intraday", "one_minute_proxy_scalping", "none"]
+    },
+    "operator_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["current_research_answer", "run_command", "direct_command"],
+      "properties": {
+        "current_research_answer": {"type": "string"},
+        "run_command": {"const": "make run-btc-scalping-research-backtest"},
+        "direct_command": {"const": "python3 scripts/run_btc_scalping_research_backtest.py"}
+      }
+    },
+    "backtests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["one_minute_proxy_scalping", "five_minute_drift_guarded_intraday"],
+      "properties": {
+        "one_minute_proxy_scalping": {"$ref": "#/$defs/backtest"},
+        "five_minute_drift_guarded_intraday": {"$ref": "#/$defs/backtest"}
+      }
+    },
+    "manifest_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_fields",
+        "one_minute_proxy_scalping_complete",
+        "five_minute_drift_guarded_intraday_complete"
+      ],
+      "properties": {
+        "required_fields": {
+          "type": "array",
+          "items": {
+            "enum": ["data_version", "strategy_version", "params", "cost_model", "slippage_model", "commit_hash"]
+          },
+          "minItems": 6
+        },
+        "one_minute_proxy_scalping_complete": {"type": "boolean"},
+        "five_minute_drift_guarded_intraday_complete": {"type": "boolean"}
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "strategy_outputs_only",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "real_orders_created",
+        "candidate_generation_allowed",
+        "paper_or_live_unlock_allowed",
+        "paper_queue",
+        "live",
+        "pnl_from_fill_or_trade_ledger"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "strategy_outputs_only": {
+          "type": "array",
+          "items": {"enum": ["Signal", "OrderIntent", "TargetPosition"]},
+          "minItems": 3
+        },
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "candidate_generation_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"},
+        "pnl_from_fill_or_trade_ledger": {"const": true}
+      }
+    }
+  },
+  "$defs": {
+    "backtest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "timeframe",
+        "status",
+        "strategy_id",
+        "variant_id",
+        "scope",
+        "report_path",
+        "run_dir",
+        "artifacts",
+        "metrics",
+        "gate_passed",
+        "gate_status",
+        "blockers",
+        "manifest",
+        "research_only_lock"
+      ],
+      "properties": {
+        "label": {"type": "string"},
+        "timeframe": {"enum": ["1m", "5m"]},
+        "status": {"type": "string"},
+        "strategy_id": {"type": "string"},
+        "variant_id": {"type": "string"},
+        "scope": {"type": "string"},
+        "report_path": {"type": ["string", "null"]},
+        "run_dir": {"type": ["string", "null"]},
+        "artifacts": {"type": "object", "additionalProperties": {"type": ["string", "null"]}},
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "event_count": {"type": ["integer", "null"]},
+            "trade_count": {"type": ["integer", "null"]},
+            "fill_count": {"type": ["integer", "null"]},
+            "profit_factor": {"type": ["number", "null"]},
+            "hit_rate": {"type": ["number", "null"]},
+            "mean_trade_return_bps": {"type": ["number", "null"]},
+            "total_return_pct": {"type": ["number", "null"]},
+            "max_drawdown": {"type": ["number", "null"]},
+            "walk_forward_pass_rate": {"type": ["number", "null"]},
+            "regime_pass_rate": {"type": ["number", "null"]}
+          }
+        },
+        "gate_passed": {"type": "boolean"},
+        "gate_status": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "manifest": {"$ref": "#/$defs/manifest"},
+        "research_only_lock": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidate_generation_allowed",
+            "strategy_skeleton_generation_allowed",
+            "paper_or_live_unlock_allowed",
+            "true_scalping_allowed"
+          ],
+          "properties": {
+            "candidate_generation_allowed": {"const": false},
+            "strategy_skeleton_generation_allowed": {"const": false},
+            "paper_or_live_unlock_allowed": {"const": false},
+            "true_scalping_allowed": {"const": false}
+          }
+        }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "present", "required_fields_present", "complete", "paper_queue", "live"],
+      "properties": {
+        "path": {"type": ["string", "null"]},
+        "present": {"type": "boolean"},
+        "required_fields_present": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["data_version", "strategy_version", "params", "cost_model", "slippage_model", "commit_hash"],
+          "properties": {
+            "data_version": {"type": "boolean"},
+            "strategy_version": {"type": "boolean"},
+            "params": {"type": "boolean"},
+            "cost_model": {"type": "boolean"},
+            "slippage_model": {"type": "boolean"},
+            "commit_hash": {"type": "boolean"}
+          }
+        },
+        "complete": {"type": "boolean"},
+        "paper_queue": {"type": ["string", "null"]},
+        "live": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

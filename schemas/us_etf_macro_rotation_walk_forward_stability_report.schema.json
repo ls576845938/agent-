@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_macro_rotation_walk_forward_stability_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Macro Rotation Walk Forward Stability Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "live_ready",
+    "paper_ready",
+    "primary_cost_bps",
+    "stress_cost_bps",
+    "price_source",
+    "macro_path",
+    "macro_status",
+    "train_years",
+    "test_years",
+    "parameter_grid",
+    "all_candidates",
+    "base_candidate",
+    "best_full_sample",
+    "top_full_sample",
+    "stability",
+    "walk_forward",
+    "methodology"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_macro_rotation_walk_forward_stability_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "research_only"},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "primary_cost_bps": {"const": 50},
+    "stress_cost_bps": {"type": "array", "contains": {"const": 50}, "items": {"type": "number"}},
+    "price_source": {"type": "string", "minLength": 1},
+    "macro_path": {"type": "string", "minLength": 1},
+    "macro_status": {"type": "string", "minLength": 1},
+    "train_years": {"type": "integer", "minimum": 1},
+    "test_years": {"type": "array", "minItems": 1, "items": {"type": "integer"}},
+    "parameter_grid": {
+      "type": "object",
+      "required": ["base_parameters", "candidate_count", "dimensions"],
+      "properties": {
+        "base_parameters": {"$ref": "#/$defs/parameters"},
+        "candidate_count": {"const": 36},
+        "dimensions": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "all_candidates": {"type": "array", "minItems": 36, "maxItems": 36, "items": {"$ref": "#/$defs/candidate"}},
+    "base_candidate": {"$ref": "#/$defs/candidate"},
+    "best_full_sample": {"$ref": "#/$defs/candidate"},
+    "top_full_sample": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/candidate"}},
+    "stability": {
+      "type": "object",
+      "required": ["candidate_count", "alive_count", "alive_rate", "stable_enough_for_next_research_stage", "min", "p25", "median", "p75", "max"],
+      "properties": {
+        "candidate_count": {"const": 36},
+        "alive_count": {"type": "integer", "minimum": 0, "maximum": 36},
+        "alive_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "stable_enough_for_next_research_stage": {"type": "boolean"},
+        "min": {"type": "object"},
+        "p25": {"type": "object"},
+        "median": {"type": "object"},
+        "p75": {"type": "object"},
+        "max": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "walk_forward": {
+      "type": "object",
+      "required": ["fold_count", "folds", "oos_alive_rate", "aggregate_oos_metrics", "stable_enough_for_next_research_stage"],
+      "properties": {
+        "fold_count": {"type": "integer", "minimum": 5},
+        "folds": {"type": "array", "minItems": 5, "items": {"$ref": "#/$defs/fold"}},
+        "oos_alive_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "aggregate_oos_metrics": {"$ref": "#/$defs/metrics"},
+        "stable_enough_for_next_research_stage": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "methodology": {"type": "object"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "parameters": {
+      "type": "object",
+      "required": ["min_hold_months", "rebalance_blend", "turnover_threshold", "max_monthly_turnover"],
+      "properties": {
+        "min_hold_months": {"type": "integer", "minimum": 1},
+        "rebalance_blend": {"type": "number"},
+        "turnover_threshold": {"type": "number"},
+        "max_monthly_turnover": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["cagr", "sharpe", "max_drawdown", "turnover"],
+      "properties": {
+        "cagr": {"type": "number"},
+        "sharpe": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "turnover": {"type": "number", "minimum": 0},
+        "total_return": {"type": "number"},
+        "benchmark_total_return": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["parameters", "metrics", "score", "alive", "t_plus_1_execution"],
+      "properties": {
+        "parameters": {"$ref": "#/$defs/parameters"},
+        "metrics": {"$ref": "#/$defs/metrics"},
+        "score": {"type": "number"},
+        "alive": {"type": "boolean"},
+        "t_plus_1_execution": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "fold": {
+      "type": "object",
+      "required": ["train_years", "test_year", "selected_parameters", "test_metrics"],
+      "properties": {
+        "train_years": {"type": "array", "minItems": 1, "items": {"type": "integer"}},
+        "test_year": {"type": "integer"},
+        "selected_parameters": {"$ref": "#/$defs/parameters"},
+        "test_metrics": {"$ref": "#/$defs/metrics"}
+      },
+      "additionalProperties": true
+    }
+  }
+}

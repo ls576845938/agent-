@@ -1,0 +1,117 @@
+{
+  "schema_version": "btc_5m_trend_family_ga_search_prereg_v1",
+  "ticket": "BTC-5M-TREND-FAMILY-GA-SEARCH-02",
+  "status": "frozen_before_search",
+  "frozen_at_code_base": "bcc31f0b9bfb1ffa97a7f91dc14debb1c05683c7",
+  "engine_code_commit": "b2499b3f0ab03f67272aead61de4b54e4993d2a9",
+  "depends_on": [
+    "published-btc-5m-qcv2r1-selection-prefix-01-8748a1775"
+  ],
+  "economic_hypotheses": [
+    {
+      "family": "breakout_retest_continuation",
+      "hypothesis": "A prior-channel breakout aligned with a higher-timeframe directional-quality filter can continue after a causal 5m retest."
+    },
+    {
+      "family": "directional_efficiency_continuation",
+      "hypothesis": "High directional path efficiency plus aligned EMA slope can screen out range whipsaw before a causal 5m continuation entry."
+    }
+  ],
+  "negative_control": {
+    "strategy": "fixed_ema_12_48_crossover",
+    "genetic": false,
+    "eligible_for_champion_selection": false
+  },
+  "sources": [
+    {"url": "https://doi.org/10.1016/j.frl.2019.08.011", "use": "trading-range breakout hypothesis only"},
+    {"url": "https://doi.org/10.3390/risks8020044", "use": "5m moving-average negative control"},
+    {"url": "https://ssrn.com/abstract=4080253", "use": "intraday momentum/reversal regime, jumps and liquidity caution"},
+    {"url": "https://ssrn.com/abstract=3416106", "use": "5m realized-volatility measurement context"},
+    {"url": "https://arxiv.org/abs/2009.12155", "use": "crypto walk-forward trend background"}
+  ],
+  "data_binding": {
+    "required_manifest_schema": "shared_dataset_manifest_v1",
+    "required_dataset_id": "btc-5m-qcv2r1-selection-prefix",
+    "dataset_version": "btc-5m-qcv2r1-selection-prefix-248270-parent76e8654c-mainbcc31f0b-corr01",
+    "manifest_git_blob_sha256": "0c38ae5cd13fb47f074573047c68b3a6da1ca237b2ef75c9e5fcb651c8dd35d3",
+    "payload_sha256": "b00557b75b3b4049bde1c09bfa69d31a8856993bb9f4fbdc71cfb49078b8f9b5",
+    "payload_bytes": 89831446,
+    "aggregate_sha256": "ac599353f65ee31b4a40b1d516c8ad244fc9f30c1a098403167fdbc6e0774741",
+    "selection_rows": 248270,
+    "selection_start_open_time": "2024-01-01T00:00:00Z",
+    "selection_end_open_time": "2026-05-12T01:05:00Z",
+    "unseen_rows_in_payload": 0,
+    "unseen_bytes_read": 0,
+    "unseen_rows_decoded": 0
+  },
+  "search_protocol": {
+    "algorithm": "deterministic_typed_hierarchical_pareto_genetic_search",
+    "family_count": 2,
+    "within_family_crossover_and_mutation_only": true,
+    "cross_family_operation": "unified_pareto_comparison_only",
+    "family_inactive_genes_in_hash_or_trial_count": false,
+    "population_per_family": 24,
+    "generations": 6,
+    "planned_slots": 288,
+    "parameter_neighbors_maximum": 12,
+    "maximum_new_unique_evaluations": 300,
+    "prior_unique_evaluations": 1587,
+    "maximum_cumulative_unique_evaluations": 1887,
+    "seed": 20260827,
+    "single_weighted_fitness_used": false
+  },
+  "validation": {
+    "fold_count": 4,
+    "walk_forward": true,
+    "flat_at_fold_start": true,
+    "only_validation_window_new_entries_counted": true,
+    "embargo_rule": "maximum_lookback_bars_plus_event_memory_bars",
+    "decision_time": "completed_5m_close",
+    "execution_time": "next_5m_open",
+    "pnl_source": "fill_position_cash_ledger"
+  },
+  "selection_gate": {
+    "cost_scenario_bps": {"base": 10.0, "conservative": 16.5, "stress": 30.0},
+    "minimum_applicable_fold_regime_rows": 288,
+    "minimum_independent_bets_per_fold": 8,
+    "minimum_effective_bets_per_fold": 4.8,
+    "base": {"return_gt": 0.0, "profit_factor_gte": 1.05, "max_drawdown_gte": -0.20},
+    "conservative": {"return_gt": 0.0, "profit_factor_gte": 1.02, "max_drawdown_gte": -0.20},
+    "stress": {"return_gt": 0.0, "profit_factor_gte": 1.0, "max_drawdown_gte": -0.20},
+    "minimum_passed_folds": 3,
+    "minimum_pooled_effective_bets": 30.0,
+    "multiple_testing_deflated_mean_bet_return_gt": 0.0,
+    "parameter_neighborhood_required": true
+  },
+  "fixed_sizing_policy": {
+    "max_abs_position": 1.0,
+    "rebalance_interval_bars": 12,
+    "no_trade_band": 0.15,
+    "minimum_position_delta": 0.15,
+    "optimized_by_ga": false
+  },
+  "fixed_risk_constitution": {
+    "max_abs_position": 1.0,
+    "bar_hard_stop_proxy_atr_multiple": 3.0,
+    "daily_loss_limit_pct": 0.04,
+    "max_strategy_loss_pct": 0.15,
+    "venue_hosted_stop_proven": false,
+    "optimized_by_ga": false
+  },
+  "holdout_policy": {
+    "reveal_code_path_present": false,
+    "strategy_metrics_read": false,
+    "separate_preregistered_ticket_required": true
+  },
+  "guardrails": {
+    "research_only": true,
+    "promotion_allowed": false,
+    "paper_allowed": false,
+    "live_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_allowed": false,
+    "transfer_allowed": false,
+    "withdraw_allowed": false
+  }
+}

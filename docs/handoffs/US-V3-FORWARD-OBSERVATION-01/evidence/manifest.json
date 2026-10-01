@@ -1,0 +1,56 @@
+{
+  "schema_version": "us_v3_forward_observation_delivery_manifest_v1",
+  "goal_id": "US-V3-FORWARD-OBSERVATION-01",
+  "deliverable_commit": "90c41da075ede822f34536ca4cdbb6864d4bb846",
+  "source_files": [
+    {
+      "path": "quant_us/application/us_equity_forward_observation.py",
+      "sha256": "9a551ec4f7563f9d7ad53ee2babe5065a86c3a7254c29537912f2d9c874ed3b5",
+      "responsibility": "fail-closed natural-time service, continuity evaluation and append-only receipt store"
+    },
+    {
+      "path": "scripts/run_us_equity_forward_observation.py",
+      "sha256": "985e515710de9402bb21e64271bcbf1536ceea539c3302f4721119eeae4211be",
+      "responsibility": "offline thin CLI"
+    },
+    {
+      "path": "schemas/us_equity_forward_observation_receipt.schema.json",
+      "sha256": "0e4752d55daa8e2e8baf8cb5192c995aa9329c83218d5f9a0cc6b53136d158a2",
+      "responsibility": "durable receipt, window, identity, continuity and safety contract"
+    },
+    {
+      "path": "configs/monitoring/us_v3_forward_observation_v1.json",
+      "sha256": "64b53ab2beff9cab1abd8b1bdbff3ea0d4d988ca12daffb9e844313d43965378",
+      "responsibility": "timezone, schedule, window, code-tree identity and all-false safety policy"
+    },
+    {
+      "path": "tests/contracts/test_us_equity_forward_observation.py",
+      "sha256": "255c00d01118670c07f688d62fcbd04a8ed8b96def0be3fc7ca459cb5fd008a4",
+      "responsibility": "same-day, gap, cross-HEAD, cross-strategy, tamper, schedule and independent-window contracts"
+    },
+    {
+      "path": "docs/data_contracts/us_v3_forward_observation.md",
+      "sha256": "0ba86a59076db3c3529569ceda0e6140e7695349c34d927e3ea0f2ecfd77c3a8",
+      "responsibility": "consumer, time, identity, continuity and artifact contract"
+    },
+    {
+      "path": "docs/handoffs/US-V3-FORWARD-OBSERVATION-01.md",
+      "sha256": "1fc0eb883d44df4e8149f2c5ed450e3f7ff64af1237194167488b80568c9de36",
+      "responsibility": "integrator boundary and fail-closed gate semantics"
+    }
+  ],
+  "current_day_preview": {
+    "natural_day": "2026-07-24",
+    "status": "blocked_external_data",
+    "expected_finalized_session": "2026-07-23",
+    "receipt_sha256": "ef60a4203cecdfd7be95478e6d784564dab14d33298406c66b431373b1afe40a",
+    "manifest_sha256": "2e7bce8b8950aa397d3b9eda364f7eef12a5e277169142c3c2c6864ab7682ec9",
+    "durability": "system_temp_preview_only_final_head_receipt_pending"
+  },
+  "data_modified": false,
+  "data_manifest_written": false,
+  "scheduler_modified": false,
+  "paper_ledger_written": false,
+  "network_or_secret_used": false,
+  "safety_flags_all_false": true
+}

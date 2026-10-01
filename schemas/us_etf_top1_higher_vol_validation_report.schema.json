@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_top1_higher_vol_validation_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Top1 Higher Vol Validation Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "live_ready",
+    "paper_ready",
+    "strategy_id",
+    "baseline_id",
+    "rebalance_semantics",
+    "primary_parameters",
+    "primary_metrics",
+    "baseline_metrics",
+    "cost_stress",
+    "parameter_neighborhood",
+    "walk_forward",
+    "yearly_breakdown",
+    "decision",
+    "methodology"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_top1_higher_vol_validation_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "research_only_validation"},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "strategy_id": {"const": "top1_higher_vol"},
+    "baseline_id": {"type": "string", "minLength": 1},
+    "rebalance_semantics": {"const": "calendar_month_end_only_skip_if_not_trading_day"},
+    "primary_parameters": {"type": "object", "minProperties": 1},
+    "primary_metrics": {"$ref": "#/$defs/metrics_bundle"},
+    "baseline_metrics": {"$ref": "#/$defs/metrics_bundle"},
+    "cost_stress": {
+      "type": "object",
+      "required": ["0x", "1x", "2x", "3x"],
+      "properties": {
+        "0x": {"$ref": "#/$defs/cost_row"},
+        "1x": {"$ref": "#/$defs/cost_row"},
+        "2x": {"$ref": "#/$defs/cost_row"},
+        "3x": {"$ref": "#/$defs/cost_row"}
+      },
+      "additionalProperties": false
+    },
+    "parameter_neighborhood": {
+      "type": "object",
+      "required": ["candidate_count", "alive_count", "alive_rate", "best", "top_candidates", "all_candidates", "median_cagr"],
+      "properties": {
+        "candidate_count": {"const": 18},
+        "alive_count": {"type": "integer", "minimum": 0},
+        "alive_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "best": {"$ref": "#/$defs/neighborhood_candidate"},
+        "top_candidates": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/neighborhood_candidate"}},
+        "all_candidates": {"type": "array", "minItems": 18, "items": {"$ref": "#/$defs/neighborhood_candidate"}},
+        "median_cagr": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "walk_forward": {
+      "type": "object",
+      "required": ["fold_count", "folds", "aggregate_oos"],
+      "properties": {
+        "fold_count": {"type": "integer", "minimum": 5},
+        "folds": {"type": "array", "minItems": 5, "items": {"$ref": "#/$defs/fold"}},
+        "aggregate_oos": {"type": "object", "required": ["metrics"], "properties": {"metrics": {"$ref": "#/$defs/metrics_bundle"}}, "additionalProperties": true}
+      },
+      "additionalProperties": false
+    },
+    "yearly_breakdown": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/year_row"}},
+    "decision": {
+      "type": "object",
+      "required": ["status", "live_ready", "paper_ready", "primary_improves_baseline", "oos_cagr", "neighborhood_alive_rate", "reason"],
+      "properties": {
+        "status": {"const": "manual_review_candidate"},
+        "live_ready": {"const": false},
+        "paper_ready": {"const": false},
+        "primary_improves_baseline": {"type": "boolean"},
+        "oos_cagr": {"type": "number"},
+        "neighborhood_alive_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "methodology": {"type": "object", "minProperties": 1}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "metrics_bundle": {
+      "type": "object",
+      "required": ["strategy", "SPY", "QQQ"],
+      "properties": {
+        "strategy": {"$ref": "#/$defs/performance"},
+        "SPY": {"$ref": "#/$defs/performance"},
+        "QQQ": {"$ref": "#/$defs/performance"},
+        "turnover": {"type": "number", "minimum": 0},
+        "rows": {"type": "integer", "minimum": 1},
+        "sample_start": {"type": "string", "minLength": 1},
+        "sample_end": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "performance": {
+      "type": "object",
+      "required": ["true_cagr", "total_return", "max_drawdown", "sharpe_no_risk_free"],
+      "properties": {
+        "true_cagr": {"type": "number"},
+        "arithmetic_annualized_return": {"type": "number"},
+        "total_return": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "sharpe_no_risk_free": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "cost_row": {
+      "type": "object",
+      "required": ["cost_multiplier", "metrics"],
+      "properties": {
+        "cost_multiplier": {"type": "number"},
+        "metrics": {"$ref": "#/$defs/metrics_bundle"}
+      },
+      "additionalProperties": false
+    },
+    "neighborhood_candidate": {
+      "type": "object",
+      "required": ["parameters", "metrics"],
+      "properties": {
+        "parameters": {"type": "object", "minProperties": 1},
+        "metrics": {"$ref": "#/$defs/metrics_bundle"}
+      },
+      "additionalProperties": true
+    },
+    "fold": {
+      "type": "object",
+      "required": ["selected_parameters", "test_metrics"],
+      "properties": {
+        "selected_parameters": {"type": "object", "minProperties": 1},
+        "test_metrics": {"$ref": "#/$defs/metrics_bundle"}
+      },
+      "additionalProperties": true
+    },
+    "year_row": {
+      "type": "object",
+      "required": ["year", "strategy_return", "SPY_return", "QQQ_return", "turnover", "max_drawdown"],
+      "properties": {
+        "year": {"type": "integer"},
+        "strategy_return": {"type": "number"},
+        "SPY_return": {"type": "number"},
+        "QQQ_return": {"type": "number"},
+        "excess_vs_SPY": {"type": "number"},
+        "excess_vs_QQQ": {"type": "number"},
+        "beats_SPY": {"type": "boolean"},
+        "beats_QQQ": {"type": "boolean"},
+        "turnover": {"type": "number", "minimum": 0},
+        "max_drawdown": {"type": "number"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

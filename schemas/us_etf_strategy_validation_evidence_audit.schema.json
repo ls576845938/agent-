@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_strategy_validation_evidence_audit.schema.json",
+  "title": "QuantStation VNEXT US ETF Strategy Validation Evidence Audit",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "strategy_id",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "gate_status",
+    "summary",
+    "requirements",
+    "incomplete_requirements",
+    "source_reports",
+    "blockers",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_strategy_validation_evidence_audit_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": ["string", "null"]},
+    "branch": {"type": ["string", "null"]},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"type": "string"},
+    "status": {
+      "enum": [
+        "validation_evidence_audit_incomplete",
+        "validation_evidence_audit_blocked_data_quality",
+        "validation_evidence_audit_ready_for_forward_observation"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "enum": [
+          "validation_evidence_audit_incomplete",
+          "validation_evidence_audit_blocked_data_quality",
+          "validation_evidence_audit_ready_for_forward_observation"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "decision": {"type": "string", "minLength": 1},
+    "gate_status": {"type": "string", "minLength": 1},
+    "gate_decision": {"type": ["string", "null"]},
+    "summary": {
+      "type": "object",
+      "required": [
+        "requirement_count",
+        "complete_count",
+        "blocked_count",
+        "incomplete_count",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "requirement_count": {"const": 12},
+        "complete_count": {"type": "integer", "minimum": 0, "maximum": 12},
+        "blocked_count": {"type": "integer", "minimum": 0, "maximum": 12},
+        "incomplete_count": {"type": "integer", "minimum": 0, "maximum": 12},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "required": [
+          "requirement_id",
+          "title",
+          "status",
+          "gate_check_key",
+          "gate_check_passed",
+          "source_report_keys",
+          "source_paths",
+          "blocker"
+        ],
+        "properties": {
+          "requirement_id": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "status": {"enum": ["complete", "blocked", "incomplete"]},
+          "gate_check_key": {"type": "string", "minLength": 1},
+          "gate_check_passed": {"type": "boolean"},
+          "source_report_keys": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "source_paths": {"type": "object", "additionalProperties": {"type": "string"}},
+          "blocker": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "incomplete_requirements": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "source_reports": {"type": "object", "additionalProperties": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "audit_only",
+        "validation_evidence_audit_is_not_execution_permission",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "audit_only": {"const": true},
+        "validation_evidence_audit_is_not_execution_permission": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

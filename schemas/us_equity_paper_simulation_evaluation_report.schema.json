@@ -1,0 +1,375 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_paper_simulation_evaluation_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Paper Simulation Evaluation Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "strategy_id",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "ledger_root",
+    "metrics",
+    "ledger_checks",
+    "prestart_evidence",
+    "latest_state",
+    "blockers",
+    "guardrails",
+    "source_reports",
+    "source_ledgers",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_paper_simulation_evaluation_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"const": "us_etf_rotation_min_adv_10m_vol_target_20pct_cap1_5x"},
+    "status": {
+      "enum": [
+        "paper_simulation_not_started",
+        "paper_simulation_observing",
+        "paper_simulation_complete_for_manual_review",
+        "paper_simulation_blocked"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "paper_simulation_not_started",
+          "paper_simulation_observing",
+          "paper_simulation_complete_for_manual_review",
+          "paper_simulation_blocked"
+        ]
+      },
+      "minItems": 4,
+      "uniqueItems": true
+    },
+    "decision": {"const": "do_not_start_live_or_claim_paper_success"},
+    "ledger_root": {"const": "data/paper_ledger/us_equity_etf_rotation_v1"},
+    "metrics": {
+      "type": "object",
+      "required": [
+        "paper_days",
+        "target_position_count",
+        "fill_count",
+        "position_ledger_count",
+        "cash_ledger_count",
+        "snapshot_count",
+        "target_change_count",
+        "total_estimated_slippage",
+        "total_estimated_financing",
+        "latest_equity",
+        "max_drawdown"
+      ],
+      "properties": {
+        "paper_days": {"type": "integer", "minimum": 0},
+        "target_position_count": {"type": "integer", "minimum": 0},
+        "fill_count": {"type": "integer", "minimum": 0},
+        "position_ledger_count": {"type": "integer", "minimum": 0},
+        "cash_ledger_count": {"type": "integer", "minimum": 0},
+        "snapshot_count": {"type": "integer", "minimum": 0},
+        "target_change_count": {"type": "integer", "minimum": 0},
+        "total_estimated_slippage": {"type": "number", "minimum": 0},
+        "total_estimated_financing": {"type": "number", "minimum": 0},
+        "latest_equity": {"type": "number"},
+        "max_drawdown": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "ledger_checks": {
+      "type": "object",
+      "required": ["ledger_completeness", "snapshot_reconciliation", "target_fill_consistency", "trade_reconciliation", "position_cash_consistency", "ledger_pnl_replay", "unsafe_flags_absent"],
+      "properties": {
+        "ledger_completeness": {"$ref": "#/$defs/ledger_completeness"},
+        "snapshot_reconciliation": {"type": "object"},
+        "target_fill_consistency": {"type": "object"},
+        "trade_reconciliation": {"type": "object"},
+        "position_cash_consistency": {"type": "object"},
+        "ledger_pnl_replay": {
+          "type": "object",
+          "required": [
+            "status",
+            "canonical_replay_module",
+            "source",
+            "initial_cash",
+            "raw_fill_count",
+            "effective_fill_count",
+            "snapshot_count",
+            "latest_equity",
+            "net_pnl",
+            "final_cash",
+            "expected_final_cash",
+            "cash_diff",
+            "position_quantity_diffs",
+            "equity_curve",
+            "artifact_hash",
+            "reconciliation",
+            "integrity",
+            "blockers"
+          ],
+          "properties": {
+            "status": {"enum": ["not_started", "passed", "blocked"]},
+            "canonical_replay_module": {"const": "quant_us.backtest.ledger_pnl"},
+            "source": {"const": "fills_positions_cash_ledger"},
+            "initial_cash": {"type": "number"},
+            "raw_fill_count": {"type": "integer", "minimum": 0},
+            "effective_fill_count": {"type": "integer", "minimum": 0},
+            "snapshot_count": {"type": "integer", "minimum": 0},
+            "latest_equity": {"type": "number"},
+            "net_pnl": {"type": "number"},
+            "final_cash": {"type": "number"},
+            "expected_final_cash": {"type": "number"},
+            "cash_diff": {"type": "number"},
+            "position_quantity_diffs": {"type": "object", "additionalProperties": {"type": "number"}},
+            "equity_curve": {"type": "array", "items": {"type": "object"}},
+            "artifact_hash": {"type": "string"},
+            "reconciliation": {"type": "object"},
+            "integrity": {"type": "object"},
+            "blockers": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": false
+        },
+        "unsafe_flags_absent": {
+          "type": "object",
+          "required": ["passed", "unsafe_flags"],
+          "properties": {
+            "passed": {"type": "boolean"},
+            "unsafe_flags": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "prestart_evidence": {
+      "type": "object",
+      "required": [
+        "ledger_started",
+        "ledger_root_exists",
+        "ledger_root",
+        "expected_ledger_files",
+        "missing_ledger_files",
+        "ledger_file_statuses",
+        "roll_report_status",
+        "roll_cycle_status",
+        "roll_blockers",
+        "roll_ledger_materialization_status",
+        "roll_ledger_writes_performed",
+        "roll_ledger_rows_written_this_cycle",
+        "roll_ledger_materialization_next_action",
+        "blocked_by_roll_report",
+        "ledger_write_expected",
+        "readiness_status",
+        "readiness_decision",
+        "manual_start_approved",
+        "independent_ledger_root_verified",
+        "next_action",
+        "blockers"
+      ],
+      "properties": {
+        "ledger_started": {"type": "boolean"},
+        "ledger_root_exists": {"type": "boolean"},
+        "ledger_root": {"const": "data/paper_ledger/us_equity_etf_rotation_v1"},
+        "expected_ledger_files": {
+          "type": "array",
+          "items": {
+            "enum": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports"]
+          },
+          "minItems": 7,
+          "uniqueItems": true
+        },
+        "missing_ledger_files": {
+          "type": "array",
+          "items": {
+            "enum": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports"]
+          },
+          "uniqueItems": true
+        },
+        "ledger_file_statuses": {
+          "type": "object",
+          "required": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports"],
+          "additionalProperties": false,
+          "properties": {
+            "target_positions": {"$ref": "#/$defs/ledger_file_status"},
+            "fills": {"$ref": "#/$defs/ledger_file_status"},
+            "positions": {"$ref": "#/$defs/ledger_file_status"},
+            "cash_ledger": {"$ref": "#/$defs/ledger_file_status"},
+            "portfolio_snapshots": {"$ref": "#/$defs/ledger_file_status"},
+            "validation_state": {"$ref": "#/$defs/ledger_file_status"},
+            "daily_reports": {"$ref": "#/$defs/ledger_file_status"}
+          }
+        },
+        "roll_report_status": {"type": "string"},
+        "roll_cycle_status": {"type": "string"},
+        "roll_blockers": {"type": "array", "items": {"type": "string"}},
+        "roll_ledger_materialization_status": {"type": "string"},
+        "roll_ledger_writes_performed": {"type": "boolean"},
+        "roll_ledger_rows_written_this_cycle": {
+          "type": "object",
+          "required": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports"],
+          "properties": {
+            "target_positions": {"type": "integer", "minimum": 0},
+            "fills": {"type": "integer", "minimum": 0},
+            "positions": {"type": "integer", "minimum": 0},
+            "cash_ledger": {"type": "integer", "minimum": 0},
+            "portfolio_snapshots": {"type": "integer", "minimum": 0},
+            "validation_state": {"type": "integer", "minimum": 0},
+            "daily_reports": {"type": "integer", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "roll_ledger_materialization_next_action": {"type": "string"},
+        "blocked_by_roll_report": {"type": "boolean"},
+        "ledger_write_expected": {"type": "boolean"},
+        "readiness_status": {"type": "string"},
+        "readiness_decision": {"type": "string"},
+        "manual_start_approved": {"type": "boolean"},
+        "independent_ledger_root_verified": {"type": "boolean"},
+        "next_action": {"type": "string", "minLength": 1},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "latest_state": {
+      "type": "object",
+      "required": ["state_present", "last_processed_timestamp", "current_equity", "target_position_count", "fill_count"],
+      "properties": {
+        "state_present": {"type": "boolean"},
+        "last_processed_timestamp": {"type": "string"},
+        "current_equity": {"type": "number"},
+        "target_position_count": {"type": "integer", "minimum": 0},
+        "fill_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "evaluation_only",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used",
+        "live_ready_claim_allowed"
+      ],
+      "properties": {
+        "evaluation_only": {"const": true},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false},
+        "live_ready_claim_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "source_reports": {
+      "type": "object",
+      "required": ["paper_roll"],
+      "properties": {
+        "paper_roll": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "source_ledgers": {
+      "type": "object",
+      "required": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports"],
+      "properties": {
+        "target_positions": {"type": "string", "minLength": 1},
+        "fills": {"type": "string", "minLength": 1},
+        "positions": {"type": "string", "minLength": 1},
+        "cash_ledger": {"type": "string", "minLength": 1},
+        "portfolio_snapshots": {"type": "string", "minLength": 1},
+        "validation_state": {"type": "string", "minLength": 1},
+        "daily_reports": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "ledger_file_status": {
+      "type": "object",
+      "required": ["path", "exists", "row_count"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "exists": {"type": "boolean"},
+        "row_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "ledger_completeness": {
+      "type": "object",
+      "required": [
+        "passed",
+        "status",
+        "ledger_started",
+        "ledger_write_expected",
+        "expected_files",
+        "missing_files",
+        "row_counts",
+        "target_position_count",
+        "snapshot_count",
+        "blockers",
+        "next_action"
+      ],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "status": {"enum": ["complete", "incomplete", "not_started", "blocked_before_write"]},
+        "ledger_started": {"type": "boolean"},
+        "ledger_write_expected": {"type": "boolean"},
+        "expected_files": {
+          "type": "array",
+          "items": {
+            "enum": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports"]
+          },
+          "minItems": 7,
+          "uniqueItems": true
+        },
+        "missing_files": {
+          "type": "array",
+          "items": {
+            "enum": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports"]
+          },
+          "uniqueItems": true
+        },
+        "row_counts": {
+          "type": "object",
+          "required": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports"],
+          "properties": {
+            "target_positions": {"type": "integer", "minimum": 0},
+            "fills": {"type": "integer", "minimum": 0},
+            "positions": {"type": "integer", "minimum": 0},
+            "cash_ledger": {"type": "integer", "minimum": 0},
+            "portfolio_snapshots": {"type": "integer", "minimum": 0},
+            "validation_state": {"type": "integer", "minimum": 0},
+            "daily_reports": {"type": "integer", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "target_position_count": {"type": "integer", "minimum": 0},
+        "snapshot_count": {"type": "integer", "minimum": 0},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "next_action": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

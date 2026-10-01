@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_vendor_drop_preflight_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Vendor Drop Preflight Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "source_dir",
+    "package_report",
+    "required_file_count",
+    "ready_file_count",
+    "missing_file_count",
+    "required_files",
+    "missing_required_files",
+    "ready_required_files",
+    "file_copy_plan",
+    "import_metadata_requirements",
+    "package_checks",
+    "csv_checks",
+    "blockers",
+    "operator_next_actions",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_vendor_drop_preflight_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "vendor_drop_preflight_blocked",
+        "vendor_drop_preflight_waiting_for_vendor_files",
+        "vendor_drop_preflight_ready_for_readiness_check"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "vendor_drop_preflight_blocked",
+          "vendor_drop_preflight_waiting_for_vendor_files",
+          "vendor_drop_preflight_ready_for_readiness_check"
+        ]
+      },
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "source_dir": {"type": "string", "minLength": 1},
+    "package_report": {"type": "string", "minLength": 1},
+    "required_file_count": {"type": "integer", "minimum": 6},
+    "ready_file_count": {"type": "integer", "minimum": 0},
+    "missing_file_count": {"type": "integer", "minimum": 0},
+    "required_files": {
+      "type": "array",
+      "minItems": 6,
+      "items": {"$ref": "#/$defs/required_file"}
+    },
+    "missing_required_files": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/required_file"}
+    },
+    "ready_required_files": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/required_file"}
+    },
+    "file_copy_plan": {
+      "type": "array",
+      "minItems": 6,
+      "items": {"$ref": "#/$defs/file_copy_plan_item"}
+    },
+    "import_metadata_requirements": {"$ref": "#/$defs/import_metadata_requirements"},
+    "package_checks": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/check"}},
+    "csv_checks": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/check"}},
+    "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "operator_next_actions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "preflight_only",
+        "templates_only",
+        "source_vendor_data_modified",
+        "production_bundle_written",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "preflight_only": {"const": true},
+        "templates_only": {"const": false},
+        "source_vendor_data_modified": {"const": false},
+        "production_bundle_written": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "required_file": {
+      "type": "object",
+      "required": [
+        "table",
+        "filename",
+        "path",
+        "required_fields",
+        "exists",
+        "header_matches",
+        "data_row_count",
+        "ready",
+        "blocker"
+      ],
+      "properties": {
+        "table": {"type": "string", "minLength": 1},
+        "filename": {"type": "string", "pattern": "\\.csv$"},
+        "path": {"type": "string", "minLength": 1},
+        "required_fields": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+        "exists": {"type": "boolean"},
+        "header_matches": {"type": "boolean"},
+        "data_row_count": {"type": "integer", "minimum": 0},
+        "ready": {"type": "boolean"},
+        "blocker": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "file_copy_plan_item": {
+      "type": "object",
+      "required": [
+        "table",
+        "filename",
+        "template_path",
+        "target_path",
+        "required_fields",
+        "current_state",
+        "current_blocker",
+        "operator_action",
+        "ready_after_action_requires_rerun"
+      ],
+      "properties": {
+        "table": {"type": "string", "minLength": 1},
+        "filename": {"type": "string", "pattern": "\\.csv$"},
+        "template_path": {"type": "string", "minLength": 1},
+        "target_path": {"type": "string", "minLength": 1},
+        "required_fields": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+        "current_state": {"enum": ["missing", "header_mismatch", "header_only", "ready"]},
+        "current_blocker": {"type": "string"},
+        "operator_action": {
+          "enum": [
+            "copy_licensed_csv_with_exact_header_to_target_path",
+            "replace_file_or_reexport_with_exact_template_header",
+            "replace_template_with_licensed_vendor_rows",
+            "no_action_required"
+          ]
+        },
+        "ready_after_action_requires_rerun": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "import_metadata_requirements": {
+      "type": "object",
+      "required": [
+        "bundle_id",
+        "source_provider_allowed_values",
+        "source_type_required",
+        "required_cli_args",
+        "optional_cli_args",
+        "preferred_import_command_template",
+        "notes"
+      ],
+      "properties": {
+        "bundle_id": {"const": "manual_vendor_bundle_v1"},
+        "source_provider_allowed_values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "source_type_required": {"const": "production"},
+        "required_cli_args": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^--"}
+        },
+        "optional_cli_args": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^--"}
+        },
+        "preferred_import_command_template": {"type": "string", "minLength": 1},
+        "notes": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "check": {
+      "type": "object",
+      "required": ["check_id", "passed", "blocker", "evidence"],
+      "properties": {
+        "check_id": {"type": "string", "minLength": 1},
+        "passed": {"type": "boolean"},
+        "blocker": {"type": "string"},
+        "evidence": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

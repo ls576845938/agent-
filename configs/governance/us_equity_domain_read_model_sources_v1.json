@@ -1,0 +1,84 @@
+{
+  "schema_version": "us_equity_domain_read_model_sources_v1",
+  "domain": "us_equity",
+  "path_contract": {
+    "repository_relative_paths_use_posix": true,
+    "committed_blob_bytes_are_authoritative": true,
+    "working_tree_bytes_are_not_consumed": true,
+    "external_absolute_paths_allowed": false
+  },
+  "sources": [
+    {
+      "id": "g06_pit_dataready",
+      "integration_commit": "755ed39040e44a1cec720578100ea3b2343f55b9",
+      "readiness_class": "research_ready",
+      "layers": [
+        {
+          "id": "data",
+          "readiness_class": "research_ready"
+        }
+      ],
+      "artifact": {
+        "path": "docs/handoffs/US-V3-PIT-DATAREADY-CONSUMER-01/us_equity_pit_dataready_consumption_report.json",
+        "sha256": "0dcae0d5c827e4a270a510af51185d2d1d96ba538185040df92ff3e4d7d58c76",
+        "schema_version": "us_equity_pit_dataready_consumption_report_v1"
+      },
+      "manifest": {
+        "path": ".agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json",
+        "sha256": "f78e8db20b94b2d23a800adcb143d67afacdde74aa81b6232b508b40b8c7b10e"
+      }
+    },
+    {
+      "id": "g07_canonical_backtest_portfolio",
+      "integration_commit": "7bba9192664f23a5f25e1123763d61e5407e0fe2",
+      "readiness_class": "backtest_ready",
+      "layers": [
+        {
+          "id": "backtest",
+          "readiness_class": "backtest_ready"
+        },
+        {
+          "id": "portfolio",
+          "readiness_class": "backtest_ready"
+        }
+      ],
+      "artifact": {
+        "path": "docs/handoffs/US-V3-CANONICAL-BACKTEST-PORTFOLIO-EVIDENCE-01/evidence/report.json",
+        "sha256": "67db58fdd826a3268f7945ea00793e69d335ec40b76d753340bae4cc84005223",
+        "schema_version": "us_v3_canonical_backtest_portfolio_evidence_v1"
+      },
+      "manifest": {
+        "path": "docs/handoffs/US-V3-CANONICAL-BACKTEST-PORTFOLIO-EVIDENCE-01/evidence/manifest.json",
+        "sha256": "8cb1f04e96fdf599c452d0898c6145082a1a2705c670607f700964241cb51d71"
+      }
+    },
+    {
+      "id": "g08_paper_oms_reconciliation",
+      "integration_commit": "66986fb04ecb4d158cda3721032f964e58405a4a",
+      "readiness_class": "quality_checked",
+      "layers": [
+        {
+          "id": "oms",
+          "readiness_class": "quality_checked"
+        },
+        {
+          "id": "ledger",
+          "readiness_class": "quality_checked"
+        },
+        {
+          "id": "replay",
+          "readiness_class": "quality_checked"
+        }
+      ],
+      "artifact": {
+        "path": "docs/handoffs/US-V3-PAPER-OMS-RECONCILIATION-01/evidence/report.json",
+        "sha256": "eeabc3672c72910431c7535b47970411da9b98f932e64f7ffc84c2a338924ee3",
+        "schema_version": "us_v3_paper_oms_reconciliation_v1"
+      },
+      "manifest": {
+        "path": "docs/handoffs/US-V3-PAPER-OMS-RECONCILIATION-01/evidence/manifest.json",
+        "sha256": "7144ba16441be95573be67d476ac5f9ae00f75f4ae7e1956e2eb00cfcd28fc87"
+      }
+    }
+  ]
+}

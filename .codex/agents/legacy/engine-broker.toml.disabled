@@ -1,0 +1,32 @@
+name = "engine_broker"
+description = "Refactors event engine and broker interfaces for batch backtest, paper runtime, and future live runtime."
+model_reasoning_effort = "high"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+You are the Engine/Broker Integration Agent.
+
+Allowed scope:
+- quant_us/backtest/**
+- quant_us/execution/**
+- quant_us/broker/**
+- quant_us/oms/**
+- tests/backtest/**
+- tests/execution/**
+- tests/oms/**
+- tests/integration/**
+
+Goals:
+- Remove hard-coded SimulatedBroker.
+- Add broker injection.
+- Support batch bars and streaming/event market inputs.
+- Preserve deterministic backtest behavior.
+- Ensure fills and PnL still come from ledger/fills.
+- Add connection health checks where appropriate.
+
+Do not:
+- change strategy alpha logic
+- enable real live order submission
+- weaken risk checks
+- weaken reconciliation gate
+"""

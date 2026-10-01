@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_local_pit_file_discovery_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Local PIT File Discovery Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "incoming_drop_dir",
+    "search_roots",
+    "required_file_count",
+    "ready_for_copy_count",
+    "missing_filename_count",
+    "ready_filenames",
+    "missing_filenames",
+    "files",
+    "operator_next_actions",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_local_pit_file_discovery_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "pit_file_discovery_ready_for_copy",
+        "pit_file_discovery_no_complete_candidate_set"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "pit_file_discovery_ready_for_copy",
+          "pit_file_discovery_no_complete_candidate_set"
+        ]
+      },
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "decision": {"type": "string", "minLength": 1},
+    "incoming_drop_dir": {"const": "data/external/us_equity_lineage/incoming/manual_vendor_drop"},
+    "search_roots": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "required_file_count": {"type": "integer", "minimum": 1},
+    "ready_for_copy_count": {"type": "integer", "minimum": 0},
+    "missing_filename_count": {"type": "integer", "minimum": 0},
+    "ready_filenames": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "missing_filenames": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/fileStatus"}
+    },
+    "operator_next_actions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "discovery_only",
+        "files_copied",
+        "vendor_data_imported",
+        "configuration_mutated_by_this_report",
+        "license_reviewed_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "discovery_only": {"const": true},
+        "files_copied": {"const": false},
+        "vendor_data_imported": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "license_reviewed_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "fileStatus": {
+      "type": "object",
+      "required": [
+        "table",
+        "filename",
+        "required_fields",
+        "ready_for_copy",
+        "ready_candidates",
+        "excluded_candidates",
+        "excluded_candidate_count",
+        "target_path"
+      ],
+      "properties": {
+        "table": {"type": "string", "minLength": 1},
+        "filename": {"type": "string", "minLength": 1},
+        "required_fields": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "ready_for_copy": {"type": "boolean"},
+        "ready_candidates": {"type": "array", "items": {"$ref": "#/$defs/candidate"}},
+        "excluded_candidates": {"type": "array", "items": {"$ref": "#/$defs/excludedCandidate"}},
+        "excluded_candidate_count": {"type": "integer", "minimum": 0},
+        "target_path": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "path",
+        "row_count",
+        "header_fields",
+        "missing_required_fields",
+        "file_size_bytes"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "row_count": {"type": "integer", "minimum": 0},
+        "header_fields": {"type": "array", "items": {"type": "string"}},
+        "missing_required_fields": {"type": "array", "items": {"type": "string"}},
+        "file_size_bytes": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "excludedCandidate": {
+      "type": "object",
+      "required": [
+        "path",
+        "row_count",
+        "header_fields",
+        "missing_required_fields",
+        "file_size_bytes",
+        "reason"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "row_count": {"type": "integer", "minimum": 0},
+        "header_fields": {"type": "array", "items": {"type": "string"}},
+        "missing_required_fields": {"type": "array", "items": {"type": "string"}},
+        "file_size_bytes": {"type": "integer", "minimum": 0},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_data_freshness_daily_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Data Freshness Daily Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "as_of_date",
+    "status",
+    "asset",
+    "price_freshness",
+    "macro_freshness",
+    "data_status",
+    "blockers",
+    "warnings",
+    "guardrails",
+    "source_reports",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_data_freshness_daily_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "as_of_date": {"type": "string", "minLength": 1},
+    "status": {"enum": ["pass", "blocked"]},
+    "asset": {"const": "us_equity"},
+    "price_freshness": {
+      "type": "object",
+      "required": [
+        "provider",
+        "import_status",
+        "symbol_count",
+        "missing_symbols",
+        "latest_common_date",
+        "stale_calendar_days",
+        "max_stale_calendar_days",
+        "passed"
+      ],
+      "properties": {
+        "provider": {"type": ["string", "null"]},
+        "import_status": {"type": ["string", "null"]},
+        "symbol_count": {"type": ["integer", "number", "null"], "minimum": 0},
+        "missing_symbols": {"type": "array", "items": {"type": "string"}},
+        "latest_common_date": {"type": ["string", "null"]},
+        "stale_calendar_days": {"type": ["integer", "null"]},
+        "max_stale_calendar_days": {"type": "integer", "minimum": 0},
+        "passed": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "macro_freshness": {
+      "type": "object",
+      "required": ["status", "source", "latest_common_date", "passed"],
+      "properties": {
+        "status": {"enum": ["missing", "stale", "unknown", "present"]},
+        "source": {"type": ["string", "null"]},
+        "latest_common_date": {"type": ["string", "null"]},
+        "passed": {"type": "boolean"},
+        "source_status": {"type": ["string", "null"]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "data_status": {
+      "type": "object",
+      "required": ["status", "promotion_clean", "data_lineage_grade", "blockers"],
+      "properties": {
+        "status": {"type": ["string", "null"]},
+        "promotion_clean": {"type": ["boolean", "null"]},
+        "data_lineage_grade": true,
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "freshness_gate_only",
+        "forward_runner_must_block_on_status_blocked",
+        "macro_missing_must_not_be_silently_assumed_neutral",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "freshness_gate_only": {"const": true},
+        "forward_runner_must_block_on_status_blocked": {"const": true},
+        "macro_missing_must_not_be_silently_assumed_neutral": {"const": true},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "source_reports": {
+      "type": "object",
+      "required": ["tiingo_report", "data_status"],
+      "additionalProperties": {"type": "string"}
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

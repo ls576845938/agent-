@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_dataready_consumption_report.schema.json",
+  "title": "BTC Immutable DataReady Consumption Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "current_head",
+    "status",
+    "decision",
+    "runtime_pointer",
+    "expected_datasets",
+    "manifest_checks",
+    "data_checks",
+    "readiness",
+    "promotion_blockers",
+    "blockers",
+    "next_action",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_dataready_consumption_report_v1"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "current_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "status": {"enum": ["quality_checked", "blocked"]},
+    "decision": {
+      "enum": [
+        "consume_immutable_data_read_only",
+        "block_dataready_consumption_fail_closed"
+      ]
+    },
+    "runtime_pointer": {"$ref": "#/$defs/check"},
+    "expected_datasets": {
+      "type": "object",
+      "required": ["kline_snapshot", "okx_timestamp_aligned_public_l2"],
+      "properties": {
+        "kline_snapshot": {"const": "btc-market-data-sqlite-snapshot"},
+        "okx_timestamp_aligned_public_l2": {
+          "const": "btc-okx-timestamp-aligned-public-l2-history"
+        }
+      },
+      "additionalProperties": false
+    },
+    "manifest_checks": {
+      "type": "object",
+      "required": ["kline_snapshot", "okx_timestamp_aligned_public_l2"],
+      "properties": {
+        "kline_snapshot": {"$ref": "#/$defs/manifestCheck"},
+        "okx_timestamp_aligned_public_l2": {"$ref": "#/$defs/manifestCheck"}
+      },
+      "additionalProperties": false
+    },
+    "data_checks": {
+      "type": "object",
+      "required": ["klines", "okx_public_l2"],
+      "properties": {
+        "klines": {"$ref": "#/$defs/check"},
+        "okx_public_l2": {"$ref": "#/$defs/check"}
+      },
+      "additionalProperties": false
+    },
+    "readiness": {
+      "type": "object",
+      "required": [
+        "quality_checked",
+        "research_ready",
+        "backtest_ready",
+        "promotion_evidence_ready"
+      ],
+      "properties": {
+        "quality_checked": {"type": "boolean"},
+        "research_ready": {"type": "boolean"},
+        "backtest_ready": {"type": "boolean"},
+        "promotion_evidence_ready": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "promotion_blockers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string"}
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "next_action": {"type": "string", "minLength": 1},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "mutable_sqlite_consumed",
+        "network_collection_used",
+        "shared_data_published_by_consumer",
+        "promotion_unlock_allowed",
+        "paper_or_live_unlock_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "withdraw_allowed"
+      ],
+      "properties": {
+        "mutable_sqlite_consumed": {"const": false},
+        "network_collection_used": {"const": false},
+        "shared_data_published_by_consumer": {"const": false},
+        "promotion_unlock_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "withdraw_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "required": ["status", "blockers"],
+      "properties": {
+        "status": {"enum": ["pass", "blocked", "missing"]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "manifestCheck": {
+      "type": "object",
+      "required": [
+        "status",
+        "dataset_id",
+        "dataset_version",
+        "manifest_source",
+        "immutable_uri",
+        "resolved_path",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"enum": ["pass", "blocked", "missing"]},
+        "dataset_id": {"type": "string"},
+        "dataset_version": {"type": "string"},
+        "manifest_source": {"type": "string"},
+        "immutable_uri": {"type": "string"},
+        "resolved_path": {"type": "string"},
+        "aggregate_sha256": {"type": "string"},
+        "producer_commit": {"type": "string"},
+        "readiness_class": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

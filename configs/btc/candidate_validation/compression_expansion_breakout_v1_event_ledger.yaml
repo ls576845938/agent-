@@ -1,0 +1,36 @@
+schema_version: btc_candidate_event_ledger_validation_v1
+strategy_id: btc_compression_expansion_breakout_v1
+source_hypothesis_id: compression_expansion_breakout_v0
+source_skeleton: configs/btc/hypotheses/compression_expansion_breakout_v1_skeleton.yaml
+mode: event_ledger_candidate_validation
+promotion_status: research_candidate
+paper_ready: false
+live_ready: false
+live_enabled: false
+paper_auto_start: false
+live_frozen: true
+event_ledger_required: true
+pnl_source: ledger_fills
+side: long_only
+selected_direction: upside_breakout
+params:
+  time_exit_bars: 48
+  cooldown_bars: 12
+  signal_scale: 0.20
+  min_reentry_delay_bars: 12
+  no_orderflow_entry: true
+  no_short: true
+gates:
+  profit_factor: 1.15
+  event_profit_factor: 1.15
+  annual_turnover: 10.0
+  walk_forward_pass_rate: 0.80
+  regime_pass_rate: 0.75
+  max_drawdown_pct_floor: -15.0
+  dsr: 0.10
+  pbo: 0.50
+safety:
+  paper_queue: LOCKED
+  live: FROZEN
+  real_broker_api_allowed: false
+  real_orders_allowed: false

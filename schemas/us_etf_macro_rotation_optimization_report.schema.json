@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_macro_rotation_optimization_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Macro Rotation Optimization Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "strategy_id",
+    "status",
+    "live_ready",
+    "paper_ready",
+    "price_source",
+    "macro_status",
+    "macro_path",
+    "focus_years",
+    "baseline",
+    "schemes",
+    "best_overall",
+    "methodology"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_macro_rotation_optimization_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "strategy_id": {"type": "string", "minLength": 1},
+    "status": {"const": "research_only"},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "price_source": {"type": "string", "minLength": 1},
+    "macro_status": {"type": "string", "minLength": 1},
+    "macro_path": {"type": ["string", "null"]},
+    "focus_years": {
+      "type": "array",
+      "minItems": 4,
+      "contains": {"const": 2015},
+      "items": {"type": "integer"}
+    },
+    "baseline": {"$ref": "#/$defs/candidate"},
+    "schemes": {
+      "type": "object",
+      "required": [
+        "v1_macro_floor",
+        "v1_turnover_guard",
+        "v1_risk_capped_selection",
+        "v1_defense_regime_cap",
+        "v1_combined_conservative"
+      ],
+      "properties": {
+        "v1_macro_floor": {"$ref": "#/$defs/scheme"},
+        "v1_turnover_guard": {"$ref": "#/$defs/scheme"},
+        "v1_risk_capped_selection": {"$ref": "#/$defs/scheme"},
+        "v1_defense_regime_cap": {"$ref": "#/$defs/scheme"},
+        "v1_combined_conservative": {"$ref": "#/$defs/scheme"}
+      },
+      "additionalProperties": false
+    },
+    "best_overall": {"$ref": "#/$defs/candidate"},
+    "methodology": {
+      "type": "object",
+      "minProperties": 1
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "scheme": {
+      "type": "object",
+      "required": ["candidate_count", "best", "top_candidates", "all_candidates"],
+      "properties": {
+        "candidate_count": {"type": "integer", "minimum": 1},
+        "best": {"$ref": "#/$defs/candidate"},
+        "top_candidates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/candidate"}
+        },
+        "all_candidates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/candidate"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "scheme_id",
+        "description",
+        "parameters",
+        "metrics",
+        "focus_years",
+        "diagnostics",
+        "mean_focus_excess_return",
+        "mean_focus_excess_improvement_vs_baseline",
+        "optimization_score"
+      ],
+      "properties": {
+        "scheme_id": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "parameters": {"type": "object"},
+        "metrics": {"$ref": "#/$defs/metrics"},
+        "focus_years": {
+          "type": "object",
+          "required": ["2015", "2022", "2023", "2024"],
+          "properties": {
+            "2015": {"$ref": "#/$defs/focus_year"},
+            "2022": {"$ref": "#/$defs/focus_year"},
+            "2023": {"$ref": "#/$defs/focus_year"},
+            "2024": {"$ref": "#/$defs/focus_year"}
+          },
+          "additionalProperties": false
+        },
+        "diagnostics": {"$ref": "#/$defs/diagnostics"},
+        "mean_focus_excess_return": {"type": "number"},
+        "mean_focus_excess_improvement_vs_baseline": {"type": "number"},
+        "optimization_score": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "total_return",
+        "cagr",
+        "sharpe",
+        "max_drawdown",
+        "benchmark_total_return",
+        "turnover",
+        "avg_rebalance_turnover"
+      ],
+      "properties": {
+        "total_return": {"type": "number"},
+        "cagr": {"type": "number"},
+        "sharpe": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "benchmark_total_return": {"type": "number"},
+        "turnover": {"type": "number", "minimum": 0},
+        "avg_rebalance_turnover": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "focus_year": {
+      "type": "object",
+      "required": [
+        "strategy_return",
+        "benchmark_return",
+        "excess_return",
+        "turnover",
+        "avg_offensive_weight",
+        "avg_defense_weight"
+      ],
+      "properties": {
+        "strategy_return": {"type": "number"},
+        "benchmark_return": {"type": "number"},
+        "excess_return": {"type": "number"},
+        "turnover": {"type": "number", "minimum": 0},
+        "avg_offensive_weight": {"type": "number"},
+        "avg_defense_weight": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "diagnostics": {
+      "type": "object",
+      "required": [
+        "turnover",
+        "rebalance_count",
+        "rebalance_reason_counts",
+        "avg_rebalance_turnover",
+        "t_plus_1_execution"
+      ],
+      "properties": {
+        "turnover": {"type": "number", "minimum": 0},
+        "rebalance_count": {"type": "integer", "minimum": 0},
+        "rebalance_reason_counts": {"type": "object"},
+        "avg_rebalance_turnover": {"type": "number", "minimum": 0},
+        "t_plus_1_execution": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  }
+}

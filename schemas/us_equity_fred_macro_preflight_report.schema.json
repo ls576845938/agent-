@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_fred_macro_preflight_report.schema.json",
+  "title": "QuantStation VNEXT US Equity FRED Macro Preflight Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "provider",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "current_session_api_key_present",
+    "api_key_env_var",
+    "api_key_value_recorded",
+    "import_report",
+    "freshness_report",
+    "macro_release_lag",
+    "csv_profile",
+    "warnings",
+    "blockers",
+    "guardrails",
+    "source_files",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_fred_macro_preflight_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": ["string", "null"]},
+    "branch": {"type": ["string", "null"]},
+    "asset": {"const": "us_equity"},
+    "provider": {"const": "FRED"},
+    "status": {"enum": ["fred_macro_preflight_pass", "fred_macro_preflight_warn", "fred_macro_preflight_blocked"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["fred_macro_preflight_pass", "fred_macro_preflight_warn", "fred_macro_preflight_blocked"]},
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "decision": {"enum": ["repair_fred_macro_data_chain", "research_macro_data_available_with_caveats"]},
+    "current_session_api_key_present": {"type": "boolean"},
+    "api_key_env_var": {"const": "FRED_API_KEY"},
+    "api_key_value_recorded": {"const": false},
+    "import_report": {
+      "type": "object",
+      "required": [
+        "status",
+        "source_type",
+        "latest_common_date",
+        "api_key_used_for_macro_data",
+        "token_written_to_artifacts",
+        "series",
+        "latest_by_series"
+      ],
+      "properties": {
+        "status": {"type": ["string", "null"]},
+        "source_type": {"type": ["string", "null"]},
+        "latest_common_date": {"type": ["string", "null"]},
+        "api_key_used_for_macro_data": {"type": ["boolean", "null"]},
+        "token_written_to_artifacts": {"type": ["boolean", "null"]},
+        "series": {"type": "array", "items": {"type": "string"}},
+        "latest_by_series": {"type": "object", "additionalProperties": true}
+      },
+      "additionalProperties": false
+    },
+    "freshness_report": {
+      "type": "object",
+      "required": ["status", "macro_freshness_status", "blockers"],
+      "properties": {
+        "status": {"type": ["string", "null"]},
+        "macro_freshness_status": {"type": ["string", "null"]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "macro_release_lag": {
+      "type": "object",
+      "required": ["status", "macro_lag_days", "release_calendar_fields_present", "research_proxy_only"],
+      "properties": {
+        "status": {"type": ["string", "null"]},
+        "macro_lag_days": {"type": ["integer", "number", "null"]},
+        "release_calendar_fields_present": {"type": ["boolean", "null"]},
+        "research_proxy_only": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "csv_profile": {
+      "type": "object",
+      "required": ["exists", "row_count", "columns", "latest_timestamp_utc"],
+      "properties": {
+        "exists": {"type": "boolean"},
+        "row_count": {"type": "integer", "minimum": 0},
+        "columns": {"type": "array", "items": {"type": "string"}},
+        "latest_timestamp_utc": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "macro_preflight_only",
+        "api_key_value_recorded",
+        "token_written_to_artifacts",
+        "research_macro_data_is_not_production_pit",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "freshness_gate_only"
+      ],
+      "properties": {
+        "macro_preflight_only": {"const": true},
+        "api_key_value_recorded": {"const": false},
+        "token_written_to_artifacts": {"const": false},
+        "research_macro_data_is_not_production_pit": {"type": "boolean"},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "freshness_gate_only": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "source_files": {
+      "type": "object",
+      "required": ["import_report", "freshness_report", "macro_release_lag_report", "macro_csv"],
+      "additionalProperties": {"type": "string"}
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

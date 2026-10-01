@@ -1,0 +1,353 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_intraday_short_cycle_alpha_probe_report.schema.json",
+  "title": "QuantStation VNEXT BTC Intraday Short-Cycle Alpha Probe Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "distribution_probe_completed",
+    "alpha_distribution_observed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "true_scalping_allowed",
+    "source_intraday_short_cycle_alpha_plan",
+    "source_data_status",
+    "source_cost_model",
+    "data_context",
+    "cost_context",
+    "probe_parameters",
+    "family_results",
+    "best_family",
+    "acceptance_gates",
+    "guardrails",
+    "interpretation",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_intraday_short_cycle_alpha_probe_report_v1"},
+    "generated_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "scope": {"const": "research_only_distribution_probe_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "probe_data_blocked",
+        "probe_completed_no_distribution_edge",
+        "probe_completed_candidate_blocked"
+      ]
+    },
+    "decision": {
+      "enum": [
+        "repair_intraday_probe_data",
+        "continue_intraday_alpha_research",
+        "run_event_ledger_backtest_for_best_short_cycle_family"
+      ]
+    },
+    "next_required_action": {
+      "enum": [
+        "repair_5m_15m_sqlite_data",
+        "refine_short_cycle_event_definitions_before_candidate",
+        "design_research_only_event_ledger_backtest_for_best_probe_family"
+      ]
+    },
+    "distribution_probe_completed": {"type": "boolean"},
+    "alpha_distribution_observed": {"type": "boolean"},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "source_intraday_short_cycle_alpha_plan": {"type": ["string", "null"]},
+    "source_data_status": {"type": ["string", "null"]},
+    "source_cost_model": {"type": ["string", "null"]},
+    "data_context": {"$ref": "#/$defs/dataContext"},
+    "cost_context": {"$ref": "#/$defs/costContext"},
+    "probe_parameters": {"$ref": "#/$defs/probeParameters"},
+    "family_results": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/familyResult"}
+    },
+    "best_family": {
+      "anyOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/bestFamily"}
+      ]
+    },
+    "acceptance_gates": {"$ref": "#/$defs/acceptanceGates"},
+    "guardrails": {"$ref": "#/$defs/guardrails"},
+    "interpretation": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "probe_completed_no_distribution_edge"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "decision": {"const": "continue_intraday_alpha_research"},
+          "next_required_action": {"const": "refine_short_cycle_event_definitions_before_candidate"},
+          "distribution_probe_completed": {"const": true},
+          "alpha_distribution_observed": {"const": false},
+          "blockers": {"minItems": 1}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "probe_completed_candidate_blocked"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "decision": {"const": "run_event_ledger_backtest_for_best_short_cycle_family"},
+          "next_required_action": {"const": "design_research_only_event_ledger_backtest_for_best_probe_family"},
+          "distribution_probe_completed": {"const": true},
+          "alpha_distribution_observed": {"const": true},
+          "candidate_generation_allowed": {"const": false},
+          "blockers": {"minItems": 1}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "probe_data_blocked"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "decision": {"const": "repair_intraday_probe_data"},
+          "next_required_action": {"const": "repair_5m_15m_sqlite_data"},
+          "distribution_probe_completed": {"const": false},
+          "alpha_distribution_observed": {"const": false},
+          "blockers": {"minItems": 1}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "dataContext": {
+      "type": "object",
+      "required": [
+        "db_path",
+        "db_exists",
+        "exchange",
+        "symbol",
+        "market_type",
+        "source_type",
+        "intervals",
+        "data_status",
+        "data_status_blockers"
+      ],
+      "properties": {
+        "db_path": {"type": "string"},
+        "db_exists": {"type": "boolean"},
+        "exchange": {"const": "binance_spot"},
+        "symbol": {"const": "BTCUSDT"},
+        "market_type": {"type": "string"},
+        "source_type": {"type": "string"},
+        "intervals": {
+          "type": "object",
+          "required": ["5m", "15m"],
+          "properties": {
+            "5m": {"$ref": "#/$defs/intervalContext"},
+            "15m": {"$ref": "#/$defs/intervalContext"}
+          },
+          "additionalProperties": false
+        },
+        "data_status": {"type": "string"},
+        "data_status_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "intervalContext": {
+      "type": "object",
+      "required": ["row_count", "sample_start", "sample_end"],
+      "properties": {
+        "row_count": {"type": "integer", "minimum": 0},
+        "sample_start": {"type": "string"},
+        "sample_end": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "costContext": {
+      "type": "object",
+      "required": [
+        "cost_model_status",
+        "taker_fee_bps",
+        "round_trip_taker_cost_bps",
+        "cost_is_diagnostic_not_fill_ledger_pnl"
+      ],
+      "properties": {
+        "cost_model_status": {"type": "string"},
+        "taker_fee_bps": {"type": "number", "minimum": 0},
+        "round_trip_taker_cost_bps": {"type": "number", "minimum": 0},
+        "cost_is_diagnostic_not_fill_ledger_pnl": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "probeParameters": {
+      "type": "object",
+      "required": [
+        "event_bar_interval",
+        "context_interval",
+        "forward_return_horizons",
+        "min_event_count_for_distribution",
+        "min_alpha_net_mean_bps",
+        "lookahead_used_for_signal",
+        "future_returns_used_only_as_labels"
+      ],
+      "properties": {
+        "event_bar_interval": {"const": "5m"},
+        "context_interval": {"const": "15m"},
+        "forward_return_horizons": {
+          "type": "array",
+          "prefixItems": [{"const": "30m"}, {"const": "60m"}, {"const": "120m"}],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "min_event_count_for_distribution": {"const": 300},
+        "min_alpha_net_mean_bps": {"const": 0.0},
+        "lookahead_used_for_signal": {"const": false},
+        "future_returns_used_only_as_labels": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "familyResult": {
+      "type": "object",
+      "required": [
+        "family_id",
+        "status",
+        "event_count",
+        "distribution_sample_ready",
+        "alpha_distribution_observed",
+        "best_horizon",
+        "best_net_mean_bps",
+        "horizon_stats",
+        "notes"
+      ],
+      "properties": {
+        "family_id": {"type": "string"},
+        "status": {
+          "enum": [
+            "distribution_edge_observed",
+            "distribution_sample_ready_no_net_edge",
+            "sample_too_sparse",
+            "context_blocked_missing_intraday_funding_premium"
+          ]
+        },
+        "event_count": {"type": "integer", "minimum": 0},
+        "distribution_sample_ready": {"type": "boolean"},
+        "alpha_distribution_observed": {"type": "boolean"},
+        "best_horizon": {"type": ["string", "null"]},
+        "best_net_mean_bps": {"type": ["number", "null"]},
+        "horizon_stats": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/horizonStats"}
+        },
+        "notes": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "horizonStats": {
+      "type": "object",
+      "required": [
+        "mean_gross_bps",
+        "median_gross_bps",
+        "p25_gross_bps",
+        "p75_gross_bps",
+        "mean_net_bps",
+        "median_net_bps",
+        "gross_positive_hit_rate",
+        "net_positive_hit_rate"
+      ],
+      "properties": {
+        "mean_gross_bps": {"type": ["number", "null"]},
+        "median_gross_bps": {"type": ["number", "null"]},
+        "p25_gross_bps": {"type": ["number", "null"]},
+        "p75_gross_bps": {"type": ["number", "null"]},
+        "mean_net_bps": {"type": ["number", "null"]},
+        "median_net_bps": {"type": ["number", "null"]},
+        "gross_positive_hit_rate": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "net_positive_hit_rate": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "bestFamily": {
+      "type": "object",
+      "required": [
+        "family_id",
+        "status",
+        "event_count",
+        "best_horizon",
+        "best_net_mean_bps",
+        "candidate_generation_allowed"
+      ],
+      "properties": {
+        "family_id": {"type": "string"},
+        "status": {"type": "string"},
+        "event_count": {"type": "integer", "minimum": 0},
+        "best_horizon": {"type": ["string", "null"]},
+        "best_net_mean_bps": {"type": ["number", "null"]},
+        "candidate_generation_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "acceptanceGates": {
+      "type": "object",
+      "required": [
+        "event_ledger_backtest_required_before_candidate",
+        "walk_forward_required_before_candidate",
+        "regime_required_before_candidate",
+        "cost_stress_required_before_candidate",
+        "fill_ledger_pnl_required_before_paper",
+        "manifest_required"
+      ],
+      "properties": {
+        "event_ledger_backtest_required_before_candidate": {"const": true},
+        "walk_forward_required_before_candidate": {"const": true},
+        "regime_required_before_candidate": {"const": true},
+        "cost_stress_required_before_candidate": {"const": true},
+        "fill_ledger_pnl_required_before_paper": {"const": true},
+        "manifest_required": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "research_only",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "paper_or_live_unlock_allowed",
+        "candidate_generation_allowed",
+        "strategy_skeleton_generation_allowed",
+        "true_scalping_allowed",
+        "sub_minute_or_tick_scalping_allowed",
+        "pnl_from_fill_ledger_required_for_promotion"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "candidate_generation_allowed": {"const": false},
+        "strategy_skeleton_generation_allowed": {"const": false},
+        "true_scalping_allowed": {"const": false},
+        "sub_minute_or_tick_scalping_allowed": {"const": false},
+        "pnl_from_fill_ledger_required_for_promotion": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

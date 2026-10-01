@@ -1,0 +1,54 @@
+{
+  "schema_version": "btc_paper_account_runtime_attestation_input_v1",
+  "attestation_id": "manual-paper-runtime-fill-me",
+  "venue": "OKX",
+  "instrument_id": "BTC-USDT-SWAP",
+  "issued_at_utc": "YYYY-MM-DDT00:00:00+00:00",
+  "expires_at_utc": "YYYY-MM-DDT00:00:00+00:00",
+  "account_runtime": {
+    "account_mode": "paper_trading",
+    "account_mode_verified": false,
+    "position_mode": "fill_after_okx_paper_account_check",
+    "position_mode_verified": false,
+    "margin_mode": "fill_after_okx_paper_account_check",
+    "margin_mode_verified": false,
+    "max_leverage_approved": 0,
+    "evidence_reference": "manual_note_or_screenshot_id_without_secrets"
+  },
+  "rate_limit_budget": {
+    "verified": false,
+    "max_orders_per_minute": 0,
+    "max_requests_per_2s": 0,
+    "evidence_reference": "manual_rate_limit_note_without_secrets"
+  },
+  "credential_permissions": {
+    "credential_class": "paper_trade",
+    "paper_key_redacted_identifier": "paper-****0000",
+    "read_permission_verified": false,
+    "trade_permission_verified": false,
+    "withdraw_permission_enabled": false,
+    "withdraw_permission_verified_false": false,
+    "cashout_disabled_verified": false,
+    "ip_allowlist_configured_verified": false,
+    "live_credential_not_loaded_verified": false,
+    "evidence_reference": "manual_permission_note_without_secrets"
+  },
+  "credential_separation": {
+    "recorded": false,
+    "data_readonly_redacted_identifier": "data-****0000",
+    "paper_trade_redacted_identifier": "paper-****0000",
+    "live_trade_redacted_identifier": "live-****0000",
+    "data_key_readonly_verified": false,
+    "paper_key_not_live_verified": false,
+    "live_key_not_loaded_in_paper_verified": false,
+    "evidence_reference": "manual_key_separation_note_without_secrets"
+  },
+  "manual_approval": {
+    "recorded": false,
+    "approval_id": "",
+    "approved_by": "",
+    "approved_at_utc": "",
+    "approval_scope": "paper_account_runtime_attestation_only_no_order",
+    "approval_decision": "approve_attestation_only_no_paper_no_live"
+  }
+}

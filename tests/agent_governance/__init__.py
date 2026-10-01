@@ -1,0 +1,1 @@
+"""Agent governance contract tests."""

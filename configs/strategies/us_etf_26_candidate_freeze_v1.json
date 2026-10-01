@@ -1,0 +1,98 @@
+{
+  "schema_version": "us_etf_26_candidate_freeze_config_v1",
+  "candidate_id": "us-etf26-complete-return-qqq-1d-v1",
+  "strategy_version": "us_etf_complete_return_fixed_signal_v1",
+  "status": "frozen_exploratory_research_only",
+  "selection": {
+    "rule": "maximum_three_x_total_return_pct_among_nonzero_26x7_combinations",
+    "symbol": "QQQ",
+    "timeframe": "1D",
+    "exposure_multiplier": 3.0
+  },
+  "parameters": {
+    "atr_mult": 3.0,
+    "atr_window": 10,
+    "bars_per_session": 1,
+    "cooldown_bars": 6,
+    "ema_fast_days": 50,
+    "ema_slow_days": 200,
+    "entry_window": 120,
+    "exit_window": 60,
+    "failure_exit_window": 3
+  },
+  "universe": [
+    "AGG", "DBA", "DIA", "GLD", "HYG", "IEF", "IWM", "LQD", "MDY",
+    "QQQ", "SHY", "SLV", "SPY", "TLT", "UNG", "USO", "XLB", "XLC",
+    "XLE", "XLF", "XLI", "XLK", "XLP", "XLU", "XLV", "XLY"
+  ],
+  "timeframes": ["1min", "5min", "15min", "30min", "1H", "4H", "1D"],
+  "data": {
+    "data_version": "hf-data-library-etf26-clean-1min-6d6b07e77962",
+    "aggregate_sha256": "f8f2f3244d26b8e6e59cc610444d9775658270cc66bb7951d87b8d9c28ca1629",
+    "manifest_path": ".agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json",
+    "readiness_class": "research_ready",
+    "consumer_read_only": true
+  },
+  "research_window": {
+    "requested_start": "2018-01-01",
+    "requested_end": "2026-07-10",
+    "sample_role": "exploratory_selection_sample",
+    "used_for_symbol_or_timeframe_selection": true,
+    "clean_holdout": false
+  },
+  "independent_confirmation_window": {
+    "start": "2026-07-13",
+    "end": "2027-07-12",
+    "eligible_bar_rule": "first eligible completed bar on or after start through final eligible completed bar on or before end",
+    "minimum_complete_sessions": 252,
+    "parameters_may_change": false,
+    "universe_may_change": false,
+    "timeframe_may_change": false,
+    "selection_or_ranking_allowed": false,
+    "evaluation_before_window_end_allowed": false,
+    "status": "not_started"
+  },
+  "cost_model": {
+    "base_cost_bps_per_unit_turnover": 10.0,
+    "stress_cost_bps_per_unit_turnover": [0.0, 5.0, 10.0, 25.0, 50.0],
+    "turnover_rule": "absolute change in target exposure multiplied by exposure multiplier",
+    "margin_interest_annual": 0.06,
+    "spread_separately_modeled": false,
+    "market_impact_separately_modeled": false,
+    "broker_executable": false
+  },
+  "signal_rule": {
+    "trend": "prior-session 50/200 EMA trend and close above prior slow EMA",
+    "entry": "close breaks prior 120-bar high while trend is positive and cooldown is zero",
+    "exit": "trend failure or close below prior 60-bar low or 3 ATR trailing stop or 3-bar failed breakout",
+    "input_visibility": "completed bars only"
+  },
+  "execution_rule": {
+    "decision": "compute raw signal after the completed daily bar",
+    "effective_signal": "shift raw signal by one full bar",
+    "fill_proxy": "next daily bar open",
+    "order_generation": "none"
+  },
+  "position_rule": {
+    "states": [0.0, 3.0],
+    "long_only": true,
+    "rollover_policy": "no_rollover_core_compounding_reference",
+    "maintenance_margin_rate": 0.25,
+    "margin_call_threshold_pct": -11.111111,
+    "terminal_on_margin_call_or_wipeout": true
+  },
+  "allowed_uses": [
+    "deterministic_replay_of_the_frozen_exploratory_candidate",
+    "data_quality_and_contract_validation",
+    "one_time_evaluation_after_the_independent_confirmation_window_closes"
+  ],
+  "prohibited_uses": [
+    "parameter_tuning_on_or_after_2026-07-13",
+    "symbol_or_timeframe_reselection",
+    "promotion_evidence",
+    "paper_queue_write",
+    "paper_or_live_unlock",
+    "private_or_order_endpoint_access",
+    "real_order_generation"
+  ]
+}

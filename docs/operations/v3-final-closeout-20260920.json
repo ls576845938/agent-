@@ -1,0 +1,40 @@
+{
+  "schema_version": "v3_final_closeout_matrix_v1",
+  "ticket": "V3-DONCHIAN-READONLY-CLOSEOUT-20260920",
+  "source_head": "e024f42468f4d0a7c39b83fe28ed86c5688459aa",
+  "status": "source_candidate_pending_independent_review_and_canonical_page_acceptance",
+  "overall_v3_complete": false,
+  "truth_kind": "offline_software_correctness",
+  "donchian_receipt": {
+    "path": ".agent/offline_evidence/donchian-v3-closeout-20260920.json",
+    "summary_sha256": "a83e6745d485c0ce2e90259f284128722c4ae744d0bd8212d6114b7d8ce89a9a",
+    "run_id": "v3donchian01",
+    "counts": {"decisions": 5, "orders": 4, "fills": 4, "decision_linked_ledger_events": 4},
+    "signal_market_data": "synthetic_ohlcv_signal_input_only",
+    "simulated_execution_price_usdt": "60000",
+    "final_equity_usdt": "4999.988",
+    "fee_cashflow_usdt": "-0.012",
+    "actual_funding_cashflow_usdt": "0",
+    "final_position_contracts": "0"
+  },
+  "readonly_validation": {
+    "fixed_reviewed_summary_sha256": "a83e6745d485c0ce2e90259f284128722c4ae744d0bd8212d6114b7d8ce89a9a",
+    "quantity_unit": "OKX_contracts",
+    "fixture_contracts_per_order": "0.01",
+    "position_and_economic_crosscheck": "33_focused_backend_tests_passed",
+    "source_event_audit": "independent_readonly_review_report_pending",
+    "get_reads_runtime_state": false
+  },
+  "historical_validation": [
+    {"stage": "V0", "result": "219_passed_24_new_195_compatible", "report": "docs/architecture/strategy-admission-v0.md", "rerun_this_ticket": false},
+    {"stage": "V1", "result": "15_normalization_19_composition_11_original_chain_passed", "report": "docs/operations/btc-protection-parent-join-independent-review-20260915.md", "rerun_this_ticket": false},
+    {"stage": "V2", "result": "28_inference_4_v0_v1_compatibility_passed", "report": "docs/operations/strategy-v2-frozen-qlib-independent-review-20260915.md", "rerun_this_ticket": false},
+    {"stage": "V3", "result": "51_passed_1_moving_head_failure_then_fixed_head_5_passed", "report": "docs/operations/strategy-v3-event-ordering-independent-review-20260920.md", "rerun_this_ticket": false}
+  ],
+  "pending": ["independent_source_review", "canonical_research_readonly_page_acceptance", "final_decision_and_rollback_receipt"],
+  "permissions": {
+    "demo_control_enabled": false, "execution_permission": false, "live": false,
+    "order": false, "paper": false, "private": false, "promotion": false,
+    "real_order": false, "runtime_observed": false, "transfer": false, "withdraw": false
+  }
+}

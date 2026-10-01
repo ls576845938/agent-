@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_completion_audit_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Completion Audit Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "summary",
+    "phases",
+    "blockers",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_completion_audit_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["completion_blocked", "completion_in_progress", "completion_complete"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["completion_blocked", "completion_in_progress", "completion_complete"]},
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "decision": {"const": "continue_fail_closed_until_all_phases_complete"},
+    "summary": {
+      "type": "object",
+      "required": [
+        "phase_count",
+        "complete_count",
+        "in_progress_count",
+        "blocked_count",
+        "first_incomplete_phase_id",
+        "first_incomplete_phase_status",
+        "first_blocker",
+        "next_action",
+        "operator_open_input_count",
+        "operator_external_input_count",
+        "operator_manual_input_count",
+        "operator_natural_time_count",
+        "completion_dependency_blocked_count",
+        "completion_claim_allowed",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "phase_count": {"type": "integer", "minimum": 1},
+        "complete_count": {"type": "integer", "minimum": 0},
+        "in_progress_count": {"type": "integer", "minimum": 0},
+        "blocked_count": {"type": "integer", "minimum": 0},
+        "first_incomplete_phase_id": {"type": "string"},
+        "first_incomplete_phase_status": {"enum": ["", "complete", "in_progress", "blocked"]},
+        "first_blocker": {"type": "string"},
+        "next_action": {"type": "string"},
+        "operator_open_input_count": {"type": "integer", "minimum": 0},
+        "operator_external_input_count": {"type": "integer", "minimum": 0},
+        "operator_manual_input_count": {"type": "integer", "minimum": 0},
+        "operator_natural_time_count": {"type": "integer", "minimum": 0},
+        "completion_dependency_blocked_count": {"type": "integer", "minimum": 0},
+        "completion_claim_allowed": {"type": "boolean"},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 7,
+      "items": {"$ref": "#/$defs/phase"}
+    },
+    "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "source_reports": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "audit_only",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_calls_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "audit_only": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "phase": {
+      "type": "object",
+      "required": [
+        "phase_id",
+        "title",
+        "status",
+        "passed",
+        "evidence_reports",
+        "blockers",
+        "next_action"
+      ],
+      "properties": {
+        "phase_id": {"type": "string", "pattern": "^phase_[0-9]+_[a-z0-9_]+$"},
+        "title": {"type": "string", "minLength": 1},
+        "status": {"enum": ["complete", "in_progress", "blocked"]},
+        "passed": {"type": "boolean"},
+        "evidence_reports": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "next_action": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

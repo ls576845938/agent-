@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_forward_observation_replay_readiness_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Forward Observation Replay Readiness Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "strategy_id",
+    "candidate_variant",
+    "status",
+    "decision",
+    "replay_scope",
+    "latest_observation",
+    "checks",
+    "blockers",
+    "source_files",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_forward_observation_replay_readiness_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": ["string", "null"]},
+    "branch": {"type": ["string", "null"]},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"type": ["string", "null"]},
+    "candidate_variant": {"type": ["string", "null"]},
+    "status": {"enum": ["replay_readiness_pass", "replay_readiness_blocked"]},
+    "decision": {"enum": ["replay_inputs_available_for_manual_audit", "repair_replay_evidence"]},
+    "replay_scope": {
+      "type": "object",
+      "required": [
+        "static_evidence_check_only",
+        "alpha_recalculated",
+        "current_realtime_data_accessed",
+        "fixed_clock",
+        "fixed_random_seed",
+        "required_inputs",
+        "required_outputs"
+      ],
+      "properties": {
+        "static_evidence_check_only": {"const": true},
+        "alpha_recalculated": {"const": false},
+        "current_realtime_data_accessed": {"const": false},
+        "fixed_clock": {"type": "string", "minLength": 1},
+        "fixed_random_seed": {"const": 0},
+        "required_inputs": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "data_snapshot"},
+            {"const": "strategy_version"},
+            {"const": "params"},
+            {"const": "risk_config"},
+            {"const": "current_position"},
+            {"const": "orders_and_fills"}
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "required_outputs": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "replayed_signal"},
+            {"const": "replayed_target_position"},
+            {"const": "replayed_risk_decision"},
+            {"const": "diff_vs_original_artifact"}
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      },
+      "additionalProperties": false
+    },
+    "latest_observation": {
+      "type": "object",
+      "required": ["timestamp", "target_count", "fill_count", "snapshot_reconciliation_status"],
+      "properties": {
+        "timestamp": {"type": ["string", "null"]},
+        "target_count": {"type": ["integer", "number", "null"]},
+        "fill_count": {"type": "integer", "minimum": 0},
+        "snapshot_reconciliation_status": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "checks": {
+      "type": "object",
+      "required": [
+        "ledger_artifacts_present",
+        "latest_target_replay_inputs",
+        "fills_replay_inputs",
+        "snapshot_replay_inputs",
+        "roll_report_replay_context",
+        "validation_report_context",
+        "monitoring_replay_contract",
+        "fixed_replay_contract",
+        "unsafe_flags"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["passed"],
+        "properties": {
+          "passed": {"type": "boolean"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "source_files": {
+      "type": "object",
+      "required": [
+        "ledger_root",
+        "target_positions",
+        "fills",
+        "portfolio_snapshots",
+        "validation_state",
+        "roll_report",
+        "evaluation_report",
+        "validation_report",
+        "monitoring_report"
+      ],
+      "additionalProperties": {"type": "string"}
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "replay_readiness_only",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "replay_readiness_only": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

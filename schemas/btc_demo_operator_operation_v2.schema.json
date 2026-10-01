@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_demo_operator_operation_v2.schema.json",
+  "title": "BTC Demo Operator Operation V2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operation_id",
+    "action",
+    "request_digest",
+    "state",
+    "phase",
+    "blocker_codes",
+    "created_at_utc",
+    "updated_at_utc",
+    "state_revision",
+    "result_present",
+    "retryable",
+    "replayed",
+    "idempotent_replay",
+    "acknowledged",
+    "acknowledged_at_utc",
+    "safety_flags",
+    "start_attempt"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_demo_operation_read_model_v2"},
+    "operation_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "action": {
+      "enum": [
+        "authoritative_preflight_start",
+        "refresh_account_snapshot",
+        "stop_keep_position",
+        "stop_and_flatten",
+        "enter_cancel_only",
+        "emergency_reduce_only_exit",
+        "acknowledge_guardian_trip",
+        "recover_guardian_after_fresh_preflight"
+      ]
+    },
+    "request_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "state": {
+      "enum": ["queued", "running", "succeeded", "failed", "blocked", "interrupted", "timed_out"]
+    },
+    "phase": {"type": "string"},
+    "blocker_codes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"}
+    },
+    "created_at_utc": {"type": "string", "format": "date-time"},
+    "updated_at_utc": {"type": "string", "format": "date-time"},
+    "state_revision": {"type": "integer", "minimum": 0},
+    "result_present": {"type": "boolean"},
+    "retryable": {"type": "boolean"},
+    "replayed": {"type": "boolean"},
+    "idempotent_replay": {"type": "boolean"},
+    "acknowledged": {"type": "boolean"},
+    "acknowledged_at_utc": {"type": ["string", "null"], "format": "date-time"},
+    "safety_flags": {"$ref": "#/$defs/falseSafetyFlags"},
+    "start_attempt": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/startAttempt"}
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"state": {"enum": ["succeeded", "failed", "blocked", "interrupted", "timed_out"]}}},
+      "then": {"properties": {"result_present": {"const": true}}}
+    },
+    {
+      "if": {"properties": {"acknowledged": {"const": true}}},
+      "then": {"properties": {"acknowledged_at_utc": {"type": "string", "format": "date-time"}}},
+      "else": {"properties": {"acknowledged_at_utc": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"action": {"const": "authoritative_preflight_start"}}},
+      "then": {
+        "if": {"properties": {"state": {"enum": ["queued", "running", "succeeded"]}}},
+        "then": {"properties": {"start_attempt": {"$ref": "#/$defs/startAttempt"}}}
+      },
+      "else": {"properties": {"start_attempt": {"type": "null"}}}
+    }
+  ],
+  "$defs": {
+    "falseSafetyFlags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["promotion_eligible", "paper", "live", "private", "order", "real_order", "transfer", "withdraw"],
+      "properties": {
+        "promotion_eligible": {"const": false},
+        "paper": {"const": false},
+        "live": {"const": false},
+        "private": {"const": false},
+        "order": {"const": false},
+        "real_order": {"const": false},
+        "transfer": {"const": false},
+        "withdraw": {"const": false}
+      }
+    },
+    "startAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "parent_operation_id",
+        "inner_operation_id",
+        "attempt_id",
+        "runtime_identity",
+        "source_head",
+        "effective_policy_digest",
+        "risk_profile",
+        "expected_leverage",
+        "account_identity_hash",
+        "created_at_utc",
+        "updated_at_utc",
+        "state",
+        "phase",
+        "current_attempt",
+        "historical",
+        "historical_reason_codes",
+        "actual_long_leverage",
+        "actual_short_leverage"
+      ],
+      "properties": {
+        "schema_version": {"const": "btc_demo_start_attempt_v1"},
+        "parent_operation_id": {"type": "string", "minLength": 1},
+        "inner_operation_id": {"type": "string", "minLength": 1},
+        "attempt_id": {"type": "string", "minLength": 1},
+        "runtime_identity": {"type": "string", "pattern": "^[A-Za-z0-9_.:-]{1,160}$"},
+        "source_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "effective_policy_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "risk_profile": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{1,63}$"},
+        "expected_leverage": {"type": "string", "pattern": "^[1-9][0-9]*(?:\\.[0-9]+)?$"},
+        "account_identity_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "created_at_utc": {"type": "string", "format": "date-time"},
+        "updated_at_utc": {"type": "string", "format": "date-time"},
+        "state": {"type": "string"},
+        "phase": {"type": "string"},
+        "current_attempt": {"type": "boolean"},
+        "historical": {"type": "boolean"},
+        "historical_reason_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"}
+        },
+        "actual_long_leverage": {"type": ["string", "null"]},
+        "actual_short_leverage": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

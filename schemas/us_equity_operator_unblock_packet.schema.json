@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_operator_unblock_packet.schema.json",
+  "title": "QuantStation VNEXT US Equity Operator Unblock Packet",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "summary",
+    "next_operator_action",
+    "external_inputs",
+    "manual_inputs",
+    "natural_time_inputs",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_operator_unblock_packet_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["operator_unblock_open", "operator_unblock_complete"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["operator_unblock_open", "operator_unblock_complete"]},
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "decision": {"enum": ["operator_inputs_required_keep_paper_live_locked", "no_operator_inputs_pending"]},
+    "summary": {
+      "type": "object",
+      "required": [
+        "open_count",
+        "external_input_count",
+        "manual_input_count",
+        "natural_time_count",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "open_count": {"type": "integer", "minimum": 0},
+        "external_input_count": {"type": "integer", "minimum": 0},
+        "manual_input_count": {"type": "integer", "minimum": 0},
+        "natural_time_count": {"type": "integer", "minimum": 0},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "next_operator_action": {
+      "anyOf": [
+        {"$ref": "#/$defs/unblock_item"},
+        {"type": "null"}
+      ]
+    },
+    "external_inputs": {"type": "array", "items": {"$ref": "#/$defs/unblock_item"}},
+    "manual_inputs": {"type": "array", "items": {"$ref": "#/$defs/unblock_item"}},
+    "natural_time_inputs": {"type": "array", "items": {"$ref": "#/$defs/unblock_item"}},
+    "source_reports": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "operator_packet_only",
+        "files_copied",
+        "local_review_mutated",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_calls_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "operator_packet_only": {"const": true},
+        "files_copied": {"const": false},
+        "local_review_mutated": {"const": false},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "unblock_item": {
+      "type": "object",
+      "required": [
+        "item_id",
+        "category",
+        "status",
+        "owner",
+        "title",
+        "reason",
+        "next_action",
+        "evidence_path",
+        "source_report",
+        "blockers",
+        "commands"
+      ],
+      "properties": {
+        "item_id": {"type": "string", "minLength": 1},
+        "category": {"enum": ["external_input", "manual_input", "natural_time"]},
+        "status": {"enum": ["open"]},
+        "owner": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "next_action": {"type": "string", "minLength": 1},
+        "evidence_path": {"type": "string", "minLength": 1},
+        "source_report": {"type": "string", "minLength": 1},
+        "local_file": {"type": "string"},
+        "connectivity_evidence": {
+          "type": "object",
+          "properties": {
+            "evidence_role": {"const": "read_only_ibkr_market_data_connectivity_only"},
+            "operator_interpretation": {
+              "type": "object",
+              "properties": {
+                "connection_proven": {"type": "boolean"},
+                "can_satisfy_credential_review": {"const": false},
+                "can_unlock_paper_or_live": {"const": false},
+                "manual_review_still_required": {"const": true}
+              },
+              "additionalProperties": true
+            },
+            "guardrails": {
+              "type": "object",
+              "properties": {
+                "market_data_probe_only": {"const": true},
+                "private_account_endpoint_used": {"const": false},
+                "order_endpoint_used": {"const": false},
+                "broker_order_endpoint_used": {"const": false},
+                "real_order_submitted": {"const": false},
+                "paper_or_live_unlock_allowed": {"const": false},
+                "live_order_allowed": {"const": false}
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "required_files": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "ready_files": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "acceptable_source_routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["route_id", "label"],
+            "properties": {
+              "route_id": {"type": "string", "minLength": 1},
+              "label": {"type": "string", "minLength": 1}
+            },
+            "additionalProperties": false
+          }
+        },
+        "supplemental_source_boundaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["route_id", "label", "not_sufficient_for"],
+            "properties": {
+              "route_id": {"type": "string", "minLength": 1},
+              "label": {"type": "string", "minLength": 1},
+              "not_sufficient_for": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+            },
+            "additionalProperties": false
+          }
+        },
+        "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "commands": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

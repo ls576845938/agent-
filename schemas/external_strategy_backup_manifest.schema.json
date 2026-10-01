@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/external_strategy_backup_manifest.schema.json",
+  "title": "External Strategy Project Backup Manifest Schema",
+  "type": "object",
+  "required": ["schema_version", "status", "source", "backup_root", "backup_dir", "files", "blockers"],
+  "properties": {
+    "schema_version": {"const": "external_strategy_project_backup_manifest_v1"},
+    "status": {"enum": ["completed", "blocked"]},
+    "source": {"type": "string", "minLength": 1},
+    "backup_root": {"type": "string", "minLength": 1},
+    "backup_dir": {"type": "string", "minLength": 1},
+    "files": {"type": "array"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

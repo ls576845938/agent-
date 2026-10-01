@@ -1,0 +1,152 @@
+{
+  "schema_version": "data_btc_real_l2_attestation_blocked_receipt_v1",
+  "ticket_id": "DATA-BTC-REAL-L2-ATTESTATION-04",
+  "generated_at": "2026-07-28T14:41:07.531Z",
+  "status": "blocked",
+  "decision": "public_ws_zero_messages_and_server_clock_offset_fail_closed",
+  "repository": {
+    "base_commit": "65820741737cb3d889db1711b80de7cd74e6a908",
+    "collector_commit": "746b70207f19e228ed77f1e2997e82586ee580ff",
+    "branch": "agent/data_steward/data-btc-real-l2-attestation-04",
+    "sparse_checkout": true
+  },
+  "scope": {
+    "venue": "okx",
+    "instrument_id": "BTC-USDT-SWAP",
+    "channel": "books",
+    "public_market_data_only": true,
+    "credentials_used": false
+  },
+  "runtime_identity": {
+    "python_implementation": "CPython",
+    "python_version": "3.14.4",
+    "websocket_client_module": "websocket",
+    "websocket_client_version": "1.9.0",
+    "owner_marker_sha256": "3c3dd81371ce197ef36522a0a73b794eb590cd81d47232c0cb748735502d8e1a",
+    "repository_identity": "sha256:e7a8210a82047eb25bc8ac969edd03d7c9f2465a18cdfeb521a888818c430198"
+  },
+  "public_ws_attempts": [
+    {
+      "endpoint": "wss://ws.okx.com:8443/ws/v5/public",
+      "endpoint_class": "official_production_public_websocket",
+      "message_count": 0,
+      "snapshot_count": 0,
+      "update_count": 0,
+      "connection_count": 0,
+      "subscription_ack_received": false,
+      "error_type": "ConnectionResetError",
+      "winerror": 10054,
+      "error": "remote host forcibly closed the connection before subscription acknowledgement",
+      "capture_report_sha256": "d16b6997d97b2b0b64246a1a73e3fe63c383c956eca0578abfa3377d7b86c184",
+      "raw_messages_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_manifest_sha256": "956d4c79008a9c57fe4993378b7e2e3e326f0c9baaf13f8ae62684cb96d55a92"
+    },
+    {
+      "endpoint": "wss://wsaws.okx.com:8443/ws/v5/public",
+      "endpoint_class": "official_production_public_websocket_alternate",
+      "message_count": 0,
+      "snapshot_count": 0,
+      "update_count": 0,
+      "connection_count": 0,
+      "subscription_ack_received": false,
+      "error_type": "WebSocketAddressException",
+      "winerror": null,
+      "error": "getaddrinfo failed",
+      "capture_report_sha256": "75c234117f7beff87b580365ebdf919eb9b13d2766cddc48ab772c2251e7e63b",
+      "raw_messages_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_manifest_sha256": "dba47b702a28d92f1adb5f5f2b006de42a4a7903f8c6e1608ff89053afbbe2e6"
+    }
+  ],
+  "sequence": {
+    "real_message_count": 0,
+    "two_sided": false,
+    "sequence_continuity_verified": false,
+    "duplicate_count": 0,
+    "out_of_order_count": 0,
+    "gap_count": 0,
+    "blocker": "btc_okx_public_ws_l2_no_messages_captured"
+  },
+  "controlled_recovery": {
+    "requested": true,
+    "forced_reconnect_after_messages": 30,
+    "executed": false,
+    "last_good_sequence": null,
+    "first_recovered_sequence": null,
+    "recovery_method": "not_executed_zero_messages",
+    "events_backfilled": 0,
+    "recovery_result": "blocked",
+    "gapfill_pass": false,
+    "classification": "controlled_recovery_not_observed_not_a_natural_gap"
+  },
+  "server_clock": {
+    "public_rest_only": true,
+    "sample_count_requested": 9,
+    "valid_sample_count": 9,
+    "selected_offset_ms": 4782.757,
+    "selected_round_trip_ms": 1399.438,
+    "abs_offset_p50_ms": 4829.779,
+    "abs_offset_p95_ms": 5424.47,
+    "abs_offset_max_ms": 5431.406,
+    "round_trip_p50_ms": 1457.56,
+    "round_trip_p95_ms": 2700.463,
+    "round_trip_max_ms": 2700.594,
+    "max_allowed_abs_offset_ms": 2000.0,
+    "max_allowed_round_trip_ms": 5000.0,
+    "offset_verified": false,
+    "blocker": "btc_okx_server_time_offset_exceeds_threshold",
+    "report_sha256": "d1e503a78839d5ff0f637ae084f77535b64f793fa56a7db6f381e19734a625c9"
+  },
+  "attestation": {
+    "visible_at": "2026-07-28T14:41:07.531Z",
+    "as_of": "2026-07-28T14:39:54Z",
+    "data_version": "btc-okx-real-l2-attestation-20260728T143943Z-746b70207-blocked1",
+    "data_schema": "data_btc_real_l2_attestation_blocked_receipt_v1",
+    "quality_status": "blocked",
+    "immutable_version": true,
+    "normalized_l2_emitted": false,
+    "lineage_complete_for_failed_attempts": true
+  },
+  "blockers": [
+    "btc_okx_public_ws_primary_connection_reset_10054",
+    "btc_okx_public_ws_alternate_dns_resolution_failed",
+    "btc_okx_public_ws_l2_no_messages_captured",
+    "btc_okx_l2_two_sided_coverage_missing",
+    "btc_okx_l2_sequence_continuity_unverified",
+    "btc_okx_l2_controlled_recovery_unverified",
+    "btc_okx_server_time_offset_exceeds_threshold",
+    "btc_okx_l2_natural_observation_30_60_days_missing",
+    "btc_private_ws_evidence_missing",
+    "btc_real_funding_nonflat_fill_evidence_missing",
+    "btc_paper_live_manual_approval_missing"
+  ],
+  "readiness": {
+    "quality_checked": false,
+    "research_ready": false,
+    "backtest_ready": false,
+    "promotion_evidence_ready": false,
+    "paper_ready": false,
+    "live_ready": false
+  },
+  "safety": {
+    "api_key_used": false,
+    "secret_read": false,
+    "private_endpoint_used": false,
+    "account_endpoint_used": false,
+    "order_endpoint_used": false,
+    "broker_used": false,
+    "paper_queue_write": false,
+    "paper_started": false,
+    "live_started": false,
+    "real_order_submitted": false,
+    "transfer_used": false,
+    "withdraw_used": false,
+    "promotion_unlocked": false
+  },
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_okx_public_collector_boundaries.py tests/contracts/test_btc_okx_server_time_preflight.py --basetemp <unique-system-temp> -p no:cacheprovider -q",
+      "exit_code": 0,
+      "result": "41 passed"
+    }
+  ]
+}

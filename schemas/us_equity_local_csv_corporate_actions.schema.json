@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_local_csv_corporate_actions.schema.json",
+  "title": "US Equity Local CSV Corporate Actions Row",
+  "type": "object",
+  "required": ["security_id", "ticker", "event_type", "ex_date", "effective_date", "ratio", "cash_amount", "old_symbol", "new_symbol", "source_record_id"],
+  "properties": {
+    "security_id": {"type": "string"},
+    "ticker": {"type": "string"},
+    "event_type": {"enum": ["split", "dividend", "merger", "spin_off", "symbol_change", "delisting", "other"]},
+    "ex_date": {"type": "string"},
+    "effective_date": {"type": "string"},
+    "ratio": {"type": "string"},
+    "cash_amount": {"type": "string"},
+    "old_symbol": {"type": "string"},
+    "new_symbol": {"type": "string"},
+    "source_record_id": {"type": "string"}
+  },
+  "additionalProperties": true
+}

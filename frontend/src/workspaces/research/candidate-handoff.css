@@ -1,0 +1,35 @@
+.candidate-handoff-entry { margin-block: 12px; }
+.candidate-handoff { margin-block: 12px; padding: 16px; border: 1px solid #35465e; border-radius: 8px; background: #101b2b; color: #dce6f5; min-width: 0; }
+.candidate-handoff header { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: start; }
+.candidate-handoff h3, .candidate-handoff h4, .candidate-handoff h5 { margin: 4px 0 10px; color: #edf3ff; }
+.candidate-handoff h5 { font-size: 14px; }
+.candidate-handoff p { line-height: 1.6; overflow-wrap: anywhere; }
+.candidate-handoff small, .candidate-handoff dt, .candidate-handoff-note { color: #a8b9cf; }
+.candidate-handoff header > span { color: #f0c579; font-size: 12px; }
+.candidate-handoff button, .candidate-handoff-entry > button, .candidate-handoff select { padding: 8px 12px; border: 1px solid #486183; border-radius: 4px; background: #1a2c43; color: #e1edff; font: inherit; cursor: pointer; }
+.candidate-handoff button:disabled { opacity: .6; cursor: not-allowed; }
+.candidate-handoff :focus-visible, .candidate-handoff-entry > button:focus-visible { outline: 2px solid #8ab6ff; outline-offset: 3px; }
+.candidate-handoff-steps, .candidate-handoff-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.candidate-handoff-steps [aria-current="step"] { border-color: #91b9ff; background: #24426b; }
+.candidate-handoff-facts { display: grid; grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); gap: 12px; margin: 12px 0; }
+.candidate-handoff-facts dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+.candidate-handoff-artifacts { list-style: none; padding: 0; }
+.candidate-handoff-artifacts li { padding: 10px 0; border-bottom: 1px solid #304158; }
+.candidate-handoff-artifacts li > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
+.candidate-handoff-artifacts span { color: #d5bc86; font-size: 12px; }
+.candidate-handoff code { display: inline; font-size: 12px; overflow-wrap: anywhere; white-space: normal; }
+.candidate-handoff-artifacts code { display: block; color: #a8b9cf; margin-top: 6px; }
+.candidate-handoff-form { display: grid; gap: 10px; }
+.candidate-handoff-form textarea { max-width: 100%; box-sizing: border-box; resize: vertical; background: #0a1320; color: #dce6f5; border: 1px solid #486183; border-radius: 4px; padding: 10px; font: inherit; }
+.candidate-handoff-ack { display: flex; gap: 8px; align-items: start; line-height: 1.6; }
+.candidate-handoff-ack input { margin-top: 6px; }
+.candidate-handoff footer { display: block; margin-top: 18px; padding-top: 12px; border-top: 1px solid #486183; color: #ddc597; }
+.candidate-handoff a { color: #a6caff; text-decoration: underline; }
+.candidate-handoff-feedback { border-left: 3px solid #83ace5; padding-left: 10px; }
+.candidate-handoff-inbox { font-size: 13px; }
+@media (max-width: 560px) { .candidate-handoff { padding: 12px; } .candidate-handoff-facts { grid-template-columns: 1fr; } .candidate-handoff-steps button { flex: 1 1 100%; } }
+.candidate-delivery { margin-top: 1rem; border-top: 1px solid var(--border-color, #344156); padding-top: .8rem; }
+.candidate-delivery label { display: block; margin: .6rem 0; }
+.candidate-delivery input[type="password"], .candidate-delivery select, .candidate-delivery textarea { display: block; width: 100%; max-width: 100%; box-sizing: border-box; }
+.candidate-delivery code { overflow-wrap: anywhere; }
+.candidate-delivery button { margin: .25rem .4rem .25rem 0; }

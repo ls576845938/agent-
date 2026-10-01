@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_paper_review_evidence_pack_report.schema.json",
+  "title": "BTC Paper Review Evidence Pack Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "review_id",
+    "status",
+    "decision",
+    "next_required_action",
+    "evidence_pack_path",
+    "evidence_pack_sha256",
+    "review_template_path",
+    "final_review_path",
+    "candidate_id",
+    "proposed_symbols",
+    "proposed_capital",
+    "source_reports",
+    "source_hashes",
+    "promotion_evidence_contract",
+    "evidence_pack",
+    "review_template",
+    "blockers",
+    "paper_start_allowed",
+    "paper_execution_authorized",
+    "live_status",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_paper_review_evidence_pack_report_v1"},
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "review_id": {"type": "string"},
+    "status": {"enum": ["ready_for_human_paper_review", "blocked"]},
+    "decision": {"enum": ["await_human_approval_no_auto_start", "repair_evidence_before_review"]},
+    "next_required_action": {"enum": ["human_paper_review_approval", "repair_paper_review_evidence_pack"]},
+    "evidence_pack_path": {"type": "string"},
+    "evidence_pack_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "review_template_path": {"type": "string"},
+    "final_review_path": {"type": "string"},
+    "candidate_id": {"type": "string"},
+    "proposed_symbols": {"type": "array", "items": {"type": "string"}},
+    "proposed_capital": {"type": "number", "minimum": 0},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": {"type": ["string", "null"]}
+    },
+    "source_hashes": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "promotion_evidence_contract": {"$ref": "#/$defs/promotionEvidenceContract"},
+    "evidence_pack": {"type": "object"},
+    "review_template": {"type": "object"},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "paper_start_allowed": {"const": false},
+    "paper_execution_authorized": {"const": false},
+    "live_status": {"const": "frozen"},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_only",
+        "paper_start_allowed",
+        "paper_execution_authorized",
+        "paper_auto_start",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "real_orders_created",
+        "live"
+      ],
+      "properties": {
+        "review_only": {"const": true},
+        "paper_start_allowed": {"const": false},
+        "paper_execution_authorized": {"const": false},
+        "paper_auto_start": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "live": {"const": "FROZEN"}
+      }
+    }
+  },
+  "$defs": {
+    "promotionEvidenceContract": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "schema_version",
+        "status",
+        "required_fields",
+        "minimum_metrics_required",
+        "fields",
+        "minimum_metrics",
+        "missing_fields",
+        "missing_minimum_metrics",
+        "blockers"
+      ],
+      "properties": {
+        "schema_version": {"const": "btc_promotion_evidence_contract_v1"},
+        "status": {"enum": ["complete", "blocked"]},
+        "required_fields": {
+          "type": "array",
+          "minItems": 22,
+          "items": {"type": "string"},
+          "contains": {"const": "promotion_decision"}
+        },
+        "minimum_metrics_required": {
+          "type": "array",
+          "minItems": 14,
+          "items": {"type": "string"},
+          "contains": {"const": "capacity_proxy"}
+        },
+        "fields": {
+          "type": "object",
+          "required": [
+            "strategy_id",
+            "research_question",
+            "economic_hypothesis",
+            "data_source",
+            "data_version",
+            "start_time",
+            "end_time",
+            "decision_time_rule",
+            "execution_time_rule",
+            "cost_model",
+            "slippage_model",
+            "params",
+            "params_hash",
+            "candidate_count",
+            "trial_count",
+            "selected_by",
+            "walk_forward_summary",
+            "regime_summary",
+            "parameter_stability_summary",
+            "cost_stress_summary",
+            "ledger_reconciliation",
+            "promotion_decision"
+          ],
+          "additionalProperties": {"$ref": "#/$defs/evidenceField"}
+        },
+        "minimum_metrics": {
+          "type": "object",
+          "required": [
+            "total_return",
+            "annualized_return",
+            "annualized_volatility",
+            "risk_adjusted_return",
+            "max_drawdown",
+            "turnover",
+            "average_holding_period",
+            "exposure_ratio",
+            "number_of_bets",
+            "fee_paid",
+            "slippage_paid_or_modeled",
+            "best_year_contribution_share",
+            "worst_year",
+            "capacity_proxy"
+          ],
+          "additionalProperties": true
+        },
+        "missing_fields": {"type": "array", "items": {"type": "string"}},
+        "missing_minimum_metrics": {"type": "array", "items": {"type": "string"}},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "evidenceField": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["present", "value", "source"],
+      "properties": {
+        "present": {"type": "boolean"},
+        "source": {"type": "string"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "ready_for_human_paper_review"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "decision": {"const": "await_human_approval_no_auto_start"},
+          "next_required_action": {"const": "human_paper_review_approval"},
+          "blockers": {"maxItems": 0},
+          "proposed_symbols": {
+            "prefixItems": [{"const": "BTCUSDT"}],
+            "minItems": 1,
+            "maxItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

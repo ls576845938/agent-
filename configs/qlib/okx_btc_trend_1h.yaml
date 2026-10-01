@@ -1,0 +1,107 @@
+profile: okx_btc_trend_1h
+run_id_prefix: qlib_okx_trend_1h
+mode: research_only
+daily_only: false
+minute_data_enabled: true
+live_enabled: false
+paper_enabled: false
+universe_config: configs/universe/okx_btc_perpetual_1h.yaml
+workflow:
+  experiment_name: qs_qlib_time_series_trend
+  enable_signal_analysis: false
+  enable_portfolio_analysis: false
+  fit_kwargs: {num_boost_round: 120, early_stopping_rounds: 15, verbose_eval: false}
+data:
+  source: okx
+  asset_class: crypto
+  bar_size: 1h
+  start_date: '2025-12-22 00:00:00'
+  end_date: '2026-07-29 23:00:00'
+qlib_init:
+  region: us
+  kernels: 1
+  joblib_backend: threading
+  expression_cache: null
+  dataset_cache: null
+  exp_manager:
+    class: MLflowExpManager
+    module_path: qlib.workflow.expm
+    kwargs:
+      uri: sqlite:///artifacts/qlib_runs/{run_id}/mlflow.db
+      default_exp_name: qs_qlib_time_series_trend
+model:
+  name: lgbm_causal_trend
+  feature_set: causal_ohlcv_trend_v1
+  label: 'Ref($open, -14) / Ref($open, -2) - 1'
+  strategy_version: qlib_time_series_trend_v1
+  params: {seed: 17, num_leaves: 15, learning_rate: 0.035, min_data_in_leaf: 80}
+evaluation:
+  kind: time_series
+  label_horizon_bars: 12
+  entry_delay_bars: 2
+  minimum_segment_rows: 300
+  calibration_method: validation_ols
+  minimum_calibration_samples: 300
+research_simulation:
+  engine: btc_risk_budget
+  initial_equity: 100000
+  fee_bps: 5
+  slippage_bps: 3
+  spread_bps: 2
+  impact_bps: 2
+  risk_budget_fraction: 0.005
+  max_weight: 0.25
+  volatility_target_annual: 0.20
+  hard_stop_fraction: 0.04
+  trailing_stop_fraction: 0.06
+  maximum_holding_bars: 72
+  funding_filter_enabled: false
+  oi_filter_enabled: false
+task:
+  model:
+    class: LGBModel
+    module_path: qlib.contrib.model.gbdt
+    kwargs:
+      loss: mse
+      num_leaves: 15
+      learning_rate: 0.035
+      min_data_in_leaf: 80
+      lambda_l2: 5
+      seed: 17
+      num_threads: 2
+      verbosity: -1
+  dataset:
+    class: DatasetH
+    module_path: qlib.data.dataset
+    kwargs:
+      handler:
+        class: DataHandlerLP
+        module_path: qlib.data.dataset.handler
+        kwargs:
+          start_time: '2025-12-22 00:00:00'
+          end_time: '2026-07-29 23:00:00'
+          instruments: all
+          drop_raw: false
+          data_loader:
+            class: QlibDataLoader
+            module_path: qlib.data.dataset.loader
+            kwargs:
+              freq: 60min
+              config:
+                feature:
+                  - ['$close/Ref($close,1)-1', '$close/Ref($close,6)-1', '$close/Ref($close,24)-1', '$close/Ref($close,72)-1', '$close/Mean($close,24)-1', '$close/Mean($close,72)-1', 'Std($close/Ref($close,1)-1,24)', 'Std($close/Ref($close,1)-1,72)', '($high-$low)/$close', '($close-$open)/$open', '$volume/Mean($volume,24)-1', '$close/Max($high,72)-1', '$close/Min($low,72)-1']
+                  - [ret_1h, ret_6h, ret_24h, ret_72h, ma_gap_24h, ma_gap_72h, vol_24h, vol_72h, range, body, volume_ratio, breakout_high, breakout_low]
+                label:
+                  - ['Ref($open, -14) / Ref($open, -2) - 1']
+                  - [forward_return_12h]
+          infer_processors:
+            - {class: Fillna, kwargs: {fields_group: feature}}
+          learn_processors:
+            - {class: DropnaLabel}
+      segments:
+        train: ['2025-12-25 00:00:00', '2026-04-29 00:00:00']
+        valid: ['2026-05-01 00:00:00', '2026-05-30 00:00:00']
+        test: ['2026-06-01 00:00:00', '2026-07-28 23:00:00']
+lineage:
+  cost_model: {fee_bps_per_side: 5, funding: immutable_realized_rate_prior_available_mark_proxy}
+  slippage_model: {bps_per_side: 3, fill: next_delayed_open, execution_delay_bars: 2}

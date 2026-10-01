@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_production_bundle_intake_packet.schema.json",
+  "title": "QuantStation VNEXT US Equity Production Bundle Intake Packet",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "decision",
+    "bundle_contract",
+    "current_state",
+    "operator_steps",
+    "validation_commands",
+    "acceptance_criteria",
+    "blockers",
+    "source_reports",
+    "outputs",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_production_bundle_intake_packet_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": ["string", "null"]},
+    "branch": {"type": ["string", "null"]},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["intake_packet_ready_for_data_vendor_drop", "intake_packet_action_required"]},
+    "decision": {"type": "string", "minLength": 1},
+    "bundle_contract": {
+      "type": "object",
+      "required": [
+        "accepted_source_type",
+        "accepted_source_providers",
+        "incoming_drop_dir",
+        "target_bundle_root",
+        "default_import_bundle_id",
+        "required_table_count",
+        "required_tables",
+        "preferred_import_command",
+        "must_include_license_note",
+        "must_include_sha256_and_record_count",
+        "must_use_explicit_bundle_selection",
+        "manifest_name"
+      ],
+      "properties": {
+        "accepted_source_type": {"const": "production"},
+        "accepted_source_providers": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "incoming_drop_dir": {"const": "data/external/us_equity_lineage/incoming/manual_vendor_drop"},
+        "target_bundle_root": {"type": "string", "minLength": 1},
+        "default_import_bundle_id": {"const": "manual_vendor_bundle_v1"},
+        "required_table_count": {"const": 6},
+        "required_tables": {"type": "array", "minItems": 6, "items": {"$ref": "#/$defs/required_table"}},
+        "preferred_import_command": {"type": "string", "pattern": "import_us_equity_local_csv_production_bundle.py"},
+        "must_include_license_note": {"const": true},
+        "must_include_sha256_and_record_count": {"const": true},
+        "must_use_explicit_bundle_selection": {"const": true},
+        "manifest_name": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "current_state": {"type": "object", "required": ["current_blockers"], "additionalProperties": true},
+    "operator_steps": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/operator_step"}},
+    "validation_commands": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["criterion", "required_value"],
+        "properties": {
+          "criterion": {"type": "string", "minLength": 1},
+          "required_value": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "source_reports": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+    "outputs": {"type": "object", "required": ["json", "markdown"], "additionalProperties": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "intake_packet_only",
+        "vendor_data_written_by_this_report",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "intake_packet_only": {"const": true},
+        "vendor_data_written_by_this_report": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "required_table": {
+      "type": "object",
+      "required": ["table", "required_fields", "minimum_record_count"],
+      "properties": {
+        "table": {"type": "string", "minLength": 1},
+        "required_fields": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "minimum_record_count": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": true
+    },
+    "operator_step": {
+      "type": "object",
+      "required": ["step_id"],
+      "properties": {
+        "step_id": {"type": "string", "minLength": 1},
+        "command": {"type": "string"},
+        "description": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  }
+}

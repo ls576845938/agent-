@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "us_application_service_boundary.schema.json",
+  "title": "US Application Service Boundary",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "goal_id",
+    "application_layer",
+    "entrypoint_facades",
+    "legacy_builder_matrix",
+    "integrator_wiring",
+    "safety"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_application_service_boundary_v1"},
+    "goal_id": {"const": "US-V3-APPLICATION-SERVICE-BOUNDARY-01"},
+    "application_layer": {
+      "type": "object",
+      "required": ["service", "ports", "adapter", "clock"],
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "entrypoint_facades": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["entrypoint", "facade", "compatible_contract"],
+        "properties": {
+          "entrypoint": {"type": "string", "minLength": 1},
+          "facade": {"type": "string", "minLength": 1},
+          "compatible_contract": {"const": true}
+        },
+        "additionalProperties": false
+      }
+    },
+    "legacy_builder_matrix": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["path", "boundary_state", "next_condition"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "boundary_state": {
+            "enum": [
+              "application_service",
+              "compat_adapter",
+              "compat_facade",
+              "deferred_builder_extraction"
+            ]
+          },
+          "next_condition": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "integrator_wiring": {
+      "type": "object",
+      "required": ["app_factory_modified", "facade", "next_action"],
+      "properties": {
+        "app_factory_modified": {"const": false},
+        "facade": {"const": "backend.app.services.us_application_facade.USApplicationFacade"},
+        "next_action": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "minProperties": 7,
+      "additionalProperties": {"const": false}
+    }
+  },
+  "additionalProperties": false
+}

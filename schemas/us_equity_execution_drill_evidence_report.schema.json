@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_execution_drill_evidence_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Execution Drill Evidence Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "drill_count",
+    "proven_count",
+    "blocked_count",
+    "drills",
+    "oms_exception_scenarios",
+    "oms_exception_coverage_matrix",
+    "blockers",
+    "broker_credentials_evidence",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_execution_drill_evidence_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "execution_drill_evidence_blocked",
+        "execution_drill_evidence_partial",
+        "execution_drill_evidence_complete"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "execution_drill_evidence_blocked",
+          "execution_drill_evidence_partial",
+          "execution_drill_evidence_complete"
+        ]
+      },
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "drill_count": {"const": 5},
+    "proven_count": {"type": "integer", "minimum": 0, "maximum": 5},
+    "blocked_count": {"type": "integer", "minimum": 0, "maximum": 5},
+    "drills": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["drill_id", "title", "status", "required_evidence", "blockers"],
+        "properties": {
+          "drill_id": {
+            "enum": [
+              "margin_financing_share_rounding_preflight",
+              "order_reconciliation_drill",
+              "oms_exception_drill",
+              "kill_switch_drill",
+              "monitoring_alerting_drill"
+            ]
+          },
+          "title": {"type": "string", "minLength": 1},
+          "status": {"enum": ["blocked", "proven"]},
+          "required_evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "oms_exception_scenarios": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "required": [
+          "scenario_id",
+          "event",
+          "expected_action",
+          "broker_submit_attempted",
+          "order_created",
+          "simulated_fill_created",
+          "retry_allowed",
+          "passed",
+          "blockers"
+        ],
+        "properties": {
+          "scenario_id": {
+            "enum": [
+              "broker_reject_structured_error",
+              "cancel_pending_not_assumed_cancelled",
+              "duplicate_submit_idempotency",
+              "market_closed_reject",
+              "broker_outage_no_duplicate_retry",
+              "partial_fill_remaining_qty_recomputed",
+              "reconciliation_break_halts_new_orders"
+            ]
+          },
+          "event": {"type": "string", "minLength": 1},
+          "expected_action": {"type": "string", "minLength": 1},
+          "broker_submit_attempted": {"const": false},
+          "order_created": {"const": false},
+          "simulated_fill_created": {"const": false},
+          "retry_allowed": {"type": "boolean"},
+          "idempotency_key_required": {"type": "boolean"},
+          "structured_error_recorded": {"type": "boolean"},
+          "reject_code_recorded": {"type": "boolean"},
+          "risk_state_recorded": {"type": "boolean"},
+          "next_action_recorded": {"type": "boolean"},
+          "cancel_request_recorded": {"type": "boolean"},
+          "cancel_confirmation_required": {"type": "boolean"},
+          "cancelled_assumed_without_confirmation": {"type": "boolean"},
+          "partial_fill_recorded": {"type": "boolean"},
+          "remaining_quantity_recomputed": {"type": "boolean"},
+          "cash_position_reconciliation_required": {"type": "boolean"},
+          "reconciliation_break_detected": {"type": "boolean"},
+          "new_orders_blocked": {"type": "boolean"},
+          "incident_review_required": {"type": "boolean"},
+          "passed": {"const": true},
+          "blockers": {"type": "array", "maxItems": 0}
+        },
+        "additionalProperties": false
+      }
+    },
+    "oms_exception_coverage_matrix": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "required": [
+          "scenario_id",
+          "required",
+          "event",
+          "expected_action",
+          "policy_scenario_passed",
+          "order_reconciliation_matrix_present",
+          "order_reconciliation_matrix_passed",
+          "order_reconciliation_status",
+          "coverage_status",
+          "source_reports",
+          "source_drills",
+          "broker_submit_attempted",
+          "order_created",
+          "simulated_fill_created",
+          "blockers"
+        ],
+        "properties": {
+          "scenario_id": {
+            "enum": [
+              "broker_reject_structured_error",
+              "cancel_pending_not_assumed_cancelled",
+              "duplicate_submit_idempotency",
+              "market_closed_reject",
+              "broker_outage_no_duplicate_retry",
+              "partial_fill_remaining_qty_recomputed",
+              "reconciliation_break_halts_new_orders"
+            ]
+          },
+          "required": {"const": true},
+          "event": {"type": "string", "minLength": 1},
+          "expected_action": {"type": "string", "minLength": 1},
+          "policy_scenario_passed": {"type": "boolean"},
+          "order_reconciliation_matrix_present": {"type": "boolean"},
+          "order_reconciliation_matrix_passed": {"type": "boolean"},
+          "order_reconciliation_status": {"type": "string"},
+          "coverage_status": {"enum": ["complete", "policy_only", "blocked"]},
+          "source_reports": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "source_drills": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "broker_submit_attempted": {"const": false},
+          "order_created": {"const": false},
+          "simulated_fill_created": {"const": false},
+          "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "broker_credentials_evidence": {
+      "type": "object",
+      "required": [
+        "status",
+        "broker_credentials_proven",
+        "blockers",
+        "review_evidence_classification",
+        "credential_review_can_unlock_paper_or_live",
+        "credential_review_contains_secret_values",
+        "reviewer_recorded",
+        "reviewed_at_recorded",
+        "manual_approval_ticket_recorded",
+        "account_id_hash_format",
+        "account_id_hash_format_ok",
+        "raw_account_id_pattern_detected",
+        "read_only_or_live_disabled",
+        "order_permission_enabled",
+        "api_key_present_in_repo",
+        "template_safe_defaults_present",
+        "template_order_permission_enabled_default",
+        "live_order_allowed",
+        "order_endpoint_allowed",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "broker_credentials_proven": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "review_evidence_classification": {"type": "string"},
+        "credential_review_can_unlock_paper_or_live": {"const": false},
+        "credential_review_contains_secret_values": {"const": false},
+        "reviewer_recorded": {"type": "boolean"},
+        "reviewed_at_recorded": {"type": "boolean"},
+        "manual_approval_ticket_recorded": {"type": "boolean"},
+        "account_id_hash_format": {"type": "string"},
+        "account_id_hash_format_ok": {"type": "boolean"},
+        "raw_account_id_pattern_detected": {"type": "boolean"},
+        "read_only_or_live_disabled": {"type": "boolean"},
+        "order_permission_enabled": {"type": "boolean"},
+        "api_key_present_in_repo": {"type": "boolean"},
+        "template_safe_defaults_present": {"type": "boolean"},
+        "template_order_permission_enabled_default": {"type": ["boolean", "null"]},
+        "live_order_allowed": {"type": "boolean"},
+        "order_endpoint_allowed": {"type": "boolean"},
+        "broker_calls_used": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "source_reports": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["path", "exists", "status"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "exists": {"type": "boolean"},
+          "status": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "evidence_only",
+        "simulated_or_policy_evidence_only",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_calls_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "evidence_only": {"const": true},
+        "simulated_or_policy_evidence_only": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

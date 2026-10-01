@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuantStation VNEXT 项目评估与下一步方向</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #647084;
+      --line: #dbe2ee;
+      --accent: #0f766e;
+      --warn: #b45309;
+      --bad: #b91c1c;
+      --good: #047857;
+      --chip: #eef3f8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    main {
+      width: min(980px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
+
+    header {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(26px, 5vw, 42px);
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 22px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 22px;
+      margin: 16px 0;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.045);
+    }
+
+    ul, ol {
+      padding-left: 22px;
+      margin: 8px 0 0;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--chip);
+      color: #263447;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .chip.good {
+      background: #e8f7ef;
+      color: var(--good);
+    }
+
+    .chip.bad {
+      background: #fdecec;
+      color: var(--bad);
+    }
+
+    .chip.warn {
+      background: #fff3df;
+      color: var(--warn);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfdff;
+    }
+
+    .card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .card strong {
+      display: block;
+      font-size: 19px;
+      line-height: 1.25;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-top: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: #fff;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f0f4f9;
+      color: #334155;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code {
+      background: #eef3f8;
+      padding: 2px 5px;
+      border-radius: 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.95em;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      padding: 12px 14px;
+      background: #ecfdf8;
+      border-radius: 8px;
+      margin: 14px 0 0;
+    }
+
+    .callout.warn {
+      border-left-color: var(--warn);
+      background: #fff8ed;
+    }
+
+    .callout.bad {
+      border-left-color: var(--bad);
+      background: #fff1f1;
+    }
+
+    @media (max-width: 720px) {
+      main {
+        width: min(100% - 18px, 980px);
+        padding-top: 12px;
+      }
+
+      header, section {
+        border-radius: 8px;
+        padding: 16px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      th, td {
+        padding: 9px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>QuantStation VNEXT 项目评估与下一步方向</h1>
+      <p class="meta">生成时间：2026-05-16 · 位置：Google Cloud VM · 范围：架构、量化研究、交易系统安全边界、BTC Alpha Hardening 结果</p>
+      <div class="chips">
+        <span class="chip good">工程闭环已成型</span>
+        <span class="chip warn">alpha 质量是主瓶颈</span>
+        <span class="chip bad">BTC 候选未过 gate</span>
+        <span class="chip good">paper queue locked</span>
+        <span class="chip good">live frozen</span>
+      </div>
+    </header>
+
+    <section>
+      <h2>总判断</h2>
+      <p>这个系统的工程闭环已经明显超过普通个人量化项目，短板不再是“能不能跑”，而是“研究产出的 alpha 是否足够硬，以及证据链是否足够统一”。现在应该停止扩更多 live/paper 外壳和策略数量，把重心切到 alpha 质量、回测证据一致性、候选门禁收敛。</p>
+      <div class="callout">
+        <strong>架构结论：</strong>平台底座已经够用了。下一阶段最值钱的工作不是再造模块，而是把研究噪声压下去，让一个 BTC alpha 真的经得起 ledger、成本、regime 和 walk-forward。
+      </div>
+    </section>
+
+    <section>
+      <h2>当前进展</h2>
+      <div class="grid">
+        <div class="card"><span>数据层</span><strong>可用</strong><p>US equity 数据管线、manifest、质量报告已具备；BTC SQLite 可用，支持多周期。</p></div>
+        <div class="card"><span>回测层</span><strong>主线正确</strong><p>event-driven + fills/ledger PnL 已经成为主线，这是正确方向。</p></div>
+        <div class="card"><span>研究层</span><strong>较完整</strong><p>candidate gen、walk-forward、cost stress、PBO/DSR、promotion gate、evidence registry 已有实现。</p></div>
+        <div class="card"><span>风控 / 执行</span><strong>安全壳很完整</strong><p>OMS、Risk、paper、shadow/live safety shell 很多，但 live 仍应冻结。</p></div>
+        <div class="card"><span>前端</span><strong>可诊断</strong><p>Crypto workspace / Research dashboard 可展示闭环与 hardening 结果。</p></div>
+        <div class="card"><span>测试</span><strong>覆盖很宽</strong><p>仓库约 257 个 test 文件，覆盖 data、backtest、research、risk、live safety。</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>量化结论</h2>
+      <p>当前 BTC alpha 没有达到可 paper 的质量。降噪和控换手有效，但原始边际不足。order-flow 单独或确认后都还没有形成稳定收益来源。</p>
+
+      <h3>Baseline</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>strategy</th>
+              <th>PF</th>
+              <th>Sharpe</th>
+              <th>MDD</th>
+              <th>turnover</th>
+              <th>WF pass</th>
+              <th>regime pass</th>
+              <th>gate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>btc_perp_dual_trend</code></td>
+              <td>1.0996</td>
+              <td>1.5938</td>
+              <td>-6.8768%</td>
+              <td>1416%</td>
+              <td>50%</td>
+              <td>40%</td>
+              <td>failed</td>
+            </tr>
+            <tr>
+              <td><code>btc_orderflow_pressure</code></td>
+              <td>1.1053</td>
+              <td>1.6522</td>
+              <td>-5.7667%</td>
+              <td>2550%</td>
+              <td>75%</td>
+              <td>80%</td>
+              <td>failed</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Hardening 后</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>strategy</th>
+              <th>PF</th>
+              <th>Sharpe</th>
+              <th>MDD</th>
+              <th>turnover</th>
+              <th>WF pass</th>
+              <th>regime pass</th>
+              <th>gate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>btc_perp_dual_trend_v2</code></td>
+              <td>1.0189</td>
+              <td>0.4901</td>
+              <td>-7.9128%</td>
+              <td>601%</td>
+              <td>100%</td>
+              <td>75%</td>
+              <td>failed: PF / event PF</td>
+            </tr>
+            <tr>
+              <td><code>btc_orderflow_confirmed_trend_v1</code></td>
+              <td>1.0030</td>
+              <td>0.0757</td>
+              <td>-9.0322%</td>
+              <td>339%</td>
+              <td>75%</td>
+              <td>87.5%</td>
+              <td>failed: PF / event PF / WF</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>主要风险</h2>
+      <ol>
+        <li>研究证据存在多套入口：strict evidence、fresh event-ledger rerun、closure run 的指标有差异，需要统一 canonical report。</li>
+        <li>live/paper 代码非常多，安全壳强，但复杂度已经偏高。不要继续扩 live 模块。</li>
+        <li>当前策略数量不少，但真正接近 gate 的 alpha 很少。</li>
+        <li>BTC alpha 的 PF margin 太薄，成本、切片、regime 一压就没了。</li>
+        <li>当前 worktree 还有一批既有 dirty files，应先清理分支状态，否则后续归因会变差。</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>下一步方向</h2>
+      <h3>1. Evidence Consolidation</h3>
+      <ul>
+        <li>统一 baseline 口径：同一数据版本、同一 event-ledger、同一 cost model、同一 manifest。</li>
+        <li>所有报告只认一个 canonical artifact。</li>
+        <li>把 signal equity 彻底降级为 diagnostic，不参与 gate。</li>
+        <li>目标：任何策略结果都能一条命令复现。</li>
+      </ul>
+
+      <h3>2. BTC Alpha Research 进入归因优先</h3>
+      <ul>
+        <li>不再新增策略名。</li>
+        <li>针对 <code>perp_dual_trend</code> 做交易级 attribution：哪些入场条件赚钱，哪些 exit 亏钱。</li>
+        <li>order-flow 改成 sizing/veto 因子，而不是 entry trigger。</li>
+        <li>重点研究趋势延续低频持仓、liquidation shock 后的顺趋势恢复、compression 到 expansion 的突破确认。</li>
+        <li>目标不是 Sharpe，而是先把 event-ledger PF 稳定推到 1.15 以上。</li>
+      </ul>
+
+      <h3>3. Gate 和 Paper 严格保持冻结</h3>
+      <ul>
+        <li>当前没有策略进入 <code>candidate_passed_internal_gate</code>。</li>
+        <li>不创建 paper queue。</li>
+        <li>live 继续 frozen。</li>
+        <li>只有当 1-3 个候选同时过 PF、WF、regime、cost stress、PBO/DSR、no-lookahead、ledger gate，才进入 <code>paper_review_pending</code>。</li>
+      </ul>
+
+      <h3>4. 系统复杂度收敛</h3>
+      <ul>
+        <li>live/paper/G5-G9 模块很多，下一阶段不要继续扩展。</li>
+        <li>做一次 runtime boundary audit：哪些是真入口，哪些只是 review-only。</li>
+        <li>前端只服务诊断，不做更多花哨页面。</li>
+        <li>CI 固化最小核心测试集：data quality、event-ledger、no-lookahead、promotion gate、paper/live no-side-effect。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>建议下一个 Sprint</h2>
+      <p><strong>名称：</strong><code>BTC Alpha Attribution and Evidence Unification Sprint</code></p>
+      <h3>验收目标</h3>
+      <ul>
+        <li>统一 BTC canonical backtest report。</li>
+        <li>输出 per-trade attribution report。</li>
+        <li>明确 3 个盈利/亏损 regime。</li>
+        <li>只改 1 个主候选：<code>btc_perp_dual_trend_v3</code>。</li>
+        <li>PF 目标 >= 1.15，turnover <= 1000%，WF >= 80%，regime >= 75%。</li>
+        <li>若未达标，继续保持 <code>research_failed</code> / <code>candidate_gate_failed</code>。</li>
+      </ul>
+      <div class="callout warn">
+        <strong>执行边界：</strong>不打开 paper，不打开 live，不降低 gate，不新增一堆策略，不绕过 event-ledger。
+      </div>
+    </section>
+
+    <section>
+      <h2>当前安全状态</h2>
+      <div class="grid">
+        <div class="card"><span>candidate_passed_internal_gate</span><strong>0</strong></div>
+        <div class="card"><span>paper review queue</span><strong>LOCKED</strong></div>
+        <div class="card"><span>live</span><strong>FROZEN</strong></div>
+      </div>
+      <div class="callout bad">
+        当前没有 BTC 策略达到内部晋级标准。下一步必须优先做归因和证据统一，而不是推进 paper 或 live。
+      </div>
+    </section>
+  </main>
+</body>
+</html>

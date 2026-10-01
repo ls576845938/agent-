@@ -1,0 +1,39 @@
+# BTC Binance USD-M Public Data Operator Guide
+
+The collector skeleton is dry-run by default. It does not use API keys and does not call private or order endpoints.
+
+Allowed public endpoints:
+- `/fapi/v1/klines`
+- `/fapi/v1/markPriceKlines`
+- `/fapi/v1/premiumIndexKlines`
+- `/fapi/v1/fundingRate`
+- `/fapi/v1/fundingInfo`
+- `/fapi/v1/premiumIndex`
+- `/fapi/v1/exchangeInfo`
+- `/fapi/v1/openInterest`
+- `/futures/data/openInterestHist`
+
+Default workflow:
+1. Prefer `landing_mode=local_archive_import` for historical klines, mark price klines, premium index klines, funding rate, funding info, and exchangeInfo.
+2. Keep `allow_public_rest_fetch=false` and `allow_network=false` until a human explicitly decides to use public REST.
+3. Run the collector in dry-run mode to inspect planned endpoint calls. Dry-run does not create a bundle directory.
+4. Public REST execution requires both CLI flags `--allow-network --execute` and config flags `allow_public_rest_fetch=true` and `allow_network=true`.
+5. For manual metadata landing, capture `exchange_info_raw.json` and `funding_info_raw.json` as distinct files outside the selected bundle, and preserve `exchange_info_http_status.txt` and `funding_info_http_status.txt` with value `200`. Then run `make dry-run-btc-manual-metadata-import EXCHANGE_INFO_RAW=exchange_info_raw.json FUNDING_INFO_RAW=funding_info_raw.json EXCHANGE_INFO_HTTP_STATUS=exchange_info_http_status.txt FUNDING_INFO_HTTP_STATUS=funding_info_http_status.txt BTC_MANUAL_METADATA_CAPTURED_AT=2026-05-22T00:00:00Z` before the matching `make apply-btc-manual-metadata-import ...` command. Use the actual UTC capture time. The importer rejects missing, non-UTC, or future timestamps, refuses reused raw paths, refuses raw files under the bundle, refuses non-selected bundle targets, writes nothing unless both metadata contracts verify, and only the write-capable import writes `artifacts/btc_data_status/latest/btc_manual_metadata_import_report.json`. Provider verification only accepts the import when the report's `exchange_info_output_sha256` and `funding_info_output_sha256` match the current selected bundle files. The apply target rebuilds the downstream BTC data, cost, candidate, registry, paper-readiness, and paper-start artifacts without resetting the public capture attempt; the operator packet also ends the post-capture validation sequence with `make rebuild-btc-paper-readiness-chain` so the final `btc_paper_validation_start_report.json` is refreshed after any intermediate validation.
+6. For fee-tier landing, capture maker/taker bps from a public USD-M fee schedule source, then run `make dry-run-btc-fee-tier-overlay-import BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> BTC_FEE_TIER_CAPTURED_AT=<UTC_CAPTURE_TIME>` before `make apply-btc-fee-tier-overlay-import ...`. Do not use account, private, or API-key fee endpoints. The apply target rebuilds the same downstream BTC paper-readiness chain, and the operator packet exposes `post_import_rebuild_command=make rebuild-btc-paper-readiness-chain`. The cost model only accepts fee-tier evidence when `btc_fee_tier_overlay_import_report.json` is a verified non-dry-run write report and its `overlay_payload_sha256` matches `btc_fee_tier_overlay.json`. The operator packet also publishes `manual_inputs_status`, `paper_gate_manual_inputs_complete`, and `required_manual_inputs` so exchangeInfo, fundingInfo, and fee-tier capture are tracked as one paper-gate checklist. Once all three manual inputs are available, prefer the combined paper-gate command: `make dry-run-btc-paper-gate-manual-inputs EXCHANGE_INFO_RAW=exchange_info_raw.json FUNDING_INFO_RAW=funding_info_raw.json EXCHANGE_INFO_HTTP_STATUS=exchange_info_http_status.txt FUNDING_INFO_HTTP_STATUS=funding_info_http_status.txt BTC_MANUAL_METADATA_CAPTURED_AT=<UTC_METADATA_CAPTURE_TIME> BTC_FEE_TIER_MAKER_BPS=<MAKER_FEE_BPS> BTC_FEE_TIER_TAKER_BPS=<TAKER_FEE_BPS> BTC_FEE_TIER_CAPTURED_AT=<UTC_FEE_CAPTURE_TIME>` before the matching `make apply-btc-paper-gate-manual-inputs ...`.
+7. Any fetched or imported data must stay under `data/external/btc_perpetual/binance_usdm/bundles/<bundle_id>/`.
+8. Build `btc_perpetual_bundle_manifest.json` with SHA-256 hashes, record counts, sample ranges, and source endpoint/archive notes.
+9. Run bundle preflight and provider verification before rebuilding BTC evidence.
+10. After any dry-run validation target that rebuilds BTC metadata capture status, run `make restore-btc-live-metadata-evidence` to refresh the live public metadata attempt and all downstream BTC data, cost, candidate, paper-readiness, paper-start, and registry artifacts.
+11. `btc_paper_validation_start_report.json` embeds a read-only `preflight_probe` using `python3 scripts/check_btc_paper_validation_readiness.py --symbols BTCUSDT --market-type usds_m_perpetual --ledger-root data/paper_ledger/btc --data-root data --no-start-report-ready-required --json`. A start command is only allowed when this probe returns `PASS`; blocked reports keep `commands.start_command` empty.
+12. Use `make check-btc-paper-validation-readiness` for the final read-only operator check. Use `make start-btc-paper-validation` only for the first clean-ledger cycle after the start report is ready; it calls the guarded BTC runner, uses simulated paper execution only, derives commission and slippage from `artifacts/btc_cost_model/latest/btc_cost_model_report.json`, and writes a schema-validated `data/paper_ledger/btc/audit/btc_paper_validation_start_attempt.json` instead of starting when any gate fails. CLI commission or slippage overrides are only allowed when they match the verified cost-model report exactly. A blocked start attempt must record `real_order_submission=false`, `allows_live_orders=false`, `orders_require_risk_engine=true`, `pnl_source=fills_and_ledger`, and `network_required=false`.
+13. If the hard data, cost, ledger, and candidate gates reach `ready_for_manual_paper_review`, approve only through the record-only paper review flow: `python3 -m quant_us.cli research paper-review-approve --paper-review-id <id> --manual --reviewer <name> --reason "<reason>" --data-root data`. BTC readiness requires the persisted `approval` object with `schema_version=paper_review_approval_v1`, reviewer, timestamp, candidate binding, source, and a gate snapshot proving `paper_execution_authorized=false`; a hand-written `APPROVED_FOR_PAPER_ONLY` status is not sufficient.
+14. After a successful first cycle, use `make resume-btc-paper-validation BTC_PAPER_START=<UTC start> BTC_PAPER_END=<UTC end>` for subsequent validation windows. The resume target is explicit because `make start-btc-paper-validation` must fail closed when `orders.jsonl` or `fills.jsonl` already exists without `--resume`.
+15. When the guarded runner is allowed to run, `data/paper_ledger/btc/validation_report.json` and `data/paper_ledger/btc/audit/paper_session_manifest.json` must validate against the BTC paper-validation run/session schemas, including the cost-model report path, commission rate, and slippage bps used for the simulated cycle. Clean reconciliation increments `validation_state.json.consecutive_clean_days`; this counter is the evidence path toward the 30-day paper-validation gate.
+
+Forbidden boundaries:
+- No API key, signature, timestamp, or private auth parameter.
+- No account, position, order, listenKey, userData, leverage, margin, transfer, income, balance, broker, or private endpoint.
+- Public API capability and successful download are not local verification.
+- Open interest current/latest-month data remains diagnostic unless full local archive coverage is proven.
+
+Perpetual data readiness still does not imply alpha readiness. Funding PnL, mark price, exchange rules, tail dependency, event PF, walk-forward, and regime gates must all pass before any candidate review.

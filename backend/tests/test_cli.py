@@ -1,0 +1,1303 @@
+"""Tests for quant_us/cli.py — unified CLI entry point.
+
+Covers:
+  - Each subcommand --help works
+  - Ingest subcommand with mocked pipeline
+  - Backtest subcommand with mocked runner
+"""
+
+from __future__ import annotations
+
+import argparse
+import io
+import json
+import unittest
+import sys
+from contextlib import redirect_stdout
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import MagicMock, patch
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from quant_us.cli import build_parser, main
+
+
+def _write_review_json(
+    data_root: str | Path,
+    status: str = "PENDING_HUMAN_REVIEW",
+    *,
+    reviewer: str = "",
+    with_evidence_pack: bool = False,
+) -> Path:
+    review_dir = Path(data_root) / "research" / "paper_reviews" / "prev_001"
+    review_dir.mkdir(parents=True)
+    review_path = review_dir / "review.json"
+    payload = {
+        "paper_review_id": "prev_001",
+        "strategy_manifest_id": "sman_001",
+        "status": status,
+        "created_at": "2026-05-08T12:00:00+00:00",
+    }
+    if reviewer:
+        payload["reviewer"] = reviewer
+    if with_evidence_pack:
+        pack_path = Path(data_root) / "research" / "evidence_packs" / "prev_001" / "evidence_pack.json"
+        pack_path.parent.mkdir(parents=True, exist_ok=True)
+        pack_path.write_text(
+            json.dumps({"paper_review_id": "prev_001"}),
+            encoding="utf-8",
+        )
+        payload["evidence_pack_path"] = str(pack_path)
+    review_path.write_text(
+        json.dumps(payload, indent=2),
+        encoding="utf-8",
+    )
+    return review_path
+
+
+def _write_saved_evidence_registry(data_root: str | Path) -> None:
+    from quant_us.research.evidence_registry import rebuild_evidence_registry
+
+    rebuild_evidence_registry(data_root, write=True)
+
+
+def _write_empty_subject_registry(data_root: str | Path) -> None:
+    registry_path = Path(data_root) / "research" / "evidence_registry.json"
+    registry_path.parent.mkdir(parents=True, exist_ok=True)
+    subject_index = {
+        "candidate_id": {"cand_001": [{"candidate_id": "cand_001"}]},
+        "strategy_manifest_id": {"sman_001": [{"strategy_manifest_id": "sman_001"}]},
+        "paper_review_id": {},
+        "backtest_run_id": {"abc123": [{"backtest_run_id": "abc123"}]},
+        "data_version": {"data_v2": [{"data_version": "data_v2"}]},
+        "report_date": {"2026-05-08": [{"report_date": "2026-05-08"}]},
+        "session_id": {"sess_001": [{"session_id": "sess_001"}]},
+    }
+    registry_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "evidence_registry_v1",
+                "generated_at": "2099-01-01T00:00:00+00:00",
+                "registry_path": str(registry_path),
+                "registry_notes": [],
+                "counts": {
+                    "candidate_count": 0,
+                    "data_manifest_count": 0,
+                    "backtest_manifest_count": 0,
+                    "promotion_result_count": 0,
+                    "strategy_manifest_count": 0,
+                    "paper_review_count": 0,
+                    "daily_report_count": 0,
+                },
+                "evidence": {
+                    "data_manifests": [],
+                    "backtest_manifests": [],
+                    "promotion_results": [],
+                    "strategy_manifests": [],
+                    "paper_reviews": [],
+                    "daily_reports": [],
+                    "candidates": [],
+                },
+                "chains": {},
+                "subject_index_schema_version": "subject_evidence_index_v1",
+                "subject_index": subject_index,
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_paper_validation_artifacts(data_root: str | Path) -> None:
+    root = Path(data_root)
+    market_data_dir = (
+        root
+        / "raw"
+        / "vendor=yfinance"
+        / "asset_class=equity"
+        / "bar_size=1d"
+        / "symbol=AAPL"
+    )
+    market_data_dir.mkdir(parents=True, exist_ok=True)
+    (market_data_dir / "date=2026-05-08.parquet").write_bytes(b"fixture")
+    report_dir = root / "paper_ledger" / "daily_reports"
+    report_dir.mkdir(parents=True)
+    (report_dir / "daily_report_2026-05-08.json").write_text(
+        json.dumps(
+            {
+                "report_date": "2026-05-08",
+                "generated_at": "2026-05-08T21:00:00+00:00",
+                "ending_equity": 101000.0,
+                "daily_pnl": 1000.0,
+                "orders_submitted": 2,
+                "orders_filled": 2,
+                "reconciliation_status": "clean",
+                "kill_switch_triggered": False,
+                "errors": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    state_dir = root / "reports" / "paper_production"
+    state_dir.mkdir(parents=True)
+    (state_dir / "validation_state.json").write_text(
+        json.dumps(
+            {
+                "symbols": ["AAPL"],
+                "data_root": str(root),
+                "source": "yfinance",
+                "bar_size": "1d",
+                "days_required": 30,
+                "days_completed": 30,
+                "consecutive_clean_days": 30,
+                "daily_results": [
+                    {"date": f"2026-04-{day:02d}", "errors": [], "recon": "PASS"}
+                    for day in range(1, 31)
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_dir = root / "paper_ledger" / "audit"
+    audit_dir.mkdir(parents=True)
+    (audit_dir / "paper_session_manifest.json").write_text(
+        json.dumps(
+            {
+                "session_id": "sess_001",
+                "mode": "paper",
+                "paper_broker": "simulated",
+                "broker_backend": "simulated",
+                "submit_orders": False,
+                "history_artifact_path": str(audit_dir / "paper_session_manifests" / "sess_001.json"),
+                "no_real_order_submission_proof": {"status": "PASS"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (audit_dir / "paper_broker_adapter_startup_sync.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "halt_reconciliation": False,
+                "no_submit_proof": {
+                    "submit_call_count_available": True,
+                    "submit_order_invoked": False,
+                    "write_method_invoked": False,
+                    "submit_call_count_delta": 0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (audit_dir / "paper_broker_state_recovery.json").write_text(
+        json.dumps(
+            {
+                "status": "verified",
+                "resume_detected": False,
+                "operationally_complete": True,
+                "broker_state_restored": False,
+                "broker_state_verified": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+    recon_dir = root / "paper_ledger" / "reconciliation"
+    recon_dir.mkdir(parents=True)
+    (recon_dir / "recon_20260508_210000.json").write_text(
+        json.dumps(
+            {
+                "status": "clean",
+                "cash_diff": 0.0,
+                "position_diffs": {},
+                "order_diffs": {},
+                "fill_diffs": {},
+                "halt_new_orders": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (recon_dir / "ledger_recon_artifact_aaaaaaaaaaaaaaaa.json").write_text(
+        json.dumps(
+            {
+                "artifact_hash": "aaaaaaaaaaaaaaaa",
+                "fills": {"duplicate_fill_count": 0, "conflict_fill_count": 0},
+                "hashes": {"fills_hash": "bbbbbbbbbbbbbbbb"},
+                "pnl": {"net_pnl": 1000.0},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+class CliHelpTests(unittest.TestCase):
+    """Each subcommand must display --help without error."""
+
+    def test_root_help(self) -> None:
+        parser = build_parser()
+        help_text = parser.format_help()
+        self.assertIn("ingest", help_text)
+        self.assertIn("backtest", help_text)
+        self.assertIn("paper", help_text)
+        self.assertIn("reconcile", help_text)
+        self.assertIn("readiness", help_text)
+        self.assertIn("micro-live-readiness", help_text)
+        self.assertIn("manifest", help_text)
+        self.assertIn("report", help_text)
+
+    def test_ingest_help(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        ingest_parser = sub.choices["ingest"]
+        help_text = ingest_parser.format_help()
+        self.assertIn("--source", help_text)
+        self.assertIn("--bar-size", help_text)
+        self.assertIn("--start", help_text)
+        self.assertIn("--end", help_text)
+
+    def test_backtest_help(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        bt_parser = sub.choices["backtest"]
+        help_text = bt_parser.format_help()
+        self.assertIn("--strategy", help_text)
+        self.assertIn("--start", help_text)
+        self.assertIn("--end", help_text)
+        self.assertIn("--initial-cash", help_text)
+
+    def test_paper_help(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        pp_parser = sub.choices["paper"]
+        help_text = pp_parser.format_help()
+        self.assertIn("--strategy", help_text)
+        self.assertIn("--broker", help_text)
+
+    def test_reconcile_help(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        rc_parser = sub.choices["reconcile"]
+        help_text = rc_parser.format_help()
+        self.assertIn("--broker", help_text)
+
+
+class CliIngestTests(unittest.TestCase):
+    """Ingest subcommand with mocked pipeline."""
+
+    @patch("quant_us.data.connectors.us_equity_ingestion.USEquityIngestionPipeline")
+    def test_ingest_calls_pipeline(self, mock_pipeline_cls: MagicMock) -> None:
+        mock_instance = MagicMock()
+        mock_pipeline_cls.return_value = mock_instance
+        mock_instance.run.return_value = []
+
+        main(["ingest", "--symbols", "SPY,QQQ", "--source", "yfinance", "--start", "2024-01-01", "--end", "2024-01-05"])
+
+        mock_pipeline_cls.assert_called_once()
+        call_config = mock_pipeline_cls.call_args[0][0]
+        self.assertEqual(call_config.source, "yfinance")
+        self.assertEqual(call_config.symbols, ["SPY", "QQQ"])
+        self.assertEqual(call_config.start, "2024-01-01")
+        self.assertEqual(call_config.end, "2024-01-05")
+        mock_instance.run.assert_called_once()
+
+    @patch("quant_us.data.connectors.us_equity_ingestion.USEquityIngestionPipeline")
+    def test_ingest_with_default_symbols(self, mock_pipeline_cls: MagicMock) -> None:
+        """When no --symbols given, should use V1_SYMBOLS."""
+        mock_instance = MagicMock()
+        mock_pipeline_cls.return_value = mock_instance
+        mock_instance.run.return_value = []
+
+        from config.v1_universe import V1_SYMBOLS
+
+        main(["ingest", "--start", "2024-01-01", "--end", "2024-01-05"])
+
+        call_config = mock_pipeline_cls.call_args[0][0]
+        self.assertEqual(len(call_config.symbols), len(V1_SYMBOLS))
+        self.assertIn("SPY", call_config.symbols)
+
+
+class CliBacktestTests(unittest.TestCase):
+    """Backtest subcommand with mocked runner."""
+
+    @patch("quant_us.backtest.unified_runner.UnifiedBacktestRunner")
+    @patch("quant_us.cli._load_backtest_data")
+    @patch("quant_us.strategies.factory.build_strategy")
+    def test_backtest_calls_runner(
+        self,
+        mock_build_strategy: MagicMock,
+        mock_load_data: MagicMock,
+        mock_runner_cls: MagicMock,
+    ) -> None:
+        import pandas as pd
+
+        mock_strategy = MagicMock()
+        mock_strategy.version = "0.1.0"
+        mock_build_strategy.return_value = mock_strategy
+
+        mock_frame = pd.DataFrame({
+            "timestamp_utc": pd.date_range("2024-01-01", periods=10, freq="D", tz="UTC"),
+            "symbol": ["SPY"] * 10,
+            "open": [450.0] * 10,
+            "high": [452.0] * 10,
+            "low": [449.0] * 10,
+            "close": [451.0] * 10,
+            "volume": [1_000_000] * 10,
+        })
+        mock_load_data.return_value = mock_frame
+
+        mock_instance = MagicMock()
+        mock_runner_cls.return_value = mock_instance
+        mock_result = MagicMock()
+        mock_result.run_id = "test-run"
+        mock_result.summary = {
+            "total_return_pct": 1.5,
+            "sharpe_ratio": 0.8,
+            "max_drawdown_pct": -2.0,
+            "trade_count": 10,
+        }
+        mock_result.equity_consistent = True
+        mock_result.is_trustworthy = True
+        mock_instance.run.return_value = mock_result
+
+        main([
+            "backtest",
+            "--strategy", "etf_rotation",
+            "--symbols", "SPY,QQQ",
+            "--start", "2024-01-01",
+            "--end", "2024-01-10",
+            "--initial-cash", "50000",
+        ])
+
+        mock_build_strategy.assert_called_once_with("etf_rotation", {})
+        mock_load_data.assert_called_once()
+        mock_instance.run.assert_called_once()
+
+    def test_backtest_requires_strategy(self) -> None:
+        """--strategy is required for backtest subcommand."""
+        parser = build_parser()
+        with self.assertRaises(SystemExit):
+            parser.parse_args(["backtest", "--start", "2024-01-01"])
+
+    def test_backtest_help_includes_strategy(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        bt_parser = sub.choices["backtest"]
+        help_text = bt_parser.format_help()
+        self.assertIn("--strategy", help_text)
+
+
+class CliPaperTests(unittest.TestCase):
+    """Paper subcommand."""
+
+    def test_paper_help_includes_broker(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        pp_parser = sub.choices["paper"]
+        help_text = pp_parser.format_help()
+        self.assertIn("--broker", help_text)
+        self.assertIn("--strategy", help_text)
+
+    def test_paper_strategy_defaults(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        pp_parser = sub.choices["paper"]
+        args = pp_parser.parse_args(["--broker", "simulated"])
+        self.assertEqual(args.strategy, "etf_rotation")
+
+    @patch("quant_us.live.paper_runtime.PaperRuntime")
+    @patch("quant_us.strategies.factory.build_strategy")
+    def test_paper_run_passes_broker_to_runtime_config(
+        self,
+        mock_build_strategy: MagicMock,
+        mock_runtime_cls: MagicMock,
+    ) -> None:
+        from quant_us.cli import _cmd_paper_run
+
+        mock_build_strategy.return_value = MagicMock()
+        runtime = mock_runtime_cls.return_value
+        runtime.metrics_log = []
+        runtime.broker.get_account.return_value = MagicMock(
+            equity=100_000.0,
+            cash=100_000.0,
+            positions={},
+        )
+        runtime.kill_switch.triggered = False
+        args = argparse.Namespace(
+            strategy="trend_momentum",
+            broker="alpaca",
+            submit_orders=True,
+            initial_cash=100_000.0,
+            commission_rate=0.0001,
+            slippage_bps=1.0,
+            poll_interval=60.0,
+            data_root="data",
+            max_runtime_hours=1.0,
+            data_vendor="yfinance",
+            bar_size="1m",
+        )
+
+        with patch.dict(
+            "os.environ",
+            {"APCA_API_KEY_ID": "paper_key", "APCA_API_SECRET_KEY": "paper_secret"},
+            clear=True,
+        ):
+            _cmd_paper_run(["SPY"], args)
+
+        config = mock_runtime_cls.call_args.kwargs["config"]
+        self.assertEqual(config.paper_broker, "alpaca")
+        self.assertTrue(config.submit_orders)
+
+    @patch("quant_us.live.paper_runtime.PaperRuntime")
+    @patch("quant_us.strategies.factory.build_strategy")
+    def test_paper_start_enable_orders_maps_to_submit_orders(
+        self,
+        mock_build_strategy: MagicMock,
+        mock_runtime_cls: MagicMock,
+    ) -> None:
+        from quant_us.cli import _start_paper_production_loop
+
+        mock_build_strategy.return_value = MagicMock()
+        runtime = mock_runtime_cls.return_value
+        runtime.metrics_log = []
+        runtime.broker.get_account.return_value = MagicMock(
+            equity=100_000.0,
+            cash=100_000.0,
+            positions={},
+        )
+        runtime.kill_switch.triggered = False
+        args = argparse.Namespace(
+            strategy="trend_momentum",
+            enable_paper_orders=True,
+            initial_cash=100_000.0,
+            commission_rate=0.0001,
+            slippage_bps=1.0,
+            data_vendor="yfinance",
+            bar_size="1d",
+        )
+
+        _start_paper_production_loop(["SPY"], args)
+
+        config = mock_runtime_cls.call_args.kwargs["config"]
+        self.assertTrue(config.submit_orders)
+        self.assertEqual(config.paper_broker, "alpaca")
+
+
+class CliReconcileTests(unittest.TestCase):
+    """Reconcile subcommand."""
+
+    def test_reconcile_help(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        rc_parser = sub.choices["reconcile"]
+        help_text = rc_parser.format_help()
+        self.assertIn("--broker", help_text)
+
+
+class CliReadinessTests(unittest.TestCase):
+    """Readiness subcommand."""
+
+    def test_readiness_help_has_validation_state(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        rd_parser = sub.choices["readiness"]
+        help_text = rd_parser.format_help()
+        self.assertIn("--validation-state", help_text)
+
+    def test_readiness_runs_without_error(self) -> None:
+        """'quant-us readiness' should execute without exception."""
+        from quant_us.cli import main
+
+        main(["readiness"])
+
+    def test_small_live_missing_validation_state_fails_closed(self) -> None:
+        out = io.StringIO()
+        with self.assertRaises(SystemExit) as ctx, redirect_stdout(out):
+            main(["readiness", "--small-live"])
+
+        self.assertEqual(ctx.exception.code, 1)
+        text = out.getvalue()
+        self.assertIn("RESULT: BLOCKED for small-live review", text)
+        self.assertIn("scope:  report only, no execution", text)
+
+    def test_readiness_missing_registry_blocks_without_creating_registry(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_review_json(tmp)
+            registry_path = Path(tmp) / "research" / "evidence_registry.json"
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["readiness", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("scope:       report only, no execution", text)
+            self.assertIn("validation_state_state: MISSING", text)
+            self.assertIn("latest_daily_report_state: MISSING", text)
+            self.assertIn("evidence_registry_state: MISSING (missing)", text)
+            self.assertIn("paper_review_status: BLOCKED_MISSING_REGISTRY", text)
+            self.assertIn("paper_review_entry_allowed: NO", text)
+            self.assertIn("manual_review_pending: NO", text)
+            self.assertFalse(registry_path.exists())
+
+    def test_readiness_legacy_index_cannot_replace_canonical_registry(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_review_json(tmp)
+            _write_saved_evidence_registry(tmp)
+            registry_path = Path(tmp) / "research" / "evidence_registry.json"
+            legacy_index_path = Path(tmp) / "research" / "paper_review_index.json"
+            shadow_registry_path = Path(tmp) / "research" / "shadow_registry.json"
+            shadow_registry_path.write_text(registry_path.read_text(encoding="utf-8"), encoding="utf-8")
+            legacy_index = json.loads(legacy_index_path.read_text(encoding="utf-8"))
+            legacy_index["registry_path"] = str(shadow_registry_path)
+            legacy_index_path.write_text(json.dumps(legacy_index, indent=2), encoding="utf-8")
+            registry_path.unlink()
+
+            readiness_out = io.StringIO()
+            with redirect_stdout(readiness_out):
+                main(["readiness", "--data-root", tmp])
+            readiness_text = readiness_out.getvalue()
+            self.assertIn("evidence_registry_state: MISSING (missing)", readiness_text)
+            self.assertIn("paper_review_status: BLOCKED_MISSING_REGISTRY", readiness_text)
+
+            registry_out = io.StringIO()
+            with redirect_stdout(registry_out):
+                main(["report", "evidence-registry", "--data-root", tmp])
+            registry_text = registry_out.getvalue()
+            self.assertIn("registry_state: MISSING (missing)", registry_text)
+            self.assertIn("evidence:       evidence_registry=(not found)", registry_text)
+
+    def test_readiness_saved_registry_prints_paper_review_status(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_review_json(tmp)
+            _write_saved_evidence_registry(tmp)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["readiness", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("evidence_registry_state: PASS (present)", text)
+            self.assertIn("paper_review_status: PENDING_HUMAN_REVIEW", text)
+            self.assertIn("paper_review_entry_allowed: YES", text)
+            self.assertIn("manual_review_pending: YES", text)
+            self.assertIn("evidence:     paper_review=", text)
+
+    def test_readiness_corrupt_registry_reports_conflict(self) -> None:
+        with TemporaryDirectory() as tmp:
+            registry_path = Path(tmp) / "research" / "evidence_registry.json"
+            registry_path.parent.mkdir(parents=True)
+            registry_path.write_text("{not-json", encoding="utf-8")
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["readiness", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("evidence_registry_state: CONFLICT (inspect_failed)", text)
+            self.assertIn("paper_review_status: CONFLICT", text)
+            self.assertIn("paper_review_entry_allowed: NO", text)
+            self.assertIn("evidence:     paper_review_status=CONFLICT (registry inspect failed)", text)
+
+
+class CliLiveSafetyTests(unittest.TestCase):
+    """Live CLI must be explicit review-only / fail-closed."""
+
+    def test_live_start_help_is_review_only(self) -> None:
+        parser = build_parser()
+        sub = parser._subparsers._group_actions[0]
+        live_parser = sub.choices["live"]
+        live_sub = live_parser._subparsers._group_actions[0]
+        start_parser = live_sub.choices["start"]
+        help_text = start_parser.format_help()
+        flat_help = " ".join(help_text.split())
+
+        self.assertIn("fail-closed, no execution", help_text)
+        self.assertIn("Review flag only; does not enable live execution", help_text)
+        self.assertIn("Ignored by live start; no paper/live orders are submitted", flat_help)
+        self.assertNotIn("paper production loop unless gates pass", help_text)
+        self.assertNotIn("Enable live order path", help_text)
+
+    @patch("quant_us.cli._start_paper_production_loop")
+    @patch("quant_us.live.runtime.LiveRuntime")
+    def test_live_start_gate_pass_does_not_fall_back_to_paper_loop(
+        self,
+        mock_runtime_cls: MagicMock,
+        mock_paper_loop: MagicMock,
+    ) -> None:
+        health = MagicMock()
+        health.ok = True
+        health.status = "ready"
+        health.checks = {}
+        health.errors = []
+        mock_runtime_cls.return_value.bootstrap.return_value = health
+
+        out = io.StringIO()
+        err = io.StringIO()
+        with self.assertRaises(SystemExit) as ctx, redirect_stdout(out), patch("sys.stderr", err):
+            main(["live", "start", "--symbols", "SPY"])
+
+        self.assertEqual(ctx.exception.code, 1)
+        mock_paper_loop.assert_not_called()
+        text = out.getvalue() + err.getvalue()
+        self.assertIn("real_order_submission: DISABLED (review-only CLI, no execution)", text)
+        self.assertIn("live start is fail-closed", text)
+
+    @patch("quant_us.cli._start_paper_production_loop")
+    def test_start_live_production_loop_is_blocked_and_never_delegates(
+        self,
+        mock_paper_loop: MagicMock,
+    ) -> None:
+        from quant_us.cli import _start_live_production_loop
+
+        args = argparse.Namespace(
+            strategy="etf_rotation",
+            initial_cash=100_000.0,
+            poll_interval=60.0,
+            bar_size="1m",
+            data_vendor="yfinance",
+            max_runtime_hours=1.0,
+        )
+
+        out = io.StringIO()
+        err = io.StringIO()
+        with self.assertRaises(SystemExit) as ctx, redirect_stdout(out), patch("sys.stderr", err):
+            _start_live_production_loop(["SPY"], args)
+
+        self.assertEqual(ctx.exception.code, 1)
+        mock_paper_loop.assert_not_called()
+        text = out.getvalue() + err.getvalue()
+        self.assertIn("RESULT: BLOCKED", text)
+        self.assertIn("scope:  review only, no execution", text)
+        self.assertIn("paper_loop_fallback:   DISABLED", text)
+        self.assertNotIn("REAL ORDERS ENABLED", text)
+
+
+class CliManifestReportTests(unittest.TestCase):
+    """Traceability commands for manifests and reports."""
+
+    def test_manifest_inspect_backtest_run_id(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "run_abc123.json").write_text(
+                """{
+                  "run_id": "abc123",
+                  "data_version": "data_v1",
+                  "strategy_version": "strat_v1",
+                  "commit_hash": "deadbee",
+                  "start_time": "2026-05-01T00:00:00+00:00",
+                  "end_time": "2026-05-01T00:01:00+00:00",
+                  "config": {"initial_cash": 100000, "commission_rate": 0.0001, "slippage_bps": 1.0}
+                }""",
+                encoding="utf-8",
+            )
+            main(["manifest", "inspect", "--manifest", "abc123", "--data-root", tmp])
+
+    def test_manifest_inspect_prints_data_manifest_v2_fields(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "data_v2.json").write_text(
+                json.dumps(
+                    {
+                        "data_version": "data_v2",
+                        "source": "yfinance",
+                        "symbol": "AAPL",
+                        "interval": "1d",
+                        "start": "2026-05-01",
+                        "end": "2026-05-08",
+                        "universe_id": "us-core",
+                        "universe_source": "explicit",
+                        "survivorship_bias_risk": "low",
+                        "adjustment_policy": "split_adjusted",
+                        "corporate_action_adjustment": "split_adjusted",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["manifest", "inspect", "--manifest", "data_v2", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("universe_id: us-core", text)
+            self.assertIn("survivorship_bias_risk: low", text)
+            self.assertIn("adjustment_policy: split_adjusted", text)
+
+    def test_report_backtest_prints_state_and_report_only_scope(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "run_abc123.json").write_text(
+                """{
+                  "run_id": "abc123",
+                  "data_version": "data_v1",
+                  "strategy_version": "strat_v1",
+                  "commit_hash": "deadbee",
+                  "start_time": "2026-05-01T00:00:00+00:00",
+                  "end_time": "2026-05-01T00:01:00+00:00",
+                  "config": {"initial_cash": 100000, "commission_rate": 0.0001, "slippage_bps": 1.0}
+                }""",
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "backtest", "--run-id", "abc123", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("evidence_state: PASS manifest_path", text)
+            self.assertIn("scope:       report only, no execution", text)
+
+    def test_report_backtest_prints_ledger_evidence_fields(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "run_abc123.json").write_text(
+                """{
+                  "run_id": "abc123",
+                  "data_version": "data_v1",
+                  "strategy_version": "strat_v1",
+                  "commit_hash": "deadbee",
+                  "generated_at": "2026-05-01T00:02:00+00:00",
+                  "as_of_utc": "2026-05-01T00:02:00+00:00",
+                  "ledger_artifact_hash": "artifacthash",
+                  "ledger_artifact_path": "data/manifests/reconciliation/ledger_recon_artifact_artifacthash.json",
+                  "ledger_hash": "ledgerhash",
+                  "fills_hash": "fillshash",
+                  "orders_hash": "ordershash",
+                  "portfolio_snapshots_hash": "snapshotshash",
+                  "start_time": "2026-05-01T00:00:00+00:00",
+                  "end_time": "2026-05-01T00:01:00+00:00",
+                  "config": {"initial_cash": 100000, "commission_rate": 0.0001, "slippage_bps": 1.0},
+                  "ledger_artifact": {
+                    "artifact_hash": "artifacthash",
+                    "as_of_utc": "2026-05-01T00:02:00+00:00",
+                    "hashes": {
+                      "ledger_hash": "ledgerhash",
+                      "fills_hash": "fillshash",
+                      "orders_hash": "ordershash",
+                      "portfolio_snapshots_hash": "snapshotshash"
+                    }
+                  },
+                  "evidence": {
+                    "completeness": {
+                      "ledger_evidence_complete": true,
+                      "data_manifest_bound": true,
+                      "promotion_evidence_complete": true
+                    }
+                  }
+                }""",
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "backtest", "--run-id", "abc123", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("generated_at: 2026-05-01T00:02:00+00:00", text)
+            self.assertIn("as_of_utc:    2026-05-01T00:02:00+00:00", text)
+            self.assertIn("ledger_artifact_hash: artifacthash", text)
+            self.assertIn("ledger_artifact_path: data/manifests/reconciliation/ledger_recon_artifact_artifacthash.json", text)
+            self.assertIn("ledger_hash: ledgerhash", text)
+            self.assertIn("fills_hash: fillshash", text)
+            self.assertIn("orders_hash: ordershash", text)
+            self.assertIn("portfolio_snapshots_hash: snapshotshash", text)
+            self.assertIn("artifact_consistency_state: PASS", text)
+            self.assertIn("artifact_completeness_state: PASS", text)
+            self.assertIn("completeness_ledger_evidence_complete: True", text)
+
+    def test_report_backtest_prints_missing_ledger_evidence_fields(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "run_abc123.json").write_text(
+                """{
+                  "run_id": "abc123",
+                  "data_version": "data_v1",
+                  "strategy_version": "strat_v1",
+                  "commit_hash": "deadbee",
+                  "start_time": "2026-05-01T00:00:00+00:00",
+                  "end_time": "2026-05-01T00:01:00+00:00",
+                  "config": {"initial_cash": 100000, "commission_rate": 0.0001, "slippage_bps": 1.0}
+                }""",
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "backtest", "--run-id", "abc123", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("ledger_artifact_hash: (missing)", text)
+            self.assertIn("ledger_artifact_path: (missing)", text)
+            self.assertIn("ledger_hash: (missing)", text)
+            self.assertIn("fills_hash: (missing)", text)
+            self.assertIn("orders_hash: (missing)", text)
+            self.assertIn("portfolio_snapshots_hash: (missing)", text)
+            self.assertIn("artifact_consistency_state: MISSING", text)
+            self.assertIn("artifact_completeness_state: MISSING", text)
+
+    def test_report_backtest_prints_embedded_data_manifest_v2_fields(self) -> None:
+        with TemporaryDirectory() as tmp:
+            manifest_dir = Path(tmp) / "manifests"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "run_abc123.json").write_text(
+                json.dumps(
+                    {
+                        "run_id": "abc123",
+                        "data_version": "data_v2",
+                        "strategy_version": "strat_v1",
+                        "commit_hash": "deadbee",
+                        "start_time": "2026-05-01T00:00:00+00:00",
+                        "end_time": "2026-05-01T00:01:00+00:00",
+                        "config": {"initial_cash": 100000, "commission_rate": 0.0001, "slippage_bps": 1.0},
+                        "data_manifest": {
+                            "universe_id": "us-core",
+                            "universe_source": "explicit",
+                            "survivorship_bias_risk": "low",
+                            "adjustment_policy": "split_adjusted",
+                            "corporate_action_adjustment": "split_adjusted",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "backtest", "--run-id", "abc123", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("universe_id: us-core", text)
+            self.assertIn("corporate_action_adjustment: split_adjusted", text)
+
+    def test_report_backtest_requires_identifier(self) -> None:
+        with self.assertRaises(SystemExit) as ctx:
+            main(["report", "backtest"])
+        self.assertEqual(ctx.exception.code, 2)
+
+    def test_report_evidence_registry_missing_uses_required_state_word(self) -> None:
+        with TemporaryDirectory() as tmp:
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "evidence-registry", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("Evidence Registry Report", text)
+            self.assertIn("registry_state: MISSING (missing)", text)
+            self.assertIn("scope:       report only, no execution", text)
+
+    def test_report_evidence_registry_corrupt_reports_conflict(self) -> None:
+        with TemporaryDirectory() as tmp:
+            registry_path = Path(tmp) / "research" / "evidence_registry.json"
+            registry_path.parent.mkdir(parents=True)
+            registry_path.write_text("{not-json", encoding="utf-8")
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "evidence-registry", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("Evidence Registry Report", text)
+            self.assertIn("registry_state: CONFLICT (conflict)", text)
+            self.assertIn("registry_error: inspect_failed", text)
+
+    def test_report_evidence_registry_prints_subject_index_counts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_empty_subject_registry(tmp)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "evidence-registry", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("registry_state: PASS (present)", text)
+            self.assertIn("subject_index_schema: subject_evidence_index_v1", text)
+            self.assertIn("subject_index_candidate_id_count: 1", text)
+            self.assertIn("subject_index_session_id_count: 1", text)
+
+    def test_report_daily_latest_uses_ledger_report(self) -> None:
+        with TemporaryDirectory() as tmp:
+            report_dir = Path(tmp) / "paper_ledger" / "daily_reports"
+            report_dir.mkdir(parents=True)
+            (report_dir / "daily_report_2026-05-08.json").write_text(
+                """{
+                  "report_date": "2026-05-08",
+                  "session_id": "sess_001",
+                  "generated_at": "2026-05-08T21:00:00+00:00",
+                  "ending_equity": 101000.0,
+                  "daily_pnl": 1000.0,
+                  "orders_submitted": 2,
+                  "orders_filled": 2,
+                  "reconciliation_status": "clean",
+                  "ledger_artifact_hash": "aaaaaaaaaaaaaaaa",
+                  "ledger_fill_hash": "bbbbbbbbbbbbbbbb",
+                  "ledger_duplicate_fill_count": 1,
+                  "ledger_conflict_fill_count": 0,
+                  "ledger_pnl": 123.45,
+                  "kill_switch_triggered": false
+                }""",
+                encoding="utf-8",
+            )
+            audit_dir = Path(tmp) / "paper_ledger" / "audit"
+            audit_dir.mkdir(parents=True)
+            (audit_dir / "paper_session_manifest.json").write_text(
+                json.dumps(
+                    {
+                        "artifact_type": "paper_session_manifest",
+                        "artifact_version": "paper_session_manifest_v1",
+                        "session_id": "sess_001",
+                        "mode": "paper",
+                        "symbols": ["AAPL"],
+                        "broker_backend": "simulated",
+                        "submit_orders": False,
+                        "registry_evidence": {"allowed": False},
+                        "startup_sync_status": {"status": "no_submit"},
+                        "no_real_order_submission_proof": {"status": "PASS"},
+                        "created_at": "2026-05-08T20:00:00+00:00",
+                        "history_artifact_path": str(
+                            Path(tmp) / "paper_ledger" / "audit" / "paper_session_manifests" / "sess_001.json"
+                        ),
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (audit_dir / "paper_broker_adapter_startup_sync.json").write_text(
+                json.dumps({"status": "no_submit", "no_real_order_submission": True}),
+                encoding="utf-8",
+            )
+            recon_dir = Path(tmp) / "paper_ledger" / "reconciliation"
+            recon_dir.mkdir(parents=True)
+            (recon_dir / "ledger_recon_artifact_aaaaaaaaaaaaaaaa.json").write_text(
+                json.dumps({"artifact_hash": "aaaaaaaaaaaaaaaa"}),
+                encoding="utf-8",
+            )
+            _write_review_json(tmp, status="APPROVED_FOR_PAPER_ONLY")
+            registry_path = Path(tmp) / "research" / "evidence_registry.json"
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "daily", "--latest", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_review_status: BLOCKED_MISSING_REGISTRY", text)
+            self.assertIn("paper_review_entry_allowed: NO", text)
+            self.assertIn("manual_review_pending: NO", text)
+            self.assertIn("report_state: PASS daily_report", text)
+            self.assertIn("readiness_state: MISSING validation_state", text)
+            self.assertIn("evidence:     paper_session_manifest=", text)
+            self.assertIn("paper_session_id: sess_001", text)
+            self.assertIn("paper_session_history_artifact_path:", text)
+            self.assertIn("paper_session_manifests/sess_001.json", text)
+            self.assertIn("paper_session_no_submit_proof: PASS", text)
+            self.assertIn("startup_sync_status: no_submit", text)
+            self.assertIn("evidence:     ledger_reconciliation_artifact=", text)
+            self.assertIn("ledger_artifact_hash: aaaaaaaaaaaaaaaa", text)
+            self.assertIn("ledger_fill_dup_conflict: 1/0", text)
+            self.assertIn("ledger_pnl: $+123.45", text)
+            self.assertIn("evidence_registry_state: MISSING (missing)", text)
+            self.assertIn("scope:       report only, no execution", text)
+            self.assertIn("Reporting only. This does not approve or start paper/live trading.", text)
+            self.assertFalse(registry_path.exists())
+
+    def test_report_daily_saved_registry_prints_review_status(self) -> None:
+        with TemporaryDirectory() as tmp:
+            report_dir = Path(tmp) / "paper_ledger" / "daily_reports"
+            report_dir.mkdir(parents=True)
+            (report_dir / "daily_report_2026-05-08.json").write_text(
+                """{
+                  "report_date": "2026-05-08",
+                  "generated_at": "2026-05-08T21:00:00+00:00",
+                  "ending_equity": 101000.0,
+                  "daily_pnl": 1000.0,
+                  "orders_submitted": 2,
+                  "orders_filled": 2,
+                  "reconciliation_status": "clean",
+                  "kill_switch_triggered": false
+                }""",
+                encoding="utf-8",
+            )
+            _write_review_json(
+                tmp,
+                status="APPROVED_FOR_PAPER_ONLY",
+                reviewer="risk-reviewer",
+                with_evidence_pack=True,
+            )
+            _write_saved_evidence_registry(tmp)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "daily", "--latest", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("evidence_registry_state: PASS (present)", text)
+            self.assertIn("paper_review_status: APPROVED_FOR_PAPER_ONLY", text)
+            self.assertIn("paper_review_entry_allowed: YES", text)
+            self.assertIn("manual_review_pending: NO", text)
+
+    def test_report_paper_validation_prints_full_evidence_summary(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "paper-validation", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("30-Day Paper Validation Evidence", text)
+            self.assertIn("paper_validation_state: PASS", text)
+            self.assertIn("audit_blocker_status: PASS", text)
+            self.assertIn("data_strict_status: PASS", text)
+            self.assertIn("recovery_status: PASS", text)
+            self.assertIn("paper_submit_orders: DISABLED", text)
+            self.assertIn("paper_validation_days: 30/30 completed, 30/30 clean", text)
+            self.assertIn("evidence:     broker_state_recovery=", text)
+            self.assertIn("paper_broker_state_recovery.json", text)
+            self.assertIn("broker_state_recovery: path=", text)
+            self.assertIn("status=verified, operationally_complete=True", text)
+            self.assertIn("broker_local_diff_summary: cash=+0.00, positions=0, orders=0, fills=0, total=0", text)
+            self.assertIn("recovery_summary: required=False", text)
+            self.assertIn("paper_readiness_gaps: (none)", text)
+            self.assertIn("audit_recommendation: python scripts/audit_research_evidence.py --data-root", text)
+            self.assertIn("scope:       report only, no execution", text)
+
+    def test_report_paper_validation_blocks_when_broker_state_recovery_missing(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            recovery_path = (
+                Path(tmp)
+                / "paper_ledger"
+                / "audit"
+                / "paper_broker_state_recovery.json"
+            )
+            recovery_path.unlink()
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "paper-validation", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_validation_state: BLOCKED", text)
+            self.assertIn("audit_blocker_status: BLOCKED", text)
+            self.assertIn("recovery_status: BLOCKED", text)
+            self.assertIn("evidence:     broker_state_recovery=(not found)", text)
+            self.assertIn("broker_state_recovery: path=(missing), status=missing, operationally_complete=False", text)
+            self.assertIn("paper_readiness_gaps: broker_state_recovery_missing", text)
+
+    def test_report_paper_validation_blocks_when_startup_sync_missing(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            startup_path = (
+                Path(tmp)
+                / "paper_ledger"
+                / "audit"
+                / "paper_broker_adapter_startup_sync.json"
+            )
+            startup_path.unlink()
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "paper-validation", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_validation_state: BLOCKED", text)
+            self.assertIn("audit_blocker_status: BLOCKED", text)
+            self.assertIn("evidence:     startup_sync=(not found)", text)
+            self.assertIn("paper_readiness_gaps: startup_sync_missing", text)
+
+    def test_report_paper_validation_blocks_when_ledger_recon_artifact_missing(self) -> None:
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            artifact_path = (
+                Path(tmp)
+                / "paper_ledger"
+                / "reconciliation"
+                / "ledger_recon_artifact_aaaaaaaaaaaaaaaa.json"
+            )
+            artifact_path.unlink()
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "paper-validation", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_validation_state: BLOCKED", text)
+            self.assertIn("audit_blocker_status: BLOCKED", text)
+            self.assertIn("paper_readiness_gaps: ledger_reconciliation_artifact_missing", text)
+
+    def test_readiness_prints_broker_state_recovery_evidence_without_audit_lookup(self) -> None:
+        from quant_us.reports.live_readiness import LiveReadinessReport, ReadinessCheck
+
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            validation_state = (
+                Path(tmp) / "reports" / "paper_production" / "validation_state.json"
+            )
+            report = LiveReadinessReport(
+                checks=[ReadinessCheck(name="paper_30_day_clean", passed=True, detail="ok")]
+            )
+            with (
+                patch("quant_us.reports.live_readiness.LiveReadinessGate") as gate_cls,
+                redirect_stdout(io.StringIO()) as out,
+            ):
+                gate_cls.return_value.check_all.return_value = report
+                main(
+                    [
+                        "readiness",
+                        "--profile",
+                        "paper",
+                        "--validation-state",
+                        str(validation_state),
+                        "--data-root",
+                        tmp,
+                    ]
+                )
+
+            text = out.getvalue()
+            self.assertIn("scope:       review-only, no execution", text)
+            self.assertIn("readiness_recovery_status: PASS", text)
+            self.assertIn("readiness_audit_blocker_status: PASS", text)
+            self.assertIn("readiness_data_strict_status: PASS", text)
+            self.assertIn("evidence:     broker_state_recovery=", text)
+            self.assertIn("paper_broker_state_recovery.json", text)
+            self.assertIn("scope:       report only, no execution", text)
+
+    def test_run_paper_validation_state_records_resume_boundary(self) -> None:
+        from scripts.run_paper_validation import enrich_validation_evidence, save_report
+
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            root = Path(tmp)
+            state_path = root / "paper_ledger" / "validation_state.json"
+            report_path = root / "paper_ledger" / "validation_report.json"
+            state = {
+                "days_required": 30,
+                "days_completed": 30,
+                "consecutive_clean_days": 30,
+                "daily_results": [],
+            }
+
+            enrich_validation_evidence(
+                state,
+                ledger_root=root / "paper_ledger",
+                state_path=state_path,
+                report_path=report_path,
+            )
+            save_report(state, report_path)
+
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            self.assertEqual(report["evidence_schema_version"], "paper_validation_evidence_v1")
+            self.assertFalse(report["paper_submit_evidence"]["submit_orders"])
+            self.assertEqual(report["broker_local_diff_summary"]["total_diff_count"], 0)
+            self.assertFalse(report["recovery_summary"]["resume_restores_broker_state"])
+            self.assertTrue(report["recovery_summary"]["resume_restores_validation_counters"])
+
+    def test_micro_live_readiness_is_independent_review_only(self) -> None:
+        from quant_us.reports.live_readiness import LiveReadinessReport, ReadinessCheck
+
+        with TemporaryDirectory() as tmp:
+            _write_paper_validation_artifacts(tmp)
+            validation_state = (
+                Path(tmp) / "reports" / "paper_production" / "validation_state.json"
+            )
+            report = LiveReadinessReport(
+                checks=[ReadinessCheck(name="paper_30_day_clean", passed=True, detail="30/30")]
+            )
+            with (
+                patch("quant_us.reports.live_readiness.LiveReadinessGate") as gate_cls,
+                redirect_stdout(io.StringIO()) as out,
+            ):
+                gate_cls.return_value.check_all.return_value = report
+                main(
+                    [
+                        "micro-live-readiness",
+                        "--validation-state",
+                        str(validation_state),
+                        "--data-root",
+                        tmp,
+                    ]
+                )
+
+            text = out.getvalue()
+            self.assertIn("Micro-Live Readiness Review", text)
+            self.assertIn("boundary:    independent review entry; no start/run/submit action", text)
+            self.assertIn("RESULT: READINESS EVIDENCE PASSED for micro-live manual review only.", text)
+            self.assertIn("cannot start paper or live trading", text)
+
+    def test_report_daily_saved_registry_blocks_invalid_approved_review(self) -> None:
+        with TemporaryDirectory() as tmp:
+            report_dir = Path(tmp) / "paper_ledger" / "daily_reports"
+            report_dir.mkdir(parents=True)
+            (report_dir / "daily_report_2026-05-08.json").write_text(
+                """{
+                  "report_date": "2026-05-08",
+                  "generated_at": "2026-05-08T21:00:00+00:00",
+                  "ending_equity": 101000.0,
+                  "daily_pnl": 1000.0,
+                  "orders_submitted": 2,
+                  "orders_filled": 2,
+                  "reconciliation_status": "clean",
+                  "kill_switch_triggered": false
+                }""",
+                encoding="utf-8",
+            )
+            _write_review_json(tmp, status="APPROVED_FOR_PAPER_ONLY")
+            _write_saved_evidence_registry(tmp)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["report", "daily", "--latest", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("evidence_registry_state: PASS (present)", text)
+            self.assertIn("paper_review_status: PAPER_REVIEW_EVIDENCE_INVALID", text)
+            self.assertIn("paper_review_entry_allowed: NO", text)
+            self.assertIn("paper_review_note: Approved paper review evidence is incomplete", text)
+
+    def test_paper_report_prints_session_history_artifact_path(self) -> None:
+        with TemporaryDirectory() as tmp:
+            report_dir = Path(tmp) / "paper_ledger" / "daily_reports"
+            report_dir.mkdir(parents=True)
+            (report_dir / "daily_report_2026-05-08.json").write_text(
+                json.dumps(
+                    {
+                        "date": "2026-05-08",
+                        "ending_equity": 101000.0,
+                        "daily_pnl": 1000.0,
+                        "orders_submitted": 0,
+                        "orders_filled": 0,
+                        "reconciliation_status": "clean",
+                        "kill_switch_triggered": False,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            audit_dir = Path(tmp) / "paper_ledger" / "audit"
+            audit_dir.mkdir(parents=True)
+            history_path = audit_dir / "paper_session_manifests" / "sess_001.json"
+            (audit_dir / "paper_session_manifest.json").write_text(
+                json.dumps(
+                    {
+                        "session_id": "sess_001",
+                        "mode": "paper",
+                        "broker_backend": "simulated",
+                        "submit_orders": False,
+                        "history_artifact_path": str(history_path),
+                        "no_real_order_submission_proof": {"status": "PASS"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(["paper", "report", "--latest", "--data-root", tmp])
+
+            text = out.getvalue()
+            self.assertIn("paper_session_history_artifact_path:", text)
+            self.assertIn("paper_session_manifests/sess_001.json", text)
+            self.assertIn("scope:       report only, no execution", text)

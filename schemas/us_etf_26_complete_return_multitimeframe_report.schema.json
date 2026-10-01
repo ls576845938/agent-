@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_26_complete_return_multitimeframe_report.schema.json",
+  "title": "US 26 ETF Complete Return Multi-Timeframe Research Report",
+  "type": "object",
+  "required": ["schema_version", "status", "decision", "code_commit", "data", "strategy_contract", "matrix_rows", "cost_stress_rows", "walk_forward_rows", "walk_forward_contract", "no_lookahead_contract", "promotion_blockers", "guardrails"],
+  "properties": {
+    "schema_version": {"const": "us_etf_26_complete_return_multitimeframe_report_v1"},
+    "status": {"const": "complete_research_only"},
+    "code_commit": {"type": "string", "minLength": 7},
+    "data": {"type": "object", "required": ["data_version", "batch_sha256", "symbol_count", "consumer_read_only", "immutable_version"], "properties": {"symbol_count": {"const": 26}, "consumer_read_only": {"const": true}, "immutable_version": {"const": true}}, "additionalProperties": true},
+    "matrix_rows": {"type": "array", "minItems": 182, "maxItems": 182},
+    "cost_stress_rows": {"type": "array", "minItems": 910, "maxItems": 910},
+    "walk_forward_rows": {"type": "array", "minItems": 1},
+    "walk_forward_contract": {"type": "object", "required": ["sample_role", "selection_sample_reused", "holdout_reused_for_selection", "clean_holdout", "new_independent_confirmation_window_required"], "properties": {"sample_role": {"const": "exploratory_selection_sample"}, "selection_sample_reused": {"const": true}, "holdout_reused_for_selection": {"const": true}, "clean_holdout": {"const": false}, "new_independent_confirmation_window_required": {"const": true}}, "additionalProperties": true},
+    "no_lookahead_contract": {"type": "object", "required": ["status", "execution_time_rule", "future_adjustment_available_time_replay_complete"], "properties": {"status": {"const": "pass_for_research_replay"}, "future_adjustment_available_time_replay_complete": {"const": false}}, "additionalProperties": true},
+    "promotion_blockers": {"type": "array", "contains": {"const": "historical_2018_2026_sample_used_for_candidate_selection_not_clean_holdout"}},
+    "guardrails": {"type": "object", "required": ["research_only", "promotion_unlock_allowed", "paper_queue_write_allowed", "paper_order_allowed", "paper_or_live_unlock_allowed", "live_order_allowed", "private_endpoint_used", "broker_endpoint_used", "order_endpoint_used", "real_order_submitted"], "properties": {"research_only": {"const": true}, "promotion_unlock_allowed": {"const": false}, "paper_queue_write_allowed": {"const": false}, "paper_order_allowed": {"const": false}, "paper_or_live_unlock_allowed": {"const": false}, "live_order_allowed": {"const": false}, "private_endpoint_used": {"const": false}, "broker_endpoint_used": {"const": false}, "order_endpoint_used": {"const": false}, "real_order_submitted": {"const": false}}, "additionalProperties": true}
+  },
+  "additionalProperties": true
+}

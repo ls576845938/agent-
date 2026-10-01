@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_walk_forward_parameter_stability_gate_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Walk Forward Parameter Stability Gate Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "strategy_id",
+    "status",
+    "blockers",
+    "source_report",
+    "fold_count",
+    "candidate_count",
+    "alive_rate",
+    "stable_enough_for_next_research_stage",
+    "aggregate_oos_metrics",
+    "stability_summary",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_walk_forward_parameter_stability_gate_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["research_only_manual_review_required", "blocked"]},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "source_report": {"type": "string", "minLength": 1},
+    "fold_count": {"type": "integer", "minimum": 0},
+    "candidate_count": {"type": "integer", "minimum": 0},
+    "alive_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "stable_enough_for_next_research_stage": {"type": "boolean"},
+    "aggregate_oos_metrics": {"type": "object", "required": ["cagr", "sharpe", "max_drawdown"], "additionalProperties": {"type": "number"}},
+    "stability_summary": {
+      "type": "object",
+      "required": ["min", "median", "max"],
+      "properties": {
+        "min": {"type": "object"},
+        "median": {"type": "object"},
+        "max": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "research_only",
+        "not_strategy_validation_pass",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "not_strategy_validation_pass": {"const": true},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

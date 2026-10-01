@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_l2_feature_diagnostics_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_reports",
+    "selected_bundle_dir",
+    "source_files",
+    "historical_alignment",
+    "feature_diagnostics",
+    "feature_candidates",
+    "blockers",
+    "event_ledger_feature_validation_allowed",
+    "true_scalping_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_l2_feature_diagnostics_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "scope": {"const": "research_only_l2_feature_diagnostics_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "l2_feature_diagnostics_ready_research_only_backtest_blocked",
+        "l2_feature_diagnostics_blocked_missing_sample_evidence"
+      ]
+    },
+    "decision": {"type": "string"},
+    "next_required_action": {"type": "string"},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sample_quality", "capture_report", "event_definition_redesign"],
+      "properties": {
+        "sample_quality": {"type": ["string", "null"]},
+        "capture_report": {"type": ["string", "null"]},
+        "event_definition_redesign": {"type": ["string", "null"]}
+      }
+    },
+    "selected_bundle_dir": {"type": "string"},
+    "source_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agg_trades_samples", "order_book_depth_samples"],
+      "properties": {
+        "agg_trades_samples": {"$ref": "#/$defs/sourceFile"},
+        "order_book_depth_samples": {"$ref": "#/$defs/sourceFile"}
+      }
+    },
+    "historical_alignment": {"$ref": "#/$defs/historicalAlignment"},
+    "feature_diagnostics": {"$ref": "#/$defs/featureDiagnostics"},
+    "feature_candidates": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/featureCandidate"}
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "event_ledger_feature_validation_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "production_ready",
+        "paper_or_live_usable",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed",
+        "real_orders_created",
+        "future_label_used_for_signal",
+        "lookahead_used_for_signal",
+        "paper_queue",
+        "live"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "production_ready": {"const": false},
+        "paper_or_live_usable": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "future_label_used_for_signal": {"const": false},
+        "lookahead_used_for_signal": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"}
+      }
+    }
+  },
+  "$defs": {
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "exists", "row_count"],
+      "properties": {
+        "path": {"type": ["string", "null"]},
+        "exists": {"type": "boolean"},
+        "row_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "historicalAlignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "sample_capture_start",
+        "sample_capture_end",
+        "backtest_start",
+        "backtest_end",
+        "overlaps_backtest_window",
+        "timestamp_aligned_l2_history_available",
+        "causal_event_ledger_join_allowed",
+        "reason"
+      ],
+      "properties": {
+        "status": {"const": "not_timestamp_aligned_to_backtest"},
+        "sample_capture_start": {"type": ["string", "null"]},
+        "sample_capture_end": {"type": ["string", "null"]},
+        "backtest_start": {"type": ["string", "null"]},
+        "backtest_end": {"type": ["string", "null"]},
+        "overlaps_backtest_window": {"type": "boolean"},
+        "timestamp_aligned_l2_history_available": {"const": false},
+        "causal_event_ledger_join_allowed": {"const": false},
+        "reason": {"type": "string"}
+      }
+    },
+    "featureDiagnostics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "book_snapshot_count",
+        "trade_flow_sample_count",
+        "joined_sample_count",
+        "max_book_level",
+        "spread_bps",
+        "microprice_edge_bps",
+        "depth_imbalance_top1",
+        "depth_imbalance_top5",
+        "depth_imbalance_top10",
+        "depth_imbalance_top50",
+        "trade_size_imbalance",
+        "trade_notional_imbalance",
+        "book_trade_pressure_proxy"
+      ],
+      "properties": {
+        "book_snapshot_count": {"type": "integer", "minimum": 0},
+        "trade_flow_sample_count": {"type": "integer", "minimum": 0},
+        "joined_sample_count": {"type": "integer", "minimum": 0},
+        "max_book_level": {"type": "integer", "minimum": 0},
+        "spread_bps": {"$ref": "#/$defs/stats"},
+        "microprice_edge_bps": {"$ref": "#/$defs/stats"},
+        "depth_imbalance_top1": {"$ref": "#/$defs/stats"},
+        "depth_imbalance_top5": {"$ref": "#/$defs/stats"},
+        "depth_imbalance_top10": {"$ref": "#/$defs/stats"},
+        "depth_imbalance_top50": {"$ref": "#/$defs/stats"},
+        "trade_size_imbalance": {"$ref": "#/$defs/stats"},
+        "trade_notional_imbalance": {"$ref": "#/$defs/stats"},
+        "book_trade_pressure_proxy": {"$ref": "#/$defs/stats"}
+      }
+    },
+    "featureCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feature_id",
+        "diagnostic_status",
+        "description",
+        "sample_observed",
+        "event_ledger_backtest_usable",
+        "backtest_blocker"
+      ],
+      "properties": {
+        "feature_id": {"type": "string"},
+        "diagnostic_status": {"type": "string"},
+        "description": {"type": "string"},
+        "sample_observed": {"type": "boolean"},
+        "event_ledger_backtest_usable": {"const": false},
+        "backtest_blocker": {"type": ["string", "null"]}
+      }
+    },
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max", "mean", "median"],
+      "properties": {
+        "min": {"type": ["number", "null"]},
+        "max": {"type": ["number", "null"]},
+        "mean": {"type": ["number", "null"]},
+        "median": {"type": ["number", "null"]}
+      }
+    }
+  }
+}

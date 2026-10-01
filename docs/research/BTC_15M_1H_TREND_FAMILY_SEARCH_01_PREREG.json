@@ -1,0 +1,126 @@
+{
+  "schema_version": "btc_multiscale_trend_15m_1h_search_prereg_v1",
+  "ticket_id": "BTC-15M-1H-TREND-FAMILY-SEARCH-01",
+  "status": "frozen_before_corrected_official_rerun",
+  "base_commit": "4f3139431bb801f71f0bca9bbb0f69e4febdb8a4",
+  "engine_code_commit": "242975b4674605d34c258c494ae9bbb999f27d6d",
+  "correction_commit": "f827ab73e2f2ca7eb4871fbaae271b4500667fdd",
+  "correction_scope": {
+    "invalidated_artifact_run_id": "official-68b70551-seed20260827",
+    "invalidated_artifact_semantic_hash": "666c9ebb130f9910c2cc119379d213c6c9c6fa8b3ea3b690f30e7a2a68b92620",
+    "invalidated_reasons": [
+      "neighborhood_only_diagnostic_candidates_were_incorrectly_reintroduced_into_lockable_ranking",
+      "annualized_fields_inherited_five_minute_period_scaling"
+    ],
+    "threshold_seed_budget_genes_costs_folds_embargo_changed": false,
+    "rerun_counts_as_new_multiple_testing_round": false
+  },
+  "change_risk": "unclassified",
+  "research_question": "Which preregistered trend hypothesis and completed 15m/30m/1h decision stratum has robust after-cost conditional evidence on the immutable selection prefix?",
+  "data_binding": {
+    "manifest_relative_path": ".agent/data_manifests/btc-5m-qcv2r1-selection-prefix/btc-5m-qcv2r1-selection-prefix-248270-qc2r1.json",
+    "manifest_git_blob_sha": "7e083664a9bf0509695a3eb62c78c0d15d9dd752",
+    "dataset_id": "btc-5m-qcv2r1-selection-prefix",
+    "dataset_version": "btc-5m-qcv2r1-selection-prefix-248270-parent76e8654c-mainbcc31f0b-corr01",
+    "payload_sha256": "b00557b75b3b4049bde1c09bfa69d31a8856993bb9f4fbdc71cfb49078b8f9b5",
+    "selection_rows": 248270,
+    "selection_end_open_time": "2026-05-12T01:05:00Z",
+    "allowed_payload_role": "immutable_selection_prefix_only",
+    "full_parent_latest_sqlite_staging_glob_allowed": false
+  },
+  "aggregation": {
+    "version": "utc_epoch_complete_5m_groups_available_time_v1",
+    "target_timeframes_minutes": [15, 30, 60],
+    "source_bars_per_target": {"15": 3, "30": 6, "60": 12},
+    "expected_complete_rows": {"15": 82756, "30": 41378, "60": 20689},
+    "expected_last_available_time": "2026-05-12T00:59:59.999Z",
+    "bucket_rule": "UTC epoch aligned left_closed_right_open; complete unique consecutive 5m groups only",
+    "visibility_rule": "decision only after target close; target available_time equals last source available_time",
+    "execution_rule": "next target bar open, which is the next source 5m open"
+  },
+  "economic_hypotheses": [
+    {
+      "family": "dynamic_momentum_cycle_continuation",
+      "hypothesis": "directional movement that survives a completed-bar turning-point confirmation may continue until momentum or structure invalidates",
+      "searchable": ["momentum window", "turning point", "semantic exit", "time stop", "cooldown"]
+    },
+    {
+      "family": "volatility_conditioned_channel_breakout",
+      "hypothesis": "a prior-channel break during above-baseline realized range may continue after costs until channel invalidation",
+      "searchable": ["prior channel", "ATR window", "buffer", "semantic exit", "time stop", "cooldown"]
+    },
+    {
+      "family": "htf_pullback_reacceleration",
+      "hypothesis": "a pullback inside a slow completed-bar trend may reaccelerate after reclaiming a recent structure boundary",
+      "searchable": ["EMA trend pair", "pullback tolerance", "reacceleration window", "semantic exit", "time stop", "cooldown"]
+    }
+  ],
+  "search_protocol": {
+    "timeframes_minutes": [15, 30, 60],
+    "families_per_timeframe": 3,
+    "population_per_stratum": 12,
+    "generations": 4,
+    "maximum_new_unique_evaluations": 450,
+    "prior_unique_evaluations": 1840,
+    "seed": 20260827
+  },
+  "validation_design": {
+    "classification": "purged_chronological_selection_folds_not_oos",
+    "fold_count": 4,
+    "embargo_source_5m_bars": 5760,
+    "embargo_target_bars": {"15": 1920, "30": 960, "60": 480},
+    "fold_start_position": "flat",
+    "pre_validation_entries_counted": false,
+    "timeframe_is_ga_gene": false,
+    "constraint_domination_before_pareto": true,
+    "generic_trades_per_day_gate": false
+  },
+  "selection_gate": {
+    "cost_scenario_bps": {"base": 10.0, "conservative": 16.5, "stress": 30.0},
+    "minimum_applicable_folds": 3,
+    "minimum_passed_folds": 3,
+    "minimum_independent_bets_per_applicable_fold": 6,
+    "minimum_pooled_independent_bets": 24,
+    "minimum_pooled_effective_bets": 14.4,
+    "conservative_total_return": "greater_than_zero",
+    "conservative_profit_factor": "at_least_1.02",
+    "conservative_max_drawdown": "not_below_minus_20pct",
+    "stress_total_return": "not_below_minus_2pct",
+    "stress_profit_factor": "at_least_0.98",
+    "multiple_testing_deflated_mean_bet_return": "greater_than_zero",
+    "parameter_neighborhood": "at_least_two_thirds_stable",
+    "maximum_locked_candidates": 1,
+    "post_result_gate_changes_allowed": false
+  },
+  "fixed_risk_and_sizing": {
+    "fixed_1x": true,
+    "leverage_is_gene": false,
+    "maximum_loss_is_gene": false,
+    "pause_threshold_is_gene": false,
+    "cost_or_slippage_is_gene": false,
+    "sizing_policy": "repository FixedSizingPolicy slow rebalance and no-trade band",
+    "risk_constitution": "repository FixedRiskConstitution outside genome",
+    "hard_stop": "completed-bar proxy only, not venue-hosted protection"
+  },
+  "negative_control": {
+    "definition": "fixed 12/48 simple moving-average directional reference by timeframe",
+    "eligible_for_selection": false
+  },
+  "holdout_policy": {
+    "status": "legacy_qcv2r1_holdout_retired_without_metric_reveal",
+    "old_holdout_metrics_read": false,
+    "old_holdout_reveal_authorized": false,
+    "new_future_unseen_required": true
+  },
+  "guardrails": {
+    "research_only": true,
+    "promotion_allowed": false,
+    "paper_allowed": false,
+    "live_allowed": false,
+    "private_allowed": false,
+    "order_allowed": false,
+    "real_order_allowed": false,
+    "transfer_allowed": false,
+    "withdraw_allowed": false
+  }
+}

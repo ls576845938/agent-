@@ -1,0 +1,93 @@
+{
+  "blockers": [
+    "immutable_snapshot_not_published",
+    "data_steward_attestation_required",
+    "immutable_manifest_not_published",
+    "okx_timestamp_aligned_l2_manifest_not_published"
+  ],
+  "current_head": "2c7360619dd93594f78865c48825bb389a052e81",
+  "data_checks": {
+    "klines": {
+      "blockers": [
+        "data_steward_attestation_required"
+      ],
+      "common_end": "",
+      "freshness_age_hours": null,
+      "status": "blocked"
+    },
+    "okx_public_l2": {
+      "blockers": [
+        "data_steward_attestation_required"
+      ],
+      "common_end": "",
+      "freshness_age_hours": null,
+      "status": "blocked"
+    }
+  },
+  "decision": "block_dataready_consumption_fail_closed",
+  "expected_datasets": {
+    "kline_snapshot": "btc-market-data-sqlite-snapshot",
+    "okx_timestamp_aligned_public_l2": "btc-okx-timestamp-aligned-public-l2-history"
+  },
+  "generated_at": "2026-07-24T06:36:01.702273Z",
+  "guardrails": {
+    "mutable_sqlite_consumed": false,
+    "network_collection_used": false,
+    "order_endpoint_used": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_used": false,
+    "promotion_unlock_allowed": false,
+    "shared_data_published_by_consumer": false,
+    "withdraw_allowed": false
+  },
+  "manifest_checks": {
+    "kline_snapshot": {
+      "blockers": [
+        "immutable_snapshot_not_published",
+        "immutable_manifest_not_published",
+        "data_steward_attestation_required"
+      ],
+      "dataset_id": "btc-market-data-sqlite-snapshot",
+      "dataset_version": "",
+      "immutable_uri": "",
+      "manifest_source": "",
+      "resolved_path": "",
+      "status": "missing"
+    },
+    "okx_timestamp_aligned_public_l2": {
+      "blockers": [
+        "okx_timestamp_aligned_l2_manifest_not_published",
+        "immutable_manifest_not_published",
+        "data_steward_attestation_required"
+      ],
+      "dataset_id": "btc-okx-timestamp-aligned-public-l2-history",
+      "dataset_version": "",
+      "immutable_uri": "",
+      "manifest_source": "",
+      "resolved_path": "",
+      "status": "missing"
+    }
+  },
+  "next_action": "data_steward must publish both immutable datasets and attestations, then integrate their manifests",
+  "promotion_blockers": [
+    "dataready_manifest_is_not_current_head_promotion_evidence",
+    "promotion_requires_strategy_risk_oms_fill_ledger_audit_gate_chain"
+  ],
+  "readiness": {
+    "backtest_ready": false,
+    "promotion_evidence_ready": false,
+    "quality_checked": false,
+    "research_ready": false
+  },
+  "runtime_pointer": {
+    "blockers": [
+      "immutable_snapshot_not_published",
+      "data_steward_attestation_required"
+    ],
+    "dataset_id": "btc-market-data-sqlite-snapshot",
+    "publication_status": "awaiting_data_steward_publication",
+    "status": "blocked"
+  },
+  "schema_version": "btc_dataready_consumption_report_v1",
+  "status": "blocked"
+}

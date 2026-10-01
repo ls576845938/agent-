@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_etf_kline_quality_daily_report.schema.json",
+  "title": "QuantStation VNEXT US Equity ETF Kline Quality Daily Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "provider",
+    "source_type",
+    "status",
+    "allowed_statuses",
+    "promotion_clean",
+    "symbol_count",
+    "available_symbol_count",
+    "missing_symbols",
+    "summary",
+    "thresholds",
+    "symbol_reports",
+    "blockers",
+    "warnings",
+    "guardrails",
+    "source_files",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_etf_kline_quality_daily_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": ["string", "null"]},
+    "branch": {"type": ["string", "null"]},
+    "asset": {"const": "us_equity"},
+    "provider": {"const": "tiingo"},
+    "source_type": {"const": "local_tiingo_eod_parquet"},
+    "status": {"enum": ["pass", "warn", "blocked"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["pass", "warn", "blocked"]},
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "promotion_clean": {"type": "boolean"},
+    "symbol_count": {"type": "integer", "minimum": 0},
+    "available_symbol_count": {"type": "integer", "minimum": 0},
+    "missing_symbols": {"type": "array", "items": {"type": "string"}},
+    "summary": {
+      "type": "object",
+      "required": [
+        "latest_common_date",
+        "latest_any_date",
+        "earliest_start",
+        "min_rows",
+        "max_rows",
+        "blocked_symbol_count",
+        "warn_symbol_count"
+      ],
+      "properties": {
+        "latest_common_date": {"type": ["string", "null"]},
+        "latest_any_date": {"type": ["string", "null"]},
+        "earliest_start": {"type": ["string", "null"]},
+        "min_rows": {"type": "integer", "minimum": 0},
+        "max_rows": {"type": "integer", "minimum": 0},
+        "blocked_symbol_count": {"type": "integer", "minimum": 0},
+        "warn_symbol_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "thresholds": {
+      "type": "object",
+      "required": [
+        "max_staleness_days",
+        "extreme_abs_return_threshold",
+        "key_benchmark_abs_return_threshold",
+        "max_calendar_gap_days"
+      ],
+      "properties": {
+        "max_staleness_days": {"type": "integer", "minimum": 0},
+        "extreme_abs_return_threshold": {"type": "number", "minimum": 0},
+        "key_benchmark_abs_return_threshold": {"type": "number", "minimum": 0},
+        "max_calendar_gap_days": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "symbol_reports": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/symbol_report"}
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "kline_quality_gate_only",
+        "api_key_value_recorded",
+        "token_written_to_artifacts",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "kline_quality_gate_only": {"const": true},
+        "api_key_value_recorded": {"const": false},
+        "token_written_to_artifacts": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "source_files": {
+      "type": "object",
+      "required": ["kline_root", "tiingo_import_report"],
+      "additionalProperties": {"type": "string"}
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "symbol_report": {
+      "type": "object",
+      "required": ["status", "path", "rows", "blockers", "warnings"],
+      "properties": {
+        "status": {"enum": ["pass", "warn", "blocked", "missing"]},
+        "path": {"type": "string"},
+        "rows": {"type": "integer", "minimum": 0},
+        "start": {"type": ["string", "null"]},
+        "end": {"type": ["string", "null"]},
+        "staleness_days": {"type": "integer", "minimum": 0},
+        "latest_close": {"type": "number"},
+        "duplicate_dates": {"type": "integer", "minimum": 0},
+        "non_positive_ohlc_rows": {"type": "integer", "minimum": 0},
+        "invalid_ohlc_rows": {"type": "integer", "minimum": 0},
+        "zero_or_negative_volume_rows": {"type": "integer", "minimum": 0},
+        "extreme_daily_return_rows": {"type": "integer", "minimum": 0},
+        "max_abs_return": {"type": "number", "minimum": 0},
+        "large_calendar_gap_rows": {"type": "integer", "minimum": 0},
+        "sample_extreme_return_dates": {"type": "array", "items": {"type": "string"}},
+        "sample_large_gap_dates": {"type": "array", "items": {"type": "string"}},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": "us_v3_forward_observation_config_v1",
+  "candidate": {
+    "config_path": "configs/strategies/us_etf_26_candidate_freeze_v1.json",
+    "parameters_frozen": true,
+    "candidate_reselection_allowed": false
+  },
+  "data": {
+    "pit_consumer_config_path": "configs/data/us_equity_pit_dataready_consumer_v1.json",
+    "producer_role": "data_steward",
+    "committed_immutable_successor_required": true,
+    "consumer_read_only": true
+  },
+  "time_contract": {
+    "timezone": "Asia/Shanghai",
+    "recommended_local_time": "09:20",
+    "calendar": "XNYS",
+    "calendar_provider": "builtin_nyse_rules",
+    "expected_finalized_session_rule": "previous_xnys_trading_session"
+  },
+  "windows": {
+    "paper_review_natural_days": 30,
+    "independent_confirmation_trading_sessions": 252,
+    "substitution_allowed": false,
+    "backfill_allowed": false,
+    "evaluation_before_confirmation_window_end_allowed": false
+  },
+  "receipt_store": {
+    "root": "artifacts/us_equity_forward_observation",
+    "one_receipt_per_natural_day": true,
+    "append_only": true,
+    "latest_pointer_requires_hash_verification": true
+  },
+  "identity": {
+    "cross_head_interrupts_continuity": true,
+    "cross_strategy_interrupts_continuity": true,
+    "code_tree_hash_drift_interrupts_continuity": true,
+    "natural_day_gap_interrupts_continuity": true,
+    "code_tree_paths": [
+      "quant_us/application/us_equity_forward_observation.py",
+      "quant_us/data/pit_dataready_consumer.py",
+      "quant_us/core/calendar.py",
+      "quant_us/strategies/us_etf_26_complete_return.py",
+      "configs/strategies/us_etf_26_candidate_freeze_v1.json",
+      "configs/data/us_equity_pit_dataready_consumer_v1.json",
+      "configs/monitoring/us_v3_forward_observation_v1.json",
+      "schemas/us_equity_forward_observation_receipt.schema.json"
+    ]
+  },
+  "state_evidence": {
+    "signal": "",
+    "target": "",
+    "fill": "",
+    "ledger": ""
+  },
+  "safety": {
+    "network_allowed": false,
+    "secret_access_allowed": false,
+    "promotion_allowed": false,
+    "paper_allowed": false,
+    "paper_runner_allowed": false,
+    "paper_queue_write_allowed": false,
+    "live_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "broker_access_allowed": false,
+    "withdraw_allowed": false,
+    "demo_allowed": false,
+    "real_order_allowed": false,
+    "scheduler_modification_allowed": false
+  }
+}

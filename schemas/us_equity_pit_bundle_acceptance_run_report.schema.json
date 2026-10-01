@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_pit_bundle_acceptance_run_report.schema.json",
+  "title": "QuantStation VNEXT US Equity PIT Bundle Acceptance Run Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "bundle_id",
+    "source_dir",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "current_blocking_step",
+    "blockers",
+    "steps",
+    "license_reviewed",
+    "sample_start",
+    "sample_end",
+    "as_of_date",
+    "universe_name",
+    "price_data_reference",
+    "activation_candidate_config_path",
+    "post_acceptance_manual_commands",
+    "unsafe_flags",
+    "outputs",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_pit_bundle_acceptance_run_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "source_dir": {"type": "string", "minLength": 1},
+    "status": {"enum": ["acceptance_blocked", "acceptance_ready_for_manual_config_apply"]},
+    "allowed_statuses": {
+      "type": "array",
+      "contains": {"const": "acceptance_blocked"},
+      "items": {"enum": ["acceptance_blocked", "acceptance_ready_for_manual_config_apply"]}
+    },
+    "decision": {"type": "string", "minLength": 1},
+    "current_blocking_step": {"type": "string", "minLength": 1},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "steps": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/step"}},
+    "license_reviewed": {"type": "boolean"},
+    "sample_start": {"type": "string"},
+    "sample_end": {"type": "string"},
+    "as_of_date": {"type": "string"},
+    "universe_name": {"type": "string"},
+    "price_data_reference": {"type": "string"},
+    "activation_candidate_config_path": {"type": ["string", "null"]},
+    "post_acceptance_manual_commands": {"type": "array", "items": {"type": "string"}},
+    "unsafe_flags": {"type": "array", "items": {"type": "string"}},
+    "outputs": {"type": "object", "required": ["json", "markdown"], "additionalProperties": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "acceptance_orchestration_only",
+        "source_vendor_data_modified",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "acceptance_orchestration_only": {"const": true},
+        "source_vendor_data_modified": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["step_id", "passed"],
+      "properties": {
+        "step_id": {"type": "string", "minLength": 1},
+        "passed": {"type": "boolean"},
+        "status": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    }
+  }
+}

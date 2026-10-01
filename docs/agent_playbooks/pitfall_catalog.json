@@ -1,0 +1,528 @@
+{
+  "schema_version": "1.1.0",
+  "ruleset_version": "agent-governance-v2",
+  "selection_policy": {
+    "default_status": "active",
+    "max_rules": 24,
+    "raw_log_policy": "targeted_only"
+  },
+  "rules": [
+    {
+      "id": "GOV-ROOT-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["shared", "governance"],
+      "rule": "量化任务必须从真实 Git 仓库 agent- 启动，不能把外层 Obsidian 工作区当成项目根目录。",
+      "sources": ["docs/agent_playbooks/agent_workflow_pitfall_log.md#2026-07-10 外层 workspace 启动不会自动加载内层项目配置"],
+      "regression_tests": ["tests/agent_governance/test_governance_contract.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "GOV-DIRTY-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["shared", "governance"],
+      "rule": "修改前记录 base commit、touch set 和限定源码路径的 dirty 状态；禁止自动或人工执行非 sparse 全仓 status/diff，不得覆盖、回滚或清理其他代理的改动。",
+      "sources": ["docs/agent_playbooks/shared_pitfalls.md#启动顺序"],
+      "regression_tests": [
+        "tests/agent_governance/test_context_packet.py",
+        "tests/agent_governance/test_safe_status.py"
+      ],
+      "superseded_by": null
+    },
+    {
+      "id": "GOV-WINDOWS-001",
+      "status": "active",
+      "enforcement": "advisory",
+      "severity": "P1",
+      "roles": ["all"],
+      "scopes": ["shared", "governance"],
+      "rule": "Windows 中文文件使用 UTF-8 显式读取；PowerShell 不使用 Bash heredoc；pytest 使用独立临时目录。",
+      "sources": [
+        "docs/btc_development_pitfall_log.md#2026-06-24 PowerShell 中文输出可能误显示为乱码",
+        "docs/btc_development_pitfall_log.md#2026-06-25 PowerShell 不支持 Bash heredoc",
+        "docs/us_equity_development_pitfall_log.md#2026-06-27 Pytest basetemp can stay locked on Windows"
+      ],
+      "regression_tests": ["tests/agent_governance/test_governance_contract.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "GOV-CONCURRENCY-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["shared", "governance"],
+      "rule": "同一文件、SQLite 或 latest artifact 同时只能有一个写入者；写代理不得启动并行写子代理。",
+      "sources": ["docs/agent_playbooks/agent_workflow_pitfall_log.md#2026-07-10 全局 Ultra 与并行写代理会放大共享 worktree 冲突"],
+      "regression_tests": ["tests/agent_governance/test_governance_contract.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "GOV-STORAGE-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["shared", "governance", "data", "monitoring", "gate"],
+      "rule": "writer worktree 默认 sparse 且跳过 LFS smudge；低于 50 GB 禁止完整 checkout，低于 20 GB 停止数据采集和 artifact 重建；mutable SQLite 与超过 5 MB 的 data/artifact 不得进入 Git。",
+      "sources": ["docs/agent_playbooks/agent_workflow_pitfall_log.md#2026-07-21 全量 Git diff 与 LFS clean filter 写爆仓库盘"],
+      "regression_tests": [
+        "tests/agent_governance/test_disk_guard.py",
+        "tests/agent_governance/test_hooks.py",
+        "tests/agent_governance/test_safe_status.py"
+      ],
+      "superseded_by": null
+    },
+    {
+      "id": "GOV-WORKTREE-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["shared", "governance"],
+      "rule": "常驻角色任务必须从 agent- 项目以 Local 环境启动；写代理不得修改注册主工作树，具体写票据必须使用 planner 在 D 盘同级 worktrees 下创建独立 sparse worktree。Full Access 只消除机械审批，不放宽角色、安全或 promotion 边界。",
+      "sources": ["docs/agent_playbooks/agent_workflow_pitfall_log.md#2026-07-28 常驻角色使用 Codex-managed worktree 导致 C 盘膨胀和跨盘审批"],
+      "regression_tests": ["tests/agent_governance/test_governance_contract.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "GOV-HANDOFF-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["shared", "governance", "architecture", "data", "monitoring", "gate"],
+      "rule": "跨代理交付只认已提交 deliverable、append-only handoff 和不可变数据 manifest；未提交工作树文件不得被消费。",
+      "sources": ["docs/agent_playbooks/cross_agent_coordination.md#required-producer-sequence"],
+      "regression_tests": [
+        "tests/agent_governance/test_handoff.py",
+        "tests/agent_governance/test_shared_data.py",
+        "tests/agent_governance/test_team_context.py"
+      ],
+      "superseded_by": null
+    },
+    {
+      "id": "GOV-OBJECTIVE-001",
+      "status": "active",
+      "enforcement": "conditional_guardrail",
+      "applicability": {
+        "change_risks": ["observe_only", "promotion_evidence", "live_execution", "governance_control", "research_readonly_release"],
+        "capabilities": ["runtime_observation", "promotion", "live", "governance"],
+        "operations": ["objective_selection", "blocker_triage", "gate_rebuild"]
+      },
+      "owner": "quant_architect",
+      "last_reviewed": "2026-07-30",
+      "review_due": "2026-10-30",
+      "sunset_criteria": "Retire when objective-scoped scheduling is structurally enforced and blocker inventory cannot create work.",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["shared", "governance", "architecture", "monitoring"],
+      "rule": "active user objective/current milestone 是工作选择边界；完整 blocker inventory 只是风险清单。环境、数据、自然时间或人工审批 blocker 不会自动授权代码、测试、handoff、集成或 gate 重建；milestone 变更不得把旧 artifact 描述为已满足。",
+      "sources": ["docs/agent_playbooks/agent_workflow_pitfall_log.md#2026-07-29 运行 blocker 被错误升级为无限工程票据"],
+      "regression_tests": [
+        "tests/agent_governance/test_governance_contract.py",
+        "tests/agent_governance/cases/agent_workflow_cases.json"
+      ],
+      "superseded_by": null
+    },
+    {
+      "id": "GOV-ENGINEERING-CIRCUIT-001",
+      "status": "active",
+      "enforcement": "conditional_guardrail",
+      "applicability": {
+        "change_risks": ["observe_only", "promotion_evidence", "live_execution", "governance_control", "research_readonly_release"],
+        "capabilities": ["runtime_observation", "promotion", "live", "governance"],
+        "operations": ["runtime_retry", "engineering_ticket_creation", "gate_rebuild"]
+      },
+      "owner": "quant_architect",
+      "last_reviewed": "2026-07-30",
+      "review_due": "2026-10-30",
+      "sunset_criteria": "Retire when runtime incident classifiers prevent automatic engineering expansion by construction.",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["shared", "governance", "architecture", "monitoring"],
+      "rule": "运行/观察任务已有 current-HEAD 持久入口、单写者、fail-closed 和可恢复状态后，间歇性 clock/network/TLS/DNS/latency/观察不足只能恢复环境、继续既有重试或等待且保持代码冻结。仅 current-HEAD 可确定复现的代码缺陷、现有入口无法表达用户目标或用户明确授权新范围时可开最小工程票据；显式修复默认最多一个 producer ticket 和一个 integration ticket。",
+      "sources": ["docs/agent_playbooks/agent_workflow_pitfall_log.md#2026-07-29 运行 blocker 被错误升级为无限工程票据"],
+      "regression_tests": [
+        "tests/agent_governance/test_team_context.py",
+        "tests/agent_governance/test_governance_contract.py",
+        "tests/agent_governance/cases/agent_workflow_cases.json"
+      ],
+      "superseded_by": null
+    },
+    {
+      "id": "ARCH-READONLY-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["architect"],
+      "scopes": ["shared", "architecture", "governance"],
+      "rule": "架构师默认只读，不修改策略、数据管道、风控、OMS、adapter 或 live/paper 业务代码。",
+      "sources": ["docs/agent_playbooks/architect_pitfalls.md#职责边界"],
+      "regression_tests": ["tests/agent_governance/test_governance_contract.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "GOV-PITFALL-001",
+      "status": "active",
+      "enforcement": "conditional_guardrail",
+      "applicability": {
+        "change_risks": ["governance_control", "research_readonly_release"],
+        "capabilities": ["governance"],
+        "operations": ["catalog_update", "incident_review"]
+      },
+      "owner": "quant_architect",
+      "last_reviewed": "2026-07-30",
+      "review_due": "2026-10-30",
+      "sunset_criteria": "Retire when incident sources are fully indexed and bounded retrieval is mechanically guaranteed.",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["shared", "governance"],
+      "rule": "原始踩坑日志是定向调查的历史源；任务默认读取 active catalog，禁止每轮全文加载 BTC/美股/A 股日志。",
+      "sources": ["docs/agent_playbooks/agent_workflow_pitfall_log.md#2026-07-10 每轮全文读取原始踩坑日志造成上下文污染"],
+      "regression_tests": ["tests/agent_governance/test_governance_contract.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "GOV-PROMPT-001",
+      "status": "active",
+      "enforcement": "advisory",
+      "severity": "P1",
+      "roles": ["all"],
+      "scopes": ["shared", "governance"],
+      "rule": "AGENTS 只保存稳定约束；模型、effort、sandbox 属于 agent config，当前阶段和 gate 状态属于 current-HEAD artifacts。",
+      "sources": ["docs/agent_playbooks/agent_workflow_pitfall_log.md#2026-07-10 AGENTS 不应混入模型参数、Sprint 矩阵和当前系统状态"],
+      "regression_tests": ["tests/agent_governance/test_governance_contract.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "QSYS-BOUNDARY-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["strategy", "backtest", "risk", "execution"],
+      "rule": "Strategy 只能输出 Signal、Forecast、TargetPosition 或 OrderIntent，不能直接调用 broker/exchange。",
+      "sources": ["docs/knowledge/00_codex_rules/quant_system_non_negotiables.md#硬规则"],
+      "regression_tests": ["tests/contracts/test_btc_trend_boundary_report.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "QSYS-LEDGER-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["a_share_developer", "super_developer", "btc_developer", "researcher", "architect"],
+      "scopes": ["backtest", "risk", "execution", "monitoring"],
+      "rule": "所有 PnL 必须由 fill、position 和 cash ledger 推导并可回放。",
+      "sources": ["docs/knowledge/00_codex_rules/quant_system_non_negotiables.md#硬规则"],
+      "regression_tests": ["tests/contracts/test_us_equity_paper_simulation_roll.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "QSYS-GATE-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["gate", "monitoring", "execution", "governance"],
+      "rule": "wrapper 成功不等于 gate 成功；结论必须来自当前 HEAD 的 decision、blockers、安全旗标和 artifact hash。",
+      "sources": ["docs/agent_playbooks/shared_pitfalls.md#Artifact / Gate 规则"],
+      "regression_tests": ["tests/contracts/test_btc_gate_report_consistency.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "QSYS-ARTIFACT-001",
+      "status": "active",
+      "enforcement": "conditional_guardrail",
+      "applicability": {
+        "change_risks": ["promotion_evidence", "live_execution"],
+        "capabilities": ["artifact", "promotion", "live"],
+        "operations": ["artifact_rebuild", "promotion_gate", "live_start"]
+      },
+      "owner": "quant_architect",
+      "last_reviewed": "2026-07-30",
+      "review_due": "2026-10-30",
+      "sunset_criteria": "Retire when schema dependency DAGs automatically rebuild and attest every affected current-HEAD artifact.",
+      "severity": "P0",
+      "roles": ["a_share_developer", "data_steward", "super_developer", "btc_developer", "architect"],
+      "scopes": ["data", "gate", "monitoring", "execution"],
+      "rule": "schema 或报告字段变化后必须按依赖顺序重建 concrete latest artifacts，再运行 schema/contract tests。",
+      "sources": [
+        "docs/btc_development_pitfall_log.md#2026-06-26 统一 artifact schema 要落在生成层而不是只写测试断言",
+        "docs/us_equity_development_pitfall_log.md#2026-06-27 Schema changes must refresh latest artifacts before schema coverage tests"
+      ],
+      "regression_tests": [
+        "tests/contracts/test_btc_artifact_schema.py",
+        "tests/contracts/test_us_equity_artifact_schema_coverage.py"
+      ],
+      "superseded_by": null
+    },
+    {
+      "id": "QSYS-SECURITY-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["data", "execution", "security", "governance"],
+      "rule": "禁止读取或输出 secret；未明确授权时禁止 private/order/live endpoint，所有交易安全旗标保持 false。",
+      "sources": ["docs/agent_playbooks/shared_pitfalls.md#交易安全边界"],
+      "regression_tests": ["tests/contracts/test_btc_api_key_permission_audit.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "DATA-VERSION-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["a_share_developer", "data_steward", "architect", "researcher"],
+      "scopes": ["data"],
+      "rule": "数据必须区分 immutable raw、derived version、manifest、lineage、freshness 和 PIT 可见时间。",
+      "sources": ["docs/agent_playbooks/shared_pitfalls.md#数据与回测规则"],
+      "regression_tests": ["tests/data/test_crypto_resample.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "DATA-FRESHNESS-001",
+      "status": "active",
+      "enforcement": "conditional_guardrail",
+      "applicability": {
+        "change_risks": ["observe_only", "demo_transport_hotfix", "demo_execution_semantics", "promotion_evidence", "live_execution", "research_readonly_release"],
+        "capabilities": ["market_data", "freshness"],
+        "operations": ["data_read", "tail_merge", "gate_evidence"]
+      },
+      "owner": "data_steward",
+      "last_reviewed": "2026-07-30",
+      "review_due": "2026-10-30",
+      "sunset_criteria": "Retire when every data resolver enforces freshness and completeness before consumption.",
+      "severity": "P0",
+      "roles": ["a_share_developer", "data_steward", "architect", "researcher"],
+      "scopes": ["data", "cn_equity", "us_equity", "btc"],
+      "rule": "缓存存在不等于数据新鲜；报告必须给出 common date、覆盖率、异常和完整缺口。",
+      "sources": ["docs/agent_playbooks/shared_pitfalls.md#数据与回测规则"],
+      "regression_tests": ["tests/contracts/test_us_equity_completion_dependency_report.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "DATA-BTC-FINAL-001",
+      "status": "active",
+      "enforcement": "conditional_guardrail",
+      "applicability": {
+        "change_risks": ["observe_only", "demo_transport_hotfix", "demo_execution_semantics", "promotion_evidence", "live_execution", "research_readonly_release"],
+        "capabilities": ["btc_market_data", "websocket"],
+        "operations": ["candle_tail_merge", "l2_ingestion", "gate_evidence"]
+      },
+      "owner": "data_steward",
+      "last_reviewed": "2026-07-30",
+      "review_due": "2026-10-30",
+      "sunset_criteria": "Retire when finalized-candle and L2 sequence contracts are enforced at every BTC data boundary.",
+      "severity": "P0",
+      "roles": ["data_steward", "btc_developer", "architect", "researcher"],
+      "scopes": ["data", "btc"],
+      "rule": "BTC K 线必须区分 finalized/in-progress；L2 必须记录 sequence、gap、event/snapshot time 和 two-sided coverage。",
+      "sources": ["docs/agent_playbooks/data_steward_pitfalls.md#BTC 数据规则"],
+      "regression_tests": ["tests/contracts/test_btc_source_role_report.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "DATA-US-PIT-001",
+      "status": "active",
+      "enforcement": "conditional_guardrail",
+      "applicability": {
+        "change_risks": ["observe_only", "promotion_evidence", "live_execution", "research_readonly_release"],
+        "capabilities": ["us_market_data", "pit"],
+        "operations": ["broker_bar_import", "backtest", "promotion_gate"]
+      },
+      "owner": "data_steward",
+      "last_reviewed": "2026-07-30",
+      "review_due": "2026-10-30",
+      "sunset_criteria": "Retire when broker bars cannot enter derived datasets without PIT manifests and replay validation.",
+      "severity": "P0",
+      "roles": ["data_steward", "super_developer", "architect", "researcher"],
+      "scopes": ["data", "us_equity"],
+      "rule": "IBKR 或外部 broker bars 在 PIT adjustment replay、复权、manifest 和质量验证前只能作为 raw evidence。",
+      "sources": ["docs/us_equity_development_pitfall_log.md#2026-07-09 IBKR 1m deep-history backfill needs small chunks and py on this Windows host"],
+      "regression_tests": ["tests/contracts/test_us_equity_completion_dependency_report.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "BACKTEST-COST-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["a_share_developer", "super_developer", "btc_developer", "researcher", "architect"],
+      "scopes": ["backtest", "risk", "btc", "cn_equity", "us_equity"],
+      "rule": "回测必须完整扣除手续费、税费、滑点、适用时的资金费率和冲击成本，并通过 walk-forward/holdout/no-lookahead。",
+      "sources": ["docs/agent_playbooks/shared_pitfalls.md#数据与回测规则"],
+      "regression_tests": ["tests/contracts/test_btc_perpetual_execution_evidence.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "RESEARCH-HOLDOUT-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["researcher", "architect", "a_share_developer", "btc_developer", "super_developer"],
+      "scopes": ["research", "backtest", "btc", "cn_equity", "us_equity"],
+      "rule": "看过的 holdout 不再是干净样本；禁止在 confirmatory/observe-only 窗口继续选参。",
+      "sources": ["docs/btc_development_pitfall_log.md#2026-07-01 看过的 holdout 不能继续当干净样本"],
+      "regression_tests": ["tests/contracts/test_btc_perpetual_gate_objective_status.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "BTC-PERP-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["btc_developer", "data_steward", "architect", "researcher"],
+      "scopes": ["btc", "risk", "execution", "data"],
+      "rule": "BTC 永续必须显式建模 funding、mark/index price、liquidation buffer、杠杆、保证金模式和 venue filters。",
+      "sources": ["docs/agent_playbooks/btc_developer_pitfalls.md#BTC 专项硬线"],
+      "regression_tests": ["tests/contracts/test_btc_perpetual_execution_evidence.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "BTC-NONFLAT-001",
+      "status": "active",
+      "enforcement": "conditional_guardrail",
+      "applicability": {
+        "change_risks": ["demo_execution_semantics", "promotion_evidence", "live_execution"],
+        "capabilities": ["btc_execution", "promotion"],
+        "operations": ["nonflat_demo", "paper_evidence", "live_start"]
+      },
+      "owner": "btc_developer",
+      "last_reviewed": "2026-07-30",
+      "review_due": "2026-10-30",
+      "sunset_criteria": "Retire when non-flat lifecycle evidence is generated and validated automatically for every execution run.",
+      "severity": "P0",
+      "roles": ["btc_developer", "architect", "researcher"],
+      "scopes": ["btc", "gate", "execution", "monitoring"],
+      "rule": "空仓 heartbeat 不是成交证据；非空样本出现后必须自动形成 risk、OMS、fill、funding、liquidation 和 depth mapping 证据链。",
+      "sources": ["docs/agent_playbooks/btc_developer_pitfalls.md#Gate / Artifact 规则"],
+      "regression_tests": ["tests/contracts/test_btc_gate_snapshot.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "BTC-OMS-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["btc_developer", "architect"],
+      "scopes": ["btc", "execution", "monitoring"],
+      "rule": "BTC Paper OMS 使用 append-only lifecycle、idempotency key、partial/reject/cancel 和独立 reconciliation，不能借用美股共享状态凑语义。",
+      "sources": ["docs/btc_development_pitfall_log.md#2026-06-26 BTC Paper OMS 不应为了 reconciled 改共享 OrderStatus"],
+      "regression_tests": ["tests/contracts/test_btc_paper_oms_lifecycle.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "BTC-WS-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["btc_developer", "data_steward", "architect"],
+      "scopes": ["btc", "data", "execution"],
+      "rule": "WebSocket 必须覆盖 reconnect、gapfill、sequence 校验、私有流对账和 outage/cancel-only；未证明时保持 blocked。",
+      "sources": ["docs/agent_playbooks/btc_developer_pitfalls.md#OKX / 交易所规则"],
+      "regression_tests": ["tests/contracts/test_btc_perpetual_paper_runtime_reconciliation.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "REPLAY-ISOLATION-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["a_share_developer", "btc_developer", "super_developer", "architect"],
+      "scopes": ["monitoring", "execution", "btc", "cn_equity", "us_equity"],
+      "rule": "Replay 只能消费注入的历史 snapshot、params、risk state、orders、fills 和 audit DAG，不能自行读取 latest/current/live。",
+      "sources": ["docs/btc_development_pitfall_log.md#2026-06-26 Replay engine 不应自己读取实时或当前文件状态"],
+      "regression_tests": ["tests/contracts/test_btc_replay_engine.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "US-SERVICE-BOUNDARY-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P1",
+      "roles": ["super_developer", "architect"],
+      "scopes": ["us_equity", "architecture", "monitoring", "execution"],
+      "rule": "美股 gate、monitoring 和 live report 规则属于 service layer；scripts 只能保留薄 CLI 入口。",
+      "sources": ["docs/us_equity_development_pitfall_log.md#2026-07-10 Strategy production line rules must not stay script-owned"],
+      "regression_tests": ["tests/contracts/test_us_equity_completion_audit_report.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "US-QUEUE-FRESHNESS-001",
+      "status": "active",
+      "enforcement": "conditional_guardrail",
+      "applicability": {
+        "change_risks": ["promotion_evidence", "live_execution"],
+        "capabilities": ["us_gate", "report_queue"],
+        "operations": ["report_rebuild", "promotion_gate", "live_start"]
+      },
+      "owner": "super_developer",
+      "last_reviewed": "2026-07-30",
+      "review_due": "2026-10-30",
+      "sunset_criteria": "Retire when the US report DAG scheduler enforces topological freshness atomically.",
+      "severity": "P0",
+      "roles": ["super_developer", "architect"],
+      "scopes": ["us_equity", "gate", "monitoring"],
+      "rule": "美股依赖报告必须按 completion dependency、queue、operator packet、audit 的拓扑顺序刷新，禁止并行生成依赖链。",
+      "sources": ["docs/us_equity_development_pitfall_log.md#2026-07-09 Queue reports depend on freshly rebuilt completion dependencies"],
+      "regression_tests": ["tests/contracts/test_us_equity_completion_dependency_report.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "CN-BOUNDARY-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["a_share_developer", "architect"],
+      "scopes": ["cn_equity", "architecture", "shared"],
+      "rule": "A 股专用行为必须进入 cn_equity 领域边界；不得通过修改美股或 BTC 语义实现 A 股，共享合同只能经架构批准的集成票据变更。",
+      "sources": ["docs/cn_equity_development_pitfall_log.md#2026-07-13 A 股领域不能复用美股交易语义"],
+      "regression_tests": ["tests/agent_governance/test_governance_contract.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "CN-DATA-PIT-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["a_share_developer", "data_steward", "architect", "researcher"],
+      "scopes": ["cn_equity", "data", "backtest"],
+      "rule": "A 股 universe、成分、上市退市、风险警示、停复牌和公司行动必须带可见时间与版本；缺少 PIT 证据时只能 research-only 或 blocked。",
+      "sources": ["docs/cn_equity_development_pitfall_log.md#2026-07-13 A 股历史状态不能按当前状态回填"],
+      "regression_tests": ["tests/agent_governance/test_context_packet.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "CN-MARKET-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["a_share_developer", "architect", "researcher"],
+      "scopes": ["cn_equity", "backtest", "risk", "execution"],
+      "rule": "A 股回测和执行必须按生效日期显式建模交易时段、竞价、可卖数量、价格限制、停牌、最小交易单位、费用税费和结算语义；缺规则时 fail-closed。",
+      "sources": ["docs/agent_playbooks/a_share_developer_pitfalls.md#A 股回测与执行硬线"],
+      "regression_tests": ["tests/agent_governance/test_handoff.py"],
+      "superseded_by": null
+    },
+    {
+      "id": "MONITOR-AUDIT-001",
+      "status": "active",
+      "enforcement": "global_invariant",
+      "severity": "P0",
+      "roles": ["all"],
+      "scopes": ["monitoring", "execution", "gate"],
+      "rule": "核心链路日志必须关联 run、strategy、data、decision、signal/forecast/target、risk、order、fill 和 error code，且不得记录 secret。",
+      "sources": ["docs/knowledge/05_monitoring_replay/logging_policy.md#必须记录"],
+      "regression_tests": ["tests/contracts/test_btc_audit_dag.py"],
+      "superseded_by": null
+    }
+  ]
+}

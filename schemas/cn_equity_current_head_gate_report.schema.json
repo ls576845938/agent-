@@ -1,0 +1,432 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cn_equity_current_head_gate_report.schema.json",
+  "title": "CN Equity Current-HEAD Gate Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "domain",
+    "generated_at_utc",
+    "source_head",
+    "data_version",
+    "status",
+    "wrapper_status",
+    "decision",
+    "freshness",
+    "builder_order",
+    "stage_reports",
+    "input_hashes",
+    "input_set_sha256",
+    "root_blockers",
+    "root_blocker_count",
+    "derived_blocker_references",
+    "derived_reference_count",
+    "validation_checks",
+    "readiness",
+    "safety_flags"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "cn_equity_current_head_gate_report_v1"
+    },
+    "domain": {
+      "const": "cn_equity"
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_head": {
+      "$ref": "#/$defs/commit"
+    },
+    "data_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "blocked",
+        "manual_review_required"
+      ]
+    },
+    "wrapper_status": {
+      "const": "success"
+    },
+    "decision": {
+      "enum": [
+        "blocked_fail_closed",
+        "manual_review_required"
+      ]
+    },
+    "freshness": {
+      "const": "current_head"
+    },
+    "builder_order": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "prefixItems": [
+        {
+          "const": "dataready"
+        },
+        {
+          "const": "market_rules"
+        },
+        {
+          "const": "research_backtest"
+        },
+        {
+          "const": "risk_oms_ledger"
+        },
+        {
+          "const": "replay"
+        },
+        {
+          "const": "qmt_broker"
+        },
+        {
+          "const": "paper_readiness"
+        }
+      ],
+      "items": false
+    },
+    "stage_reports": {
+      "type": "object",
+      "required": [
+        "dataready",
+        "market_rules",
+        "research_backtest",
+        "risk_oms_ledger",
+        "replay",
+        "qmt_broker",
+        "paper_readiness"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "dataready": {
+          "$ref": "#/$defs/stage"
+        },
+        "market_rules": {
+          "$ref": "#/$defs/stage"
+        },
+        "research_backtest": {
+          "$ref": "#/$defs/stage"
+        },
+        "risk_oms_ledger": {
+          "$ref": "#/$defs/stage"
+        },
+        "replay": {
+          "$ref": "#/$defs/stage"
+        },
+        "qmt_broker": {
+          "$ref": "#/$defs/stage"
+        },
+        "paper_readiness": {
+          "$ref": "#/$defs/stage"
+        }
+      }
+    },
+    "input_hashes": {
+      "type": "object",
+      "minProperties": 10,
+      "additionalProperties": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "input_set_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "root_blockers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/blocker"
+      }
+    },
+    "root_blocker_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "derived_blocker_references": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/derived"
+      }
+    },
+    "derived_reference_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "validation_checks": {
+      "type": "object",
+      "required": [
+        "single_writer_lock_held",
+        "required_builder_order_preserved",
+        "all_report_schemas_valid",
+        "all_reports_current_head",
+        "all_report_hashes_verified",
+        "all_declared_input_hashes_verified",
+        "all_safety_flags_false",
+        "self_reference_blockers_filtered",
+        "network_or_secret_used",
+        "paper_queue_written",
+        "real_order_submitted"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "single_writer_lock_held": {
+          "const": true
+        },
+        "required_builder_order_preserved": {
+          "const": true
+        },
+        "all_report_schemas_valid": {
+          "const": true
+        },
+        "all_reports_current_head": {
+          "const": true
+        },
+        "all_report_hashes_verified": {
+          "const": true
+        },
+        "all_declared_input_hashes_verified": {
+          "const": true
+        },
+        "all_safety_flags_false": {
+          "const": true
+        },
+        "self_reference_blockers_filtered": {
+          "const": true
+        },
+        "network_or_secret_used": {
+          "const": false
+        },
+        "paper_queue_written": {
+          "const": false
+        },
+        "real_order_submitted": {
+          "const": false
+        }
+      }
+    },
+    "readiness": {
+      "type": "object",
+      "required": [
+        "quality_checked",
+        "research_ready",
+        "backtest_ready",
+        "promotion_evidence_ready",
+        "paper_ready",
+        "live_ready"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "quality_checked": {
+          "const": true
+        },
+        "research_ready": {
+          "const": false
+        },
+        "backtest_ready": {
+          "const": false
+        },
+        "promotion_evidence_ready": {
+          "const": false
+        },
+        "paper_ready": {
+          "const": false
+        },
+        "live_ready": {
+          "const": false
+        }
+      }
+    },
+    "safety_flags": {
+      "$ref": "#/$defs/safety"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "stage": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "source_head",
+        "generated_at_utc",
+        "status",
+        "decision",
+        "freshness",
+        "input_set_sha256",
+        "root_blocker_count",
+        "effective_blocker_count"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^[^\\\\]+$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_head": {
+          "$ref": "#/$defs/commit"
+        },
+        "generated_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "enum": [
+            "blocked",
+            "quality_checked"
+          ]
+        },
+        "decision": {
+          "enum": [
+            "blocked_fail_closed",
+            "manual_review_required"
+          ]
+        },
+        "freshness": {
+          "const": "current_head"
+        },
+        "input_set_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "root_blocker_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effective_blocker_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "required": [
+        "code",
+        "owner",
+        "next_action",
+        "source_layer",
+        "stage_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_layer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "derived": {
+      "type": "object",
+      "required": [
+        "code",
+        "stage_ids"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "promotion_allowed",
+        "paper_allowed",
+        "live_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_access_allowed",
+        "withdraw_allowed",
+        "demo_allowed",
+        "paper_queue_allowed",
+        "real_order_allowed",
+        "network_allowed",
+        "secret_access_allowed",
+        "qmt_sdk_allowed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "promotion_allowed": {
+          "const": false
+        },
+        "paper_allowed": {
+          "const": false
+        },
+        "live_allowed": {
+          "const": false
+        },
+        "private_endpoint_allowed": {
+          "const": false
+        },
+        "order_endpoint_allowed": {
+          "const": false
+        },
+        "broker_access_allowed": {
+          "const": false
+        },
+        "withdraw_allowed": {
+          "const": false
+        },
+        "demo_allowed": {
+          "const": false
+        },
+        "paper_queue_allowed": {
+          "const": false
+        },
+        "real_order_allowed": {
+          "const": false
+        },
+        "network_allowed": {
+          "const": false
+        },
+        "secret_access_allowed": {
+          "const": false
+        },
+        "qmt_sdk_allowed": {
+          "const": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,471 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_candidate_bounded_retest_plan.schema.json",
+  "title": "QuantStation VNEXT BTC Candidate Bounded Retest Plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "status",
+    "retest_allowed",
+    "bounded_parameter_search_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "source_artifacts",
+    "candidate",
+    "data_cost_prerequisite",
+    "metric_repair_context",
+    "acceptance_criteria",
+    "test_scope",
+    "retest_steps",
+    "execution_plan",
+    "guardrails",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_candidate_bounded_retest_plan_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "status": {
+      "enum": [
+        "blocked_missing_metric_repair_report",
+        "blocked_by_perpetual_data_cost",
+        "blocked_missing_metric_failures",
+        "ready_for_bounded_retest",
+        "not_required_candidate_metric_gate_passed"
+      ]
+    },
+    "retest_allowed": {"type": "boolean"},
+    "bounded_parameter_search_allowed": {"type": "boolean"},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "source_artifacts": {
+      "type": "object",
+      "required": ["candidate_metric_repair_report", "walk_forward_fold_attribution"],
+      "properties": {
+        "candidate_metric_repair_report": {"type": ["string", "null"]},
+        "walk_forward_fold_attribution": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "candidate": {"$ref": "#/$defs/candidateSummary"},
+    "data_cost_prerequisite": {
+      "type": "object",
+      "required": ["status", "required_before_retest", "action", "blockers"],
+      "properties": {
+        "status": {"enum": ["blocked", "complete"]},
+        "required_before_retest": {"const": true},
+        "action": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "metric_repair_context": {
+      "type": "object",
+      "required": [
+        "status",
+        "failed_metrics",
+        "event_profit_factor",
+        "walk_forward_pass_rate",
+        "regime_pass_rate",
+        "ordinary_profit_factor",
+        "metric_repair_blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "failed_metrics": {"type": "array", "items": {"type": "string"}},
+        "event_profit_factor": {"type": ["number", "null"]},
+        "walk_forward_pass_rate": {"type": ["number", "null"]},
+        "regime_pass_rate": {"type": ["number", "null"]},
+        "ordinary_profit_factor": {"type": ["number", "null"]},
+        "metric_repair_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "acceptance_criteria": {
+      "type": "object",
+      "required": [
+        "event_profit_factor_min",
+        "walk_forward_pass_rate_min",
+        "regime_pass_rate_min",
+        "cost_stress_required",
+        "ledger_fill_pnl_required",
+        "walk_forward_recompute_required",
+        "manifest_required"
+      ],
+      "properties": {
+        "event_profit_factor_min": {"type": ["number", "null"]},
+        "walk_forward_pass_rate_min": {"type": ["number", "null"]},
+        "regime_pass_rate_min": {"type": ["number", "null"]},
+        "cost_stress_required": {"type": "boolean"},
+        "ledger_fill_pnl_required": {"const": true},
+        "walk_forward_recompute_required": {"const": true},
+        "manifest_required": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "test_scope": {
+      "type": "object",
+      "required": [
+        "primary_objectives",
+        "diagnostic_only_metrics",
+        "focus_failed_metrics",
+        "focus_failed_folds",
+        "folds_required_for_rerun",
+        "allowed_rule_changes",
+        "disallowed_rule_changes"
+      ],
+      "properties": {
+        "primary_objectives": {
+          "type": "array",
+          "contains": {"const": "event_profit_factor"},
+          "items": {
+            "enum": [
+              "event_profit_factor",
+              "walk_forward_pass_rate",
+              "regime_pass_rate",
+              "cost_stress"
+            ]
+          }
+        },
+        "diagnostic_only_metrics": {
+          "type": "array",
+          "contains": {"const": "ordinary_profit_factor"},
+          "items": {"type": "string"}
+        },
+        "focus_failed_metrics": {"type": "array", "items": {"type": "string"}},
+        "focus_failed_folds": {"type": "array", "items": {"type": "integer"}},
+        "folds_required_for_rerun": {"type": "array", "items": {"type": "integer"}},
+        "allowed_rule_changes": {"type": "array", "items": {"type": "string"}},
+        "disallowed_rule_changes": {
+          "type": "array",
+          "contains": {"const": "ordinary_profit_factor_primary_objective"},
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "retest_steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/retestStep"}
+    },
+    "execution_plan": {"$ref": "#/$defs/executionPlan"},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "report_only",
+        "strategy_retest_allowed",
+        "bounded_parameter_search_only",
+        "paper_or_live_unlock_allowed",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "ordinary_profit_factor_diagnostic_only",
+        "requires_event_ledger_fills_pnl",
+        "requires_walk_forward_pass",
+        "requires_cost_stress_pass",
+        "requires_perpetual_data_cost_evidence",
+        "requires_manifest",
+        "no_future_function"
+      ],
+      "properties": {
+        "report_only": {"const": true},
+        "strategy_retest_allowed": {"type": "boolean"},
+        "bounded_parameter_search_only": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "ordinary_profit_factor_diagnostic_only": {"const": true},
+        "requires_event_ledger_fills_pnl": {"const": true},
+        "requires_walk_forward_pass": {"const": true},
+        "requires_cost_stress_pass": {"const": true},
+        "requires_perpetual_data_cost_evidence": {"const": true},
+        "requires_manifest": {"const": true},
+        "no_future_function": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "ready_for_bounded_retest"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "retest_allowed": {"const": true},
+          "bounded_parameter_search_allowed": {"const": true},
+          "blockers": {"maxItems": 0},
+          "guardrails": {
+            "properties": {
+              "strategy_retest_allowed": {"const": true}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"not": {"properties": {"status": {"const": "ready_for_bounded_retest"}}}},
+      "then": {
+        "properties": {
+          "retest_allowed": {"const": false},
+          "bounded_parameter_search_allowed": {"const": false},
+          "execution_plan": {
+            "properties": {
+              "status": {"enum": ["blocked", "not_required"]},
+              "retest_command": {"const": ""}
+            }
+          },
+          "guardrails": {
+            "properties": {
+              "strategy_retest_allowed": {"const": false}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "not_required_candidate_metric_gate_passed"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "blockers": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "properties": {
+            "status": {
+              "enum": [
+                "ready_for_bounded_retest",
+                "not_required_candidate_metric_gate_passed"
+              ]
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "blockers": {"minItems": 1}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "candidateSummary": {
+      "type": "object",
+      "required": ["strategy_id", "source_run_dir", "status", "failed_metrics", "metrics", "thresholds"],
+      "properties": {
+        "strategy_id": {"type": "string"},
+        "source_run_dir": {"type": "string"},
+        "status": {"type": "string"},
+        "failed_metrics": {"type": "array", "items": {"type": "string"}},
+        "metrics": {
+          "type": "object",
+          "required": [
+            "event_profit_factor",
+            "walk_forward_pass_rate",
+            "regime_pass_rate",
+            "ordinary_profit_factor",
+            "dsr",
+            "pbo",
+            "max_drawdown",
+            "trade_count",
+            "fill_count"
+          ],
+          "properties": {
+            "event_profit_factor": {"type": ["number", "null"]},
+            "walk_forward_pass_rate": {"type": ["number", "null"]},
+            "regime_pass_rate": {"type": ["number", "null"]},
+            "ordinary_profit_factor": {"type": ["number", "null"]},
+            "dsr": {"type": ["number", "null"]},
+            "pbo": {"type": ["number", "null"]},
+            "max_drawdown": {"type": ["number", "null"]},
+            "trade_count": {"type": ["integer", "null"]},
+            "fill_count": {"type": ["integer", "null"]}
+          },
+          "additionalProperties": false
+        },
+        "thresholds": {
+          "type": "object",
+          "required": ["event_profit_factor", "walk_forward_pass_rate", "regime_pass_rate"],
+          "properties": {
+            "event_profit_factor": {"type": ["number", "null"]},
+            "walk_forward_pass_rate": {"type": ["number", "null"]},
+            "regime_pass_rate": {"type": ["number", "null"]}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "retestStep": {
+      "type": "object",
+      "required": ["name", "status", "required", "description"],
+      "properties": {
+        "name": {"type": "string"},
+        "status": {"enum": ["blocked", "complete", "pending"]},
+        "required": {"type": "boolean"},
+        "description": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "executionPlan": {
+      "type": "object",
+      "required": [
+        "status",
+        "readiness_check_command",
+        "retest_command",
+        "retest_command_template",
+        "post_retest_validation_command",
+        "runner",
+        "input_artifacts",
+        "required_output_artifacts",
+        "manifest_contract",
+        "preflight_checks",
+        "strategy_id"
+      ],
+      "properties": {
+        "status": {"enum": ["blocked", "ready", "not_required"]},
+        "readiness_check_command": {"type": "string", "pattern": "^make check-btc-candidate-bounded-retest-readiness$"},
+        "retest_command": {"type": "string"},
+        "retest_command_template": {
+          "type": "string",
+          "pattern": "^python3 scripts/research/run_btc_eventpf_wf_stabilization.py "
+        },
+        "post_retest_validation_command": {"type": "string", "pattern": "^make validate-btc-evidence$"},
+        "runner": {"$ref": "#/$defs/runnerContract"},
+        "input_artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"}
+        },
+        "required_output_artifacts": {
+          "type": "array",
+          "contains": {
+            "const": "artifacts/btc_canonical/BTC_CANDIDATE_RETEST_YYYYMMDDTHHMMSSZ/manifests/run_btc_perp_dual_trend_v4_eventpf_wf_base.json"
+          },
+          "items": {"type": "string"}
+        },
+        "manifest_contract": {"$ref": "#/$defs/manifestContract"},
+        "preflight_checks": {
+          "type": "array",
+          "minItems": 3,
+          "items": {"$ref": "#/$defs/preflightCheck"}
+        },
+        "strategy_id": {"type": "string"}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "ready"}}, "required": ["status"]},
+          "then": {"properties": {"retest_command": {"minLength": 1}}}
+        },
+        {
+          "if": {"not": {"properties": {"status": {"const": "ready"}}}},
+          "then": {"properties": {"retest_command": {"const": ""}}}
+        }
+      ]
+    },
+    "runnerContract": {
+      "type": "object",
+      "required": [
+        "path",
+        "exists",
+        "module",
+        "supports_run_id_arg",
+        "supports_output_root_arg",
+        "supports_source_run_dir_arg",
+        "broker_calls_allowed",
+        "paper_or_live_unlock_allowed"
+      ],
+      "properties": {
+        "path": {"type": "string"},
+        "exists": {"type": "boolean"},
+        "module": {"const": "quant_us.research.btc_eventpf_wf.run_stabilization_sprint"},
+        "supports_run_id_arg": {"type": "boolean"},
+        "supports_output_root_arg": {"type": "boolean"},
+        "supports_source_run_dir_arg": {"type": "boolean"},
+        "broker_calls_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "manifestContract": {
+      "type": "object",
+      "required": [
+        "required_event_manifest_fields",
+        "params_field",
+        "existing_run_manifest_path",
+        "existing_run_manifest_has_artifact_paths",
+        "existing_event_manifest_path",
+        "existing_event_manifest_fields_present",
+        "existing_event_manifest_contract_ok",
+        "blockers"
+      ],
+      "properties": {
+        "required_event_manifest_fields": {
+          "type": "array",
+          "contains": {"const": "data_version"},
+          "items": {
+            "enum": [
+              "data_version",
+              "strategy_version",
+              "strategy_params",
+              "cost_model",
+              "slippage_model",
+              "commit_hash"
+            ]
+          }
+        },
+        "params_field": {"const": "strategy_params"},
+        "existing_run_manifest_path": {"type": ["string", "null"]},
+        "existing_run_manifest_has_artifact_paths": {"type": "boolean"},
+        "existing_event_manifest_path": {"type": ["string", "null"]},
+        "existing_event_manifest_fields_present": {
+          "type": "object",
+          "required": [
+            "data_version",
+            "strategy_version",
+            "strategy_params",
+            "cost_model",
+            "slippage_model",
+            "commit_hash"
+          ],
+          "properties": {
+            "data_version": {"type": "boolean"},
+            "strategy_version": {"type": "boolean"},
+            "strategy_params": {"type": "boolean"},
+            "cost_model": {"type": "boolean"},
+            "slippage_model": {"type": "boolean"},
+            "commit_hash": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        },
+        "existing_event_manifest_contract_ok": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "preflightCheck": {
+      "type": "object",
+      "required": ["name", "status", "blockers"],
+      "properties": {
+        "name": {"type": "string"},
+        "status": {"enum": ["blocked", "complete"]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

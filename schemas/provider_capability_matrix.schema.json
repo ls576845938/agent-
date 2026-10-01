@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/provider_capability_matrix.schema.json",
+  "title": "US Equity Provider Capability Matrix Filename Compatibility Schema",
+  "type": "object",
+  "required": ["schema_version", "promotion_clean_provider_available", "providers", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_provider_capability_matrix_v1"},
+    "promotion_clean_provider_available": {"type": "boolean"},
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["provider_id", "promotion_clean_capable", "verified_for_promotion"],
+        "properties": {
+          "provider_id": {"type": "string"},
+          "promotion_clean_capable": {"type": "boolean"},
+          "verified_for_promotion": {"type": "boolean"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

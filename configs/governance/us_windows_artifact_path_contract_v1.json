@@ -1,0 +1,29 @@
+{
+  "schema_version": "us_windows_artifact_path_contract_config_v1",
+  "reference_schema_path": "schemas/us_artifact_path_reference.schema.json",
+  "durable_relative": {
+    "separator": "/",
+    "identity_root_required": true,
+    "machine_private_prefix_allowed": false,
+    "parent_traversal_allowed": false,
+    "stable_identity": true
+  },
+  "external_absolute": {
+    "explicit_reference_required": true,
+    "stable_identity": false
+  },
+  "safety": {
+    "paper_gate_changed": false,
+    "broker_adapter_semantics_changed": false,
+    "submission_semantics_changed": false,
+    "network_collection_allowed": false,
+    "secret_access_allowed": false,
+    "broker_private_endpoint_allowed": false,
+    "paper_order_allowed": false,
+    "paper_queue_write_allowed": false,
+    "live_order_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

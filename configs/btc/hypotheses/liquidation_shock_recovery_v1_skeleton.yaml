@@ -1,0 +1,17 @@
+hypothesis_id: liquidation_shock_recovery_v0
+status: research_candidate
+event_ledger_required: true
+selected_direction: long_recovery_after_liquidation_shock
+primary_horizon: 24h
+conditions:
+  liquidation_shock: current closed bar return <= threshold with elevated volume
+  recovery_confirmation: positive closed bar after recent shifted shock state
+exit:
+  time_exit_bars: TBD
+  volatility_exit: TBD
+safety:
+  paper_ready: false
+  live_ready: false
+  live_enabled: false
+  broker_api_allowed: false
+  real_orders_allowed: false

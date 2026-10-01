@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_blocker_taxonomy_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Blocker Taxonomy Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "decision",
+    "summary",
+    "categories",
+    "waiting_on",
+    "actionable_now",
+    "uncategorized",
+    "remediation_tickets",
+    "operator_next_actions",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_blocker_taxonomy_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["blocked_external_and_time_dependencies", "actionable_engineering_review", "no_blockers_detected"]},
+    "decision": {"const": "continue_fail_closed_development_do_not_unlock_paper_or_live"},
+    "summary": {
+      "type": "object",
+      "required": ["total_blockers", "categorized_blockers", "uncategorized_blockers", "waiting_category_count", "actionable_category_count", "remediation_ticket_count"],
+      "properties": {
+        "total_blockers": {"type": "integer", "minimum": 0},
+        "categorized_blockers": {"type": "integer", "minimum": 0},
+        "uncategorized_blockers": {"type": "integer", "minimum": 0},
+        "waiting_category_count": {"type": "integer", "minimum": 0},
+        "actionable_category_count": {"type": "integer", "minimum": 0},
+        "remediation_ticket_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "categories": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/category"}},
+    "waiting_on": {"type": "array", "items": {"$ref": "#/$defs/category"}},
+    "actionable_now": {"type": "array", "items": {"$ref": "#/$defs/category"}},
+    "uncategorized": {"type": "array", "items": {"$ref": "#/$defs/blocker"}},
+    "remediation_tickets": {"type": "array", "items": {"$ref": "#/$defs/remediation_ticket"}},
+    "operator_next_actions": {"type": "array", "items": {"type": "string"}},
+    "source_reports": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "taxonomy_only",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "taxonomy_only": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "category": {
+      "type": "object",
+      "required": ["category", "label", "blocker_count", "blockers", "blocker_details", "source_reports", "next_action"],
+      "properties": {
+        "category": {"enum": ["external_data", "natural_time", "manual_review", "execution_infra", "research_data_quality", "remediation_governance", "unsafe_flags", "other"]},
+        "label": {"type": "string", "minLength": 1},
+        "blocker_count": {"type": "integer", "minimum": 0},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "blocker_details": {"type": "array", "items": {"$ref": "#/$defs/blocker"}},
+        "source_reports": {"type": "array", "items": {"type": "string"}},
+        "next_action": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "blocker": {
+      "type": "object",
+      "required": ["blocker", "category", "source_reports", "source_paths"],
+      "properties": {
+        "blocker": {"type": "string", "minLength": 1},
+        "category": {"type": "string", "minLength": 1},
+        "source_reports": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "source_paths": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "remediation_ticket": {
+      "type": "object",
+      "required": [
+        "ticket_id",
+        "category",
+        "owner",
+        "dependency_type",
+        "status",
+        "blocker_count",
+        "source_reports",
+        "next_action",
+        "acceptance_evidence"
+      ],
+      "properties": {
+        "ticket_id": {"type": "string", "pattern": "^us_equity_remediate_[a-z_]+$"},
+        "category": {"enum": ["external_data", "natural_time", "manual_review", "execution_infra", "research_data_quality", "remediation_governance", "unsafe_flags", "other"]},
+        "owner": {
+          "enum": [
+            "operator_data_vendor",
+            "daily_forward_observation_scheduler",
+            "human_reviewer",
+            "execution_engineering",
+            "research_data_engineering",
+            "quant_architect",
+            "safety_engineering"
+          ]
+        },
+        "dependency_type": {
+          "enum": [
+            "external_user_action",
+            "natural_time",
+            "manual_review",
+            "engineering",
+            "engineering_after_data",
+            "governance_dependency",
+            "safety_repair",
+            "manual_triage"
+          ]
+        },
+        "status": {
+          "enum": [
+            "waiting_external_input",
+            "waiting_observation_window",
+            "blocked_until_upstream_ready",
+            "not_started",
+            "waiting_broker_local_review",
+            "blocked_by_data_quality",
+            "waiting_upstream_ticket_closure",
+            "requires_immediate_repair",
+            "needs_triage"
+          ]
+        },
+        "blocker_count": {"type": "integer", "minimum": 1},
+        "source_reports": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "next_action": {"type": "string", "minLength": 1},
+        "acceptance_evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

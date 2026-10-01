@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_monitoring_rules_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Monitoring Rules Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "strategy_id",
+    "status",
+    "required_before_paper_or_live",
+    "monitor_count",
+    "minimum_required_before_paper",
+    "rules",
+    "audit_trail",
+    "incident_review",
+    "replay_requirements",
+    "logging_policy",
+    "strategy_lifecycle_review",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_monitoring_rules_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"type": "string", "minLength": 1},
+    "status": {"const": "monitoring_rules_defined"},
+    "required_before_paper_or_live": {"const": true},
+    "monitor_count": {"type": "integer", "minimum": 18},
+    "minimum_required_before_paper": {
+      "type": "array",
+      "items": {"type": "string"},
+      "contains": {"const": "forward_observation_ledger_reconciliation"}
+    },
+    "rules": {
+      "type": "object",
+      "required": ["data_monitors", "attribution", "position_and_execution_monitors", "retirement_rules"],
+      "properties": {
+        "data_monitors": {
+          "type": "object",
+          "required": ["etf_price_stale_stop", "fred_macro_stale_stop", "non_positive_price_stop", "extreme_return_review"],
+          "additionalProperties": {"$ref": "#/$defs/rule"}
+        },
+        "attribution": {
+          "type": "object",
+          "required": ["asset_selection", "macro_switch", "volatility_scaling", "leverage_financing_slippage", "defensive_assets"],
+          "additionalProperties": {"type": "object", "required": ["required"], "properties": {"required": {"const": true}}, "additionalProperties": true}
+        },
+        "position_and_execution_monitors": {
+          "type": "object",
+          "required": ["target_actual_weight_drift", "cash_and_financing_reconciliation", "kill_switch_required", "partial_fill_state_machine_required"],
+          "additionalProperties": {"$ref": "#/$defs/rule"}
+        },
+        "retirement_rules": {
+          "type": "object",
+          "required": ["walk_forward_failure", "cost_failure", "data_integrity_failure", "forward_observation_failure", "risk_limit_failure"],
+          "additionalProperties": {"type": "object", "required": ["severity", "trigger"], "properties": {"severity": {"type": "string"}, "trigger": {"type": "string"}}, "additionalProperties": false}
+        }
+      },
+      "additionalProperties": false
+    },
+    "audit_trail": {
+      "type": "object",
+      "required": ["required_chain", "manual_approval_requires_reviewer_time_reason", "promotion_gate_must_record_reasons", "historical_result_changes_require_new_run_id"],
+      "properties": {
+        "required_chain": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "data_snapshot"},
+            {"const": "feature"},
+            {"const": "signal"},
+            {"const": "forecast_or_target_position"},
+            {"const": "risk_decision"},
+            {"const": "simulated_or_paper_order"},
+            {"const": "fill"},
+            {"const": "ledger"},
+            {"const": "pnl"},
+            {"const": "report"}
+          ],
+          "minItems": 10,
+          "maxItems": 10
+        },
+        "manual_approval_requires_reviewer_time_reason": {"const": true},
+        "promotion_gate_must_record_reasons": {"const": true},
+        "historical_result_changes_require_new_run_id": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "incident_review": {
+      "type": "object",
+      "required": ["triggers", "required_template_fields", "incident_review_must_create_test_or_rule_update"],
+      "properties": {
+        "triggers": {"type": "array", "items": {"type": "string"}, "contains": {"const": "ledger_reconciliation_failure"}},
+        "required_template_fields": {"type": "array", "items": {"type": "string"}, "contains": {"const": "regression_test"}},
+        "incident_review_must_create_test_or_rule_update": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "replay_requirements": {
+      "type": "object",
+      "required": ["inputs", "outputs", "fixed_clock_required", "fixed_random_seed_required", "must_not_access_current_realtime_data", "replay_failure_severity"],
+      "properties": {
+        "inputs": {"type": "array", "items": {"type": "string"}, "contains": {"const": "orders_and_fills"}},
+        "outputs": {"type": "array", "items": {"type": "string"}, "contains": {"const": "diff_vs_original_artifact"}},
+        "fixed_clock_required": {"const": true},
+        "fixed_random_seed_required": {"const": true},
+        "must_not_access_current_realtime_data": {"const": true},
+        "replay_failure_severity": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "logging_policy": {
+      "type": "object",
+      "required": ["structured_logs_required", "secret_values_must_not_be_logged", "required_fields"],
+      "properties": {
+        "structured_logs_required": {"const": true},
+        "secret_values_must_not_be_logged": {"const": true},
+        "required_fields": {"type": "array", "items": {"type": "string"}, "contains": {"const": "target_position"}}
+      },
+      "additionalProperties": false
+    },
+    "strategy_lifecycle_review": {
+      "type": "object",
+      "required": [
+        "cadence",
+        "required_evidence",
+        "decision_record_fields",
+        "forbidden_decisions",
+        "parameter_change_requires_new_strategy_id",
+        "retirement_requires_manual_reason",
+        "live_unlock_allowed"
+      ],
+      "properties": {
+        "cadence": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["review_id", "trigger", "allowed_decisions"],
+            "properties": {
+              "review_id": {"type": "string", "minLength": 1},
+              "trigger": {"type": "string", "minLength": 1},
+              "allowed_decisions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+            },
+            "additionalProperties": false
+          }
+        },
+        "required_evidence": {
+          "type": "array",
+          "contains": {"const": "manual_reviewer_decision_record"},
+          "items": {"type": "string", "minLength": 1}
+        },
+        "decision_record_fields": {
+          "type": "array",
+          "contains": {"const": "parameter_or_strategy_id_change_required"},
+          "items": {"type": "string", "minLength": 1}
+        },
+        "forbidden_decisions": {
+          "type": "array",
+          "contains": {"const": "auto_live_enable"},
+          "items": {"type": "string", "minLength": 1}
+        },
+        "parameter_change_requires_new_strategy_id": {"const": true},
+        "retirement_requires_manual_reason": {"const": true},
+        "live_unlock_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "rules_only",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "rules_only": {"const": true},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": ["severity", "threshold", "action", "evidence"],
+      "properties": {
+        "severity": {"type": "string", "minLength": 1},
+        "threshold": {"type": "string", "minLength": 1},
+        "action": {"type": "string", "minLength": 1},
+        "evidence": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

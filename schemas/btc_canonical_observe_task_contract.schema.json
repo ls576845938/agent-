@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quant-system.local/schemas/btc_canonical_observe_task_contract.schema.json",
+  "title": "BTC canonical observe task contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "canonical_main_root",
+    "task_design",
+    "protected_source_paths",
+    "allowed_child_environment",
+    "git_contract",
+    "legacy_runner_names",
+    "inner_contract"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "btc_canonical_observe_task_contract_v1"
+    },
+    "canonical_main_root": {
+      "const": "D:\\vibe coding\\Obsidian\\量化系统\\agent-"
+    },
+    "task_design": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_path",
+        "task_name",
+        "enabled",
+        "registration_allowed",
+        "action_count",
+        "trigger_count",
+        "execution_policy_bypass",
+        "working_directory"
+      ],
+      "properties": {
+        "task_path": {
+          "const": "\\QuantSystem\\BTC\\"
+        },
+        "task_name": {
+          "const": "Quant_BTC_Canonical_Observe_Only"
+        },
+        "enabled": {
+          "const": false
+        },
+        "registration_allowed": {
+          "const": false
+        },
+        "action_count": {
+          "const": 1
+        },
+        "trigger_count": {
+          "const": 1
+        },
+        "execution_policy_bypass": {
+          "const": false
+        },
+        "working_directory": {
+          "const": "D:\\vibe coding\\Obsidian\\量化系统\\agent-"
+        }
+      }
+    },
+    "protected_source_paths": {
+      "type": "array",
+      "minItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "allowed_child_environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "QS_BTC_RUNTIME_ARTIFACT_ROOT",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONUTF8",
+        "GIT_TERMINAL_PROMPT"
+      ],
+      "properties": {
+        "QS_BTC_RUNTIME_ARTIFACT_ROOT": {
+          "const": "explicit_candidate_root"
+        },
+        "PYTHONDONTWRITEBYTECODE": {
+          "const": "1"
+        },
+        "PYTHONUTF8": {
+          "const": "1"
+        },
+        "GIT_TERMINAL_PROMPT": {
+          "const": "0"
+        }
+      }
+    },
+    "git_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executable",
+        "sha256",
+        "path_lookup_allowed"
+      ],
+      "properties": {
+        "executable": {
+          "const": "C:\\Program Files\\Git\\cmd\\git.exe"
+        },
+        "sha256": {
+          "const": "da240fe9bc24895b3e04150a4990b8a6ff329ecabcd8f19684c2cc310da5ef3f"
+        },
+        "path_lookup_allowed": {
+          "const": false
+        }
+      }
+    },
+    "legacy_runner_names": {
+      "const": [
+        "Invoke-BtcResearchJob.ps1"
+      ]
+    },
+    "inner_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "script",
+        "expected_exit_code",
+        "expected_status",
+        "receipt_logical_path",
+        "promotion_eligible",
+        "paper_or_live_allowed"
+      ],
+      "properties": {
+        "script": {
+          "const": "scripts/run_btc_external_runtime_observe_job.py"
+        },
+        "expected_exit_code": {
+          "const": 2
+        },
+        "expected_status": {
+          "const": "blocked_fail_closed"
+        },
+        "receipt_logical_path": {
+          "const": "artifacts/btc_external_runtime_observe_job/btc_external_runtime_observe_receipt.json"
+        },
+        "promotion_eligible": {
+          "const": false
+        },
+        "paper_or_live_allowed": {
+          "const": false
+        }
+      }
+    }
+  }
+}

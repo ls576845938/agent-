@@ -1,0 +1,111 @@
+{
+  "schema_version": "us_shared_platform_adoption_v1",
+  "goal_id": "US-V3-SHARED-ADOPTION-01",
+  "domain_id": "us_equity",
+  "shared_platform_version": "shared_platform_v2",
+  "adapter_module": "quant_us.compat.shared_platform",
+  "domain_owned_semantics": [
+    "us_trading_calendar",
+    "pit_visibility",
+    "corporate_actions",
+    "broker_lifecycle"
+  ],
+  "shared_capabilities": {
+    "utc": "quant_shared.core.ensure_utc",
+    "identity": "quant_us.compat.shared_platform.us_identity",
+    "serialization": "quant_us.compat.shared_platform.canonical_us_payload_hash",
+    "evidence": "quant_us.compat.shared_platform.build_evidence_bundle",
+    "ledger": "quant_us.compat.shared_platform.build_ledger_record",
+    "replay": "quant_us.compat.shared_platform.build_replay_input",
+    "read_model": "quant_us.compat.shared_platform.build_read_model_snapshot"
+  },
+  "migration_matrix": [
+    {
+      "legacy_symbol": "quant_us.core.clock.ensure_utc",
+      "shared_replacement": "quant_shared.core.ensure_utc",
+      "us_wrapper": "quant_us.core.clock.ensure_utc",
+      "btc_dependents": [],
+      "final_deletion_condition": "Keep facade until all quant_us callers migrate; deletion requires an architect-approved integrator ticket."
+    },
+    {
+      "legacy_symbol": "quant_us.core.clock.utc_now",
+      "shared_replacement": "quant_shared.core.utc_now",
+      "us_wrapper": "quant_us.core.clock.utc_now",
+      "btc_dependents": [],
+      "final_deletion_condition": "Keep facade until all quant_us callers migrate; deletion requires an architect-approved integrator ticket."
+    },
+    {
+      "legacy_symbol": "quant_us.core.types.Signal",
+      "shared_replacement": null,
+      "us_wrapper": "quant_us.core.types.Signal",
+      "btc_dependents": [],
+      "final_deletion_condition": "US retains its domain type; BTC uses quant_crypto.trading_contracts.Signal with wire-field compatibility only."
+    },
+    {
+      "legacy_symbol": "quant_us.core.types.TargetPosition",
+      "shared_replacement": null,
+      "us_wrapper": "quant_us.core.types.TargetPosition",
+      "btc_dependents": [],
+      "final_deletion_condition": "US retains its domain type; BTC uses quant_crypto.trading_contracts.TargetPosition with wire-field compatibility only."
+    },
+    {
+      "legacy_symbol": "quant_us.core.types.OrderIntent",
+      "shared_replacement": null,
+      "us_wrapper": "quant_us.core.types.OrderIntent",
+      "btc_dependents": [],
+      "final_deletion_condition": "US retains its domain type; BTC uses quant_crypto.trading_contracts.OrderIntent with wire-field compatibility only."
+    },
+    {
+      "legacy_symbol": "quant_us.core.types.RiskDecision",
+      "shared_replacement": null,
+      "us_wrapper": "quant_us.core.types.RiskDecision",
+      "btc_dependents": [],
+      "final_deletion_condition": "US retains its domain type; BTC uses quant_crypto.trading_contracts.RiskDecision with wire-field compatibility only."
+    },
+    {
+      "legacy_symbol": "quant_us.core.enums.OrderSide",
+      "shared_replacement": null,
+      "us_wrapper": "quant_us.core.enums.OrderSide",
+      "btc_dependents": [],
+      "final_deletion_condition": "US retains its domain enum; BTC uses quant_crypto.trading_contracts.OrderSide with wire-value compatibility only."
+    },
+    {
+      "legacy_symbol": "quant_us.core.enums.OrderType",
+      "shared_replacement": null,
+      "us_wrapper": "quant_us.core.enums.OrderType",
+      "btc_dependents": [],
+      "final_deletion_condition": "US retains its domain enum; BTC uses quant_crypto.trading_contracts.OrderType with wire-value compatibility only."
+    },
+    {
+      "legacy_symbol": "quant_us.core.enums.SignalDirection",
+      "shared_replacement": null,
+      "us_wrapper": "quant_us.core.enums.SignalDirection",
+      "btc_dependents": [],
+      "final_deletion_condition": "US retains its domain enum; BTC uses quant_crypto.trading_contracts.SignalDirection with wire-value compatibility only."
+    },
+    {
+      "legacy_symbol": "quant_us.core.enums.TimeInForce",
+      "shared_replacement": null,
+      "us_wrapper": "quant_us.core.enums.TimeInForce",
+      "btc_dependents": [],
+      "final_deletion_condition": "US retains its domain enum; BTC uses quant_crypto.trading_contracts.TimeInForce with wire-value compatibility only."
+    }
+  ],
+  "deferred_breaking_cleanup": {
+    "required": false,
+    "status": "completed",
+    "owner": "integrator",
+    "ticket_condition": "Completed by the validated BTC current-main forward-port successor; no BTC runtime imports or class-identity dependency on quant_us remain.",
+    "btc_contract_module": "quant_crypto.trading_contracts",
+    "completion_handoff": "published-btc-v3-current-main-forwardport-successor-05-8adf033a2"
+  },
+  "safety": {
+    "promotion_eligible": false,
+    "promotion_unlock_allowed": false,
+    "paper_order_allowed": false,
+    "live_order_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "real_order_submitted": false
+  }
+}

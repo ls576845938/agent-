@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_26_candidate_strategy_card.schema.json",
+  "title": "US 26 ETF Frozen Candidate Strategy Card",
+  "type": "object",
+  "required": ["schema_version", "status", "decision", "candidate_id", "strategy_version", "code_commit", "params_hash", "cost_model_hash", "parameters", "universe", "selected_candidate", "data", "research_window", "independent_confirmation_window", "cost_model", "signal_rule", "execution_rule", "position_rule", "allowed_uses", "prohibited_uses", "source_evidence", "blockers", "guardrails"],
+  "properties": {
+    "schema_version": {"const": "us_etf_26_candidate_strategy_card_v1"},
+    "status": {"const": "frozen_exploratory_research_only"},
+    "candidate_id": {"const": "us-etf26-complete-return-qqq-1d-v1"},
+    "code_commit": {"type": "string", "minLength": 7},
+    "params_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "cost_model_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "universe": {"type": "array", "minItems": 26, "maxItems": 26, "uniqueItems": true},
+    "research_window": {"type": "object", "required": ["sample_role", "used_for_symbol_or_timeframe_selection", "clean_holdout"], "properties": {"sample_role": {"const": "exploratory_selection_sample"}, "used_for_symbol_or_timeframe_selection": {"const": true}, "clean_holdout": {"const": false}}, "additionalProperties": true},
+    "independent_confirmation_window": {"type": "object", "required": ["start", "end", "parameters_may_change", "universe_may_change", "timeframe_may_change", "selection_or_ranking_allowed", "evaluation_before_window_end_allowed", "status"], "properties": {"start": {"const": "2026-07-13"}, "end": {"const": "2027-07-12"}, "parameters_may_change": {"const": false}, "universe_may_change": {"const": false}, "timeframe_may_change": {"const": false}, "selection_or_ranking_allowed": {"const": false}, "evaluation_before_window_end_allowed": {"const": false}, "status": {"const": "not_started"}}, "additionalProperties": true},
+    "guardrails": {"type": "object", "required": ["research_only", "promotion_unlock_allowed", "paper_queue_write_allowed", "paper_order_allowed", "paper_or_live_unlock_allowed", "live_order_allowed", "private_endpoint_used", "broker_endpoint_used", "order_endpoint_used", "real_order_submitted"], "properties": {"research_only": {"const": true}, "promotion_unlock_allowed": {"const": false}, "paper_queue_write_allowed": {"const": false}, "paper_order_allowed": {"const": false}, "paper_or_live_unlock_allowed": {"const": false}, "live_order_allowed": {"const": false}, "private_endpoint_used": {"const": false}, "broker_endpoint_used": {"const": false}, "order_endpoint_used": {"const": false}, "real_order_submitted": {"const": false}}, "additionalProperties": false}
+  },
+  "additionalProperties": true
+}

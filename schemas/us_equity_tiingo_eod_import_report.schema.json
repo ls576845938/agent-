@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_tiingo_eod_import_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Tiingo EOD Import Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "provider",
+    "source_type",
+    "status",
+    "symbols",
+    "symbol_count",
+    "start_date",
+    "end_date",
+    "output_root",
+    "report_path",
+    "network_called",
+    "writes_performed",
+    "token_present",
+    "token_printed",
+    "blockers",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_tiingo_eod_import_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "provider": {"const": "tiingo"},
+    "source_type": {"const": "market_data_eod"},
+    "status": {"enum": ["dry_run", "pass", "partial", "blocked"]},
+    "symbols": {"type": "array", "items": {"type": "string"}},
+    "symbol_count": {"type": "integer", "minimum": 0},
+    "available_symbols": {"type": "array", "items": {"type": "string"}},
+    "missing_symbols": {"type": "array", "items": {"type": "string"}},
+    "fetched_symbols": {"type": "array", "items": {"type": "string"}},
+    "skipped_existing_symbols": {"type": "array", "items": {"type": "string"}},
+    "start_date": {"type": "string", "minLength": 1},
+    "end_date": {"type": "string", "minLength": 1},
+    "output_root": {"type": "string", "minLength": 1},
+    "kline_root": {"type": "string", "minLength": 1},
+    "report_path": {"type": "string", "minLength": 1},
+    "planned_endpoint": {"type": "string", "minLength": 1},
+    "skip_existing": {"type": "boolean"},
+    "network_called": {"type": "boolean"},
+    "writes_performed": {"type": "boolean"},
+    "token_present": {"type": "boolean"},
+    "token_printed": {"const": false},
+    "symbol_reports": {"type": "object", "additionalProperties": {"$ref": "#/$defs/symbol_report"}},
+    "summary": {"type": "object", "additionalProperties": true},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "api_key_used_for_market_data",
+        "token_written_to_artifacts",
+        "live_order_allowed",
+        "paper_or_live_unlock_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "broker_endpoint_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "api_key_used_for_market_data": {"type": "boolean"},
+        "token_written_to_artifacts": {"const": false},
+        "live_order_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "broker_endpoint_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "symbol_report": {
+      "type": "object",
+      "required": ["status", "blockers"],
+      "properties": {
+        "status": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "rows": {"type": "integer", "minimum": 0},
+        "start": {"type": ["string", "null"]},
+        "end": {"type": ["string", "null"]},
+        "latest_close": {"type": "number"},
+        "staleness_days": {"type": "integer", "minimum": 0},
+        "write_mode": {"type": "string"},
+        "duplicate_dates": {"type": "integer", "minimum": 0},
+        "invalid_ohlc_rows": {"type": "integer", "minimum": 0},
+        "non_positive_ohlc_rows": {"type": "integer", "minimum": 0},
+        "zero_or_negative_volume_rows": {"type": "integer", "minimum": 0},
+        "extreme_daily_return_rows": {"type": "integer", "minimum": 0},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    }
+  }
+}

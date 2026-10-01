@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/production_bundle_preflight_report.schema.json",
+  "title": "US Equity Production Bundle Preflight Report Filename Compatibility Schema",
+  "type": "object",
+  "required": ["schema_version", "production_bundle_preflight_pass", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_production_bundle_preflight_report_v1"},
+    "production_bundle_preflight_pass": {"type": "boolean"},
+    "selected_bundle_id": {"type": ["string", "null"]},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_okx_10s_microstructure_immutable_feed.schema.json",
+  "title": "BTC OKX 10s Microstructure Immutable Feed Attestation",
+  "type": "object",
+  "required": [
+    "schema_version", "exporter_version", "dataset_id", "dataset_version",
+    "source_head", "generated_at", "venue", "instrument_id", "public_channels",
+    "same_connection_trade_ordered_l2", "coverage_start", "coverage_end",
+    "source_segments", "source_aggregate_sha256", "trade_count",
+    "unique_trade_count", "duplicate_trade_count", "joined_trade_count",
+    "joined_coverage_pct", "cost_complete_trade_count",
+    "cost_sample_completeness_pct", "receive_lag_p99_ms",
+    "trade_book_alignment_p99_ms", "taker_fee_bps", "fee_model",
+    "ordered_l2", "readiness", "guardrails", "files", "aggregate_payload_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_okx_10s_microstructure_immutable_feed_v1"},
+    "exporter_version": {"const": "btc_okx_10s_microstructure_immutable_export_v1"},
+    "dataset_id": {"const": "btc-okx-10s-microstructure-immutable-feed"},
+    "dataset_version": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "source_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "venue": {"const": "okx"},
+    "instrument_id": {"const": "BTC-USDT-SWAP"},
+    "public_channels": {"const": ["trades", "books"]},
+    "same_connection_trade_ordered_l2": {"const": true},
+    "event_time_field": {"const": "event_time"},
+    "available_time_field": {"const": "available_time"},
+    "ingested_at_field": {"const": "ingested_at"},
+    "coverage_start": {"type": "string", "format": "date-time"},
+    "coverage_end": {"type": "string", "format": "date-time"},
+    "source_segments": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "source_aggregate_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "trade_count": {"type": "integer", "minimum": 1},
+    "unique_trade_count": {"type": "integer", "minimum": 1},
+    "duplicate_trade_count": {"const": 0},
+    "joined_trade_count": {"type": "integer", "minimum": 0},
+    "joined_coverage_pct": {"type": "number", "minimum": 0, "maximum": 100},
+    "cost_complete_trade_count": {"type": "integer", "minimum": 0},
+    "cost_sample_completeness_pct": {"type": "number", "minimum": 0, "maximum": 100},
+    "receive_lag_p99_ms": {"type": ["number", "null"]},
+    "trade_book_alignment_p99_ms": {"type": ["number", "null"]},
+    "taker_fee_bps": {"type": "number", "minimum": 0},
+    "fee_model": {"const": "explicit_conservative_public_research_assumption"},
+    "ordered_l2": {
+      "type": "object",
+      "required": ["sequence_gap_count", "duplicate_sequence_count", "out_of_order_sequence_count", "unrecovered_gap_count", "snapshot_count", "update_count", "reconnect_count", "resync_snapshot_count", "two_sided_coverage_pct", "max_clock_offset_ms"]
+    },
+    "readiness": {
+      "const": {
+        "quality_checked": true,
+        "research_ready": false,
+        "backtest_ready": false,
+        "promotion_evidence_ready": false
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "required": ["raw_frames_preserved", "future_book_join_used", "network_collection_used", "promotion_unlock_allowed", "paper_or_live_unlock_allowed", "private_endpoint_used", "order_endpoint_used", "broker_call_used", "real_order_submitted", "transfer_or_withdraw_used"],
+      "properties": {
+        "raw_frames_preserved": {"const": true},
+        "future_book_join_used": {"const": false},
+        "network_collection_used": {"const": false},
+        "promotion_unlock_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "broker_call_used": {"const": false},
+        "real_order_submitted": {"const": false},
+        "transfer_or_withdraw_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "files": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["path", "sha256", "bytes"]}},
+    "aggregate_payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "l2_export_report_status": {"const": "quality_checked"}
+  },
+  "additionalProperties": false
+}

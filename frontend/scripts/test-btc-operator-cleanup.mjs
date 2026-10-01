@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const read = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
+const css = read('../src/index.css');
+assert.match(css, /\.crypto-tv-shell \.sr-only\s*\{[^}]*top: 0;[^}]*left: 0;/s, 'hidden help must not retain an offscreen static-position anchor');
+assert.match(css, /\.crypto-tv-shell \.sr-only\s*\{[^}]*clip-path: inset\(50%\)/s, 'action descriptions must not occupy the visible action grid');
+assert.match(css, /scrollbar-color:\s*#665b50\s+#171a20/, 'dark scrollbars must be scoped to the trading workspace');
+const report = read('../src/workspaces/crypto/StrategyTesterReport.tsx');
+assert.ok(!report.includes('External immutable 历史运行'));
+assert.ok(!report.includes('历史报告未展示：{historyError}'));
+const editor = read('../src/workspaces/crypto/CryptoStrategyEditor.tsx');
+assert.match(editor, /<details className="crypto-strategy-editor-meta">/);
+assert.ok(!editor.includes('RESEARCH DRAFT · CONTROLLED BACKTEST'));
+console.log('PASS customer-facing layout and diagnostics regression');

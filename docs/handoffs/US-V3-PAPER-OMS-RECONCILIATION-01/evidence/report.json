@@ -1,0 +1,198 @@
+{
+  "artifact_identity_sha256": "e72739ecac3602788f0b9600e0e57ddca683f4bd9c5d170304d8cc19a3c0afbc",
+  "asset": "us_equity",
+  "blockers": [
+    "paper_start_not_authorized",
+    "real_paper_evidence_missing",
+    "production_event_ledger_missing",
+    "manual_paper_start_approval_missing"
+  ],
+  "code_binding": {
+    "code_commit": "f4af7adc57d2d68df2fa21f384f1a72d34a48716",
+    "code_tree_hash": "d4d027ccb2f8748cdec6fee565cee1a53557f2e0",
+    "config_sha256": "f1f6e811eabc6d61aacd82d635364d73fb373d84f243383171309c4800d8bb28"
+  },
+  "credential_review": {
+    "account_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "approval_ticket": "FIXTURE-NO-PAPER-START",
+    "blockers": [],
+    "broker": "fixture-broker",
+    "can_unlock_paper": false,
+    "metadata_only": true,
+    "order_endpoint_used": false,
+    "permission_conclusion": "paper_order_permission_not_authorized",
+    "private_endpoint_used": false,
+    "reviewed_at": "2026-07-24T13:00:00Z",
+    "reviewer": "fixture-reviewer",
+    "secret_read": false,
+    "secret_values_recorded": false,
+    "status": "quality_checked"
+  },
+  "decision": "fixture_execution_drill_complete_paper_not_started",
+  "evidence_classification": {
+    "can_unlock_live": false,
+    "can_unlock_paper": false,
+    "classification": "fixture_execution_drill_quality_checked",
+    "production_event_ledger": false,
+    "quality_checked": true,
+    "real_paper_evidence": false
+  },
+  "fixture_run": {
+    "fake_adapter": true,
+    "full_runtime_ledger_persisted_in_git": false,
+    "injected_broker_snapshots_only": true,
+    "injected_callbacks_only": true,
+    "network_access": false,
+    "run_id": "us-v3-paper-oms-reconciliation-fixture-v1"
+  },
+  "generated_at": "2026-07-24T20:35:31+08:00",
+  "guardrails": {
+    "broker_call_used": false,
+    "broker_endpoint_used": false,
+    "demo_allowed": false,
+    "live_allowed": false,
+    "live_order_allowed": false,
+    "network_used": false,
+    "order_endpoint_used": false,
+    "paper_or_live_unlock_allowed": false,
+    "paper_order_allowed": false,
+    "paper_queue_write_allowed": false,
+    "paper_runner_started": false,
+    "paper_simulation_allowed": false,
+    "private_endpoint_used": false,
+    "real_order_submitted": false,
+    "secret_read": false,
+    "withdraw_allowed": false
+  },
+  "lifecycle": {
+    "complete": true,
+    "observed_states": [
+      "accepted",
+      "cancel",
+      "cancel_pending",
+      "created",
+      "expired",
+      "filled",
+      "partial",
+      "reconciled",
+      "rejected",
+      "risk_checked",
+      "unknown"
+    ],
+    "operational_states": [
+      "created",
+      "risk_checked",
+      "accepted",
+      "partial",
+      "filled",
+      "cancel",
+      "rejected",
+      "expired",
+      "unknown",
+      "reconciled",
+      "cancel_pending"
+    ],
+    "required_states": [
+      "created",
+      "risk_checked",
+      "accepted",
+      "partial",
+      "filled",
+      "cancel",
+      "rejected",
+      "expired",
+      "unknown",
+      "reconciled"
+    ]
+  },
+  "reconciliation": {
+    "broken_snapshot": {
+      "breaks": [
+        "cash_mismatch"
+      ],
+      "halt_new_orders": true,
+      "reconciled_order_ids": [],
+      "status": "breaks_detected_fail_closed",
+      "uow_operation_count": 2
+    },
+    "clean_snapshot": {
+      "breaks": [],
+      "halt_new_orders": false,
+      "reconciled_order_ids": [
+        "out-of-order"
+      ],
+      "status": "reconciled_clean",
+      "uow_operation_count": 3
+    },
+    "final_status": "clean",
+    "ledger_derived_cash": 98993.89940000001,
+    "ledger_derived_positions": {
+      "QQQ": 10.0
+    }
+  },
+  "recovery": {
+    "crash_recovery_probe": {
+      "initial_state_preserved": true,
+      "passed": true,
+      "recovered_transaction_count": 1,
+      "status": "recovered"
+    },
+    "restart_duplicate_result": {
+      "blockers": [
+        "out_of_order_callback:out-of-order:risk_checked->filled"
+      ],
+      "duplicate": true,
+      "halt_new_orders": true,
+      "ledger_mutated": false,
+      "lifecycle_state": "reconciled",
+      "order_id": "filled-order",
+      "recovered_transaction_ids": [],
+      "status": "duplicate_callback_ignored",
+      "uow_operation_count": 0
+    },
+    "truncated_log_probe": {
+      "blockers": [
+        "jsonl_unreadable:orders.jsonl:line:1:JSONDecodeError"
+      ],
+      "passed": true,
+      "status": "blocked_fail_closed"
+    }
+  },
+  "scenario_results": {
+    "atomic_uow_rollback": true,
+    "broker_outage": true,
+    "cancel_confirmation": true,
+    "cancel_pending_fail_closed": true,
+    "crash_restart_recovery": true,
+    "credential_review_metadata_only": true,
+    "filled": true,
+    "halted_new_order_blocked": true,
+    "idempotency": true,
+    "market_closed": true,
+    "out_of_order_callback": true,
+    "partial_fill": true,
+    "reconciliation_break": true,
+    "reconciliation_recovery": true,
+    "restart_idempotency": true,
+    "truncated_log_fail_closed": true
+  },
+  "schema_version": "us_v3_paper_oms_reconciliation_v1",
+  "status": "complete_quality_checked_paper_blocked",
+  "uow": {
+    "atomic_ledgers": [
+      "orders",
+      "fills",
+      "positions",
+      "cash",
+      "audit",
+      "state"
+    ],
+    "fill_commit_operation_count": 6,
+    "implementation": "quant_us.live.paper_ledger_uow",
+    "rollback_probe": {
+      "partial_ledger_files_present": false,
+      "passed": true,
+      "rollback_succeeded": true
+    }
+  }
+}

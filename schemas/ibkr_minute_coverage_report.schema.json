@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/ibkr_minute_coverage_report.schema.json",
+  "title": "QuantStation VNEXT US Equity IBKR Minute Coverage Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "research_ready_status",
+    "asset",
+    "provider",
+    "source_type",
+    "network_called",
+    "writes_market_data",
+    "readonly_local_scan",
+    "guardrails",
+    "data_limitations",
+    "adjustment_controls",
+    "summary",
+    "symbol_reports",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_ibkr_minute_coverage_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"enum": ["pass", "partial", "blocked"]},
+    "research_ready_status": {"const": "blocked"},
+    "asset": {"const": "us_equity"},
+    "provider": {"const": "ibkr"},
+    "source_type": {"const": "local_broker_historical_market_data_chunk_coverage"},
+    "network_called": {"const": false},
+    "writes_market_data": {"const": false},
+    "readonly_local_scan": {"const": true},
+    "symbols": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "symbol_count": {"type": "integer", "minimum": 0},
+    "requested_start_date": {"type": "string", "minLength": 10},
+    "requested_end_date": {"type": "string", "minLength": 10},
+    "input_root": {"type": "string", "minLength": 1},
+    "report_path": {"type": "string", "minLength": 1},
+    "summary": {
+      "type": "object",
+      "required": [
+        "complete_symbol_count",
+        "partial_symbol_count",
+        "blocked_symbol_count",
+        "min_coverage_ratio_calendar",
+        "max_coverage_ratio_calendar",
+        "next_missing_by_symbol"
+      ],
+      "properties": {
+        "complete_symbol_count": {"type": "integer", "minimum": 0},
+        "partial_symbol_count": {"type": "integer", "minimum": 0},
+        "blocked_symbol_count": {"type": "integer", "minimum": 0},
+        "min_coverage_ratio_calendar": {"type": "number", "minimum": 0},
+        "max_coverage_ratio_calendar": {"type": "number", "minimum": 0},
+        "common_last_covered_date": {"type": ["string", "null"]},
+        "latest_any_covered_date": {"type": ["string", "null"]},
+        "next_missing_by_symbol": {"type": "object"}
+      },
+      "additionalProperties": true
+    },
+    "symbol_reports": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/symbol_report"}
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "next_actions": {"type": "array", "items": {"type": "object"}},
+    "guardrails": {"$ref": "#/$defs/guardrails"},
+    "data_limitations": {"$ref": "#/$defs/data_limitations"},
+    "adjustment_controls": {"$ref": "#/$defs/adjustment_controls"}
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "symbol_report": {
+      "type": "object",
+      "required": [
+        "symbol",
+        "raw_data_status",
+        "research_ready_status",
+        "chunk_file_count",
+        "readable_chunk_count",
+        "row_count",
+        "next_missing_date",
+        "coverage_ratio_calendar",
+        "blockers"
+      ],
+      "properties": {
+        "symbol": {"type": "string", "minLength": 1},
+        "raw_data_status": {"enum": ["complete", "partial", "blocked"]},
+        "research_ready_status": {"const": "blocked"},
+        "chunk_root": {"type": "string", "minLength": 1},
+        "chunk_file_count": {"type": "integer", "minimum": 0},
+        "readable_chunk_count": {"type": "integer", "minimum": 0},
+        "unreadable_chunk_count": {"type": "integer", "minimum": 0},
+        "row_count": {"type": "integer", "minimum": 0},
+        "requested_start_date": {"type": "string", "minLength": 10},
+        "requested_end_date": {"type": "string", "minLength": 10},
+        "first_covered_date": {"type": ["string", "null"]},
+        "last_covered_date": {"type": ["string", "null"]},
+        "next_missing_date": {"type": ["string", "null"]},
+        "covered_calendar_days": {"type": "integer", "minimum": 0},
+        "requested_calendar_days": {"type": "integer", "minimum": 0},
+        "coverage_ratio_calendar": {"type": "number", "minimum": 0},
+        "observed_start_timestamp": {"type": ["string", "null"]},
+        "observed_end_timestamp": {"type": ["string", "null"]},
+        "merged_coverage_ranges": {"type": "array", "items": {"type": "object"}},
+        "sample_unreadable_chunks": {"type": "array"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "network_called",
+        "private_account_endpoint_used",
+        "broker_order_endpoint_used",
+        "order_endpoint_used",
+        "live_order_allowed",
+        "real_order_submitted",
+        "paper_or_live_unlock_allowed",
+        "promotion_clean_granted_by_this_report"
+      ],
+      "properties": {
+        "network_called": {"const": false},
+        "private_account_endpoint_used": {"const": false},
+        "broker_order_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "live_order_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "data_limitations": {
+      "type": "object",
+      "required": [
+        "ibkr_role",
+        "minute_bars_are_raw",
+        "point_in_time_adjustment_replay_included",
+        "research_clean_approval_granted",
+        "account_or_order_endpoint_used"
+      ],
+      "properties": {
+        "ibkr_role": {"type": "string", "minLength": 1},
+        "minute_bars_are_raw": {"const": true},
+        "point_in_time_adjustment_replay_included": {"const": false},
+        "research_clean_approval_granted": {"const": false},
+        "account_or_order_endpoint_used": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "adjustment_controls": {
+      "type": "object",
+      "required": [
+        "raw_intraday_retained",
+        "pit_adjustment_replay_required_before_research_use",
+        "back_adjusted_for_signal_use_allowed"
+      ],
+      "properties": {
+        "raw_intraday_retained": {"const": true},
+        "pit_adjustment_replay_required_before_research_use": {"const": true},
+        "back_adjusted_for_signal_use_allowed": {"const": false},
+        "no_lookahead_rule": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    }
+  }
+}

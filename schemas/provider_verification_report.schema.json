@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/provider_verification_report.schema.json",
+  "title": "US Equity Provider Verification Report Filename Compatibility Schema",
+  "type": "object",
+  "required": ["schema_version", "promotion_clean", "point_in_time_universe_confirmed", "corporate_action_event_source_available", "survivorship_clean", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_provider_verification_report_v1"},
+    "promotion_clean": {"type": "boolean"},
+    "point_in_time_universe_confirmed": {"type": "boolean"},
+    "corporate_action_event_source_available": {"type": "boolean"},
+    "survivorship_clean": {"type": "boolean"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

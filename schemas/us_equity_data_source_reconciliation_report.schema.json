@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_data_source_reconciliation_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Data Source Reconciliation Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "asset",
+    "selected_price_source",
+    "selected_price_root",
+    "research_report",
+    "tiingo_import_report",
+    "data_status_report",
+    "external_quality_report",
+    "macro_release_lag_report",
+    "summary",
+    "symbol_reconciliation",
+    "latest_date_mismatches",
+    "blockers",
+    "warnings",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_data_source_reconciliation_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"enum": ["pass", "research_reconciled_promotion_blocked", "blocked"]},
+    "asset": {"const": "us_equity"},
+    "selected_price_source": {"type": "string"},
+    "selected_price_root": {"type": ["string", "null"]},
+    "research_report": {"type": "string"},
+    "tiingo_import_report": {"type": "string"},
+    "data_status_report": {"type": "string"},
+    "external_quality_report": {"type": "string"},
+    "macro_release_lag_report": {"type": "string"},
+    "summary": {
+      "type": "object",
+      "required": [
+        "required_symbol_count",
+        "available_symbol_count",
+        "missing_symbols",
+        "tiingo_import_status",
+        "tiingo_latest_common_date",
+        "research_price_source",
+        "research_status",
+        "data_status",
+        "data_promotion_clean",
+        "external_quality_status",
+        "macro_release_lag_status"
+      ],
+      "properties": {
+        "required_symbol_count": {"type": "integer", "minimum": 0},
+        "available_symbol_count": {"type": "integer", "minimum": 0},
+        "missing_symbols": {"type": "array", "items": {"type": "string"}},
+        "tiingo_import_status": {"type": ["string", "null"]},
+        "tiingo_latest_common_date": {"type": ["string", "null"]},
+        "research_price_source": {"type": "string"},
+        "research_status": {"type": ["string", "null"]},
+        "data_status": {"type": ["string", "null"]},
+        "data_promotion_clean": {"type": "boolean"},
+        "external_quality_status": {"type": ["string", "null"]},
+        "macro_release_lag_status": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "symbol_reconciliation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "symbol",
+          "selected_status",
+          "selected_start",
+          "selected_end",
+          "selected_rows",
+          "tiingo_status",
+          "tiingo_start",
+          "tiingo_end",
+          "tiingo_rows",
+          "canonical_status",
+          "canonical_start",
+          "canonical_end",
+          "canonical_rows",
+          "external_status",
+          "external_start",
+          "external_end",
+          "external_rows"
+        ],
+        "properties": {
+          "symbol": {"type": "string", "minLength": 1},
+          "selected_status": {"type": ["string", "null"]},
+          "selected_start": {"type": ["string", "null"]},
+          "selected_end": {"type": ["string", "null"]},
+          "selected_rows": {"type": ["integer", "number", "null"], "minimum": 0},
+          "tiingo_status": {"type": ["string", "null"]},
+          "tiingo_start": {"type": ["string", "null"]},
+          "tiingo_end": {"type": ["string", "null"]},
+          "tiingo_rows": {"type": ["integer", "number", "null"], "minimum": 0},
+          "canonical_status": {"type": ["string", "null"]},
+          "canonical_start": {"type": ["string", "null"]},
+          "canonical_end": {"type": ["string", "null"]},
+          "canonical_rows": {"type": ["integer", "number", "null"], "minimum": 0},
+          "external_status": {"type": ["string", "null"]},
+          "external_start": {"type": ["string", "null"]},
+          "external_end": {"type": ["string", "null"]},
+          "external_rows": {"type": ["integer", "number", "null"], "minimum": 0}
+        },
+        "additionalProperties": false
+      }
+    },
+    "latest_date_mismatches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["symbol", "selected_end", "tiingo_end", "reason"],
+        "properties": {
+          "symbol": {"type": ["string", "null"]},
+          "selected_end": {"type": ["string", "null"]},
+          "tiingo_end": {"type": ["string", "null"]},
+          "reason": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "reconciliation_report_is_not_production_clean_evidence",
+        "promotion_clean_granted_by_this_report",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed"
+      ],
+      "properties": {
+        "reconciliation_report_is_not_production_clean_evidence": {"const": true},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

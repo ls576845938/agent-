@@ -1,0 +1,35 @@
+{
+  "schema_version": "us_v3_domain_read_model_delivery_manifest_v1",
+  "goal_id": "US-V3-DOMAIN-READ-MODEL-01",
+  "base_commit": "40f6515131799db27ec06b9b82832a4a3ff4c980",
+  "business_commit": "6e2c4bd913ccb705fb7cb0876a5c9ec31572de2f",
+  "immutable": true,
+  "committed_files": [
+    {
+      "path": "docs/handoffs/US-V3-DOMAIN-READ-MODEL-01/evidence/report.json",
+      "sha256": "9ec6ff965aa97d6ce3f185c342fe17a8b08bb8c3976736fb7f8d59774d845211",
+      "schema_version": "us_v3_domain_read_model_delivery_report_v1"
+    }
+  ],
+  "business_deliverable_count": 13,
+  "runtime_projection": {
+    "path": "artifacts/us_equity_strategy_production_line/latest/us_equity_operator_read_model.json",
+    "committed_deliverable": false,
+    "rebuild_after_each_final_head": true,
+    "snapshot_source_head": "6e2c4bd913ccb705fb7cb0876a5c9ec31572de2f",
+    "snapshot_file_sha256": "64950138439a717a153aaf918b720161c78e2eec9508b544fb716c6590e72055",
+    "snapshot_identity_sha256": "f24944e8e32b894ed79cfef2af49bc607d698d363dc0243c1a76145d71086850",
+    "status": "blocked",
+    "freshness": "current_head",
+    "promotion_eligible": false
+  },
+  "guardrails": {
+    "read_model_only": true,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "paper_queue_write_allowed": false,
+    "real_order_submitted": false
+  }
+}

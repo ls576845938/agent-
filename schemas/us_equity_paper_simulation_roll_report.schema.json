@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_paper_simulation_roll_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Paper Simulation Roll Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "cycle_status",
+    "asset",
+    "strategy_id",
+    "candidate_variant",
+    "manual_start_approved",
+    "readiness_status",
+    "readiness_decision",
+    "ledger_root",
+    "forward_ledger_root",
+    "target_position",
+    "rebalance",
+    "fills",
+    "portfolio_snapshot",
+    "reconciliation",
+    "validation_state_path",
+    "ledger_materialization",
+    "blockers",
+    "guardrails",
+    "source_reports",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_paper_simulation_roll_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"enum": ["PASS", "BLOCKED"]},
+    "cycle_status": {"enum": ["COMPLETED", "SKIPPED_ALREADY_COMPLETED", "NOT_RUN", "RECONCILIATION_FAILED"]},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"const": "us_etf_rotation_min_adv_10m_vol_target_20pct_cap1_5x"},
+    "candidate_variant": {"const": "min_adv_10m_to_shv"},
+    "manual_start_approved": {"type": "boolean"},
+    "readiness_status": {"type": "string"},
+    "readiness_decision": {"type": "string"},
+    "ledger_root": {"const": "data/paper_ledger/us_equity_etf_rotation_v1"},
+    "forward_ledger_root": {"type": "string", "minLength": 1, "not": {"const": "data/paper_ledger/us_equity_etf_rotation_v1"}},
+    "target_position": {"type": "object"},
+    "rebalance": {"type": "object"},
+    "fills": {"type": "array", "items": {"type": "object"}},
+    "portfolio_snapshot": {"type": "object"},
+    "reconciliation": {
+      "type": "object",
+      "required": ["status", "passed"],
+      "properties": {
+        "status": {"type": "string"},
+        "passed": {"type": "boolean"},
+        "expected_equity": {"type": "number"},
+        "actual_equity": {"type": "number"},
+        "diff": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "validation_state_path": {"type": "string"},
+    "ledger_materialization": {
+      "type": "object",
+      "required": [
+        "status",
+        "writes_performed",
+        "skipped_already_completed",
+        "blocked_before_ledger_write",
+        "paper_ledger_is_independent",
+        "canonical_ledger_root_verified",
+        "uses_forward_observation_as_source_only",
+        "must_not_reuse_forward_observation_ledger",
+        "paper_ledger_root",
+        "forward_ledger_root",
+        "expected_ledger_files",
+        "output_paths",
+        "rows_written_this_cycle",
+        "simulated_fills_only",
+        "broker_order_ids_absent",
+        "exchange_order_ids_absent",
+        "reconciliation_passed_before_write",
+        "blockers",
+        "operator_next_action"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ledger_rows_written",
+            "already_processed_no_new_rows",
+            "blocked_before_ledger_write",
+            "blocked_reconciliation_failed_no_rows_written"
+          ]
+        },
+        "writes_performed": {"type": "boolean"},
+        "skipped_already_completed": {"type": "boolean"},
+        "blocked_before_ledger_write": {"type": "boolean"},
+        "paper_ledger_is_independent": {"type": "boolean"},
+        "canonical_ledger_root_verified": {"type": "boolean"},
+        "uses_forward_observation_as_source_only": {"type": "boolean"},
+        "must_not_reuse_forward_observation_ledger": {"const": true},
+        "paper_ledger_root": {"const": "data/paper_ledger/us_equity_etf_rotation_v1"},
+        "forward_ledger_root": {"type": "string", "minLength": 1, "not": {"const": "data/paper_ledger/us_equity_etf_rotation_v1"}},
+        "expected_ledger_files": {
+          "type": "array",
+          "items": {
+            "enum": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports"]
+          },
+          "minItems": 7,
+          "uniqueItems": true
+        },
+        "output_paths": {
+          "type": "object",
+          "required": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports", "daily_report"],
+          "properties": {
+            "target_positions": {"type": "string", "minLength": 1},
+            "fills": {"type": "string", "minLength": 1},
+            "positions": {"type": "string", "minLength": 1},
+            "cash_ledger": {"type": "string", "minLength": 1},
+            "portfolio_snapshots": {"type": "string", "minLength": 1},
+            "validation_state": {"type": "string", "minLength": 1},
+            "daily_reports": {"type": "string", "minLength": 1},
+            "daily_report": {"type": "string", "minLength": 1}
+          },
+          "additionalProperties": false
+        },
+        "rows_written_this_cycle": {
+          "type": "object",
+          "required": ["target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports"],
+          "properties": {
+            "target_positions": {"type": "integer", "minimum": 0},
+            "fills": {"type": "integer", "minimum": 0},
+            "positions": {"type": "integer", "minimum": 0},
+            "cash_ledger": {"type": "integer", "minimum": 0},
+            "portfolio_snapshots": {"type": "integer", "minimum": 0},
+            "validation_state": {"type": "integer", "minimum": 0},
+            "daily_reports": {"type": "integer", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "simulated_fills_only": {"type": "boolean"},
+        "broker_order_ids_absent": {"type": "boolean"},
+        "exchange_order_ids_absent": {"type": "boolean"},
+        "reconciliation_passed_before_write": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "operator_next_action": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "paper_simulation_runner_only",
+        "simulated_only",
+        "manual_start_required",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "private_endpoint_used",
+        "order_endpoint_allowed",
+        "order_endpoint_used",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "paper_simulation_runner_only": {"const": true},
+        "simulated_only": {"const": true},
+        "manual_start_required": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "source_reports": {
+      "type": "object",
+      "required": ["paper_readiness", "forward_target_ledger"],
+      "properties": {
+        "paper_readiness": {"type": "string", "minLength": 1},
+        "forward_target_ledger": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "target_positions", "fills", "positions", "cash_ledger", "portfolio_snapshots", "validation_state", "daily_reports", "daily_report"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "target_positions": {"type": "string", "minLength": 1},
+        "fills": {"type": "string", "minLength": 1},
+        "positions": {"type": "string", "minLength": 1},
+        "cash_ledger": {"type": "string", "minLength": 1},
+        "portfolio_snapshots": {"type": "string", "minLength": 1},
+        "validation_state": {"type": "string", "minLength": 1},
+        "daily_reports": {"type": "string", "minLength": 1},
+        "daily_report": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

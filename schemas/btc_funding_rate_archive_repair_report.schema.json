@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_funding_rate_archive_repair_report.schema.json",
+  "title": "QuantStation VNEXT BTC Funding Rate Archive Repair Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "bundle_id",
+    "repair_mode",
+    "attempted_sources",
+    "rows_added",
+    "repair_success",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_funding_rate_archive_repair_report_v1"},
+    "generated_at": {"type": "string"},
+    "bundle_id": {"type": "string"},
+    "repair_mode": {"type": "string"},
+    "attempted_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["mode", "url", "status_code", "role", "date_or_month", "rows", "error_type"],
+        "properties": {
+          "mode": {"enum": ["monthly", "daily"]},
+          "url": {"type": "string"},
+          "status_code": {"type": ["integer", "null"]},
+          "role": {"const": "funding_rate"},
+          "date_or_month": {"type": "string"},
+          "rows": {"type": "integer", "minimum": 0},
+          "error_type": {
+            "enum": ["none", "not_found", "network_blocked", "http_451", "path_generation_error", "unknown", "unknown_http_error"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "rows_added": {"type": "integer", "minimum": 0},
+    "repair_success": {"type": "boolean"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

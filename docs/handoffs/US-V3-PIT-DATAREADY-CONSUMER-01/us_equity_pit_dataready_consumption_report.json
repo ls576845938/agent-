@@ -1,0 +1,130 @@
+{
+  "artifact_identity_sha256": "c6db3e91660657b06b5cc6a4efae1a3df4e686c211a20711102f53f1f587edec",
+  "asset": "us_equity",
+  "blockers": [
+    "production_pit_bundle_root_not_supplied",
+    "production_pit_required_file_missing:provider_bundle_manifest.json",
+    "production_pit_required_file_missing:universe_membership_events.csv",
+    "production_pit_required_file_missing:delisted_symbols.csv",
+    "production_pit_required_file_missing:corporate_actions.csv",
+    "production_pit_required_file_missing:symbol_mapping.csv",
+    "production_pit_required_file_missing:adjustment_replay.csv",
+    "production_pit_required_file_missing:macro_release_calendar.csv"
+  ],
+  "decision": "wait_for_data_steward_immutable_production_pit_handoff",
+  "etf26_minute": {
+    "constraints": [
+      "etf26_manifest_calendar_contract_missing",
+      "etf26_source_splice_equivalence_unproven",
+      "etf26_adjustment_visibility_replay_missing"
+    ],
+    "coverage": {
+      "end": "2026-07-10T15:59:00",
+      "start": "2002-12-30T09:30:00"
+    },
+    "dataset_id": "us-equity-hf-etf26-1min",
+    "dataset_version": "hf-data-library-etf26-clean-1min-6d6b07e77962",
+    "errors": [],
+    "immutable_resolution": {
+      "consumer_read_only": true,
+      "mode": "publication_marker_fast",
+      "status": "resolved"
+    },
+    "manifest_git_spec": "9f5fb84f77d5e85bef6e94203e186560c19bc78f:.agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json",
+    "manifest_sha256": "f78e8db20b94b2d23a800adcb143d67afacdde74aa81b6232b508b40b8c7b10e",
+    "producer_commit": "0606c34e2d87069df551f80c985371809061aa58",
+    "producer_role": "data_steward",
+    "promotion_evidence_ready": false,
+    "readiness_class": "research_ready",
+    "scope": "frozen_etf26_research_observation_only",
+    "state": "research_ready"
+  },
+  "generated_at": "2026-07-24T08:39:45Z",
+  "guardrails": {
+    "broker_endpoint_used": false,
+    "consumer_read_only": true,
+    "data_manifest_written": false,
+    "demo_allowed": false,
+    "live_allowed": false,
+    "network_used": false,
+    "order_endpoint_used": false,
+    "paper_allowed": false,
+    "paper_queue_write_allowed": false,
+    "private_endpoint_used": false,
+    "promotion_allowed": false,
+    "promotion_evidence_ready": false,
+    "real_order_submitted": false,
+    "withdraw_allowed": false
+  },
+  "next_handoff_contract": {
+    "consumer_action": "publish committed append-only handoff referencing an immutable manifest and all seven verified bundle files",
+    "immutable_version_required": true,
+    "owner": "data_steward",
+    "producer_role": "data_steward",
+    "readiness_class": "research_ready",
+    "required_adjustment_visibility_field": "adjustment_available_time",
+    "required_files": [
+      "provider_bundle_manifest.json",
+      "universe_membership_events.csv",
+      "delisted_symbols.csv",
+      "corporate_actions.csv",
+      "symbol_mapping.csv",
+      "adjustment_replay.csv",
+      "macro_release_calendar.csv"
+    ],
+    "required_manifest_fields": [
+      "schema_version",
+      "bundle_id",
+      "bundle_version",
+      "immutable_version",
+      "producer_role",
+      "producer_commit",
+      "published_at",
+      "coverage",
+      "calendar",
+      "source_splices",
+      "files"
+    ],
+    "required_row_visibility_fields": [
+      "event_time",
+      "available_time",
+      "ingested_at"
+    ]
+  },
+  "pit_lite": {
+    "errors": [],
+    "production_pit_substitute": false,
+    "scope": "frozen_etf26_research_observation_only",
+    "state": "not_supplied"
+  },
+  "production_pit": {
+    "accepted": false,
+    "blockers": [
+      "production_pit_bundle_root_not_supplied",
+      "production_pit_required_file_missing:provider_bundle_manifest.json",
+      "production_pit_required_file_missing:universe_membership_events.csv",
+      "production_pit_required_file_missing:delisted_symbols.csv",
+      "production_pit_required_file_missing:corporate_actions.csv",
+      "production_pit_required_file_missing:symbol_mapping.csv",
+      "production_pit_required_file_missing:adjustment_replay.csv",
+      "production_pit_required_file_missing:macro_release_calendar.csv"
+    ],
+    "bundle_id": "",
+    "bundle_version": "",
+    "calendar": "",
+    "coverage": {},
+    "data_modified": false,
+    "manifest_published_by_consumer": false,
+    "producer_commit": "",
+    "producer_role": "",
+    "state": "missing",
+    "validated_files": []
+  },
+  "readiness": {
+    "production_pit_accepted": false,
+    "promotion_evidence_ready": false,
+    "research_ready": true
+  },
+  "schema_version": "us_equity_pit_dataready_consumption_report_v1",
+  "status": "blocked_external_data"
+}

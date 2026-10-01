@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_candidate_bundle_evidence_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Candidate Bundle Evidence Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "decision",
+    "source_type",
+    "tiingo_kline",
+    "fred_macro",
+    "evidence_available",
+    "missing_production_contract_groups",
+    "blockers",
+    "next_actions",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_candidate_bundle_evidence_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["candidate_evidence_ready_for_manual_bundle_build", "candidate_evidence_blocked"]},
+    "decision": {"const": "use_as_manual_bundle_build_input_only_do_not_promote"},
+    "source_type": {"const": "research_price_bars_and_macro"},
+    "tiingo_kline": {
+      "type": "object",
+      "required": [
+        "available",
+        "root",
+        "parquet_file_count",
+        "symbol_count",
+        "symbols",
+        "date_range",
+        "raw_and_adjusted_prices",
+        "volume_available",
+        "split_dividend_fields_available",
+        "derived_split_event_rows",
+        "derived_dividend_event_rows",
+        "read_errors"
+      ],
+      "properties": {
+        "available": {"type": "boolean"},
+        "root": {"type": "string"},
+        "parquet_file_count": {"type": "integer", "minimum": 0},
+        "symbol_count": {"type": "integer", "minimum": 0},
+        "symbols": {"type": "array", "items": {"type": "string"}},
+        "date_range": {"$ref": "#/$defs/date_range"},
+        "columns_seen": {"type": "array", "items": {"type": "string"}},
+        "raw_and_adjusted_prices": {"type": "boolean"},
+        "volume_available": {"type": "boolean"},
+        "split_dividend_fields_available": {"type": "boolean"},
+        "derived_split_event_rows": {"type": "integer", "minimum": 0},
+        "derived_dividend_event_rows": {"type": "integer", "minimum": 0},
+        "sample_files": {"type": "array", "items": {"type": "object"}},
+        "read_errors": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "fred_macro": {
+      "type": "object",
+      "required": [
+        "available",
+        "path",
+        "rows",
+        "columns",
+        "date_range",
+        "realtime_columns_available",
+        "series_columns",
+        "blockers"
+      ],
+      "properties": {
+        "available": {"type": "boolean"},
+        "path": {"type": "string"},
+        "rows": {"type": "integer", "minimum": 0},
+        "columns": {"type": "array", "items": {"type": "string"}},
+        "date_range": {"$ref": "#/$defs/date_range"},
+        "realtime_columns_available": {"type": "boolean"},
+        "series_columns": {"type": "array", "items": {"type": "string"}},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "evidence_available": {
+      "type": "object",
+      "required": [
+        "price_bars",
+        "raw_and_adjusted_prices",
+        "volume",
+        "derived_split_dividend_fields",
+        "fred_macro_csv",
+        "fred_realtime_columns"
+      ],
+      "properties": {
+        "price_bars": {"type": "boolean"},
+        "raw_and_adjusted_prices": {"type": "boolean"},
+        "volume": {"type": "boolean"},
+        "derived_split_dividend_fields": {"type": "boolean"},
+        "fred_macro_csv": {"type": "boolean"},
+        "fred_realtime_columns": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "missing_production_contract_groups": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "next_actions": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "diagnostic_only",
+        "vendor_data_written_by_this_report",
+        "production_bundle_written_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "diagnostic_only": {"const": true},
+        "vendor_data_written_by_this_report": {"const": false},
+        "production_bundle_written_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "date_range": {
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": {
+        "start": {"type": ["string", "null"]},
+        "end": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  }
+}

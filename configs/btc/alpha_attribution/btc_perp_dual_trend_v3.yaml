@@ -1,0 +1,47 @@
+schema_version: btc_alpha_attribution_candidate_v1
+strategy_id: btc_perp_dual_trend_v3
+base_strategy_id: btc_perp_dual_trend
+asset_class: crypto
+symbol: BTCUSDT
+timeframe: 1h
+pnl_source: ledger_fills
+paper_auto_start: false
+live_enabled: false
+live_frozen: true
+orderflow_role: veto_only
+attribution_basis:
+  keep:
+    - trending_up strong_uptrend long continuation
+    - expansion long continuation
+  block:
+    - high_vol_trend losses
+    - trending_down short losses
+    - standalone orderflow entries
+params:
+  fast_ma: 96
+  slow_ma: 336
+  regime_ma: 720
+  momentum_window: 168
+  momentum_threshold: 0.025
+  vol_window: 168
+  max_volatility: 0.055
+  orderflow_window: 144
+  orderflow_veto_threshold: 0.012
+  allowed_long_regimes:
+    - trending_up
+    - expansion
+  allowed_short_regimes: []
+  min_hold_bars: 120
+  cooldown_bars: 72
+  exit_hysteresis_bars: 4
+  max_hold_bars: 720
+  signal_scale: 0.20
+gates:
+  profit_factor: 1.15
+  event_profit_factor: 1.15
+  annual_turnover: 10.0
+  walk_forward_pass_rate: 0.80
+  regime_pass_rate: 0.75
+  max_drawdown_pct_floor: -15.0
+  dsr: 0.10
+  pbo: 0.50

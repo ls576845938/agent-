@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_macro_rotation_cost_stress_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Macro Rotation Cost Stress Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "live_ready",
+    "paper_ready",
+    "stress_cost_bps",
+    "source_optimization_report",
+    "price_source",
+    "macro_status",
+    "macro_path",
+    "schemes",
+    "ranking_50bps",
+    "best_50bps",
+    "methodology"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_macro_rotation_cost_stress_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "research_only"},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "stress_cost_bps": {"const": [10, 25, 50]},
+    "source_optimization_report": {"type": "string", "minLength": 1},
+    "price_source": {"type": "string", "minLength": 1},
+    "macro_status": {"type": "string", "minLength": 1},
+    "macro_path": {"type": ["string", "null"]},
+    "schemes": {
+      "type": "object",
+      "required": [
+        "baseline_current",
+        "v1_macro_floor",
+        "v1_turnover_guard",
+        "v1_risk_capped_selection",
+        "v1_defense_regime_cap",
+        "v1_combined_conservative"
+      ],
+      "additionalProperties": {"$ref": "#/$defs/scheme"}
+    },
+    "ranking_50bps": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/ranking_row"}},
+    "best_50bps": {"$ref": "#/$defs/ranking_row"},
+    "methodology": {
+      "type": "object",
+      "required": ["cost_model", "survival_rule", "note"],
+      "properties": {
+        "cost_model": {"type": "string", "minLength": 1},
+        "survival_rule": {"type": "string", "minLength": 1},
+        "note": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "scheme": {
+      "type": "object",
+      "required": ["description", "base_parameters", "stress", "survives_50bps"],
+      "properties": {
+        "description": {"type": "string", "minLength": 1},
+        "base_parameters": {"type": "object"},
+        "stress": {
+          "type": "object",
+          "required": ["10bps", "25bps", "50bps"],
+          "properties": {
+            "10bps": {"$ref": "#/$defs/stress_row"},
+            "25bps": {"$ref": "#/$defs/stress_row"},
+            "50bps": {"$ref": "#/$defs/stress_row"}
+          },
+          "additionalProperties": false
+        },
+        "survives_50bps": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "stress_row": {
+      "type": "object",
+      "required": ["cost_bps", "metrics", "focus_years", "diagnostics"],
+      "properties": {
+        "cost_bps": {"enum": [10, 25, 50]},
+        "metrics": {"$ref": "#/$defs/metrics"},
+        "focus_years": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "object"}},
+        "diagnostics": {
+          "type": "object",
+          "required": ["turnover", "cost_per_turnover", "rebalance_count", "t_plus_1_execution"],
+          "properties": {
+            "turnover": {"type": "number", "minimum": 0},
+            "cost_per_turnover": {"type": "number", "minimum": 0},
+            "rebalance_count": {"type": "integer", "minimum": 0},
+            "rebalance_reason_counts": {"type": "object"},
+            "avg_rebalance_turnover": {"type": "number", "minimum": 0},
+            "t_plus_1_execution": {"const": true}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "total_return",
+        "cagr",
+        "sharpe",
+        "max_drawdown",
+        "benchmark_total_return",
+        "turnover",
+        "cost_drag_estimate"
+      ],
+      "properties": {
+        "total_return": {"type": "number"},
+        "cagr": {"type": "number"},
+        "sharpe": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "benchmark_total_return": {"type": "number"},
+        "turnover": {"type": "number", "minimum": 0},
+        "cost_drag_estimate": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "ranking_row": {
+      "type": "object",
+      "required": ["scheme_id", "cagr", "sharpe", "max_drawdown", "turnover", "survives_50bps"],
+      "properties": {
+        "scheme_id": {"type": "string", "minLength": 1},
+        "cagr": {"type": "number"},
+        "sharpe": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "turnover": {"type": "number", "minimum": 0},
+        "survives_50bps": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

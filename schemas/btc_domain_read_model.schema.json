@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "btc_domain_read_model.schema.json",
+  "title": "BTC Domain Read Model",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "domain",
+    "source_head",
+    "generated_at_utc",
+    "freshness",
+    "status",
+    "current_stage",
+    "gate_decision",
+    "readiness_class",
+    "layers",
+    "evidence",
+    "blockers",
+    "next_executable_action",
+    "safety",
+    "api_contract"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_domain_read_model_v1"},
+    "domain": {"const": "btc"},
+    "source_head": {"type": "string", "minLength": 7},
+    "generated_at_utc": {"type": "string", "format": "date-time"},
+    "freshness": {"enum": ["current_head", "blocked"]},
+    "status": {"enum": ["blocked", "current_read_only"]},
+    "current_stage": {"type": "string"},
+    "gate_decision": {"type": "string"},
+    "readiness_class": {
+      "enum": [
+        "quality_checked",
+        "research_ready",
+        "backtest_ready",
+        "promotion_evidence_ready"
+      ]
+    },
+    "promotion_evidence_ready": {"type": "boolean"},
+    "paper_ready": {"const": false},
+    "live_ready": {"const": false},
+    "layers": {
+      "type": "object",
+      "required": ["data", "strategy", "risk", "oms", "ledger", "replay", "gate"]
+    },
+    "evidence": {"type": "array"},
+    "blockers": {"type": "array"},
+    "next_executable_action": {"type": "object"},
+    "safety": {
+      "type": "object",
+      "required": [
+        "promotion_allowed",
+        "paper_allowed",
+        "live_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_access_allowed",
+        "withdraw_allowed"
+      ],
+      "additionalProperties": {"const": false}
+    },
+    "api_contract": {
+      "type": "object",
+      "required": ["method", "path", "cache_control", "read_only", "side_effects"],
+      "properties": {
+        "method": {"const": "GET"},
+        "path": {"const": "/api/research/btc/domain-read-model"},
+        "cache_control": {"const": "no-store"},
+        "read_only": {"const": true},
+        "side_effects": {"const": false}
+      }
+    }
+  }
+}

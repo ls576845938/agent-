@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_remediation_ticket_closure_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Remediation Ticket Closure Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "summary",
+    "ticket_count",
+    "closed_count",
+    "open_count",
+    "closure_progress",
+    "missing_sources",
+    "closure_checks",
+    "blockers",
+    "unsafe_flags",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_remediation_ticket_closure_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "remediation_tickets_open",
+        "remediation_tickets_closed",
+        "remediation_ticket_closure_source_missing"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "remediation_tickets_open",
+          "remediation_tickets_closed",
+          "remediation_ticket_closure_source_missing"
+        ]
+      },
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "decision": {"const": "keep_paper_live_locked_until_all_remediation_tickets_close"},
+    "summary": {
+      "type": "object",
+      "required": [
+        "ticket_count",
+        "open_count",
+        "closed_count",
+        "missing_source_count",
+        "unsafe_flag_count",
+        "external_or_time_dependency_count",
+        "manual_dependency_count",
+        "engineering_dependency_count",
+        "governance_dependency_count",
+        "other_dependency_count",
+        "open_by_category",
+        "first_open_ticket_id",
+        "first_open_blocking_evidence",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "ticket_count": {"type": "integer", "minimum": 0},
+        "open_count": {"type": "integer", "minimum": 0},
+        "closed_count": {"type": "integer", "minimum": 0},
+        "missing_source_count": {"type": "integer", "minimum": 0},
+        "unsafe_flag_count": {"type": "integer", "minimum": 0},
+        "external_or_time_dependency_count": {"type": "integer", "minimum": 0},
+        "manual_dependency_count": {"type": "integer", "minimum": 0},
+        "engineering_dependency_count": {"type": "integer", "minimum": 0},
+        "governance_dependency_count": {"type": "integer", "minimum": 0},
+        "other_dependency_count": {"type": "integer", "minimum": 0},
+        "open_by_category": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "first_open_ticket_id": {"type": "string"},
+        "first_open_blocking_evidence": {"type": "string"},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "ticket_count": {"type": "integer", "minimum": 0},
+    "closed_count": {"type": "integer", "minimum": 0},
+    "open_count": {"type": "integer", "minimum": 0},
+    "closure_progress": {
+      "type": "object",
+      "required": [
+        "ticket_count",
+        "open_count",
+        "closed_count",
+        "open_ticket_ids",
+        "closed_ticket_ids",
+        "by_category",
+        "by_source_report",
+        "all_tickets_closed",
+        "paper_or_live_unlock_allowed"
+      ],
+      "properties": {
+        "ticket_count": {"type": "integer", "minimum": 0},
+        "open_count": {"type": "integer", "minimum": 0},
+        "closed_count": {"type": "integer", "minimum": 0},
+        "open_ticket_ids": {"type": "array", "items": {"type": "string", "pattern": "^us_equity_remediate_[a-z_]+$"}},
+        "closed_ticket_ids": {"type": "array", "items": {"type": "string", "pattern": "^us_equity_remediate_[a-z_]+$"}},
+        "by_category": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["ticket_count", "open_count", "closed_count"],
+            "properties": {
+              "ticket_count": {"type": "integer", "minimum": 0},
+              "open_count": {"type": "integer", "minimum": 0},
+              "closed_count": {"type": "integer", "minimum": 0}
+            },
+            "additionalProperties": false
+          }
+        },
+        "by_source_report": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "all_tickets_closed": {"type": "boolean"},
+        "paper_or_live_unlock_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "missing_sources": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "closure_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "ticket_id",
+          "category",
+          "source_ticket_status",
+          "closed",
+          "status",
+          "blocking_evidence",
+          "acceptance_evidence",
+          "source_reports"
+        ],
+        "properties": {
+          "ticket_id": {"type": "string", "pattern": "^us_equity_remediate_[a-z_]+$"},
+          "category": {"type": "string", "minLength": 1},
+          "source_ticket_status": {"type": "string"},
+          "closed": {"type": "boolean"},
+          "status": {"enum": ["open", "closed"]},
+          "blocking_evidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "acceptance_evidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "source_reports": {"type": "array", "items": {"type": "string", "minLength": 1}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "unsafe_flags": {"type": "array", "items": {"type": "string"}},
+    "source_reports": {
+      "type": "object",
+      "required": [
+        "taxonomy",
+        "manual_review",
+        "paper_readiness",
+        "live_readiness",
+        "pit_intake",
+        "pit_acceptance",
+        "vendor_drop_pipeline",
+        "forward_evaluation",
+        "strategy_validation",
+        "broker_handoff",
+        "broker_review"
+      ],
+      "properties": {
+        "taxonomy": {"type": "string", "minLength": 1},
+        "manual_review": {"type": "string", "minLength": 1},
+        "paper_readiness": {"type": "string", "minLength": 1},
+        "live_readiness": {"type": "string", "minLength": 1},
+        "pit_intake": {"type": "string", "minLength": 1},
+        "pit_acceptance": {"type": "string", "minLength": 1},
+        "vendor_drop_pipeline": {"type": "string", "minLength": 1},
+        "forward_evaluation": {"type": "string", "minLength": 1},
+        "strategy_validation": {"type": "string", "minLength": 1},
+        "broker_handoff": {"type": "string", "minLength": 1},
+        "broker_review": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "closure_report_only",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "closure_report_only": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

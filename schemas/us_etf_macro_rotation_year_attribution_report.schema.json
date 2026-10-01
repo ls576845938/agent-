@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_macro_rotation_year_attribution_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Macro Rotation Year Attribution Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "strategy_id",
+    "price_source",
+    "macro_status",
+    "macro_path",
+    "methodology",
+    "years"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_macro_rotation_year_attribution_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "strategy_id": {"const": "us_etf_macro_momentum_rotation_v1"},
+    "price_source": {"type": "string", "minLength": 1},
+    "macro_status": {"type": "string", "minLength": 1},
+    "macro_path": {"type": ["string", "null"]},
+    "methodology": {
+      "type": "object",
+      "required": ["benchmark", "additive_excess_formula", "notes"],
+      "properties": {
+        "benchmark": {"const": "SPY"},
+        "additive_excess_formula": {"type": "string", "minLength": 1},
+        "notes": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "years": {
+      "type": "object",
+      "required": ["2015", "2022", "2023", "2024"],
+      "properties": {
+        "2015": {"$ref": "#/$defs/year_attribution"},
+        "2022": {"$ref": "#/$defs/year_attribution"},
+        "2023": {"$ref": "#/$defs/year_attribution"},
+        "2024": {"$ref": "#/$defs/year_attribution"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "year_attribution": {
+      "type": "object",
+      "required": [
+        "strategy_return",
+        "benchmark_return",
+        "excess_return",
+        "additive_excess",
+        "attribution_additive",
+        "exposure",
+        "asset_contribution",
+        "rebalance_reason_counts",
+        "diagnosis"
+      ],
+      "properties": {
+        "strategy_return": {"type": "number"},
+        "benchmark_return": {"type": "number"},
+        "excess_return": {"type": "number"},
+        "additive_excess": {"type": "number"},
+        "attribution_additive": {
+          "type": "object",
+          "required": [
+            "macro_equity_exposure_effect",
+            "momentum_selection_effect",
+            "defense_asset_contribution",
+            "cost_effect",
+            "cash_residual_effect",
+            "reconstructed_excess"
+          ],
+          "properties": {
+            "macro_equity_exposure_effect": {"type": "number"},
+            "momentum_selection_effect": {"type": "number"},
+            "defense_asset_contribution": {"type": "number"},
+            "cost_effect": {"type": "number"},
+            "cash_residual_effect": {"type": "number"},
+            "reconstructed_excess": {"type": "number"}
+          },
+          "additionalProperties": false
+        },
+        "exposure": {
+          "type": "object",
+          "required": [
+            "avg_actual_offensive_weight",
+            "avg_base_equity_weight",
+            "avg_defense_weight",
+            "avg_macro_score",
+            "avg_total_weight",
+            "risk_off_days",
+            "inverted_curve_days",
+            "turnover"
+          ],
+          "properties": {
+            "avg_actual_offensive_weight": {"type": "number", "minimum": 0, "maximum": 1},
+            "avg_base_equity_weight": {"type": "number", "minimum": 0},
+            "avg_defense_weight": {"type": "number", "minimum": 0, "maximum": 1},
+            "avg_macro_score": {"type": "number"},
+            "avg_total_weight": {"type": "number", "minimum": 0, "maximum": 1.000001},
+            "risk_off_days": {"type": "integer", "minimum": 0},
+            "inverted_curve_days": {"type": "integer", "minimum": 0},
+            "turnover": {"type": "number", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "asset_contribution": {
+          "type": "object",
+          "required": ["best", "worst"],
+          "properties": {
+            "best": {"type": "object", "additionalProperties": {"type": "number"}},
+            "worst": {"type": "object", "additionalProperties": {"type": "number"}}
+          },
+          "additionalProperties": false
+        },
+        "rebalance_reason_counts": {"type": "object", "additionalProperties": {"type": "integer"}},
+        "diagnosis": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  }
+}

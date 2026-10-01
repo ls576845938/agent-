@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_macro_rotation_book_inspired_optimization_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Macro Rotation Book Inspired Optimization Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "live_ready",
+    "paper_ready",
+    "stress_cost_bps",
+    "price_source",
+    "macro_status",
+    "macro_path",
+    "book_sources",
+    "strategy_inventory_151",
+    "families",
+    "ranking",
+    "baseline",
+    "best_overall",
+    "best_non_baseline",
+    "highest_cagr_candidate",
+    "methodology"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_macro_rotation_book_inspired_optimization_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "research_only"},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "stress_cost_bps": {"const": [10, 25, 50]},
+    "price_source": {"type": "string", "minLength": 1},
+    "macro_status": {"type": "string", "minLength": 1},
+    "macro_path": {"type": ["string", "null"]},
+    "book_sources": {"type": "array", "minItems": 5, "items": {"$ref": "#/$defs/source"}},
+    "strategy_inventory_151": {
+      "type": "object",
+      "required": [
+        "source_found",
+        "total_strategy_entries",
+        "directly_tested_count",
+        "chapter_counts",
+        "deferred_groups"
+      ],
+      "properties": {
+        "source_found": {"const": true},
+        "total_strategy_entries": {"type": "integer", "minimum": 150},
+        "directly_tested_count": {"type": "integer", "minimum": 14},
+        "chapter_counts": {"type": "object", "minProperties": 1},
+        "deferred_groups": {"type": "object", "minProperties": 1}
+      },
+      "additionalProperties": true
+    },
+    "deferred_ideas": {"type": "array"},
+    "families": {
+      "type": "object",
+      "required": [
+        "baseline_v2_turnover_guard",
+        "dual_momentum_absolute_relative",
+        "ensemble_forecast_blend",
+        "macro_vol_scaled_overlay",
+        "multi_speed_trend_forecast",
+        "quality_momentum_12_1",
+        "alpha_rotation_residual_151",
+        "channel_breakout_151",
+        "etf_mean_reversion_151",
+        "low_volatility_anomaly_151",
+        "multi_asset_tsmom_151",
+        "multifactor_portfolio_151",
+        "r_squared_trend_quality_151",
+        "sector_dual_momentum_151",
+        "sector_momentum_ma_filter_151",
+        "sector_price_momentum_rotation_151",
+        "single_moving_average_151",
+        "support_resistance_breakout_151",
+        "three_moving_averages_151",
+        "two_moving_averages_151"
+      ],
+      "additionalProperties": {"$ref": "#/$defs/family"}
+    },
+    "ranking": {"type": "array", "minItems": 20, "items": {"$ref": "#/$defs/candidate"}},
+    "baseline": {"$ref": "#/$defs/candidate"},
+    "best_overall": {"$ref": "#/$defs/candidate"},
+    "best_non_baseline": {"$ref": "#/$defs/candidate"},
+    "highest_cagr_candidate": {"$ref": "#/$defs/candidate"},
+    "methodology": {
+      "type": "object",
+      "required": ["primary_cost_bps", "score_50bps"],
+      "properties": {
+        "primary_cost_bps": {"const": 50},
+        "score_50bps": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {"path": {"type": "string", "minLength": 1}},
+      "additionalProperties": true
+    },
+    "family": {
+      "type": "object",
+      "required": ["candidate_count", "best", "top_candidates"],
+      "properties": {
+        "candidate_count": {"type": "integer", "minimum": 1},
+        "best": {"$ref": "#/$defs/candidate"},
+        "top_candidates": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/candidate"}}
+      },
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "family",
+        "description",
+        "parameters",
+        "score_50bps",
+        "stress",
+        "survives_50bps"
+      ],
+      "properties": {
+        "family": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "parameters": {"type": "object"},
+        "score_50bps": {"type": "number"},
+        "source_idea": {"type": "string"},
+        "stress": {"$ref": "#/$defs/stress_bundle"},
+        "survives_50bps": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "stress_bundle": {
+      "type": "object",
+      "required": ["10bps", "25bps", "50bps"],
+      "properties": {
+        "10bps": {"$ref": "#/$defs/stress_row"},
+        "25bps": {"$ref": "#/$defs/stress_row"},
+        "50bps": {"$ref": "#/$defs/stress_row"}
+      },
+      "additionalProperties": false
+    },
+    "stress_row": {
+      "type": "object",
+      "required": ["metrics", "diagnostics", "focus_years"],
+      "properties": {
+        "metrics": {"$ref": "#/$defs/metrics"},
+        "diagnostics": {"$ref": "#/$defs/diagnostics"},
+        "focus_years": {"type": "object", "minProperties": 1}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["total_return", "cagr", "sharpe", "max_drawdown", "benchmark_total_return", "turnover"],
+      "properties": {
+        "total_return": {"type": "number"},
+        "cagr": {"type": "number"},
+        "sharpe": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "benchmark_total_return": {"type": "number"},
+        "turnover": {"type": "number", "minimum": 0},
+        "avg_rebalance_turnover": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "diagnostics": {
+      "type": "object",
+      "required": ["turnover", "cost_per_turnover", "rebalance_count", "rebalance_reason_counts", "t_plus_1_execution"],
+      "properties": {
+        "turnover": {"type": "number", "minimum": 0},
+        "cost_per_turnover": {"type": "number", "minimum": 0},
+        "rebalance_count": {"type": "integer", "minimum": 0},
+        "rebalance_reason_counts": {"type": "object"},
+        "avg_rebalance_turnover": {"type": "number", "minimum": 0},
+        "top_n": {"type": "integer"},
+        "t_plus_1_execution": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  }
+}

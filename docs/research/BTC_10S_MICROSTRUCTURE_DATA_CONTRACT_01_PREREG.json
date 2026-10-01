@@ -1,0 +1,66 @@
+{
+  "schema_version": "btc_10s_microstructure_data_contract_prereg_v1",
+  "ticket_id": "BTC-10S-MICROSTRUCTURE-DATA-CONTRACT-01",
+  "frozen_at": "2026-08-27T00:00:00Z",
+  "purpose": "research_admission_only",
+  "prediction_target": "future_10_30_60s_cost_adjusted_return_distribution",
+  "horizons": ["10s", "30s", "60s"],
+  "execution_baseline": "taker_only",
+  "information_thresholds": {
+    "eligible_labeled_windows_by_horizon": {"10s": 1000, "30s": 1000, "60s": 1000},
+    "autocorrelation_adjusted_ess_by_horizon": {"10s": 500, "30s": 500, "60s": 500},
+    "utc_4h_bucket_count": 6,
+    "min_independent_60s_windows_per_utc_4h_bucket": 100,
+    "volatility_liquidity_regime_grid": [3, 3],
+    "min_ess_per_applicable_regime_cell": 50,
+    "joined_coverage_pct": 99,
+    "future_label_availability_pct": 99,
+    "receive_lag_p99_ms": 500,
+    "trade_book_alignment_p99_ms": 250,
+    "cost_sample_completeness_pct": 99,
+    "duplicate_count": 0,
+    "out_of_order_count": 0,
+    "unrecovered_sequence_gap_count": 0,
+    "crossed_book_count": 0,
+    "one_sided_book_count": 0,
+    "gap_resync_embargo_seconds": 60,
+    "reconnect_requires_snapshot_reset": true,
+    "cost_components": ["spread", "fee", "depth_impact", "stratified_stability"]
+  },
+  "family_requirements": {
+    "trade_imbalance_continuation": ["unique_tick_trade_ids", "exchange_timestamps", "aggressor_side", "two_sided_bbo", "trade_bbo_joined"],
+    "order_flow_imbalance_capability": ["l2_price_levels", "ordered_l2_updates", "trade_ordered_l2_joined"],
+    "micro_breakout": ["unique_tick_trade_ids", "exchange_timestamps", "two_sided_bbo", "trade_bbo_joined", "volume_depth_shock"],
+    "sweep_absorption_reversal": ["unique_tick_trade_ids", "exchange_timestamps", "ordered_l2_updates", "trade_ordered_l2_joined", "recovery_events"],
+    "liquidation_cascade_recovery": ["unique_tick_trade_ids", "exchange_timestamps", "ordered_l2_updates", "trade_ordered_l2_joined", "recovery_events", "time_aligned_open_interest", "liquidation_events"],
+    "maker_queue": ["out_of_scope"]
+  },
+  "immutable_input_policy": {
+    "git_tracked_manifest_required": true,
+    "full_file_hash_verification_required": true,
+    "physical_version_required": true,
+    "mutable_sqlite_forbidden": true,
+    "latest_pointer_forbidden": true,
+    "glob_fallback_forbidden": true,
+    "staging_fallback_forbidden": true,
+    "repo_local_artifact_fallback_forbidden": true,
+    "network_recollection_forbidden": true
+  },
+  "decision_policy": {
+    "allowed_statuses": ["ready", "blocked", "not_applicable"],
+    "next_model_or_ga_ticket_requires_exact_family_horizon_ready": true,
+    "short_fragment_default": "blocked_insufficient_information",
+    "liquidation_requirements_do_not_block_other_families": true,
+    "visible_depth_is_not_queue_position": true,
+    "promotion_paper_live_unchanged": true
+  },
+  "guardrails": {
+    "model_or_ga_run": false,
+    "promotion_unlock_allowed": false,
+    "paper_or_live_unlock_allowed": false,
+    "private_endpoint_used": false,
+    "order_endpoint_used": false,
+    "real_order_submitted": false,
+    "transfer_or_withdraw_used": false
+  }
+}

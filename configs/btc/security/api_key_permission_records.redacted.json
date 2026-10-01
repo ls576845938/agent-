@@ -1,0 +1,76 @@
+{
+  "repository_default_fail_closed": true,
+  "all_permissions_enabled": false,
+  "all_approvals_completed": false,
+  "records": [
+    {
+      "key_class": "data_readonly",
+      "venue": "okx",
+      "mode": "read_only",
+      "permission_read": false,
+      "permission_trade": false,
+      "permission_withdraw": false,
+      "ip_allowlist_configured": false,
+      "environment_target": "read_only",
+      "account_label": "btc-data-readonly",
+      "redacted_identifier": "",
+      "withdraw_permission_verified_false": false,
+      "redaction_confirmed": false,
+      "manual_approval_id": "",
+      "reviewed_at_utc": "",
+      "expires_at_utc": "",
+      "raw_metadata": {
+        "note": "repository default is disabled; redacted permission facts only"
+      }
+    },
+    {
+      "key_class": "paper_trade",
+      "venue": "okx",
+      "mode": "paper",
+      "permission_read": false,
+      "permission_trade": false,
+      "permission_withdraw": false,
+      "ip_allowlist_configured": false,
+      "environment_target": "paper",
+      "account_label": "btc-paper-trade",
+      "redacted_identifier": "",
+      "withdraw_permission_verified_false": false,
+      "redaction_confirmed": false,
+      "manual_approval_id": "",
+      "reviewed_at_utc": "",
+      "expires_at_utc": "",
+      "raw_metadata": {
+        "note": "repository default is disabled; no paper permission is granted"
+      }
+    },
+    {
+      "key_class": "live_trade",
+      "venue": "okx",
+      "mode": "live",
+      "permission_read": false,
+      "permission_trade": false,
+      "permission_withdraw": false,
+      "ip_allowlist_configured": false,
+      "environment_target": "live",
+      "account_label": "btc-live-trade",
+      "redacted_identifier": "",
+      "withdraw_permission_verified_false": false,
+      "redaction_confirmed": false,
+      "manual_approval_id": "",
+      "reviewed_at_utc": "",
+      "expires_at_utc": "",
+      "raw_metadata": {
+        "note": "repository default is disabled; no live permission is granted"
+      }
+    }
+  ],
+  "template_rules": [
+    "Repository defaults grant no read, trade, withdraw, paper, or live permission.",
+    "Repository defaults contain no approval or attestation.",
+    "Only enter redacted permission facts.",
+    "Do not include API key, secret, passphrase, token, signature, authorization header, or private account identifiers.",
+    "Keep data_readonly, paper_trade, and live_trade as separate redacted identifiers.",
+    "Set withdraw_permission_verified_false=true only after confirming withdraw=false on the exchange UI.",
+    "Fill manual_approval_id, reviewed_at_utc, and expires_at_utc; expired records are fail-closed."
+  ]
+}

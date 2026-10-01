@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_shared_forecast_vs_baseline_smoke.schema.json",
+  "title": "US Equity Shared Forecasting Smoke Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "status",
+    "generated_at_utc",
+    "asset",
+    "scope",
+    "contract",
+    "input",
+    "safety_flags",
+    "report_paths"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_shared_forecast_vs_baseline_smoke_v1"},
+    "status": {"enum": ["COMPLETE_RESEARCH_ONLY_SMOKE", "BLOCKED"]},
+    "generated_at_utc": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "scope": {"const": "us_equity_shared_forecasting_interface_smoke_vs_existing_baselines"},
+    "commit": {"type": "string"},
+    "contract": {
+      "type": "object",
+      "required": ["shared_package", "contract_version", "allowed_usage"],
+      "properties": {
+        "shared_package": {"const": "quant_shared.forecasting"},
+        "contract_version": {"const": "shared_forecasting_v1"},
+        "request_type": {"type": "string"},
+        "result_type": {"type": "string"},
+        "allowed_usage": {"const": "research_only"}
+      },
+      "additionalProperties": false
+    },
+    "model": {
+      "type": "object",
+      "required": ["model_id", "model_version", "adapter_mode"],
+      "properties": {
+        "model_id": {"type": "string", "minLength": 1},
+        "model_version": {"type": "string", "minLength": 1},
+        "adapter_mode": {"type": "string", "minLength": 1},
+        "timesfm_available": {"type": "boolean"},
+        "timesfm_environment": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "input": {
+      "type": "object",
+      "required": ["price_source", "symbols"],
+      "properties": {
+        "price_source": {"type": "string", "minLength": 1},
+        "macro_status": {"type": "string"},
+        "macro_path": {"type": ["string", "null"]},
+        "symbols": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "price_rows": {"type": "integer"},
+        "price_start": {"type": "string"},
+        "price_end": {"type": "string"},
+        "lookback_days": {"type": "integer"},
+        "horizon_days": {"type": "integer"},
+        "holdout_days": {"type": "integer"},
+        "decision_count": {"type": "integer"},
+        "first_decision_time_utc": {"type": "string"},
+        "last_decision_time_utc": {"type": "string"},
+        "forecast_row_count": {"type": "integer"},
+        "forecast_rows_sha256": {"type": "string"},
+        "price_coverage": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "validation_design": {"type": "object"},
+    "forecast_request_audit": {
+      "type": "object",
+      "properties": {
+        "request_count": {"type": "integer"},
+        "lookahead_violation_count": {"const": 0},
+        "lookahead_violation_sample": {"type": "array"},
+        "all_requests_research_only": {"const": true},
+        "asset_namespace": {"const": "us_equity"}
+      },
+      "additionalProperties": false
+    },
+    "comparison": {
+      "type": "object",
+      "required": ["metrics", "ranking_by_return_then_sharpe"],
+      "properties": {
+        "metrics": {"type": "array", "items": {"type": "object"}},
+        "ranking_by_return_then_sharpe": {"type": "array", "items": {"type": "object"}}
+      },
+      "additionalProperties": false
+    },
+    "research_decision": {
+      "type": "object",
+      "properties": {
+        "status": {"type": "string"},
+        "paper_candidate_allowed": {"const": false},
+        "live_allowed": {"const": false},
+        "summary_cn": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "safety_flags": {
+      "type": "object",
+      "required": [
+        "paper_queue_write_allowed",
+        "paper_or_live_unlock_allowed",
+        "live_unlock_allowed",
+        "live_order_allowed",
+        "oms_access_allowed",
+        "broker_access_allowed",
+        "order_intent_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used"
+      ],
+      "properties": {
+        "paper_queue_write_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "oms_access_allowed": {"const": false},
+        "broker_access_allowed": {"const": false},
+        "order_intent_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "report_paths": {"type": "object"}
+  },
+  "additionalProperties": false
+}

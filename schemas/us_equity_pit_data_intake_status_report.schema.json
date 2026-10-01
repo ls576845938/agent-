@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_pit_data_intake_status_report.schema.json",
+  "title": "QuantStation VNEXT US Equity PIT Data Intake Status Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "decision",
+    "current_blocking_stage",
+    "next_action",
+    "operator_next_actions",
+    "stages",
+    "blockers",
+    "unsafe_flags",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_pit_data_intake_status_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["production_pit_data_intake_ready", "production_pit_data_intake_blocked"]},
+    "decision": {"const": "continue_data_intake_do_not_unlock_paper_or_live"},
+    "current_blocking_stage": {"type": "string"},
+    "next_action": {
+      "type": "object",
+      "required": ["stage_id", "description", "first_blocker"],
+      "properties": {
+        "stage_id": {"type": "string"},
+        "description": {"type": "string"},
+        "first_blocker": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "operator_next_actions": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "stages": {
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["stage_id", "status", "report_status", "report_path", "summary", "blockers"],
+        "properties": {
+          "stage_id": {"type": "string", "minLength": 1},
+          "status": {"enum": ["pass", "blocked"]},
+          "report_status": {"type": "string"},
+          "report_path": {"type": "string", "minLength": 1},
+          "summary": {"type": "object"},
+          "blockers": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "unsafe_flags": {"type": "array", "items": {"type": "string"}},
+    "source_reports": {"type": "object"},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "status_panel_only",
+        "source_vendor_data_modified",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "status_panel_only": {"const": true},
+        "source_vendor_data_modified": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "production_pit_data_intake_ready"}}},
+      "then": {
+        "properties": {
+          "blockers": {"maxItems": 0},
+          "current_blocking_stage": {"const": "none"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "production_pit_data_intake_blocked"}}},
+      "then": {
+        "properties": {
+          "blockers": {"minItems": 1}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

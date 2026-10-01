@@ -1,0 +1,324 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_intraday_short_cycle_alpha_plan_report.schema.json",
+  "title": "QuantStation VNEXT BTC Intraday Short-Cycle Alpha Plan Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "intraday_research_distribution_allowed",
+    "short_cycle_probe_allowed",
+    "true_scalping_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "source_data_status",
+    "source_cost_model",
+    "source_candidate_gate",
+    "source_research_registry",
+    "source_data_source_decision",
+    "data_status",
+    "cost_model_status",
+    "candidate_gate_status",
+    "data_source_decision_status",
+    "current_candidate_count",
+    "selected_research_style",
+    "candidate_families",
+    "data_prerequisites",
+    "cost_context",
+    "acceptance_gates",
+    "guardrails",
+    "interpretation",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_intraday_short_cycle_alpha_plan_report_v1"},
+    "generated_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "scope": {"const": "research_only_intraday_short_cycle_no_scalping_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "intraday_data_blocked",
+        "research_distribution_ready_candidate_blocked"
+      ]
+    },
+    "decision": {
+      "enum": [
+        "extend_intraday_public_history_before_distribution",
+        "start_intraday_short_cycle_alpha_distribution"
+      ]
+    },
+    "next_required_action": {
+      "enum": [
+        "repair_5m_15m_public_history_before_intraday_distribution_probe",
+        "run_research_only_intraday_short_cycle_distribution_probe"
+      ]
+    },
+    "intraday_research_distribution_allowed": {"type": "boolean"},
+    "short_cycle_probe_allowed": {"type": "boolean"},
+    "true_scalping_allowed": {"const": false},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "source_data_status": {"type": ["string", "null"]},
+    "source_cost_model": {"type": ["string", "null"]},
+    "source_candidate_gate": {"type": ["string", "null"]},
+    "source_research_registry": {"type": ["string", "null"]},
+    "source_data_source_decision": {"type": ["string", "null"]},
+    "data_status": {"type": "string"},
+    "cost_model_status": {"type": "string"},
+    "candidate_gate_status": {"type": "string"},
+    "data_source_decision_status": {"type": "string"},
+    "current_candidate_count": {"type": "integer", "minimum": 0},
+    "selected_research_style": {"$ref": "#/$defs/selectedResearchStyle"},
+    "candidate_families": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/candidateFamily"}
+    },
+    "data_prerequisites": {"$ref": "#/$defs/dataPrerequisites"},
+    "cost_context": {"$ref": "#/$defs/costContext"},
+    "acceptance_gates": {"$ref": "#/$defs/acceptanceGates"},
+    "guardrails": {"$ref": "#/$defs/guardrails"},
+    "interpretation": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "research_distribution_ready_candidate_blocked"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "decision": {"const": "start_intraday_short_cycle_alpha_distribution"},
+          "next_required_action": {"const": "run_research_only_intraday_short_cycle_distribution_probe"},
+          "intraday_research_distribution_allowed": {"const": true},
+          "short_cycle_probe_allowed": {"const": true},
+          "candidate_generation_allowed": {"const": false},
+          "paper_or_live_unlock_allowed": {"const": false},
+          "guardrails": {
+            "properties": {
+              "intraday_research_distribution_allowed": {"const": true},
+              "short_cycle_probe_allowed": {"const": true},
+              "candidate_generation_allowed": {"const": false},
+              "true_scalping_allowed": {"const": false},
+              "paper_or_live_unlock_allowed": {"const": false}
+            }
+          },
+          "blockers": {"minItems": 1}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "intraday_data_blocked"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "decision": {"const": "extend_intraday_public_history_before_distribution"},
+          "next_required_action": {"const": "repair_5m_15m_public_history_before_intraday_distribution_probe"},
+          "intraday_research_distribution_allowed": {"const": false},
+          "short_cycle_probe_allowed": {"const": false},
+          "blockers": {"minItems": 1}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "selectedResearchStyle": {
+      "type": "object",
+      "required": [
+        "style_id",
+        "status",
+        "primary_timeframes",
+        "holding_period_intent",
+        "core_hypothesis",
+        "not_scalping_because"
+      ],
+      "properties": {
+        "style_id": {"const": "intraday_short_cycle_alpha_v0"},
+        "status": {"enum": ["data_blocked", "ready_for_distribution_probe"]},
+        "primary_timeframes": {
+          "type": "array",
+          "prefixItems": [{"const": "5m"}, {"const": "15m"}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "holding_period_intent": {"const": "minutes_to_hours_not_sub_minute_scalping"},
+        "core_hypothesis": {"type": "string"},
+        "not_scalping_because": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "candidateFamily": {
+      "type": "object",
+      "required": ["family_id", "priority", "selection_status", "primary_edge_inputs"],
+      "properties": {
+        "family_id": {"type": "string"},
+        "priority": {"type": "integer", "minimum": 1},
+        "selection_status": {
+          "enum": [
+            "distribution_probe_backlog",
+            "context_overlay_not_primary_alpha",
+            "confirmation_only_until_orderbook_data_exists"
+          ]
+        },
+        "primary_edge_inputs": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "dataPrerequisites": {
+      "type": "object",
+      "required": [
+        "required_intervals",
+        "present_intervals",
+        "sample_start",
+        "sample_end",
+        "sample_days",
+        "min_sample_days",
+        "intervals",
+        "data_status",
+        "data_status_blockers"
+      ],
+      "properties": {
+        "required_intervals": {
+          "type": "array",
+          "prefixItems": [{"const": "5m"}, {"const": "15m"}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "present_intervals": {"type": "array", "items": {"type": "string"}},
+        "sample_start": {"type": "string"},
+        "sample_end": {"type": "string"},
+        "sample_days": {"type": "number", "minimum": 0},
+        "min_sample_days": {"const": 365.0},
+        "intervals": {
+          "type": "object",
+          "required": ["5m", "15m"],
+          "properties": {
+            "5m": {"$ref": "#/$defs/intervalPrerequisite"},
+            "15m": {"$ref": "#/$defs/intervalPrerequisite"}
+          },
+          "additionalProperties": false
+        },
+        "data_status": {"type": "string"},
+        "data_status_blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "intervalPrerequisite": {
+      "type": "object",
+      "required": [
+        "bar_count",
+        "min_required_bars",
+        "completeness_ratio",
+        "min_completeness_ratio",
+        "missing_bar_count",
+        "duplicate_bar_count"
+      ],
+      "properties": {
+        "bar_count": {"type": "integer", "minimum": 0},
+        "min_required_bars": {"type": "integer", "minimum": 1},
+        "completeness_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "min_completeness_ratio": {"const": 0.995},
+        "missing_bar_count": {"type": "integer", "minimum": 0},
+        "duplicate_bar_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "costContext": {
+      "type": "object",
+      "required": [
+        "status",
+        "fee_tier_verified",
+        "maker_fee_bps",
+        "taker_fee_bps",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "fee_tier_verified": {"type": "boolean"},
+        "maker_fee_bps": {"type": ["number", "null"], "minimum": 0},
+        "taker_fee_bps": {"type": ["number", "null"], "minimum": 0},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "acceptanceGates": {
+      "type": "object",
+      "required": [
+        "event_profit_factor_min",
+        "walk_forward_pass_rate_min",
+        "regime_pass_rate_min",
+        "cost_stress_required",
+        "ledger_fill_pnl_required",
+        "manifest_required",
+        "no_lookahead",
+        "candidate_generation_after_distribution_probe_only"
+      ],
+      "properties": {
+        "event_profit_factor_min": {"const": 1.15},
+        "walk_forward_pass_rate_min": {"const": 0.8},
+        "regime_pass_rate_min": {"const": 0.75},
+        "cost_stress_required": {"const": true},
+        "ledger_fill_pnl_required": {"const": true},
+        "manifest_required": {"const": true},
+        "no_lookahead": {"const": true},
+        "candidate_generation_after_distribution_probe_only": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "research_only",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "paper_or_live_unlock_allowed",
+        "intraday_research_distribution_allowed",
+        "short_cycle_probe_allowed",
+        "true_scalping_allowed",
+        "sub_minute_or_tick_scalping_allowed",
+        "maker_queue_assumption_without_orderbook_allowed",
+        "candidate_generation_allowed",
+        "strategy_skeleton_generation_allowed",
+        "pnl_from_fill_ledger_required",
+        "event_profit_factor_gate_required",
+        "cost_stress_required",
+        "walk_forward_required"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "intraday_research_distribution_allowed": {"type": "boolean"},
+        "short_cycle_probe_allowed": {"type": "boolean"},
+        "true_scalping_allowed": {"const": false},
+        "sub_minute_or_tick_scalping_allowed": {"const": false},
+        "maker_queue_assumption_without_orderbook_allowed": {"const": false},
+        "candidate_generation_allowed": {"const": false},
+        "strategy_skeleton_generation_allowed": {"const": false},
+        "pnl_from_fill_ledger_required": {"const": true},
+        "event_profit_factor_gate_required": {"const": true},
+        "cost_stress_required": {"const": true},
+        "walk_forward_required": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

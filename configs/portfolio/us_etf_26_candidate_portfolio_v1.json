@@ -1,0 +1,79 @@
+{
+  "schema_version": "us_etf_26_candidate_portfolio_config_v1",
+  "candidate_config": "configs/strategies/us_etf_26_candidate_freeze_v1.json",
+  "canonical_latest_pointer": "artifacts/us_equity_etf_26_canonical_backtest/latest_pointer.json",
+  "goal2_intake_report": "artifacts/us_equity_production_pit_intake/latest/us_equity_production_pit_intake_report.json",
+  "expected_canonical_run_id": "us-etf26-canonical-dabbf601cc921ae3",
+  "expected_canonical_code_commit": "dabd786b066ab761c11c7ed30f67218feb1511db",
+  "expected_canonical_manifest_sha256": "26ba9ce62602d14c4efdd9c7dcf3a33ccc9e363eab4c6cf472ca2c1967e0661b",
+  "expected_canonical_report_sha256": "f77fa582f64261fe9d850fbd4045e8d2e6f9b7ff75d2ff3877397db15c16d0e9",
+  "handoff_event": ".agent/handoffs/us-hf-etf26-shared-data-v1/data-ready-hf-etf26-1min-6d6b07e77962.json",
+  "handoff_event_id": "data-ready-hf-etf26-1min-6d6b07e77962",
+  "manifest_git_spec": "249bb1194c749e9db64553d72ca06b335b6332ea:.agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json",
+  "dataset_id": "us-equity-hf-etf26-1min",
+  "dataset_version": "hf-data-library-etf26-clean-1min-6d6b07e77962",
+  "aggregate_sha256": "f8f2f3244d26b8e6e59cc610444d9775658270cc66bb7951d87b8d9c28ca1629",
+  "symbol_file": "symbol=QQQ/QQQ_clean_1min.parquet",
+  "benchmark_symbol": "SPY",
+  "risk_estimation": {
+    "lookback_sessions": 252,
+    "minimum_symbol_sessions": 120,
+    "minimum_pairwise_sessions": 120,
+    "annualization_sessions": 252,
+    "target_annual_volatility": 0.2
+  },
+  "forecast_conversion": {
+    "signal_score_range": [0.0, 1.0],
+    "forecast_unit": "binary_long_state_not_expected_return",
+    "alpha_score_rule": "signal_strength_x_forecast_confidence",
+    "expected_return_calibration_available": false,
+    "expected_return_blocker": "forecast_alpha_calibration_unavailable_without_clean_oos_ic",
+    "canonical_target_rule": "alpha_score_x_frozen_exposure_multiplier_3x"
+  },
+  "constraints": {
+    "long_only": true,
+    "max_single_asset_weight": 1.0,
+    "max_sector_weight": 0.4,
+    "max_style_weight": 0.6,
+    "max_gross_exposure": 1.0,
+    "max_net_exposure": 1.0,
+    "max_leverage": 1.0,
+    "minimum_cash_weight": 0.0,
+    "max_turnover_per_rebalance": 3.0,
+    "max_annualized_turnover": 50.0,
+    "minimum_order_notional": 100.0,
+    "max_volume_participation_pct": 1.0,
+    "max_drawdown": 0.2,
+    "max_daily_loss": 0.075,
+    "max_stale_trading_sessions": 1
+  },
+  "instrument_models": {
+    "qqq_one_x": {
+      "symbol": "QQQ",
+      "exposure_multiplier": 1.0,
+      "embedded_daily_leverage": false,
+      "external_margin_financing": false,
+      "canonical_candidate": false
+    },
+    "qqq_synthetic_three_x": {
+      "symbol": "QQQ",
+      "exposure_multiplier": 3.0,
+      "embedded_daily_leverage": false,
+      "external_margin_financing": true,
+      "maintenance_margin_rate": 0.25,
+      "canonical_candidate": true,
+      "broker_executable": false,
+      "use": "danger_reference_research_only"
+    },
+    "tqqq_intrinsic_leverage": {
+      "symbol": "TQQQ",
+      "target_daily_exposure_multiplier": 3.0,
+      "embedded_daily_leverage": true,
+      "external_margin_financing": false,
+      "daily_reset_path_dependency": true,
+      "canonical_candidate": false,
+      "canonical_fills_available": false
+    }
+  },
+  "artifact_root": "artifacts/us_equity_etf_26_candidate_portfolio"
+}

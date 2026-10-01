@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/ibkr_historical_bars_probe_report.schema.json",
+  "title": "QuantStation VNEXT US Equity IBKR Historical Bars Probe Report",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "asset", "provider", "source_type", "status", "guardrails", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_ibkr_historical_bars_probe_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "provider": {"const": "ibkr"},
+    "source_type": {"const": "broker_historical_market_data_probe"},
+    "status": {"enum": ["pass", "partial", "blocked"]},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {"$ref": "#/$defs/guardrails"}
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "live_order_allowed",
+        "paper_or_live_unlock_allowed",
+        "private_account_endpoint_used",
+        "order_endpoint_used",
+        "broker_order_endpoint_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "live_order_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "private_account_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "broker_order_endpoint_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": true
+    }
+  }
+}

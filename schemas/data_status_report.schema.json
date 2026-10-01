@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/data_status_report.schema.json",
+  "title": "US Equity Data Status Report Filename Compatibility Schema",
+  "type": "object",
+  "required": ["schema_version", "asset", "status", "promotion_ready", "promotion_clean", "paper_queue_status", "live_status", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_data_status_report_v1"},
+    "asset": {"const": "us_equity"},
+    "status": {"type": "string", "minLength": 1},
+    "promotion_ready": {"const": false},
+    "promotion_clean": {"const": false},
+    "paper_queue_status": {"const": "locked"},
+    "live_status": {"const": "frozen"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

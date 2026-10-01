@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_macro_release_lag_policy_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Macro Release Lag Policy Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "asset",
+    "macro_source",
+    "fred_import_report",
+    "policy",
+    "source_checks",
+    "accepted_evidence_for_promotion",
+    "blockers",
+    "warnings",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_macro_release_lag_policy_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {
+      "enum": [
+        "research_lag_only_release_calendar_missing",
+        "blocked",
+        "macro_release_lag_policy_ready_for_validation"
+      ]
+    },
+    "asset": {"const": "us_equity"},
+    "macro_source": {
+      "type": "object",
+      "required": [
+        "path",
+        "exists",
+        "row_count",
+        "columns",
+        "required_columns",
+        "missing_required_columns",
+        "release_calendar_fields_present",
+        "release_calendar_fields",
+        "release_date_fields_present",
+        "release_date_fields",
+        "vintage_fields_present",
+        "vintage_fields",
+        "start_date",
+        "end_date"
+      ],
+      "properties": {
+        "path": {"type": "string"},
+        "exists": {"type": "boolean"},
+        "row_count": {"type": "integer", "minimum": 0},
+        "columns": {"type": "array", "items": {"type": "string"}},
+        "required_columns": {"type": "array", "items": {"type": "string"}},
+        "missing_required_columns": {"type": "array", "items": {"type": "string"}},
+        "release_calendar_fields_present": {"type": "boolean"},
+        "release_calendar_fields": {"type": "array", "items": {"type": "string"}},
+        "release_date_fields_present": {"type": "boolean"},
+        "release_date_fields": {"type": "array", "items": {"type": "string"}},
+        "vintage_fields_present": {"type": "boolean"},
+        "vintage_fields": {"type": "array", "items": {"type": "string"}},
+        "start_date": {"type": ["string", "null"]},
+        "end_date": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "fred_import_report": {
+      "type": "object",
+      "required": ["path", "status", "latest_common_date", "token_written_to_artifacts"],
+      "properties": {
+        "path": {"type": "string"},
+        "status": {"type": ["string", "null"]},
+        "latest_common_date": {"type": ["string", "null"]},
+        "token_written_to_artifacts": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "required": [
+        "macro_lag_days",
+        "lag_policy_type",
+        "research_interpretation",
+        "production_requirement",
+        "required_release_fields"
+      ],
+      "properties": {
+        "macro_lag_days": {"type": "integer", "minimum": 0},
+        "lag_policy_type": {"const": "calendar_row_shift"},
+        "research_interpretation": {"type": "string", "minLength": 1},
+        "production_requirement": {"type": "string", "minLength": 1},
+        "required_release_fields": {"type": "array", "items": {"type": "string"}, "contains": {"const": "available_at"}}
+      },
+      "additionalProperties": false
+    },
+    "source_checks": {
+      "type": "object",
+      "required": [
+        "alpha_signal_module",
+        "research_module",
+        "alpha_uses_cfg_macro_lag_shift",
+        "research_uses_cfg_macro_lag_shift",
+        "shift_expression"
+      ],
+      "properties": {
+        "alpha_signal_module": {"type": "string"},
+        "research_module": {"type": "string"},
+        "alpha_uses_cfg_macro_lag_shift": {"type": "boolean"},
+        "research_uses_cfg_macro_lag_shift": {"type": "boolean"},
+        "shift_expression": {"const": "macro.shift(cfg.macro_lag_days)"}
+      },
+      "additionalProperties": false
+    },
+    "accepted_evidence_for_promotion": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "research_lag_proxy_is_not_production_pit",
+        "promotion_clean_granted_by_this_report",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed"
+      ],
+      "properties": {
+        "research_lag_proxy_is_not_production_pit": {"type": "boolean"},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

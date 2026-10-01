@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "us_equity_operator_read_model.schema.json",
+  "title": "US Equity Operator Read Model Discovery Alias",
+  "description": "Filename-aligned discovery schema for the canonical US equity domain read model.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "domain",
+    "source_head",
+    "code_commit",
+    "generated_at_utc",
+    "freshness",
+    "status",
+    "gate_decision",
+    "promotion_evidence_ready",
+    "paper_ready",
+    "live_ready",
+    "layers",
+    "evidence",
+    "blockers",
+    "gate",
+    "safety",
+    "api_contract",
+    "team_context_contract",
+    "artifact_identity_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "us_equity_domain_read_model_v1"
+    },
+    "domain": {
+      "const": "us_equity"
+    },
+    "source_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "code_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "freshness": {
+      "enum": [
+        "current_head",
+        "blocked"
+      ]
+    },
+    "status": {
+      "enum": [
+        "blocked",
+        "current_read_only"
+      ]
+    },
+    "gate_decision": {
+      "const": "blocked_do_not_promote_or_start_paper"
+    },
+    "promotion_evidence_ready": {
+      "const": false
+    },
+    "paper_ready": {
+      "const": false
+    },
+    "live_ready": {
+      "const": false
+    },
+    "layers": {
+      "type": "object",
+      "required": [
+        "data",
+        "backtest",
+        "portfolio",
+        "oms",
+        "ledger",
+        "replay"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1
+    },
+    "blockers": {
+      "type": "array"
+    },
+    "gate": {
+      "type": "object",
+      "required": [
+        "decision",
+        "first_blocker",
+        "root_cause",
+        "owner",
+        "next_action"
+      ]
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "promotion_allowed",
+        "paper_allowed",
+        "live_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_access_allowed",
+        "paper_runner_started",
+        "paper_queue_write_allowed",
+        "real_order_submitted",
+        "withdraw_allowed",
+        "network_used"
+      ],
+      "additionalProperties": {
+        "const": false
+      }
+    },
+    "api_contract": {
+      "type": "object",
+      "required": [
+        "method",
+        "path",
+        "cache_control",
+        "read_only",
+        "side_effects",
+        "builder_triggered",
+        "runtime_triggered",
+        "order_path_registered"
+      ],
+      "properties": {
+        "method": {
+          "const": "GET"
+        },
+        "cache_control": {
+          "const": "no-store"
+        },
+        "read_only": {
+          "const": true
+        },
+        "side_effects": {
+          "const": false
+        },
+        "builder_triggered": {
+          "const": false
+        },
+        "runtime_triggered": {
+          "const": false
+        },
+        "order_path_registered": {
+          "const": false
+        }
+      }
+    },
+    "team_context_contract": {
+      "type": "object",
+      "required": [
+        "discovery_path",
+        "current_head_required",
+        "missing_is_blocked",
+        "stale_is_blocked"
+      ],
+      "properties": {
+        "discovery_path": {
+          "const": "artifacts/us_equity_strategy_production_line/latest/us_equity_operator_read_model.json"
+        },
+        "current_head_required": {
+          "const": true
+        },
+        "missing_is_blocked": {
+          "const": true
+        },
+        "stale_is_blocked": {
+          "const": true
+        }
+      }
+    },
+    "artifact_identity_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": true
+}

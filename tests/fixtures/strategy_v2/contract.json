@@ -1,0 +1,156 @@
+{
+  "schema_version": "strategy_v2_frozen_inference_contract_v1",
+  "usage": "research_only",
+  "output_kind": "frozen_inference",
+  "archive_manifest_git_spec": "165a446729f8c114748e1b20bbfcf0c91e75066e:.agent/data_manifests/m1-trend-environment-acceptance/m1-okx-59f5eb861-20260911.json",
+  "archive_aggregate_sha256": "593eb9f893c280703b26423f00a4eaff62542152110ebff1dd5b5ad69061bcde",
+  "calibration_evidence": {
+    "git_spec": "e0b7a08f88fcc20bbe56bb93de655469927cd902:tests/fixtures/strategy_v0/baseline.json",
+    "sha256": "bea6697f06cdd56e45aea1e315dcab10caf1b9b9e81e27c805ba14a80b6614e9"
+  },
+  "run_id": "m1-okx-qlib",
+  "candidate_id": "qlib_manifest_0de835a36fc243c1",
+  "strategy_id": "qlib_time_series_trend_v1",
+  "strategy_version": "qlib_time_series_trend_v1",
+  "source_code_version": "59f5eb86132fd0e386d1d4e733c9fbc53ff80d7e",
+  "model_id": "lgbm_causal_trend",
+  "profile_id": "okx_btc_trend_1h",
+  "feature_set": "causal_ohlcv_trend_v1",
+  "domain": "crypto",
+  "source": "okx",
+  "source_instrument": "BTCUSDT",
+  "venue_instrument": "BTC-USDT-SWAP",
+  "qlib_instrument": "BTC-USDT-SWAP",
+  "bar_size": "1h",
+  "qlib_frequency": "60min",
+  "data_version": "btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1",
+  "data_aggregate_sha256": "3a61fc915da66994294113cc7b2334a1da4c0e08bccf428a743564c863c8d680",
+  "artifact_sha256": {
+    "model.txt": "8b44ef4bc97be069c21240cbf70a78b7e2f29fc182b057925328503196e16b74",
+    "pred_score.parquet": "c6456f68c35c221d7f3d093723ab92f2cc0d2af34f8bae4544f2d41f296988e5",
+    "qlib_workflow_config.yaml": "783b91ab84a93cfb95e517d5e5ba713312b2a32d484ab8b38b1bd75a7f71f14f",
+    "qlib_strategy_manifest.json": "cdcf0791800f44e1df110b37c7edef8fc1c0d3b6aa1686a867dc2d163b9aefeb",
+    "research_trace.json": "f058e9dd3b2654c858026e93abb87e04b35b8c6b2cf83d8d089f070c40f8c9bc",
+    "research_decisions.jsonl": "c5458e48251e13d24533cc1e0327f8614e770aa0f46bc78ca190ce59ccbe6c11"
+  },
+  "feature_expressions": [
+    "$close/Ref($close,1)-1",
+    "$close/Ref($close,6)-1",
+    "$close/Ref($close,24)-1",
+    "$close/Ref($close,72)-1",
+    "$close/Mean($close,24)-1",
+    "$close/Mean($close,72)-1",
+    "Std($close/Ref($close,1)-1,24)",
+    "Std($close/Ref($close,1)-1,72)",
+    "($high-$low)/$close",
+    "($close-$open)/$open",
+    "$volume/Mean($volume,24)-1",
+    "$close/Max($high,72)-1",
+    "$close/Min($low,72)-1"
+  ],
+  "features_in_order": [
+    "ret_1h",
+    "ret_6h",
+    "ret_24h",
+    "ret_72h",
+    "ma_gap_24h",
+    "ma_gap_72h",
+    "vol_24h",
+    "vol_72h",
+    "range",
+    "body",
+    "volume_ratio",
+    "breakout_high",
+    "breakout_low"
+  ],
+  "infer_processors": [
+    {
+      "class": "Fillna",
+      "kwargs": {
+        "fields_group": "feature"
+      }
+    }
+  ],
+  "segments": {
+    "train": ["2025-12-25 00:00:00", "2026-04-29 00:00:00"],
+    "valid": ["2026-05-01 00:00:00", "2026-05-30 00:00:00"],
+    "test": ["2026-06-01 00:00:00", "2026-07-28 23:00:00"]
+  },
+  "handler_range": ["2025-12-22 00:00:00", "2026-07-29 23:00:00"],
+  "decision_count": 1392,
+  "model_internal_feature_names": [
+    "Column_0", "Column_1", "Column_2", "Column_3", "Column_4", "Column_5", "Column_6",
+    "Column_7", "Column_8", "Column_9", "Column_10", "Column_11", "Column_12"
+  ],
+  "loaded_tree_count": 1,
+  "calibration": {
+    "method": "validation_ols",
+    "intercept": -0.0005507704422562133,
+    "slope": 0.6609774067561168,
+    "sample_size": 697,
+    "clip_fraction": 0.05,
+    "score_units": "forward_return_12h",
+    "limitation": "validation_reused_for_early_stopping_not_independent_calibration_holdout"
+  },
+  "time_semantics": {
+    "event_time": "completed_bar_open_utc",
+    "available_time": "event_time_plus_1h",
+    "decision_time": "event_time_plus_1h",
+    "label_horizon_bars": 12,
+    "entry_delay_bars": 2,
+    "hypothetical_execution_time": "event_time_plus_2h_not_decision_time_plus_2h"
+  },
+  "policy_bindings": {
+    "position": {
+      "engine": "btc_risk_budget",
+      "risk_budget_fraction": 0.005,
+      "max_weight": 0.25,
+      "volatility_target_annual_configured": 0.2,
+      "volatility_target_applied": false
+    },
+    "exit": {
+      "hard_stop_fraction": 0.04,
+      "trailing_stop_fraction": 0.06,
+      "maximum_holding_bars": 72
+    },
+    "cost": {
+      "fee_bps_per_side": 5,
+      "funding": "immutable_realized_rate_prior_available_mark_proxy",
+      "slippage_bps_per_side": 3,
+      "spread_bps_per_side": 2,
+      "impact_bps_per_side": 2,
+      "fill": "next_delayed_open",
+      "execution_delay_bars": 2
+    }
+  },
+  "comparison": {
+    "prediction_atol": 1e-10,
+    "prediction_rtol": 1e-8,
+    "feature_atol": 0.0,
+    "feature_rtol": 0.0,
+    "tolerance_policy": "frozen_no_auto_widen"
+  },
+  "permissions": {
+    "promotion": false,
+    "paper": false,
+    "live": false,
+    "private": false,
+    "order": false,
+    "real_order": false,
+    "transfer": false,
+    "withdraw": false,
+    "execution_permission": false,
+    "runtime_observed": false
+  },
+  "non_goals": [
+    "no_training",
+    "no_search",
+    "no_target_position",
+    "no_exit_evaluation",
+    "no_risk_or_oms",
+    "no_fill_or_ledger",
+    "no_demo_or_live",
+    "no_archive_write",
+    "no_frontend_or_api"
+  ]
+}

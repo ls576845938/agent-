@@ -1,0 +1,38 @@
+{
+  "name": "quantstation-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node ./scripts/start-current-main.mjs",
+    "dev:worktree": "node ./scripts/start-current-main.mjs",
+    "build": "vite build",
+    "preview": "node ./scripts/start-current-main.mjs",
+    "clean": "node ./scripts/clean.mjs",
+    "identity:check": "node ./scripts/check-frontend-identity.mjs",
+    "identity:refresh": "node ./scripts/update-frontend-identity.mjs",
+    "identity:test": "node ./scripts/test-frontend-identity.mjs",
+    "identity:runtime-test": "node ./scripts/test-frontend-runtime-drift.mjs",
+    "check:btc-tradingview": "node ./scripts/check-btc-tradingview-entry.mjs",
+    "lint": "tsc --noEmit",
+    "test:status-cards": "playwright test e2e/status-cards.spec.ts",
+    "smoke": "node ./scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "@xyflow/react": "^12.12.0",
+    "elkjs": "^0.12.0",
+    "lightweight-charts": "5.2.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-router-dom": "^7.15.0",
+    "recharts": "^3.9.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.4.2"
+  }
+}

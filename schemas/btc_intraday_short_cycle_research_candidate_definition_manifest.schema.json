@@ -1,0 +1,338 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_intraday_short_cycle_research_candidate_definition_manifest.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_reports",
+    "review_subject",
+    "checks",
+    "blockers",
+    "candidate_definition",
+    "evidence_requirements",
+    "remaining_manual_or_external_blockers",
+    "remaining_blocker_summary",
+    "research_candidate_definition_manifest_ready",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "true_scalping_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_intraday_short_cycle_research_candidate_definition_manifest_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "scope": {"const": "research_candidate_definition_manifest_no_strategy_skeleton_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "blocked_research_candidate_definition_manifest_manual_review_required",
+        "blocked_research_candidate_definition_manifest_preflight_missing",
+        "blocked_research_candidate_definition_manifest_preflight_repair_required",
+        "ready_research_candidate_definition_manifest_only"
+      ]
+    },
+    "decision": {
+      "enum": [
+        "continue_research_manual_review_required",
+        "repair_research_candidate_definition_preflight_before_manifest",
+        "publish_research_candidate_definition_manifest_only"
+      ]
+    },
+    "next_required_action": {"type": "string"},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_definition_preflight",
+        "manual_review_packet",
+        "promotion_gate",
+        "drift_guarded_event_ledger",
+        "canonical_backtest_report",
+        "cost_stress_report",
+        "walk_forward_report",
+        "regime_report",
+        "tail_dependency_report",
+        "run_manifest"
+      ],
+      "properties": {
+        "candidate_definition_preflight": {"type": ["string", "null"]},
+        "manual_review_packet": {"type": ["string", "null"]},
+        "promotion_gate": {"type": ["string", "null"]},
+        "drift_guarded_event_ledger": {"type": ["string", "null"]},
+        "canonical_backtest_report": {"type": ["string", "null"]},
+        "cost_stress_report": {"type": ["string", "null"]},
+        "walk_forward_report": {"type": ["string", "null"]},
+        "regime_report": {"type": ["string", "null"]},
+        "tail_dependency_report": {"type": ["string", "null"]},
+        "run_manifest": {"type": ["string", "null"]}
+      }
+    },
+    "review_subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy_id", "variant_id", "family_id", "metrics", "gate"],
+      "properties": {
+        "strategy_id": {"type": "string"},
+        "variant_id": {"type": "string"},
+        "family_id": {"type": "string"},
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "trade_count",
+            "fill_count",
+            "profit_factor",
+            "event_profit_factor",
+            "walk_forward_pass_rate",
+            "regime_pass_rate"
+          ],
+          "properties": {
+            "trade_count": {"type": "integer"},
+            "fill_count": {"type": "integer"},
+            "profit_factor": {"type": ["number", "null"]},
+            "event_profit_factor": {"type": ["number", "null"]},
+            "walk_forward_pass_rate": {"type": ["number", "null"]},
+            "regime_pass_rate": {"type": ["number", "null"]}
+          }
+        },
+        "gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "passed"],
+          "properties": {
+            "status": {"type": "string"},
+            "passed": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preflight_present",
+        "preflight_ready_for_definition_manifest",
+        "preflight_allows_definition_manifest",
+        "manual_review_packet_approved",
+        "recorded_manual_review_approved",
+        "research_candidate_definition_allowed_by_review",
+        "candidate_generation_still_locked",
+        "strategy_skeleton_still_locked",
+        "paper_live_still_locked",
+        "true_scalping_still_locked",
+        "broker_private_order_paths_locked",
+        "blueprint_scope_candidate_definition_only",
+        "blueprint_required_next_artifact_manifest",
+        "source_run_id_present",
+        "source_strategy_version_present",
+        "source_data_version_present",
+        "params_hash_present",
+        "forbidden_outputs_include_strategy_code",
+        "forbidden_outputs_include_broker_order",
+        "forbidden_outputs_include_paper_live_runtime",
+        "forbidden_outputs_include_true_scalping_claim"
+      ],
+      "properties": {
+        "preflight_present": {"type": "boolean"},
+        "preflight_ready_for_definition_manifest": {"type": "boolean"},
+        "preflight_allows_definition_manifest": {"type": "boolean"},
+        "manual_review_packet_approved": {"type": "boolean"},
+        "recorded_manual_review_approved": {"type": "boolean"},
+        "research_candidate_definition_allowed_by_review": {"type": "boolean"},
+        "candidate_generation_still_locked": {"type": "boolean"},
+        "strategy_skeleton_still_locked": {"type": "boolean"},
+        "paper_live_still_locked": {"type": "boolean"},
+        "true_scalping_still_locked": {"type": "boolean"},
+        "broker_private_order_paths_locked": {"type": "boolean"},
+        "blueprint_scope_candidate_definition_only": {"type": "boolean"},
+        "blueprint_required_next_artifact_manifest": {"type": "boolean"},
+        "source_run_id_present": {"type": "boolean"},
+        "source_strategy_version_present": {"type": "boolean"},
+        "source_data_version_present": {"type": "boolean"},
+        "params_hash_present": {"type": "boolean"},
+        "forbidden_outputs_include_strategy_code": {"type": "boolean"},
+        "forbidden_outputs_include_broker_order": {"type": "boolean"},
+        "forbidden_outputs_include_paper_live_runtime": {"type": "boolean"},
+        "forbidden_outputs_include_true_scalping_claim": {"type": "boolean"}
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "candidate_definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "strategy_id",
+        "variant_id",
+        "family_id",
+        "definition_scope",
+        "source_run_id",
+        "source_strategy_version",
+        "source_data_version",
+        "params_hash",
+        "allowed_output",
+        "forbidden_outputs",
+        "strategy_may_emit_only",
+        "simulated_order_intent_only",
+        "strategy_may_call_broker",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "paper_runtime_entry_allowed",
+        "live_runtime_entry_allowed",
+        "true_scalping_claim_allowed"
+      ],
+      "properties": {
+        "candidate_id": {"type": "string"},
+        "strategy_id": {"type": "string"},
+        "variant_id": {"type": "string"},
+        "family_id": {"type": "string"},
+        "definition_scope": {"const": "research_candidate_definition_only"},
+        "source_run_id": {"type": "string"},
+        "source_strategy_version": {"type": "string"},
+        "source_data_version": {"type": "string"},
+        "params_hash": {"type": "string"},
+        "allowed_output": {"const": "research_candidate_definition_manifest"},
+        "forbidden_outputs": {"type": "array", "items": {"type": "string"}},
+        "strategy_may_emit_only": {
+          "type": "array",
+          "items": {"enum": ["Signal", "OrderIntent", "TargetPosition"]}
+        },
+        "simulated_order_intent_only": {"const": true},
+        "strategy_may_call_broker": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "paper_runtime_entry_allowed": {"const": false},
+        "live_runtime_entry_allowed": {"const": false},
+        "true_scalping_claim_allowed": {"const": false}
+      }
+    },
+    "evidence_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recorded_manual_review_approval",
+        "true_long_horizon_l2_tick_history",
+        "execution_latency_model",
+        "queue_position_model",
+        "paper_gate"
+      ],
+      "properties": {
+        "recorded_manual_review_approval": {"$ref": "#/$defs/evidenceRequirement"},
+        "true_long_horizon_l2_tick_history": {"$ref": "#/$defs/evidenceRequirement"},
+        "execution_latency_model": {"$ref": "#/$defs/evidenceRequirement"},
+        "queue_position_model": {"$ref": "#/$defs/evidenceRequirement"},
+        "paper_gate": {"$ref": "#/$defs/evidenceRequirement"}
+      }
+    },
+    "remaining_manual_or_external_blockers": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/remainingBlocker"}
+    },
+    "remaining_blocker_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "only_manual_or_external_blockers_remain",
+        "automated_engineering_blockers",
+        "manual_or_external_blocker_count",
+        "manifest_blocker_count"
+      ],
+      "properties": {
+        "only_manual_or_external_blockers_remain": {"type": "boolean"},
+        "automated_engineering_blockers": {"type": "array", "items": {"type": "string"}},
+        "manual_or_external_blocker_count": {"type": "integer", "minimum": 0},
+        "manifest_blocker_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "research_candidate_definition_manifest_ready": {"type": "boolean"},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "candidate_definition_manifest_only",
+        "strategy_code_generation_allowed",
+        "candidate_generation_allowed",
+        "strategy_skeleton_generation_allowed",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "real_orders_created",
+        "pnl_from_fill_ledger_required",
+        "paper_queue",
+        "live",
+        "approval_scope",
+        "true_scalping_claim_allowed"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "candidate_definition_manifest_only": {"const": true},
+        "strategy_code_generation_allowed": {"const": false},
+        "candidate_generation_allowed": {"const": false},
+        "strategy_skeleton_generation_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "pnl_from_fill_ledger_required": {"const": true},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"},
+        "approval_scope": {"const": "research_candidate_definition_only"},
+        "true_scalping_claim_allowed": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "evidenceRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "satisfied", "required_for"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "satisfied": {"type": "boolean"},
+        "required_for": {"type": "string"}
+      }
+    },
+    "remainingBlocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blocker", "category", "status", "required_for"],
+      "properties": {
+        "blocker": {"type": "string"},
+        "category": {
+          "enum": [
+            "manual_approval",
+            "real_long_horizon_market_data",
+            "execution_evidence",
+            "queue_evidence",
+            "paper_gate"
+          ]
+        },
+        "status": {"type": "string"},
+        "required_for": {"type": "string"}
+      }
+    }
+  }
+}

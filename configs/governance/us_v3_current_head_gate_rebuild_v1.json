@@ -1,0 +1,60 @@
+{
+  "schema_version": "us_v3_current_head_gate_rebuild_config_v1",
+  "goal_id": "US-V3-CURRENT-HEAD-GATE-REBUILD-01",
+  "domain": "us_equity",
+  "writer_contract": {
+    "single_writer": true,
+    "parallel_builders_allowed": false,
+    "latest_rollback_on_failure": true,
+    "network_allowed": false,
+    "secret_access_allowed": false,
+    "paper_ledger_write_allowed": false
+  },
+  "primary_step_order": [
+    "completion_dependency",
+    "next_action_queue",
+    "operator_unblock_packet",
+    "completion_audit",
+    "production_line",
+    "portfolio_promotion",
+    "paper_readiness",
+    "paper_roll",
+    "paper_evaluation",
+    "live_readiness",
+    "domain_read_model"
+  ],
+  "final_closure_order": [
+    "completion_dependency_final",
+    "next_action_queue_final",
+    "operator_unblock_packet_final",
+    "completion_audit_final"
+  ],
+  "authoritative_outputs": {
+    "receipt": "artifacts/us_equity_gate_rebuild/latest/us_equity_current_head_gate_rebuild.json",
+    "blocker_taxonomy": "artifacts/us_equity_gate_rebuild/latest/us_equity_current_head_blocker_taxonomy.json"
+  },
+  "artifact_health": {
+    "commit_mismatch": "stale_blocked",
+    "expired": "stale_blocked",
+    "input_hash_drift": "stale_blocked",
+    "valid_blocked_artifact_preferred_over_missing": true,
+    "wrapper_success_is_not_decision": true
+  },
+  "safety": {
+    "promotion_allowed": false,
+    "paper_allowed": false,
+    "paper_runner_started": false,
+    "paper_queue_write_allowed": false,
+    "live_allowed": false,
+    "live_order_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "broker_access_allowed": false,
+    "broker_calls_used": false,
+    "withdraw_allowed": false,
+    "demo_allowed": false,
+    "real_order_submitted": false,
+    "network_used": false,
+    "secret_accessed": false
+  }
+}

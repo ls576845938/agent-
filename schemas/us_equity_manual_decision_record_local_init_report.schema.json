@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_manual_decision_record_local_init_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Manual Decision Record Local Init Report",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "asset", "status", "guardrails", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_manual_decision_record_local_init_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["manual_decision_local_init_blocked", "manual_decision_local_initialized"]},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {"type": "object", "properties": {"manual_approval_recorded_by_this_report": {"const": false}, "paper_or_live_unlock_allowed": {"const": false}, "paper_simulation_allowed": {"const": false}, "live_order_allowed": {"const": false}, "private_endpoint_allowed": {"const": false}, "order_endpoint_allowed": {"const": false}, "broker_calls_used": {"const": false}, "real_order_submitted": {"const": false}}, "additionalProperties": true}
+  },
+  "additionalProperties": true
+}

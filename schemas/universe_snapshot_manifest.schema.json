@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/universe_snapshot_manifest.schema.json",
+  "title": "US Equity Universe Snapshot Manifest Filename Compatibility Schema",
+  "type": "object",
+  "required": ["schema_version", "source_type", "point_in_time_confirmed", "membership_events_available", "delisted_symbols_included", "identifier_mapping_available", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_universe_snapshot_manifest_v1"},
+    "source_type": {"enum": ["derived_from_bars", "production_pit_bundle"]},
+    "point_in_time_confirmed": {"type": "boolean"},
+    "membership_events_available": {"type": "boolean"},
+    "delisted_symbols_included": {"type": "boolean"},
+    "identifier_mapping_available": {"type": "boolean"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_completion_dependency_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Completion Dependency Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "summary",
+    "external_input_summary",
+    "dependency_groups",
+    "primary_next_action",
+    "milestones",
+    "blockers",
+    "operator_next_actions",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_completion_dependency_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["completion_dependencies_blocked", "completion_dependencies_satisfied"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["completion_dependencies_blocked", "completion_dependencies_satisfied"]},
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "decision": {"const": "continue_fail_closed_until_all_dependencies_satisfied"},
+    "summary": {
+      "type": "object",
+      "required": [
+        "milestone_count",
+        "passed_count",
+        "blocked_count",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "milestone_count": {"type": "integer", "minimum": 1},
+        "passed_count": {"type": "integer", "minimum": 0},
+        "blocked_count": {"type": "integer", "minimum": 0},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "external_input_summary": {
+      "type": "object",
+      "required": [
+        "vendor_drop_preflight_status",
+        "required_file_count",
+        "missing_file_count",
+        "ready_file_count",
+        "missing_required_filenames",
+        "ready_required_filenames",
+        "required_operator_inputs",
+        "operator_command_sequence",
+        "operator_action"
+      ],
+      "properties": {
+        "vendor_drop_preflight_status": {"type": "string"},
+        "required_file_count": {"type": "integer", "minimum": 0},
+        "missing_file_count": {"type": "integer", "minimum": 0},
+        "ready_file_count": {"type": "integer", "minimum": 0},
+        "missing_required_filenames": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "ready_required_filenames": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "required_operator_inputs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/required_operator_input"}
+        },
+        "operator_command_sequence": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "operator_action": {
+          "enum": [
+            "place_licensed_pit_csv_files_and_rerun_readiness",
+            "rerun_incoming_drop_readiness"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "dependency_groups": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/dependency_group"}
+    },
+    "primary_next_action": {
+      "anyOf": [
+        {"$ref": "#/$defs/primary_next_action"},
+        {"type": "null"}
+      ]
+    },
+    "milestones": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/milestone"}
+    },
+    "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "operator_next_actions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "source_reports": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "dependency_dashboard_only",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_calls_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "dependency_dashboard_only": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "milestone": {
+      "type": "object",
+      "required": ["milestone_id", "label", "dependency_type", "actionability", "passed", "blockers", "source_reports", "next_action"],
+      "properties": {
+        "milestone_id": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "dependency_type": {"$ref": "#/$defs/dependency_type"},
+        "actionability": {"$ref": "#/$defs/actionability"},
+        "passed": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "source_reports": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "next_action": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "dependency_group": {
+      "type": "object",
+      "required": [
+        "dependency_type",
+        "actionability",
+        "milestone_count",
+        "blocked_count",
+        "passed_count",
+        "milestone_ids",
+        "first_blockers",
+        "next_actions"
+      ],
+      "properties": {
+        "dependency_type": {"$ref": "#/$defs/dependency_type"},
+        "actionability": {"$ref": "#/$defs/actionability"},
+        "milestone_count": {"type": "integer", "minimum": 1},
+        "blocked_count": {"type": "integer", "minimum": 0},
+        "passed_count": {"type": "integer", "minimum": 0},
+        "milestone_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "first_blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "next_actions": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "primary_next_action": {
+      "type": "object",
+      "required": [
+        "milestone_id",
+        "dependency_type",
+        "actionability",
+        "first_blocker",
+        "next_action",
+        "source_reports"
+      ],
+      "properties": {
+        "milestone_id": {"type": "string", "minLength": 1},
+        "dependency_type": {"$ref": "#/$defs/dependency_type"},
+        "actionability": {"$ref": "#/$defs/actionability"},
+        "first_blocker": {"type": "string"},
+        "next_action": {"type": "string", "minLength": 1},
+        "source_reports": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "required_operator_input": {
+      "type": "object",
+      "required": ["filename", "target_path", "table", "blocker", "required_fields"],
+      "properties": {
+        "filename": {"type": "string", "minLength": 1},
+        "target_path": {"type": "string"},
+        "table": {"type": "string"},
+        "blocker": {"type": "string"},
+        "required_fields": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "dependency_type": {
+      "enum": [
+        "external_input",
+        "natural_time",
+        "manual_review",
+        "engineering",
+        "engineering_after_data",
+        "engineering_after_review",
+        "governance"
+      ]
+    },
+    "actionability": {
+      "enum": [
+        "waiting",
+        "manual",
+        "actionable",
+        "blocked_until_data",
+        "blocked_until_review",
+        "blocked_until_upstream"
+      ]
+    }
+  }
+}

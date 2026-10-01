@@ -1,0 +1,32 @@
+strategy_id: btc_perp_dual_trend_v4_eventpf_wf
+strategy_version: btc_perp_dual_trend_v4_eventpf_wf:eventpf_wf_v1
+evidence_source: canonical_event_ledger
+paper_auto_start: false
+live_enabled: false
+live_status: frozen
+params:
+  fast_ma: 96
+  slow_ma: 336
+  regime_ma: 720
+  momentum_window: 168
+  momentum_threshold: 0.03
+  vol_window: 168
+  max_volatility: 0.052
+  orderflow_window: 144
+  orderflow_veto_threshold: 0.012
+  allowed_long_regimes: [trending_up, expansion]
+  allowed_short_regimes: []
+  min_hold_bars: 120
+  cooldown_bars: 120
+  exit_hysteresis_bars: 8
+  max_hold_bars: 480
+  signal_scale: 0.2
+  orderflow_mode: no_orderflow
+  strategy_revision: eventpf_wf_v4
+  no_same_bar_flip: true
+  flat_then_confirm_reverse: true
+  reverse_confirmation_bars: 6
+  reverse_requires_regime_alignment: true
+  min_reentry_delay_bars: 120
+  short_signal_scale: 0.0
+  event_pf_bridge_required: true

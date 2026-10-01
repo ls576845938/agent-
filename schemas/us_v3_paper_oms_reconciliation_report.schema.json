@@ -1,0 +1,387 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_v3_paper_oms_reconciliation_report.schema.json",
+  "title": "US V3 Paper OMS Reconciliation Evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "decision",
+    "code_binding",
+    "fixture_run",
+    "lifecycle",
+    "scenario_results",
+    "uow",
+    "recovery",
+    "reconciliation",
+    "credential_review",
+    "evidence_classification",
+    "blockers",
+    "guardrails",
+    "artifact_identity_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "us_v3_paper_oms_reconciliation_v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "asset": {
+      "const": "us_equity"
+    },
+    "status": {
+      "const": "complete_quality_checked_paper_blocked"
+    },
+    "decision": {
+      "const": "fixture_execution_drill_complete_paper_not_started"
+    },
+    "code_binding": {
+      "type": "object",
+      "required": [
+        "code_commit",
+        "code_tree_hash",
+        "config_sha256"
+      ],
+      "properties": {
+        "code_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "code_tree_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "config_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "fixture_run": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "fake_adapter",
+        "injected_callbacks_only",
+        "injected_broker_snapshots_only",
+        "full_runtime_ledger_persisted_in_git",
+        "network_access"
+      ],
+      "properties": {
+        "run_id": {
+          "const": "us-v3-paper-oms-reconciliation-fixture-v1"
+        },
+        "fake_adapter": {
+          "const": true
+        },
+        "injected_callbacks_only": {
+          "const": true
+        },
+        "injected_broker_snapshots_only": {
+          "const": true
+        },
+        "full_runtime_ledger_persisted_in_git": {
+          "const": false
+        },
+        "network_access": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": [
+        "required_states",
+        "operational_states",
+        "observed_states",
+        "complete"
+      ],
+      "properties": {
+        "required_states": {
+          "const": [
+            "created",
+            "risk_checked",
+            "accepted",
+            "partial",
+            "filled",
+            "cancel",
+            "rejected",
+            "expired",
+            "unknown",
+            "reconciled"
+          ]
+        },
+        "operational_states": {
+          "type": "array",
+          "contains": {
+            "const": "cancel_pending"
+          },
+          "minContains": 1
+        },
+        "observed_states": {
+          "type": "array",
+          "uniqueItems": true,
+          "minItems": 11,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "complete": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "scenario_results": {
+      "type": "object",
+      "required": [
+        "idempotency",
+        "restart_idempotency",
+        "partial_fill",
+        "filled",
+        "cancel_pending_fail_closed",
+        "cancel_confirmation",
+        "market_closed",
+        "broker_outage",
+        "halted_new_order_blocked",
+        "out_of_order_callback",
+        "reconciliation_break",
+        "reconciliation_recovery",
+        "atomic_uow_rollback",
+        "crash_restart_recovery",
+        "truncated_log_fail_closed",
+        "credential_review_metadata_only"
+      ],
+      "properties": {
+        "idempotency": {"const": true},
+        "restart_idempotency": {"const": true},
+        "partial_fill": {"const": true},
+        "filled": {"const": true},
+        "cancel_pending_fail_closed": {"const": true},
+        "cancel_confirmation": {"const": true},
+        "market_closed": {"const": true},
+        "broker_outage": {"const": true},
+        "halted_new_order_blocked": {"const": true},
+        "out_of_order_callback": {"const": true},
+        "reconciliation_break": {"const": true},
+        "reconciliation_recovery": {"const": true},
+        "atomic_uow_rollback": {"const": true},
+        "crash_restart_recovery": {"const": true},
+        "truncated_log_fail_closed": {"const": true},
+        "credential_review_metadata_only": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "uow": {
+      "type": "object",
+      "required": [
+        "implementation",
+        "atomic_ledgers",
+        "fill_commit_operation_count",
+        "rollback_probe"
+      ],
+      "properties": {
+        "implementation": {
+          "const": "quant_us.live.paper_ledger_uow"
+        },
+        "atomic_ledgers": {
+          "const": [
+            "orders",
+            "fills",
+            "positions",
+            "cash",
+            "audit",
+            "state"
+          ]
+        },
+        "fill_commit_operation_count": {
+          "type": "integer",
+          "minimum": 6
+        },
+        "rollback_probe": {
+          "type": "object",
+          "required": [
+            "passed",
+            "rollback_succeeded",
+            "partial_ledger_files_present"
+          ],
+          "properties": {
+            "passed": {"const": true},
+            "rollback_succeeded": {"const": true},
+            "partial_ledger_files_present": {"const": false}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "recovery": {
+      "type": "object"
+    },
+    "reconciliation": {
+      "type": "object",
+      "required": [
+        "broken_snapshot",
+        "clean_snapshot",
+        "final_status",
+        "ledger_derived_cash",
+        "ledger_derived_positions"
+      ],
+      "properties": {
+        "broken_snapshot": {
+          "type": "object",
+          "required": ["status", "halt_new_orders"],
+          "properties": {
+            "status": {"const": "breaks_detected_fail_closed"},
+            "halt_new_orders": {"const": true}
+          },
+          "additionalProperties": true
+        },
+        "clean_snapshot": {
+          "type": "object",
+          "required": ["status", "halt_new_orders"],
+          "properties": {
+            "status": {"const": "reconciled_clean"},
+            "halt_new_orders": {"const": false}
+          },
+          "additionalProperties": true
+        },
+        "final_status": {
+          "const": "clean"
+        },
+        "ledger_derived_cash": {
+          "type": "number"
+        },
+        "ledger_derived_positions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "credential_review": {
+      "type": "object",
+      "required": [
+        "metadata_only",
+        "status",
+        "reviewer",
+        "reviewed_at",
+        "broker",
+        "account_hash",
+        "approval_ticket",
+        "permission_conclusion",
+        "blockers",
+        "secret_values_recorded",
+        "secret_read",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "can_unlock_paper"
+      ],
+      "properties": {
+        "metadata_only": {"const": true},
+        "status": {"const": "quality_checked"},
+        "reviewer": {"type": "string", "minLength": 1},
+        "reviewed_at": {"type": "string", "format": "date-time"},
+        "broker": {"type": "string", "minLength": 1},
+        "account_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "approval_ticket": {"type": "string", "minLength": 1},
+        "permission_conclusion": {"type": "string", "minLength": 1},
+        "blockers": {"type": "array", "maxItems": 0},
+        "secret_values_recorded": {"const": false},
+        "secret_read": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "can_unlock_paper": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "evidence_classification": {
+      "type": "object",
+      "required": [
+        "classification",
+        "quality_checked",
+        "real_paper_evidence",
+        "production_event_ledger",
+        "can_unlock_paper",
+        "can_unlock_live"
+      ],
+      "properties": {
+        "classification": {
+          "const": "fixture_execution_drill_quality_checked"
+        },
+        "quality_checked": {"const": true},
+        "real_paper_evidence": {"const": false},
+        "production_event_ledger": {"const": false},
+        "can_unlock_paper": {"const": false},
+        "can_unlock_live": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "paper_runner_started",
+        "paper_queue_write_allowed",
+        "paper_order_allowed",
+        "paper_simulation_allowed",
+        "paper_or_live_unlock_allowed",
+        "live_allowed",
+        "live_order_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "broker_endpoint_used",
+        "broker_call_used",
+        "network_used",
+        "secret_read",
+        "withdraw_allowed",
+        "demo_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "paper_runner_started": {"const": false},
+        "paper_queue_write_allowed": {"const": false},
+        "paper_order_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "broker_endpoint_used": {"const": false},
+        "broker_call_used": {"const": false},
+        "network_used": {"const": false},
+        "secret_read": {"const": false},
+        "withdraw_allowed": {"const": false},
+        "demo_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "artifact_identity_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false
+}

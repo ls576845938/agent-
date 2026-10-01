@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "btc_10s_microstructure_data_contract_report.schema.json",
+  "title": "BTC 10s microstructure research-admission data contract report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ticket_id",
+    "source_head",
+    "generated_at",
+    "decision",
+    "prediction_target",
+    "execution_baseline",
+    "legacy_natural_day_gate_modified",
+    "research_admission_uses_natural_days",
+    "source_evaluations",
+    "measured_metrics",
+    "readiness_matrix",
+    "next_research_authorization",
+    "blockers",
+    "execution_evidence_blockers",
+    "guardrails",
+    "semantic_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_10s_microstructure_data_contract_report_v1"},
+    "ticket_id": {"const": "BTC-10S-MICROSTRUCTURE-DATA-CONTRACT-01"},
+    "source_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "decision": {"enum": ["research_admission_ready", "blocked_insufficient_information"]},
+    "prediction_target": {"const": "future_10_30_60s_cost_adjusted_return_distribution"},
+    "execution_baseline": {"const": "taker_only"},
+    "legacy_natural_day_gate_modified": {"const": false},
+    "research_admission_uses_natural_days": {"const": false},
+    "source_evaluations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "manifest_git_spec",
+          "manifest_blob_sha256",
+          "dataset_id",
+          "dataset_version",
+          "aggregate_sha256",
+          "resolution_status",
+          "physical_path",
+          "full_file_hash_verified",
+          "fallback_used",
+          "blockers",
+          "measured"
+        ],
+        "properties": {
+          "manifest_git_spec": {"type": "string"},
+          "manifest_blob_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "dataset_id": {"type": "string"},
+          "dataset_version": {"type": "string"},
+          "aggregate_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "file_count": {"type": "integer", "minimum": 0},
+          "total_bytes": {"type": "integer", "minimum": 0},
+          "coverage": {"type": "object"},
+          "resolution_status": {
+            "enum": [
+              "resolved_verified",
+              "physical_version_missing",
+              "hash_or_manifest_verification_failed",
+              "verified_payload_semantic_parse_failed"
+            ]
+          },
+          "physical_path": {"type": "null"},
+          "full_file_hash_verified": {"type": "boolean"},
+          "fallback_used": {"const": false},
+          "blockers": {"type": "array", "items": {"type": "string"}},
+          "measured": {"type": "object"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "measured_metrics": {
+      "type": "object",
+      "required": [
+        "raw_counts",
+        "information_by_horizon",
+        "utc_4h_bucket_independent_60s_windows",
+        "weekday_independent_60s_windows",
+        "regime_cell_ess",
+        "quality",
+        "coverage",
+        "cost",
+        "reference_data",
+        "fields"
+      ]
+    },
+    "readiness_matrix": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["family", "horizon", "status", "execution_baseline", "measured", "required", "capabilities", "blockers"],
+        "properties": {
+          "family": {"enum": ["trade_imbalance_continuation", "micro_breakout", "sweep_absorption_reversal", "liquidation_cascade_recovery", "maker_queue"]},
+          "horizon": {"enum": ["10s", "30s", "60s"]},
+          "status": {"enum": ["ready", "blocked", "not_applicable"]},
+          "execution_baseline": {"const": "taker_only"},
+          "measured": {"type": "object"},
+          "required": {"type": "object"},
+          "capabilities": {"type": "object"},
+          "blockers": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "next_research_authorization": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["family", "horizon"],
+        "properties": {
+          "family": {"type": "string"},
+          "horizon": {"enum": ["10s", "30s", "60s"]}
+        }
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "execution_evidence_blockers": {
+      "type": "array",
+      "contains": {"const": "current_head_promotion_artifact_missing"}
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_or_ga_run",
+        "network_used",
+        "mutable_fallback_used",
+        "promotion_unlock_allowed",
+        "paper_or_live_unlock_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "real_order_submitted",
+        "transfer_or_withdraw_used"
+      ],
+      "properties": {
+        "model_or_ga_run": {"const": false},
+        "network_used": {"const": false},
+        "mutable_fallback_used": {"const": false},
+        "promotion_unlock_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "real_order_submitted": {"const": false},
+        "transfer_or_withdraw_used": {"const": false}
+      }
+    },
+    "semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

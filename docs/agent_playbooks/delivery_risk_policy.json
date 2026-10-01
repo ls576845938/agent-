@@ -1,0 +1,428 @@
+{
+  "schema_version": "delivery_change_risk_policy_v1",
+  "default_change_risk": "unclassified",
+  "change_risks": {
+    "observe_only": {
+      "rank": 0,
+      "independent_integrator_required": false,
+      "promotion_artifact_rebuild_required": false,
+      "backend_restart_required": false,
+      "fast_forward_main_allowed": false,
+      "requirements": ["scoped_dirty", "read_only_evidence"]
+    },
+    "demo_transport_hotfix": {
+      "rank": 1,
+      "independent_integrator_required": false,
+      "promotion_artifact_rebuild_required": false,
+      "backend_restart_required": true,
+      "fast_forward_main_allowed": true,
+      "requirements": [
+        "dedicated_sparse_producer",
+        "scoped_dirty",
+        "failure_first_regression",
+        "demo_safety_attestation",
+        "committed_deliverable",
+        "append_only_handoff_when_cross_agent",
+        "verified_commit_touch_set_and_handoff"
+      ],
+      "forbidden_changes": [
+        "strategy",
+        "risk",
+        "order_construction",
+        "private_ws_reconciliation",
+        "ledger",
+        "security",
+        "live_permissions"
+      ],
+      "backend_evidence_profile": "demo_quasi_live"
+    },
+    "demo_execution_semantics": {
+      "rank": 2,
+      "independent_integrator_required": true,
+      "promotion_artifact_rebuild_required": false,
+      "backend_restart_required": true,
+      "fast_forward_main_allowed": false,
+      "requirements": [
+        "dedicated_sparse_producer",
+        "scoped_dirty",
+        "failure_first_regression",
+        "demo_safety_attestation",
+        "append_only_handoff",
+        "independent_integrator"
+      ],
+      "backend_evidence_profile": "demo_quasi_live"
+    },
+    "promotion_evidence": {
+      "rank": 3,
+      "independent_integrator_required": true,
+      "promotion_artifact_rebuild_required": true,
+      "backend_restart_required": true,
+      "fast_forward_main_allowed": false,
+      "requirements": [
+        "independent_integrator",
+        "current_head_artifact",
+        "current_head_read_model",
+        "promotion_gate_rebuild"
+      ],
+      "backend_evidence_profile": "promotion_strict"
+    },
+    "live_execution": {
+      "rank": 4,
+      "independent_integrator_required": true,
+      "promotion_artifact_rebuild_required": true,
+      "backend_restart_required": true,
+      "fast_forward_main_allowed": false,
+      "requirements": [
+        "independent_integrator",
+        "current_head_artifact",
+        "current_head_read_model",
+        "promotion_gate_rebuild",
+        "explicit_human_authorization"
+      ],
+      "backend_evidence_profile": "promotion_strict"
+    },
+    "governance_control": {
+      "rank": 4,
+      "independent_integrator_required": true,
+      "promotion_artifact_rebuild_required": false,
+      "backend_restart_required": false,
+      "fast_forward_main_allowed": false,
+      "requirements": [
+        "dedicated_sparse_producer",
+        "scoped_dirty",
+        "governance_contract_regression",
+        "append_only_handoff",
+        "independent_integrator"
+      ]
+    },
+    "research_readonly_release": {
+      "rank": 2,
+      "independent_integrator_required": true,
+      "promotion_artifact_rebuild_required": false,
+      "backend_restart_required": true,
+      "fast_forward_main_allowed": false,
+      "backend_evidence_profile": "research_readonly",
+      "readiness_ceiling": "quality_checked",
+      "requirements": [
+        "explicit_research_release_ticket", "dedicated_sparse_producer", "scoped_dirty",
+        "failure_first_regression", "committed_deliverable", "append_only_handoff",
+        "independent_integrator", "fresh_context_after_governance_activation",
+        "current_main_readonly_publication_acceptance", "verified_rollback_point"
+      ],
+      "allowed_capabilities": [
+        "research_producers", "research_read_models", "research_frontend",
+        "research_evidence", "documentation", "tests"
+      ],
+      "forbidden_changes": [
+        "strategy_signal", "position", "exit", "risk", "oms", "protection", "ledger",
+        "broker_transport", "private_ws_reconciliation", "security", "trading_permissions",
+        "runtime_artifact_store", "runtime_artifact_publication", "promotion", "live_execution",
+        "governance"
+      ],
+      "protected_path_prefixes": [
+        "quant_crypto/", "quant_shared/runtime/", "quant_shared/strategy_runtime/",
+        "quant_us/live/", "quant_us/oms/", "quant_us/risk/", "quant_cn/execution/",
+        "backend/app/services/btc_demo_runtime.py", "backend/app/core/security",
+        "scripts/start_backend_current_main", "scripts/start_frontend_current_main",
+        "start-backend.cmd", "start-frontend.cmd", ".codex/", ".agents/",
+        "AGENTS.md", "tools/agent_governance/", "docs/agent_playbooks/"
+      ],
+      "required_checks": [
+        "explicit_user_authorization", "fresh_context", "scoped_clean", "committed_handoff_verified",
+        "independent_review", "execution_semantics_unchanged", "sealed_evidence_integrity",
+        "exact_source_versions_and_staleness", "immutable_data_resolver", "readonly_data_discovery",
+        "current_main_identity", "canonical_browser_acceptance", "rollback_point_verified"
+      ],
+      "required_false_flags": [
+        "demo_control_enabled", "promotion", "paper", "live", "private", "order",
+        "real_order", "transfer", "withdraw", "execution_permission", "runtime_observed"
+      ],
+      "documentation": "docs/agent_playbooks/research_readonly_release.md"
+    },
+    "unclassified": {
+      "rank": 5,
+      "independent_integrator_required": true,
+      "promotion_artifact_rebuild_required": true,
+      "backend_restart_required": true,
+      "fast_forward_main_allowed": false,
+      "requirements": [
+        "legacy_conservative_rule_selection",
+        "dedicated_sparse_producer",
+        "append_only_handoff",
+        "independent_integrator",
+        "current_head_artifact_when_applicable"
+      ],
+      "backend_evidence_profile": "promotion_strict"
+    }
+  },
+  "strategy_v1_readonly_delivery": {
+    "schema_version": "strategy_v1_readonly_delivery_contract_v1",
+    "receipt_schema_version": "strategy_v1_readonly_delivery_receipt_v1",
+    "ticket_id": "STRATEGY-V1-DONCHIAN-OFFLINE",
+    "source_change_risk": "demo_execution_semantics",
+    "deployment_profile": "research_readonly",
+    "evidence_kind": "offline_execution",
+    "touch_set_approval_role": "architect",
+    "readiness_ceiling": "quality_checked",
+    "independent_integrator_required": true,
+    "promotion_artifact_rebuild_required": false,
+    "backend_restart_required": true,
+    "allowed_phases": [
+      "source_review",
+      "deployment_acceptance"
+    ],
+    "required_source_checks": [
+      "dedicated_sparse_producer",
+      "scoped_dirty",
+      "scoped_clean",
+      "failure_first_regression",
+      "demo_safety_attestation",
+      "architect_touch_set_artifact_verified",
+      "source_commit_verified",
+      "source_handoff_commit_verified",
+      "source_review_commit_verified",
+      "source_review_report_verified",
+      "v0_baseline_verified",
+      "original_donchian_behavior_unchanged",
+      "execution_authority_chain_reused",
+      "recovery_verified",
+      "duplicate_event_dedup_verified",
+      "duplicate_fill_dedup_verified",
+      "ledger_replay_consistent",
+      "deterministic_decision_evidence_linkage",
+      "append_only_handoff",
+      "committed_handoff_verified",
+      "exact_commit_and_touch_set",
+      "no_network_private_or_transport_change",
+      "independent_source_review",
+      "independent_integrator"
+    ],
+    "required_deployment_checks": [
+      "fresh_context_after_governance_activation",
+      "source_review_receipt_verified",
+      "sealed_offline_evidence_integrity",
+      "exact_source_versions_and_staleness",
+      "readonly_evidence_discovery",
+      "offline_execution_type_verified",
+      "no_similar_record_fallback",
+      "research_readonly_controls_disabled",
+      "committed_deployment_handoff_verified",
+      "independent_deployment_review",
+      "deployment_contains_reviewed_source_commit",
+      "reviewed_source_files_unchanged",
+      "deployment_delta_is_readonly_only",
+      "deployment_handoff_verified",
+      "current_main_identity",
+      "canonical_browser_acceptance",
+      "rollback_point_verified"
+    ],
+    "required_false_flags": [
+      "demo_control_enabled",
+      "promotion",
+      "paper",
+      "live",
+      "private",
+      "order",
+      "real_order",
+      "transfer",
+      "withdraw",
+      "execution_permission",
+      "runtime_worker_enabled",
+      "runtime_observed"
+    ],
+    "allowed_source_capabilities": [
+      "donchian_offline_input_injection",
+      "deterministic_offline_clock_injection",
+      "deterministic_decision_evidence_linkage",
+      "sealed_offline_execution_evidence",
+      "offline_runtime_state_projection",
+      "persistent_ledger_replay_verification",
+      "reduce_only_signal_forecast_source_identity_binding",
+      "reduce_only_runtime_action_projection",
+      "documentation",
+      "tests"
+    ],
+    "forbidden_source_changes": [
+      "strategy_parameters",
+      "strategy_signal_economics",
+      "position_economics",
+      "quantity_economics",
+      "exit_economics",
+      "risk_semantics",
+      "oms_semantics",
+      "protection_semantics",
+      "ledger_semantics",
+      "broker_transport",
+      "private_ws_reconciliation",
+      "security",
+      "trading_permissions",
+      "automatic_runtime_worker",
+      "demo_activation",
+      "paper_activation",
+      "live_activation"
+    ],
+    "protected_source_path_prefixes": [
+      "backend/app/core/security",
+      "integrations/",
+      "quant_shared/runtime/permissions",
+      "scripts/start_backend_current_main",
+      "scripts/start_frontend_current_main",
+      "start-backend.cmd",
+      "start-frontend.cmd",
+      ".codex/",
+      ".agents/",
+      "AGENTS.md"
+    ],
+    "allowed_source_path_prefixes": [
+      "quant_crypto/application/",
+      "quant_crypto/monitoring/",
+      "quant_crypto/oms/",
+      "quant_crypto/runtime/",
+      "tests/",
+      "docs/architecture/",
+      "docs/operations/"
+    ],
+    "allowed_source_paths": [
+      "quant_shared/strategy_runtime/decision_envelope.py",
+      "quant_crypto/portfolio/decision.py"
+    ],
+    "allowed_deployment_capabilities": [
+      "offline_execution_read_models",
+      "research_frontend",
+      "offline_execution_evidence",
+      "documentation",
+      "tests"
+    ],
+    "protected_deployment_path_prefixes": [
+      "quant_crypto/",
+      "quant_shared/runtime/",
+      "quant_shared/strategy_runtime/",
+      "quant_us/live/",
+      "quant_us/oms/",
+      "quant_us/risk/",
+      "quant_cn/execution/",
+      "backend/app/services/btc_demo_runtime.py",
+      "backend/app/core/security",
+      "scripts/start_backend_current_main",
+      "scripts/start_frontend_current_main",
+      "start-backend.cmd",
+      "start-frontend.cmd",
+      ".codex/",
+      ".agents/",
+      "AGENTS.md",
+      "tools/agent_governance/",
+      "docs/agent_playbooks/"
+    ],
+    "documentation": "docs/agent_playbooks/strategy_v1_readonly_delivery.md"
+  },
+  "strategy_v3_readonly_delivery": {
+    "schema_version": "strategy_v3_readonly_delivery_contract_v1",
+    "ticket_id": "V3-READONLY-DELIVERY-20260920",
+    "source_commit": "aca55c90d82b327800e473774e22dbbeac69bd90",
+    "baseline_commit": "b920d131e41ecbfe7f76f0709affbe22c8b35f5e",
+    "source_change_risk": "demo_execution_semantics",
+    "deployment_profile": "research_readonly",
+    "evidence_kind": "offline_execution",
+    "readiness_ceiling": "quality_checked",
+    "independent_integrator_required": true,
+    "promotion_artifact_rebuild_required": false,
+    "backend_restart_required": true,
+    "required_source_checks": [
+      "explicit_user_authorization",
+      "dedicated_sparse_producer",
+      "scoped_dirty",
+      "scoped_clean",
+      "failure_first_regression",
+      "demo_safety_attestation",
+      "append_only_handoff",
+      "independent_integrator",
+      "upstream_reviews_verified",
+      "frozen_source_inventory_verified",
+      "governance_independently_reviewed",
+      "no_new_execution_semantics"
+    ],
+    "required_deployment_checks": [
+      "fresh_reviewed_governance_context",
+      "frozen_source_unchanged",
+      "readonly_profile_verified",
+      "current_main_identity",
+      "offline_entry_run_and_resume",
+      "canonical_browser_acceptance",
+      "evidence_kind_and_staleness_truthful",
+      "rollback_point_verified",
+      "no_private_or_trading_access"
+    ],
+    "required_false_flags": [
+      "demo_control_enabled",
+      "promotion",
+      "paper",
+      "live",
+      "private",
+      "order",
+      "real_order",
+      "transfer",
+      "withdraw",
+      "execution_permission",
+      "runtime_worker_enabled",
+      "runtime_observed"
+    ],
+    "documentation": "docs/agent_playbooks/strategy_v3_readonly_delivery.md"
+  },
+  "donchian_history_readonly_delivery": {
+    "schema_version": "donchian_history_readonly_delivery_contract_v1",
+    "ticket_id": "DONCHIAN-HISTORY-READONLY-GOVERNANCE-20260922",
+    "source_commit": "7fef4db378aef350a45c9ee716338103ecc5031e",
+    "baseline_commit": "31e3e882e69e983aa88c01ccdf517236e0172e75",
+    "source_change_risk": "demo_execution_semantics",
+    "deployment_profile": "research_readonly",
+    "evidence_kind": "offline_historical_replay",
+    "readiness_ceiling": "quality_checked",
+    "independent_integrator_required": true,
+    "promotion_artifact_rebuild_required": false,
+    "backend_restart_required": true,
+    "required_source_checks": [
+      "explicit_user_authorization",
+      "dedicated_sparse_producer",
+      "scoped_clean",
+      "upstream_handoff_verified",
+      "independent_business_integration_verified",
+      "frozen_source_inventory_verified",
+      "regression_316_and_existing_skip_verified",
+      "historical_800_resume_and_ledger_verified",
+      "legacy_800_parity_verified",
+      "governance_independent_review_verified",
+      "no_new_source_delta",
+      "no_private_or_trading_access"
+    ],
+    "required_deployment_checks": [
+      "fresh_governance_context",
+      "frozen_source_unchanged",
+      "readonly_profile_verified",
+      "readonly_cli_entry_verified",
+      "main_exact_deployment_commit",
+      "canonical_backend_identity",
+      "canonical_frontend_identity",
+      "registered_listeners_and_health",
+      "architecture_page_acceptance",
+      "donchian_stage_page_acceptance",
+      "historical_sources_truthfully_labeled",
+      "rollback_point_verified",
+      "no_private_or_trading_access"
+    ],
+    "required_false_flags": [
+      "demo_control_enabled",
+      "promotion",
+      "paper",
+      "live",
+      "private",
+      "order",
+      "real_order",
+      "transfer",
+      "withdraw",
+      "execution_permission",
+      "runtime_worker_enabled",
+      "runtime_observed"
+    ],
+    "documentation": "docs/agent_playbooks/donchian_history_readonly_delivery.md"
+  }
+}

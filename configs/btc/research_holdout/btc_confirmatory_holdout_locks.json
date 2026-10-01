@@ -1,0 +1,109 @@
+{
+  "global_policy": {
+    "default_for_new_btc_research": "check_selection_window_violations_before_parameter_search",
+    "live_unlock_allowed": false,
+    "paper_queue_write_allowed": false,
+    "parameter_search_requires_no_overlap_with_forbidden_locked_windows": true
+  },
+  "latest_common_history_end": "2026-06-28T23:59:59.999000+00:00",
+  "lock_config_hash": "8ba0426f41762682",
+  "lock_config_id": "btc_confirmatory_holdout_locks_current",
+  "locked_windows": [
+    {
+      "allowed_uses": [
+        "audit_replay",
+        "fixed_parameter_regression",
+        "historical_context"
+      ],
+      "already_seen_by_human_or_report": true,
+      "clean_pre_selection_holdout": false,
+      "forbidden_uses": [
+        "parameter_search",
+        "candidate_ranking",
+        "ga_fitness",
+        "threshold_tuning",
+        "watchlist_replacement",
+        "paper_promotion_evidence_as_sole_basis"
+      ],
+      "line": "long_short_donchian_top5",
+      "lock_id": "btc_ls_top5_historical_confirmation_holdout_v1",
+      "lock_type": "historical_confirmation_holdout_already_reviewed",
+      "locked_before_next_search": true,
+      "source_artifact": "artifacts/btc_long_short_top5_review/latest/btc_long_short_top5_review_report.json",
+      "source_note": "The formal shortlist was already selected from the full historical report. This review is a post-selection confirmation stress, not fresh unseen market data.",
+      "window": {
+        "end_inclusive": "2026-06-28T23:59:59.999000+00:00",
+        "row_count": 1092,
+        "start_inclusive": "2025-12-29T03:59:59.999000+00:00"
+      }
+    },
+    {
+      "allowed_uses": [
+        "audit_replay",
+        "fixed_parameter_regression",
+        "historical_context"
+      ],
+      "already_seen_by_human_or_report": true,
+      "clean_pre_selection_holdout": false,
+      "forbidden_uses": [
+        "parameter_search",
+        "candidate_ranking",
+        "ga_fitness",
+        "threshold_tuning",
+        "watchlist_replacement",
+        "paper_promotion_evidence_as_sole_basis"
+      ],
+      "line": "high_octane_attack_sleeve_v2",
+      "lock_id": "btc_high_octane_v2_selection_consumed_history_v1",
+      "lock_type": "selection_consumed_history_not_clean_holdout",
+      "locked_before_next_search": true,
+      "source_artifact": "artifacts/btc_high_octane_attack_sleeve_lab/latest/btc_high_octane_attack_sleeve_lab_report.json",
+      "source_note": "High-Octane v2 was selected from this full historical grid window; future tuning must not reuse it as clean confirmation.",
+      "window": {
+        "end_inclusive": "2026-06-28T23:59:59.999000+00:00",
+        "row_count": 5460,
+        "start_inclusive": "2024-01-01T03:59:59.999000+00:00"
+      }
+    },
+    {
+      "allowed_uses": [
+        "observe_only_signal_recording",
+        "no_order_forward_monitoring"
+      ],
+      "already_seen_by_human_or_report": false,
+      "clean_pre_selection_holdout": true,
+      "forbidden_uses": [
+        "parameter_search",
+        "candidate_ranking",
+        "ga_fitness",
+        "threshold_tuning",
+        "watchlist_replacement",
+        "paper_promotion_evidence_as_sole_basis",
+        "paper_candidate_creation",
+        "live_unlock"
+      ],
+      "line": "btc_all_current_research_lines",
+      "lock_id": "btc_post_20260628_forward_observe_only_v1",
+      "lock_type": "future_confirmatory_holdout_observe_only",
+      "locked_before_next_search": true,
+      "source_artifact": "artifacts/btc_strategy_bar_replay_visibility/latest/btc_strategy_bar_replay_visibility_report.json",
+      "source_note": "New data after the latest completed common history is reserved for 30/60 day observe-only confirmation.",
+      "window": {
+        "end_inclusive": "2026-08-27T23:59:59.999000+00:00",
+        "open_until_observation_complete": true,
+        "planned_30d_end_inclusive": "2026-07-28T23:59:59.999000+00:00",
+        "planned_60d_end_inclusive": "2026-08-27T23:59:59.999000+00:00",
+        "start_exclusive": "2026-06-28T23:59:59.999000+00:00"
+      }
+    }
+  ],
+  "schema_version": "btc_confirmatory_holdout_lock_config_v1",
+  "source_reports": {
+    "bar_replay_report_commit": "219758d0",
+    "bar_replay_report_path": "artifacts/btc_strategy_bar_replay_visibility/latest/btc_strategy_bar_replay_visibility_report.json",
+    "high_octane_report_commit": "580d3136",
+    "high_octane_report_path": "artifacts/btc_high_octane_attack_sleeve_lab/latest/btc_high_octane_attack_sleeve_lab_report.json",
+    "long_short_report_commit": "768550e3",
+    "long_short_top5_report_path": "artifacts/btc_long_short_top5_review/latest/btc_long_short_top5_review_report.json"
+  }
+}

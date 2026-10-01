@@ -1,0 +1,391 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "us_equity_domain_read_model.schema.json",
+  "title": "US Equity Domain Read Model",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "domain",
+    "source_head",
+    "code_commit",
+    "generated_at_utc",
+    "freshness",
+    "status",
+    "current_stage",
+    "readiness_class",
+    "gate_decision",
+    "promotion_evidence_ready",
+    "paper_ready",
+    "live_ready",
+    "layers",
+    "evidence",
+    "blockers",
+    "gate",
+    "safety",
+    "api_contract",
+    "team_context_contract",
+    "artifact_identity_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "us_equity_domain_read_model_v1"
+    },
+    "domain": {
+      "const": "us_equity"
+    },
+    "source_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "code_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "freshness": {
+      "enum": [
+        "current_head",
+        "blocked"
+      ]
+    },
+    "status": {
+      "enum": [
+        "blocked",
+        "current_read_only"
+      ]
+    },
+    "current_stage": {
+      "enum": [
+        "blocked_external_data",
+        "research_only_fail_closed"
+      ]
+    },
+    "readiness_class": {
+      "enum": [
+        "quality_checked",
+        "research_ready",
+        "backtest_ready",
+        "promotion_evidence_ready"
+      ]
+    },
+    "gate_decision": {
+      "const": "blocked_do_not_promote_or_start_paper"
+    },
+    "promotion_evidence_ready": {
+      "const": false
+    },
+    "paper_ready": {
+      "const": false
+    },
+    "live_ready": {
+      "const": false
+    },
+    "layers": {
+      "type": "object",
+      "required": [
+        "data",
+        "backtest",
+        "portfolio",
+        "oms",
+        "ledger",
+        "replay"
+      ],
+      "additionalProperties": {
+        "$ref": "#/$defs/layer"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/blocker"
+      }
+    },
+    "gate": {
+      "type": "object",
+      "required": [
+        "decision",
+        "first_blocker",
+        "root_cause",
+        "owner",
+        "next_action"
+      ],
+      "properties": {
+        "decision": {
+          "const": "blocked_do_not_promote_or_start_paper"
+        },
+        "first_blocker": {
+          "type": "string"
+        },
+        "root_cause": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "next_action": {
+          "type": "string"
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "promotion_allowed",
+        "paper_allowed",
+        "live_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_access_allowed",
+        "paper_runner_started",
+        "paper_queue_write_allowed",
+        "real_order_submitted",
+        "withdraw_allowed",
+        "network_used"
+      ],
+      "additionalProperties": {
+        "const": false
+      }
+    },
+    "api_contract": {
+      "type": "object",
+      "required": [
+        "method",
+        "path",
+        "cache_control",
+        "read_only",
+        "side_effects",
+        "builder_triggered",
+        "runtime_triggered",
+        "order_path_registered"
+      ],
+      "properties": {
+        "method": {
+          "const": "GET"
+        },
+        "path": {
+          "const": "/api/research/us-equity/domain-read-model"
+        },
+        "cache_control": {
+          "const": "no-store"
+        },
+        "read_only": {
+          "const": true
+        },
+        "side_effects": {
+          "const": false
+        },
+        "builder_triggered": {
+          "const": false
+        },
+        "runtime_triggered": {
+          "const": false
+        },
+        "order_path_registered": {
+          "const": false
+        }
+      }
+    },
+    "team_context_contract": {
+      "type": "object",
+      "required": [
+        "discovery_path",
+        "current_head_required",
+        "missing_is_blocked",
+        "stale_is_blocked"
+      ],
+      "properties": {
+        "discovery_path": {
+          "const": "artifacts/us_equity_strategy_production_line/latest/us_equity_operator_read_model.json"
+        },
+        "current_head_required": {
+          "const": true
+        },
+        "missing_is_blocked": {
+          "const": true
+        },
+        "stale_is_blocked": {
+          "const": true
+        }
+      }
+    },
+    "artifact_identity_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "$defs": {
+    "binding": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?![A-Za-z]:)(?!/)(?!.*\\\\).+$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "layer": {
+      "type": "object",
+      "required": [
+        "status",
+        "freshness",
+        "readiness_class",
+        "evidence_id",
+        "artifact_path",
+        "artifact_sha256",
+        "manifest_path",
+        "manifest_sha256",
+        "integration_commit"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "freshness": {
+          "enum": [
+            "current_head",
+            "blocked"
+          ]
+        },
+        "readiness_class": {
+          "enum": [
+            "quality_checked",
+            "research_ready",
+            "backtest_ready",
+            "promotion_evidence_ready"
+          ]
+        },
+        "evidence_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifact_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifact_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "manifest_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "manifest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "integration_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "id",
+        "integration_commit",
+        "freshness",
+        "status",
+        "decision",
+        "readiness_class",
+        "artifact",
+        "manifest",
+        "validation_blockers"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "integration_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "freshness": {
+          "enum": [
+            "current_head",
+            "blocked"
+          ]
+        },
+        "status": {
+          "type": "string"
+        },
+        "decision": {
+          "type": "string"
+        },
+        "readiness_class": {
+          "enum": [
+            "quality_checked",
+            "research_ready",
+            "backtest_ready",
+            "promotion_evidence_ready"
+          ]
+        },
+        "artifact": {
+          "$ref": "#/$defs/binding"
+        },
+        "manifest": {
+          "$ref": "#/$defs/binding"
+        },
+        "validation_blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "required": [
+        "code",
+        "source",
+        "root_cause",
+        "owner",
+        "next_action"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "root_cause": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

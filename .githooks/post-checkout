@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+[ "${AGENT_AUTO_SPARSE_IN_PROGRESS:-}" = "1" ] && exit 0
+
+HOOK_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+py -3 "$HOOK_DIR/../tools/agent_governance/worktree_storage_bootstrap.py" \
+  --repo-root "$(git rev-parse --show-toplevel)"
+
+command -v git-lfs >/dev/null 2>&1 || {
+  printf >&2 "\n%s\n\n" "This repository requires Git LFS, but git-lfs is unavailable."
+  exit 2
+}
+git lfs post-checkout "$@"

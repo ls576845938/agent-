@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_top1_higher_vol_leverage_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Top1 Higher Vol Leverage Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "live_ready",
+    "paper_ready",
+    "strategy_id",
+    "asset_selection_bias_guard",
+    "leverage_model",
+    "financing_rate",
+    "primary_parameters",
+    "benchmarks",
+    "base_unlevered",
+    "variants",
+    "ranking",
+    "decision",
+    "methodology"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_top1_higher_vol_leverage_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "research_only_no_live_or_paper"},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "strategy_id": {"type": "string", "minLength": 1},
+    "asset_selection_bias_guard": {"type": "string", "pattern": "No QQQ/sector/technology preference"},
+    "leverage_model": {"const": "portfolio_return_overlay_no_asset_selection_changes"},
+    "financing_rate": {"type": "number", "exclusiveMinimum": 0},
+    "primary_parameters": {"type": "object", "minProperties": 1},
+    "benchmarks": {
+      "type": "object",
+      "required": ["SPY", "QQQ"],
+      "properties": {
+        "SPY": {"$ref": "#/$defs/performance"},
+        "QQQ": {"$ref": "#/$defs/performance"}
+      },
+      "additionalProperties": false
+    },
+    "base_unlevered": {"$ref": "#/$defs/variant"},
+    "variants": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/variant"}},
+    "ranking": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/variant"}},
+    "decision": {
+      "type": "object",
+      "required": ["status", "live_ready", "paper_ready", "qqq_beater_count", "best_variant_id", "reason"],
+      "properties": {
+        "status": {"type": "string", "minLength": 1},
+        "live_ready": {"const": false},
+        "paper_ready": {"const": false},
+        "qqq_beater_count": {"type": "integer", "minimum": 0},
+        "best_variant_id": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "methodology": {"type": "object", "minProperties": 1}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "variant": {
+      "type": "object",
+      "required": [
+        "variant_id",
+        "exposure",
+        "financing_cost_total_return_drag",
+        "metrics",
+        "excess_vs_SPY",
+        "excess_vs_QQQ",
+        "beats_SPY_cagr",
+        "beats_QQQ_cagr",
+        "beats_QQQ_with_lower_drawdown"
+      ],
+      "properties": {
+        "variant_id": {"type": "string", "minLength": 1},
+        "exposure": {
+          "type": "object",
+          "required": ["min", "max", "average", "days_above_1x"],
+          "properties": {
+            "min": {"type": "number", "minimum": 0},
+            "max": {"type": "number", "minimum": 0},
+            "average": {"type": "number", "minimum": 0},
+            "days_above_1x": {"type": "integer", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "financing_cost_total_return_drag": {"type": "number"},
+        "metrics": {"$ref": "#/$defs/performance"},
+        "excess_vs_SPY": {"$ref": "#/$defs/excess"},
+        "excess_vs_QQQ": {"$ref": "#/$defs/excess"},
+        "beats_SPY_cagr": {"type": "boolean"},
+        "beats_QQQ_cagr": {"type": "boolean"},
+        "beats_QQQ_with_lower_drawdown": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "performance": {
+      "type": "object",
+      "required": ["true_cagr", "total_return", "max_drawdown", "sharpe_no_risk_free"],
+      "properties": {
+        "true_cagr": {"type": "number"},
+        "arithmetic_annualized_return": {"type": "number"},
+        "annualized_volatility": {"type": "number"},
+        "calmar": {"type": "number"},
+        "total_return": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "sharpe_no_risk_free": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "excess": {
+      "type": "object",
+      "required": ["true_cagr", "sharpe", "max_drawdown_improvement"],
+      "properties": {
+        "true_cagr": {"type": "number"},
+        "sharpe": {"type": "number"},
+        "max_drawdown_improvement": {"type": "number"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

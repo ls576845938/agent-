@@ -1,0 +1,83 @@
+{
+  "budget": {
+    "experiments": 1,
+    "max_evaluation_hours": 8784,
+    "search": false,
+    "stop_on_ambiguity": true,
+    "stop_on_ledger_mismatch": true
+  },
+  "data": {
+    "aggregate_sha256": "593eb9f893c280703b26423f00a4eaff62542152110ebff1dd5b5ad69061bcde",
+    "dataset_id": "m1-trend-environment-acceptance",
+    "dataset_version": "m1-okx-59f5eb861-20260911",
+    "files": {
+      "daily_bars.parquet": "1c170ba3d8daa448eb5d185db57dd557ec72da95aa3a4d72bf17540eb10e860b",
+      "funding.parquet": "ed4856c11f6c28fa2394aced9a18a24840b99bb298694f101e23eb6e72d58f89",
+      "mark.parquet": "a6b738eb2b222bb01dd6071175c5d2708b9298ef73fb62fab9ab5af585f121dc",
+      "premium.parquet": "e4d719c611bf104460f4d2afd5b00892567f13d9d24ac771331e63d332ee4498"
+    },
+    "manifest_git_spec": "165a446729f8c114748e1b20bbfcf0c91e75066e:.agent/data_manifests/m1-trend-environment-acceptance/m1-okx-59f5eb861-20260911.json",
+    "manifest_sha256": "2aab7e1e031acf094ce7a827d324102050344d27246443cac7acb574dd5c3f2a",
+    "prefix": "qlib_runs/m1-okx-factory-input/qlib_input"
+  },
+  "evidence_class": "exploratory_historical_not_promotion",
+  "execution": {
+    "account_equity_usdt": "5000",
+    "contract_value_btc": "0.01",
+    "cost": {
+      "taker_fee_bps": "5",
+      "version": "fixed_taker_5bps_v1"
+    },
+    "exit_rule": "original_registry_signal_and_existing_protection_v1",
+    "funding_interval_hours": 8,
+    "funding_mark": "t_minus_1h_visible_mark_close_approximation",
+    "matching": {
+      "depth": "not_available_assumed_one_contract_each_side",
+      "execution": "marketable_limit_fok_ioc_full_fill_within_frozen_depth",
+      "half_spread_bps": "0.5",
+      "market_impact": "not_modeled",
+      "queue": "not_modeled",
+      "version": "historical_next_bar_open_spread_aware_v2"
+    },
+    "order_contracts": "0.01",
+    "position_rule": "original_fixed_contracts_v1",
+    "protection": {
+      "double_touch": "blocked_ambiguous",
+      "stop_loss_bps": "100",
+      "take_profit_bps": "200",
+      "version": "existing_v1_mark_oco_100_200bps_v1"
+    },
+    "terminal": "observe_and_reconcile_no_new_order_no_forced_close"
+  },
+  "schema_version": "btc_donchian_history_spec_v1",
+  "strategy": {
+    "candidate_id": "okx_native_btc_ls_tf_formal_donchian_w240_d50_200_atr20_cd12_fail0_risknone_78f5f0a0e4",
+    "params": {
+      "atr_mult": 2.0,
+      "atr_window": 20,
+      "cooldown_bars": 12,
+      "daily_fast": 50,
+      "daily_slow": 200,
+      "derivatives_usage": "risk_filter_only",
+      "entry_window": 240,
+      "exit_window": 120,
+      "failure_exit_window": 6,
+      "primary_signal_source": "price_trend",
+      "risk_filter_mode": "none",
+      "signal_type": "symmetric_donchian",
+      "use_derivatives_risk_filter": false,
+      "use_failed_breakout_exit": false,
+      "use_risk_exit": false
+    },
+    "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+    "strategy_id": "long_short_donchian_top5_okx_native",
+    "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0"
+  },
+  "window": {
+    "evaluation_end": "2026-07-30T00:00:00+00:00",
+    "evaluation_start": "2026-07-10T00:00:00+00:00",
+    "requested_months": 12,
+    "selection_reason": "Frozen before PnL: maximum continuous overlap in the existing hash-verified immutable input after 200 complete UTC warmup days. Public funding probe for 2025-09-21 returned no rows; twelve-month target remains unmet. No return-based window choice.",
+    "warmup_start": "2025-12-22T00:00:00+00:00"
+  }
+}

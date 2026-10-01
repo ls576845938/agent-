@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quant.local/schemas/us_ibkr_yahoo_runtime_semantic_contract.schema.json",
+  "title": "Yahoo Research to IBKR Runtime Semantic Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_id",
+    "contract_version",
+    "contract_sha256",
+    "contract"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "us_ibkr_yahoo_runtime_semantic_contract_envelope_v1"
+    },
+    "contract_id": {
+      "const": "us-ibkr-yahoo-runtime-semantic-contract-v1"
+    },
+    "contract_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "contract_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_source",
+        "runtime_source",
+        "corporate_action_policy",
+        "session_policy",
+        "bar_availability_policy",
+        "freshness_and_sequence_policy",
+        "numerical_parity_tolerance",
+        "promotion_semantics"
+      ],
+      "properties": {
+        "research_source": {
+          "type": "object",
+          "required": ["provider", "role", "runtime_forbidden_uses"],
+          "properties": {
+            "provider": {"const": "Yahoo Finance"},
+            "role": {"const": "research_only"},
+            "runtime_forbidden_uses": {
+              "type": "array",
+              "contains": {"const": "warmup_fallback"}
+            }
+          }
+        },
+        "runtime_source": {
+          "type": "object",
+          "required": ["provider", "role", "required_market_data_type", "price_semantics"],
+          "properties": {
+            "provider": {"const": "IBKR"},
+            "role": {"const": "runtime_only"},
+            "required_market_data_type": {"const": "live"},
+            "price_semantics": {
+              "const": "IBKR_ADJUSTED_LAST_completed_daily_bar_triggered_by_IBKR_realtime_RTH_close"
+            }
+          }
+        },
+        "corporate_action_policy": {
+          "type": "object",
+          "required": [
+            "absolute_adjusted_to_raw_price_parity_allowed",
+            "split_policy",
+            "dividend_policy",
+            "verified_status_alone_sufficient",
+            "silent_ignore_allowed"
+          ],
+          "properties": {
+            "absolute_adjusted_to_raw_price_parity_allowed": {"const": false},
+            "verified_status_alone_sufficient": {"const": false},
+            "silent_ignore_allowed": {"const": false}
+          }
+        },
+        "session_policy": {"type": "object"},
+        "bar_availability_policy": {
+          "type": "object",
+          "required": ["strategy_trigger", "daily_normalization", "warmup_yahoo_fallback_allowed"],
+          "properties": {
+            "strategy_trigger": {"const": "completed_bar_only"},
+            "warmup_yahoo_fallback_allowed": {"const": false}
+          }
+        },
+        "freshness_and_sequence_policy": {"type": "object"},
+        "numerical_parity_tolerance": {"type": "object"},
+        "promotion_semantics": {"type": "object"}
+      }
+    }
+  }
+}

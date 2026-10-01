@@ -1,0 +1,29 @@
+universe_id: okx_btc_perpetual_1h
+description: Committed immutable OKX BTC-USDT-SWAP completed UTC hourly bars
+market: crypto
+asset_class: crypto
+bar_size: 1h
+timezone: UTC
+source: okx
+research_only: true
+allow_live: false
+allow_minute_data: true
+allow_implicit_downloads: false
+strict_missing_symbols: true
+strict_calendar_coverage: true
+expected_symbol_count: 1
+symbols: [BTC-USDT-SWAP]
+data_binding:
+  canonical_symbol: BTCUSDT # Immutable payload symbol; distinct from the Qlib/venue instrument.
+  instrument_id: BTC-USDT-SWAP
+  instrument_metadata: {path: exchange_info.json, sha256: 1a3be93ab5be07d8d0625ff37c077a461cba075876e44e8517266c9a28e336e8}
+  dataset_id: btc-okx-public-swap-research-bundle
+  dataset_version: btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1
+  manifest_path: .agent/data_manifests/btc-okx-public-swap-research-bundle/btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1.json
+  manifest_sha256: 6c5dd8036da320062002b839792852c1aa53971fecdd20b1ba7ae3ec6c2260c9
+  aggregate_sha256: 3a61fc915da66994294113cc7b2334a1da4c0e08bccf428a743564c863c8d680
+  files:
+    bars: {path: klines_1h.csv, sha256: e30158c4f18ffdf5dc2aa67199a4bedcb25e08f7331e947582c96d9f130a5950}
+    mark: {path: mark_price_klines_1h.csv, sha256: 2ac1d79ae69ced2df07dd7dd9006052aa41f2bcf5bd0f19059bb63ae3f6df9c9}
+    premium: {path: premium_index_klines_1h.csv, sha256: e403bd951bc91a6da8dc8c0c8a7a16f437500d9e48f67aa8628e8c5a3d80a9d4}
+    funding: {path: funding_rate.csv, sha256: ba745f622ff9753ecd6b0a7a828ba308cebcc151c22c5b9424ed9c12de324d19}

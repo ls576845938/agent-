@@ -1,0 +1,509 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_objective_completion_audit_report.schema.json",
+  "title": "QuantStation VNEXT BTC Objective Completion Audit Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "goal_complete",
+    "requirements",
+    "incomplete_requirements",
+    "blockers",
+    "next_required_action"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_objective_completion_audit_report_v1"},
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "status": {"enum": ["complete", "incomplete"]},
+    "goal_complete": {"type": "boolean"},
+    "requirements": {
+      "type": "object",
+      "required": [
+        "manual_exchange_info_capture",
+        "funding_info_endpoint_policy_repair",
+        "funding_ledger_net_pnl_integration",
+        "archive_compression_expansion_breakout",
+        "btc_hypothesis_lab_v2_controlled_search"
+      ],
+      "properties": {
+        "manual_exchange_info_capture": {"$ref": "#/$defs/manual_metadata_requirement"},
+        "funding_info_endpoint_policy_repair": {"$ref": "#/$defs/funding_info_requirement"},
+        "funding_ledger_net_pnl_integration": {"$ref": "#/$defs/funding_ledger_requirement"},
+        "archive_compression_expansion_breakout": {"$ref": "#/$defs/compression_archive_requirement"},
+        "btc_hypothesis_lab_v2_controlled_search": {"$ref": "#/$defs/hypothesis_v2_requirement"}
+      },
+      "additionalProperties": false
+    },
+    "incomplete_requirements": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "next_required_action": {"enum": ["manual_capture_from_allowed_network", "none"]}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "requirement_status": {
+      "enum": ["complete", "incomplete", "blocked_external_capture"]
+    },
+    "manual_metadata_requirement": {
+      "type": "object",
+      "required": [
+        "status",
+        "evidence",
+        "completion_criteria",
+        "verified",
+        "manual_capture_required",
+        "operator_action",
+        "import_status",
+        "import_writes_performed",
+        "import_captured_at",
+        "import_bundle_dir",
+        "raw_input_files",
+        "last_capture_status",
+        "last_http_status",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/requirement_status"},
+        "evidence": {"$ref": "#/$defs/evidence"},
+        "completion_criteria": {"$ref": "#/$defs/completion_criteria"},
+        "verified": {"type": "boolean"},
+        "manual_capture_required": {"type": "boolean"},
+        "operator_action": {"type": "string"},
+        "import_status": {"type": "string"},
+        "import_writes_performed": {"type": "boolean"},
+        "import_captured_at": {"type": ["string", "null"]},
+        "import_bundle_dir": {"$ref": "#/$defs/import_bundle_dir"},
+        "raw_input_files": {"$ref": "#/$defs/raw_input_files"},
+        "last_capture_status": {"type": "string"},
+        "last_http_status": {"type": ["integer", "null"]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "complete"}}, "required": ["status"]},
+          "then": {"$ref": "#/$defs/complete_manual_metadata_requirement"}
+        }
+      ]
+    },
+    "funding_info_requirement": {
+      "type": "object",
+      "required": [
+        "status",
+        "evidence",
+        "completion_criteria",
+        "verified",
+        "manual_capture_required",
+        "operator_action",
+        "import_status",
+        "import_writes_performed",
+        "import_captured_at",
+        "import_bundle_dir",
+        "raw_input_files",
+        "endpoint_response_available",
+        "last_capture_status",
+        "last_http_status",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/requirement_status"},
+        "evidence": {"$ref": "#/$defs/evidence"},
+        "completion_criteria": {"$ref": "#/$defs/completion_criteria"},
+        "verified": {"type": "boolean"},
+        "manual_capture_required": {"type": "boolean"},
+        "operator_action": {"type": "string"},
+        "import_status": {"type": "string"},
+        "import_writes_performed": {"type": "boolean"},
+        "import_captured_at": {"type": ["string", "null"]},
+        "import_bundle_dir": {"$ref": "#/$defs/import_bundle_dir"},
+        "raw_input_files": {"$ref": "#/$defs/raw_input_files"},
+        "endpoint_response_available": {"type": "boolean"},
+        "last_capture_status": {"type": "string"},
+        "last_http_status": {"type": ["integer", "null"]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "complete"}}, "required": ["status"]},
+          "then": {
+            "allOf": [
+              {"$ref": "#/$defs/complete_manual_metadata_requirement"},
+              {"properties": {"endpoint_response_available": {"const": true}}}
+            ]
+          }
+        }
+      ]
+    },
+    "complete_manual_metadata_requirement": {
+      "type": "object",
+      "properties": {
+        "verified": {"const": true},
+        "manual_capture_required": {"const": false},
+        "operator_action": {"enum": ["no_manual_capture_required", "manual_capture_from_allowed_network"]},
+        "import_status": {"const": "verified"},
+        "import_writes_performed": {"const": true},
+        "import_captured_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "import_bundle_dir": {"$ref": "#/$defs/complete_import_bundle_dir"},
+        "raw_input_files": {
+          "type": "object",
+          "properties": {
+            "exchange_info_raw": {"$ref": "#/$defs/complete_raw_file"},
+            "funding_info_raw": {"$ref": "#/$defs/complete_raw_file"}
+          }
+        },
+        "blockers": {"maxItems": 0}
+      }
+    },
+    "import_bundle_dir": {
+      "type": "object",
+      "required": [
+        "path",
+        "selected_bundle_path",
+        "selected_bundle_configured",
+        "exists",
+        "matches_selected_bundle",
+        "exchange_info_exists",
+        "funding_info_exists",
+        "exchange_info_output_hash_verified",
+        "funding_info_output_hash_verified"
+      ],
+      "properties": {
+        "path": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "\\S"}
+          ]
+        },
+        "selected_bundle_path": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "\\S"}
+          ]
+        },
+        "selected_bundle_configured": {"type": "boolean"},
+        "exists": {"type": "boolean"},
+        "matches_selected_bundle": {"type": "boolean"},
+        "exchange_info_exists": {"type": "boolean"},
+        "funding_info_exists": {"type": "boolean"},
+        "exchange_info_output_hash_verified": {"type": "boolean"},
+        "funding_info_output_hash_verified": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "complete_import_bundle_dir": {
+      "type": "object",
+      "required": [
+        "path",
+        "selected_bundle_path",
+        "selected_bundle_configured",
+        "exists",
+        "matches_selected_bundle",
+        "exchange_info_exists",
+        "funding_info_exists",
+        "exchange_info_output_hash_verified",
+        "funding_info_output_hash_verified"
+      ],
+      "properties": {
+        "path": {"type": "string", "pattern": "\\S"},
+        "selected_bundle_path": {"type": "string", "pattern": "\\S"},
+        "selected_bundle_configured": {"const": true},
+        "exists": {"const": true},
+        "matches_selected_bundle": {"const": true},
+        "exchange_info_exists": {"const": true},
+        "funding_info_exists": {"const": true},
+        "exchange_info_output_hash_verified": {"const": true},
+        "funding_info_output_hash_verified": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "raw_input_files": {
+      "type": "object",
+      "required": ["exchange_info_raw", "funding_info_raw"],
+      "properties": {
+        "exchange_info_raw": {"$ref": "#/$defs/raw_file"},
+        "funding_info_raw": {"$ref": "#/$defs/raw_file"}
+      },
+      "additionalProperties": false
+    },
+    "raw_file": {
+      "type": "object",
+      "required": [
+        "path",
+        "exists",
+        "size_bytes",
+        "sha256",
+        "http_status_file",
+        "http_status",
+        "http_status_verified",
+        "current_file_verified"
+      ],
+      "properties": {
+        "path": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "\\S"}
+          ]
+        },
+        "exists": {"type": "boolean"},
+        "size_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "http_status_file": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "\\S"}
+          ]
+        },
+        "http_status": {"type": ["integer", "null"]},
+        "http_status_verified": {"type": "boolean"},
+        "current_file_verified": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "complete_raw_file": {
+      "type": "object",
+      "required": [
+        "path",
+        "exists",
+        "size_bytes",
+        "sha256",
+        "http_status_file",
+        "http_status",
+        "http_status_verified",
+        "current_file_verified"
+      ],
+      "properties": {
+        "path": {"type": "string", "pattern": "\\S"},
+        "exists": {"const": true},
+        "size_bytes": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "http_status_file": {"type": "string", "pattern": "\\S"},
+        "http_status": {"const": 200},
+        "http_status_verified": {"const": true},
+        "current_file_verified": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "completion_criteria": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "funding_ledger_requirement": {
+      "type": "object",
+      "required": [
+        "status",
+        "evidence",
+        "funding_payment_in_ledger",
+        "funding_merged_into_net_ledger",
+        "funding_events_count",
+        "funding_payment_count",
+        "funding_adjusted_net_pnl_reconciled",
+        "funding_adjusted_net_pnl_reconciliation_delta",
+        "trade_ledger_net_pnl_total",
+        "funding_pnl_total",
+        "expected_funding_adjusted_net_pnl_total",
+        "funding_adjusted_net_pnl_total",
+        "funding_adjusted_ledger_path",
+        "funding_adjusted_ledger_exists",
+        "funding_adjusted_ledger_reconciled_to_report",
+        "funding_adjusted_ledger_trade_count",
+        "funding_adjusted_ledger_funding_pnl_total",
+        "funding_adjusted_ledger_net_pnl_before_total",
+        "funding_adjusted_ledger_net_pnl_after_total",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/requirement_status"},
+        "evidence": {"$ref": "#/$defs/evidence"},
+        "funding_payment_in_ledger": {"type": "boolean"},
+        "funding_merged_into_net_ledger": {"type": "boolean"},
+        "funding_events_count": {"type": "integer", "minimum": 0},
+        "funding_payment_count": {"type": "integer", "minimum": 0},
+        "funding_adjusted_net_pnl_reconciled": {"type": "boolean"},
+        "funding_adjusted_net_pnl_reconciliation_delta": {"type": ["number", "null"]},
+        "trade_ledger_net_pnl_total": {"type": ["number", "null"]},
+        "funding_pnl_total": {"type": ["number", "null"]},
+        "expected_funding_adjusted_net_pnl_total": {"type": ["number", "null"]},
+        "funding_adjusted_net_pnl_total": {"type": ["number", "null"]},
+        "funding_adjusted_ledger_path": {"type": ["string", "null"]},
+        "funding_adjusted_ledger_exists": {"type": "boolean"},
+        "funding_adjusted_ledger_reconciled_to_report": {"type": "boolean"},
+        "funding_adjusted_ledger_trade_count": {"type": "integer", "minimum": 0},
+        "funding_adjusted_ledger_funding_pnl_total": {"type": ["number", "null"]},
+        "funding_adjusted_ledger_net_pnl_before_total": {"type": ["number", "null"]},
+        "funding_adjusted_ledger_net_pnl_after_total": {"type": ["number", "null"]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "complete"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "funding_payment_in_ledger": {"const": true},
+              "funding_merged_into_net_ledger": {"const": true},
+              "funding_events_count": {"type": "integer", "minimum": 1},
+              "funding_payment_count": {"type": "integer", "minimum": 1},
+              "funding_adjusted_net_pnl_reconciled": {"const": true},
+              "funding_adjusted_net_pnl_reconciliation_delta": {"const": 0.0},
+              "funding_adjusted_ledger_path": {"type": "string"},
+              "funding_adjusted_ledger_exists": {"const": true},
+              "funding_adjusted_ledger_reconciled_to_report": {"const": true},
+              "funding_adjusted_ledger_trade_count": {"type": "integer", "minimum": 1},
+              "blockers": {"maxItems": 0}
+            }
+          }
+        }
+      ]
+    },
+    "compression_archive_requirement": {
+      "type": "object",
+      "required": [
+        "status",
+        "evidence",
+        "attribution_status",
+        "registry_status",
+        "allowed_next_action",
+        "registry_next_action",
+        "archive_recommended",
+        "limited_retest_allowed",
+        "paper_review_pending_allowed",
+        "paper_review_pending_created",
+        "promotion_ready",
+        "paper_queue",
+        "live",
+        "archived_or_rejected",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/requirement_status"},
+        "evidence": {"$ref": "#/$defs/evidence"},
+        "attribution_status": {"type": ["string", "null"]},
+        "registry_status": {"type": ["string", "null"]},
+        "allowed_next_action": {"type": ["string", "null"]},
+        "registry_next_action": {"type": ["string", "null"]},
+        "archive_recommended": {"type": "boolean"},
+        "limited_retest_allowed": {"type": "boolean"},
+        "paper_review_pending_allowed": {"type": "boolean"},
+        "paper_review_pending_created": {"type": "boolean"},
+        "promotion_ready": {"type": "boolean"},
+        "paper_queue": {"type": ["string", "null"]},
+        "live": {"type": ["string", "null"]},
+        "archived_or_rejected": {"type": "array", "items": {"type": "string"}},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "complete"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "attribution_status": {"const": "archived"},
+              "registry_status": {"const": "archived"},
+              "allowed_next_action": {"const": "archive_only"},
+              "registry_next_action": {"const": "do_not_retest_without_new_hypothesis"},
+              "archive_recommended": {"const": true},
+              "limited_retest_allowed": {"const": false},
+              "paper_review_pending_allowed": {"const": false},
+              "paper_review_pending_created": {"const": false},
+              "promotion_ready": {"const": false},
+              "paper_queue": {"const": "LOCKED"},
+              "live": {"const": "FROZEN"},
+              "archived_or_rejected": {"contains": {"const": "compression_expansion_breakout"}},
+              "blockers": {"maxItems": 0}
+            }
+          }
+        }
+      ]
+    },
+    "hypothesis_v2_requirement": {
+      "type": "object",
+      "required": [
+        "status",
+        "evidence",
+        "mode",
+        "allowed_output_level",
+        "strategy_skeleton_generation_allowed",
+        "strategy_skeleton_generated",
+        "strategy_skeleton_path",
+        "candidate_generation_allowed",
+        "candidate_generated",
+        "paper_or_live_side_effects_allowed",
+        "paper_queue",
+        "live",
+        "generated_artifacts",
+        "forbidden_outputs",
+        "decision",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/requirement_status"},
+        "evidence": {"$ref": "#/$defs/evidence"},
+        "mode": {"type": ["string", "null"]},
+        "allowed_output_level": {"type": ["string", "null"]},
+        "strategy_skeleton_generation_allowed": {"type": "boolean"},
+        "strategy_skeleton_generated": {"type": "boolean"},
+        "strategy_skeleton_path": {"type": "string"},
+        "candidate_generation_allowed": {"type": "boolean"},
+        "candidate_generated": {"type": "boolean"},
+        "paper_or_live_side_effects_allowed": {"type": "boolean"},
+        "paper_queue": {"type": ["string", "null"]},
+        "live": {"type": ["string", "null"]},
+        "generated_artifacts": {"type": "array", "items": {"type": "string"}},
+        "forbidden_outputs": {"type": "array", "items": {"type": "string"}},
+        "decision": {"type": ["string", "null"]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "complete"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "mode": {"const": "hypothesis_level_only"},
+              "allowed_output_level": {"const": "hypothesis"},
+              "strategy_skeleton_generation_allowed": {"const": false},
+              "strategy_skeleton_generated": {"const": false},
+              "strategy_skeleton_path": {"const": ""},
+              "candidate_generation_allowed": {"const": false},
+              "candidate_generated": {"const": false},
+              "paper_or_live_side_effects_allowed": {"const": false},
+              "paper_queue": {"const": "LOCKED"},
+              "live": {"const": "FROZEN"},
+              "generated_artifacts": {
+                "items": {
+                  "not": {
+                    "type": "string",
+                    "pattern": "(skeleton|candidate_config|paper_order|live_order|broker)"
+                  }
+                }
+              },
+              "forbidden_outputs": {
+                "allOf": [
+                  {"contains": {"const": "strategy_skeleton"}},
+                  {"contains": {"const": "candidate_config"}},
+                  {"contains": {"const": "paper_order"}},
+                  {"contains": {"const": "live_order"}},
+                  {"contains": {"const": "broker_call"}}
+                ]
+              },
+              "blockers": {"maxItems": 0}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

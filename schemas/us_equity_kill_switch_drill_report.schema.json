@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_kill_switch_drill_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Kill Switch Drill Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "scenario_count",
+    "proven_count",
+    "blocked_count",
+    "scenarios",
+    "blockers",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_kill_switch_drill_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "kill_switch_drill_blocked",
+        "kill_switch_drill_partial",
+        "kill_switch_drill_proven"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "kill_switch_drill_blocked",
+          "kill_switch_drill_partial",
+          "kill_switch_drill_proven"
+        ]
+      },
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "scenario_count": {"const": 5},
+    "proven_count": {"type": "integer", "minimum": 0, "maximum": 5},
+    "blocked_count": {"type": "integer", "minimum": 0, "maximum": 5},
+    "scenarios": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["scenario_id", "title", "status", "required_evidence", "blockers"],
+        "properties": {
+          "scenario_id": {
+            "enum": [
+              "data_stale_stop",
+              "unsafe_endpoint_flag_stop",
+              "reconciliation_failure_stop",
+              "drawdown_loss_stop",
+              "manual_stop_reset"
+            ]
+          },
+          "title": {"type": "string", "minLength": 1},
+          "status": {"enum": ["blocked", "proven"]},
+          "required_evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "source_reports": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["path", "exists", "status"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "exists": {"type": "boolean"},
+          "status": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "evidence_only",
+        "simulated_or_policy_evidence_only",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_calls_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "evidence_only": {"const": true},
+        "simulated_or_policy_evidence_only": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

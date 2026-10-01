@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_production_pit_intake_report.schema.json",
+  "title": "US Equity Production PIT Intake Report",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "asset", "code_commit", "branch", "status", "decision", "handoff_discovery", "required_components", "required_metadata", "adapter_contract_audit", "source_classification", "blockers", "guardrails", "outputs"],
+  "properties": {
+    "schema_version": {"const": "us_equity_production_pit_intake_report_v1"},
+    "asset": {"const": "us_equity"},
+    "code_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "status": {"const": "blocked_external_data"},
+    "decision": {"const": "wait_for_valid_committed_production_pit_bundle_no_goal3_no_promotion_no_paper_no_live"},
+    "handoff_discovery": {
+      "type": "object",
+      "required": ["verification_mode", "scanned_event_count", "invalid_event_count", "production_pit_candidate_count", "valid_production_pit_handoff_count", "state", "candidates", "branch_presence_is_delivery", "uncommitted_worktree_files_consumed"],
+      "properties": {
+        "branch_presence_is_delivery": {"const": false},
+        "uncommitted_worktree_files_consumed": {"const": false},
+        "valid_production_pit_handoff_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": true
+    },
+    "required_components": {"type": "array", "minItems": 6, "maxItems": 6, "uniqueItems": true},
+    "required_metadata": {"type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true},
+    "blockers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "guardrails": {
+      "type": "object",
+      "required": ["research_only", "fixture_only", "immutable_manifest_consumed", "source_vendor_data_modified", "configuration_mutated_by_this_report", "promotion_clean", "promotion_unlock_allowed", "paper_queue_write_allowed", "paper_order_allowed", "paper_or_live_unlock_allowed", "live_order_allowed", "private_endpoint_used", "broker_endpoint_used", "order_endpoint_used", "real_order_submitted", "network_used", "secret_read"],
+      "properties": {
+        "research_only": {"const": true},
+        "fixture_only": {"const": false},
+        "immutable_manifest_consumed": {"const": false},
+        "source_vendor_data_modified": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean": {"const": false},
+        "promotion_unlock_allowed": {"const": false},
+        "paper_queue_write_allowed": {"const": false},
+        "paper_order_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "broker_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "real_order_submitted": {"const": false},
+        "network_used": {"const": false},
+        "secret_read": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "handoff_discovery": {
+            "properties": {"valid_production_pit_handoff_count": {"const": 0}}
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "blockers": {
+            "allOf": [
+              {"contains": {"const": "production_pit_bundle_missing:universe_membership_events"}},
+              {"contains": {"const": "production_pit_bundle_missing:delisted_symbols"}},
+              {"contains": {"const": "production_pit_bundle_missing:corporate_actions"}},
+              {"contains": {"const": "production_pit_bundle_missing:symbol_mapping"}},
+              {"contains": {"const": "production_pit_bundle_missing:adjustment_replay"}},
+              {"contains": {"const": "production_pit_bundle_missing:macro_release_calendar"}}
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": true
+}

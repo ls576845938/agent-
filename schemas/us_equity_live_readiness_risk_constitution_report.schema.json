@@ -1,0 +1,363 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_live_readiness_risk_constitution_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Live Readiness Risk Constitution Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "decision",
+    "asset",
+    "strategy_id",
+    "account_capital_usd",
+    "max_live_principal_usd",
+    "live_order_allowed",
+    "paper_simulation_unlocked_by_this_report",
+    "real_order_submitted",
+    "forward_observation",
+    "paper_simulation_evaluation",
+    "strategy_validation",
+    "manual_review",
+    "production_pit_data",
+    "remediation_tickets",
+    "gate_checks",
+    "risk_constitution",
+    "execution_readiness",
+    "unsafe_flags",
+    "blockers",
+    "source_reports",
+    "outputs",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_live_readiness_risk_constitution_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "live_readiness_blocked"},
+    "decision": {"const": "do_not_start_live_trading"},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"type": "string", "minLength": 1},
+    "account_capital_usd": {"type": "number", "minimum": 0},
+    "max_live_principal_usd": {"type": "number", "minimum": 0},
+    "live_order_allowed": {"const": false},
+    "paper_simulation_unlocked_by_this_report": {"const": false},
+    "real_order_submitted": {"const": false},
+    "forward_observation": {
+      "type": "object",
+      "required": ["status", "observation_days", "minimum_complete_days"],
+      "properties": {
+        "status": {"type": "string"},
+        "observation_days": {"type": "integer", "minimum": 0},
+        "minimum_complete_days": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "strategy_validation": {
+      "type": "object",
+      "required": ["status", "evidence_audit_status", "evidence_complete_count", "evidence_blocked_count", "evidence_incomplete_count", "paper_simulation_allowed", "live_order_allowed"],
+      "properties": {
+        "status": {"type": "string"},
+        "evidence_audit_status": {"type": ["string", "null"]},
+        "evidence_complete_count": {"type": ["integer", "string"], "minimum": 0},
+        "evidence_blocked_count": {"type": ["integer", "string"], "minimum": 0},
+        "evidence_incomplete_count": {"type": ["integer", "string"], "minimum": 0},
+        "paper_simulation_allowed": {"type": ["boolean", "null"]},
+        "live_order_allowed": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "manual_review": {
+      "type": "object",
+      "required": [
+        "status",
+        "manual_approval_recorded",
+        "manual_review_can_unlock_paper_by_itself",
+        "manual_review_can_unlock_live_by_itself"
+      ],
+      "properties": {
+        "status": {"type": ["string", "null"]},
+        "manual_approval_recorded": {"type": ["boolean", "null"]},
+        "manual_review_can_unlock_paper_by_itself": {"const": false},
+        "manual_review_can_unlock_live_by_itself": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "paper_simulation_evaluation": {
+      "type": "object",
+      "required": ["status", "paper_days", "minimum_complete_days"],
+      "properties": {
+        "status": {"type": "string"},
+        "paper_days": {"type": "integer", "minimum": 0},
+        "minimum_complete_days": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "production_pit_data": {
+      "type": "object",
+      "required": ["intake_status", "current_blocking_stage", "acceptance_status", "acceptance_current_blocking_step"],
+      "properties": {
+        "intake_status": {"type": ["string", "null"]},
+        "current_blocking_stage": {"type": ["string", "null"]},
+        "acceptance_status": {"type": ["string", "null"]},
+        "acceptance_current_blocking_step": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "gate_checks": {
+      "type": "object",
+      "required": [
+        "strategy_validation_gate_passed",
+        "strategy_validation_evidence_audit_ready",
+        "forward_observation_complete",
+        "forward_roll_pass",
+        "manual_review_packet_ready",
+        "manual_approval_recorded",
+        "paper_simulation_complete_for_manual_review",
+        "data_status_pass",
+        "production_line_manual_review_required",
+        "remediation_tickets_closed",
+        "no_unsafe_live_flags",
+        "account_capital_set",
+        "max_live_principal_set",
+        "manual_reviewer_recorded",
+        "broker_credentials_review_complete",
+        "margin_and_financing_preflight_complete",
+        "share_rounding_rule_complete",
+        "small_account_execution_preflight_pass",
+        "production_pit_intake_ready",
+        "pit_bundle_acceptance_ready",
+        "order_reconciliation_proven",
+        "kill_switch_drill_complete",
+        "monitoring_and_alerting_proven"
+      ],
+      "additionalProperties": {"type": "boolean"}
+    },
+    "remediation_tickets": {
+      "type": "object",
+      "required": [
+        "source_status",
+        "ticket_count",
+        "external_or_time_dependency_count",
+        "engineering_dependency_count",
+        "manual_dependency_count",
+        "by_dependency_type",
+        "by_status",
+        "tickets"
+      ],
+      "properties": {
+        "source_status": {"type": "string"},
+        "ticket_count": {"type": "integer", "minimum": 0},
+        "external_or_time_dependency_count": {"type": "integer", "minimum": 0},
+        "engineering_dependency_count": {"type": "integer", "minimum": 0},
+        "manual_dependency_count": {"type": "integer", "minimum": 0},
+        "by_dependency_type": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "by_status": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "tickets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "ticket_id",
+              "category",
+              "owner",
+              "dependency_type",
+              "status",
+              "blocker_count",
+              "source_reports",
+              "next_action",
+              "acceptance_evidence"
+            ],
+            "properties": {
+              "ticket_id": {"type": "string", "pattern": "^us_equity_remediate_[a-z_]+$"},
+              "category": {"type": "string", "minLength": 1},
+              "owner": {"type": "string", "minLength": 1},
+              "dependency_type": {"type": "string", "minLength": 1},
+              "status": {"type": "string", "minLength": 1},
+              "blocker_count": {"type": "integer", "minimum": 1},
+              "source_reports": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "next_action": {"type": "string", "minLength": 1},
+              "acceptance_evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "risk_constitution": {
+      "type": "object",
+      "required": [
+        "constitution_version",
+        "scope",
+        "capital",
+        "instrument_limits",
+        "execution_constraints",
+        "strategy_limits",
+        "loss_limits",
+        "review_required"
+      ],
+      "properties": {
+        "constitution_version": {"const": "us_equity_live_risk_constitution_v1"},
+        "scope": {"type": "string", "minLength": 1},
+        "capital": {
+          "type": "object",
+          "required": ["account_capital_usd", "max_live_principal_usd", "default_until_manual_set", "capital_must_be_segregated", "do_not_add_capital_after_win_streak"],
+          "properties": {
+            "account_capital_usd": {"type": "number", "minimum": 0},
+            "max_live_principal_usd": {"type": "number", "minimum": 0},
+            "default_until_manual_set": {"const": 0.0},
+            "capital_must_be_segregated": {"const": true},
+            "do_not_add_capital_after_win_streak": {"const": true}
+          },
+          "additionalProperties": false
+        },
+        "instrument_limits": {
+          "type": "object",
+          "required": ["allowed_instrument_type", "single_name_stocks_allowed", "options_allowed", "futures_allowed", "shorting_allowed", "initial_live_leverage_cap", "research_max_leverage_seen", "leverage_above_1x_requires_separate_manual_approval"],
+          "properties": {
+            "allowed_instrument_type": {"type": "string", "minLength": 1},
+            "single_name_stocks_allowed": {"const": false},
+            "options_allowed": {"const": false},
+            "futures_allowed": {"const": false},
+            "shorting_allowed": {"const": false},
+            "initial_live_leverage_cap": {"const": 1.0},
+            "research_max_leverage_seen": {"const": 1.5},
+            "leverage_above_1x_requires_separate_manual_approval": {"const": true}
+          },
+          "additionalProperties": false
+        },
+        "execution_constraints": {
+          "type": "object",
+          "required": ["broker_private_endpoint_allowed_before_live_gate", "order_endpoint_allowed_before_live_gate", "manual_order_confirmation_required_for_first_live_pilot", "margin_and_financing_rate_preflight_required", "whole_or_fractional_share_rule_required", "minimum_trade_amount_rule_required", "monthly_or_daily_rebalance_calendar_must_be_explicit"],
+          "properties": {
+            "broker_private_endpoint_allowed_before_live_gate": {"const": false},
+            "order_endpoint_allowed_before_live_gate": {"const": false},
+            "manual_order_confirmation_required_for_first_live_pilot": {"const": true},
+            "margin_and_financing_rate_preflight_required": {"const": true},
+            "whole_or_fractional_share_rule_required": {"const": true},
+            "minimum_trade_amount_rule_required": {"const": true},
+            "monthly_or_daily_rebalance_calendar_must_be_explicit": {"const": true}
+          },
+          "additionalProperties": false
+        },
+        "strategy_limits": {
+          "type": "object",
+          "required": ["primary_candidate", "forward_observation_is_not_alpha_validation", "strategy_validation_gate_required", "parameter_tuning_during_forward_observation_allowed", "unregistered_strategy_live_allowed"],
+          "properties": {
+            "primary_candidate": {"type": "string", "minLength": 1},
+            "forward_observation_is_not_alpha_validation": {"const": true},
+            "strategy_validation_gate_required": {"const": true},
+            "parameter_tuning_during_forward_observation_allowed": {"const": false},
+            "unregistered_strategy_live_allowed": {"const": false}
+          },
+          "additionalProperties": false
+        },
+        "loss_limits": {
+          "type": "object",
+          "required": ["pilot_daily_loss_stop_pct_of_principal", "pilot_total_drawdown_stop_pct_of_principal", "consecutive_bad_reconciliation_stop_count", "manual_reset_required_after_stop"],
+          "properties": {
+            "pilot_daily_loss_stop_pct_of_principal": {"type": "number", "exclusiveMinimum": 0},
+            "pilot_total_drawdown_stop_pct_of_principal": {"type": "number", "exclusiveMinimum": 0},
+            "consecutive_bad_reconciliation_stop_count": {"type": "integer", "minimum": 1},
+            "manual_reset_required_after_stop": {"const": true}
+          },
+          "additionalProperties": false
+        },
+        "review_required": {
+          "type": "object",
+          "required": ["forward_observation_days", "manual_strategy_review", "manual_risk_review", "manual_credentials_review", "manual_kill_switch_drill"],
+          "properties": {
+            "forward_observation_days": {"type": "integer", "minimum": 30},
+            "manual_strategy_review": {"const": true},
+            "manual_risk_review": {"const": true},
+            "manual_credentials_review": {"const": true},
+            "manual_kill_switch_drill": {"const": true}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "execution_readiness": {
+      "type": "object",
+      "required": ["status", "drill_count", "proven_count", "blocked_count", "drills", "guardrails"],
+      "properties": {
+        "status": {"enum": ["execution_readiness_blocked", "execution_readiness_proven"]},
+        "drill_count": {"const": 5},
+        "proven_count": {"type": "integer", "minimum": 0, "maximum": 5},
+        "blocked_count": {"type": "integer", "minimum": 0, "maximum": 5},
+        "drills": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "required": ["drill_id", "title", "status", "required_evidence", "blockers"],
+            "properties": {
+              "drill_id": {
+                "enum": [
+                  "broker_credentials_review",
+                  "margin_financing_share_rounding_preflight",
+                  "order_reconciliation_drill",
+                  "kill_switch_drill",
+                  "monitoring_alerting_drill"
+                ]
+              },
+              "title": {"type": "string", "minLength": 1},
+              "status": {"enum": ["blocked", "proven"]},
+              "required_evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+              "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}}
+            },
+            "additionalProperties": false
+          }
+        },
+        "guardrails": {
+          "type": "object",
+          "required": [
+            "readiness_only",
+            "broker_calls_used",
+            "private_endpoint_allowed",
+            "order_endpoint_allowed",
+            "real_order_submitted"
+          ],
+          "properties": {
+            "readiness_only": {"const": true},
+            "broker_calls_used": {"const": false},
+            "private_endpoint_allowed": {"const": false},
+            "order_endpoint_allowed": {"const": false},
+            "real_order_submitted": {"const": false}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "unsafe_flags": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "source_reports": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+    "outputs": {
+      "type": "object",
+      "required": ["json", "compat_json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "compat_json": {"type": ["string", "null"]},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": ["research_only_until_live_gate_passes", "live_order_allowed", "private_endpoint_allowed", "order_endpoint_allowed", "real_order_submitted", "manual_review_required"],
+      "properties": {
+        "research_only_until_live_gate_passes": {"const": true},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "manual_review_required": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

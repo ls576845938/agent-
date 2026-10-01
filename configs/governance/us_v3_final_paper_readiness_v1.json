@@ -1,0 +1,85 @@
+{
+  "schema_version": "us_v3_final_paper_readiness_config_v1",
+  "goal_id": "US-V3-FINAL-PAPER-READINESS-01",
+  "domain": "us_equity",
+  "evidence_paths": {
+    "integrated_handoffs": [
+      ".agent/handoffs/SHARED-PLATFORM-V2-CURRENT-MAIN-01/integrated-shared-platform-v2-current-main-01-batch-02-takeover.json",
+      ".agent/handoffs/US-V3-CURRENT-MAIN-SUCCESSOR-01/integrated-us-v3-current-main-successor-01-goal2-batch-01.json",
+      ".agent/handoffs/US-V3-WINDOWS-ARTIFACT-PATH-CONTRACT-01/integrated-us-v3-windows-artifact-path-contract-01-goal3-batch-01.json",
+      ".agent/handoffs/US-V3-SHARED-ADOPTION-01/integrated-us-v3-shared-adoption-01-goal4-batch-01.json",
+      ".agent/handoffs/US-V3-APPLICATION-SERVICE-BOUNDARY-01/integrated-us-v3-application-service-boundary-01-goal5-batch-01.json",
+      ".agent/handoffs/US-V3-PIT-DATAREADY-CONSUMER-01/integrated-us-v3-pit-dataready-consumer-01-goal6-batch-01.json",
+      ".agent/handoffs/US-V3-CANONICAL-BACKTEST-PORTFOLIO-EVIDENCE-01/integrated-us-v3-canonical-backtest-portfolio-evidence-01-goal7-batch-01.json",
+      ".agent/handoffs/US-V3-PAPER-OMS-RECONCILIATION-01/integrated-us-v3-paper-oms-reconciliation-01-goal8-batch-01.json",
+      ".agent/handoffs/US-V3-DOMAIN-READ-MODEL-01/integrated-us-v3-domain-read-model-01-goal9-batch-01.json",
+      ".agent/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01/integrated-us-v3-current-head-gate-rebuild-01-goal10-batch-01.json",
+      ".agent/handoffs/US-V3-FORWARD-OBSERVATION-01/integrated-us-v3-forward-observation-01-goal11-batch-01.json"
+    ],
+    "producer_handoffs": [
+      ".agent/handoffs/US-V3-CURRENT-MAIN-SUCCESSOR-01/published-us-v3-current-main-successor-01-220840dda825.json",
+      ".agent/handoffs/US-V3-WINDOWS-ARTIFACT-PATH-CONTRACT-01/published-us-v3-windows-artifact-path-contract-01-d430f693e3f8.json",
+      ".agent/handoffs/US-V3-SHARED-ADOPTION-01/published-us-v3-shared-adoption-01-e9dbbad6e.json",
+      ".agent/handoffs/US-V3-APPLICATION-SERVICE-BOUNDARY-01/published-us-v3-application-service-boundary-01-f32598c8.json",
+      ".agent/handoffs/US-V3-PIT-DATAREADY-CONSUMER-01/published-us-v3-pit-dataready-consumer-01-4ab4cc8e.json",
+      ".agent/handoffs/US-V3-CANONICAL-BACKTEST-PORTFOLIO-EVIDENCE-01/published-us-v3-canonical-backtest-portfolio-evidence-01-2b4c026b.json",
+      ".agent/handoffs/US-V3-PAPER-OMS-RECONCILIATION-01/published-us-v3-paper-oms-reconciliation-01-193033cf.json",
+      ".agent/handoffs/US-V3-DOMAIN-READ-MODEL-01/published-us-v3-domain-read-model-01-f022d5ab.json",
+      ".agent/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01/published-us-v3-current-head-gate-rebuild-01-487b76fe.json",
+      ".agent/handoffs/US-V3-FORWARD-OBSERVATION-01/published-us-v3-forward-observation-01-5c6b1007.json"
+    ],
+    "production_pit": "docs/handoffs/US-V3-PIT-DATAREADY-CONSUMER-01/us_equity_pit_dataready_consumption_report.json",
+    "canonical": "docs/handoffs/US-V3-CANONICAL-BACKTEST-PORTFOLIO-EVIDENCE-01/evidence/report.json",
+    "oms": "docs/handoffs/US-V3-PAPER-OMS-RECONCILIATION-01/evidence/report.json",
+    "observation": "artifacts/us_equity_forward_observation/latest/latest_pointer.json",
+    "current_head_gate": "artifacts/us_equity_gate_rebuild/latest/us_equity_current_head_gate_rebuild.json",
+    "broker_review": "artifacts/us_equity_etf_macro_rotation/latest/us_equity_broker_credentials_review_report.json",
+    "manual_decision": "artifacts/us_equity_etf_macro_rotation/latest/us_equity_manual_decision_record_report.json"
+  },
+  "fallback_evidence_paths": {
+    "observation": "docs/handoffs/US-V3-FORWARD-OBSERVATION-01/evidence/report.json"
+  },
+  "engineering_defects": [
+    {
+      "defect_id": "paper_durable_path_assertion_drift",
+      "status": "open",
+      "owner": "paper_runtime",
+      "evidence_path": "backend/tests/test_paper_runtime.py::TestPaperRuntimeBootstrap::test_bootstrap_persists_session_manifest_history",
+      "validator": "targeted current-main pytest regression",
+      "ticket": "docs/tickets/US-V3-PAPER-DURABLE-PATH-ASSERTION-DRIFT-01.md",
+      "next_action": "complete the independent repair ticket, preserve POSIX durable identity, and rerun paper safety/runtime regression"
+    },
+    {
+      "defect_id": "live_submission_gate_audit_path_not_injected",
+      "status": "open",
+      "owner": "live_runtime",
+      "evidence_path": "tests/live/test_safety_boundary_regressions.py",
+      "validator": "targeted current-main pytest safety-boundary regression",
+      "ticket": "docs/tickets/US-V3-LIVE-SUBMISSION-GATE-AUDIT-PATH-INJECTION-01.md",
+      "next_action": "inject an explicit audit root into LiveOrderSubmissionGate and rerun the four exact safety-boundary regressions"
+    }
+  ],
+  "safety": {
+    "promotion_allowed": false,
+    "paper_allowed": false,
+    "paper_enabled": false,
+    "paper_runner_allowed": false,
+    "paper_runner_started": false,
+    "paper_queue_write_allowed": false,
+    "live_allowed": false,
+    "live_enabled": false,
+    "live_order_allowed": false,
+    "private_endpoint_allowed": false,
+    "private_endpoint_used": false,
+    "order_endpoint_allowed": false,
+    "order_endpoint_used": false,
+    "broker_access_allowed": false,
+    "broker_calls_used": false,
+    "withdraw_allowed": false,
+    "demo_allowed": false,
+    "real_order_allowed": false,
+    "real_order_submitted": false,
+    "network_used": false,
+    "secret_accessed": false
+  }
+}

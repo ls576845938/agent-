@@ -1,0 +1,581 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_okx_l2_dataready_attestation.schema.json",
+  "title": "BTC OKX Immutable L2 DataReady Attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "exporter_version",
+    "producer_role",
+    "dataset_id",
+    "dataset_version",
+    "source_head",
+    "generated_at",
+    "timezone",
+    "venue",
+    "instrument_id",
+    "channel",
+    "event_time_field",
+    "snapshot_time_field",
+    "available_time_field",
+    "sequence_validation_status",
+    "sequence_gap_count",
+    "duplicate_sequence_count",
+    "out_of_order_sequence_count",
+    "unrecovered_gap_count",
+    "checksum_observed_count",
+    "checksum_validated_count",
+    "checksum_policy",
+    "event_snapshot_time_order_valid",
+    "two_sided_snapshot_count",
+    "two_sided_coverage_pct",
+    "clock_offset_attested",
+    "max_clock_offset_ms",
+    "max_clock_lag_policy_ms",
+    "max_inter_message_gap_seconds",
+    "inter_message_gap_policy_id",
+    "approved_max_inter_message_gap_seconds",
+    "endpoint_anchor_tolerance_seconds",
+    "capture_duration_tolerance_seconds",
+    "observed_history_policy",
+    "coverage_start",
+    "coverage_end",
+    "common_start",
+    "common_end",
+    "freshness_sla_minutes",
+    "freshness_age_minutes",
+    "history_window_days",
+    "observed_history_seconds",
+    "coverage_span_days",
+    "segment_count",
+    "snapshot_count",
+    "update_count",
+    "book_record_count",
+    "reconnect_count",
+    "resync_snapshot_count",
+    "gap_windows",
+    "source_segments",
+    "source_aggregate_sha256",
+    "files",
+    "aggregate_table_sha256",
+    "quality_checked",
+    "promotion_evidence_ready",
+    "promotion_blockers",
+    "readiness",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "btc_okx_l2_dataready_attestation_v1"
+    },
+    "exporter_version": {
+      "const": "btc_okx_l2_immutable_export_v5"
+    },
+    "producer_role": {
+      "const": "data_steward"
+    },
+    "dataset_id": {
+      "const": "btc-okx-timestamp-aligned-public-l2-history"
+    },
+    "dataset_version": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "source_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "timezone": {
+      "const": "UTC"
+    },
+    "venue": {
+      "const": "okx"
+    },
+    "instrument_id": {
+      "const": "BTC-USDT-SWAP"
+    },
+    "channel": {
+      "const": "books"
+    },
+    "event_time_field": {
+      "const": "event_time"
+    },
+    "snapshot_time_field": {
+      "const": "snapshot_time"
+    },
+    "available_time_field": {
+      "const": "available_time"
+    },
+    "sequence_validation_status": {
+      "const": "pass"
+    },
+    "sequence_gap_count": {
+      "const": 0
+    },
+    "duplicate_sequence_count": {
+      "const": 0
+    },
+    "out_of_order_sequence_count": {
+      "const": 0
+    },
+    "unrecovered_gap_count": {
+      "const": 0
+    },
+    "checksum_observed_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "checksum_validated_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checksum_policy": {
+      "const": "nonzero_crc32_validated_zero_accepted_after_okx_deprecation"
+    },
+    "event_snapshot_time_order_valid": {
+      "const": true
+    },
+    "two_sided_snapshot_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "two_sided_coverage_pct": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "clock_offset_attested": {
+      "const": true
+    },
+    "max_clock_offset_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "max_clock_lag_policy_ms": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "max_inter_message_gap_seconds": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 5
+    },
+    "inter_message_gap_policy_id": {
+      "const": "btc_okx_l2_inter_message_gap_v1"
+    },
+    "approved_max_inter_message_gap_seconds": {
+      "const": 5
+    },
+    "endpoint_anchor_tolerance_seconds": {
+      "const": 0.1
+    },
+    "capture_duration_tolerance_seconds": {
+      "const": 0.2
+    },
+    "observed_history_policy": {
+      "const": "sum_min_receive_monotonic_contiguous_deltas_excluding_reconnect_idle_and_unobserved_endpoint_gaps"
+    },
+    "coverage_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "coverage_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "common_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "common_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "freshness_sla_minutes": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "freshness_age_minutes": {
+      "type": "number",
+      "minimum": 0
+    },
+    "history_window_days": {
+      "type": "number",
+      "minimum": 0
+    },
+    "observed_history_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "coverage_span_days": {
+      "type": "number",
+      "minimum": 0
+    },
+    "segment_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "snapshot_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "update_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "book_record_count": {
+      "type": "integer",
+      "minimum": 2
+    },
+    "reconnect_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "resync_snapshot_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "gap_windows": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/gapWindow"
+      }
+    },
+    "source_segments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/sourceSegment"
+      }
+    },
+    "source_aggregate_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    },
+    "aggregate_table_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "quality_checked": {
+      "const": true
+    },
+    "promotion_evidence_ready": {
+      "const": false
+    },
+    "promotion_blockers": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "contains": {
+        "const": "btc_execution_latency_model_missing"
+      }
+    },
+    "readiness": {
+      "$ref": "#/$defs/readiness"
+    },
+    "guardrails": {
+      "$ref": "#/$defs/guardrails"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "bytes",
+        "row_count"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^venue=okx/instrument_id=BTC-USDT-SWAP/date=\\d{4}-\\d{2}-\\d{2}/part-00000\\.jsonl$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "sourceSegment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "segment_name",
+        "data_version",
+        "raw_sha256",
+        "manifest_sha256",
+        "raw_bytes",
+        "manifest_bytes",
+        "raw_row_count",
+        "books_row_count",
+        "capture_start",
+        "capture_end",
+        "raw_first_receive_time",
+        "raw_last_receive_time",
+        "max_clock_offset_ms",
+        "capture_duration_seconds",
+        "capture_started_monotonic_ns",
+        "capture_ended_monotonic_ns",
+        "raw_receive_span_seconds",
+        "raw_monotonic_span_seconds",
+        "clock_span_drift_seconds",
+        "endpoint_gap_count",
+        "manifest_connection_count",
+        "manifest_gap_count",
+        "observed_reconnect_count",
+        "snapshot_count",
+        "update_count",
+        "output_record_count",
+        "blockers"
+      ],
+      "properties": {
+        "segment_name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+        },
+        "data_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "raw_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "raw_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "manifest_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "raw_row_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "books_row_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "capture_start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "capture_end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "raw_first_receive_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "raw_last_receive_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "max_clock_offset_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "capture_duration_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "capture_started_monotonic_ns": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "capture_ended_monotonic_ns": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "raw_receive_span_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "raw_monotonic_span_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "clock_span_drift_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.1
+        },
+        "endpoint_gap_count": {
+          "const": 0
+        },
+        "manifest_connection_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "manifest_gap_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observed_reconnect_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "snapshot_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "update_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "output_record_count": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "blockers": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    },
+    "gapWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "segment_name",
+        "from_connection_sequence",
+        "to_connection_sequence",
+        "gap_start",
+        "gap_end",
+        "duration_seconds",
+        "recovered"
+      ],
+      "properties": {
+        "segment_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from_connection_sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "to_connection_sequence": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "gap_start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "gap_end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "duration_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "recovered": {
+          "const": true
+        }
+      }
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quality_checked",
+        "research_ready",
+        "backtest_ready",
+        "promotion_evidence_ready"
+      ],
+      "properties": {
+        "quality_checked": {
+          "const": true
+        },
+        "research_ready": {
+          "const": false
+        },
+        "backtest_ready": {
+          "const": false
+        },
+        "promotion_evidence_ready": {
+          "const": false
+        }
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_segments_mutated",
+        "database_payload_emitted",
+        "network_collection_used",
+        "shared_data_published",
+        "promotion_unlock_allowed",
+        "paper_or_live_unlock_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "broker_call_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "source_segments_mutated": {
+          "const": false
+        },
+        "database_payload_emitted": {
+          "const": false
+        },
+        "network_collection_used": {
+          "const": false
+        },
+        "shared_data_published": {
+          "const": false
+        },
+        "promotion_unlock_allowed": {
+          "const": false
+        },
+        "paper_or_live_unlock_allowed": {
+          "const": false
+        },
+        "private_endpoint_used": {
+          "const": false
+        },
+        "order_endpoint_used": {
+          "const": false
+        },
+        "broker_call_used": {
+          "const": false
+        },
+        "real_order_submitted": {
+          "const": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,474 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cn_equity_paper_readiness_closure_report.schema.json",
+  "title": "CN Equity Paper Readiness Closure Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "domain",
+    "generated_at_utc",
+    "source_head",
+    "data_version",
+    "status",
+    "wrapper_status",
+    "decision",
+    "freshness",
+    "current_head_gate",
+    "offline_drills",
+    "dependency_statuses",
+    "input_hashes",
+    "input_set_sha256",
+    "root_blockers",
+    "root_blocker_count",
+    "readiness",
+    "paper_start_authorized",
+    "promotion_eligible",
+    "validation_checks",
+    "safety_flags"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "cn_equity_paper_readiness_closure_report_v1"
+    },
+    "domain": {
+      "const": "cn_equity"
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_head": {
+      "$ref": "#/$defs/commit"
+    },
+    "data_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "const": "blocked"
+    },
+    "wrapper_status": {
+      "const": "success"
+    },
+    "decision": {
+      "const": "blocked_fail_closed"
+    },
+    "freshness": {
+      "const": "current_head"
+    },
+    "current_head_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "source_head",
+        "status",
+        "decision",
+        "freshness",
+        "root_blocker_count",
+        "input_set_sha256",
+        "report_sha256"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "cn_equity_current_head_gate_report_v1"
+        },
+        "source_head": {
+          "$ref": "#/$defs/commit"
+        },
+        "status": {
+          "enum": ["blocked", "manual_review_required"]
+        },
+        "decision": {
+          "enum": ["blocked_fail_closed", "manual_review_required"]
+        },
+        "freshness": {
+          "const": "current_head"
+        },
+        "root_blocker_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "input_set_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "report_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "offline_drills": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/drill"
+      }
+    },
+    "dependency_statuses": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dataready",
+        "market_rules",
+        "research_backtest",
+        "oms_ledger_replay",
+        "qmt_broker",
+        "manual_approval"
+      ],
+      "properties": {
+        "dataready": {
+          "$ref": "#/$defs/dependency_status"
+        },
+        "market_rules": {
+          "$ref": "#/$defs/dependency_status"
+        },
+        "research_backtest": {
+          "$ref": "#/$defs/dependency_status"
+        },
+        "oms_ledger_replay": {
+          "$ref": "#/$defs/dependency_status"
+        },
+        "qmt_broker": {
+          "$ref": "#/$defs/dependency_status"
+        },
+        "manual_approval": {
+          "$ref": "#/$defs/dependency_status"
+        }
+      }
+    },
+    "input_hashes": {
+      "type": "object",
+      "minProperties": 7,
+      "additionalProperties": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "input_set_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "root_blockers": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/blocker"
+      }
+    },
+    "root_blocker_count": {
+      "type": "integer",
+      "minimum": 4
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offline_drills_quality_checked",
+        "research_ready",
+        "backtest_ready",
+        "promotion_evidence_ready",
+        "paper_ready",
+        "live_ready"
+      ],
+      "properties": {
+        "offline_drills_quality_checked": {
+          "const": true
+        },
+        "research_ready": {
+          "const": false
+        },
+        "backtest_ready": {
+          "const": false
+        },
+        "promotion_evidence_ready": {
+          "const": false
+        },
+        "paper_ready": {
+          "const": false
+        },
+        "live_ready": {
+          "const": false
+        }
+      }
+    },
+    "paper_start_authorized": {
+      "const": false
+    },
+    "promotion_eligible": {
+      "const": false
+    },
+    "validation_checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "current_head_gate_valid",
+        "current_head_gate_blocked",
+        "both_fixture_modes_exercised",
+        "pre_trade_risk_exercised",
+        "partial_fill_exercised",
+        "kill_switch_exercised",
+        "restart_exercised",
+        "reconciliation_clean_in_fixture",
+        "replay_reconciled_in_fixture",
+        "audit_chain_hashed",
+        "all_safety_flags_false",
+        "network_or_secret_used",
+        "paper_queue_written",
+        "qmt_sdk_imported",
+        "private_or_order_endpoint_called",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "current_head_gate_valid": {
+          "const": true
+        },
+        "current_head_gate_blocked": {
+          "type": "boolean"
+        },
+        "both_fixture_modes_exercised": {
+          "const": true
+        },
+        "pre_trade_risk_exercised": {
+          "const": true
+        },
+        "partial_fill_exercised": {
+          "const": true
+        },
+        "kill_switch_exercised": {
+          "const": true
+        },
+        "restart_exercised": {
+          "const": true
+        },
+        "reconciliation_clean_in_fixture": {
+          "const": true
+        },
+        "replay_reconciled_in_fixture": {
+          "const": true
+        },
+        "audit_chain_hashed": {
+          "const": true
+        },
+        "all_safety_flags_false": {
+          "const": true
+        },
+        "network_or_secret_used": {
+          "const": false
+        },
+        "paper_queue_written": {
+          "const": false
+        },
+        "qmt_sdk_imported": {
+          "const": false
+        },
+        "private_or_order_endpoint_called": {
+          "const": false
+        },
+        "real_order_submitted": {
+          "const": false
+        }
+      }
+    },
+    "safety_flags": {
+      "$ref": "#/$defs/safety_flags"
+    }
+  },
+  "$defs": {
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "dependency_status": {
+      "enum": ["blocked", "quality_checked"]
+    },
+    "blocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "owner", "next_action", "source_layer"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_layer": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "drill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "fixture_id",
+        "source_kind",
+        "fixture_sha256",
+        "status",
+        "decision",
+        "checks",
+        "blockers",
+        "lifecycle",
+        "reconciliation_status",
+        "replay_status",
+        "replay_sha256",
+        "audit_sha256",
+        "evidence_sha256",
+        "runtime_eligible",
+        "paper_start_authorized",
+        "promotion_eligible",
+        "safety_flags"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "cn_equity_offline_paper_drill_v1"
+        },
+        "fixture_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_kind": {
+          "enum": ["synthetic_fixture", "recorded_fixture"]
+        },
+        "fixture_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "status": {
+          "const": "quality_checked"
+        },
+        "decision": {
+          "const": "quality_checked_offline_only"
+        },
+        "checks": {
+          "type": "object",
+          "minProperties": 12,
+          "additionalProperties": {
+            "const": true
+          }
+        },
+        "blockers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "lifecycle": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reconciliation_status": {
+          "const": "reconciled"
+        },
+        "replay_status": {
+          "const": "reconciled"
+        },
+        "replay_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "audit_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "evidence_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "runtime_eligible": {
+          "const": false
+        },
+        "paper_start_authorized": {
+          "const": false
+        },
+        "promotion_eligible": {
+          "const": false
+        },
+        "safety_flags": {
+          "$ref": "#/$defs/safety_flags"
+        }
+      }
+    },
+    "safety_flags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "broker_access_allowed",
+        "demo_allowed",
+        "live_allowed",
+        "network_allowed",
+        "order_endpoint_allowed",
+        "paper_allowed",
+        "paper_queue_allowed",
+        "paper_start_authorized",
+        "private_endpoint_allowed",
+        "promotion_eligible",
+        "qmt_sdk_allowed",
+        "real_order_submitted",
+        "secret_access_allowed",
+        "withdraw_allowed"
+      ],
+      "properties": {
+        "broker_access_allowed": {
+          "const": false
+        },
+        "demo_allowed": {
+          "const": false
+        },
+        "live_allowed": {
+          "const": false
+        },
+        "network_allowed": {
+          "const": false
+        },
+        "order_endpoint_allowed": {
+          "const": false
+        },
+        "paper_allowed": {
+          "const": false
+        },
+        "paper_queue_allowed": {
+          "const": false
+        },
+        "paper_start_authorized": {
+          "const": false
+        },
+        "private_endpoint_allowed": {
+          "const": false
+        },
+        "promotion_eligible": {
+          "const": false
+        },
+        "qmt_sdk_allowed": {
+          "const": false
+        },
+        "real_order_submitted": {
+          "const": false
+        },
+        "secret_access_allowed": {
+          "const": false
+        },
+        "withdraw_allowed": {
+          "const": false
+        }
+      }
+    }
+  }
+}

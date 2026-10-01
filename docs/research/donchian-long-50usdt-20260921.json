@@ -1,0 +1,85 @@
+{
+  "budget": {
+    "experiments": 1,
+    "max_evaluation_hours": 8784,
+    "search": false,
+    "stop_on_ambiguity": true,
+    "stop_on_ledger_mismatch": true
+  },
+  "data": {
+    "aggregate_sha256": "62bed3a6efa945d8fa4f52917667dc44a276add7ed280bb45085ef52950d10af",
+    "dataset_id": "donchian-long-input",
+    "dataset_version": "donchian-long-input-20260921-v2",
+    "files": {
+      "daily_bars.parquet": "7f68b0e0d1a044a12c67135218eefe37adb2cae15a2b45ea36e575c6b2f34101",
+      "funding.parquet": "d3aca4901fc93620ea78f6763ab127ecda68098331f5e977ed8607570d3ae68f",
+      "mark.parquet": "6328df235333b428e9fbdadb36cc97d8e8810c0bce60bd70bfd1a6a24713497e",
+      "premium.parquet": "03dcf771292d155a585c804213cf9f96375a9cd569fc27b7a9dde6a562494e94"
+    },
+    "manifest_git_spec": "02e85c7e035cf9fdd8becc8ea110c1bffef57964:.agent/data_manifests/donchian-long-input/donchian-long-input-20260921-v2.json",
+    "manifest_sha256": "349bd130a769796a71877f48ab7aa597338303ece8b124d4b9e23a3759e3993d",
+    "prefix": "history_input"
+  },
+  "evidence_class": "exploratory_historical_not_promotion",
+  "execution": {
+    "account_equity_usdt": "5000",
+    "contract_value_btc": "0.01",
+    "cost": {
+      "taker_fee_bps": "5",
+      "version": "fixed_taker_5bps_v1"
+    },
+    "exit_rule": "original_registry_signal_and_existing_protection_v1",
+    "funding_interval_hours": 8,
+    "funding_mark": "t_minus_1h_visible_mark_close_approximation",
+    "matching": {
+      "depth": "not_available_assumed_one_contract_each_side",
+      "execution": "marketable_limit_fok_ioc_full_fill_within_frozen_depth",
+      "half_spread_bps": "0.5",
+      "market_impact": "not_modeled",
+      "queue": "not_modeled",
+      "version": "historical_next_bar_open_spread_aware_v2"
+    },
+    "order_contracts": "0.01",
+    "position_rule": "original_fixed_contracts_v1",
+    "protection": {
+      "double_touch": "blocked_ambiguous",
+      "stop_loss_bps": "100",
+      "take_profit_bps": "200",
+      "version": "existing_v1_mark_oco_100_200bps_v1"
+    },
+    "terminal": "observe_and_reconcile_no_new_order_no_forced_close",
+    "max_notional_usdt": "50",
+    "max_loss_usdt": "10"
+  },
+  "schema_version": "btc_donchian_history_spec_v2",
+  "strategy": {
+    "candidate_id": "okx_native_btc_ls_tf_formal_donchian_w240_d50_200_atr20_cd12_fail0_risknone_78f5f0a0e4",
+    "params": {
+      "atr_mult": 2,
+      "atr_window": 20,
+      "cooldown_bars": 12,
+      "daily_fast": 50,
+      "daily_slow": 200,
+      "derivatives_usage": "risk_filter_only",
+      "entry_window": 240,
+      "exit_window": 120,
+      "failure_exit_window": 6,
+      "primary_signal_source": "price_trend",
+      "risk_filter_mode": "none",
+      "signal_type": "symmetric_donchian",
+      "use_derivatives_risk_filter": false,
+      "use_failed_breakout_exit": false,
+      "use_risk_exit": false
+    },
+    "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+    "strategy_id": "long_short_donchian_top5_okx_native",
+    "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0"
+  },
+  "window": {
+    "evaluation_end": "2026-09-01T00:00:00+00:00",
+    "evaluation_start": "2025-09-01T00:00:00+00:00",
+    "requested_months": 12,
+    "selection_reason": "fixed_complete_calendar_year_before_collection_not_selected_by_returns",
+    "warmup_start": "2025-02-13T00:00:00+00:00"
+  }
+}

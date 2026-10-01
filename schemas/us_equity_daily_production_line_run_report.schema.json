@@ -1,0 +1,564 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_daily_production_line_run_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Daily Production Line Run Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "pipeline",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "expected_external_blocker",
+    "strategy_registry_contract",
+    "forward_observation",
+    "remediation_tickets",
+    "remediation_ticket_closure",
+    "production_pit_drop",
+    "vendor_drop_pipeline",
+    "production_pit_operator_inputs",
+    "operator_drop_progress",
+    "operator_unblock",
+    "completion_audit",
+    "live_execution_readiness",
+    "run_progress",
+    "steps",
+    "blockers",
+    "unsafe_flags",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_daily_production_line_run_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "pipeline": {"const": "us_equity_daily_production_line"},
+    "status": {"enum": ["PASS", "BLOCKED"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["PASS", "BLOCKED"]},
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "decision": {"type": "string", "minLength": 1},
+    "expected_external_blocker": {
+      "type": "object",
+      "required": [
+        "production_pit_data_required",
+        "production_line_status",
+        "development_plan_status"
+      ],
+      "properties": {
+        "production_pit_data_required": {"type": "boolean"},
+        "production_line_status": {"type": "string"},
+        "development_plan_status": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "strategy_registry_contract": {
+      "type": "object",
+      "required": [
+        "status",
+        "formal_candidate_count",
+        "source_report_contract_passed",
+        "missing_required_keys_by_strategy",
+        "missing_paths_by_strategy"
+      ],
+      "properties": {
+        "status": {"type": "string"},
+        "formal_candidate_count": {"type": ["integer", "null"], "minimum": 0},
+        "source_report_contract_passed": {"type": ["boolean", "null"]},
+        "missing_required_keys_by_strategy": {
+          "type": "object",
+          "additionalProperties": {"type": "array", "items": {"type": "string"}}
+        },
+        "missing_paths_by_strategy": {
+          "type": "object",
+          "additionalProperties": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "additionalProperties": false
+    },
+    "forward_observation": {
+      "type": "object",
+      "required": [
+        "daily_health_status",
+        "observation_days",
+        "minimum_complete_days",
+        "latest_observation_date",
+        "continuity_passed",
+        "unique_observation_days",
+        "max_calendar_gap_days",
+        "duplicate_target_date_count",
+        "duplicate_snapshot_date_count",
+        "missing_snapshot_for_target_count",
+        "missing_target_for_snapshot_count"
+      ],
+      "properties": {
+        "daily_health_status": {"type": "string"},
+        "observation_days": {"type": ["integer", "null"], "minimum": 0},
+        "minimum_complete_days": {"type": ["integer", "null"], "minimum": 0},
+        "latest_observation_date": {"type": ["string", "null"]},
+        "continuity_passed": {"type": ["boolean", "null"]},
+        "unique_observation_days": {"type": ["integer", "null"], "minimum": 0},
+        "max_calendar_gap_days": {"type": ["integer", "null"], "minimum": 0},
+        "duplicate_target_date_count": {"type": "integer", "minimum": 0},
+        "duplicate_snapshot_date_count": {"type": "integer", "minimum": 0},
+        "missing_snapshot_for_target_count": {"type": "integer", "minimum": 0},
+        "missing_target_for_snapshot_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "remediation_tickets": {
+      "type": "object",
+      "required": [
+        "ticket_count",
+        "external_or_time_dependency_count",
+        "engineering_dependency_count",
+        "manual_dependency_count",
+        "by_dependency_type",
+        "by_status",
+        "tickets"
+      ],
+      "properties": {
+        "ticket_count": {"type": "integer", "minimum": 0},
+        "external_or_time_dependency_count": {"type": "integer", "minimum": 0},
+        "engineering_dependency_count": {"type": "integer", "minimum": 0},
+        "manual_dependency_count": {"type": "integer", "minimum": 0},
+        "by_dependency_type": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "by_status": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "tickets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "ticket_id",
+              "category",
+              "owner",
+              "dependency_type",
+              "status",
+              "blocker_count",
+              "source_reports",
+              "next_action",
+              "acceptance_evidence"
+            ],
+            "properties": {
+              "ticket_id": {"type": "string", "pattern": "^us_equity_remediate_[a-z_]+$"},
+              "category": {"type": "string", "minLength": 1},
+              "owner": {"type": "string", "minLength": 1},
+              "dependency_type": {"type": "string", "minLength": 1},
+              "status": {"type": "string", "minLength": 1},
+              "blocker_count": {"type": "integer", "minimum": 1},
+              "source_reports": {"type": "array", "items": {"type": "string", "minLength": 1}},
+              "next_action": {"type": "string", "minLength": 1},
+              "acceptance_evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "remediation_ticket_closure": {
+      "type": "object",
+      "required": [
+        "status",
+        "ticket_count",
+        "open_count",
+        "closed_count",
+        "missing_source_count"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "remediation_tickets_open",
+            "remediation_tickets_closed",
+            "remediation_ticket_closure_source_missing",
+            ""
+          ]
+        },
+        "ticket_count": {"type": ["integer", "null"], "minimum": 0},
+        "open_count": {"type": ["integer", "null"], "minimum": 0},
+        "closed_count": {"type": ["integer", "null"], "minimum": 0},
+        "missing_source_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "production_pit_drop": {
+      "type": "object",
+      "required": [
+        "status",
+        "ready_file_count",
+        "required_file_count",
+        "first_blocker",
+        "ready_table_count",
+        "blocked_table_count"
+      ],
+      "properties": {
+        "status": {"type": ["string", "null"]},
+        "ready_file_count": {"type": ["integer", "null"], "minimum": 0},
+        "required_file_count": {"type": ["integer", "null"], "minimum": 0},
+        "first_blocker": {"type": ["string", "null"]},
+        "ready_table_count": {"type": ["integer", "null"], "minimum": 0},
+        "blocked_table_count": {"type": ["integer", "null"], "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "vendor_drop_pipeline": {
+      "type": "object",
+      "required": [
+        "status",
+        "current_blocking_step",
+        "blocker_count",
+        "unsafe_flag_count",
+        "license_reviewed"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "vendor_drop_pipeline_blocked",
+            "vendor_drop_pipeline_ready_for_manual_config_review",
+            ""
+          ]
+        },
+        "current_blocking_step": {"type": ["string", "null"]},
+        "blocker_count": {"type": "integer", "minimum": 0},
+        "unsafe_flag_count": {"type": "integer", "minimum": 0},
+        "license_reviewed": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "operator_drop_progress": {
+      "type": "object",
+      "required": [
+        "status",
+        "completed_count",
+        "blocked_count",
+        "pending_count",
+        "step_count",
+        "next_step_id",
+        "next_action"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "operator_drop_blocked",
+            "operator_drop_ready_for_import",
+            "operator_drop_complete_for_manual_review"
+          ]
+        },
+        "completed_count": {"type": "integer", "minimum": 0},
+        "blocked_count": {"type": "integer", "minimum": 0},
+        "pending_count": {"type": "integer", "minimum": 0},
+        "step_count": {"type": "integer", "minimum": 1},
+        "next_step_id": {"type": "string"},
+        "next_action": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "production_pit_operator_inputs": {
+      "type": "object",
+      "required": [
+        "next_action_id",
+        "owner",
+        "missing_file_count",
+        "required_inputs",
+        "command_sequence"
+      ],
+      "properties": {
+        "next_action_id": {"type": "string"},
+        "owner": {"type": "string"},
+        "missing_file_count": {"type": "integer", "minimum": 0},
+        "required_inputs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/required_operator_input"}
+        },
+        "command_sequence": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "additionalProperties": false
+    },
+    "live_execution_readiness": {
+      "type": "object",
+      "required": [
+        "status",
+        "drill_count",
+        "proven_count",
+        "blocked_count",
+        "live_order_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "status": {"enum": ["execution_readiness_blocked", "execution_readiness_proven"]},
+        "drill_count": {"type": "integer", "minimum": 1},
+        "proven_count": {"type": "integer", "minimum": 0},
+        "blocked_count": {"type": "integer", "minimum": 0},
+        "live_order_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "operator_unblock": {
+      "type": "object",
+      "required": [
+        "status",
+        "open_count",
+        "external_input_count",
+        "manual_input_count",
+        "natural_time_count",
+        "next_operator_item_id",
+        "next_operator_owner",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "status": {"enum": ["operator_unblock_open", "operator_unblock_complete", ""]},
+        "open_count": {"type": ["integer", "null"], "minimum": 0},
+        "external_input_count": {"type": ["integer", "null"], "minimum": 0},
+        "manual_input_count": {"type": ["integer", "null"], "minimum": 0},
+        "natural_time_count": {"type": ["integer", "null"], "minimum": 0},
+        "next_operator_item_id": {"type": "string"},
+        "next_operator_owner": {"type": "string"},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "completion_audit": {
+      "type": "object",
+      "required": [
+        "status",
+        "phase_count",
+        "complete_count",
+        "in_progress_count",
+        "blocked_count",
+        "first_blocked_phase_id",
+        "first_incomplete_phase_id",
+        "first_incomplete_phase_status",
+        "first_blocker",
+        "next_action",
+        "completion_claim_allowed",
+        "completion_dependency_blocked_count",
+        "operator_open_input_count",
+        "operator_external_input_count",
+        "operator_manual_input_count",
+        "operator_natural_time_count",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "status": {"enum": ["completion_blocked", "completion_in_progress", "completion_complete", ""]},
+        "phase_count": {"type": ["integer", "null"], "minimum": 0},
+        "complete_count": {"type": ["integer", "null"], "minimum": 0},
+        "in_progress_count": {"type": ["integer", "null"], "minimum": 0},
+        "blocked_count": {"type": ["integer", "null"], "minimum": 0},
+        "first_blocked_phase_id": {"type": "string"},
+        "first_incomplete_phase_id": {"type": "string"},
+        "first_incomplete_phase_status": {"type": "string"},
+        "first_blocker": {"type": "string"},
+        "next_action": {"type": "string"},
+        "completion_claim_allowed": {"type": "boolean"},
+        "completion_dependency_blocked_count": {"type": ["integer", "null"], "minimum": 0},
+        "operator_open_input_count": {"type": ["integer", "null"], "minimum": 0},
+        "operator_external_input_count": {"type": ["integer", "null"], "minimum": 0},
+        "operator_manual_input_count": {"type": ["integer", "null"], "minimum": 0},
+        "operator_natural_time_count": {"type": ["integer", "null"], "minimum": 0},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "production_control_health": {
+      "type": "object",
+      "required": [
+        "health_status",
+        "checked_count",
+        "schema_invalid_count",
+        "missing_count",
+        "stale_count",
+        "path_escape_count",
+        "blockers",
+        "promotion_safe"
+      ],
+      "properties": {
+        "health_status": {"enum": ["pass", "warn", "fail", ""]},
+        "checked_count": {"type": "integer", "minimum": 0},
+        "schema_invalid_count": {"type": "integer", "minimum": 0},
+        "missing_count": {"type": "integer", "minimum": 0},
+        "stale_count": {"type": "integer", "minimum": 0},
+        "path_escape_count": {"type": "integer", "minimum": 0},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "promotion_safe": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "run_progress": {
+      "type": "object",
+      "required": [
+        "status",
+        "step_count",
+        "passed_step_count",
+        "failed_step_count",
+        "failed_step_ids",
+        "production_line_status",
+        "production_line_next_action",
+        "next_action_owner",
+        "next_action_dependency_type",
+        "next_action_actionability",
+        "actionable_engineering_count",
+        "blocked_until_upstream_count",
+        "forward_observation_days",
+        "forward_minimum_days",
+        "forward_days_until_minimum",
+        "remediation_ticket_count",
+        "remediation_open_count",
+        "production_pit_ready_file_count",
+        "production_pit_required_file_count",
+        "operator_next_step_id",
+        "operator_unblock_open_count",
+        "operator_unblock_external_input_count",
+        "operator_unblock_manual_input_count",
+        "operator_unblock_natural_time_count",
+        "completion_phase_count",
+        "completion_complete_count",
+        "completion_in_progress_count",
+        "completion_blocked_count",
+        "completion_first_incomplete_phase_id",
+        "completion_first_incomplete_phase_status",
+        "completion_first_blocker",
+        "completion_next_action",
+        "completion_claim_allowed",
+        "completion_dependency_blocked_count",
+        "live_execution_status",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "status": {"enum": ["PASS", "BLOCKED"]},
+        "step_count": {"type": "integer", "minimum": 1},
+        "passed_step_count": {"type": "integer", "minimum": 0},
+        "failed_step_count": {"type": "integer", "minimum": 0},
+        "failed_step_ids": {"type": "array", "items": {"type": "string"}},
+        "production_line_status": {"type": "string"},
+        "production_line_next_action": {"type": "string"},
+        "next_action_owner": {"type": "string"},
+        "next_action_dependency_type": {"type": "string"},
+        "next_action_actionability": {"type": "string"},
+        "actionable_engineering_count": {"type": ["integer", "null"], "minimum": 0},
+        "blocked_until_upstream_count": {"type": ["integer", "null"], "minimum": 0},
+        "forward_observation_days": {"type": ["integer", "null"], "minimum": 0},
+        "forward_minimum_days": {"type": ["integer", "null"], "minimum": 0},
+        "forward_days_until_minimum": {"type": ["integer", "null"], "minimum": 0},
+        "remediation_ticket_count": {"type": ["integer", "null"], "minimum": 0},
+        "remediation_open_count": {"type": ["integer", "null"], "minimum": 0},
+        "production_pit_ready_file_count": {"type": ["integer", "null"], "minimum": 0},
+        "production_pit_required_file_count": {"type": ["integer", "null"], "minimum": 0},
+        "operator_next_step_id": {"type": ["string", "null"]},
+        "operator_unblock_open_count": {"type": ["integer", "null"], "minimum": 0},
+        "operator_unblock_external_input_count": {"type": ["integer", "null"], "minimum": 0},
+        "operator_unblock_manual_input_count": {"type": ["integer", "null"], "minimum": 0},
+        "operator_unblock_natural_time_count": {"type": ["integer", "null"], "minimum": 0},
+        "completion_phase_count": {"type": ["integer", "null"], "minimum": 0},
+        "completion_complete_count": {"type": ["integer", "null"], "minimum": 0},
+        "completion_in_progress_count": {"type": ["integer", "null"], "minimum": 0},
+        "completion_blocked_count": {"type": ["integer", "null"], "minimum": 0},
+        "completion_first_incomplete_phase_id": {"type": ["string", "null"]},
+        "completion_first_incomplete_phase_status": {"type": ["string", "null"]},
+        "completion_first_blocker": {"type": ["string", "null"]},
+        "completion_next_action": {"type": ["string", "null"]},
+        "completion_claim_allowed": {"type": "boolean"},
+        "completion_dependency_blocked_count": {"type": ["integer", "null"], "minimum": 0},
+        "live_execution_status": {"type": ["string", "null"]},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "step_id",
+          "status",
+          "passed",
+          "blockers",
+          "warnings",
+          "output",
+          "payload"
+        ],
+        "properties": {
+          "step_id": {"type": "string", "minLength": 1},
+          "status": {"type": "string"},
+          "passed": {"type": "boolean"},
+          "blockers": {"type": "array", "items": {"type": "string"}},
+          "warnings": {"type": "array", "items": {"type": "string"}},
+          "output": {"type": ["string", "null"]},
+          "payload": {"type": "object"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "unsafe_flags": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "daily_orchestration_only",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "daily_orchestration_only": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "required_operator_input": {
+      "type": "object",
+      "required": ["filename", "target_path", "table", "blocker", "required_fields"],
+      "properties": {
+        "filename": {"type": "string"},
+        "target_path": {"type": "string"},
+        "table": {"type": "string"},
+        "blocker": {"type": "string"},
+        "required_fields": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

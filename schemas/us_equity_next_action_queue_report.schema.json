@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_next_action_queue_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Next Action Queue Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "summary",
+    "next_action",
+    "parallel_tracks",
+    "actions",
+    "source_reports",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_next_action_queue_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["next_actions_open", "next_actions_complete"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["next_actions_open", "next_actions_complete"]},
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "decision": {"const": "execute_actions_in_order_keep_paper_live_locked"},
+    "summary": {
+      "type": "object",
+      "required": [
+        "action_count",
+        "open_count",
+        "manual_required_count",
+        "external_input_count",
+        "natural_time_count",
+        "actionable_engineering_count",
+        "blocked_until_upstream_count",
+        "blocked_gate_record_count",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "action_count": {"type": "integer", "minimum": 0},
+        "open_count": {"type": "integer", "minimum": 0},
+        "manual_required_count": {"type": "integer", "minimum": 0},
+        "external_input_count": {"type": "integer", "minimum": 0},
+        "natural_time_count": {"type": "integer", "minimum": 0},
+        "actionable_engineering_count": {"type": "integer", "minimum": 0},
+        "blocked_until_upstream_count": {"type": "integer", "minimum": 0},
+        "blocked_gate_record_count": {"type": "integer", "minimum": 0},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "next_action": {
+      "anyOf": [
+        {"$ref": "#/$defs/action"},
+        {"type": "null"}
+      ]
+    },
+    "parallel_tracks": {"type": "array", "items": {"$ref": "#/$defs/parallel_track"}},
+    "actions": {"type": "array", "items": {"$ref": "#/$defs/action"}},
+    "source_reports": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "queue_only",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_calls_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "queue_only": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "action": {
+      "type": "object",
+      "required": [
+        "action_id",
+        "priority",
+        "milestone_id",
+        "title",
+        "owner",
+        "dependency_type",
+        "actionability",
+        "status",
+        "manual_required",
+        "recommended_command",
+        "instruction",
+        "first_blocker",
+        "blockers",
+        "blocked_gate_records",
+        "evidence",
+        "unlocks",
+        "source_reports"
+      ],
+      "properties": {
+        "action_id": {"type": "string", "minLength": 1},
+        "priority": {"type": "integer", "minimum": 0},
+        "milestone_id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "owner": {"type": "string", "minLength": 1},
+        "dependency_type": {"type": "string", "minLength": 1},
+        "actionability": {"type": "string", "minLength": 1},
+        "status": {"enum": ["open"]},
+        "manual_required": {"type": "boolean"},
+        "recommended_command": {"type": "string"},
+        "instruction": {"type": "string", "minLength": 1},
+        "first_blocker": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "blocked_gate_records": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/blocked_gate_record"}
+        },
+        "evidence": {"type": "object"},
+        "unlocks": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "source_reports": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "parallel_track": {
+      "type": "object",
+      "required": [
+        "track_id",
+        "label",
+        "action_count",
+        "action_ids",
+        "owners",
+        "recommended_commands"
+      ],
+      "properties": {
+        "track_id": {
+          "enum": [
+            "external_input_waiting",
+            "natural_time_waiting",
+            "manual_required",
+            "actionable_engineering",
+            "blocked_until_upstream",
+            "blocked_until_manual_input"
+          ]
+        },
+        "label": {"type": "string", "minLength": 1},
+        "action_count": {"type": "integer", "minimum": 0},
+        "action_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "owners": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "recommended_commands": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "blocked_gate_record": {
+      "type": "object",
+      "required": [
+        "record_id",
+        "milestone_id",
+        "gate_id",
+        "blocker",
+        "owner",
+        "reason",
+        "next_action",
+        "evidence_path",
+        "source_report",
+        "actionability",
+        "dependency_type"
+      ],
+      "properties": {
+        "record_id": {"type": "string", "minLength": 1},
+        "milestone_id": {"type": "string", "minLength": 1},
+        "gate_id": {"type": "string", "minLength": 1},
+        "blocker": {"type": "string", "minLength": 1},
+        "owner": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "next_action": {"type": "string", "minLength": 1},
+        "evidence_path": {"type": "string", "minLength": 1},
+        "source_report": {"type": "string"},
+        "actionability": {"type": "string", "minLength": 1},
+        "dependency_type": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  }
+}

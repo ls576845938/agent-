@@ -1,0 +1,1 @@
+"""CN equity domain tests."""

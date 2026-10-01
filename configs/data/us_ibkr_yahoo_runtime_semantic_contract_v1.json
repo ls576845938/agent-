@@ -1,0 +1,99 @@
+{
+  "schema_version": "us_ibkr_yahoo_runtime_semantic_contract_envelope_v1",
+  "contract_id": "us-ibkr-yahoo-runtime-semantic-contract-v1",
+  "contract_version": "1.1.0",
+  "contract_sha256": "3d62fc290c903b172c511a6a70988500e55b77f34b940391b135bc0ff6e78a67",
+  "contract": {
+    "research_source": {
+      "provider": "Yahoo Finance",
+      "role": "research_only",
+      "allowed_uses": [
+        "research",
+        "backtest",
+        "offline_semantic_comparison"
+      ],
+      "runtime_forbidden_uses": [
+        "paper_runtime_source",
+        "live_runtime_source",
+        "warmup_fallback",
+        "disconnect_fallback"
+      ],
+      "price_semantics": "adjusted_ohlc_research_series"
+    },
+    "runtime_source": {
+      "provider": "IBKR",
+      "role": "runtime_only",
+      "required_market_data_type": "live",
+      "rejected_market_data_types": [
+        "frozen",
+        "delayed",
+        "delayed-frozen",
+        "unknown"
+      ],
+      "price_semantics": "IBKR_ADJUSTED_LAST_completed_daily_bar_triggered_by_IBKR_realtime_RTH_close",
+      "required_identity_fields": [
+        "conId",
+        "symbol",
+        "secType",
+        "exchange",
+        "currency",
+        "event_timestamp_utc",
+        "receive_timestamp_utc",
+        "source_sequence",
+        "source_identity"
+      ]
+    },
+    "corporate_action_policy": {
+      "absolute_adjusted_to_raw_price_parity_allowed": false,
+      "ordinary_session_comparison": "compare_same-session_return_and_feature_semantics",
+      "split_policy": "IBKR_ADJUSTED_LAST_normalization_and_content_hash_required_else_fail_closed",
+      "dividend_policy": "IBKR_ADJUSTED_LAST_normalization_and_content_hash_required_else_fail_closed",
+      "entitlement_status": "derived_from_successful_IBKR_ADJUSTED_LAST_response_not_operator_boolean",
+      "verified_status_alone_sufficient": false,
+      "silent_ignore_allowed": false
+    },
+    "session_policy": {
+      "calendar": "XNYS",
+      "runtime_default": "RTH_only",
+      "regular_session": "09:30-16:00 America/New_York",
+      "early_close_session": "09:30-13:00 America/New_York",
+      "extended_hours_default_allowed": false,
+      "timezone": "America/New_York",
+      "internal_timezone": "UTC",
+      "trading_date_rule": "event_timestamp_converted_to_America/New_York"
+    },
+    "bar_availability_policy": {
+      "strategy_trigger": "completed_bar_only",
+      "partial_bar_allowed": false,
+      "future_bar_allowed": false,
+      "daily_candidate_timeframe": "1d",
+      "daily_availability": "at_verified_RTH_session_close",
+      "daily_normalization": "refresh_same_session_IBKR_ADJUSTED_LAST_after_realtime_RTH_close",
+      "warmup_sources": [
+        "IBKR_historical",
+        "IBKR_runtime_cache"
+      ],
+      "warmup_yahoo_fallback_allowed": false
+    },
+    "freshness_and_sequence_policy": {
+      "missing_bar_tolerance": 0,
+      "sequence_gap_tolerance": 0,
+      "duplicate_signal_tolerance": 0,
+      "duplicate_order_intent_tolerance": 0,
+      "stale_action": "fail_closed",
+      "disconnect_action": "fail_closed",
+      "reconnect_rule": "deduplicate_by_symbol_bar_size_event_timestamp_then_resume_monotonic_sequence_per_connection_epoch"
+    },
+    "numerical_parity_tolerance": {
+      "comparison_measure": "same-session_close_return",
+      "session_return_absolute": 1e-08,
+      "absolute_price_comparison_allowed": false
+    },
+    "promotion_semantics": {
+      "semantic_contract_is_promotion_evidence": false,
+      "paper_submit_allowed": false,
+      "live_allowed": false,
+      "promotion_allowed": false
+    }
+  }
+}

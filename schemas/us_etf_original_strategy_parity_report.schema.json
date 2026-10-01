@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_original_strategy_parity_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Original Strategy Parity Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "live_ready",
+    "paper_ready",
+    "canonical_original_baseline",
+    "original_project",
+    "original_data_lake",
+    "start_date",
+    "original_external_v8_2",
+    "integrated_research_backtest",
+    "diagnosis"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_original_strategy_parity_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "diagnostic_research_only"},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "canonical_original_baseline": {
+      "type": "object",
+      "required": [
+        "baseline_id",
+        "strategy_family",
+        "rebalance_semantics",
+        "metric_basis",
+        "eligible_for_direct_comparison_with_integrated_candidates",
+        "reason"
+      ],
+      "properties": {
+        "baseline_id": {"const": "original_v8_2_semantics"},
+        "strategy_family": {"const": "us_etf_macro_momentum_rotation"},
+        "rebalance_semantics": {"const": "calendar_month_end_only_skip_if_not_trading_day"},
+        "metric_basis": {"const": "true_cagr_and_arithmetic_annualized_both_reported"},
+        "eligible_for_direct_comparison_with_integrated_candidates": {"const": false},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "original_project": {"type": "string", "minLength": 1},
+    "original_data_lake": {"type": "string", "minLength": 1},
+    "start_date": {"const": "2018-01-01"},
+    "original_external_v8_2": {"$ref": "#/$defs/run_result"},
+    "integrated_research_backtest": {"$ref": "#/$defs/run_result"},
+    "diagnosis": {
+      "type": "object",
+      "required": [
+        "primary_reason",
+        "metric_label_issue",
+        "benchmark_issue",
+        "data_issue",
+        "conclusion",
+        "next_action"
+      ],
+      "properties": {
+        "primary_reason": {"type": "string", "minLength": 1},
+        "metric_label_issue": {"type": "string", "minLength": 1},
+        "benchmark_issue": {"type": "string", "minLength": 1},
+        "data_issue": {"type": "string", "minLength": 1},
+        "conclusion": {"type": "string", "minLength": 1},
+        "next_action": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "run_result": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"type": "string"},
+        "metrics": {
+          "type": "object",
+          "required": ["sample_start", "sample_end", "rows", "strategy", "SPY", "QQQ", "turnover"],
+          "properties": {
+            "sample_start": {"type": "string"},
+            "sample_end": {"type": "string"},
+            "rows": {"type": "integer", "minimum": 1},
+            "strategy": {"$ref": "#/$defs/metrics"},
+            "SPY": {"$ref": "#/$defs/metrics"},
+            "QQQ": {"$ref": "#/$defs/metrics"},
+            "turnover": {"type": "number", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "rebalance_calendar": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "true_cagr",
+        "arithmetic_annualized_return",
+        "sharpe_no_risk_free",
+        "max_drawdown",
+        "total_return"
+      ],
+      "properties": {
+        "true_cagr": {"type": "number"},
+        "arithmetic_annualized_return": {"type": "number"},
+        "sharpe_no_risk_free": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "total_return": {"type": "number"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

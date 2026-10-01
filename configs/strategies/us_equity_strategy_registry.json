@@ -1,0 +1,362 @@
+{
+  "schema_version": "us_equity_strategy_registry_v1",
+  "asset": "us_equity",
+  "policy": {
+    "default_mode": "research_governance",
+    "strategy_expansion_allowed_before_pipeline_gate": false,
+    "unregistered_strategy_promotion_allowed": false,
+    "paper_or_live_unlock_allowed_by_registry": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "live_order_allowed": false
+  },
+  "production_line_order": [
+    "data_ingestion",
+    "data_quality_pit_check",
+    "strategy_hypothesis_registration",
+    "standardized_backtest",
+    "cost_liquidity_capacity_stress",
+    "walk_forward_parameter_stability",
+    "strategy_validation_gate",
+    "forward_observation",
+    "manual_review",
+    "paper_simulation",
+    "small_capital_live_readiness",
+    "monitoring_attribution_retirement_iteration"
+  ],
+  "strategies": [
+    {
+      "strategy_id": "us_etf_rotation_min_adv_10m_vol_target_20pct_cap1_5x",
+      "family": "us_etf_macro_momentum_rotation",
+      "status": "forward_observation_only",
+      "current_stage": "forward_observation",
+      "primary_candidate": true,
+      "strategy_card": "docs/strategy_cards/us_etf_rotation_min_adv_10m_vol_target_20pct_cap1_5x.md",
+      "hypothesis": {
+        "alpha_sources": [
+          "ETF cross-sectional momentum",
+          "macro risk switch",
+          "volatility scaling"
+        ],
+        "risk_premia_explanation": "The strategy seeks intermediate-horizon continuation across liquid ETFs while reducing exposure when macro risk signals and realized volatility make the expected payoff worse.",
+        "known_risks": [
+          "survivorship and point-in-time universe risk",
+          "corporate action adjustment reproducibility",
+          "DBMF or other low-liquidity sleeve capacity",
+          "leverage and financing drag",
+          "momentum crash or fast regime reversal"
+        ],
+        "capital_scope_usd": 10000,
+        "rebalance_frequency": "daily close / next-session target update",
+        "initial_live_leverage_recommended": false
+      },
+      "parameter_space": {
+        "momentum_lookbacks_trading_days": [63, 126, 189, 252],
+        "top_n": [1, 2, 3],
+        "volatility_target": [0.1, 0.15, 0.2],
+        "leverage_cap": [1.0, 1.25, 1.5],
+        "min_adv_usd": [5000000, 10000000, 25000000],
+        "defensive_asset": ["SHV", "IEF"]
+      },
+      "data_dependencies": {
+        "prices": "Tiingo adjusted EOD ETF OHLCV",
+        "macro": "FRED series with publication lag handling required",
+        "liquidity": "ADV and minimum trade amount",
+        "corporate_actions": "adjustment reproducibility required before promotion"
+      },
+      "cost_model": {
+        "turnover_cost_bps": [10, 25, 50],
+        "slippage_model": "bps on traded notional with liquidity stress",
+        "financing_required_if_leverage_above_1x": true
+      },
+      "failure_conditions": [
+        "strategy validation gate remains blocked on data quality",
+        "forward observation ledger is not reproducible",
+        "cost stress destroys excess return versus benchmark",
+        "liquidity or share-rounding constraints fail for 10000 USD account",
+        "macro data lag cannot be handled point-in-time"
+      ],
+      "source_reports": {
+        "data_ingestion": "artifacts/us_equity_data_status/latest/tiingo_eod_import_report.json",
+        "data_freshness": "artifacts/us_equity_data_status/latest/us_equity_data_freshness_daily_report.json",
+        "etf_kline_quality_daily": "artifacts/us_equity_data_status/latest/us_equity_etf_kline_quality_daily_report.json",
+        "fred_macro_preflight": "artifacts/us_equity_data_status/latest/us_equity_fred_macro_preflight_report.json",
+        "data_source_reconciliation": "artifacts/us_equity_data_status/latest/us_equity_data_source_reconciliation_report.json",
+        "data_lineage_remediation": "artifacts/us_equity_data_lineage/latest/us_equity_data_lineage_remediation_report.json",
+        "production_data_acquisition_plan": "artifacts/us_equity_data_lineage/latest/us_equity_production_data_acquisition_plan.json",
+        "production_pit_intake_status": "artifacts/us_equity_data_lineage/latest/us_equity_pit_data_intake_status_report.json",
+        "pit_bundle_acceptance": "artifacts/us_equity_data_lineage/latest/us_equity_pit_bundle_acceptance_run_report.json",
+        "macro_release_lag_policy": "artifacts/us_equity_data_lineage/latest/us_equity_macro_release_lag_policy_report.json",
+        "research_backtest": "artifacts/us_equity_etf_macro_rotation/latest/us_etf_macro_rotation_research_report.json",
+        "standard_report_schema_audit": "artifacts/us_equity_etf_macro_rotation/latest/us_equity_standard_report_schema_audit_report.json",
+        "top_candidate_validation": "artifacts/us_equity_etf_macro_rotation/latest/us_etf_top1_higher_vol_20pct_15x_validation_report.json",
+        "walk_forward_parameter_stability_gate": "artifacts/us_equity_etf_macro_rotation/latest/us_etf_walk_forward_parameter_stability_gate_report.json",
+        "forward_observation": "artifacts/us_equity_etf_macro_rotation/latest/us_etf_forward_observation_roll_report.json",
+        "forward_observation_evaluation": "artifacts/us_equity_etf_macro_rotation/latest/us_etf_forward_observation_evaluation_report.json",
+        "forward_observation_daily_health": "artifacts/us_equity_etf_macro_rotation/latest/us_etf_forward_observation_daily_health_report.json",
+        "strategy_validation_gate": "artifacts/us_equity_etf_macro_rotation/latest/us_etf_strategy_validation_gate_report.json",
+        "small_account_execution_preflight": "artifacts/us_equity_etf_macro_rotation/latest/us_etf_small_account_execution_preflight_report.json",
+        "manual_review": "artifacts/us_equity_etf_macro_rotation/latest/us_equity_manual_review_packet.json",
+        "paper_simulation_readiness": "artifacts/us_equity_etf_macro_rotation/latest/us_equity_paper_simulation_readiness_report.json",
+        "live_readiness": "artifacts/us_equity_etf_macro_rotation/latest/us_equity_live_readiness_risk_constitution_report.json",
+        "monitoring_rules": "artifacts/us_equity_etf_macro_rotation/latest/us_equity_monitoring_rules_report.json",
+        "replay_readiness": "artifacts/us_equity_etf_macro_rotation/latest/us_etf_forward_observation_replay_readiness_report.json"
+      },
+      "guardrails": {
+        "backtest_allowed_without_registration": false,
+        "paper_ready": false,
+        "live_ready": false,
+        "private_endpoint_allowed": false,
+        "order_endpoint_allowed": false,
+        "real_order_allowed": false
+      }
+    },
+    {
+      "strategy_id": "us_equity_dual_momentum_research_placeholder",
+      "family": "dual_momentum",
+      "status": "hypothesis_registered_only",
+      "current_stage": "strategy_hypothesis_registration",
+      "primary_candidate": false,
+      "strategy_card": "docs/strategy_cards/us_equity_dual_momentum_research_placeholder.md",
+      "hypothesis": {
+        "alpha_sources": ["time-series momentum", "cross-sectional momentum"],
+        "risk_premia_explanation": "Combines absolute trend with relative strength across risk assets and defensive assets.",
+        "known_risks": ["crowding", "regime reversal", "data-snooping", "defensive asset drag"]
+      },
+      "parameter_space": {
+        "absolute_momentum_lookbacks_trading_days": [126, 189, 252],
+        "relative_momentum_lookbacks_trading_days": [63, 126, 252],
+        "defensive_assets": ["SHV", "IEF", "GLD"],
+        "rebalance_frequency": ["monthly", "weekly"]
+      },
+      "data_dependencies": {
+        "prices": "Tiingo adjusted EOD ETF OHLCV",
+        "risk_free_or_cash_proxy": "SHV or FRED short-rate proxy",
+        "corporate_actions": "adjustment reproducibility required"
+      },
+      "cost_model": {
+        "turnover_cost_bps": [10, 25, 50],
+        "slippage_model": "rebalance notional bps stress",
+        "financing_required_if_leverage_above_1x": false
+      },
+      "failure_conditions": [
+        "absolute momentum filter fails in whipsaw regimes",
+        "relative momentum advantage is not stable across walk-forward folds",
+        "benchmark replacement value is weak after costs"
+      ],
+      "design_spec_report": "artifacts/us_equity_strategy_registry/latest/us_equity_dual_momentum_design_spec_report.json",
+      "source_reports": {},
+      "guardrails": {
+        "backtest_allowed_without_registration": false,
+        "paper_ready": false,
+        "live_ready": false
+      }
+    },
+    {
+      "strategy_id": "us_equity_absolute_momentum_research_placeholder",
+      "family": "absolute_momentum",
+      "status": "hypothesis_registered_only",
+      "current_stage": "strategy_hypothesis_registration",
+      "primary_candidate": false,
+      "strategy_card": "docs/strategy_cards/us_equity_absolute_momentum_research_placeholder.md",
+      "hypothesis": {
+        "alpha_sources": ["time-series momentum", "cash switch"],
+        "risk_premia_explanation": "Uses positive own-asset trend to keep risk exposure and moves to cash-like ETFs when trend is negative.",
+        "known_risks": ["late exits", "cash drag", "false defensive signals", "macro crisis gap risk"]
+      },
+      "parameter_space": {
+        "lookbacks_trading_days": [63, 126, 189, 252],
+        "signal_thresholds": [0.0, 0.02, 0.05],
+        "defensive_asset": ["SHV", "IEF"],
+        "rebalance_frequency": ["weekly", "monthly"]
+      },
+      "data_dependencies": {
+        "prices": "Tiingo adjusted EOD ETF OHLCV",
+        "cash_proxy": "SHV plus optional FRED short-rate",
+        "trading_calendar": "NYSE sessions"
+      },
+      "cost_model": {
+        "turnover_cost_bps": [10, 25, 50],
+        "slippage_model": "bps on rebalance notional",
+        "financing_required_if_leverage_above_1x": false
+      },
+      "failure_conditions": [
+        "trend filter underperforms buy-and-hold without materially reducing drawdown",
+        "parameter neighborhood is unstable",
+        "cash proxy data is stale or unavailable"
+      ],
+      "design_spec_report": "artifacts/us_equity_strategy_registry/latest/us_equity_absolute_momentum_design_spec_report.json",
+      "source_reports": {},
+      "guardrails": {
+        "backtest_allowed_without_registration": false,
+        "paper_ready": false,
+        "live_ready": false
+      }
+    },
+    {
+      "strategy_id": "us_equity_etf_topn_rotation_research_placeholder",
+      "family": "topn_etf_rotation",
+      "status": "hypothesis_registered_only",
+      "current_stage": "strategy_hypothesis_registration",
+      "primary_candidate": false,
+      "strategy_card": "docs/strategy_cards/us_equity_etf_topn_rotation_research_placeholder.md",
+      "hypothesis": {
+        "alpha_sources": ["ETF cross-sectional momentum", "breadth diversification"],
+        "risk_premia_explanation": "Tests whether holding several top-ranked ETFs improves stability versus top-1 concentration.",
+        "known_risks": ["diluted alpha", "higher turnover", "correlated holdings", "benchmark-like behavior"]
+      },
+      "parameter_space": {
+        "momentum_lookbacks_trading_days": [63, 126, 189, 252],
+        "top_n": [2, 3, 5],
+        "weighting": ["equal_weight", "inverse_volatility"],
+        "min_adv_usd": [5000000, 10000000, 25000000]
+      },
+      "data_dependencies": {
+        "prices": "Tiingo adjusted EOD ETF OHLCV",
+        "liquidity": "ADV and minimum trade amount",
+        "universe_membership": "point-in-time ETF universe required before promotion"
+      },
+      "cost_model": {
+        "turnover_cost_bps": [10, 25, 50],
+        "slippage_model": "bps by traded sleeve notional",
+        "financing_required_if_leverage_above_1x": true
+      },
+      "failure_conditions": [
+        "diversification reduces CAGR without improving drawdown or Sharpe",
+        "capacity improvement is not meaningful for small account constraints",
+        "top-N holdings are effectively one correlated equity bet"
+      ],
+      "design_spec_report": "artifacts/us_equity_strategy_registry/latest/us_equity_topn_etf_rotation_design_spec_report.json",
+      "source_reports": {},
+      "guardrails": {
+        "backtest_allowed_without_registration": false,
+        "paper_ready": false,
+        "live_ready": false
+      }
+    },
+    {
+      "strategy_id": "us_equity_regime_overlay_research_placeholder",
+      "family": "regime_overlay",
+      "status": "hypothesis_registered_only",
+      "current_stage": "strategy_hypothesis_registration",
+      "primary_candidate": false,
+      "strategy_card": "docs/strategy_cards/us_equity_regime_overlay_research_placeholder.md",
+      "hypothesis": {
+        "alpha_sources": ["macro risk regime", "market trend", "defensive overlay"],
+        "risk_premia_explanation": "Tests whether lagged macro and market-state variables can reduce downside exposure without overfitting.",
+        "known_risks": ["macro data revision", "publication lag leakage", "false risk-off signals", "over-filtering"]
+      },
+      "parameter_space": {
+        "macro_series": ["FRED:DGS10", "FRED:T10Y3M", "FRED:UNRATE", "FRED:CPIAUCSL"],
+        "release_lag_days": [1, 3, 7, 30],
+        "trend_lookbacks_trading_days": [126, 200, 252],
+        "risk_off_assets": ["SHV", "IEF", "GLD"]
+      },
+      "data_dependencies": {
+        "prices": "Tiingo adjusted EOD ETF OHLCV",
+        "macro": "FRED with explicit release dates and revision policy",
+        "calendar": "NYSE sessions plus macro release calendar"
+      },
+      "cost_model": {
+        "turnover_cost_bps": [10, 25, 50],
+        "slippage_model": "bps on overlay-driven rebalance notional",
+        "financing_required_if_leverage_above_1x": true
+      },
+      "failure_conditions": [
+        "macro release lag cannot be reproduced point-in-time",
+        "overlay improves backtest only through post-hoc regime definitions",
+        "risk-off switching creates unacceptable whipsaw costs"
+      ],
+      "design_spec_report": "artifacts/us_equity_strategy_registry/latest/us_equity_regime_overlay_design_spec_report.json",
+      "source_reports": {},
+      "guardrails": {
+        "backtest_allowed_without_registration": false,
+        "paper_ready": false,
+        "live_ready": false
+      }
+    },
+    {
+      "strategy_id": "us_equity_factor_momentum_quality_research_placeholder",
+      "family": "equity_factor",
+      "status": "hypothesis_registered_only",
+      "current_stage": "strategy_hypothesis_registration",
+      "primary_candidate": false,
+      "strategy_card": "docs/strategy_cards/us_equity_factor_momentum_quality_research_placeholder.md",
+      "hypothesis": {
+        "alpha_sources": ["momentum", "quality"],
+        "risk_premia_explanation": "Tests whether stock or ETF proxies for momentum and quality provide diversifying alpha after point-in-time data controls.",
+        "known_risks": ["survivorship bias", "point-in-time fundamentals", "rebalance timing leakage"]
+      },
+      "parameter_space": {
+        "momentum_lookbacks_trading_days": [126, 252],
+        "quality_metrics": ["profitability", "leverage", "earnings_stability"],
+        "rebalance_frequency": ["monthly", "quarterly"],
+        "portfolio_size": [20, 50, 100]
+      },
+      "data_dependencies": {
+        "prices": "point-in-time adjusted US equity or ETF prices",
+        "fundamentals": "point-in-time fundamentals required before research promotion",
+        "corporate_actions": "splits, dividends, delistings"
+      },
+      "cost_model": {
+        "turnover_cost_bps": [10, 25, 50],
+        "slippage_model": "ADV-based bps stress",
+        "financing_required_if_leverage_above_1x": true
+      },
+      "failure_conditions": [
+        "point-in-time fundamentals are unavailable",
+        "excess return disappears after delisting and transaction cost controls",
+        "portfolio is too fragmented for 10000 USD account"
+      ],
+      "design_spec_report": "artifacts/us_equity_strategy_registry/latest/us_equity_factor_momentum_quality_design_spec_report.json",
+      "source_reports": {},
+      "guardrails": {
+        "backtest_allowed_without_registration": false,
+        "paper_ready": false,
+        "live_ready": false
+      }
+    },
+    {
+      "strategy_id": "us_equity_151_trading_strategies_candidate_research_placeholder",
+      "family": "151_trading_strategies_migration",
+      "status": "hypothesis_registered_only",
+      "current_stage": "strategy_hypothesis_registration",
+      "primary_candidate": false,
+      "strategy_card": "docs/strategy_cards/us_equity_151_trading_strategies_candidate_research_placeholder.md",
+      "hypothesis": {
+        "alpha_sources": ["published anomaly candidate", "cross-sectional or time-series signal"],
+        "risk_premia_explanation": "Candidates from 151 Trading Strategies may enter only as hypotheses and must pass the same data, cost, and validation gates.",
+        "known_risks": ["data mining", "publication decay", "implementation mismatch", "shorting or capacity constraints"]
+      },
+      "parameter_space": {
+        "candidate_family": ["momentum", "reversal", "seasonality", "liquidity", "volatility"],
+        "lookbacks_trading_days": [5, 21, 63, 126, 252],
+        "holding_periods_trading_days": [1, 5, 21, 63],
+        "universe": ["liquid_etf_proxy", "large_cap_equity_future_phase"]
+      },
+      "data_dependencies": {
+        "prices": "point-in-time adjusted prices",
+        "universe_membership": "point-in-time tradable universe",
+        "borrow_or_short_data": "required if candidate needs short leg"
+      },
+      "cost_model": {
+        "turnover_cost_bps": [10, 25, 50, 100],
+        "slippage_model": "capacity-aware stress by turnover and ADV",
+        "financing_required_if_leverage_above_1x": true
+      },
+      "failure_conditions": [
+        "candidate requires unavailable PIT or borrow data",
+        "performance depends on sample-mined parameter choice",
+        "turnover makes the signal unusable after cost stress",
+        "short-leg or leverage assumptions are not executable for small account"
+      ],
+      "design_spec_report": "artifacts/us_equity_strategy_registry/latest/us_equity_151_trading_strategies_migration_design_spec_report.json",
+      "source_reports": {},
+      "guardrails": {
+        "backtest_allowed_without_registration": false,
+        "paper_ready": false,
+        "live_ready": false
+      }
+    }
+  ]
+}

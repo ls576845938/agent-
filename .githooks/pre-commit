@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+HOOK_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec py -3 "$HOOK_DIR/../tools/agent_governance/repository_size_guard.py" --repo-root "$(git rev-parse --show-toplevel)"

@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_macro_rotation_research_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Macro Rotation Research Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "strategy_id",
+    "source_project",
+    "branch",
+    "commit",
+    "status",
+    "allowed_next_action",
+    "promotion_ready",
+    "live_ready",
+    "paper_ready",
+    "blockers",
+    "guardrails",
+    "data",
+    "macro_data",
+    "parameters",
+    "architecture",
+    "backtest",
+    "signal_integrity",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_macro_momentum_rotation_research_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"type": "string", "minLength": 1},
+    "source_project": {
+      "type": "object",
+      "required": ["path", "integration_mode"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "integration_mode": {"type": "string", "minLength": 1},
+        "files": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "branch": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "status": {"enum": ["partial", "blocked"]},
+    "allowed_next_action": {"enum": ["research_only", "fix_data_inputs"]},
+    "promotion_ready": {"const": false},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "research_only",
+        "live_order_allowed",
+        "paper_or_live_unlock_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "broker_endpoint_used",
+        "network_fetcher_imported",
+        "external_scheduler_imported"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "live_order_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "broker_endpoint_used": {"const": false},
+        "network_fetcher_imported": {"const": false},
+        "external_scheduler_imported": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "required_symbols",
+        "available_symbols",
+        "missing_symbols",
+        "price_source",
+        "price_source_precedence",
+        "promotion_clean",
+        "data_lineage_grade"
+      ],
+      "properties": {
+        "required_symbols": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "available_symbols": {"type": "array", "items": {"type": "string"}},
+        "missing_symbols": {"type": "array", "items": {"type": "string"}},
+        "price_source": {"type": "string", "minLength": 1},
+        "price_source_precedence": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "promotion_clean": {"type": "boolean"},
+        "data_lineage_grade": {"type": "object"}
+      },
+      "additionalProperties": true
+    },
+    "macro_data": {
+      "type": "object",
+      "required": ["status", "neutral_regime_used", "required_columns"],
+      "properties": {
+        "status": {"type": "string", "minLength": 1},
+        "neutral_regime_used": {"type": "boolean"},
+        "required_columns": {"type": "array", "items": {"type": "string"}},
+        "path": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "parameters": {"type": "object", "required": ["strategy_id", "required_symbols"], "additionalProperties": true},
+    "architecture": {
+      "type": "object",
+      "required": [
+        "separation_status",
+        "alpha_signal_module",
+        "portfolio_construction_module",
+        "execution_simulation_module",
+        "layer_contract"
+      ],
+      "properties": {
+        "separation_status": {"const": "signals_portfolio_execution_decoupled"},
+        "alpha_signal_module": {"const": "quant_us.signals.us_etf_rotation_alpha"},
+        "portfolio_construction_module": {"const": "quant_us.portfolio.us_etf_rotation_portfolio"},
+        "execution_simulation_module": {"const": "quant_us.execution.us_etf_rotation_execution"},
+        "layer_contract": {"type": "string", "minLength": 1},
+        "orchestrator": {"type": "string", "minLength": 1},
+        "core_layers_forbidden_responsibilities": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "backtest": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["complete", "blocked"]},
+        "reason": {"type": "string"},
+        "metrics": {"type": "object"},
+        "diagnostics": {"type": "object"},
+        "latest_weights": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "signal_integrity": {
+      "type": "object",
+      "required": ["t_plus_1_execution", "no_private_endpoint", "no_order_endpoint", "live_order_allowed", "paper_queue_status"],
+      "properties": {
+        "t_plus_1_execution": {"type": "boolean"},
+        "no_private_endpoint": {"const": true},
+        "no_order_endpoint": {"const": true},
+        "live_order_allowed": {"const": false},
+        "paper_queue_status": {"const": "locked"}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["target_weights_csv", "daily_returns_csv"],
+      "properties": {
+        "target_weights_csv": {"type": ["string", "null"]},
+        "daily_returns_csv": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

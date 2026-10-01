@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/tiingo_eod_import_report.schema.json",
+  "title": "QuantStation VNEXT Tiingo EOD Import Report Filename Compatibility Schema",
+  "type": "object",
+  "required": ["schema_version", "status", "provider", "source_type", "token_printed", "blockers", "guardrails"],
+  "properties": {
+    "schema_version": {"const": "us_equity_tiingo_eod_import_report_v1"},
+    "status": {"enum": ["dry_run", "pass", "partial", "blocked"]},
+    "provider": {"const": "tiingo"},
+    "source_type": {"const": "market_data_eod"},
+    "token_printed": {"const": false},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": ["token_written_to_artifacts", "live_order_allowed", "private_endpoint_used", "order_endpoint_used"],
+      "properties": {
+        "token_written_to_artifacts": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

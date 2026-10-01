@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_manual_vendor_drop_package_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Manual Vendor Drop Package Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "incoming_drop_dir",
+    "default_bundle_id",
+    "template_root",
+    "template_files",
+    "field_dictionary",
+    "handoff_doc",
+    "field_count",
+    "required_table_count",
+    "required_tables",
+    "source_boundary_rules",
+    "operator_checklist",
+    "operator_commands",
+    "copy_readiness_checks",
+    "acceptance_rules",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_manual_vendor_drop_package_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"const": "manual_vendor_drop_package_ready"},
+    "incoming_drop_dir": {"const": "data/external/us_equity_lineage/incoming/manual_vendor_drop"},
+    "default_bundle_id": {"const": "manual_vendor_bundle_v1"},
+    "template_root": {"type": "string", "minLength": 1},
+    "template_files": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["table", "filename", "path", "required_fields", "header_sha256", "template_file_sha256"],
+        "properties": {
+          "table": {"type": "string", "minLength": 1},
+          "filename": {"type": "string", "pattern": "\\.csv$"},
+          "path": {"type": "string", "minLength": 1},
+          "required_fields": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "header_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "template_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "field_dictionary": {"type": "string", "minLength": 1},
+    "handoff_doc": {"type": "string", "minLength": 1},
+    "field_count": {"type": "integer", "minimum": 1},
+    "required_table_count": {"type": "integer", "minimum": 6},
+    "required_tables": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["table", "filename", "required_fields", "minimum_record_count", "empty_template_is_not_valid_drop"],
+        "properties": {
+          "table": {"type": "string"},
+          "filename": {"type": "string", "pattern": "\\.csv$"},
+          "required_fields": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "minimum_record_count": {"const": 1},
+          "empty_template_is_not_valid_drop": {"const": true}
+        },
+        "additionalProperties": false
+      }
+    },
+    "source_boundary_rules": {
+      "type": "object",
+      "required": ["acceptable_routes", "supplemental_only_routes", "rejected_routes", "promotion_clean_rule"],
+      "properties": {
+        "acceptable_routes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["route_id", "label", "mapping_doc", "must_normalize_to_local_csv_contract"],
+            "properties": {
+              "route_id": {"type": "string", "minLength": 1},
+              "label": {"type": "string", "minLength": 1},
+              "mapping_doc": {"type": "string", "minLength": 1},
+              "must_normalize_to_local_csv_contract": {"const": true}
+            },
+            "additionalProperties": false
+          }
+        },
+        "supplemental_only_routes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["route_id", "label", "usable_for", "not_sufficient_for"],
+            "properties": {
+              "route_id": {"type": "string", "minLength": 1},
+              "label": {"type": "string", "minLength": 1},
+              "usable_for": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+              "not_sufficient_for": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+            },
+            "additionalProperties": false
+          }
+        },
+        "rejected_routes": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "promotion_clean_rule": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "operator_checklist": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "required": ["step_id", "label", "command", "expected_evidence", "unlocks"],
+        "properties": {
+          "step_id": {
+            "enum": [
+              "build_handoff_package",
+              "create_incoming_drop_dir",
+              "copy_six_licensed_csv_files",
+              "run_incoming_drop_readiness",
+              "import_local_csv_bundle",
+              "run_acceptance_and_activation",
+              "rerun_daily_production_line"
+            ]
+          },
+          "label": {"type": "string", "minLength": 1},
+          "command": {"type": "string", "minLength": 1},
+          "expected_evidence": {"type": "string", "minLength": 1},
+          "unlocks": {
+            "type": "string",
+            "not": {"pattern": "paper|live"}
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "operator_commands": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "copy_readiness_checks": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["check_id", "command", "expected_result", "failure_means", "blocks_import"],
+        "properties": {
+          "check_id": {"type": "string", "minLength": 1},
+          "command": {"type": "string", "minLength": 1},
+          "expected_result": {"type": "string", "minLength": 1},
+          "failure_means": {"type": "string", "minLength": 1},
+          "blocks_import": {"const": true}
+        },
+        "additionalProperties": false
+      }
+    },
+    "acceptance_rules": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "templates_only",
+        "contains_vendor_data",
+        "source_vendor_data_modified",
+        "production_bundle_written",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "templates_only": {"const": true},
+        "contains_vendor_data": {"const": false},
+        "source_vendor_data_modified": {"const": false},
+        "production_bundle_written": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

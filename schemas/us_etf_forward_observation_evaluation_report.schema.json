@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_forward_observation_evaluation_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Forward Observation Evaluation Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "strategy_id",
+    "candidate_variant",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "minimum_complete_days",
+    "review_milestones",
+    "review_progress",
+    "metrics",
+    "observation_continuity",
+    "daily_data_gate",
+    "checks",
+    "blockers",
+    "source_files",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_forward_observation_evaluation_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": ["string", "null"]},
+    "branch": {"type": ["string", "null"]},
+    "asset": {"const": "us_equity"},
+    "strategy_id": {"type": "string", "minLength": 1},
+    "candidate_variant": {"type": "string"},
+    "status": {"enum": ["forward_observing", "forward_complete_for_manual_review", "forward_blocked"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["forward_observing", "forward_complete_for_manual_review", "forward_blocked"]},
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "decision": {"enum": ["continue_observing", "manual_review_required", "repair_forward_observation"]},
+    "minimum_complete_days": {"const": 30},
+    "review_milestones": {
+      "type": "array",
+      "prefixItems": [{"const": 30}, {"const": 60}, {"const": 90}],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "review_progress": {
+      "type": "object",
+      "required": [
+        "observation_days",
+        "minimum_complete_days",
+        "review_milestones",
+        "completed_milestones",
+        "next_milestone",
+        "days_until_minimum",
+        "manual_review_required",
+        "manual_review_only_no_paper_or_live_unlock",
+        "alpha_validation_claim_allowed",
+        "paper_or_live_unlock_allowed"
+      ],
+      "properties": {
+        "observation_days": {"type": "integer", "minimum": 0},
+        "minimum_complete_days": {"const": 30},
+        "review_milestones": {
+          "type": "array",
+          "prefixItems": [{"const": 30}, {"const": 60}, {"const": 90}],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "completed_milestones": {"type": "array", "items": {"enum": [30, 60, 90]}},
+        "next_milestone": {"type": ["integer", "null"], "enum": [30, 60, 90, null]},
+        "days_until_minimum": {"type": "integer", "minimum": 0},
+        "manual_review_required": {"type": "boolean"},
+        "manual_review_only_no_paper_or_live_unlock": {"type": "boolean"},
+        "alpha_validation_claim_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "observation_days",
+        "target_position_rows",
+        "portfolio_snapshot_rows",
+        "target_change_count",
+        "simulated_fill_count",
+        "latest_observation_date",
+        "total_estimated_slippage",
+        "total_estimated_financing",
+        "max_drawdown",
+        "daily_run_count",
+        "data_gate_pass_count",
+        "data_gate_blocked_count"
+      ],
+      "properties": {
+        "observation_days": {"type": "integer", "minimum": 0},
+        "target_position_rows": {"type": "integer", "minimum": 0},
+        "portfolio_snapshot_rows": {"type": "integer", "minimum": 0},
+        "target_change_count": {"type": "integer", "minimum": 0},
+        "simulated_fill_count": {"type": "integer", "minimum": 0},
+        "latest_observation_date": {"type": ["string", "null"]},
+        "total_estimated_slippage": {"type": "number"},
+        "total_estimated_financing": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "daily_run_count": {"type": "integer", "minimum": 0},
+        "data_gate_pass_count": {"type": "integer", "minimum": 0},
+        "data_gate_blocked_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "observation_continuity": {
+      "type": "object",
+      "required": [
+        "passed",
+        "first_observation_date",
+        "latest_observation_date",
+        "unique_observation_days",
+        "duplicate_target_dates",
+        "duplicate_snapshot_dates",
+        "missing_snapshot_for_target",
+        "missing_target_for_snapshot",
+        "state_last_processed_timestamp",
+        "fill_dates_without_snapshot",
+        "calendar_gaps",
+        "max_calendar_gap_days",
+        "note"
+      ],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "first_observation_date": {"type": ["string", "null"]},
+        "latest_observation_date": {"type": ["string", "null"]},
+        "unique_observation_days": {"type": "integer", "minimum": 0},
+        "duplicate_target_dates": {"type": "array", "items": {"type": "string"}},
+        "duplicate_snapshot_dates": {"type": "array", "items": {"type": "string"}},
+        "missing_snapshot_for_target": {"type": "array", "items": {"type": "string"}},
+        "missing_target_for_snapshot": {"type": "array", "items": {"type": "string"}},
+        "state_last_processed_timestamp": {"type": ["string", "null"]},
+        "fill_dates_without_snapshot": {"type": "array", "items": {"type": "string"}},
+        "calendar_gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["previous", "next", "gap_days"],
+            "properties": {
+              "previous": {"type": "string"},
+              "next": {"type": "string"},
+              "gap_days": {"type": "integer", "minimum": 2}
+            },
+            "additionalProperties": false
+          }
+        },
+        "max_calendar_gap_days": {"type": "integer", "minimum": 0},
+        "note": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "daily_data_gate": {
+      "type": "object",
+      "required": ["daily_run_count", "pass_count", "blocked_count", "blocked_reports", "reports"],
+      "properties": {
+        "daily_run_count": {"type": "integer", "minimum": 0},
+        "pass_count": {"type": "integer", "minimum": 0},
+        "blocked_count": {"type": "integer", "minimum": 0},
+        "blocked_reports": {"type": "array", "items": {"type": "string"}},
+        "reports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source_report", "status", "blockers", "checks"],
+            "properties": {
+              "source_report": {"type": "string"},
+              "status": {"type": "string"},
+              "blockers": {"type": "array", "items": {"type": "string"}},
+              "checks": {"type": "array", "items": {"type": "object"}}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "checks": {
+      "type": "object",
+      "required": [
+        "ledger_files_exist",
+        "target_snapshot_continuity",
+        "observation_continuity",
+        "ledger_recalculation",
+        "target_fill_consistency",
+        "rule_consistency",
+        "roll_report_scope",
+        "daily_data_gate",
+        "state_consistency",
+        "no_live_or_order_flags"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["passed"],
+        "properties": {
+          "passed": {"type": "boolean"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "source_files": {
+      "type": "object",
+      "required": ["ledger_root", "roll_report", "daily_run_report_root", "target_positions", "fills", "portfolio_snapshots", "validation_state"],
+      "additionalProperties": {"type": "string"}
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "evaluation_scope",
+        "forward_evaluation_is_not_alpha_validation",
+        "long_term_positive_expectancy_proven",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "evaluation_scope": {"const": "operational_quality_only"},
+        "forward_evaluation_is_not_alpha_validation": {"const": true},
+        "long_term_positive_expectancy_proven": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

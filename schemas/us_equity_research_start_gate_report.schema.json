@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_research_start_gate_report.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "decision",
+    "strategy_count",
+    "formal_research_allowed_count",
+    "hypothesis_design_only_count",
+    "production_data",
+    "strategies",
+    "blockers",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_research_start_gate_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "research_design_only",
+        "research_start_ready",
+        "research_start_blocked"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "decision": {"type": "string", "minLength": 1},
+    "strategy_count": {"type": "integer", "minimum": 0},
+    "formal_research_allowed_count": {"type": "integer", "minimum": 0},
+    "hypothesis_design_only_count": {"type": "integer", "minimum": 0},
+    "blocked_strategy_count": {"type": "integer", "minimum": 0},
+    "production_data": {
+      "type": "object",
+      "required": [
+        "pit_intake_status",
+        "pit_acceptance_status",
+        "production_pit_ready_for_formal_research",
+        "blockers"
+      ],
+      "properties": {
+        "pit_intake_status": {"type": "string"},
+        "pit_acceptance_status": {"type": "string"},
+        "production_pit_ready_for_formal_research": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "strategies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "strategy_id",
+          "status",
+          "production_data_gate",
+          "hypothesis_design_allowed",
+          "formal_research_allowed",
+          "standardized_backtest_allowed",
+          "paper_or_live_allowed",
+          "next_required_action",
+          "blockers"
+        ],
+        "properties": {
+          "strategy_id": {"type": "string"},
+          "family": {"type": "string"},
+          "registry_status": {"type": "string"},
+          "current_stage": {"type": "string"},
+          "strategy_card": {"type": "string"},
+          "strategy_card_exists": {"type": "boolean"},
+          "status": {
+            "enum": [
+              "formal_research_allowed",
+              "hypothesis_design_only",
+              "existing_formal_candidate_waiting_for_production_data",
+              "blocked"
+            ]
+          },
+          "production_data_gate": {"type": "object"},
+          "hypothesis_design_allowed": {"type": "boolean"},
+          "formal_research_allowed": {"type": "boolean"},
+          "existing_formal_candidate_waiting_for_production_data": {"type": "boolean"},
+          "standardized_backtest_allowed": {"type": "boolean"},
+          "paper_or_live_allowed": {"const": false},
+          "next_required_action": {"type": "string"},
+          "blockers": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "source_reports": {"type": "object"},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "standardized_backtest_started_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "gate_only": {"const": true},
+        "standardized_backtest_started_by_this_report": {"const": false},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "additionalProperties": true
+}

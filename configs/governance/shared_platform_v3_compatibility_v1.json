@@ -1,0 +1,147 @@
+{
+  "schema_version": "shared_platform_v3_compatibility_v1",
+  "contract_version": "shared_platform_v3",
+  "source_of_truth": "machine_readable_json",
+  "compatibility_window": {
+    "v2": {
+      "status": "supported",
+      "consumer_action": "keep_existing_imports",
+      "breaking_change": false
+    },
+    "v3": {
+      "status": "additive_discoverable",
+      "consumer_action": "opt_in",
+      "breaking_change": false
+    }
+  },
+  "capabilities": [
+    "runtime_state",
+    "action_authorization",
+    "audit_event",
+    "read_model_envelope"
+  ],
+  "delivery_sequence": [
+    {
+      "sequence": 0,
+      "ticket_id": "BTC-SHARED-PLATFORM-V3-01",
+      "owner_scope": "shared developer + independent integrator",
+      "acceptance": "ADR/schema/compatibility matrix and shared safety-kernel BTC/US/CN import boundary"
+    },
+    {
+      "sequence": 1,
+      "ticket_id": "BTC-SHARED-PLATFORM-V3-T1",
+      "owner_scope": "quant_shared/runtime",
+      "acceptance": "reverse the first three failed probes; after kill allow only proven reduction, opening-order removal, and protection addition"
+    },
+    {
+      "sequence": 2,
+      "ticket_id": "BTC-SHARED-PLATFORM-V3-T2",
+      "owner_scope": "quant_crypto/risk",
+      "acceptance": "risk constitution, ActionRiskEffect, portfolio loss, leverage, and protection feasibility pure functions"
+    },
+    {
+      "sequence": 3,
+      "ticket_id": "BTC-SHARED-PLATFORM-V3-T3",
+      "owner_scope": "quant_crypto/portfolio",
+      "acceptance": "reuse Forecast/TargetPosition; independent RiskReductionPlan on limits; research and runtime exit share the contract"
+    },
+    {
+      "sequence": 4,
+      "ticket_id": "BTC-SHARED-PLATFORM-V3-T4",
+      "owner_scope": "quant_crypto/application",
+      "acceptance": "pure guardian, single-writer supervisor, durable sticky latch; human confirmation alone cannot restore"
+    },
+    {
+      "sequence": 5,
+      "ticket_id": "BTC-SHARED-PLATFORM-V3-T5",
+      "owner_scope": "quant_crypto/oms",
+      "acceptance": "progressive OMS migration that retains the large runtime facade and delegates incrementally"
+    },
+    {
+      "sequence": 6,
+      "ticket_id": "BTC-SHARED-PLATFORM-V3-T6",
+      "owner_scope": "BTC application schema -> backend adapter -> integrator",
+      "acceptance": "per-action server authorization, stable blockers, idempotency, and operation read model"
+    },
+    {
+      "sequence": 7,
+      "ticket_id": "BTC-SHARED-PLATFORM-V3-T7",
+      "owner_scope": "frontend/src",
+      "acceptance": "split the giant workspace without deriving permissions or hardcoded risk values; stopped emergency and accessibility"
+    },
+    {
+      "sequence": 8,
+      "ticket_id": "BTC-SHARED-PLATFORM-V3-T8",
+      "owner_scope": "researcher review + integrator",
+      "acceptance": "rebuild current-HEAD immutable evidence and deterministic replay with cost/exit consistency while retaining the human gate"
+    }
+  ],
+  "boundaries": {
+    "owns": [
+      "asset_neutral_runtime_state_shape",
+      "stable_reason_and_blocker_code_shape",
+      "action_decision_observation_shape",
+      "append_only_audit_event_shape",
+      "derived_read_model_envelope_shape"
+    ],
+    "does_not_own": [
+      "asset_rules",
+      "strategy_logic",
+      "venue_or_broker_adapters",
+      "order_routing_or_submission",
+      "ledger_accounting_semantics",
+      "promotion_or_live_permission_decisions",
+      "secrets_or_credentials"
+    ],
+    "dependency_direction": "asset_domain_to_quant_shared_only",
+    "fail_closed": true
+  },
+  "domains": [
+    {
+      "domain": "quant_shared",
+      "current_version": "shared_platform_v3",
+      "allowed_imports": ["python_stdlib", "quant_shared.core"],
+      "forbidden_reverse_imports": ["quant_crypto", "quant_us", "quant_cn", "backend", "frontend", "vendor_sdk"],
+      "v3_adoption": "adopted",
+      "migration_condition": "Publish the V3 contract without changing existing V2 symbols.",
+      "deletion_condition": "Never delete V2 while any domain consumer declares the V2 compatibility window."
+    },
+    {
+      "domain": "quant_crypto",
+      "current_version": "shared_platform_v2",
+      "allowed_imports": ["quant_shared"],
+      "forbidden_reverse_imports": ["quant_us", "quant_cn", "backend", "frontend", "vendor_sdk"],
+      "v3_adoption": "discoverable",
+      "migration_condition": "An asset-owned adapter opts into V3 and proves BTC-specific semantics remain outside quant_shared.",
+      "deletion_condition": "Remove the V2 facade only after an independent integration proves all consumers use the V3 adapter."
+    },
+    {
+      "domain": "quant_us",
+      "current_version": "shared_platform_v2",
+      "allowed_imports": ["quant_shared"],
+      "forbidden_reverse_imports": ["quant_crypto", "quant_cn", "backend", "frontend", "vendor_sdk"],
+      "v3_adoption": "discoverable",
+      "migration_condition": "A US-owned adapter opts into V3 and preserves the existing require_shared_platform_v2 facade.",
+      "deletion_condition": "Delete the compatibility facade only after all US callers are migrated and a contract review approves removal."
+    },
+    {
+      "domain": "quant_cn",
+      "current_version": "shared_platform_v2",
+      "allowed_imports": ["quant_shared"],
+      "forbidden_reverse_imports": ["quant_crypto", "quant_us", "backend", "frontend", "vendor_sdk"],
+      "v3_adoption": "discoverable",
+      "migration_condition": "A CN-owned adapter opts into V3 while retaining exchange, settlement, and market-rule ownership.",
+      "deletion_condition": "Delete the compatibility facade only after all CN callers are migrated and an independent contract review approves removal."
+    }
+  ],
+  "safety_flags": {
+    "promotion": false,
+    "paper": false,
+    "live": false,
+    "private": false,
+    "order": false,
+    "real_order": false,
+    "transfer": false,
+    "withdraw": false
+  }
+}

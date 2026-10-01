@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_production_data_acquisition_plan.schema.json",
+  "title": "QuantStation VNEXT US Equity Production Data Acquisition Plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "asset",
+    "reports",
+    "acceptable_provider_ids",
+    "non_substitutes",
+    "required_tables",
+    "local_csv_drop_contract",
+    "current_drop_readiness",
+    "contract_status_by_table",
+    "missing_contract_groups",
+    "acceptance_commands",
+    "promotion_acceptance_criteria",
+    "blockers",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_production_data_acquisition_plan_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"enum": ["production_data_acquisition_required", "production_data_acquisition_ready_for_preflight"]},
+    "asset": {"const": "us_equity"},
+    "reports": {
+      "type": "object",
+      "required": ["provider_matrix", "onboarding", "remediation", "incoming_drop_readiness"],
+      "additionalProperties": {"type": "string"}
+    },
+    "acceptable_provider_ids": {
+      "type": "array",
+      "items": {"type": "string"},
+      "contains": {"const": "local_csv"}
+    },
+    "non_substitutes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["provider_id", "reason"],
+        "properties": {
+          "provider_id": {"enum": ["tiingo", "ibkr", "yfinance"]},
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      },
+      "minItems": 3
+    },
+    "required_tables": {
+      "type": "array",
+      "prefixItems": [
+        {"$ref": "#/$defs/required_table"},
+        {"$ref": "#/$defs/required_table"},
+        {"$ref": "#/$defs/required_table"},
+        {"$ref": "#/$defs/required_table"},
+        {"$ref": "#/$defs/required_table"},
+        {"$ref": "#/$defs/required_table"}
+      ],
+      "minItems": 6,
+      "maxItems": 6
+    },
+    "local_csv_drop_contract": {
+      "type": "object",
+      "required": ["incoming_drop_dir", "default_bundle_id", "required_filenames", "preferred_import_command"],
+      "properties": {
+        "incoming_drop_dir": {"const": "data/external/us_equity_lineage/incoming/manual_vendor_drop"},
+        "default_bundle_id": {"const": "manual_vendor_bundle_v1"},
+        "required_filenames": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "universe_membership_events.csv"},
+            {"const": "delisted_symbols.csv"},
+            {"const": "corporate_actions.csv"},
+            {"const": "symbol_mapping.csv"},
+            {"const": "adjustment_replay.csv"},
+            {"const": "macro_release_calendar.csv"}
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "preferred_import_command": {"type": "string", "pattern": "import_us_equity_local_csv_production_bundle\\.py"}
+      },
+      "additionalProperties": false
+    },
+    "current_drop_readiness": {
+      "type": "object",
+      "required": [
+        "status",
+        "source_dir",
+        "bundle_id",
+        "ready_file_count",
+        "required_file_count",
+        "blocker_count",
+        "first_blocker"
+      ],
+      "properties": {
+        "status": {"type": "string", "minLength": 1},
+        "source_dir": {"type": "string", "minLength": 1},
+        "bundle_id": {"type": "string", "minLength": 1},
+        "ready_file_count": {"type": "integer", "minimum": 0},
+        "required_file_count": {"type": "integer", "minimum": 6},
+        "blocker_count": {"type": "integer", "minimum": 0},
+        "first_blocker": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "contract_status_by_table": {
+      "type": "array",
+      "prefixItems": [
+        {"$ref": "#/$defs/table_contract_status"},
+        {"$ref": "#/$defs/table_contract_status"},
+        {"$ref": "#/$defs/table_contract_status"},
+        {"$ref": "#/$defs/table_contract_status"},
+        {"$ref": "#/$defs/table_contract_status"},
+        {"$ref": "#/$defs/table_contract_status"}
+      ],
+      "minItems": 6,
+      "maxItems": 6
+    },
+    "missing_contract_groups": {"type": "array", "items": {"type": "string"}},
+    "acceptance_commands": {
+      "type": "array",
+      "items": {"type": "string"},
+      "contains": {"type": "string", "pattern": "build_us_equity_strategy_production_line_report\\.py"}
+    },
+    "promotion_acceptance_criteria": {
+      "type": "object",
+      "required": [
+        "production_bundle_preflight_pass",
+        "provider_promotion_clean",
+        "data_status_promotion_clean",
+        "strategy_validation_gate_status",
+        "paper_or_live_unlock_allowed_by_this_plan"
+      ],
+      "properties": {
+        "production_bundle_preflight_pass": {"const": true},
+        "provider_promotion_clean": {"const": true},
+        "data_status_promotion_clean": {"const": true},
+        "strategy_validation_gate_status": {"const": "validation_passed_for_forward_observation"},
+        "paper_or_live_unlock_allowed_by_this_plan": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "data_acquisition_plan_is_not_provider_evidence",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "data_acquisition_plan_is_not_provider_evidence": {"const": true},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "required_table": {
+      "type": "object",
+      "required": ["table", "filename", "required_fields", "purpose"],
+      "properties": {
+        "table": {
+          "enum": [
+            "universe_membership_events",
+            "delisted_symbols",
+            "corporate_actions",
+            "symbol_mapping",
+            "adjustment_replay",
+            "macro_release_calendar"
+          ]
+        },
+        "filename": {"type": "string", "pattern": "\\.csv$"},
+        "required_fields": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "purpose": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "table_contract_status": {
+      "type": "object",
+      "required": [
+        "table",
+        "filename",
+        "status",
+        "exists",
+        "non_empty",
+        "record_count",
+        "missing_fields",
+        "blockers"
+      ],
+      "properties": {
+        "table": {
+          "enum": [
+            "universe_membership_events",
+            "delisted_symbols",
+            "corporate_actions",
+            "symbol_mapping",
+            "adjustment_replay",
+            "macro_release_calendar"
+          ]
+        },
+        "filename": {"type": "string", "pattern": "\\.csv$"},
+        "status": {"enum": ["ready", "blocked"]},
+        "exists": {"type": "boolean"},
+        "non_empty": {"type": "boolean"},
+        "record_count": {"type": "integer", "minimum": 0},
+        "missing_fields": {"type": "array", "items": {"type": "string"}},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "us_etf_26_canonical_backtest_config_v1",
+  "candidate_config": "configs/strategies/us_etf_26_candidate_freeze_v1.json",
+  "goal2_intake_report": "artifacts/us_equity_production_pit_intake/latest/us_equity_production_pit_intake_report.json",
+  "handoff_event": ".agent/handoffs/us-hf-etf26-shared-data-v1/data-ready-hf-etf26-1min-6d6b07e77962.json",
+  "handoff_event_id": "data-ready-hf-etf26-1min-6d6b07e77962",
+  "manifest_git_spec": "249bb1194c749e9db64553d72ca06b335b6332ea:.agent/data_manifests/us-equity-hf-etf26-1min/hf-data-library-etf26-clean-1min-6d6b07e77962.json",
+  "dataset_id": "us-equity-hf-etf26-1min",
+  "dataset_version": "hf-data-library-etf26-clean-1min-6d6b07e77962",
+  "aggregate_sha256": "f8f2f3244d26b8e6e59cc610444d9775658270cc66bb7951d87b8d9c28ca1629",
+  "symbol_file": "symbol=QQQ/QQQ_clean_1min.parquet",
+  "research_window": {
+    "start": "2018-01-01",
+    "end": "2026-07-10"
+  },
+  "initial_cash": 25000.0,
+  "risk": {
+    "long_only": true,
+    "max_target_weight": 3.0,
+    "maintenance_margin_rate": 0.25,
+    "terminal_on_margin_call": true,
+    "max_volume_participation_pct": 1.0
+  },
+  "execution": {
+    "decision_rule": "completed_session_close",
+    "execution_rule": "next_eligible_session_open",
+    "order_type": "market",
+    "time_in_force": "day",
+    "fractional_quantity_precision": 8,
+    "cancel_unfilled_at_session_close": true
+  },
+  "cost_model": {
+    "commission_bps": 1.0,
+    "spread_bps": 2.0,
+    "slippage_bps": 3.0,
+    "impact_bps": 4.0,
+    "base_total_bps": 10.0,
+    "stress_total_bps": [0.0, 5.0, 10.0, 25.0, 50.0],
+    "margin_interest_annual": 0.06,
+    "borrow": "not_applicable_long_only",
+    "spread_model": "fixed_research_proxy_no_quotes",
+    "impact_model": "fixed_research_proxy_no_depth"
+  },
+  "validation": {
+    "purge_sessions": 1,
+    "embargo_sessions": 1,
+    "minimum_confirmation_sessions": 252,
+    "confirmation_end": "2027-07-12"
+  },
+  "artifact_root": "artifacts/us_equity_etf_26_canonical_backtest"
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/tiingo_iex_minute_pit_adjustment_replay_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Tiingo IEX Minute PIT Adjustment Replay Report",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "asset", "provider", "source_type", "status", "guardrails", "adjustment_method", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_tiingo_iex_minute_pit_adjustment_replay_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "provider": {"const": "tiingo_iex"},
+    "source_type": {"const": "minute_pit_adjustment_replay"},
+    "status": {"enum": ["pass", "partial", "blocked"]},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "adjustment_method": {"type": "object", "properties": {"future_factor_backfill_allowed": {"const": false}, "raw_minute_overwrite_allowed": {"const": false}}, "additionalProperties": true},
+    "guardrails": {"type": "object", "properties": {"live_order_allowed": {"const": false}, "paper_or_live_unlock_allowed": {"const": false}, "private_endpoint_used": {"const": false}, "order_endpoint_used": {"const": false}, "broker_endpoint_used": {"const": false}, "real_order_submitted": {"const": false}}, "additionalProperties": true}
+  },
+  "additionalProperties": true
+}

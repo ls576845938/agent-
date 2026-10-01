@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_forward_observation_daily_health_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Forward Observation Daily Health Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "pipeline",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "daily_run_status",
+    "roll_status",
+    "roll_cycle_status",
+    "evaluation_status",
+    "observation_days",
+    "minimum_complete_days",
+    "latest_observation_date",
+    "daily_run_generated_at",
+    "freshness",
+    "observation_continuity",
+    "ledger",
+    "scheduler",
+    "checks",
+    "warnings",
+    "blockers",
+    "source_files",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_forward_observation_daily_health_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": ["string", "null"]},
+    "branch": {"type": ["string", "null"]},
+    "asset": {"const": "us_equity"},
+    "pipeline": {"const": "us_etf_forward_observation_daily_health"},
+    "status": {"enum": ["daily_health_pass", "daily_health_observing_stale", "daily_health_blocked"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["daily_health_pass", "daily_health_observing_stale", "daily_health_blocked"]},
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "decision": {"enum": ["continue_forward_observation", "repair_forward_observation_daily_loop"]},
+    "daily_run_status": {"type": "string"},
+    "roll_status": {"type": "string"},
+    "roll_cycle_status": {"type": "string"},
+    "evaluation_status": {"type": "string"},
+    "observation_days": {"type": "integer", "minimum": 0},
+    "minimum_complete_days": {"const": 30},
+    "latest_observation_date": {"type": ["string", "null"]},
+    "daily_run_generated_at": {"type": ["string", "null"]},
+    "freshness": {
+      "type": "object",
+      "required": ["passed", "age_days", "stale_after_days"],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "age_days": {"type": ["integer", "null"], "minimum": 0},
+        "stale_after_days": {"type": "integer", "minimum": 0},
+        "reason": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "observation_continuity": {
+      "type": "object",
+      "required": [
+        "passed",
+        "first_observation_date",
+        "latest_observation_date",
+        "unique_observation_days",
+        "duplicate_target_dates",
+        "duplicate_snapshot_dates",
+        "missing_snapshot_for_target",
+        "missing_target_for_snapshot",
+        "state_last_processed_timestamp",
+        "fill_dates_without_snapshot",
+        "calendar_gaps",
+        "max_calendar_gap_days",
+        "note"
+      ],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "first_observation_date": {"type": ["string", "null"]},
+        "latest_observation_date": {"type": ["string", "null"]},
+        "unique_observation_days": {"type": "integer", "minimum": 0},
+        "duplicate_target_dates": {"type": "array", "items": {"type": "string"}},
+        "duplicate_snapshot_dates": {"type": "array", "items": {"type": "string"}},
+        "missing_snapshot_for_target": {"type": "array", "items": {"type": "string"}},
+        "missing_target_for_snapshot": {"type": "array", "items": {"type": "string"}},
+        "state_last_processed_timestamp": {"type": ["string", "null"]},
+        "fill_dates_without_snapshot": {"type": "array", "items": {"type": "string"}},
+        "calendar_gaps": {"type": "array", "items": {"type": "object"}},
+        "max_calendar_gap_days": {"type": "integer", "minimum": 0},
+        "note": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "ledger": {
+      "type": "object",
+      "required": [
+        "ledger_root",
+        "target_position_rows",
+        "fill_rows",
+        "portfolio_snapshot_rows",
+        "state_days_completed",
+        "state_last_processed_timestamp"
+      ],
+      "properties": {
+        "ledger_root": {"const": "data/forward_observation/us_etf_rotation_v1"},
+        "target_position_rows": {"type": "integer", "minimum": 0},
+        "fill_rows": {"type": "integer", "minimum": 0},
+        "portfolio_snapshot_rows": {"type": "integer", "minimum": 0},
+        "state_days_completed": {"type": ["integer", "null"], "minimum": 0},
+        "state_last_processed_timestamp": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "scheduler": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "checks": {
+      "type": "object",
+      "required": [
+        "source_reports_exist",
+        "daily_run_passed",
+        "roll_report_passed",
+        "evaluation_status_safe",
+        "ledger_files_exist",
+        "ledger_state_consistent",
+        "ledger_dates_consistent",
+        "guardrails_safe"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["passed"],
+        "properties": {
+          "passed": {"type": "boolean"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "source_files": {
+      "type": "object",
+      "required": [
+        "daily_run_report",
+        "roll_report",
+        "evaluation_report",
+        "ledger_root",
+        "target_positions",
+        "fills",
+        "portfolio_snapshots",
+        "validation_state"
+      ],
+      "additionalProperties": {"type": "string"}
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "daily_health_is_not_alpha_validation",
+        "long_term_positive_expectancy_proven",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "daily_health_is_not_alpha_validation": {"const": true},
+        "long_term_positive_expectancy_proven": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

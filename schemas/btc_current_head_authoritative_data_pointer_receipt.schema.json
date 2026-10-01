@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quant.local/schemas/btc_current_head_authoritative_data_pointer_receipt.schema.json",
+  "title": "BTC current-head authoritative data pointer publication receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "source_code_commit",
+    "run_id",
+    "dataset_id",
+    "data_version",
+    "aggregate_sha256",
+    "manifest_identity",
+    "generated_at_utc",
+    "manifest_git_spec",
+    "manifest_blob_sha256",
+    "source_full_file_hash_verified",
+    "artifact_paths",
+    "artifact_hashes",
+    "active_strategy_family",
+    "active_horizon",
+    "eligible_labeled_windows",
+    "autocorrelation_adjusted_ess",
+    "decision",
+    "blockers",
+    "safety"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_current_head_authoritative_data_pointer_receipt_v1"},
+    "status": {"const": "published_blocked_fail_closed"},
+    "source_code_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "run_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "dataset_id": {"const": "btc-okx-10s-microstructure-immutable-feed"},
+    "data_version": {"const": "btc-okx-10s-feed-00000001-20260827t111218925177z-src4e615032a6"},
+    "aggregate_sha256": {"const": "2fa444de042e742e9763b6a4988205b7f05d5374d6cf66fa94d20c7efd26fd70"},
+    "manifest_identity": {"$ref": "#/$defs/sha256"},
+    "generated_at_utc": {"type": "string", "format": "date-time"},
+    "manifest_git_spec": {
+      "const": "f96473dda7e96df0adfa2a0a2f10cd936674cef1:.agent/data_manifests/btc-okx-10s-microstructure-immutable-feed/btc-okx-10s-feed-00000001-20260827t111218925177z-src4e615032a6.json"
+    },
+    "manifest_blob_sha256": {"$ref": "#/$defs/sha256"},
+    "source_full_file_hash_verified": {"const": true},
+    "artifact_paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pointer", "manifest", "evidence", "data_steward_attestation", "depth_fill_mapping", "active_criteria", "active_criteria_immutable"],
+      "properties": {
+        "pointer": {"type": "string", "pattern": "^artifacts/"},
+        "manifest": {"type": "string", "pattern": "^artifacts/"},
+        "evidence": {"type": "string", "pattern": "^artifacts/"},
+        "data_steward_attestation": {"type": "string", "pattern": "^artifacts/"},
+        "depth_fill_mapping": {"type": "string", "pattern": "^artifacts/"},
+        "active_criteria": {"type": "string", "pattern": "^artifacts/"},
+        "active_criteria_immutable": {"type": "string", "pattern": "^artifacts/"}
+      }
+    },
+    "artifact_hashes": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/sha256"},
+      "minProperties": 5
+    },
+    "active_strategy_family": {"const": "trade_imbalance_continuation"},
+    "active_horizon": {"const": "10s"},
+    "eligible_labeled_windows": {"const": 0},
+    "autocorrelation_adjusted_ess": {"const": 0.0},
+    "decision": {"const": "blocked_insufficient_information"},
+    "blockers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "safety": {"$ref": "#/$defs/safety"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["promotion", "paper", "live", "private", "order", "real_order", "transfer", "withdraw"],
+      "properties": {
+        "promotion": {"const": false},
+        "paper": {"const": false},
+        "live": {"const": false},
+        "private": {"const": false},
+        "order": {"const": false},
+        "real_order": {"const": false},
+        "transfer": {"const": false},
+        "withdraw": {"const": false}
+      }
+    }
+  }
+}

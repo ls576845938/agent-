@@ -1,0 +1,574 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_final_paper_readiness.schema.json",
+  "title": "US equity final paper-readiness evidence packet",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "goal_id",
+    "source_head",
+    "generated_at_utc",
+    "status",
+    "decision",
+    "wrapper_status",
+    "review_stopped_by_engineering_defect",
+    "readiness",
+    "prerequisites",
+    "evidence",
+    "blocker_taxonomy",
+    "engineering_defects",
+    "validation",
+    "safety",
+    "run_id",
+    "outputs",
+    "artifact_identity_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "us_equity_final_paper_readiness_v1"
+    },
+    "goal_id": {
+      "const": "US-V3-FINAL-PAPER-READINESS-01"
+    },
+    "source_head": {
+      "$ref": "#/$defs/commit"
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "enum": [
+        "blocked",
+        "review_complete"
+      ]
+    },
+    "decision": {
+      "enum": [
+        "blocked_fail_closed_no_paper_no_live",
+        "promotion_evidence_ready_for_architect_review_only"
+      ]
+    },
+    "wrapper_status": {
+      "const": "success"
+    },
+    "review_stopped_by_engineering_defect": {
+      "type": "boolean"
+    },
+    "readiness": {
+      "type": "object",
+      "required": [
+        "packet_quality_checked",
+        "final_review_quality_checked",
+        "promotion_evidence_ready",
+        "paper_enabled",
+        "live_enabled"
+      ],
+      "properties": {
+        "packet_quality_checked": {
+          "const": true
+        },
+        "final_review_quality_checked": {
+          "type": "boolean"
+        },
+        "promotion_evidence_ready": {
+          "type": "boolean"
+        },
+        "paper_enabled": {
+          "const": false
+        },
+        "live_enabled": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "prerequisites": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "$ref": "#/$defs/prerequisite"
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "minProperties": 8,
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "blocker_taxonomy": {
+      "type": "object",
+      "required": [
+        "root_blockers",
+        "root_blocker_count",
+        "original_blocker_retirement",
+        "original_blocker_count",
+        "unclassified_blockers"
+      ],
+      "properties": {
+        "root_blockers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/rootBlocker"
+          }
+        },
+        "root_blocker_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "original_blocker_retirement": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/retirement"
+          }
+        },
+        "original_blocker_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unclassified_blockers": {
+          "type": "array",
+          "maxItems": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "engineering_defects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/engineeringDefect"
+      }
+    },
+    "validation": {
+      "type": "object",
+      "required": [
+        "all_prerequisite_handoffs_valid",
+        "current_head_gate_schema_hash_safety_valid",
+        "canonical_replay_valid",
+        "oms_recovery_and_reconciliation_valid",
+        "all_evidence_safety_flags_false",
+        "unknown_or_unclassified_blocker_count",
+        "wrapper_success_substitutes_for_decision"
+      ],
+      "properties": {
+        "all_prerequisite_handoffs_valid": {
+          "type": "boolean"
+        },
+        "current_head_gate_schema_hash_safety_valid": {
+          "type": "boolean"
+        },
+        "canonical_replay_valid": {
+          "type": "boolean"
+        },
+        "oms_recovery_and_reconciliation_valid": {
+          "type": "boolean"
+        },
+        "all_evidence_safety_flags_false": {
+          "const": true
+        },
+        "unknown_or_unclassified_blocker_count": {
+          "const": 0
+        },
+        "wrapper_success_substitutes_for_decision": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "$ref": "#/$defs/safety"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^us-g12-[A-Za-z0-9._-]+$"
+    },
+    "outputs": {
+      "type": "object",
+      "required": [
+        "report",
+        "manifest",
+        "latest_pointer"
+      ],
+      "properties": {
+        "report": {
+          "$ref": "#/$defs/posixPath"
+        },
+        "manifest": {
+          "$ref": "#/$defs/posixPath"
+        },
+        "latest_pointer": {
+          "$ref": "#/$defs/posixPath"
+        }
+      },
+      "additionalProperties": false
+    },
+    "artifact_identity_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "review_complete"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "decision": {
+            "const": "promotion_evidence_ready_for_architect_review_only"
+          },
+          "review_stopped_by_engineering_defect": {
+            "const": false
+          },
+          "readiness": {
+            "properties": {
+              "promotion_evidence_ready": {
+                "const": true
+              }
+            }
+          },
+          "blocker_taxonomy": {
+            "properties": {
+              "root_blockers": {
+                "maxItems": 0
+              },
+              "root_blocker_count": {
+                "const": 0
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "decision": {
+            "const": "blocked_fail_closed_no_paper_no_live"
+          },
+          "readiness": {
+            "properties": {
+              "promotion_evidence_ready": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "posixPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\\\]+$"
+    },
+    "stringList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "prerequisite": {
+      "type": "object",
+      "required": [
+        "prerequisite_id",
+        "status",
+        "satisfied",
+        "owner",
+        "evidence_path",
+        "validator",
+        "blockers",
+        "retirement_decision",
+        "next_action",
+        "inverse_semantics"
+      ],
+      "properties": {
+        "prerequisite_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "satisfied",
+            "blocked"
+          ]
+        },
+        "satisfied": {
+          "type": "boolean"
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_path": {
+          "type": "string"
+        },
+        "validator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blockers": {
+          "$ref": "#/$defs/stringList"
+        },
+        "retirement_decision": {
+          "enum": [
+            "retired",
+            "retained_until_validator_passes"
+          ]
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inverse_semantics": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rootBlocker": {
+      "type": "object",
+      "required": [
+        "code",
+        "category",
+        "owner",
+        "evidence_path",
+        "validator",
+        "retirement_decision",
+        "next_action"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_path": {
+          "type": "string"
+        },
+        "validator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retirement_decision": {
+          "const": "retained"
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "retirement": {
+      "type": "object",
+      "required": [
+        "blocker",
+        "source_id",
+        "root_blocker",
+        "category",
+        "evidence_path",
+        "validator",
+        "conclusion",
+        "retirement_decision"
+      ],
+      "properties": {
+        "blocker": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "root_blocker": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "validator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "conclusion": {
+          "enum": [
+            "retired",
+            "retained",
+            "retained_reclassified"
+          ]
+        },
+        "retirement_decision": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "engineeringDefect": {
+      "type": "object",
+      "required": [
+        "defect_id",
+        "status",
+        "owner",
+        "evidence_path",
+        "validator",
+        "repair_ticket",
+        "repair_ticket_exists",
+        "next_action"
+      ],
+      "properties": {
+        "defect_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "open"
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "validator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repair_ticket": {
+          "$ref": "#/$defs/posixPath"
+        },
+        "repair_ticket_exists": {
+          "type": "boolean"
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "promotion_allowed",
+        "paper_allowed",
+        "paper_enabled",
+        "paper_runner_allowed",
+        "paper_runner_started",
+        "paper_queue_write_allowed",
+        "live_allowed",
+        "live_enabled",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "private_endpoint_used",
+        "order_endpoint_allowed",
+        "order_endpoint_used",
+        "broker_access_allowed",
+        "broker_calls_used",
+        "withdraw_allowed",
+        "demo_allowed",
+        "real_order_allowed",
+        "real_order_submitted",
+        "network_used",
+        "secret_accessed"
+      ],
+      "properties": {
+        "promotion_allowed": {
+          "const": false
+        },
+        "paper_allowed": {
+          "const": false
+        },
+        "paper_enabled": {
+          "const": false
+        },
+        "paper_runner_allowed": {
+          "const": false
+        },
+        "paper_runner_started": {
+          "const": false
+        },
+        "paper_queue_write_allowed": {
+          "const": false
+        },
+        "live_allowed": {
+          "const": false
+        },
+        "live_enabled": {
+          "const": false
+        },
+        "live_order_allowed": {
+          "const": false
+        },
+        "private_endpoint_allowed": {
+          "const": false
+        },
+        "private_endpoint_used": {
+          "const": false
+        },
+        "order_endpoint_allowed": {
+          "const": false
+        },
+        "order_endpoint_used": {
+          "const": false
+        },
+        "broker_access_allowed": {
+          "const": false
+        },
+        "broker_calls_used": {
+          "const": false
+        },
+        "withdraw_allowed": {
+          "const": false
+        },
+        "demo_allowed": {
+          "const": false
+        },
+        "real_order_allowed": {
+          "const": false
+        },
+        "real_order_submitted": {
+          "const": false
+        },
+        "network_used": {
+          "const": false
+        },
+        "secret_accessed": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

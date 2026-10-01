@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_macro_rotation_benchmark_acceptance_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Macro Rotation Benchmark Acceptance Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "live_ready",
+    "paper_ready",
+    "source_report",
+    "source_schema_version",
+    "protected_original_baseline",
+    "primary_cost_key",
+    "benchmarks",
+    "acceptance_rules",
+    "summary",
+    "best_offensive_candidate",
+    "best_defensive_candidate",
+    "candidates",
+    "ranking",
+    "decision",
+    "methodology"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_macro_rotation_benchmark_acceptance_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "research_only"},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "source_report": {"type": "string", "minLength": 1},
+    "source_schema_version": {"type": "string", "minLength": 1},
+    "protected_original_baseline": {
+      "type": "object",
+      "required": ["status", "included_in_candidate_ranking"],
+      "properties": {
+        "status": {"enum": ["available", "missing"]},
+        "baseline_id": {"const": "original_v8_2_semantics"},
+        "included_in_candidate_ranking": {"const": false},
+        "rebalance_semantics": {"type": ["string", "null"]},
+        "metrics": {"type": "object"},
+        "decision": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "primary_cost_key": {"const": "50bps"},
+    "benchmarks": {
+      "type": "object",
+      "required": ["SPY", "QQQ", "60_40_SPY_IEF", "equal_offensive_etf"],
+      "properties": {
+        "SPY": {"$ref": "#/$defs/metrics"},
+        "QQQ": {"$ref": "#/$defs/metrics"},
+        "60_40_SPY_IEF": {"$ref": "#/$defs/metrics"},
+        "equal_offensive_etf": {"$ref": "#/$defs/metrics"}
+      },
+      "additionalProperties": false
+    },
+    "acceptance_rules": {
+      "type": "object",
+      "required": ["offensive_replacement_pass", "defensive_candidate_only", "rejected_vs_buy_hold"],
+      "additionalProperties": {"type": "string"}
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "candidate_count",
+        "offensive_replacement_pass_count",
+        "defensive_candidate_pass_count",
+        "rejected_vs_buy_hold_count",
+        "has_offensive_replacement",
+        "has_defensive_candidate"
+      ],
+      "properties": {
+        "candidate_count": {"type": "integer", "minimum": 1},
+        "offensive_replacement_pass_count": {"type": "integer", "minimum": 0},
+        "defensive_candidate_pass_count": {"type": "integer", "minimum": 0},
+        "rejected_vs_buy_hold_count": {"type": "integer", "minimum": 0},
+        "has_offensive_replacement": {"type": "boolean"},
+        "has_defensive_candidate": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "best_offensive_candidate": {"$ref": "#/$defs/candidate"},
+    "best_defensive_candidate": {"$ref": "#/$defs/candidate"},
+    "candidates": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/candidate"}},
+    "ranking": {
+      "type": "object",
+      "required": ["offensive", "defensive"],
+      "properties": {
+        "offensive": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/candidate"}},
+        "defensive": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/candidate"}}
+      },
+      "additionalProperties": false
+    },
+    "decision": {
+      "type": "object",
+      "required": ["status", "live_order_allowed", "paper_promotion_allowed", "reason"],
+      "properties": {
+        "status": {
+          "enum": [
+            "offensive_replacement_candidate_for_manual_review",
+            "defensive_candidate_only_not_spy_qqq_replacement",
+            "rejected_vs_buy_hold"
+          ]
+        },
+        "live_order_allowed": {"const": false},
+        "paper_promotion_allowed": {"const": false},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "methodology": {
+      "type": "object",
+      "required": ["goal", "constraint", "original_semantics_boundary", "benchmark_set"],
+      "properties": {
+        "goal": {"type": "string", "minLength": 1},
+        "constraint": {"type": "string", "minLength": 1},
+        "original_semantics_boundary": {"type": "string", "minLength": 1},
+        "benchmark_set": {
+          "type": "array",
+          "contains": {"const": "SPY"},
+          "items": {"enum": ["SPY", "QQQ", "60_40_SPY_IEF", "equal_offensive_etf"]}
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "metrics": {
+      "type": "object",
+      "required": ["total_return", "cagr", "sharpe", "max_drawdown"],
+      "properties": {
+        "total_return": {"type": "number"},
+        "cagr": {"type": "number"},
+        "sharpe": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "benchmark_total_return": {"type": "number"},
+        "turnover": {"type": "number"},
+        "avg_rebalance_turnover": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "excess": {
+      "type": "object",
+      "required": ["cagr", "sharpe", "max_drawdown_improvement", "total_return"],
+      "properties": {
+        "cagr": {"type": "number"},
+        "sharpe": {"type": "number"},
+        "max_drawdown_improvement": {"type": "number"},
+        "total_return": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "family",
+        "parameters",
+        "metrics_50bps",
+        "gate_status",
+        "offensive_replacement_pass",
+        "defensive_candidate_pass",
+        "beats_equal_offensive_pool",
+        "excess_vs_spy",
+        "excess_vs_qqq",
+        "excess_vs_equal_offensive_etf",
+        "offensive_score",
+        "defensive_score"
+      ],
+      "properties": {
+        "family": {"type": "string", "minLength": 1, "not": {"const": "original_v8_2_semantics"}},
+        "parameters": {"type": "object"},
+        "metrics_50bps": {"$ref": "#/$defs/metrics"},
+        "gate_status": {"enum": ["offensive_replacement_pass", "defensive_candidate_only", "rejected_vs_buy_hold"]},
+        "offensive_replacement_pass": {"type": "boolean"},
+        "defensive_candidate_pass": {"type": "boolean"},
+        "beats_equal_offensive_pool": {"type": "boolean"},
+        "excess_vs_spy": {"$ref": "#/$defs/excess"},
+        "excess_vs_qqq": {"$ref": "#/$defs/excess"},
+        "excess_vs_equal_offensive_etf": {"$ref": "#/$defs/excess"},
+        "offensive_score": {"type": "number"},
+        "defensive_score": {"type": "number"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

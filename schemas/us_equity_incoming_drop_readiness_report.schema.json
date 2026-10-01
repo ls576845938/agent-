@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_incoming_drop_readiness_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Incoming Drop Readiness Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "source_dir",
+    "bundle_id",
+    "required_file_count",
+    "ready_file_count",
+    "drop_file_contract",
+    "files",
+    "row_validation_summary",
+    "blockers",
+    "operator_next_actions",
+    "preferred_import_command",
+    "post_import_commands",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_incoming_drop_readiness_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["incoming_drop_ready_for_import", "incoming_drop_blocked"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["incoming_drop_ready_for_import", "incoming_drop_blocked"]},
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "source_dir": {"type": "string", "minLength": 1},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "required_file_count": {"type": "integer", "minimum": 6},
+    "ready_file_count": {"type": "integer", "minimum": 0},
+    "drop_file_contract": {
+      "type": "object",
+      "required": [
+        "exact_required_file_count",
+        "expected_filenames",
+        "observed_file_count",
+        "observed_files",
+        "unexpected_file_count",
+        "unexpected_files",
+        "blockers",
+        "exactly_six_csv_files_required",
+        "empty_templates_are_not_valid_evidence"
+      ],
+      "properties": {
+        "exact_required_file_count": {"const": 6},
+        "expected_filenames": {
+          "type": "array",
+          "minItems": 6,
+          "items": {"type": "string", "pattern": "^[A-Za-z0-9_]+\\.csv$"},
+          "uniqueItems": true
+        },
+        "observed_file_count": {"type": "integer", "minimum": 0},
+        "observed_files": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "unexpected_file_count": {"type": "integer", "minimum": 0},
+        "unexpected_files": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "exactly_six_csv_files_required": {"const": true},
+        "empty_templates_are_not_valid_evidence": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "files": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "required": [
+          "table",
+          "filename",
+          "path",
+          "exists",
+          "non_empty",
+          "record_count",
+          "required_fields",
+          "missing_fields",
+          "extra_fields",
+          "blockers",
+          "row_validation"
+        ],
+        "properties": {
+          "table": {"type": "string", "minLength": 1},
+          "filename": {"type": "string", "pattern": "\\.csv$"},
+          "path": {"type": "string", "minLength": 1},
+          "exists": {"type": "boolean"},
+          "non_empty": {"type": "boolean"},
+          "record_count": {"type": "integer", "minimum": 0},
+          "required_fields": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "missing_fields": {"type": "array", "items": {"type": "string"}},
+          "extra_fields": {"type": "array", "items": {"type": "string"}},
+          "blockers": {"type": "array", "items": {"type": "string"}},
+          "row_validation": {"$ref": "#/$defs/rowValidation"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "row_validation_summary": {
+      "type": "object",
+      "required": [
+        "checked_file_count",
+        "checked_row_count",
+        "issue_count",
+        "reported_issue_count",
+        "issue_truncation_applied"
+      ],
+      "properties": {
+        "checked_file_count": {"type": "integer", "minimum": 0},
+        "checked_row_count": {"type": "integer", "minimum": 0},
+        "issue_count": {"type": "integer", "minimum": 0},
+        "reported_issue_count": {"type": "integer", "minimum": 0},
+        "issue_truncation_applied": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "operator_next_actions": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "preferred_import_command": {"type": "string", "minLength": 1},
+    "post_import_commands": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "diagnostic_only",
+        "source_vendor_data_modified",
+        "missing_pit_evidence_synthesized",
+        "configuration_mutated_by_this_report",
+        "production_bundle_written",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "diagnostic_only": {"const": true},
+        "source_vendor_data_modified": {"const": false},
+        "missing_pit_evidence_synthesized": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "production_bundle_written": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "incoming_drop_ready_for_import"}}},
+      "then": {
+        "properties": {
+          "blockers": {"maxItems": 0},
+          "ready_file_count": {"minimum": 6}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "incoming_drop_blocked"}}},
+      "then": {
+        "properties": {
+          "blockers": {"minItems": 1}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "rowValidation": {
+      "type": "object",
+      "required": [
+        "checked_rows",
+        "issue_count",
+        "reported_issue_count",
+        "issue_truncation_applied",
+        "blockers",
+        "issues"
+      ],
+      "properties": {
+        "checked_rows": {"type": "integer", "minimum": 0},
+        "issue_count": {"type": "integer", "minimum": 0},
+        "reported_issue_count": {"type": "integer", "minimum": 0},
+        "issue_truncation_applied": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "issues": {
+          "type": "array",
+          "maxItems": 25,
+          "items": {
+            "type": "object",
+            "required": ["table", "row_number", "field", "issue", "blocker", "value"],
+            "properties": {
+              "table": {"type": "string", "minLength": 1},
+              "row_number": {"type": "integer", "minimum": 2},
+              "field": {"type": "string", "minLength": 1},
+              "issue": {"type": "string", "minLength": 1},
+              "blocker": {"type": "string", "minLength": 1},
+              "value": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

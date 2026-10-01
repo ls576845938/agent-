@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quant.local/schemas/us_ibkr_paper_closed_loop_receipt.schema.json",
+  "title": "US IBKR Paper Closed Loop Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ticket_id",
+    "created_at_utc",
+    "current_head",
+    "registered_main_head",
+    "current_head_fresh",
+    "session_id",
+    "runtime",
+    "market_data",
+    "broker",
+    "ledger",
+    "reconciliation",
+    "integration_receipt",
+    "counts_toward_30_day_window",
+    "blockers",
+    "safety_flags",
+    "receipt_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_ibkr_paper_closed_loop_receipt_v1"},
+    "ticket_id": {"const": "US-IBKR-REALTIME-PAPER-CLOSED-LOOP-01"},
+    "created_at_utc": {"type": "string"},
+    "current_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "registered_main_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "current_head_fresh": {"type": "boolean"},
+    "session_id": {"type": "string", "minLength": 1},
+    "runtime": {"type": "object"},
+    "market_data": {"type": "object"},
+    "broker": {
+      "type": "object",
+      "required": ["connected", "gateway_connected", "paper_endpoint", "global_cancel_capable"],
+      "properties": {
+        "connected": {"type": "boolean"},
+        "gateway_connected": {"type": "boolean"},
+        "paper_endpoint": {"const": true},
+        "global_cancel_capable": {"const": false}
+      }
+    },
+    "ledger": {"type": "object"},
+    "reconciliation": {"type": "object"},
+    "integration_receipt": {"type": "object"},
+    "counts_toward_30_day_window": {"const": false},
+    "blockers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "safety_flags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "paper_submit_allowed",
+        "paper_cancel_allowed",
+        "live_allowed",
+        "promotion_allowed",
+        "secrets_read"
+      ],
+      "properties": {
+        "paper_submit_allowed": {"const": false},
+        "paper_cancel_allowed": {"const": false},
+        "live_allowed": {"const": false},
+        "promotion_allowed": {"const": false},
+        "secrets_read": {"const": false}
+      }
+    },
+    "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

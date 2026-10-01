@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_macro_rotation_cost_robust_optimization_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Macro Rotation Cost Robust Optimization Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "live_ready",
+    "paper_ready",
+    "stress_cost_bps",
+    "price_source",
+    "macro_status",
+    "macro_path",
+    "families",
+    "ranking",
+    "best_overall",
+    "methodology"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_macro_rotation_cost_robust_optimization_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "research_only"},
+    "live_ready": {"const": false},
+    "paper_ready": {"const": false},
+    "stress_cost_bps": {"const": [10, 25, 50]},
+    "price_source": {"type": "string", "minLength": 1},
+    "macro_status": {"type": "string", "minLength": 1},
+    "macro_path": {"type": ["string", "null"]},
+    "families": {
+      "type": "object",
+      "required": [
+        "v1_turnover_guard",
+        "v1_combined_conservative",
+        "v2_turnover_guard_refined",
+        "v2_cost_robust_combined"
+      ],
+      "properties": {
+        "v1_turnover_guard": {"$ref": "#/$defs/family"},
+        "v1_combined_conservative": {"$ref": "#/$defs/family"},
+        "v2_turnover_guard_refined": {"$ref": "#/$defs/family"},
+        "v2_cost_robust_combined": {"$ref": "#/$defs/family"}
+      },
+      "additionalProperties": false
+    },
+    "ranking": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/candidate"}},
+    "best_overall": {"$ref": "#/$defs/candidate"},
+    "methodology": {"type": "object", "minProperties": 1}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "family": {
+      "type": "object",
+      "required": ["candidate_count", "best", "top_candidates"],
+      "properties": {
+        "candidate_count": {"type": "integer", "minimum": 1},
+        "best": {"$ref": "#/$defs/candidate"},
+        "top_candidates": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/candidate"}}
+      },
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["family", "description", "parameters", "score_50bps", "stress", "survives_50bps"],
+      "properties": {
+        "family": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "parameters": {"type": "object"},
+        "score_50bps": {"type": "number"},
+        "stress": {"$ref": "#/$defs/stress_bundle"},
+        "survives_50bps": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "stress_bundle": {
+      "type": "object",
+      "required": ["10bps", "25bps", "50bps"],
+      "properties": {
+        "10bps": {"$ref": "#/$defs/stress_row"},
+        "25bps": {"$ref": "#/$defs/stress_row"},
+        "50bps": {"$ref": "#/$defs/stress_row"}
+      },
+      "additionalProperties": false
+    },
+    "stress_row": {
+      "type": "object",
+      "required": ["metrics", "diagnostics", "focus_years"],
+      "properties": {
+        "metrics": {"$ref": "#/$defs/metrics"},
+        "diagnostics": {"$ref": "#/$defs/diagnostics"},
+        "focus_years": {"type": "object", "minProperties": 1}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["total_return", "cagr", "sharpe", "max_drawdown", "benchmark_total_return", "turnover"],
+      "properties": {
+        "total_return": {"type": "number"},
+        "cagr": {"type": "number"},
+        "sharpe": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "benchmark_total_return": {"type": "number"},
+        "turnover": {"type": "number", "minimum": 0},
+        "avg_rebalance_turnover": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "diagnostics": {
+      "type": "object",
+      "required": ["turnover", "cost_per_turnover", "rebalance_count", "rebalance_reason_counts", "t_plus_1_execution"],
+      "properties": {
+        "turnover": {"type": "number", "minimum": 0},
+        "cost_per_turnover": {"type": "number", "minimum": 0},
+        "rebalance_count": {"type": "integer", "minimum": 0},
+        "rebalance_reason_counts": {"type": "object"},
+        "avg_rebalance_turnover": {"type": "number", "minimum": 0},
+        "t_plus_1_execution": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  }
+}

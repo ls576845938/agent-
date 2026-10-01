@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_fred_macro_import_report.schema.json",
+  "title": "QuantStation VNEXT US Equity FRED Macro Import Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "provider",
+    "source_type",
+    "status",
+    "series",
+    "series_reports",
+    "latest_by_series",
+    "latest_common_date",
+    "macro_lag_days",
+    "publication_lag_policy",
+    "output_data",
+    "row_count",
+    "blockers",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_fred_macro_import_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "provider": {"const": "FRED"},
+    "source_type": {"enum": ["fred_api", "fred_api_observations", "public_graph_csv", "offline_fixture"]},
+    "status": {"enum": ["pass", "blocked"]},
+    "series": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "series_reports": {"type": "array", "items": {"$ref": "#/$defs/series_report"}},
+    "latest_by_series": {"type": "object", "additionalProperties": {"type": ["string", "null"]}},
+    "latest_common_date": {"type": ["string", "null"]},
+    "macro_lag_days": {"type": "integer", "minimum": 0},
+    "publication_lag_policy": {"type": "string", "minLength": 1},
+    "output_data": {"type": "string", "minLength": 1},
+    "row_count": {"type": "integer", "minimum": 0},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "macro_data_only",
+        "api_key_required",
+        "api_key_used_for_macro_data",
+        "token_written_to_artifacts",
+        "live_order_allowed",
+        "paper_or_live_unlock_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "broker_endpoint_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "macro_data_only": {"const": true},
+        "api_key_required": {"type": "boolean"},
+        "api_key_used_for_macro_data": {"type": "boolean"},
+        "token_written_to_artifacts": {"const": false},
+        "live_order_allowed": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "broker_endpoint_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "series_report": {
+      "type": "object",
+      "required": ["series_id", "status"],
+      "properties": {
+        "series_id": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1},
+        "source": {"type": "string"},
+        "rows": {"type": "integer", "minimum": 0},
+        "start": {"type": ["string", "null"]},
+        "end": {"type": ["string", "null"]},
+        "error": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  }
+}

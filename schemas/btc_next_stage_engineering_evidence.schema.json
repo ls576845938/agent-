@@ -1,0 +1,461 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "btc_next_stage_engineering_evidence.schema.json",
+  "title": "BTC Next-Stage Engineering Evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source_head",
+    "code_commit",
+    "aggregation_batch_id",
+    "generated_at_utc",
+    "status",
+    "decision",
+    "readiness_class",
+    "source_evidence",
+    "builder_chain",
+    "builder_chain_phase",
+    "builder_chain_declaration_sha256",
+    "input_hashes",
+    "blockers",
+    "required_blockers",
+    "required_blocker_count",
+    "required_blockers_sha256",
+    "required_blockers_missing",
+    "required_blockers_preserved",
+    "promotion_evidence_ready",
+    "paper_ready",
+    "live_ready",
+    "safety"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "builder_chain_phase": {
+            "const": "finalized_after_gate"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "pre_gate_engineering_evidence_sha256"
+        ],
+        "properties": {
+          "pre_gate_engineering_evidence_sha256": {
+            "$ref": "#/$defs/sha256"
+          },
+          "builder_chain": {
+            "items": {
+              "properties": {
+                "target_status": {"const": "built_staged"},
+                "output_hash_verified": {"const": true},
+                "immutable_output": {"const": true}
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "btc_next_stage_engineering_evidence_v2"
+    },
+    "source_head": {
+      "$ref": "#/$defs/gitSha"
+    },
+    "code_commit": {
+      "$ref": "#/$defs/gitSha"
+    },
+    "aggregation_batch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "const": "complete_blocked"
+    },
+    "decision": {
+      "const": "blocked_fail_closed_no_paper_no_live"
+    },
+    "readiness_class": {
+      "enum": [
+        "quality_checked",
+        "blocked"
+      ]
+    },
+    "source_evidence": {
+      "type": "object",
+      "required": [
+        "strategy",
+        "oms",
+        "ledger",
+        "replay"
+      ]
+    },
+    "builder_chain": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/domainBuilder"
+        },
+        {
+          "$ref": "#/$defs/promotionBuilder"
+        },
+        {
+          "$ref": "#/$defs/gateBuilder"
+        }
+      ],
+      "items": false,
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "builder_chain_phase": {
+      "enum": [
+        "declared_before_promotion_gate",
+        "finalized_after_gate"
+      ]
+    },
+    "builder_chain_declaration_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "input_hashes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "blockers": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/blockers"
+        },
+        {
+          "contains": {
+            "const": "btc_okx_native:manual_promotion_approval_missing"
+          }
+        }
+      ]
+    },
+    "required_blockers": {
+      "$ref": "#/$defs/requiredBlockers"
+    },
+    "required_blocker_count": {
+      "const": 17
+    },
+    "required_blockers_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "required_blockers_missing": {
+      "const": []
+    },
+    "required_blockers_preserved": {
+      "const": true
+    },
+    "promotion_evidence_ready": {
+      "const": false
+    },
+    "paper_ready": {
+      "const": false
+    },
+    "live_ready": {
+      "const": false
+    },
+    "safety": {
+      "$ref": "#/$defs/safety"
+    }
+  },
+  "$defs": {
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "blockers": {
+      "type": "array",
+      "minItems": 17,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "requiredBlockers": {
+      "const": [
+        "btc_okx_public_ws_primary_connection_reset_10054",
+        "real_timestamp_aligned_l2_missing",
+        "btc_okx_l2_sequence_continuity_unverified",
+        "btc_okx_native:effective_sample_regime_coverage_prereg_evidence_incomplete",
+        "btc_okx_native:active_strategy_family_dependency_scope_missing",
+        "btc_okx_server_time_offset_exceeds_threshold",
+        "manifest_data_schema_mismatch",
+        "manifest_quality_status_not_pass",
+        "l2_manifest_attestation_readiness_mismatch",
+        "runtime_pointer_immutable_snapshot_not_published",
+        "btc_okx_native:active_criteria_pointer_lineage_mismatch",
+        "not_promotion_evidence",
+        "btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+        "btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+        "btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+        "btc_okx_native:25_hour_demo_observation_window_incomplete",
+        "btc_okx_native:manual_promotion_approval_missing"
+      ]
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "api_key_permission_reviewed",
+        "approval_granted",
+        "broker_access_allowed",
+        "broker_calls_used",
+        "broker_endpoint_accessed",
+        "broker_endpoint_allowed",
+        "broker_or_order_allowed",
+        "credential_permissions_verified",
+        "demo_allowed",
+        "demo_order_submitted",
+        "demo_trading_enabled",
+        "live_allowed",
+        "live_enabled",
+        "live_order_allowed",
+        "live_ready",
+        "live_unlock_allowed",
+        "manual_approval_recorded",
+        "micro_live_allowed",
+        "network_accessed",
+        "oms_access_allowed",
+        "order_endpoint_accessed",
+        "order_endpoint_allowed",
+        "order_endpoint_used",
+        "order_submission_allowed",
+        "paper_allowed",
+        "paper_candidate_allowed",
+        "paper_candidate_created",
+        "paper_execution_authorized",
+        "paper_order_intake_allowed",
+        "paper_order_submitted",
+        "paper_or_live_unlock_allowed",
+        "paper_queue_write_allowed",
+        "paper_queue_write_enabled",
+        "paper_ready",
+        "paper_start_allowed",
+        "permission_evidence_ready",
+        "permission_granted",
+        "position_increase_allowed",
+        "private_endpoint_accessed",
+        "private_endpoint_allowed",
+        "private_endpoint_used",
+        "promotion_allowed",
+        "promotion_evidence_ready",
+        "real_order_submitted",
+        "real_orders_enabled",
+        "secret_access_allowed",
+        "secrets_read",
+        "strategy_skeleton_generated",
+        "withdraw_allowed"
+      ],
+      "properties": {
+        "api_key_permission_reviewed": {"const": false},
+        "approval_granted": {"const": false},
+        "broker_access_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "broker_endpoint_accessed": {"const": false},
+        "broker_endpoint_allowed": {"const": false},
+        "broker_or_order_allowed": {"const": false},
+        "credential_permissions_verified": {"const": false},
+        "demo_allowed": {"const": false},
+        "demo_order_submitted": {"const": false},
+        "demo_trading_enabled": {"const": false},
+        "live_allowed": {"const": false},
+        "live_enabled": {"const": false},
+        "live_order_allowed": {"const": false},
+        "live_ready": {"const": false},
+        "live_unlock_allowed": {"const": false},
+        "manual_approval_recorded": {"const": false},
+        "micro_live_allowed": {"const": false},
+        "network_accessed": {"const": false},
+        "oms_access_allowed": {"const": false},
+        "order_endpoint_accessed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "order_submission_allowed": {"const": false},
+        "paper_allowed": {"const": false},
+        "paper_candidate_allowed": {"const": false},
+        "paper_candidate_created": {"const": false},
+        "paper_execution_authorized": {"const": false},
+        "paper_order_intake_allowed": {"const": false},
+        "paper_order_submitted": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_queue_write_allowed": {"const": false},
+        "paper_queue_write_enabled": {"const": false},
+        "paper_ready": {"const": false},
+        "paper_start_allowed": {"const": false},
+        "permission_evidence_ready": {"const": false},
+        "permission_granted": {"const": false},
+        "position_increase_allowed": {"const": false},
+        "private_endpoint_accessed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "promotion_allowed": {"const": false},
+        "promotion_evidence_ready": {"const": false},
+        "real_order_submitted": {"const": false},
+        "real_orders_enabled": {"const": false},
+        "secret_access_allowed": {"const": false},
+        "secrets_read": {"const": false},
+        "strategy_skeleton_generated": {"const": false},
+        "withdraw_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "builderBase": {
+      "type": "object",
+      "required": [
+        "name",
+        "builder_symbol",
+        "builder_code_path",
+        "builder_code_sha256",
+        "source_head",
+        "target_path",
+        "target_status",
+        "output_sha256",
+        "output_hash_verified",
+        "immutable_output"
+      ],
+      "properties": {
+        "builder_symbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "builder_code_path": {
+          "type": "string",
+          "pattern": "^(quant_crypto|scripts)/"
+        },
+        "builder_code_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_head": {
+          "$ref": "#/$defs/gitSha"
+        },
+        "target_path": {
+          "type": "string",
+          "pattern": "^artifacts/"
+        },
+        "target_status": {
+          "enum": [
+            "declared_not_built",
+            "built_staged"
+          ]
+        },
+        "output_sha256": {
+          "oneOf": [
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/sha256"
+            }
+          ]
+        },
+        "output_hash_verified": {
+          "type": "boolean"
+        },
+        "immutable_output": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "target_status": {
+                "const": "declared_not_built"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "output_sha256": {"const": ""},
+              "output_hash_verified": {"const": false},
+              "immutable_output": {"const": false}
+            }
+          },
+          "else": {
+            "properties": {
+              "output_sha256": {"$ref": "#/$defs/sha256"},
+              "output_hash_verified": {"const": true},
+              "immutable_output": {"const": true}
+            }
+          }
+        }
+      ]
+    },
+    "domainBuilder": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/builderBase"
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "domain_read_model"
+            },
+            "builder_symbol": {
+              "const": "build_btc_domain_read_model"
+            },
+            "target_path": {
+              "const": "artifacts/btc_domain_read_model/latest/btc_domain_read_model.json"
+            }
+          }
+        }
+      ]
+    },
+    "promotionBuilder": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/builderBase"
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "promotion_evidence"
+            },
+            "builder_symbol": {
+              "const": "_promotion_evidence"
+            },
+            "target_path": {
+              "const": "artifacts/btc_next_stage_promotion_evidence/latest/btc_next_stage_promotion_evidence.json"
+            }
+          }
+        }
+      ]
+    },
+    "gateBuilder": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/builderBase"
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "gate_decision"
+            },
+            "builder_symbol": {
+              "const": "_gate_decision"
+            },
+            "target_path": {
+              "const": "artifacts/btc_next_stage_promotion_gate/latest/btc_next_stage_promotion_gate_report.json"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

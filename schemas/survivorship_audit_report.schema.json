@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/survivorship_audit_report.schema.json",
+  "title": "US Equity Survivorship Audit Report Filename Compatibility Schema",
+  "type": "object",
+  "required": ["schema_version", "survivorship_status", "promotion_clean", "historical_membership_available", "delisted_symbols_included", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_survivorship_audit_report_v1"},
+    "survivorship_status": {"type": "string", "minLength": 1},
+    "promotion_clean": {"type": "boolean"},
+    "historical_membership_available": {"type": "boolean"},
+    "delisted_symbols_included": {"type": "boolean"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_fee_tier_overlay.schema.json",
+  "title": "QuantStation VNEXT BTC Fee Tier Overlay",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "symbol",
+    "market_type",
+    "maker_fee_bps",
+    "taker_fee_bps",
+    "source",
+    "source_url_or_doc",
+    "captured_at",
+    "api_key_used",
+    "private_endpoint_used",
+    "auth_headers_used"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_fee_tier_overlay_v1"},
+    "symbol": {"const": "BTCUSDT"},
+    "market_type": {"const": "usds_m_perpetual"},
+    "maker_fee_bps": {"type": "number", "minimum": 0},
+    "taker_fee_bps": {"type": "number", "minimum": 0},
+    "source": {
+      "enum": [
+        "manual_public_binance_usdm_fee_schedule",
+        "manual_public_okx_swap_fee_schedule"
+      ]
+    },
+    "source_url_or_doc": {"type": "string", "pattern": "\\S"},
+    "captured_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "api_key_used": {"const": false},
+    "private_endpoint_used": {"const": false},
+    "auth_headers_used": {"const": false}
+  },
+  "additionalProperties": false
+}

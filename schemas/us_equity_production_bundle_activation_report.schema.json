@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_production_bundle_activation_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Production Bundle Activation Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "status",
+    "asset",
+    "bundle_id",
+    "bundle_root",
+    "bundle_manifest_path",
+    "candidate_config_path",
+    "candidate_config_patch",
+    "checks",
+    "preflight_summary",
+    "provider_verification_summary",
+    "manual_apply_commands",
+    "validation_commands_after_apply",
+    "blockers",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_production_bundle_activation_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "status": {"enum": ["activation_ready_for_manual_config_apply", "activation_blocked"]},
+    "asset": {"const": "us_equity"},
+    "bundle_id": {"type": ["string", "null"]},
+    "bundle_root": {"type": "string", "minLength": 1},
+    "bundle_manifest_path": {"type": "string", "minLength": 1},
+    "candidate_config_path": {"type": "string", "minLength": 1},
+    "candidate_config_patch": {"type": "string", "minLength": 1},
+    "checks": {
+      "type": "object",
+      "required": [
+        "bundle_id",
+        "bundle_exists",
+        "manifest",
+        "manual_license_review",
+        "preflight",
+        "provider_verification"
+      ],
+      "additionalProperties": {"type": "object"}
+    },
+    "preflight_summary": {
+      "type": "object",
+      "required": [
+        "production_bundle_preflight_pass",
+        "selected_bundle_id",
+        "selected_bundle_source_type",
+        "blockers"
+      ],
+      "properties": {
+        "production_bundle_preflight_pass": {"type": "boolean"},
+        "selected_bundle_id": {"type": ["string", "null"]},
+        "selected_bundle_source_type": {"enum": ["fixture", "sample", "production", "unknown", null]},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "provider_verification_summary": {
+      "type": "object",
+      "required": [
+        "selected_provider",
+        "source_type",
+        "promotion_clean",
+        "data_lineage_grade_candidate",
+        "blockers"
+      ],
+      "properties": {
+        "selected_provider": {"enum": ["yfinance", "local_csv", "crsp", "sharadar", "polygon", "norgate", "none"]},
+        "source_type": {"enum": ["fixture", "sample", "production", "research_price_bars", "none"]},
+        "promotion_clean": {"type": "boolean"},
+        "data_lineage_grade_candidate": {
+          "enum": ["L0_fixture", "L1_sample_non_pit", "L2_static_snapshot", "L3_point_in_time_universe", "L4_promotion_clean"]
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "manual_apply_commands": {"type": "array", "items": {"type": "string"}},
+    "validation_commands_after_apply": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "activation_report_only",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "activation_report_only": {"const": true},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

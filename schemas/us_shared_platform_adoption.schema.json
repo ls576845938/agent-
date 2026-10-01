@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "us_shared_platform_adoption.schema.json",
+  "title": "US Shared Platform Adoption Contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "goal_id",
+    "domain_id",
+    "shared_platform_version",
+    "adapter_module",
+    "domain_owned_semantics",
+    "shared_capabilities",
+    "migration_matrix",
+    "deferred_breaking_cleanup",
+    "safety"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_shared_platform_adoption_v1"},
+    "goal_id": {"const": "US-V3-SHARED-ADOPTION-01"},
+    "domain_id": {"const": "us_equity"},
+    "shared_platform_version": {"const": "shared_platform_v2"},
+    "adapter_module": {"const": "quant_us.compat.shared_platform"},
+    "domain_owned_semantics": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "us_trading_calendar",
+          "pit_visibility",
+          "corporate_actions",
+          "broker_lifecycle"
+        ]
+      }
+    },
+    "shared_capabilities": {
+      "type": "object",
+      "required": [
+        "utc",
+        "identity",
+        "serialization",
+        "evidence",
+        "ledger",
+        "replay",
+        "read_model"
+      ],
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "migration_matrix": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "type": "object",
+        "required": [
+          "legacy_symbol",
+          "shared_replacement",
+          "us_wrapper",
+          "btc_dependents",
+          "final_deletion_condition"
+        ],
+        "properties": {
+          "legacy_symbol": {"type": "string", "minLength": 1},
+          "shared_replacement": {"type": ["string", "null"]},
+          "us_wrapper": {"type": "string", "minLength": 1},
+          "btc_dependents": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "final_deletion_condition": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "deferred_breaking_cleanup": {
+      "type": "object",
+      "required": [
+        "required",
+        "status",
+        "owner",
+        "ticket_condition",
+        "btc_contract_module",
+        "completion_handoff"
+      ],
+      "properties": {
+        "required": {"const": false},
+        "status": {"const": "completed"},
+        "owner": {"const": "integrator"},
+        "ticket_condition": {"type": "string", "minLength": 1},
+        "btc_contract_module": {
+          "const": "quant_crypto.trading_contracts"
+        },
+        "completion_handoff": {
+          "const": "published-btc-v3-current-main-forwardport-successor-05-8adf033a2"
+        }
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "minProperties": 7,
+      "additionalProperties": {"const": false}
+    }
+  },
+  "additionalProperties": false
+}

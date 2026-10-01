@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_manual_stop_reset_drill_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Manual Stop Reset Drill Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "event_count",
+    "checklist_count",
+    "incident_review_field_count",
+    "events",
+    "reset_checklist",
+    "incident_review",
+    "blockers",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_manual_stop_reset_drill_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["manual_stop_reset_blocked", "manual_stop_reset_proven"]},
+    "allowed_statuses": {
+      "type": "array",
+      "items": {"enum": ["manual_stop_reset_blocked", "manual_stop_reset_proven"]},
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "event_count": {"const": 4},
+    "checklist_count": {"const": 6},
+    "incident_review_field_count": {"const": 8},
+    "events": {"type": "array", "minItems": 4},
+    "reset_checklist": {"type": "array", "minItems": 6},
+    "incident_review": {
+      "type": "object",
+      "required": [
+        "timeline",
+        "impact_scope",
+        "direct_cause",
+        "root_cause",
+        "gate_that_failed_to_block",
+        "remediation",
+        "regression_test",
+        "pause_or_retire_decision"
+      ],
+      "additionalProperties": {"type": "string"}
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "evidence_only",
+        "simulated_stop_only",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_calls_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "evidence_only": {"const": true},
+        "simulated_stop_only": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

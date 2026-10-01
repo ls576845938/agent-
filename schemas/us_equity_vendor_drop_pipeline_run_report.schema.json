@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_vendor_drop_pipeline_run_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Vendor Drop Pipeline Run Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "allowed_statuses",
+    "decision",
+    "source_dir",
+    "bundle_id",
+    "sample_start",
+    "sample_end",
+    "license_reviewed",
+    "current_blocking_step",
+    "steps",
+    "blockers",
+    "unsafe_flags",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_vendor_drop_pipeline_run_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": [
+        "vendor_drop_pipeline_blocked",
+        "vendor_drop_pipeline_ready_for_manual_config_review"
+      ]
+    },
+    "allowed_statuses": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "vendor_drop_pipeline_blocked",
+          "vendor_drop_pipeline_ready_for_manual_config_review"
+        ]
+      }
+    },
+    "decision": {"type": "string", "minLength": 1},
+    "source_dir": {"type": "string", "minLength": 1},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "sample_start": {"type": "string", "minLength": 1},
+    "sample_end": {"type": "string", "minLength": 1},
+    "license_reviewed": {"type": "boolean"},
+    "current_blocking_step": {"type": "string", "minLength": 1},
+    "steps": {
+      "type": "array",
+      "minItems": 7,
+      "items": {"$ref": "#/$defs/step"}
+    },
+    "blockers": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "unsafe_flags": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "vendor_drop_pipeline_only",
+        "source_vendor_data_modified",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "vendor_drop_pipeline_only": {"const": true},
+        "source_vendor_data_modified": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["step_id", "status", "passed", "blockers", "payload"],
+      "properties": {
+        "step_id": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1},
+        "passed": {"type": "boolean"},
+        "blockers": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "skipped_due_to_step_id": {"type": "string"},
+        "skipped_due_to_status": {"type": "string"},
+        "payload": {"type": "object"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

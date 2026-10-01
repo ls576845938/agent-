@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_production_bundle_scaffold_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Production Bundle Scaffold Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "asset",
+    "bundle_id",
+    "scaffold_dir",
+    "required_tables",
+    "manifest_template",
+    "provider_config_patch",
+    "readme",
+    "activation_steps",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_production_bundle_scaffold_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"const": "template_ready_not_provider_evidence"},
+    "asset": {"const": "us_equity"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "scaffold_dir": {"type": "string", "minLength": 1},
+    "required_tables": {
+      "type": "array",
+      "prefixItems": [
+        {"$ref": "#/$defs/table"},
+        {"$ref": "#/$defs/table"},
+        {"$ref": "#/$defs/table"},
+        {"$ref": "#/$defs/table"},
+        {"$ref": "#/$defs/table"},
+        {"$ref": "#/$defs/table"}
+      ],
+      "minItems": 6,
+      "maxItems": 6
+    },
+    "manifest_template": {"type": "string", "pattern": "provider_bundle_manifest\\.template\\.json$"},
+    "provider_config_patch": {"type": "string", "pattern": "us_equity_provider_sources\\.patch\\.yaml$"},
+    "readme": {"type": "string", "pattern": "README\\.md$"},
+    "activation_steps": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "contains": {"type": "string", "pattern": "Replace template CSVs with licensed provider data"}
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "template_contains_vendor_data",
+        "template_is_not_provider_evidence",
+        "promotion_clean_granted_by_this_report",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed"
+      ],
+      "properties": {
+        "template_contains_vendor_data": {"const": false},
+        "template_is_not_provider_evidence": {"const": true},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "table": {
+      "type": "object",
+      "required": ["table", "filename", "template_path", "required_fields"],
+      "properties": {
+        "table": {
+          "enum": [
+            "universe_membership_events",
+            "delisted_symbols",
+            "corporate_actions",
+            "symbol_mapping",
+            "adjustment_replay",
+            "macro_release_calendar"
+          ]
+        },
+        "filename": {"type": "string", "pattern": "\\.csv$"},
+        "template_path": {"type": "string", "pattern": "\\.csv$"},
+        "required_fields": {"type": "array", "items": {"type": "string"}, "minItems": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

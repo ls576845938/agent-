@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "us_equity_current_head_gate_rebuild.schema.json",
+  "title": "US Equity Current-HEAD Gate Rebuild Receipt",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at_utc",
+    "source_head",
+    "run_id",
+    "status",
+    "wrapper_status",
+    "decision",
+    "step_order",
+    "validation_checks",
+    "outputs",
+    "artifact_health",
+    "blocker_taxonomy",
+    "blockers",
+    "run_manifest",
+    "quality_checked",
+    "research_ready",
+    "backtest_ready",
+    "promotion_evidence_ready",
+    "safety"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "us_equity_current_head_gate_rebuild_v1"
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "complete_blocked"
+      ]
+    },
+    "wrapper_status": {
+      "const": "success"
+    },
+    "decision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_order": {
+      "type": "array",
+      "minItems": 15,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "validation_checks": {
+      "type": "object",
+      "required": [
+        "single_writer_lock_held",
+        "required_primary_order_preserved",
+        "final_completion_chain_refreshed",
+        "all_output_schemas_valid",
+        "all_outputs_current_head",
+        "all_output_hashes_verified",
+        "all_declared_input_hashes_verified",
+        "all_safety_flags_false",
+        "paper_ledger_written",
+        "network_or_secret_used"
+      ],
+      "properties": {
+        "single_writer_lock_held": {
+          "const": true
+        },
+        "required_primary_order_preserved": {
+          "const": true
+        },
+        "final_completion_chain_refreshed": {
+          "const": true
+        },
+        "all_output_schemas_valid": {
+          "const": true
+        },
+        "all_outputs_current_head": {
+          "const": true
+        },
+        "all_output_hashes_verified": {
+          "const": true
+        },
+        "all_declared_input_hashes_verified": {
+          "const": true
+        },
+        "all_safety_flags_false": {
+          "const": true
+        },
+        "paper_ledger_written": {
+          "const": false
+        },
+        "network_or_secret_used": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "minProperties": 12,
+      "additionalProperties": {
+        "$ref": "#/$defs/output"
+      }
+    },
+    "artifact_health": {
+      "type": "object",
+      "minProperties": 12,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "freshness",
+          "blockers",
+          "decision"
+        ],
+        "properties": {
+          "freshness": {
+            "const": "current_head"
+          },
+          "blockers": {
+            "type": "array",
+            "maxItems": 0
+          },
+          "decision": {
+            "const": "consume_blocked_artifact"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "blocker_taxonomy": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "root_blockers",
+        "derived_references",
+        "root_blocker_count",
+        "derived_reference_count"
+      ]
+    },
+    "blockers": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "string"
+      }
+    },
+    "run_manifest": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^[^\\\\]+$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "quality_checked": {
+      "const": true
+    },
+    "research_ready": {
+      "const": false
+    },
+    "backtest_ready": {
+      "const": false
+    },
+    "promotion_evidence_ready": {
+      "const": false
+    },
+    "safety": {
+      "$ref": "#/$defs/safety"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "output": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "schema_path",
+        "source_head",
+        "generated_at_utc",
+        "decision",
+        "blocker_count",
+        "input_hashes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^[^\\\\]+$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "schema_path": {
+          "type": "string",
+          "pattern": "^[^\\\\]+$"
+        },
+        "source_head": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "generated_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "decision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blocker_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "input_hashes": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "minProperties": 16,
+      "additionalProperties": {
+        "const": false
+      }
+    }
+  }
+}

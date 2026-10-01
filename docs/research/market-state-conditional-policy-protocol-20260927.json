@@ -1,0 +1,88 @@
+{
+  "schema_version": "market_state_conditional_policy_protocol_v1",
+  "protocol_id": "donchian-stage-market-state-v2-20260927",
+  "status": "frozen_before_diagnostic",
+  "purpose": "exploratory_state_description_and_precommitted_entry_policy_design",
+  "source": {
+    "stage_snapshot": ".agent/offline_evidence/donchian-stage-20260921.json",
+    "stage_source_head": "897d5e99ebe4c898f71ac66cf33fb2d2420855d5",
+    "manifest_git_spec": "02e85c7e035cf9fdd8becc8ea110c1bffef57964:.agent/data_manifests/donchian-long-input/donchian-long-input-20260921-v2.json",
+    "manifest_sha256": "349bd130a769796a71877f48ab7aa597338303ece8b124d4b9e23a3759e3993d",
+    "aggregate_sha256": "62bed3a6efa945d8fa4f52917667dc44a276add7ed280bb45085ef52950d10af"
+  },
+  "window": {
+    "warmup_start_utc": "2025-02-13T00:00:00+00:00",
+    "analysis_start_utc": "2025-09-01T00:00:00+00:00",
+    "analysis_end_exclusive_utc": "2026-01-02T08:00:00+00:00",
+    "expected_analysis_bars": 2960,
+    "bar_size": "1h",
+    "calendar": "UTC_24x7"
+  },
+  "state_definition": {
+    "definition_version": "market_state_descriptive_v2",
+    "horizons": [24, 72, 168],
+    "primary_horizon": 72,
+    "volatility_history_bars": 720,
+    "state_history_bars": 72,
+    "minimum_history_observations": 24,
+    "periods_per_year": 8760,
+    "max_age_seconds": 3600,
+    "labels": {
+      "low": "path_efficiency_72h < 0.20",
+      "mixed": "0.20 <= path_efficiency_72h < 0.40",
+      "directional": "path_efficiency_72h >= 0.40"
+    },
+    "label_role": "description_only_not_fitted_from_returns"
+  },
+  "entry_policy_hypothesis": {
+    "policy_version": "entry_path_efficiency_72h_v1",
+    "enabled_in_current_runtime": false,
+    "rule": "when_flat_and_original_target_nonzero_reject_new_entry_if_state_unknown_or_path_efficiency_72h_below_0.20",
+    "non_interference": [
+      "existing_position",
+      "reduce",
+      "exit",
+      "reverse_to_close",
+      "protection"
+    ]
+  },
+  "joins": {
+    "entry": "roundtrip.open_fill_id -> exactly one decision_links.fill_ids member -> exact decision_links.event_time_utc",
+    "state": "decision event_time equals source bar event_time; state cutoff is that bar available_time",
+    "nearest_time_matching_allowed": false,
+    "protective_fill_as_strategy_signal_allowed": false
+  },
+  "diagnostic_metrics": {
+    "sample_units": ["bars", "roundtrips", "contiguous_state_segments"],
+    "trade_group_economics": "price_pnl_usdt_minus_fees_usdt",
+    "funding_group_allocation": null,
+    "funding_total_only_usdt": "-0.012403344923245647991",
+    "donchian_prediction_ic": "not_applicable"
+  },
+  "ab_budget_not_started": {
+    "arms": ["original_donchian", "original_donchian_plus_frozen_entry_policy"],
+    "fixed_replays": 2,
+    "training_runs": 0,
+    "parameter_searches": 0,
+    "window": "same_2960_hour_stage_window_with_same_warmup_data_cost_time_and_base_strategy",
+    "primary_outputs": [
+      "new_entries_rejected",
+      "roundtrips",
+      "price_pnl_minus_fees_usdt",
+      "drawdown_if_ledger_replay_exposes_it",
+      "state_coverage",
+      "exit_and_protection_non_interference"
+    ],
+    "stop_rule": "report_once_without_threshold_or_window_changes",
+    "interpretation": "exploratory_only; 28 observed roundtrips cannot support a promotion claim"
+  },
+  "forbidden": [
+    "model_training",
+    "hmm_or_regime_model",
+    "threshold_search",
+    "window_selection_by_return",
+    "annual_replay_resume",
+    "trade_or_account_access",
+    "promotion_paper_or_live_unlock"
+  ]
+}

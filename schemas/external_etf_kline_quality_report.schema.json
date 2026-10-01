@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/external_etf_kline_quality_report.schema.json",
+  "title": "QuantStation VNEXT External ETF Kline Quality Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "data_lake",
+    "threshold_abs_daily_return",
+    "max_gap_days_for_split_adjustment",
+    "status",
+    "promotion_clean",
+    "symbols",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "external_etf_kline_quality_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "data_lake": {"type": "string", "minLength": 1},
+    "threshold_abs_daily_return": {"type": "number", "exclusiveMinimum": 0},
+    "max_gap_days_for_split_adjustment": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["pass", "partial", "blocked"]},
+    "promotion_clean": {"type": "boolean"},
+    "symbols": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/symbol_quality"}
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "symbol_quality": {
+      "type": "object",
+      "required": [
+        "status",
+        "backup",
+        "repair_source",
+        "raw_source_quality",
+        "before",
+        "after",
+        "split_adjustment_events",
+        "blockers"
+      ],
+      "properties": {
+        "status": {"enum": ["pass", "partial", "blocked"]},
+        "backup": {"type": "string", "minLength": 1},
+        "repair_source": {"type": "string", "minLength": 1},
+        "raw_source_quality": {"$ref": "#/$defs/quality_stats"},
+        "before": {"$ref": "#/$defs/quality_stats"},
+        "after": {"$ref": "#/$defs/quality_stats"},
+        "split_adjustment_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["effective_date", "previous_date", "raw_return", "back_adjust_factor"],
+            "properties": {
+              "effective_date": {"type": "string", "minLength": 1},
+              "previous_date": {"type": "string", "minLength": 1},
+              "raw_return": {"type": "number"},
+              "back_adjust_factor": {"type": "number"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "quality_stats": {
+      "type": "object",
+      "required": [
+        "rows",
+        "start",
+        "end",
+        "nonpositive_ohlc_rows",
+        "abs_ret_gt_threshold",
+        "short_gap_abs_ret_gt_threshold",
+        "long_gap_abs_ret_gt_threshold",
+        "large_calendar_gaps_gt_10d",
+        "max_abs_return"
+      ],
+      "properties": {
+        "rows": {"type": "integer", "minimum": 0},
+        "start": {"type": ["string", "null"]},
+        "end": {"type": ["string", "null"]},
+        "nonpositive_ohlc_rows": {"type": "integer", "minimum": 0},
+        "abs_ret_gt_threshold": {"type": "integer", "minimum": 0},
+        "short_gap_abs_ret_gt_threshold": {"type": "integer", "minimum": 0},
+        "long_gap_abs_ret_gt_threshold": {"type": "integer", "minimum": 0},
+        "large_calendar_gaps_gt_10d": {"type": "integer", "minimum": 0},
+        "max_abs_return": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  }
+}

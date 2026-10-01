@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_pit_source_coverage_report.schema.json",
+  "title": "QuantStation VNEXT US Equity PIT Source Coverage Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "decision",
+    "summary",
+    "sources",
+    "pit_file_coverage",
+    "usable_now",
+    "still_required",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_pit_source_coverage_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["source_coverage_pit_ready", "source_coverage_partial_not_pit_clean"]},
+    "decision": {"const": "do_not_mark_production_pit_clean_from_price_or_macro_cache_only"},
+    "summary": {
+      "type": "object",
+      "required": [
+        "required_file_count",
+        "satisfied_count",
+        "partial_count",
+        "missing_count",
+        "paper_or_live_unlock_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "required_file_count": {"type": "integer", "minimum": 1},
+        "satisfied_count": {"type": "integer", "minimum": 0},
+        "partial_count": {"type": "integer", "minimum": 0},
+        "missing_count": {"type": "integer", "minimum": 0},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
+    "pit_file_coverage": {"type": "array", "minItems": 6, "items": {"$ref": "#/$defs/coverage"}},
+    "usable_now": {"type": "array", "items": {"type": "string"}},
+    "still_required": {"type": "array", "items": {"type": "string"}},
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "assessment_only",
+        "files_copied",
+        "vendor_data_imported",
+        "strategy_parameters_mutated",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "assessment_only": {"const": true},
+        "files_copied": {"const": false},
+        "vendor_data_imported": {"const": false},
+        "strategy_parameters_mutated": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["source_id", "source_type", "path", "exists", "sample_files", "sample_columns"],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "source_type": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "exists": {"type": "boolean"},
+        "sample_files": {"type": "array", "items": {"type": "string"}},
+        "sample_columns": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "filename",
+        "required_role",
+        "coverage_status",
+        "candidate_sources",
+        "reason",
+        "promotion_clean_satisfied"
+      ],
+      "properties": {
+        "filename": {"type": "string", "minLength": 1},
+        "required_role": {"type": "string", "minLength": 1},
+        "coverage_status": {"enum": ["satisfied", "partial", "missing"]},
+        "candidate_sources": {"type": "array", "items": {"type": "string"}},
+        "reason": {"type": "string", "minLength": 1},
+        "promotion_clean_satisfied": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  }
+}

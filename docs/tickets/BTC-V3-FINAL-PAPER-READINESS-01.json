@@ -1,0 +1,291 @@
+{
+  "schema_version": "btc_v3_final_paper_readiness_packet_v1",
+  "goal_id": "BTC-V3-FINAL-PAPER-READINESS-01",
+  "producer_role": "btc_developer",
+  "reviewed_source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+  "generated_at_utc": "2026-07-24T15:50:42Z",
+  "run_id": "btc-g11-final-readiness-3b7e096258f7",
+  "status": "blocked",
+  "decision": "blocked_fail_closed_no_paper_no_live",
+  "review_stopped_by_engineering_defect": true,
+  "readiness": {
+    "builder_quality_checked": true,
+    "final_review_quality_checked": false,
+    "research_ready": false,
+    "backtest_ready": false,
+    "promotion_evidence_ready": false,
+    "paper_enabled": false,
+    "live_enabled": false
+  },
+  "hard_prerequisites": [
+    {
+      "name": "current_main_integration",
+      "status": "satisfied",
+      "evidence": "integrated-btc-v3-observation-window-01-goal10-batch-01",
+      "validator": "handoff.py validate"
+    },
+    {
+      "name": "immutable_data_steward_manifest",
+      "status": "blocked",
+      "evidence": ".agent/runtime_manifests/btc-market-data-v1.json",
+      "validator": "runtime manifest inspection and SHA-256",
+      "reason": "mutable_runtime_storage_pointer_v1; immutable_snapshot_not_published; data_steward_attestation_required"
+    },
+    {
+      "name": "natural_30_60_day_window",
+      "status": "blocked",
+      "evidence": "docs/tickets/BTC-V3-OBSERVATION-WINDOW-01.md",
+      "validator": "btc_demo_observation_accumulator contract",
+      "reason": "awaiting_authorized_observation_runtime; natural time has not completed"
+    },
+    {
+      "name": "natural_non_flat_funding_depth_reconciliation_private_ws",
+      "status": "blocked",
+      "evidence": "artifacts/btc_current_head_gate_rebuild/latest/btc_current_head_gate_rebuild_report.json",
+      "validator": "current-HEAD evidence evaluator",
+      "reason": "natural non-flat, funding, timestamp-aligned L2 depth mapping and authorized private-WS reconciliation evidence are absent"
+    },
+    {
+      "name": "manual_approval",
+      "status": "blocked",
+      "evidence": "artifacts/btc_manual_paper_review_approval/latest/btc_manual_paper_review_approval_report.json",
+      "validator": "btc manual approval report contract",
+      "reason": "manual_promotion_approval_missing"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/btc_current_head_gate_rebuild/latest/btc_current_head_gate_rebuild_report.json",
+      "sha256": "fef36e86df0a7bf346fe12a3ecf8e33280b33b57f85caf9bc6ff90d5a84c0da8",
+      "schema_version": "btc_current_head_gate_rebuild_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "complete_blocked"
+    },
+    {
+      "path": "artifacts/btc_promotion_gate_control/latest/btc_promotion_gate_control_report.json",
+      "sha256": "8766dbcf333c689bf12e7f6164774dd869b9ccd5a4965d5837ce5a61385e8b88",
+      "schema_version": "btc_current_head_gate_decision_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "blocked"
+    },
+    {
+      "path": "artifacts/btc_perpetual_execution_evidence/latest/btc_perpetual_execution_evidence_report.json",
+      "sha256": "524fe390eb98f9a24f8a3f743e5feff5187d7106256c82961d2bee626a7a68fc",
+      "schema_version": "btc_perpetual_execution_evidence_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "blocked"
+    },
+    {
+      "path": "artifacts/btc_manual_paper_review_approval/latest/btc_manual_paper_review_approval_report.json",
+      "sha256": "945ee379cf5489b2f843ba3d53ee959856af73f6063bfecfcf5bc607d22749cc",
+      "schema_version": "btc_manual_paper_review_approval_report_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "blocked"
+    },
+    {
+      "path": "artifacts/btc_paper_candidate_packet/latest/btc_paper_candidate_packet_report.json",
+      "sha256": "627cc351c327c8f82e45385a37c7ce44a56e99a4c9e4ce05b59f6ac6ba3ec579",
+      "schema_version": "btc_paper_candidate_packet_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "blocked"
+    },
+    {
+      "path": "artifacts/btc_paper_readiness/latest/btc_paper_readiness_report.json",
+      "sha256": "55e098eb59624ce83121b8f67e934d829e10027d26b4ba371a9768af056ed7bd",
+      "schema_version": "btc_paper_readiness_report_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "blocked",
+      "contract_validation": "failed_schema_drift"
+    },
+    {
+      "path": "artifacts/btc_gate_dashboard/latest/btc_gate_dashboard.json",
+      "sha256": "b99a8c170715d1cf39c7f20d6321d435d6fc6d4c9779cf7f368e9f8f6429a025",
+      "schema_version": "btc_current_head_gate_dashboard_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "blocked"
+    },
+    {
+      "path": "artifacts/btc_gate_report_consistency/latest/btc_gate_report_consistency_report.json",
+      "sha256": "3817bad6a3dadea3e0e7c5542d66e4b8e6e52c03922d8a85c6078385d620cfc3",
+      "schema_version": "btc_gate_report_consistency_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "research_only"
+    },
+    {
+      "path": "artifacts/btc_domain_read_model/latest/btc_domain_read_model.json",
+      "sha256": "c968cb5b88954fa8813a97925652ec20b5ef51058c207c823b6b6a113fd9fce1",
+      "schema_version": "btc_domain_read_model_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "blocked"
+    },
+    {
+      "path": "artifacts/btc_gate_runs/btc-g11-final-readiness-3b7e096258f7/manifest.json",
+      "sha256": "dd2d849beca9b1896ea63cc2560af60d95f4447bce9748d8cf84501b1af435f6",
+      "schema_version": "btc_gate_run_snapshot_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "complete_immutable_gate_snapshot"
+    },
+    {
+      "path": "artifacts/btc_gate_runs/latest_pointer.json",
+      "sha256": "fa066e12e1836362d7cb7f805383041792a9b2a27a5b54b37172d51be68c786a",
+      "schema_version": "btc_gate_latest_pointer_v1",
+      "source_head": "3b7e096258f7df26aaf374c3ca2ca803a57d5053",
+      "status": "valid"
+    },
+    {
+      "path": ".agent/runtime_manifests/btc-market-data-v1.json",
+      "sha256": "98556852d41f443f54b263dd51e15602884b2f5ceb454d38c72beab41fcb899e",
+      "schema_version": "mutable_runtime_storage_pointer_v1",
+      "source_head": "",
+      "status": "awaiting_data_steward_publication"
+    },
+    {
+      "path": "artifacts/btc_okx_native_backtest_evidence/latest_manifest.json",
+      "sha256": "",
+      "schema_version": "",
+      "source_head": "",
+      "status": "missing"
+    }
+  ],
+  "blocker_retirement_table": [
+    {
+      "blocker": "btc_okx_native:promotion_evidence_current_head_rebuild_required",
+      "category": "engineering",
+      "owner": "btc_research",
+      "evidence": "artifacts/btc_okx_native_backtest_evidence/latest_manifest.json",
+      "validator": "authoritative OKX-native pointer validator",
+      "conclusion": "retained",
+      "next_executable_action": "publish_current_head_immutable_okx_backtest_manifest_and_evidence"
+    },
+    {
+      "blocker": "btc_okx_native:historical_timestamp_aligned_depth_fill_mapping_missing",
+      "category": "data_steward",
+      "owner": "data_steward",
+      "evidence": ".agent/runtime_manifests/btc-market-data-v1.json",
+      "validator": "immutable manifest and timestamp-aligned L2 attestation validator",
+      "conclusion": "retained",
+      "next_executable_action": "publish_timestamp_aligned_immutable_l2_manifest_then_rebuild"
+    },
+    {
+      "blocker": "btc_okx_native:natural_strategy_runtime_non_flat_fill_sample_missing",
+      "category": "natural_time",
+      "owner": "btc_observation",
+      "evidence": "artifacts/btc_perpetual_execution_evidence/latest/btc_perpetual_execution_evidence_report.json",
+      "validator": "current-HEAD evidence evaluator and audit DAG contract",
+      "conclusion": "retained",
+      "next_executable_action": "continue_observe_only_without_signal_or_threshold_changes"
+    },
+    {
+      "blocker": "btc_okx_native:funding_cashflow_not_observed_in_demo_runtime",
+      "category": "natural_time",
+      "owner": "btc_operations",
+      "evidence": "artifacts/btc_perpetual_execution_evidence/latest/btc_perpetual_execution_evidence_report.json",
+      "validator": "funding ledger observation contract",
+      "conclusion": "retained",
+      "next_executable_action": "observe_natural_funding_cashflow_only after separate runtime authorization"
+    },
+    {
+      "blocker": "btc_okx_native:private_ws_runtime_reconciliation_observation_incomplete",
+      "category": "manual_approval",
+      "owner": "btc_operations",
+      "evidence": "artifacts/btc_perpetual_execution_evidence/latest/btc_perpetual_execution_evidence_report.json",
+      "validator": "private-WS reconciliation evidence contract",
+      "conclusion": "retained",
+      "next_executable_action": "obtain separate private-WS observation authorization"
+    },
+    {
+      "blocker": "btc_okx_native:30_60_day_observation_window_incomplete",
+      "category": "natural_time",
+      "owner": "btc_observation",
+      "evidence": "docs/tickets/BTC-V3-OBSERVATION-WINDOW-01.md",
+      "validator": "btc_demo_observation_accumulator 30/60-day contract",
+      "conclusion": "retained",
+      "next_executable_action": "continue authorized natural-time observation until both windows complete"
+    },
+    {
+      "blocker": "btc_okx_native:manual_promotion_approval_missing",
+      "category": "manual_approval",
+      "owner": "architect/manual_reviewer",
+      "evidence": "artifacts/btc_manual_paper_review_approval/latest/btc_manual_paper_review_approval_report.json",
+      "validator": "manual approval observer contract",
+      "conclusion": "retained",
+      "next_executable_action": "review a complete current-HEAD packet after all prerequisite evidence exists"
+    },
+    {
+      "blocker": "btc_gate_aggregation_sparse_import_boundary_broken",
+      "category": "engineering",
+      "owner": "btc_developer",
+      "evidence": "docs/tickets/BTC-V3-GATE-AGGREGATION-SPARSE-IMPORT-01.md",
+      "validator": "import and collection smoke test in official BTC sparse worktree",
+      "conclusion": "retained",
+      "next_executable_action": "complete BTC-V3-GATE-AGGREGATION-SPARSE-IMPORT-01"
+    },
+    {
+      "blocker": "btc_paper_readiness_schema_drift",
+      "category": "engineering",
+      "owner": "btc_developer",
+      "evidence": "docs/tickets/BTC-V3-PAPER-READINESS-SCHEMA-DRIFT-01.md",
+      "validator": "tests/contracts/test_btc_paper_readiness_report.py",
+      "conclusion": "retained",
+      "next_executable_action": "complete BTC-V3-PAPER-READINESS-SCHEMA-DRIFT-01"
+    },
+    {
+      "blocker": "btc_gate_snapshot_windows_atomic_replace_flaky",
+      "category": "engineering",
+      "owner": "btc_developer",
+      "evidence": "docs/tickets/BTC-V3-GATE-SNAPSHOT-WINDOWS-ATOMICITY-01.md",
+      "validator": "tests/contracts/test_btc_gate_snapshot.py::test_concurrent_snapshot_publishers_never_create_a_mixed_batch",
+      "conclusion": "retained",
+      "next_executable_action": "complete BTC-V3-GATE-SNAPSHOT-WINDOWS-ATOMICITY-01"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_demo_observation_accumulator.py tests/contracts/test_btc_demo_manual_approval_observer.py --basetemp <unique> -p no:cacheprovider",
+      "result": "19 passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_gate_aggregation_chain.py --basetemp <unique> -p no:cacheprovider",
+      "result": "collection error: ModuleNotFoundError: No module named 'quant_us'"
+    },
+    {
+      "command": "py -3 scripts/build_btc_current_head_gate_rebuild.py --repo-root . --run-id btc-g11-final-readiness-3b7e096258f7",
+      "result": "exit 0; complete_blocked; blocked_fail_closed_no_paper_no_live"
+    },
+    {
+      "command": "py -3 -m pytest 13 BTC gate/observation/read-model contract modules --basetemp <unique> -p no:cacheprovider",
+      "result": "111 passed, 2 failed: paper-readiness schema drift and nondeterministic Windows latest-pointer atomic replace"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_btc_gate_snapshot.py::test_concurrent_snapshot_publishers_never_create_a_mixed_batch --basetemp <unique> -p no:cacheprovider",
+      "result": "1 passed on isolated diagnostic rerun; does not erase prior full-suite failure"
+    }
+  ],
+  "unclassified_blockers": [],
+  "schema_impact": {
+    "modified": false,
+    "finding": "BTC paper-readiness producer and tracked schema are incompatible; follow-up ticket required"
+  },
+  "safety": {
+    "promotion_allowed": false,
+    "paper_allowed": false,
+    "paper_enabled": false,
+    "paper_order_intake_allowed": false,
+    "paper_queue_write_allowed": false,
+    "live_allowed": false,
+    "live_enabled": false,
+    "live_unlock_allowed": false,
+    "private_endpoint_allowed": false,
+    "private_endpoint_used": false,
+    "order_endpoint_allowed": false,
+    "order_endpoint_used": false,
+    "oms_access_allowed": false,
+    "broker_access_allowed": false,
+    "demo_allowed": false,
+    "real_order_submitted": false,
+    "withdraw_allowed": false,
+    "network_collection_used": false,
+    "secret_read_used": false
+  },
+  "next_action": "Architect keeps gate blocked; schedule the three BTC engineering repair tickets, while external owners independently publish immutable data and authorized natural/manual evidence."
+}

@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_local_csv_production_bundle_import_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Local CSV Production Bundle Import Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "bundle_id",
+    "source_dir",
+    "target_bundle_root",
+    "source_provider",
+    "source_type",
+    "sample_start",
+    "sample_end",
+    "as_of_date",
+    "universe_name",
+    "price_data_reference",
+    "license_note_present",
+    "promotion_clean_allowed",
+    "copied_files",
+    "manifest_path",
+    "manifest_blockers",
+    "blockers",
+    "post_import_commands",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_local_csv_production_bundle_import_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["production_bundle_imported", "production_bundle_import_blocked"]},
+    "bundle_id": {"type": ["string", "null"]},
+    "source_dir": {"type": "string", "minLength": 1},
+    "target_bundle_root": {"type": "string", "minLength": 1},
+    "source_provider": {"enum": ["local_csv", "crsp", "sharadar", "polygon", "norgate", "other"]},
+    "source_type": {"const": "production"},
+    "sample_start": {"type": "string"},
+    "sample_end": {"type": "string"},
+    "as_of_date": {"type": "string"},
+    "universe_name": {"type": "string"},
+    "price_data_reference": {"type": "string"},
+    "license_note_present": {"type": "boolean"},
+    "promotion_clean_allowed": {"type": "boolean"},
+    "copied_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["table", "source", "target"],
+        "properties": {
+          "table": {"type": "string"},
+          "source": {"type": "string"},
+          "target": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "manifest_path": {"type": ["string", "null"]},
+    "manifest_blockers": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "post_import_commands": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "import_only",
+        "missing_pit_evidence_synthesized",
+        "source_vendor_data_modified",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "import_only": {"const": true},
+        "missing_pit_evidence_synthesized": {"const": false},
+        "source_vendor_data_modified": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "production_bundle_imported"}}},
+      "then": {
+        "properties": {
+          "blockers": {"maxItems": 0},
+          "manifest_blockers": {"maxItems": 0},
+          "license_note_present": {"const": true},
+          "promotion_clean_allowed": {"const": true},
+          "manifest_path": {"type": "string", "minLength": 1},
+          "copied_files": {"minItems": 6}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "production_bundle_import_blocked"}}},
+      "then": {
+        "properties": {
+          "copied_files": {"maxItems": 0}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

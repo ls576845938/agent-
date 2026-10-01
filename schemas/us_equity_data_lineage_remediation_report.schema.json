@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_data_lineage_remediation_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Data Lineage Remediation Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "asset",
+    "data_status_report",
+    "provider_verification_report",
+    "production_bundle_preflight_report",
+    "current_evidence",
+    "data_lineage_maturity",
+    "blockers",
+    "remediation_groups",
+    "remediation_task_count",
+    "next_actions",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_data_lineage_remediation_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {"enum": ["remediation_required", "remediation_not_required", "blocked_missing_data_status"]},
+    "asset": {"const": "us_equity"},
+    "data_status_report": {"type": "string"},
+    "provider_verification_report": {"type": "string"},
+    "production_bundle_preflight_report": {"type": "string"},
+    "current_evidence": {
+      "type": "object",
+      "required": [
+        "data_status",
+        "selected_provider",
+        "provider_promotion_clean",
+        "production_bundle_preflight_blockers",
+        "tiingo_eod_status",
+        "tiingo_source_type",
+        "tiingo_symbol_count",
+        "fred_macro_status",
+        "fred_latest_common_date",
+        "fred_token_written_to_artifacts",
+        "freshness_status",
+        "macro_release_lag_policy_status",
+        "macro_lag_days",
+        "macro_release_calendar_fields_present",
+        "provider_macro_release_calendar_available",
+        "price_data_available",
+        "promotion_clean"
+      ],
+      "properties": {
+        "data_status": {"type": ["string", "null"]},
+        "selected_provider": {"type": ["string", "null"]},
+        "provider_promotion_clean": {"type": "boolean"},
+        "production_bundle_preflight_blockers": {"type": "array", "items": {"type": "string"}},
+        "tiingo_eod_status": {"type": ["string", "null"]},
+        "tiingo_source_type": {"type": ["string", "null"]},
+        "tiingo_symbol_count": {"type": ["integer", "number", "null"], "minimum": 0},
+        "fred_macro_status": {"type": ["string", "null"]},
+        "fred_latest_common_date": {"type": ["string", "null"]},
+        "fred_token_written_to_artifacts": {"type": "boolean"},
+        "freshness_status": {"type": ["string", "null"]},
+        "macro_release_lag_policy_status": {"type": ["string", "null"]},
+        "macro_lag_days": {"type": ["integer", "number", "null"]},
+        "macro_release_calendar_fields_present": {"type": ["boolean", "null"]},
+        "provider_macro_release_calendar_available": {"type": "boolean"},
+        "price_data_available": {"type": "boolean"},
+        "promotion_clean": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "data_lineage_maturity": {"type": "object", "additionalProperties": true},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "remediation_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["group_id", "status", "matched_blockers", "accepted_evidence", "paper_or_live_unlock_allowed"],
+        "properties": {
+          "group_id": {
+            "enum": [
+              "point_in_time_universe",
+              "corporate_actions_and_adjustments",
+              "delisting_and_survivorship",
+              "provider_and_identifier_lineage",
+              "macro_release_lag"
+            ]
+          },
+          "status": {"const": "required"},
+          "matched_blockers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "accepted_evidence": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "paper_or_live_unlock_allowed": {"const": false}
+        },
+        "additionalProperties": false
+      }
+    },
+    "remediation_task_count": {"type": "integer", "minimum": 0},
+    "next_actions": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "remediation_report_is_not_data_fix",
+        "promotion_clean_granted_by_this_report",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "do_not_infer_alpha_validity"
+      ],
+      "properties": {
+        "remediation_report_is_not_data_fix": {"const": true},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "do_not_infer_alpha_validity": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

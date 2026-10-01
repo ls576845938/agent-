@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_ws_latency_queue_diagnostics_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "venue_symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_reports",
+    "source_files",
+    "selected_bundle_dir",
+    "capture_summary",
+    "receive_latency_proxy",
+    "visible_queue_proxy",
+    "validation",
+    "blockers",
+    "proxy_diagnostics_ready",
+    "contract_satisfied",
+    "event_ledger_feature_validation_allowed",
+    "execution_latency_model_ready",
+    "queue_model_ready",
+    "true_scalping_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_ws_latency_queue_diagnostics_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "venue_symbol": {"const": "BTC-USDT-SWAP"},
+    "scope": {"const": "research_only_ws_receive_latency_visible_queue_proxy_no_candidate_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "ws_latency_queue_proxy_ready_research_only_execution_latency_history_insufficient",
+        "ws_latency_queue_proxy_missing_or_invalid_research_only"
+      ]
+    },
+    "decision": {"const": "continue_long_public_ws_l2_capture_and_keep_execution_latency_queue_unlocked_false"},
+    "next_required_action": {"type": "string"},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ws_capture_report", "ws_order_book_replay_report"],
+      "properties": {
+        "ws_capture_report": {"type": ["string", "null"]},
+        "ws_order_book_replay_report": {"type": ["string", "null"]}
+      }
+    },
+    "source_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw_messages", "raw_capture_manifest"],
+      "properties": {
+        "raw_messages": {"$ref": "#/$defs/sourceFile"},
+        "raw_capture_manifest": {"$ref": "#/$defs/sourceFile"}
+      }
+    },
+    "selected_bundle_dir": {"type": "string"},
+    "capture_summary": {"$ref": "#/$defs/captureSummary"},
+    "receive_latency_proxy": {"$ref": "#/$defs/receiveLatencyProxy"},
+    "visible_queue_proxy": {"$ref": "#/$defs/visibleQueueProxy"},
+    "validation": {"$ref": "#/$defs/validation"},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "proxy_diagnostics_ready": {"type": "boolean"},
+    "contract_satisfied": {"const": false},
+    "event_ledger_feature_validation_allowed": {"const": false},
+    "execution_latency_model_ready": {"const": false},
+    "queue_model_ready": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "guardrails": {"$ref": "#/$defs/guardrails"}
+  },
+  "$defs": {
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "exists", "row_count"],
+      "properties": {
+        "path": {"type": ["string", "null"]},
+        "exists": {"type": "boolean"},
+        "row_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "captureSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capture_duration_seconds",
+        "event_ledger_history_days",
+        "message_count",
+        "data_message_count",
+        "connection_count",
+        "forced_reconnect_count"
+      ],
+      "properties": {
+        "capture_duration_seconds": {"type": "number", "minimum": 0},
+        "event_ledger_history_days": {"type": "number", "minimum": 0},
+        "message_count": {"type": "integer", "minimum": 0},
+        "data_message_count": {"type": "integer", "minimum": 0},
+        "connection_count": {"type": "integer", "minimum": 0},
+        "forced_reconnect_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "receiveLatencyProxy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proxy_id",
+        "proxy_scope",
+        "sample_count",
+        "book_sample_count",
+        "trade_sample_count",
+        "negative_clock_delta_count",
+        "clock_precision_warning",
+        "receive_clock_delta_ms",
+        "sample_preview",
+        "limitations"
+      ],
+      "properties": {
+        "proxy_id": {"const": "btc_okx_public_ws_receive_latency_proxy_v1"},
+        "proxy_scope": {"const": "public_ws_market_data_receive_clock_delta_not_order_execution_latency"},
+        "sample_count": {"type": "integer", "minimum": 0},
+        "book_sample_count": {"type": "integer", "minimum": 0},
+        "trade_sample_count": {"type": "integer", "minimum": 0},
+        "negative_clock_delta_count": {"type": "integer", "minimum": 0},
+        "clock_precision_warning": {"type": "boolean"},
+        "receive_clock_delta_ms": {"$ref": "#/$defs/stats"},
+        "sample_preview": {
+          "type": "array",
+          "items": {"type": "object", "additionalProperties": true}
+        },
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "visibleQueueProxy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proxy_id",
+        "proxy_scope",
+        "sample_count",
+        "best_bid_visible_queue_btc",
+        "best_ask_visible_queue_btc",
+        "spread_bps",
+        "maker_fill_assumption",
+        "taker_fill_assumption",
+        "sample_preview",
+        "limitations"
+      ],
+      "properties": {
+        "proxy_id": {"const": "btc_okx_public_ws_visible_queue_proxy_v1"},
+        "proxy_scope": {"const": "visible_book_depth_proxy_not_exchange_order_queue_position"},
+        "sample_count": {"type": "integer", "minimum": 0},
+        "best_bid_visible_queue_btc": {"$ref": "#/$defs/stats"},
+        "best_ask_visible_queue_btc": {"$ref": "#/$defs/stats"},
+        "spread_bps": {"$ref": "#/$defs/stats"},
+        "maker_fill_assumption": {"const": "join_back_of_visible_best_level_queue_research_only"},
+        "taker_fill_assumption": {"const": "cross_spread_and_pay_cost_model_research_only"},
+        "sample_preview": {
+          "type": "array",
+          "items": {"type": "object", "additionalProperties": true}
+        },
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max", "mean", "median"],
+      "properties": {
+        "min": {"type": ["number", "null"]},
+        "max": {"type": ["number", "null"]},
+        "mean": {"type": ["number", "null"]},
+        "median": {"type": ["number", "null"]}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw_capture_ready",
+        "replay_sequence_ready",
+        "public_source_boundary_satisfied",
+        "receive_latency_proxy_ready",
+        "receive_latency_proxy_is_execution_latency",
+        "visible_queue_proxy_ready",
+        "visible_queue_proxy_is_exchange_queue_position",
+        "minimum_research_capture_seconds_satisfied",
+        "minimum_event_ledger_history_days_satisfied",
+        "execution_latency_model_ready",
+        "queue_model_ready",
+        "proxy_diagnostics_ready"
+      ],
+      "properties": {
+        "raw_capture_ready": {"type": "boolean"},
+        "replay_sequence_ready": {"type": "boolean"},
+        "public_source_boundary_satisfied": {"type": "boolean"},
+        "receive_latency_proxy_ready": {"type": "boolean"},
+        "receive_latency_proxy_is_execution_latency": {"const": false},
+        "visible_queue_proxy_ready": {"type": "boolean"},
+        "visible_queue_proxy_is_exchange_queue_position": {"const": false},
+        "minimum_research_capture_seconds_satisfied": {"type": "boolean"},
+        "minimum_event_ledger_history_days_satisfied": {"type": "boolean"},
+        "execution_latency_model_ready": {"const": false},
+        "queue_model_ready": {"const": false},
+        "proxy_diagnostics_ready": {"type": "boolean"}
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "production_ready",
+        "paper_or_live_usable",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "broker_calls_allowed",
+        "real_orders_created",
+        "future_label_used_for_signal",
+        "lookahead_used_for_signal",
+        "paper_queue",
+        "live"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "production_ready": {"const": false},
+        "paper_or_live_usable": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "future_label_used_for_signal": {"const": false},
+        "lookahead_used_for_signal": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"}
+      }
+    }
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_intraday_short_cycle_research_candidate_definition_preflight.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "scope",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_reports",
+    "review_subject",
+    "checks",
+    "blockers",
+    "candidate_definition_blueprint",
+    "research_candidate_definition_manifest_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "true_scalping_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_intraday_short_cycle_research_candidate_definition_preflight_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "scope": {"const": "research_candidate_definition_preflight_no_strategy_skeleton_no_paper_no_live"},
+    "status": {
+      "enum": [
+        "blocked_manual_review_required",
+        "ready_for_research_candidate_definition_manifest",
+        "blocked_candidate_definition_preflight"
+      ]
+    },
+    "decision": {
+      "enum": [
+        "continue_research_manual_review_required",
+        "allow_research_candidate_definition_manifest_only",
+        "back_to_manual_review_or_promotion_gate_repair"
+      ]
+    },
+    "next_required_action": {"type": "string"},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manual_review_packet",
+        "promotion_gate",
+        "drift_guarded_event_ledger",
+        "canonical_backtest_report",
+        "cost_stress_report",
+        "walk_forward_report",
+        "regime_report",
+        "tail_dependency_report",
+        "run_manifest"
+      ],
+      "properties": {
+        "manual_review_packet": {"type": ["string", "null"]},
+        "promotion_gate": {"type": ["string", "null"]},
+        "drift_guarded_event_ledger": {"type": ["string", "null"]},
+        "canonical_backtest_report": {"type": ["string", "null"]},
+        "cost_stress_report": {"type": ["string", "null"]},
+        "walk_forward_report": {"type": ["string", "null"]},
+        "regime_report": {"type": ["string", "null"]},
+        "tail_dependency_report": {"type": ["string", "null"]},
+        "run_manifest": {"type": ["string", "null"]}
+      }
+    },
+    "review_subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy_id", "variant_id", "family_id", "metrics", "gate"],
+      "properties": {
+        "strategy_id": {"type": "string"},
+        "variant_id": {"type": "string"},
+        "family_id": {"type": "string"},
+        "metrics": {"type": "object"},
+        "gate": {"type": "object"}
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manual_review_packet_present",
+        "manual_review_packet_approved",
+        "recorded_manual_review_approved",
+        "research_candidate_definition_allowed_by_review",
+        "candidate_generation_still_locked",
+        "strategy_skeleton_still_locked",
+        "paper_live_still_locked",
+        "true_scalping_still_locked",
+        "review_scope_candidate_definition_only",
+        "broker_private_order_paths_locked",
+        "promotion_gate_manual_review_only",
+        "event_ledger_passed_internal_gate",
+        "pnl_from_fill_ledger_required",
+        "run_manifest_data_version_present",
+        "run_manifest_strategy_version_present",
+        "run_manifest_params_present",
+        "run_manifest_cost_model_present",
+        "run_manifest_slippage_model_present",
+        "run_manifest_commit_hash_present"
+      ],
+      "properties": {
+        "manual_review_packet_present": {"type": "boolean"},
+        "manual_review_packet_approved": {"type": "boolean"},
+        "recorded_manual_review_approved": {"type": "boolean"},
+        "research_candidate_definition_allowed_by_review": {"type": "boolean"},
+        "candidate_generation_still_locked": {"type": "boolean"},
+        "strategy_skeleton_still_locked": {"type": "boolean"},
+        "paper_live_still_locked": {"type": "boolean"},
+        "true_scalping_still_locked": {"type": "boolean"},
+        "review_scope_candidate_definition_only": {"type": "boolean"},
+        "broker_private_order_paths_locked": {"type": "boolean"},
+        "promotion_gate_manual_review_only": {"type": "boolean"},
+        "event_ledger_passed_internal_gate": {"type": "boolean"},
+        "pnl_from_fill_ledger_required": {"type": "boolean"},
+        "run_manifest_data_version_present": {"type": "boolean"},
+        "run_manifest_strategy_version_present": {"type": "boolean"},
+        "run_manifest_params_present": {"type": "boolean"},
+        "run_manifest_cost_model_present": {"type": "boolean"},
+        "run_manifest_slippage_model_present": {"type": "boolean"},
+        "run_manifest_commit_hash_present": {"type": "boolean"}
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "candidate_definition_blueprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "strategy_id",
+        "variant_id",
+        "definition_scope",
+        "source_run_id",
+        "source_strategy_version",
+        "source_data_version",
+        "params_hash",
+        "required_next_artifact",
+        "forbidden_outputs"
+      ],
+      "properties": {
+        "candidate_id": {"type": "string"},
+        "strategy_id": {"type": "string"},
+        "variant_id": {"type": "string"},
+        "definition_scope": {"const": "research_candidate_definition_only"},
+        "source_run_id": {"type": "string"},
+        "source_strategy_version": {"type": "string"},
+        "source_data_version": {"type": "string"},
+        "params_hash": {"type": "string"},
+        "required_next_artifact": {"const": "research_candidate_definition_manifest"},
+        "forbidden_outputs": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "research_candidate_definition_manifest_allowed": {"type": "boolean"},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "candidate_definition_manifest_only",
+        "strategy_code_generation_allowed",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "real_orders_created",
+        "pnl_from_fill_ledger_required",
+        "paper_queue",
+        "live",
+        "approval_scope"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "candidate_definition_manifest_only": {"const": true},
+        "strategy_code_generation_allowed": {"const": false},
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "pnl_from_fill_ledger_required": {"const": true},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"},
+        "approval_scope": {"const": "research_candidate_definition_only"}
+      }
+    }
+  }
+}

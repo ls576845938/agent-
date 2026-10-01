@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_pit_dataready_consumption_report.schema.json",
+  "title": "US Equity PIT DataReady Consumption Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "status",
+    "decision",
+    "etf26_minute",
+    "pit_lite",
+    "production_pit",
+    "blockers",
+    "readiness",
+    "next_handoff_contract",
+    "guardrails",
+    "artifact_identity_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "us_equity_pit_dataready_consumption_report_v1"
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "asset": {"const": "us_equity"},
+    "status": {
+      "enum": ["blocked_external_data", "production_pit_accepted"]
+    },
+    "decision": {"type": "string", "minLength": 1},
+    "artifact_identity_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "etf26_minute": {
+      "type": "object",
+      "required": [
+        "state",
+        "scope",
+        "manifest_git_spec",
+        "manifest_sha256",
+        "dataset_id",
+        "dataset_version",
+        "producer_role",
+        "producer_commit",
+        "readiness_class",
+        "coverage",
+        "immutable_resolution",
+        "constraints",
+        "errors",
+        "promotion_evidence_ready"
+      ],
+      "properties": {
+        "state": {"type": "string", "minLength": 1},
+        "scope": {"const": "frozen_etf26_research_observation_only"},
+        "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "producer_role": {"const": "data_steward"},
+        "readiness_class": {"const": "research_ready"},
+        "immutable_resolution": {
+          "type": "object",
+          "required": ["status", "consumer_read_only", "mode"],
+          "properties": {
+            "status": {"enum": ["resolved", "unresolved"]},
+            "consumer_read_only": {"const": true},
+            "mode": {"const": "publication_marker_fast"}
+          },
+          "additionalProperties": false
+        },
+        "promotion_evidence_ready": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "pit_lite": {
+      "type": "object",
+      "required": ["state", "scope", "production_pit_substitute", "errors"],
+      "properties": {
+        "scope": {"const": "frozen_etf26_research_observation_only"},
+        "production_pit_substitute": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "production_pit": {
+      "type": "object",
+      "required": [
+        "state",
+        "accepted",
+        "bundle_id",
+        "bundle_version",
+        "producer_role",
+        "producer_commit",
+        "calendar",
+        "coverage",
+        "validated_files",
+        "blockers",
+        "data_modified",
+        "manifest_published_by_consumer"
+      ],
+      "properties": {
+        "accepted": {"type": "boolean"},
+        "validated_files": {"type": "array", "maxItems": 6},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "data_modified": {"const": false},
+        "manifest_published_by_consumer": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "readiness": {
+      "type": "object",
+      "required": [
+        "research_ready",
+        "promotion_evidence_ready",
+        "production_pit_accepted"
+      ],
+      "properties": {
+        "research_ready": {"type": "boolean"},
+        "promotion_evidence_ready": {"const": false},
+        "production_pit_accepted": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "next_handoff_contract": {
+      "type": "object",
+      "required": [
+        "owner",
+        "producer_role",
+        "readiness_class",
+        "immutable_version_required",
+        "required_files",
+        "required_manifest_fields",
+        "required_row_visibility_fields",
+        "required_adjustment_visibility_field",
+        "consumer_action"
+      ],
+      "properties": {
+        "owner": {"const": "data_steward"},
+        "producer_role": {"const": "data_steward"},
+        "readiness_class": {"const": "research_ready"},
+        "immutable_version_required": {"const": true},
+        "required_files": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "uniqueItems": true
+        },
+        "required_manifest_fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"}
+        },
+        "required_row_visibility_fields": {
+          "const": ["event_time", "available_time", "ingested_at"]
+        },
+        "required_adjustment_visibility_field": {
+          "const": "adjustment_available_time"
+        },
+        "consumer_action": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "consumer_read_only",
+        "data_manifest_written",
+        "network_used",
+        "promotion_evidence_ready",
+        "promotion_allowed",
+        "paper_allowed",
+        "live_allowed",
+        "private_endpoint_used",
+        "order_endpoint_used",
+        "broker_endpoint_used",
+        "withdraw_allowed",
+        "demo_allowed",
+        "paper_queue_write_allowed",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "consumer_read_only": {"const": true},
+        "data_manifest_written": {"const": false},
+        "network_used": {"const": false},
+        "promotion_evidence_ready": {"const": false},
+        "promotion_allowed": {"const": false},
+        "paper_allowed": {"const": false},
+        "live_allowed": {"const": false},
+        "private_endpoint_used": {"const": false},
+        "order_endpoint_used": {"const": false},
+        "broker_endpoint_used": {"const": false},
+        "withdraw_allowed": {"const": false},
+        "demo_allowed": {"const": false},
+        "paper_queue_write_allowed": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {"const": "blocked_external_data"}
+        }
+      },
+      "then": {
+        "properties": {
+          "blockers": {"minItems": 1},
+          "readiness": {
+            "properties": {
+              "production_pit_accepted": {"const": false}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {"const": "production_pit_accepted"}
+        }
+      },
+      "then": {
+        "properties": {
+          "production_pit": {
+            "properties": {
+              "accepted": {"const": true},
+              "validated_files": {"minItems": 6, "maxItems": 6}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

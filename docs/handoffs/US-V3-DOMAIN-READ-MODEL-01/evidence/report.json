@@ -1,0 +1,181 @@
+{
+  "schema_version": "us_v3_domain_read_model_delivery_report_v1",
+  "goal_id": "US-V3-DOMAIN-READ-MODEL-01",
+  "base_commit": "40f6515131799db27ec06b9b82832a4a3ff4c980",
+  "business_commit": "6e2c4bd913ccb705fb7cb0876a5c9ec31572de2f",
+  "generated_at_utc": "2026-07-24T13:37:18Z",
+  "status": "complete_quality_checked_fail_closed",
+  "readiness_class": "quality_checked",
+  "promotion_eligible": false,
+  "domain_read_model": {
+    "schema_version": "us_equity_domain_read_model_v1",
+    "source_head": "6e2c4bd913ccb705fb7cb0876a5c9ec31572de2f",
+    "freshness": "current_head",
+    "status": "blocked",
+    "current_stage": "blocked_external_data",
+    "gate_decision": "blocked_do_not_promote_or_start_paper",
+    "artifact_path": "artifacts/us_equity_strategy_production_line/latest/us_equity_operator_read_model.json",
+    "artifact_file_sha256": "64950138439a717a153aaf918b720161c78e2eec9508b544fb716c6590e72055",
+    "artifact_identity_sha256": "f24944e8e32b894ed79cfef2af49bc607d698d363dc0243c1a76145d71086850",
+    "team_context_status": "blocked",
+    "team_context_freshness": "current_head",
+    "team_context_domain_read_model_missing": false
+  },
+  "layers": {
+    "data": {
+      "status": "missing",
+      "freshness": "current_head",
+      "readiness_class": "research_ready"
+    },
+    "backtest": {
+      "status": "complete_research_only_blocked",
+      "freshness": "current_head",
+      "readiness_class": "backtest_ready"
+    },
+    "portfolio": {
+      "status": "complete_research_only_blocked",
+      "freshness": "current_head",
+      "readiness_class": "backtest_ready"
+    },
+    "oms": {
+      "status": "fixture_lifecycle_quality_checked",
+      "freshness": "current_head",
+      "readiness_class": "quality_checked"
+    },
+    "ledger": {
+      "status": "fixture_uow_quality_checked",
+      "freshness": "current_head",
+      "readiness_class": "quality_checked"
+    },
+    "replay": {
+      "status": "fixture_recovery_quality_checked",
+      "freshness": "current_head",
+      "readiness_class": "quality_checked"
+    }
+  },
+  "deliverables": [
+    {
+      "path": "quant_us/application/us_equity_domain_read_model.py",
+      "sha256": "24aeaf91984576026d57b67f28058a58e2eacc41c0e5eeaac55ff4fd7c346922",
+      "role": "application_service"
+    },
+    {
+      "path": "quant_us/monitoring/us_equity_domain_read_model_repository.py",
+      "sha256": "ad0d0e9fec32bb38fced0d2905ebdde15b3d2037b1ba0df6ccf6708de23032db",
+      "role": "committed_evidence_repository"
+    },
+    {
+      "path": "backend/app/api/us_equity_domain_read_model.py",
+      "sha256": "09d558dc35e8316aaa0dc9c146f24ae0f0d420726a9811b5faafe46816ebc3ea",
+      "role": "get_only_router"
+    },
+    {
+      "path": "schemas/us_equity_domain_read_model.schema.json",
+      "sha256": "d99dbd47d0ee1b4823e64b63c2f8ef797ca8cc35b5af7285ee1fc09eafbf8ce3",
+      "role": "schema"
+    },
+    {
+      "path": "configs/governance/us_equity_domain_read_model_sources_v1.json",
+      "sha256": "4a04756abffdf6d8827f99b14e8ef1bde26042c639588d4fbc11f769ed4392ed",
+      "role": "source_contract"
+    },
+    {
+      "path": "scripts/build_us_equity_domain_read_model.py",
+      "sha256": "4bd2bfc4f8aebb32a62050709c7cee6491fc3c72d9b5837b2df47e3645b1c59e",
+      "role": "materializer"
+    },
+    {
+      "path": "tests/contracts/test_us_equity_domain_read_model.py",
+      "sha256": "2502a5797b7463cda17a7bbae6d38aadab1c3bfe11f8f51b8dd6fd2607129f38",
+      "role": "backend_contract"
+    },
+    {
+      "path": "frontend/src/workspaces/us-equity/domain-read-model.ts",
+      "sha256": "5795bbdb6b0a6e3864f055ab17f3c762ca8bddf154e1b84ee199ce1c9a1e3bb1",
+      "role": "us_local_types_and_fetch"
+    },
+    {
+      "path": "frontend/src/workspaces/us-equity/USEquityDomainReadModel.tsx",
+      "sha256": "3d069f83a792dc62afba0942e223ff73a6c9917f384d5367dceafeede4b7c423",
+      "role": "operator_evidence_view"
+    },
+    {
+      "path": "frontend/src/workspaces/USEquityWorkspace.tsx",
+      "sha256": "1f0a5a0db79abfae98537ee2392f1a8313ae76d1801ccf0de28cd9afbc4b2ff8",
+      "role": "us_local_view_partition"
+    },
+    {
+      "path": "frontend/e2e/us-domain-read-model.spec.ts",
+      "sha256": "b6140ed5d5e09cbfe2ace2c4ace07d91d3b527c670c2b765cf8861766b1d47ea",
+      "role": "frontend_e2e"
+    },
+    {
+      "path": "docs/data_contracts/us_v3_domain_read_model.md",
+      "sha256": "8645c8607f1f4892e93687db4edf36886945fee067cfe7ac5e2baf1428347a01",
+      "role": "data_contract"
+    },
+    {
+      "path": "docs/handoffs/US-V3-DOMAIN-READ-MODEL-01/integrator_wiring.md",
+      "sha256": "cf3346a47dbec9e85f6f2ca44155f3d198f4437477c78e516255b5f1a64c6d6f",
+      "role": "integrator_wiring_contract"
+    }
+  ],
+  "tests": [
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_equity_domain_read_model.py -q -p no:cacheprovider --basetemp <unique-system-temp>",
+      "result": "8 passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/contracts/test_us_equity_domain_read_model.py tests/contracts/test_us_equity_pit_dataready_consumer.py tests/contracts/test_us_v3_canonical_backtest_portfolio_evidence.py tests/contracts/test_us_v3_paper_oms_reconciliation.py -q -p no:cacheprovider --basetemp <unique-system-temp>",
+      "result": "34 passed"
+    },
+    {
+      "command": "py -3 -m pytest tests/agent_governance/test_team_context.py -q -p no:cacheprovider --basetemp <unique-system-temp>",
+      "result": "6 passed"
+    },
+    {
+      "command": "npm.cmd run lint && npm.cmd run build && npm.cmd run smoke",
+      "result": "passed"
+    },
+    {
+      "command": "playwright test e2e/us-domain-read-model.spec.ts",
+      "result": "1 passed"
+    },
+    {
+      "command": "npm.cmd run test:status-cards",
+      "result": "1 passed"
+    }
+  ],
+  "blockers": [
+    "owner:data_steward production_pit_bundle_root_not_supplied",
+    "owner:data_steward production_pit_seven_file_immutable_handoff_missing",
+    "owner:data_steward production_corporate_action_available_time_replay_missing",
+    "owner:data_steward production_delisted_symbol_history_missing",
+    "owner:data_steward production_survivorship_clean_universe_missing",
+    "owner:paper_operations paper_start_not_authorized",
+    "owner:paper_operations real_paper_evidence_missing",
+    "owner:paper_operations production_event_ledger_missing",
+    "owner:architect manual_paper_start_approval_missing",
+    "owner:integrator app_factory_get_router_wiring_pending",
+    "classification:goal9_code_delivery_complete",
+    "classification:overall_status=quality_checked_fail_closed"
+  ],
+  "next_action": {
+    "owner": "integrator",
+    "action": "Wire the GET-only router, integrate the delivery, rebuild the read model on final integrated HEAD, and verify Team Context."
+  },
+  "safety": {
+    "network_used": false,
+    "secret_read": false,
+    "broker_access_allowed": false,
+    "private_endpoint_allowed": false,
+    "order_endpoint_allowed": false,
+    "paper_allowed": false,
+    "paper_runner_started": false,
+    "paper_queue_write_allowed": false,
+    "live_allowed": false,
+    "promotion_allowed": false,
+    "real_order_submitted": false,
+    "withdraw_allowed": false
+  }
+}

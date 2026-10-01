@@ -1,0 +1,103 @@
+{
+  "schema_version": "strategy_v0_characterization_v1",
+  "scope": "v0_freeze_only",
+  "base_commit": "b920d131e41ecbfe7f76f0709affbe22c8b35f5e",
+  "source_blobs": {
+    "quant_crypto/application/btc_strategy_registry.py": "83e6285b6de3bff84c96151707e223afb7ffd18e",
+    "quant_crypto/oms/okx_demo_paper_runtime.py": "30f0926fb515e7b3f791c11057bf60cb308482fa",
+    "quant_crypto/research/long_short_trend_following_lab.py": "2afdb065fae4b43de0400f8c9024681bb6f2187e",
+    "configs/qlib/okx_btc_trend_1h.yaml": "9d496d5898b9857e0705b545e0049130a8eeb099",
+    "docs/agent_playbooks/delivery_risk_policy.json": "876db414d4de8a3f06867852dfc1d8dc620d7187"
+  },
+  "permissions": {"promotion": false, "paper": false, "live": false, "private": false, "order": false, "real_order": false, "transfer": false, "withdraw": false, "execution_permission": false, "runtime_observed": false},
+  "donchian": {
+    "strategy_id": "long_short_donchian_top5_okx_native",
+    "candidate_id": "okx_native_btc_ls_tf_formal_donchian_w240_d50_200_atr20_cd12_fail0_risknone_78f5f0a0e4",
+    "strategy_version": "btc_long_short_donchian_top5_okx_native@1.0.0",
+    "params_hash": "5941833b08a34e39c6893e0bb60ca8c7748224fb360dae528628bfbabd04d355",
+    "instrument": "BTC-USDT-SWAP", "timeframe": "completed_1h_to_4h",
+    "params": {"primary_signal_source": "price_trend", "derivatives_usage": "risk_filter_only", "signal_type": "symmetric_donchian", "daily_fast": 50, "daily_slow": 200, "entry_window": 240, "exit_window": 120, "atr_window": 20, "atr_mult": 2.0, "cooldown_bars": 12, "use_failed_breakout_exit": false, "failure_exit_window": 6, "risk_filter_mode": "none", "use_derivatives_risk_filter": false, "use_risk_exit": false},
+    "risk_profile": "baseline_1x",
+    "runtime_target_rule": "sign(raw_signal)*0.01_contracts",
+    "contract_value_btc": "0.01", "max_net_contracts": "0.01", "max_notional_usdt": "10",
+    "historical_backtest_weight": 0.98,
+    "historical_backtest_timing": "bar_close_signal_next_completed_1h_open",
+    "runtime_timing": "signal_from_latest_completed_bar_applies_after_bar_close",
+    "cost_fixture": {"fee_bps": "5", "funding_bps": "1", "slippage_budget_bps": "5", "impact_bps": "0"},
+    "fixture": {"kind": "synthetic_not_market_evidence", "bars": 5200, "last_close_utc": "2026-07-30T12:00:00+00:00", "clock_utc": "2026-07-30T12:05:00+00:00", "long_close": "10000+8*i", "short_close": "90000-8*i", "flat_close": "60000", "open": "close", "high": "close+1", "low": "close-1", "volume": 1.0, "initial_state": "fresh stopped controller; order_sequence=0; no actual account; no worker", "account_facts": "not_collected; order planning uses explicit synthetic snapshot only"}
+  },
+  "signals": {
+    "long": {"raw_signal": "1", "direction": "long", "target_contracts": "0.01", "decision_bar_close_utc": "2026-07-30T12:00:00+00:00", "effective_rule": "signal_from_latest_completed_bar_applies_after_bar_close"},
+    "short": {"raw_signal": "-1", "direction": "short", "target_contracts": "-0.01", "decision_bar_close_utc": "2026-07-30T12:00:00+00:00", "effective_rule": "signal_from_latest_completed_bar_applies_after_bar_close"},
+    "flat": {"raw_signal": "0", "direction": "flat", "target_contracts": "0", "decision_bar_close_utc": "2026-07-30T12:00:00+00:00", "effective_rule": "signal_from_latest_completed_bar_applies_after_bar_close"}
+  },
+  "plans": {
+    "open_long": {"before": "0", "target": "0.01", "result": {"action": "open_long", "side": "buy", "position_side": "long", "contracts": "0.01", "position_after_contracts": "0.01", "limit_price": "60030.2", "risk_reducing_only": false, "reversal_close_only": false, "entry_order_type": "fok"}},
+    "open_short": {"before": "0", "target": "-0.01", "result": {"action": "open_short", "side": "sell", "position_side": "short", "contracts": "0.01", "position_after_contracts": "-0.01", "limit_price": "59970", "risk_reducing_only": false, "reversal_close_only": false, "entry_order_type": "fok"}},
+    "hold_long": {"before": "0.01", "target": "0.01", "result": null},
+    "hold_short": {"before": "-0.01", "target": "-0.01", "result": null},
+    "reverse_long": {"before": "0.01", "target": "-0.01", "result": {"action": "close_long", "side": "sell", "position_side": "long", "contracts": "0.01", "position_after_contracts": "0", "risk_reducing_only": true, "reversal_close_only": true, "entry_order_type": "fok"}},
+    "reverse_short": {"before": "-0.01", "target": "0.01", "result": {"action": "close_short", "side": "buy", "position_side": "short", "contracts": "0.01", "position_after_contracts": "0", "risk_reducing_only": true, "reversal_close_only": true, "entry_order_type": "fok"}},
+    "close_long": {"before": "0.01", "target": "0", "result": {"action": "close_long", "side": "sell", "position_side": "long", "contracts": "0.01", "position_after_contracts": "0", "risk_reducing_only": true, "reversal_close_only": false, "entry_order_type": "fok"}},
+    "close_short": {"before": "-0.01", "target": "0", "result": {"action": "close_short", "side": "buy", "position_side": "short", "contracts": "0.01", "position_after_contracts": "0", "risk_reducing_only": true, "reversal_close_only": false, "entry_order_type": "fok"}}
+  },
+  "exits": {
+    "long_atr": {"close": [100,105,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102], "long_entry": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], "expected": [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1]},
+    "short_atr": {"close": [100,95,98,98,98,98,98,98,98,98,98,98,98,98,98,98,98], "short_entry": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], "expected": [-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1]},
+    "channel_exit": {"close": [100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100], "long_entry": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], "long_exit": [2], "expected": [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1]},
+    "reverse_exit": {"close": [100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100], "long_entry": [0], "short_entry": [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], "expected": [1,1,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1]}
+  },
+  "qlib": {
+    "selection_reason": "existing ordinary Qlib sealed run already used by platform; engineering baseline, not best-return selection or factory champion",
+    "run_id": "m1-okx-qlib", "candidate_id": "qlib_manifest_0de835a36fc243c1",
+    "strategy_version": "qlib_time_series_trend_v1",
+    "source_code_version": "59f5eb86132fd0e386d1d4e733c9fbc53ff80d7e",
+    "archive_manifest_git_spec": "165a446729f8c114748e1b20bbfcf0c91e75066e:.agent/data_manifests/m1-trend-environment-acceptance/m1-okx-59f5eb861-20260911.json",
+    "archive_aggregate_sha256": "593eb9f893c280703b26423f00a4eaff62542152110ebff1dd5b5ad69061bcde",
+    "source_instrument": "BTCUSDT", "venue_instrument": "BTC-USDT-SWAP",
+    "data_version": "btc-okx-public-swap-btcusdt-demo25h-tail-20260730T1145Z-src6cea196b4-corr1",
+    "data_aggregate_sha256": "3a61fc915da66994294113cc7b2334a1da4c0e08bccf428a743564c863c8d680",
+    "sha256": {
+      "model.txt": "8b44ef4bc97be069c21240cbf70a78b7e2f29fc182b057925328503196e16b74",
+      "pred_score.parquet": "c6456f68c35c221d7f3d093723ab92f2cc0d2af34f8bae4544f2d41f296988e5",
+      "qlib_run_metadata.json": "a140b54157e072a92043a6a3bc4837d5c26b8910a7a692a24ec5a59a479180b6",
+      "qlib_strategy_manifest.json": "cdcf0791800f44e1df110b37c7edef8fc1c0d3b6aa1686a867dc2d163b9aefeb",
+      "qlib_workflow_config.yaml": "783b91ab84a93cfb95e517d5e5ba713312b2a32d484ab8b38b1bd75a7f71f14f",
+      "research_model_scores.parquet": "61e58f5a7c15f3715d9143b1bea31db4981317eb4c6dea28be7abe5e666a8bef",
+      "research_trace.json": "f058e9dd3b2654c858026e93abb87e04b35b8c6b2cf83d8d089f070c40f8c9bc",
+      "run_seal.json": "bdfc25ea800de2f96fbff21ffd5214ef9345c183943ea0f2bcf46ecea0069202",
+      "signal_evaluation.json": "429c2bf29de214c5e75b0166a2a38d5f67913b7dad7b4b3e66f95a4881118619"
+    },
+    "features_in_order": ["ret_1h","ret_6h","ret_24h","ret_72h","ma_gap_24h","ma_gap_72h","vol_24h","vol_72h","range","body","volume_ratio","breakout_high","breakout_low"],
+    "model_internal_feature_names": "Column_0 through Column_12; positional mapping required", "loaded_tree_count": 1,
+    "infer_processors": [{"class": "Fillna", "kwargs": {"fields_group": "feature"}}],
+    "segments": {"train": ["2025-12-25 00:00:00","2026-04-29 00:00:00"], "valid": ["2026-05-01 00:00:00","2026-05-30 00:00:00"], "test": ["2026-06-01 00:00:00","2026-07-28 23:00:00"]},
+    "calibration": {"method": "validation_ols", "intercept": -0.0005507704422562133, "slope": 0.6609774067561168, "sample_size": 697, "clip_fraction": 0.05, "limitation": "validation_reused_for_early_stopping_not_independent_calibration_holdout"},
+    "label_horizon_bars": 12, "entry_delay_bars": 2,
+    "research_risk": {"initial_equity": 100000, "fee_bps": 5, "slippage_bps": 3, "spread_bps": 2, "impact_bps": 2, "risk_budget_fraction": 0.005, "max_weight": 0.25, "hard_stop_fraction": 0.04, "trailing_stop_fraction": 0.06, "maximum_holding_bars": 72, "funding_filter_enabled": false, "oi_filter_enabled": false, "volatility_target_annual_configured": 0.20, "volatility_target_applied": false},
+    "verification_environment": {"pyqlib": "0.9.7", "lightgbm": "4.7.0", "pandas": "3.0.4", "numpy": "2.4.6"},
+    "environment_semantics": "verified load environment, not a recovered full training dependency lock",
+    "execution_binding_status": "not_bound_research_only", "test_ic": -0.08289163706703358,
+    "decision_count": 1392, "simulated_fill_count": 0, "blockers": ["no_simulated_fills"],
+    "prediction_reload_parity": "not_run_V2", "training_performed": false
+  },
+  "contract": {
+    "status": "design_frozen_not_runtime_schema", "account_binding": "one_strategy_one_account_one_instrument",
+    "identity_required": ["package_digest","strategy_id","strategy_version","params_hash","code_version","domain","instrument","account_binding","input_event_id","decision_id","processing_phase"],
+    "time_required": ["event_time","available_time","decision_time","expiry_time"],
+    "output_required": ["output_kind","quantity_unit","horizon_unit","position_policy_version","exit_policy_version","state_before_ref","state_after_ref","evidence_refs"],
+    "donchian_output": "direction_signal_then_fixed_contract_target_no_fabricated_forecast",
+    "qlib_output": "frozen_calibrated_return_then_candidate_policy_target",
+    "economic_authority": "BTC pending intent/order/fill/ledger UOW; never independent shared CAS",
+    "reverse_processing": "close_first_phase_not_whole_bar_complete",
+    "comparison": {"categorical_and_decimal": "exact", "prediction_atol": 1e-10, "prediction_rtol": 1e-8, "tolerance_policy": "predeclared for V2; mismatch is a blocker, never automatically widen"},
+    "missing_input_policy": "reject_new_strict_binding; no unbound identity, fake healthy state or fake quality"
+  },
+  "release": {
+    "v0_delivery": "tests_fixture_documentation_only; unclassified conservative producer handoff; independent review pending",
+    "v1_v3_publication_admitted": false,
+    "blocker": "execution_semantics_policy_maps_to_demo_quasi_live_but_readonly_release_forbids_execution_changes",
+    "required_action": "independently approve high-risk-source/readonly-display release mapping before publication; no governance edits in V0",
+    "rollback": "discard unmerged V0 branch or reviewed revert after integration; never reset ledger or research archives"
+  }
+}

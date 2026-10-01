@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_production_bundle_onboarding_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Production Bundle Onboarding Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "asset",
+    "reports",
+    "stages",
+    "selected_bundle",
+    "activation_checklist",
+    "acquisition_plan",
+    "manual_vendor_drop_package",
+    "blockers",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_production_bundle_onboarding_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {
+      "enum": [
+        "production_bundle_onboarding_ready_for_data_drop",
+        "production_bundle_onboarding_blocked",
+        "production_bundle_onboarding_missing_scaffold",
+        "blocked"
+      ]
+    },
+    "asset": {"const": "us_equity"},
+    "reports": {
+      "type": "object",
+      "required": [
+        "scaffold",
+        "preflight",
+        "provider_verification",
+        "data_status",
+        "remediation",
+        "acquisition_plan",
+        "manual_vendor_drop_package"
+      ],
+      "additionalProperties": {"type": "string"}
+    },
+    "stages": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/stage"},
+      "contains": {
+        "type": "object",
+        "required": ["stage_id"],
+        "properties": {"stage_id": {"const": "manual_vendor_drop_package"}}
+      }
+    },
+    "selected_bundle": {
+      "type": "object",
+      "required": [
+        "selected_bundle_id",
+        "selected_bundle_source_type",
+        "selected_bundle_manifest_path",
+        "production_bundle_preflight_pass",
+        "provider_promotion_clean",
+        "data_promotion_clean"
+      ],
+      "properties": {
+        "selected_bundle_id": {"type": ["string", "null"]},
+        "selected_bundle_source_type": {"type": ["string", "null"]},
+        "selected_bundle_manifest_path": {"type": ["string", "null"]},
+        "production_bundle_preflight_pass": {"type": "boolean"},
+        "provider_promotion_clean": {"type": "boolean"},
+        "data_promotion_clean": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "activation_checklist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stage_id", "description", "done", "blockers"],
+        "properties": {
+          "stage_id": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1},
+          "done": {"type": "boolean"},
+          "blockers": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "acquisition_plan": {
+      "type": "object",
+      "required": ["status", "acceptable_provider_ids", "missing_contract_groups", "available"],
+      "properties": {
+        "status": {"type": ["string", "null"]},
+        "acceptable_provider_ids": {"type": "array", "items": {"type": "string"}},
+        "missing_contract_groups": {"type": "array", "items": {"type": "string"}},
+        "available": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "manual_vendor_drop_package": {
+      "type": "object",
+      "required": [
+        "status",
+        "incoming_drop_dir",
+        "template_root",
+        "field_dictionary",
+        "handoff_doc",
+        "template_file_count",
+        "field_count",
+        "available"
+      ],
+      "properties": {
+        "status": {"type": ["string", "null"]},
+        "incoming_drop_dir": {"type": ["string", "null"]},
+        "template_root": {"type": ["string", "null"]},
+        "field_dictionary": {"type": ["string", "null"]},
+        "handoff_doc": {"type": ["string", "null"]},
+        "template_file_count": {"type": "integer", "minimum": 0},
+        "field_count": {"type": ["integer", "number", "null"], "minimum": 0},
+        "available": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "onboarding_report_is_not_provider_evidence",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed"
+      ],
+      "properties": {
+        "onboarding_report_is_not_provider_evidence": {"const": true},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "stage": {
+      "type": "object",
+      "required": ["stage_id", "status", "evidence", "blockers"],
+      "properties": {
+        "stage_id": {"type": "string", "minLength": 1},
+        "status": {"enum": ["pass", "blocked"]},
+        "evidence": {"type": "object", "additionalProperties": true},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

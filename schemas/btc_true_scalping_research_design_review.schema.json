@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_true_scalping_research_design_review.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_reports",
+    "checks",
+    "blockers",
+    "limitations",
+    "research_only_scalping_design_allowed",
+    "research_only_event_definition_allowed",
+    "true_scalping_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_true_scalping_research_design_review_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "status": {
+      "enum": [
+        "research_only_scalping_design_review_passed",
+        "research_only_scalping_design_review_blocked"
+      ]
+    },
+    "decision": {"type": "string"},
+    "next_required_action": {"type": "string"},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "microstructure_readiness",
+        "microstructure_model_report",
+        "microstructure_capture_report",
+        "drift_guarded_event_ledger"
+      ],
+      "properties": {
+        "microstructure_readiness": {"type": ["string", "null"]},
+        "microstructure_model_report": {"type": ["string", "null"]},
+        "microstructure_capture_report": {"type": ["string", "null"]},
+        "drift_guarded_event_ledger": {"type": ["string", "null"]}
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "microstructure_readiness_passed",
+        "one_minute_klines_pass",
+        "tick_or_agg_trade_history_pass",
+        "order_book_depth_history_pass",
+        "spread_model_pass",
+        "latency_model_pass",
+        "queue_position_model_pass",
+        "microstructure_model_report_pass",
+        "public_capture_verified",
+        "public_capture_has_latency_samples",
+        "event_ledger_passed_internal_research_gate",
+        "event_ledger_candidate_still_locked",
+        "event_ledger_paper_live_locked",
+        "readiness_true_scalping_still_locked",
+        "readiness_strategy_skeleton_still_locked",
+        "readiness_candidate_generation_still_locked",
+        "private_order_broker_paths_locked"
+      ],
+      "properties": {
+        "microstructure_readiness_passed": {"type": "boolean"},
+        "one_minute_klines_pass": {"type": "boolean"},
+        "tick_or_agg_trade_history_pass": {"type": "boolean"},
+        "order_book_depth_history_pass": {"type": "boolean"},
+        "spread_model_pass": {"type": "boolean"},
+        "latency_model_pass": {"type": "boolean"},
+        "queue_position_model_pass": {"type": "boolean"},
+        "microstructure_model_report_pass": {"type": "boolean"},
+        "public_capture_verified": {"type": "boolean"},
+        "public_capture_has_latency_samples": {"type": "boolean"},
+        "event_ledger_passed_internal_research_gate": {"type": "boolean"},
+        "event_ledger_candidate_still_locked": {"type": "boolean"},
+        "event_ledger_paper_live_locked": {"type": "boolean"},
+        "readiness_true_scalping_still_locked": {"type": "boolean"},
+        "readiness_strategy_skeleton_still_locked": {"type": "boolean"},
+        "readiness_candidate_generation_still_locked": {"type": "boolean"},
+        "private_order_broker_paths_locked": {"type": "boolean"}
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "research_only_scalping_design_allowed": {"type": "boolean"},
+    "research_only_event_definition_allowed": {"type": "boolean"},
+    "true_scalping_allowed": {"const": false},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "manual_review_gate_only",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "real_orders_created",
+        "paper_queue",
+        "live"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "manual_review_gate_only": {"const": true},
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"}
+      }
+    }
+  }
+}

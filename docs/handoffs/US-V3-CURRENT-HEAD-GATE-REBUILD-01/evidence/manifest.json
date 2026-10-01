@@ -1,0 +1,67 @@
+{
+  "schema_version": "us_v3_current_head_gate_rebuild_delivery_manifest_v1",
+  "goal_id": "US-V3-CURRENT-HEAD-GATE-REBUILD-01",
+  "deliverable_commit": "74322c6be906e81e523a879a50a243e46645b3c5",
+  "source_files": [
+    {
+      "path": "quant_us/application/us_equity_current_head_gate_rebuild.py",
+      "sha256": "baefb1286b56dec4fe666f6080438dbc137298ca51824bb48fbee08a50ef0851",
+      "responsibility": "single-writer orchestration, rollback, health and root blocker taxonomy"
+    },
+    {
+      "path": "scripts/build_us_equity_current_head_gate_rebuild.py",
+      "sha256": "6297d33f0cc12cbaaaef5fb5602c8e0177fb6a1af8da588dc4b38c64736e3581",
+      "responsibility": "offline CLI facade"
+    },
+    {
+      "path": "schemas/us_equity_current_head_gate_rebuild.schema.json",
+      "sha256": "09cfb1b946a5c0c40a5714601b7526ba9436dcfe379bd3fa438f4e92bda80ceb",
+      "responsibility": "authoritative rebuild receipt contract"
+    },
+    {
+      "path": "schemas/us_equity_current_head_blocker_taxonomy.schema.json",
+      "sha256": "455e50ec0b6e14159575752395ff8aa173c1556e71a1990a00a59774a6ad6607",
+      "responsibility": "root blocker and derived reference contract"
+    },
+    {
+      "path": "schemas/us_equity_operator_read_model.schema.json",
+      "sha256": "0d2441790e0dfa32b9b60061d84568c40475fb997d79a3581ce8ab5e82c62cf3",
+      "responsibility": "Team Context discovery filename schema alias"
+    },
+    {
+      "path": "configs/governance/us_v3_current_head_gate_rebuild_v1.json",
+      "sha256": "7b7eb9c523b7a150455fc33886a0eeb7902495c521a331240e70458835869d98",
+      "responsibility": "ordered writer, artifact health and all-false safety policy"
+    },
+    {
+      "path": "tests/contracts/test_us_equity_current_head_gate_rebuild.py",
+      "sha256": "b5e3aacb6fed668c28220b2f5e0afcc331f9f8b74dfb21859a14707bbc8b3095",
+      "responsibility": "ordering, rollback, lock, health, taxonomy and safety contracts"
+    },
+    {
+      "path": "docs/handoffs/US-V3-CURRENT-HEAD-GATE-REBUILD-01.md",
+      "sha256": "e9c3f8c4bf40c6e855ae553b146d6712d48727db0ab885311b10062328186ea4",
+      "responsibility": "integrator wiring and operational boundary"
+    }
+  ],
+  "runtime_artifacts": [
+    {
+      "path": "artifacts/us_equity_gate_rebuild/latest/us_equity_current_head_gate_rebuild.json",
+      "sha256": "97d2770ce63a51a24294dfb1103aa4b79b6afd36c7b02f6ca59b6293349fbe10",
+      "source_head": "74322c6be906e81e523a879a50a243e46645b3c5"
+    },
+    {
+      "path": "artifacts/us_equity_gate_rebuild/latest/us_equity_current_head_blocker_taxonomy.json",
+      "sha256": "bafd2629e5574c2cc1507d8c115e7446cb4f386cb28023d631344fe747d69dd4",
+      "source_head": "74322c6be906e81e523a879a50a243e46645b3c5"
+    },
+    {
+      "path": "artifacts/us_equity_gate_rebuild/runs/us-g10-business-74322c6be906/manifest.json",
+      "sha256": "aa735db0f143f3ae9b0a43d3dd997df60d00c4f642c9cf2d3d519900dfc841de",
+      "source_head": "74322c6be906e81e523a879a50a243e46645b3c5"
+    }
+  ],
+  "safety_flags_all_false": true,
+  "paper_ledger_written": false,
+  "network_or_secret_used": false
+}

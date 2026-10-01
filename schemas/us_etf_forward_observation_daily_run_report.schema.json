@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_etf_forward_observation_daily_run_report.schema.json",
+  "title": "QuantStation VNEXT US ETF Forward Observation Daily Run Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "asset",
+    "pipeline",
+    "status",
+    "blockers",
+    "scheduler",
+    "steps",
+    "forward_observation",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_forward_observation_daily_run_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "pipeline": {"const": "us_etf_forward_observation_daily"},
+    "status": {"enum": ["PASS", "BLOCKED"]},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "scheduler": {
+      "type": "object",
+      "required": ["intended_frequency", "recommended_local_time", "market_note"],
+      "properties": {
+        "intended_frequency": {"type": "string", "minLength": 1},
+        "recommended_local_time": {"type": "string", "minLength": 1},
+        "market_note": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "steps": {
+      "type": "object",
+      "required": ["data_gate", "roll", "evaluation"],
+      "properties": {
+        "data_gate": {"$ref": "#/$defs/data_gate_step"},
+        "roll": {"$ref": "#/$defs/run_step"},
+        "evaluation": {"$ref": "#/$defs/run_step"}
+      },
+      "additionalProperties": false
+    },
+    "forward_observation": {
+      "type": "object",
+      "required": [
+        "ledger_root",
+        "validation_report",
+        "cycle_status",
+        "evaluation_status",
+        "observation_days",
+        "minimum_complete_days",
+        "new_observation_written",
+        "already_processed"
+      ],
+      "properties": {
+        "ledger_root": {"type": "string", "minLength": 1},
+        "validation_report": {"type": "string", "minLength": 1},
+        "cycle_status": {"type": "string"},
+        "evaluation_status": {"type": "string"},
+        "observation_days": {"type": "integer", "minimum": 0},
+        "minimum_complete_days": {"type": "integer", "minimum": 30},
+        "new_observation_written": {"type": "boolean"},
+        "already_processed": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "simulated_only",
+        "daily_run_is_not_alpha_validation",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "broker_calls_used",
+        "real_order_submitted"
+      ],
+      "properties": {
+        "simulated_only": {"const": true},
+        "daily_run_is_not_alpha_validation": {"const": true},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "broker_calls_used": {"const": false},
+        "real_order_submitted": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "roll_report", "evaluation_report"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "roll_report": {"type": "string", "minLength": 1},
+        "evaluation_report": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "run_step": {
+      "type": "object",
+      "required": ["status", "path", "blockers"],
+      "properties": {
+        "status": {"type": "string"},
+        "cycle_status": {"type": "string"},
+        "path": {"type": "string"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "data_gate_step": {
+      "type": "object",
+      "required": ["status", "blockers", "checks", "guardrails"],
+      "properties": {
+        "status": {"enum": ["pass", "blocked"]},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "checks": {"type": "array", "items": {"$ref": "#/$defs/data_gate_check"}},
+        "guardrails": {
+          "type": "object",
+          "required": [
+            "data_gate_only",
+            "stale_or_blocked_data_stops_forward_roll",
+            "paper_or_live_unlock_allowed",
+            "live_order_allowed"
+          ],
+          "properties": {
+            "data_gate_only": {"const": true},
+            "stale_or_blocked_data_stops_forward_roll": {"const": true},
+            "paper_or_live_unlock_allowed": {"const": false},
+            "live_order_allowed": {"const": false}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "data_gate_check": {
+      "type": "object",
+      "required": ["check_id", "source_report", "status", "passed", "blockers"],
+      "properties": {
+        "check_id": {"enum": ["data_freshness", "kline_quality", "fred_preflight"]},
+        "source_report": {"type": "string", "minLength": 1},
+        "status": {"type": "string"},
+        "passed": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

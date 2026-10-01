@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_vendor_drop_workspace_preparation_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Vendor Drop Workspace Preparation Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "source_dir",
+    "source_dir_exists",
+    "vendor_file_count",
+    "blockers",
+    "operator_next_actions",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_vendor_drop_workspace_preparation_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 1},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"const": "vendor_drop_workspace_prepared"},
+    "source_dir": {"const": "data/external/us_equity_lineage/incoming/manual_vendor_drop"},
+    "source_dir_exists": {"const": true},
+    "vendor_file_count": {"type": "integer", "minimum": 0},
+    "blockers": {"type": "array", "maxItems": 0},
+    "operator_next_actions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "workspace_preparation_only",
+        "contains_vendor_data",
+        "source_vendor_data_modified",
+        "production_bundle_written",
+        "configuration_mutated_by_this_report",
+        "promotion_clean_granted_by_this_report",
+        "paper_or_live_unlock_allowed",
+        "paper_simulation_allowed",
+        "live_order_allowed",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "broker_calls_used"
+      ],
+      "properties": {
+        "workspace_preparation_only": {"const": true},
+        "contains_vendor_data": {"const": false},
+        "source_vendor_data_modified": {"const": false},
+        "production_bundle_written": {"const": false},
+        "configuration_mutated_by_this_report": {"const": false},
+        "promotion_clean_granted_by_this_report": {"const": false},
+        "paper_or_live_unlock_allowed": {"const": false},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "broker_calls_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json", "markdown"],
+      "properties": {
+        "json": {"type": "string", "minLength": 1},
+        "markdown": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

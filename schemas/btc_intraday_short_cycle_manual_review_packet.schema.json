@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/btc_intraday_short_cycle_manual_review_packet.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "symbol",
+    "review_id",
+    "status",
+    "decision",
+    "next_required_action",
+    "source_reports",
+    "promotion_gate_sha256",
+    "review_subject",
+    "hard_checks",
+    "approval",
+    "approval_template",
+    "blockers",
+    "manual_review_packet_ready",
+    "recorded_manual_review_approved",
+    "research_candidate_definition_allowed",
+    "candidate_generation_allowed",
+    "strategy_skeleton_generation_allowed",
+    "promotion_allowed",
+    "paper_review_pending_allowed",
+    "paper_or_live_unlock_allowed",
+    "true_scalping_allowed",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": {"const": "btc_intraday_short_cycle_manual_review_packet_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "btc"},
+    "symbol": {"const": "BTCUSDT"},
+    "review_id": {"type": "string"},
+    "status": {
+      "enum": [
+        "awaiting_recorded_manual_review",
+        "approved_for_research_candidate_definition",
+        "blocked_manual_review_packet"
+      ]
+    },
+    "decision": {
+      "enum": [
+        "continue_research_manual_review_required",
+        "allow_research_candidate_definition_only",
+        "back_to_promotion_gate_repair"
+      ]
+    },
+    "next_required_action": {"type": "string"},
+    "source_reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "promotion_gate",
+        "drift_guarded_event_ledger",
+        "canonical_backtest_report",
+        "cost_stress_report",
+        "walk_forward_report",
+        "regime_report",
+        "tail_dependency_report",
+        "run_manifest"
+      ],
+      "properties": {
+        "promotion_gate": {"type": ["string", "null"]},
+        "drift_guarded_event_ledger": {"type": ["string", "null"]},
+        "canonical_backtest_report": {"type": ["string", "null"]},
+        "cost_stress_report": {"type": ["string", "null"]},
+        "walk_forward_report": {"type": ["string", "null"]},
+        "regime_report": {"type": ["string", "null"]},
+        "tail_dependency_report": {"type": ["string", "null"]},
+        "run_manifest": {"type": ["string", "null"]}
+      }
+    },
+    "promotion_gate_sha256": {"type": "string"},
+    "review_subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy_id", "variant_id", "family_id", "metrics", "gate"],
+      "properties": {
+        "strategy_id": {"type": "string"},
+        "variant_id": {"type": "string"},
+        "family_id": {"type": "string"},
+        "metrics": {"type": "object"},
+        "gate": {"type": "object"}
+      }
+    },
+    "hard_checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "promotion_gate_report_present",
+        "promotion_gate_ready_for_manual_review",
+        "promotion_gate_has_no_blockers",
+        "manual_candidate_review_allowed",
+        "manifest_data_version_present",
+        "manifest_strategy_version_present",
+        "manifest_params_present",
+        "manifest_cost_model_present",
+        "manifest_slippage_model_present",
+        "manifest_commit_hash_present",
+        "private_order_broker_paths_locked",
+        "paper_live_still_locked",
+        "true_scalping_still_locked"
+      ],
+      "properties": {
+        "promotion_gate_report_present": {"type": "boolean"},
+        "promotion_gate_ready_for_manual_review": {"type": "boolean"},
+        "promotion_gate_has_no_blockers": {"type": "boolean"},
+        "manual_candidate_review_allowed": {"type": "boolean"},
+        "manifest_data_version_present": {"type": "boolean"},
+        "manifest_strategy_version_present": {"type": "boolean"},
+        "manifest_params_present": {"type": "boolean"},
+        "manifest_cost_model_present": {"type": "boolean"},
+        "manifest_slippage_model_present": {"type": "boolean"},
+        "manifest_commit_hash_present": {"type": "boolean"},
+        "private_order_broker_paths_locked": {"type": "boolean"},
+        "paper_live_still_locked": {"type": "boolean"},
+        "true_scalping_still_locked": {"type": "boolean"}
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "exists",
+        "approved",
+        "status",
+        "review_id",
+        "strategy_id",
+        "variant_id",
+        "approval",
+        "blockers"
+      ],
+      "properties": {
+        "path": {"type": "string"},
+        "exists": {"type": "boolean"},
+        "approved": {"type": "boolean"},
+        "status": {"type": "string"},
+        "review_id": {"type": "string"},
+        "strategy_id": {"type": "string"},
+        "variant_id": {"type": "string"},
+        "approval": {"type": "object"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "approval_template": {"type": "object"},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "manual_review_packet_ready": {"type": "boolean"},
+    "recorded_manual_review_approved": {"type": "boolean"},
+    "research_candidate_definition_allowed": {"type": "boolean"},
+    "candidate_generation_allowed": {"const": false},
+    "strategy_skeleton_generation_allowed": {"const": false},
+    "promotion_allowed": {"const": false},
+    "paper_review_pending_allowed": {"const": false},
+    "paper_or_live_unlock_allowed": {"const": false},
+    "true_scalping_allowed": {"const": false},
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "research_only",
+        "manual_review_record_only",
+        "broker_calls_allowed",
+        "private_endpoints_allowed",
+        "order_endpoints_allowed",
+        "real_orders_created",
+        "paper_queue",
+        "live",
+        "approval_scope"
+      ],
+      "properties": {
+        "research_only": {"const": true},
+        "manual_review_record_only": {"const": true},
+        "broker_calls_allowed": {"const": false},
+        "private_endpoints_allowed": {"const": false},
+        "order_endpoints_allowed": {"const": false},
+        "real_orders_created": {"const": false},
+        "paper_queue": {"const": "LOCKED"},
+        "live": {"const": "FROZEN"},
+        "approval_scope": {"const": "research_candidate_definition_only"}
+      }
+    }
+  }
+}

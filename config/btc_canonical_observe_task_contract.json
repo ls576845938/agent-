@@ -1,0 +1,45 @@
+{
+  "schema_version": "btc_canonical_observe_task_contract_v1",
+  "canonical_main_root": "D:\\vibe coding\\Obsidian\\量化系统\\agent-",
+  "task_design": {
+    "task_path": "\\QuantSystem\\BTC\\",
+    "task_name": "Quant_BTC_Canonical_Observe_Only",
+    "enabled": false,
+    "registration_allowed": false,
+    "action_count": 1,
+    "trigger_count": 1,
+    "execution_policy_bypass": false,
+    "working_directory": "D:\\vibe coding\\Obsidian\\量化系统\\agent-"
+  },
+  "protected_source_paths": [
+    "scripts/run_btc_canonical_observe_task.ps1",
+    "scripts/run_btc_canonical_observe_task.py",
+    "config/btc_canonical_observe_task_contract.json",
+    "schemas/btc_canonical_observe_task_contract.schema.json",
+    "scripts/run_btc_external_runtime_observe_job.py",
+    "quant_crypto/application/btc_shared_observation_inputs.py",
+    "quant_crypto/adapters/btc_runtime_artifact_store.py"
+  ],
+  "allowed_child_environment": {
+    "QS_BTC_RUNTIME_ARTIFACT_ROOT": "explicit_candidate_root",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUTF8": "1",
+    "GIT_TERMINAL_PROMPT": "0"
+  },
+  "git_contract": {
+    "executable": "C:\\Program Files\\Git\\cmd\\git.exe",
+    "sha256": "da240fe9bc24895b3e04150a4990b8a6ff329ecabcd8f19684c2cc310da5ef3f",
+    "path_lookup_allowed": false
+  },
+  "legacy_runner_names": [
+    "Invoke-BtcResearchJob.ps1"
+  ],
+  "inner_contract": {
+    "script": "scripts/run_btc_external_runtime_observe_job.py",
+    "expected_exit_code": 2,
+    "expected_status": "blocked_fail_closed",
+    "receipt_logical_path": "artifacts/btc_external_runtime_observe_job/btc_external_runtime_observe_receipt.json",
+    "promotion_eligible": false,
+    "paper_or_live_allowed": false
+  }
+}

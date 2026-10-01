@@ -1,0 +1,575 @@
+{
+  "schema_version": "btc_real_candidate_offline_acceptance_delivery_contract_v1",
+  "receipt_schema_version": "btc_real_candidate_offline_acceptance_delivery_receipt_v1",
+  "ticket_id": "BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-GOVERNANCE-20260930",
+  "governance_base_commit": "ee42a967663d7bc306b4ac8b0d3c7d178f5b79cd",
+  "source_change_risk": "demo_execution_semantics",
+  "governance_change_risk": "governance_control",
+  "temporary_deployment_profile": "candidate_management",
+  "final_deployment_profile": "research_readonly",
+  "temporary_auth_mode": "local_no_password",
+  "evidence_kind": "real_candidate_offline_execution",
+  "readiness_ceiling": "quality_checked",
+  "independent_integrator_required": true,
+  "promotion_artifact_rebuild_required": false,
+  "backend_restart_required": true,
+  "allowed_phases": [
+    "source_review",
+    "deployment_acceptance"
+  ],
+  "source_sealed": true,
+  "source_base_commit": "ee42a967663d7bc306b4ac8b0d3c7d178f5b79cd",
+  "reviewed_source_commit": "4f730f54b34e3d2c2af7cc62e796058bc2fc3048",
+  "max_source_file_count": 14,
+  "max_test_file_count": 10,
+  "allowed_source_paths": [
+    "backend/app/api/app_factory.py",
+    "backend/app/services/candidate_delivery_bootstrap.py",
+    "backend/app/services/alpha_factory.py",
+    "backend/app/services/candidate_offline_inputs.py",
+    "quant_shared/alpha_factory/contracts.py",
+    "quant_shared/alpha_factory/engine.py",
+    "integrations/qlib_adapter/factory_trainer.py",
+    "integrations/qlib_adapter/run_qlib_workflow.py",
+    "integrations/qlib_adapter/research_pipeline.py",
+    "integrations/qlib_adapter/factory_delivery.py",
+    "integrations/qlib_adapter/factory_package.py",
+    "quant_shared/strategy_delivery/package_evidence.py",
+    "quant_crypto/application/qlib_offline_replay.py",
+    "quant_crypto/application/btc_registered_candidate.py"
+  ],
+  "allowed_test_paths": [
+    "tests/api/test_alpha_factory.py",
+    "tests/api/test_qlib_pipeline.py",
+    "tests/research/test_alpha_factory.py",
+    "tests/integrations/test_qlib_alpha_factory.py",
+    "tests/integrations/test_qlib_adapter_contract.py",
+    "tests/integrations/test_candidate_package_inference.py",
+    "tests/contracts/test_candidate_package_runtime.py",
+    "tests/contracts/test_strategy_v3_qlib_offline.py",
+    "tests/contracts/test_registered_candidate_execution.py",
+    "tests/contracts/test_candidate_offline_access.py"
+  ],
+  "source_inventory": {
+    "backend/app/api/app_factory.py": {
+      "blob": "f08b40a280e982d6f731a7cc2d28574539b14038",
+      "sha256": "93b6d715e249d0d22bbf5bedc4763e64e09f5e29e9a5972ca90b74bcaef1a525",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "backend/app/services/alpha_factory.py": {
+      "blob": "452c9b7b0d0a32b1c2d283781dab1d88624fff5a",
+      "sha256": "ab8bce96661685de9b03b6fee9843186398a2ab9342ae56c7ce5f311ef89a72e",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "backend/app/services/candidate_delivery_bootstrap.py": {
+      "blob": "22470748059dcccd11c6d9830588285503ebce5f",
+      "sha256": "bb7098823b4c5a25db877111c06650ffd00eab746ca519ce02433d7711296f25",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "backend/app/services/candidate_offline_inputs.py": {
+      "blob": "c08e48bf3ec080dc994166c0ebcde15b06fb39b0",
+      "sha256": "81e2302f3bfe409b4016c14cb055e1a5b71439b099fb23324efe8c7021ebd7df",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "integrations/qlib_adapter/factory_delivery.py": {
+      "blob": "4323d91ca273bf61f85cf353ef14c04a86266979",
+      "sha256": "23878dc963d88b5623a021df1ee065d77ca1cad3a8a0ce5c3bfa964292f3c771",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "integrations/qlib_adapter/factory_package.py": {
+      "blob": "82eeb677f8c5915fe31b1bebf3973132bca0deee",
+      "sha256": "a0e0cf7808b50a1e9f8fde157a811b6a59e1894edbeee8674355b704bd480a76",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "integrations/qlib_adapter/factory_trainer.py": {
+      "blob": "632d82cdb783746544375e49bdfe586e7559766b",
+      "sha256": "4e10fbf8d8b21c451b725863e86089052adc2f792fce7ab57a83908d103666f7",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "integrations/qlib_adapter/research_pipeline.py": {
+      "blob": "ee05aba5adb6948f0269abaa40297503f52003a1",
+      "sha256": "6d63ff6809b494acb8bb0c686b979c6383dc3c1303f87b56ef9cc66c05528778",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "integrations/qlib_adapter/run_qlib_workflow.py": {
+      "blob": "cde97814eb2e25119680703b88f3fc4bfd2ca443",
+      "sha256": "b44ce92a9ba7b290d435cec2ee851efbc934fa3d1478d3830f1f64a2f484b352",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "quant_crypto/application/btc_registered_candidate.py": {
+      "blob": "fed67f7a586eacb9db1bc0f6c75c4d1f285e0c78",
+      "sha256": "590f4d62fe30e952121b896ee647330d1d676bd077c6c3fbd9fe1dfefd7076c5",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "quant_crypto/application/qlib_offline_replay.py": {
+      "blob": "a694836c4aaf30731fd129d4aab2609f51332a91",
+      "sha256": "2e3616fbdcc275eba707f8d6374d9f64f745e63f82173412c312ea631c486f3f",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "quant_shared/alpha_factory/contracts.py": {
+      "blob": "7103595250f2eb26067dc18f0d4f03c4b6d1b7f3",
+      "sha256": "802de9f8cc8292d5b5bea507c4e29a3a181b5e02484c560e9fc738a584528707",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "quant_shared/alpha_factory/engine.py": {
+      "blob": "ec35c16f4b0e36f3ccac6df371768ea9e823bf8f",
+      "sha256": "480b96cc4134de68d302010dade88eb0a7b5dfec382a1b93f32b3b0c304913b4",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "quant_shared/strategy_delivery/package_evidence.py": {
+      "blob": "4fced4fcfd817eab221263899067fbe3605d8e83",
+      "sha256": "cf5fd707166e43fea1e324ac9a54d8b8602647153a91b9ec815cf8b0f3b7be16",
+      "mode": "100644",
+      "classification": "source"
+    },
+    "tests/api/test_alpha_factory.py": {
+      "blob": "9814084325c8214aa977e4e306c6a6f3ec989781",
+      "sha256": "0c32c1ccf67da887671f579f1dccf60fa318769857a6876925b79985b6571c62",
+      "mode": "100644",
+      "classification": "test"
+    },
+    "tests/api/test_qlib_pipeline.py": {
+      "blob": "786ceb9d9e9bec674ec9cb9bd9b14a026f30ff5c",
+      "sha256": "f13e8efbc2fd618d0e77b8a7104739735842a40a8d53148fa5cdc8f538d525a5",
+      "mode": "100644",
+      "classification": "test"
+    },
+    "tests/contracts/test_candidate_offline_access.py": {
+      "blob": "90b0f4b6b61c614ac363cc3ec413a5bc55bc48f8",
+      "sha256": "4cd39fd205a70804d5356d3486504f209caa88cd2bab13d1567f16eec325bb14",
+      "mode": "100644",
+      "classification": "test"
+    },
+    "tests/contracts/test_candidate_package_runtime.py": {
+      "blob": "18acb5f88a9538cfa17cc49fa0b6f0dde6139a9b",
+      "sha256": "eaf049e9f0c5e72ff623a0a560ed45941d50d260e41518ae535386361de3964b",
+      "mode": "100644",
+      "classification": "test"
+    },
+    "tests/contracts/test_registered_candidate_execution.py": {
+      "blob": "99c091fdc919d39d3de583eb8f84fef797cb6f06",
+      "sha256": "7cc7a1ed41f89f38952ac91da6bde85f35d454b72fec81726d775ccc26f16612",
+      "mode": "100644",
+      "classification": "test"
+    },
+    "tests/integrations/test_candidate_package_inference.py": {
+      "blob": "35ede9964ec39aaae74609e9dac234407aa61b9b",
+      "sha256": "06abe493d4fc64588bf41cfb7402111308ca361618f3ff545de71cc9bd01a311",
+      "mode": "100644",
+      "classification": "test"
+    },
+    "tests/integrations/test_qlib_adapter_contract.py": {
+      "blob": "ccb68d3518a9bd5c87c2d9fbe2fc539bbd712bc2",
+      "sha256": "b4abdcf17490ae3bdab64d66474dc4a7f3064a84f880ef4533fa1d110f42c364",
+      "mode": "100644",
+      "classification": "test"
+    },
+    "tests/integrations/test_qlib_alpha_factory.py": {
+      "blob": "e4b1d580a4fcdc966541ebf131eabe1123cf8bea",
+      "sha256": "e52592023b23c22c1fc04b700c5170e49d600aef47995d4381ce96c8b4ebec67",
+      "mode": "100644",
+      "classification": "test"
+    },
+    "tests/research/test_alpha_factory.py": {
+      "blob": "2d42fef0696525db17ce33edc4d7330128197faa",
+      "sha256": "5d930949eaf9d941d52fb2fc6cb390ece47fbdcac0691e036e139a7b1f479c64",
+      "mode": "100644",
+      "classification": "test"
+    }
+  },
+  "required_feature_implementation_paths": [
+    "quant_shared/alpha_factory/contracts.py",
+    "quant_shared/alpha_factory/engine.py",
+    "integrations/qlib_adapter/factory_trainer.py",
+    "integrations/qlib_adapter/run_qlib_workflow.py",
+    "integrations/qlib_adapter/research_pipeline.py",
+    "integrations/qlib_adapter/factory_delivery.py",
+    "integrations/qlib_adapter/factory_package.py",
+    "quant_shared/strategy_delivery/package_evidence.py",
+    "quant_crypto/application/qlib_offline_replay.py",
+    "quant_crypto/application/btc_registered_candidate.py"
+  ],
+  "reviewed_feature_inventory": {
+    "quant_shared/alpha_factory/contracts.py": {
+      "blob": "7103595250f2eb26067dc18f0d4f03c4b6d1b7f3",
+      "sha256": "802de9f8cc8292d5b5bea507c4e29a3a181b5e02484c560e9fc738a584528707",
+      "mode": "100644"
+    },
+    "quant_shared/alpha_factory/engine.py": {
+      "blob": "ec35c16f4b0e36f3ccac6df371768ea9e823bf8f",
+      "sha256": "480b96cc4134de68d302010dade88eb0a7b5dfec382a1b93f32b3b0c304913b4",
+      "mode": "100644"
+    },
+    "integrations/qlib_adapter/factory_trainer.py": {
+      "blob": "632d82cdb783746544375e49bdfe586e7559766b",
+      "sha256": "4e10fbf8d8b21c451b725863e86089052adc2f792fce7ab57a83908d103666f7",
+      "mode": "100644"
+    },
+    "integrations/qlib_adapter/run_qlib_workflow.py": {
+      "blob": "cde97814eb2e25119680703b88f3fc4bfd2ca443",
+      "sha256": "b44ce92a9ba7b290d435cec2ee851efbc934fa3d1478d3830f1f64a2f484b352",
+      "mode": "100644"
+    },
+    "integrations/qlib_adapter/research_pipeline.py": {
+      "blob": "ee05aba5adb6948f0269abaa40297503f52003a1",
+      "sha256": "6d63ff6809b494acb8bb0c686b979c6383dc3c1303f87b56ef9cc66c05528778",
+      "mode": "100644"
+    },
+    "integrations/qlib_adapter/factory_delivery.py": {
+      "blob": "4323d91ca273bf61f85cf353ef14c04a86266979",
+      "sha256": "23878dc963d88b5623a021df1ee065d77ca1cad3a8a0ce5c3bfa964292f3c771",
+      "mode": "100644"
+    },
+    "integrations/qlib_adapter/factory_package.py": {
+      "blob": "82eeb677f8c5915fe31b1bebf3973132bca0deee",
+      "sha256": "a0e0cf7808b50a1e9f8fde157a811b6a59e1894edbeee8674355b704bd480a76",
+      "mode": "100644"
+    },
+    "quant_shared/strategy_delivery/package_evidence.py": {
+      "blob": "4fced4fcfd817eab221263899067fbe3605d8e83",
+      "sha256": "cf5fd707166e43fea1e324ac9a54d8b8602647153a91b9ec815cf8b0f3b7be16",
+      "mode": "100644"
+    },
+    "quant_crypto/application/qlib_offline_replay.py": {
+      "blob": "a694836c4aaf30731fd129d4aab2609f51332a91",
+      "sha256": "2e3616fbdcc275eba707f8d6374d9f64f745e63f82173412c312ea631c486f3f",
+      "mode": "100644"
+    },
+    "quant_crypto/application/btc_registered_candidate.py": {
+      "blob": "fed67f7a586eacb9db1bc0f6c75c4d1f285e0c78",
+      "sha256": "590f4d62fe30e952121b896ee647330d1d676bd077c6c3fbd9fe1dfefd7076c5",
+      "mode": "100644"
+    }
+  },
+  "source_fingerprints": {
+    "feature_runtime": {
+      "primitive_names": [
+        "momentum_20d",
+        "momentum_60d",
+        "momentum_120d",
+        "volatility_20d",
+        "volatility_60d",
+        "liquidity_20d",
+        "reversal_1d",
+        "volume_20d"
+      ],
+      "inputs": [
+        "quant_shared/alpha_factory/contracts.py",
+        "quant_shared/alpha_factory/engine.py",
+        "integrations/qlib_adapter/factory_trainer.py",
+        "integrations/qlib_adapter/run_qlib_workflow.py",
+        "integrations/qlib_adapter/research_pipeline.py",
+        "integrations/qlib_adapter/factory_delivery.py",
+        "integrations/qlib_adapter/factory_package.py",
+        "quant_shared/strategy_delivery/package_evidence.py",
+        "quant_crypto/application/qlib_offline_replay.py",
+        "quant_crypto/application/btc_registered_candidate.py"
+      ],
+      "sha256": "c40b25e6ff0a363e39b23934507131e2920c5a8571c567967175995dc2de6198"
+    },
+    "dependency_runtime": {
+      "versions": {
+        "numpy": "2.4.6",
+        "pandas": "3.0.4",
+        "lightgbm": "4.7.0",
+        "qlib": "0.9.7"
+      },
+      "sha256": "b4d023b8c924cdecc0f912a96e0cc1ee2692be2b24a22d2967134b7d611620d2"
+    },
+    "combined": {
+      "inputs": [
+        "backend/app/api/app_factory.py",
+        "backend/app/services/alpha_factory.py",
+        "backend/app/services/candidate_delivery_bootstrap.py",
+        "backend/app/services/candidate_offline_inputs.py",
+        "integrations/qlib_adapter/factory_delivery.py",
+        "integrations/qlib_adapter/factory_package.py",
+        "integrations/qlib_adapter/factory_trainer.py",
+        "integrations/qlib_adapter/research_pipeline.py",
+        "integrations/qlib_adapter/run_qlib_workflow.py",
+        "quant_crypto/application/btc_registered_candidate.py",
+        "quant_crypto/application/qlib_offline_replay.py",
+        "quant_shared/alpha_factory/contracts.py",
+        "quant_shared/alpha_factory/engine.py",
+        "quant_shared/strategy_delivery/package_evidence.py",
+        "tests/api/test_alpha_factory.py",
+        "tests/api/test_qlib_pipeline.py",
+        "tests/contracts/test_candidate_offline_access.py",
+        "tests/contracts/test_candidate_package_runtime.py",
+        "tests/contracts/test_registered_candidate_execution.py",
+        "tests/integrations/test_candidate_package_inference.py",
+        "tests/integrations/test_qlib_adapter_contract.py",
+        "tests/integrations/test_qlib_alpha_factory.py",
+        "tests/research/test_alpha_factory.py"
+      ],
+      "sha256": "26143df83d5e15acb60b5548eb7df6aa1ef99b7ecb041e2106c7c44f479e57cb"
+    }
+  },
+  "runtime_feature_primitives": [
+    "momentum_20d",
+    "momentum_60d",
+    "momentum_120d",
+    "volatility_20d",
+    "volatility_60d",
+    "liquidity_20d",
+    "reversal_1d",
+    "volume_20d"
+  ],
+  "required_dependency_version_keys": [
+    "numpy",
+    "pandas",
+    "lightgbm",
+    "qlib"
+  ],
+  "required_dependency_versions": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.4",
+    "lightgbm": "4.7.0",
+    "qlib": "0.9.7"
+  },
+  "required_python_version": "3.11.15",
+  "source_handoff": {
+    "path": ".agent/handoffs/BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-20260930/published-btc-real-candidate-clean-source-refreeze-20261001-4f730f54.json",
+    "commit": "241c45913d55587ffa9930e806eae626712bd410",
+    "sha256": "77834c0828258121b76648fe57e94b62242f68b8b3c6e987c51693e8bcbc944f",
+    "schema_version": "agent_handoff_envelope_v1",
+    "event_id": "published-btc-real-candidate-clean-source-refreeze-20261001-4f730f54",
+    "ticket_id": "BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-20260930",
+    "deliverable_commit": "4f730f54b34e3d2c2af7cc62e796058bc2fc3048",
+    "readiness_classes": [
+      "quality_checked"
+    ],
+    "blockers": [
+      "post_refreeze_source_review_S2_not_created_or_approved",
+      "real_candidate_campaign_fit_count_zero_and_business_acceptance_not_started",
+      "same_run_F_and_readonly_page_acceptance_not_completed",
+      "refs_heads_main_not_updated_to_refrozen_source_and_source_not_deployed",
+      "not_promotion_evidence_no_demo_no_paper_no_live_no_private_no_order_no_transfer_no_withdraw"
+    ]
+  },
+  "source_handoff_identity": {
+    "ticket_id": "BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-20260930",
+    "path_prefix": ".agent/handoffs/BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-20260930/",
+    "producer_role": "btc_developer",
+    "event_type": "published",
+    "domain": "btc"
+  },
+  "allowed_production_preparation_paths": [
+    ".agent/data_manifests/btc-okx-real-candidate-minute-inputs/btc-real-candidate-1m-20260615T2359Z-20260618T0300Z-f20260929T180247Z-v1.json",
+    "docs/research/btc_real_candidate_inputs_20260930.md",
+    "scripts/research/prepare_btc_real_candidate_inputs_20260930.py",
+    "tests/research/test_prepare_btc_real_candidate_inputs_20260930.py",
+    ".agent/handoffs/BTC-REAL-CANDIDATE-DATA-20260930/published-btc-real-candidate-data-0930-314c440ac.json",
+    ".agent/handoffs/BTC-REAL-CANDIDATE-DATA-20260930/integrated-btc-real-candidate-data-0930-df2f3e7d.json",
+    "docs/agent_playbooks/btc_real_candidate_offline_acceptance_delivery_20260930.md",
+    "docs/agent_playbooks/btc_real_candidate_offline_acceptance_delivery_20260930.json",
+    "tools/agent_governance/btc_real_candidate_offline_acceptance_delivery_20260930.py",
+    "tests/agent_governance/test_btc_real_candidate_offline_acceptance_delivery_20260930.py",
+    "docs/acceptance/btc-real-candidate-offline-acceptance-governance-20260930.md"
+  ],
+  "allowed_production_preparation_prefixes": [
+    ".agent/handoffs/BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-GOVERNANCE-20260930/",
+    ".agent/handoffs/BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-20260930/"
+  ],
+  "allowed_post_source_paths": [
+    "frontend/public/frontend-identity.json",
+    ".agent/real_candidate_acceptance/btc-real-candidate-offline-source-review-20260930.json",
+    ".agent/real_candidate_acceptance/btc-real-candidate-offline-integration-review-20260930.json",
+    ".agent/real_candidate_acceptance/btc-real-candidate-offline-deployment-acceptance-20260930.json",
+    ".agent/real_candidate_acceptance/btc-real-candidate-offline-blocked-20260930.json",
+    ".agent/real_candidate_acceptance/btc-real-candidate-offline-campaign-evidence-20260930.json"
+  ],
+  "campaign_evidence_path": ".agent/real_candidate_acceptance/btc-real-candidate-offline-campaign-evidence-20260930.json",
+  "campaign_evidence_schema_version": "btc_real_candidate_offline_campaign_evidence_v1",
+  "approved_external_artifact_names": [
+    "research_contract.json",
+    "fit_budget.json",
+    "trial_cache.json",
+    "lineage.json",
+    "seal.json",
+    "factory_calibration_seal.json",
+    "factory_finalization_receipt.json",
+    "run_seal.json",
+    "model.txt",
+    "pred_score.parquet"
+  ],
+  "fixed_campaign": {
+    "campaign_id": "btc-real-candidate-offline-acceptance-20260930",
+    "instrument": "BTC-USDT-SWAP",
+    "timeframe": "1h",
+    "model": "lgbm_small",
+    "factor_pool_size": 8,
+    "factor_status": "registered",
+    "max_selected_factors": 6,
+    "seed": 17,
+    "screening_folds": 4,
+    "max_actual_fits": 5,
+    "failed_or_crashed_fit_consumes_budget": true,
+    "max_rounds": 100,
+    "early_stop_rounds": 12,
+    "threads": 2,
+    "leaves": 7,
+    "learning_rate": 0.035,
+    "min_data": 80,
+    "lambda_l2": 5,
+    "research_round_trip_cost_bps": [24, 36, 48],
+    "fee_bps_per_side": 5,
+    "slippage_bps_per_side": 2,
+    "spread_bps_per_side": 2,
+    "impact_bps_per_side": 2,
+    "funding_separate": true,
+    "decision_hours": 48,
+    "settlement_events": 6,
+    "official_run_count": 1,
+    "requested_pause_after_event": 24,
+    "warmup_hours": 180,
+    "minimum_tail_hours": 2,
+    "initial_equity_usdt": 5000,
+    "nominal_cap_usdt": 10,
+    "template_or_genetic_search_allowed": false,
+    "window_reselection_allowed": false,
+    "sixth_fit_allowed": false
+  },
+  "allowed_business_outcomes": [
+    "passed",
+    "blocked_screening",
+    "blocked_calibration",
+    "blocked_input_integrity",
+    "blocked_execution",
+    "blocked_page_acceptance"
+  ],
+  "pre_run_blocked_outcomes": [
+    "blocked_screening",
+    "blocked_calibration",
+    "blocked_input_integrity"
+  ],
+  "binding_names": [
+    "candidate",
+    "catalog",
+    "account",
+    "input"
+  ],
+  "governance_paths": [
+    "docs/agent_playbooks/btc_real_candidate_offline_acceptance_delivery_20260930.md",
+    "docs/agent_playbooks/btc_real_candidate_offline_acceptance_delivery_20260930.json",
+    "tools/agent_governance/btc_real_candidate_offline_acceptance_delivery_20260930.py",
+    "tests/agent_governance/test_btc_real_candidate_offline_acceptance_delivery_20260930.py",
+    "docs/acceptance/btc-real-candidate-offline-acceptance-governance-20260930.md"
+  ],
+  "review_report_paths": {
+    "source_review": ".agent/real_candidate_acceptance/btc-real-candidate-offline-source-review-20260930.json",
+    "integration_review": ".agent/real_candidate_acceptance/btc-real-candidate-offline-integration-review-20260930.json",
+    "deployment_acceptance": ".agent/real_candidate_acceptance/btc-real-candidate-offline-deployment-acceptance-20260930.json",
+    "blocked_deployment": ".agent/real_candidate_acceptance/btc-real-candidate-offline-blocked-20260930.json"
+  },
+  "handoff_prefixes": [
+    ".agent/handoffs/BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-GOVERNANCE-20260930/",
+    ".agent/handoffs/INTEGRATE-BTC-REAL-CANDIDATE-OFFLINE-ACCEPTANCE-20260930/"
+  ],
+  "rollback_ref": "refs/tags/codex/before-btc-real-candidate-offline-acceptance-refreeze-20261001",
+  "required_source_checks": [
+    "explicit_user_authorization",
+    "dedicated_sparse_producer",
+    "scoped_dirty",
+    "scoped_clean",
+    "exact_source_inventory_verified",
+    "source_handoff_verified",
+    "feature_dependency_fingerprints_verified",
+    "code_and_tests_independently_reviewed",
+    "execution_semantics_independently_reviewed",
+    "source_seal_does_not_require_fit_candidate_or_run",
+    "append_only_handoff",
+    "independent_integrator",
+    "no_private_or_trading_access"
+  ],
+  "required_deployment_checks": [
+    "source_review_receipt_verified",
+    "source_is_ancestor_of_deployment",
+    "source_files_unchanged_at_deployment",
+    "feature_dependency_fingerprints_unchanged",
+    "consumer_and_execution_commit_equal",
+    "candidate_catalog_account_input_bindings_frozen",
+    "single_fixed_campaign",
+    "actual_fit_budget_verified",
+    "fixed_48_hour_window",
+    "six_settlement_events",
+    "single_official_run",
+    "checkpoint_stop_same_task_resume",
+    "duplicate_writer_rejected",
+    "ledger_and_recovery_reconciled",
+    "minute_sampling_labeled_non_tick",
+    "temporary_candidate_management_local_no_password_verified",
+    "offline_worker_not_trading_permission",
+    "final_research_readonly_restored",
+    "current_main_identity",
+    "canonical_page_acceptance",
+    "rollback_point_verified",
+    "blocked_outcome_truthful",
+    "no_private_or_trading_access"
+  ],
+  "required_false_flags": [
+    "demo_control_enabled",
+    "promotion",
+    "paper",
+    "paper_order_allowed",
+    "live",
+    "live_order_allowed",
+    "private",
+    "order",
+    "real_order",
+    "transfer",
+    "withdraw",
+    "execution_permission",
+    "broker_endpoint_access",
+    "exchange_account_access"
+  ],
+  "temporary_runtime_required": {
+    "stage": "temporary_offline_acceptance",
+    "profile": "candidate_management",
+    "auth_mode": "local_no_password",
+    "loopback_only": true,
+    "candidate_management_enabled": true,
+    "management_write_enabled": true,
+    "offline_task_enabled": true,
+    "offline_worker_enabled": true,
+    "read_only": false
+  },
+  "pre_run_blocked_runtime_required": {
+    "stage": "not_started",
+    "profile": "research_readonly",
+    "loopback_only": true,
+    "candidate_management_enabled": false,
+    "management_write_enabled": false,
+    "offline_task_enabled": false,
+    "offline_worker_enabled": false,
+    "read_only": true,
+    "auth_mode_changed_for_restore": false,
+    "password_step_added": false
+  },
+  "final_runtime_required": {
+    "stage": "restored_after_acceptance",
+    "profile": "research_readonly",
+    "loopback_only": true,
+    "candidate_management_enabled": false,
+    "management_write_enabled": false,
+    "offline_task_enabled": false,
+    "offline_worker_enabled": false,
+    "read_only": true,
+    "auth_mode_changed_for_restore": false,
+    "password_step_added": false
+  },
+  "documentation": "docs/agent_playbooks/btc_real_candidate_offline_acceptance_delivery_20260930.md"
+}

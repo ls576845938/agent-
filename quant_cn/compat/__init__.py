@@ -1,0 +1,43 @@
+"""China-domain adapters for architect-approved shared infrastructure."""
+
+from quant_cn.compat.shared_adapter import (
+    CN_SHARED_ADAPTER_VERSION,
+    SAFETY_FLAGS,
+    ReplayEventAdapterInput,
+    ReplaySnapshotAdapterInput,
+    SharedContractMismatch,
+    build_backtest_evidence,
+    build_backtest_identity,
+    build_evidence_bundle,
+    build_evidence_reference,
+    build_freshness_assessment,
+    build_ledger_record,
+    build_read_model_snapshot,
+    build_replay_input,
+    canonical_cn_payload_hash,
+    cn_identity,
+    reconcile_cn_ledger,
+    require_shared_platform_v2,
+    to_shared_utc,
+)
+
+__all__ = [
+    "CN_SHARED_ADAPTER_VERSION",
+    "SAFETY_FLAGS",
+    "ReplayEventAdapterInput",
+    "ReplaySnapshotAdapterInput",
+    "SharedContractMismatch",
+    "build_backtest_evidence",
+    "build_backtest_identity",
+    "build_evidence_bundle",
+    "build_evidence_reference",
+    "build_freshness_assessment",
+    "build_ledger_record",
+    "build_read_model_snapshot",
+    "build_replay_input",
+    "canonical_cn_payload_hash",
+    "cn_identity",
+    "reconcile_cn_ledger",
+    "require_shared_platform_v2",
+    "to_shared_utc",
+]

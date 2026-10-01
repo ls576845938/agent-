@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "btc_current_head_gate_rebuild.schema.json",
+  "title": "BTC Current-HEAD Gate Rebuild Receipt",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at_utc",
+    "source_head",
+    "run_id",
+    "status",
+    "decision",
+    "step_order",
+    "authoritative_pointer",
+    "validation_checks",
+    "blockers",
+    "outputs",
+    "snapshot_publication",
+    "quality_checked",
+    "research_ready",
+    "backtest_ready",
+    "promotion_evidence_ready",
+    "safety"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "btc_current_head_gate_rebuild_v1"
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_head": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{40}$"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data_version": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "complete_blocked"
+      ]
+    },
+    "decision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_order": {
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "type": "string"
+      }
+    },
+    "authoritative_pointer": {
+      "type": "object",
+      "required": [
+        "status",
+        "pointer_path",
+        "validation_errors"
+      ]
+    },
+    "validation_checks": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "const": true
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "required": [
+        "gate",
+        "dashboard",
+        "read_model"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256",
+          "source_head"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "source_head": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{40}$"
+          }
+        }
+      }
+    },
+    "snapshot_publication": {
+      "type": "object",
+      "required": [
+        "published",
+        "run_manifest_path",
+        "run_manifest_sha256"
+      ],
+      "properties": {
+        "published": {
+          "const": true
+        },
+        "run_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "quality_checked": {
+      "const": true
+    },
+    "research_ready": {
+      "type": "boolean"
+    },
+    "backtest_ready": {
+      "type": "boolean"
+    },
+    "promotion_evidence_ready": {
+      "type": "boolean"
+    },
+    "safety": {
+      "type": "object",
+      "minProperties": 10,
+      "additionalProperties": {
+        "const": false
+      }
+    }
+  }
+}

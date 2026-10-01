@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "account_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "position": {
+      "type": "object",
+      "required": ["symbol", "quantity", "avg_price", "market_price", "unrealized_pnl"],
+      "properties": {
+        "symbol": {"type": "string", "minLength": 1},
+        "quantity": {"type": "number"},
+        "avg_price": {"type": "number"},
+        "market_price": {"type": "number"},
+        "unrealized_pnl": {"type": "number"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": [
+    "schema_version", "artifact_type", "status", "code_head", "observed_at_utc",
+    "identity", "bindings", "freshness", "data_limitations", "foundation",
+    "account_snapshot", "decision", "write_counters", "guardrails", "blockers",
+    "artifact_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_etf_26_ibkr_no_submit_shadow_v2"},
+    "artifact_type": {"const": "us_etf_26_ibkr_no_submit_shadow"},
+    "status": {"const": "injected_fake_no_submit_shadow_validated"},
+    "code_head": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "observed_at_utc": {"type": "string", "format": "date-time"},
+    "identity": {
+      "type": "object",
+      "required": [
+        "candidate_id", "strategy_version", "symbol", "timeframe",
+        "exposure_multiplier", "status", "freeze_config_path",
+        "freeze_config_sha256", "params_sha256"
+      ],
+      "properties": {
+        "candidate_id": {"const": "us-etf26-complete-return-qqq-1d-v1"},
+        "strategy_version": {"const": "us_etf_complete_return_fixed_signal_v1"},
+        "symbol": {"const": "QQQ"},
+        "timeframe": {"const": "1D"},
+        "exposure_multiplier": {"const": 3.0},
+        "status": {"const": "frozen_exploratory_research_only"},
+        "freeze_config_path": {"const": "configs/strategies/us_etf_26_candidate_freeze_v1.json"},
+        "freeze_config_sha256": {"$ref": "#/$defs/sha256"},
+        "params_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "additionalProperties": false
+    },
+    "bindings": {
+      "type": "object",
+      "required": [
+        "dataset_id", "dataset_version", "dataset_aggregate_sha256",
+        "manifest_git_spec", "manifest_path", "manifest_sha256",
+        "storage_relative_path", "yahoo_file_path", "yahoo_file_sha256",
+        "yahoo_lineage_path", "yahoo_lineage_sha256", "fred_file_path",
+        "source_code_head", "adjustment_policy", "strategy_price_semantics",
+        "account_hash"
+      ],
+      "properties": {
+        "dataset_id": {"const": "us-equity-public-forward-snapshot"},
+        "dataset_version": {"type": "string", "minLength": 1},
+        "dataset_aggregate_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_git_spec": {"type": "string", "pattern": "^[a-f0-9]{40}:\\.agent/data_manifests/us-equity-public-forward-snapshot/.+\\.json$"},
+        "manifest_path": {"type": "string", "pattern": "^\\.agent/data_manifests/us-equity-public-forward-snapshot/.+\\.json$"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "storage_relative_path": {"type": "string", "pattern": "^datasets/us-equity-public-forward-snapshot/"},
+        "yahoo_file_path": {"const": "yahoo/QQQ_1D.csv"},
+        "yahoo_file_sha256": {"$ref": "#/$defs/sha256"},
+        "yahoo_lineage_path": {"const": "yahoo/lineage.json"},
+        "yahoo_lineage_sha256": {"$ref": "#/$defs/sha256"},
+        "fred_file_path": {"const": "fred_macro_latest_vintage.csv"},
+        "source_code_head": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "adjustment_policy": {"const": "provider_adjusted_close_with_raw_ohlcv_and_policy_recorded"},
+        "strategy_price_semantics": {"const": "provider_adjusted_ohlc_via_session_ratio"},
+        "account_hash": {"$ref": "#/$defs/account_hash"}
+      },
+      "additionalProperties": false
+    },
+    "freshness": {
+      "type": "object",
+      "required": ["latest_decision_time_utc", "stale_seconds", "max_staleness_seconds", "stale"],
+      "properties": {
+        "latest_decision_time_utc": {"type": "string", "format": "date-time"},
+        "stale_seconds": {"type": "number", "minimum": 0},
+        "max_staleness_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "stale": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "data_limitations": {
+      "type": "array",
+      "allOf": [
+        {"contains": {"const": "yahoo_survivorship_bias_and_current_adjustment_vintage"}},
+        {"contains": {"const": "fred_latest_vintage_non_pit_without_realtime_bounds"}}
+      ],
+      "items": {"type": "string"}
+    },
+    "foundation": {
+      "type": "object",
+      "required": [
+        "adapter", "endpoint_kind", "port", "connected_injected_fake",
+        "auto_connect_called", "readonly", "submit_capable", "cancel_capable"
+      ],
+      "properties": {
+        "adapter": {"const": "ibkr_paper"},
+        "endpoint_kind": {"const": "paper"},
+        "port": {"enum": [4002, 7497]},
+        "connected_injected_fake": {"const": true},
+        "auto_connect_called": {"const": false},
+        "readonly": {"const": true},
+        "submit_capable": {"const": false},
+        "cancel_capable": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "account_snapshot": {
+      "type": "object",
+      "required": [
+        "timestamp_utc", "account_hash", "cash", "equity", "buying_power",
+        "positions", "open_orders", "fills"
+      ],
+      "properties": {
+        "timestamp_utc": {"type": "string", "format": "date-time"},
+        "account_hash": {"$ref": "#/$defs/account_hash"},
+        "cash": {"type": "number"},
+        "equity": {"type": "number", "minimum": 0},
+        "buying_power": {"type": "number"},
+        "positions": {"type": "array", "items": {"$ref": "#/$defs/position"}},
+        "open_orders": {"type": "array"},
+        "fills": {"type": "array"}
+      },
+      "additionalProperties": false
+    },
+    "decision": {
+      "type": "object",
+      "required": [
+        "signal", "forecast", "target_position", "portfolio_targets",
+        "portfolio_target_decisions", "portfolio_intent_decisions",
+        "order_intents", "risk_decisions", "rebalance_suppressions",
+        "rebalance_noop_reason"
+      ],
+      "properties": {
+        "signal": {"type": "object"},
+        "forecast": {"type": "object"},
+        "target_position": {"type": "object"},
+        "portfolio_targets": {"type": "array", "minItems": 1, "maxItems": 1},
+        "portfolio_target_decisions": {"type": "array", "minItems": 1, "maxItems": 1},
+        "portfolio_intent_decisions": {"type": "array", "minItems": 1, "maxItems": 1},
+        "order_intents": {"type": "array", "maxItems": 1},
+        "risk_decisions": {"type": "array", "maxItems": 1},
+        "rebalance_suppressions": {"type": "array", "maxItems": 1},
+        "rebalance_noop_reason": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "write_counters": {
+      "type": "object",
+      "required": [
+        "submit_call_count", "cancel_call_count", "global_cancel_call_count",
+        "submit_attempt_count", "cancel_attempt_count",
+        "submit_call_count_delta", "cancel_call_count_delta",
+        "global_cancel_call_count_delta", "submit_attempt_count_delta",
+        "cancel_attempt_count_delta"
+      ],
+      "properties": {
+        "submit_call_count": {"const": 0},
+        "cancel_call_count": {"const": 0},
+        "global_cancel_call_count": {"const": 0},
+        "submit_attempt_count": {"const": 0},
+        "cancel_attempt_count": {"const": 0},
+        "submit_call_count_delta": {"const": 0},
+        "cancel_call_count_delta": {"const": 0},
+        "global_cancel_call_count_delta": {"const": 0},
+        "submit_attempt_count_delta": {"const": 0},
+        "cancel_attempt_count_delta": {"const": 0}
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "injected_fake_client_only", "oms_handle_intent_called",
+        "submit_order_called", "cancel_order_called", "global_cancel_called",
+        "promotion_allowed", "paper_allowed", "live_allowed", "private_allowed",
+        "order_allowed"
+      ],
+      "properties": {
+        "injected_fake_client_only": {"const": true},
+        "oms_handle_intent_called": {"const": false},
+        "submit_order_called": {"const": false},
+        "cancel_order_called": {"const": false},
+        "global_cancel_called": {"const": false},
+        "promotion_allowed": {"const": false},
+        "paper_allowed": {"const": false},
+        "live_allowed": {"const": false},
+        "private_allowed": {"const": false},
+        "order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "blockers": {"type": "array", "minItems": 7, "items": {"type": "string"}},
+    "artifact_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "additionalProperties": false
+}

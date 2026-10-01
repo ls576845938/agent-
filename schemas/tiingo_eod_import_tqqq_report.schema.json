@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/tiingo_eod_import_tqqq_report.schema.json",
+  "title": "QuantStation VNEXT US Equity Tiingo TQQQ EOD Import Report",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "asset", "provider", "source_type", "status", "guardrails", "blockers"],
+  "properties": {
+    "schema_version": {"const": "us_equity_tiingo_eod_import_report_v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "asset": {"const": "us_equity"},
+    "provider": {"const": "tiingo"},
+    "source_type": {"const": "market_data_eod"},
+    "status": {"enum": ["dry_run", "pass", "partial", "blocked"]},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "guardrails": {"type": "object", "properties": {"token_written_to_artifacts": {"const": false}, "live_order_allowed": {"const": false}, "paper_or_live_unlock_allowed": {"const": false}, "private_endpoint_used": {"const": false}, "order_endpoint_used": {"const": false}, "broker_endpoint_used": {"const": false}, "real_order_submitted": {"const": false}}, "additionalProperties": true}
+  },
+  "additionalProperties": true
+}

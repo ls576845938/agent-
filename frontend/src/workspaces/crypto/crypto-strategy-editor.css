@@ -1,0 +1,310 @@
+.crypto-strategy-editor {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  color: var(--text-primary, #e8edf7);
+  background: #11161f;
+  border-bottom: 1px solid rgba(147, 165, 194, 0.18);
+}
+
+.crypto-strategy-editor-header,
+.crypto-strategy-editor-footer,
+.crypto-strategy-editor-meta,
+.crypto-strategy-editor-modal > header,
+.crypto-strategy-editor-modal > footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.crypto-strategy-editor-header > div:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 230px;
+}
+
+.crypto-strategy-editor-kicker {
+  color: #8fa4c4;
+  font-size: 10px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.crypto-strategy-editor-header strong { font-size: 15px; }
+.crypto-strategy-editor-header small,
+.crypto-strategy-editor-summary small,
+.crypto-strategy-editor-footer > span,
+.crypto-strategy-editor-modal footer > span { color: #8f9bb0; font-size: 11px; }
+
+.crypto-strategy-editor-selector {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+  min-width: 190px;
+  color: #9ba8bc;
+  font-size: 11px;
+}
+
+.crypto-strategy-editor select,
+.crypto-strategy-editor input,
+.crypto-strategy-editor textarea,
+.crypto-strategy-editor button {
+  font: inherit;
+}
+
+.crypto-strategy-editor select,
+.crypto-strategy-editor input {
+  min-height: 30px;
+  padding: 5px 8px;
+  color: #e8edf7;
+  background: #0b1017;
+  border: 1px solid rgba(147, 165, 194, 0.28);
+  border-radius: 4px;
+}
+
+.crypto-strategy-editor input:disabled { color: #748096; cursor: not-allowed; }
+
+.crypto-strategy-editor button {
+  min-height: 30px;
+  padding: 5px 10px;
+  color: #dce6f7;
+  background: #1a2433;
+  border: 1px solid rgba(147, 165, 194, 0.28);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.crypto-strategy-editor button:hover:not(:disabled) { border-color: #5e86c5; }
+.crypto-strategy-editor button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.crypto-strategy-editor-start,
+.crypto-strategy-editor-confirm { color: #07111e !important; background: #8ab4f8 !important; border-color: #8ab4f8 !important; font-weight: 650; }
+
+.crypto-strategy-editor-meta {
+  flex-wrap: wrap;
+  color: #9ba8bc;
+  font-size: 11px;
+}
+
+.crypto-strategy-editor-meta span { padding-right: 10px; border-right: 1px solid rgba(147, 165, 194, 0.18); }
+.crypto-strategy-editor-meta span:last-child { border-right: 0; }
+.crypto-strategy-editor-meta code,
+.crypto-strategy-editor-summary code { color: #b8d2fa; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; }
+.crypto-strategy-editor-meta .saved { color: #7fd6a3; }
+
+.crypto-strategy-editor-code {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  min-height: 180px;
+  max-height: 300px;
+  overflow: hidden;
+  background: #090d13;
+  border: 1px solid rgba(147, 165, 194, 0.2);
+  border-radius: 5px;
+}
+
+.crypto-strategy-editor-code ol {
+  margin: 0;
+  padding: 10px 8px 10px 0;
+  overflow: hidden;
+  color: #5d6b82;
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-align: right;
+  user-select: none;
+  list-style: none;
+}
+
+.crypto-strategy-editor-code textarea {
+  width: 100%;
+  min-height: 180px;
+  padding: 10px;
+  resize: vertical;
+  color: #d8e4f5;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.crypto-strategy-editor-footer { justify-content: space-between; }
+.crypto-strategy-editor-footer > div { display: flex; gap: 8px; }
+.crypto-strategy-editor-warning,
+.crypto-strategy-editor-error,
+.crypto-strategy-editor-info { margin: 0; color: #f4c67c; font-size: 12px; }
+.crypto-strategy-editor-error { color: #ff9f9f; }
+.crypto-strategy-editor-info { color: #a9bcff; }
+
+.crypto-strategy-editor-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(3, 7, 12, 0.72);
+}
+
+.crypto-strategy-editor-modal {
+  width: min(760px, 100%);
+  max-height: min(720px, 92vh);
+  overflow: auto;
+  padding: 18px;
+  color: #e8edf7;
+  background: #121a26;
+  border: 1px solid rgba(147, 165, 194, 0.32);
+  border-radius: 7px;
+  box-shadow: 0 18px 70px rgba(0, 0, 0, 0.42);
+}
+
+.crypto-strategy-editor-modal h3 { margin: 4px 0 0; font-size: 18px; }
+.crypto-strategy-editor-modal > header { justify-content: space-between; align-items: flex-start; }
+.crypto-strategy-editor-modal > header > button { min-width: 30px; padding: 0; font-size: 20px; }
+.crypto-strategy-editor-config-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+.crypto-strategy-editor-config-grid > label { display: grid; gap: 4px; color: #a9b5c9; font-size: 11px; }
+.crypto-strategy-editor-summary { display: grid; grid-column: 1 / -1; gap: 4px; padding: 10px; background: #0b111a; border: 1px solid rgba(147, 165, 194, 0.18); border-radius: 5px; }
+.crypto-strategy-editor-lifecycle { margin-top: 14px; padding: 9px 10px; color: #b8d2fa; background: rgba(55, 91, 145, 0.22); border-radius: 4px; font-size: 12px; }
+.crypto-strategy-editor-modal > footer { justify-content: space-between; margin-top: 16px; }
+.crypto-strategy-editor-modal > footer > div { display: flex; gap: 8px; }
+
+/* The editor stays mounted so restoring it is local-only; flex ordering keeps
+   the familiar editor-first view before a run while completed results remain
+   the first visible report without remounting the source loader. */
+.tv-strategy-report {
+  display: flex;
+  flex-direction: column;
+}
+
+.crypto-backtest-progress {
+  order: -2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 12px;
+  padding: 10px 12px;
+  color: var(--tv-muted, #9ca9c9);
+  background: rgba(41, 98, 255, 0.1);
+  border: 1px solid rgba(83, 125, 255, 0.45);
+  border-radius: 6px;
+}
+
+.crypto-backtest-progress > div { display: grid; gap: 3px; }
+.crypto-backtest-progress-track {
+  flex: 1 1 180px;
+  min-width: 160px;
+  height: 8px;
+  overflow: hidden;
+  display: block !important;
+  background: rgba(147, 165, 194, 0.12);
+  border: 1px solid rgba(83, 125, 255, 0.32);
+  border-radius: 999px;
+}
+.crypto-backtest-progress-track span {
+  display: block;
+  height: 100%;
+  background: #5b8cff;
+  border-radius: inherit;
+  transition: width 160ms ease-out;
+}
+.crypto-backtest-progress-stages { display: flex !important; align-items: center; gap: 4px !important; }
+.crypto-backtest-progress-stages span { padding: 4px 6px; color: #75829a; background: rgba(147, 165, 194, 0.08); border-radius: 3px; font-size: 9px; letter-spacing: 0; text-transform: none; white-space: nowrap; }
+.crypto-backtest-progress-stages span.active { color: #d8e1ff; background: rgba(83, 125, 255, 0.28); }
+.crypto-backtest-progress span { color: #8ea8ef; font-size: 9px; letter-spacing: 0.04em; text-transform: uppercase; }
+.crypto-backtest-progress strong { color: #d8e1ff; font-size: 12px; }
+.crypto-backtest-progress small { color: #9ca9c9; font-size: 9px; line-height: 1.45; }
+.crypto-backtest-progress-stages span { color: #75829a; font-size: 9px; letter-spacing: 0; text-transform: none; }
+.crypto-backtest-progress-stages span.active { color: #d8e1ff; }
+.crypto-backtest-progress.completed { background: rgba(48, 184, 122, 0.08); border-color: rgba(48, 184, 122, 0.45); }
+.crypto-backtest-progress.completed strong { color: #8ce0b6; }
+.crypto-backtest-progress.failed { background: rgba(242, 54, 69, 0.08); border-color: rgba(242, 54, 69, 0.45); }
+.crypto-backtest-progress.failed strong { color: #ef8d95; }
+
+.crypto-backtest-completed-actions {
+  order: -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 10px 12px 0;
+  padding: 12px 14px;
+  color: #d8e1ff;
+  background: rgba(41, 98, 255, 0.12);
+  border: 1px solid rgba(83, 125, 255, 0.55);
+  border-radius: 6px;
+}
+.crypto-backtest-completed-actions > div:first-child { display: grid; gap: 3px; }
+.crypto-backtest-completed-kicker { color: #8ea8ef; font-size: 9px; letter-spacing: 0.08em; }
+.crypto-backtest-completed-actions strong { font-size: 14px; }
+.crypto-backtest-completed-actions small { color: #9ca9c9; font-size: 10px; }
+.crypto-backtest-completed-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.crypto-backtest-completed-buttons button {
+  min-height: 30px;
+  padding: 0 11px;
+  color: #c7d4ff;
+  background: rgba(14, 21, 34, 0.82);
+  border: 1px solid rgba(126, 151, 214, 0.55);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.crypto-backtest-completed-buttons button.primary { color: #07111e; background: #8ab4f8; border-color: #8ab4f8; font-weight: 650; }
+.crypto-backtest-completed-buttons button:hover,
+.crypto-backtest-completed-buttons button:focus-visible { border-color: #a9c4ff; outline: none; }
+.tv-report-evidence-unavailable { padding: 18px 12px; line-height: 1.55; }
+.tv-report-missing-note { display: block; margin-top: 4px; color: #8f9bb0; font-size: 10px; }
+
+.crypto-strategy-editor-frame {
+  order: -1;
+}
+
+.tv-backtest-result-focused .crypto-backtest-progress { order: -1; }
+.tv-backtest-result-focused .crypto-strategy-editor-frame { order: 10; display: none; }
+
+.crypto-strategy-editor-restore {
+  order: 9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 12px 0;
+  padding: 8px 10px;
+  color: var(--tv-muted, #9ca9c9);
+  background: #11151d;
+  border: 1px solid var(--tv-line, #252c39);
+  border-radius: 5px;
+  font-size: 10px;
+}
+
+.crypto-strategy-editor-restore button {
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 0 10px;
+  color: #b9c9ff;
+  background: rgba(41, 98, 255, 0.12);
+  border: 1px solid rgba(83, 125, 255, 0.55);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.crypto-strategy-editor-restore button:hover,
+.crypto-strategy-editor-restore button:focus-visible {
+  background: rgba(41, 98, 255, 0.24);
+  border-color: #7799ff;
+  outline: none;
+}
+
+/* The crypto tester is an ordinary workbench module; its tab row must not be a sticky overlay. */
+.crypto-tv-shell .tv-bottom-dock .tv-bottom-tabs { position: static; top: auto; z-index: auto; }
+
+@media (max-width: 720px) {
+  .crypto-strategy-editor-header { align-items: stretch; flex-direction: column; }
+  .crypto-strategy-editor-start { width: 100%; }
+  .crypto-strategy-editor-config-grid { grid-template-columns: 1fr; }
+  .crypto-strategy-editor-summary { grid-column: auto; }
+  .crypto-strategy-editor-modal > footer { align-items: stretch; flex-direction: column; }
+  .crypto-backtest-progress,
+  .crypto-backtest-completed-actions,
+  .crypto-strategy-editor-restore { align-items: flex-start; flex-direction: column; }
+}

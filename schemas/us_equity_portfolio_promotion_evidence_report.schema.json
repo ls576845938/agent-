@@ -1,0 +1,403 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantstation.local/schemas/us_equity_portfolio_promotion_evidence_report.schema.json",
+  "title": "QuantStation US Equity Portfolio Promotion Evidence Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "commit",
+    "branch",
+    "asset",
+    "status",
+    "summary",
+    "portfolio_run_id",
+    "strategy_id",
+    "candidate_variant",
+    "evidence_classification",
+    "source_reports",
+    "evidence_tiers",
+    "evidence_source_matrix",
+    "evidence_gap_summary",
+    "required_layers",
+    "evidence_layers",
+    "blockers",
+    "promotion_ready",
+    "paper_queue_status",
+    "paper_simulation_allowed",
+    "live_status",
+    "live_order_allowed",
+    "guardrails",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {"const": "us_equity_portfolio_promotion_evidence_report_v1"},
+    "generated_at": {"type": "string"},
+    "commit": {"type": "string"},
+    "branch": {"type": "string"},
+    "asset": {"const": "us_equity"},
+    "status": {"enum": ["promotion_evidence_blocked", "promotion_evidence_ready"]},
+    "summary": {
+      "type": "object",
+      "required": [
+        "promotion_ready",
+        "fixture_evidence_present",
+        "candidate_evidence_present",
+        "promotion_evidence_present",
+        "required_layer_count",
+        "passed_layer_count",
+        "blocked_layer_count",
+        "blocked_layer_ids",
+        "first_blocker",
+        "next_required_evidence",
+        "paper_queue_status",
+        "paper_simulation_allowed",
+        "live_order_allowed"
+      ],
+      "properties": {
+        "promotion_ready": {"type": "boolean"},
+        "fixture_evidence_present": {"type": "boolean"},
+        "candidate_evidence_present": {"type": "boolean"},
+        "promotion_evidence_present": {"type": "boolean"},
+        "required_layer_count": {"type": "integer", "minimum": 10},
+        "passed_layer_count": {"type": "integer", "minimum": 0},
+        "blocked_layer_count": {"type": "integer", "minimum": 0},
+        "blocked_layer_ids": {"type": "array", "items": {"type": "string"}},
+        "first_blocker": {"type": "string"},
+        "next_required_evidence": {"type": "array", "items": {"type": "string"}},
+        "paper_queue_status": {"const": "locked"},
+        "paper_simulation_allowed": {"const": false},
+        "live_order_allowed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "portfolio_run_id": {"type": "string"},
+    "strategy_id": {"type": "string"},
+    "candidate_variant": {"type": "string"},
+    "evidence_classification": {
+      "type": "object",
+      "required": [
+        "fixture_evidence_present",
+        "candidate_evidence_present",
+        "promotion_evidence_present",
+        "fixture_can_promote",
+        "candidate_can_promote_without_portfolio_ledger"
+      ],
+      "properties": {
+        "fixture_evidence_present": {"type": "boolean"},
+        "candidate_evidence_present": {"type": "boolean"},
+        "promotion_evidence_present": {"type": "boolean"},
+        "fixture_can_promote": {"const": false},
+        "candidate_can_promote_without_portfolio_ledger": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "source_reports": {
+      "type": "object",
+      "required": [
+        "portfolio_canonical_report",
+        "portfolio_fixture_event_ledger_report",
+        "strategy_validation_gate_report",
+        "walk_forward_report",
+        "cost_stress_report"
+      ],
+      "properties": {
+        "portfolio_canonical_report": {"type": ["string", "null"]},
+        "portfolio_fixture_event_ledger_report": {"type": ["string", "null"]},
+        "strategy_validation_gate_report": {"type": ["string", "null"]},
+        "walk_forward_report": {"type": ["string", "null"]},
+        "cost_stress_report": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "evidence_tiers": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"$ref": "#/$defs/evidence_tier"}
+    },
+    "evidence_source_matrix": {
+      "type": "array",
+      "minItems": 10,
+      "items": {"$ref": "#/$defs/evidence_source_matrix_row"}
+    },
+    "evidence_gap_summary": {
+      "type": "object",
+      "required": ["fixture_evidence", "candidate_evidence", "promotion_evidence"],
+      "properties": {
+        "fixture_evidence": {
+          "type": "object",
+          "required": ["present", "status", "can_promote", "blockers", "reason"],
+          "properties": {
+            "present": {"type": "boolean"},
+            "status": {"type": "string"},
+            "can_promote": {"const": false},
+            "blockers": {"type": "array", "items": {"type": "string"}},
+            "reason": {"type": "string"}
+          },
+          "additionalProperties": false
+        },
+        "candidate_evidence": {
+          "type": "object",
+          "required": ["present", "status", "can_promote_without_portfolio_ledger", "blockers", "reason"],
+          "properties": {
+            "present": {"type": "boolean"},
+            "status": {"type": "string"},
+            "can_promote_without_portfolio_ledger": {"const": false},
+            "blockers": {"type": "array", "items": {"type": "string"}},
+            "reason": {"type": "string"}
+          },
+          "additionalProperties": false
+        },
+        "promotion_evidence": {
+          "type": "object",
+          "required": [
+            "ready",
+            "required_layer_count",
+            "passed_layer_count",
+            "blocked_layer_count",
+            "blocked_layer_ids",
+            "missing_promotion_layer_ids",
+            "blockers_by_layer",
+            "next_required_evidence"
+          ],
+          "properties": {
+            "ready": {"type": "boolean"},
+            "required_layer_count": {"type": "integer", "minimum": 10},
+            "passed_layer_count": {"type": "integer", "minimum": 0},
+            "blocked_layer_count": {"type": "integer", "minimum": 0},
+            "blocked_layer_ids": {"type": "array", "items": {"type": "string"}},
+            "missing_promotion_layer_ids": {"type": "array", "items": {"type": "string"}},
+            "blockers_by_layer": {
+              "type": "object",
+              "additionalProperties": {"type": "array", "items": {"type": "string"}}
+            },
+            "next_required_evidence": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "required_layers": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "fixture_isolation",
+          "candidate_strategy_validation",
+          "portfolio_event_ledger",
+          "event_driven_backtest",
+          "ledger_pnl",
+          "portfolio_construction",
+          "portfolio_cost_stress",
+          "portfolio_walk_forward",
+          "exposure_constraints",
+          "promotion_gate"
+        ]
+      },
+      "minItems": 10
+    },
+    "evidence_layers": {
+      "type": "object",
+      "required": [
+        "fixture_isolation",
+        "candidate_strategy_validation",
+        "portfolio_event_ledger",
+        "event_driven_backtest",
+        "ledger_pnl",
+        "portfolio_construction",
+        "portfolio_cost_stress",
+        "portfolio_walk_forward",
+        "exposure_constraints",
+        "promotion_gate"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["layer_id", "status", "passed", "promotion_eligible", "blockers", "source_report", "summary"],
+        "properties": {
+          "layer_id": {"type": "string"},
+          "status": {"enum": ["pass", "blocked"]},
+          "passed": {"type": "boolean"},
+          "promotion_eligible": {"type": "boolean"},
+          "blockers": {"type": "array", "items": {"type": "string"}},
+          "source_report": {"type": "string"},
+          "summary": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "promotion_ready": {"type": "boolean"},
+    "paper_queue_status": {"const": "locked"},
+    "paper_simulation_allowed": {"const": false},
+    "live_status": {"const": "frozen"},
+    "live_order_allowed": {"const": false},
+    "guardrails": {
+      "type": "object",
+      "required": [
+        "read_only",
+        "strategy_parameters_mutated",
+        "broker_calls_used",
+        "private_endpoint_allowed",
+        "order_endpoint_allowed",
+        "real_order_submitted",
+        "fixture_or_candidate_report_cannot_unlock_live"
+      ],
+      "properties": {
+        "read_only": {"const": true},
+        "strategy_parameters_mutated": {"const": false},
+        "broker_calls_used": {"const": false},
+        "private_endpoint_allowed": {"const": false},
+        "order_endpoint_allowed": {"const": false},
+        "real_order_submitted": {"const": false},
+        "fixture_or_candidate_report_cannot_unlock_live": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["json"],
+      "properties": {"json": {"type": "string"}},
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "evidence_source_matrix_row": {
+      "type": "object",
+      "required": [
+        "source_id",
+        "evidence_tier",
+        "classification",
+        "layer_id",
+        "source_report",
+        "status",
+        "passed",
+        "present",
+        "required_for_promotion",
+        "promotion_eligible",
+        "can_unlock_paper_or_live",
+        "blockers",
+        "next_required_evidence"
+      ],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "evidence_tier": {"enum": ["fixture", "candidate", "promotion"]},
+        "classification": {"type": "string", "minLength": 1},
+        "layer_id": {"type": "string"},
+        "source_report": {"type": "string"},
+        "status": {"type": "string", "minLength": 1},
+        "passed": {"type": "boolean"},
+        "present": {"type": "boolean"},
+        "required_for_promotion": {"type": "boolean"},
+        "promotion_eligible": {"type": "boolean"},
+        "can_unlock_paper_or_live": {"const": false},
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "next_required_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"evidence_tier": {"const": "fixture"}}, "required": ["evidence_tier"]},
+          "then": {
+            "properties": {
+              "classification": {"const": "fixture_plumbing_only"},
+              "required_for_promotion": {"const": false},
+              "promotion_eligible": {"const": false}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"evidence_tier": {"const": "candidate"}}, "required": ["evidence_tier"]},
+          "then": {
+            "properties": {
+              "classification": {"const": "strategy_candidate_research"},
+              "promotion_eligible": {"const": false}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"evidence_tier": {"const": "promotion"}}, "required": ["evidence_tier"]},
+          "then": {
+            "properties": {
+              "classification": {"const": "portfolio_promotion_evidence"},
+              "required_for_promotion": {"const": true}
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "evidence_tier": {
+      "type": "object",
+      "required": [
+        "tier_id",
+        "classification",
+        "present",
+        "status",
+        "can_promote",
+        "can_unlock_paper_or_live",
+        "required_layers",
+        "passed_layers",
+        "blocked_layers",
+        "blockers",
+        "next_required_evidence",
+        "reason"
+      ],
+      "properties": {
+        "tier_id": {"enum": ["fixture", "candidate", "promotion"]},
+        "classification": {"type": "string", "minLength": 1},
+        "present": {"type": "boolean"},
+        "status": {"type": "string", "minLength": 1},
+        "can_promote": {"type": "boolean"},
+        "can_unlock_paper_or_live": {"const": false},
+        "required_layers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "passed_layers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "blocked_layers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "next_required_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"tier_id": {"const": "fixture"}}, "required": ["tier_id"]},
+          "then": {
+            "properties": {
+              "classification": {"const": "fixture_plumbing_only"},
+              "can_promote": {"const": false}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"tier_id": {"const": "candidate"}}, "required": ["tier_id"]},
+          "then": {
+            "properties": {
+              "classification": {"const": "strategy_candidate_research"},
+              "can_promote": {"const": false}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"tier_id": {"const": "promotion"}}, "required": ["tier_id"]},
+          "then": {
+            "properties": {
+              "classification": {"const": "portfolio_promotion_evidence"}
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}
